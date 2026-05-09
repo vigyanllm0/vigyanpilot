@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VigyanLLM — Sovereign Healthcare & Life Sciences AI</title>
+<meta name="description" content="VigyanLLM is an autonomous, sovereign multi-agent AI system for the full biological research pipeline. On-premise. No external APIs.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#fff;--surface:#f8f9fb;--border:#e4e7ec;--primary:#1a56ff;--green:#059669;--amber:#d97706;--text:#0d1117;--text2:#4b5563;--muted:#9ca3af;--font-d:'Instrument Serif',serif;--font-b:'DM Sans',sans-serif;--font-m:'JetBrains Mono',monospace;--max-w:1100px;--sec-p:88px}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--font-b);line-height:1.5;-webkit-font-smoothing:antialiased}
+a{text-decoration:none;color:inherit;transition:color .15s ease}
+.container{max-width:var(--max-w);margin:0 auto;padding:0 24px}
+section{padding:var(--sec-p) 0}
+.section-tag{font-family:var(--font-m);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--primary);margin-bottom:16px;display:block}
+.section-h2{font-family:var(--font-d);font-size:clamp(1.7rem,3vw,2.5rem);color:var(--text);line-height:1.15;font-weight:400;margin-bottom:20px}
+.section-desc{font-size:15px;color:var(--text2);line-height:1.78;max-width:540px;margin-bottom:48px}
+
+/* NAV */
+nav{position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--border);z-index:100;height:64px}
+.nav-inner{display:flex;justify-content:space-between;align-items:center;height:100%;max-width:var(--max-w);margin:0 auto;padding:0 24px}
+.logo{font-family:var(--font-d);font-size:18px;font-weight:700;color:var(--text)}
+.nav-links{display:flex;gap:28px}
+.nav-links a{font-size:14px;color:var(--text2);font-weight:400}
+.nav-links a:hover,.nav-links a.active{color:var(--text);font-weight:500}
+.btn-nav{border:1px solid var(--text);border-radius:6px;padding:8px 20px;font-family:var(--font-b);font-size:13px;font-weight:500;color:var(--text);background:transparent;cursor:pointer;transition:all .15s ease}
+.btn-nav:hover{background:var(--text);color:#fff}
+
+/* HERO */
+.hero{text-align:center;max-width:740px;margin:0 auto;padding:140px 24px 0}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:999px;padding:5px 16px;margin-bottom:28px}
+.hero-badge .dot{width:6px;height:6px;border-radius:50%;background:var(--primary);animation:dotPulse 2s infinite}
+.hero-badge span{font-family:var(--font-m);font-size:10px;letter-spacing:.12em;color:var(--primary)}
+@keyframes dotPulse{0%,100%{opacity:1}50%{opacity:.3}}
+.hero h1{font-family:var(--font-d);font-size:clamp(2.6rem,5.5vw,4.4rem);font-weight:400;color:var(--text);line-height:1.08;letter-spacing:-.035em;margin-bottom:24px}
+.hero h1 em{color:var(--primary);font-style:italic}
+.hero-sub{font-size:17px;color:var(--text2);line-height:1.78;max-width:600px;margin:0 auto 40px}
+.hero-stats{display:inline-flex;background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:36px}
+.hero-stat{padding:16px 32px;text-align:center}
+.hero-stat:not(:last-child){border-right:1px solid var(--border)}
+.hero-stat .val{display:block;font-family:var(--font-m);font-size:22px;font-weight:500;color:var(--text)}
+.hero-stat .lbl{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-top:4px}
+.hero-ctas{display:flex;justify-content:center;gap:12px;margin-top:36px}
+.btn-primary{background:var(--text);color:#fff;border-radius:8px;padding:13px 30px;font-family:var(--font-b);font-size:15px;font-weight:500;border:none;cursor:pointer;transition:background .15s}
+.btn-primary:hover{background:var(--primary)}
+.btn-link{color:var(--primary);font-size:15px;display:flex;align-items:center;padding:13px 0}
+
+/* PROBLEM */
+.problem-grid{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:start}
+.problem-cards{display:flex;flex-direction:column;gap:16px}
+.problem-card{border:1px solid var(--border);border-radius:10px;padding:20px 22px;background:#fff;border-left:3px solid var(--primary)}
+.problem-card h4{font-size:14px;font-weight:600;color:var(--text);margin-bottom:6px}
+.problem-card p{font-size:13px;color:var(--text2);line-height:1.72}
+
+/* PLATFORM GRID */
+.platform-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.plat-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:26px;transition:border-color .15s}
+.plat-card:hover{border-color:var(--primary)}
+.plat-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:var(--font-m);font-size:11px;font-weight:500}
+.plat-icon.blue{background:#eff6ff;color:var(--primary)}
+.plat-icon.green{background:#ecfdf5;color:var(--green)}
+.plat-card h3{font-size:15px;font-weight:600;color:var(--text);margin:14px 0 6px}
+.plat-card p{font-size:13px;color:var(--text2);line-height:1.7}
+
+/* AGENTS */
+.agent-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-bottom:32px}
+.agent-card{border:1px solid var(--border);border-radius:12px;padding:30px;background:#fff;display:flex;flex-direction:column}
+.agent-card.blue-top{border-top:3px solid var(--primary)}
+.agent-card.green-top{border-top:3px solid var(--green)}
+.agent-card.amber-top{border-top:3px solid var(--amber)}
+.agent-lbl{font-family:var(--font-m);font-size:9px;letter-spacing:.14em;text-transform:uppercase;margin-bottom:12px}
+.agent-name{font-family:var(--font-d);font-size:28px;color:var(--text);font-weight:400;margin-bottom:10px}
+.agent-role{display:inline-block;font-size:11px;padding:3px 9px;border-radius:4px;margin-bottom:14px;align-self:flex-start}
+.agent-desc{font-size:13px;color:var(--text2);line-height:1.72;margin-bottom:20px}
+.agent-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:auto}
+.agent-tag{background:#fff;border:1px solid var(--border);border-radius:4px;font-size:11px;color:var(--text2);padding:3px 9px}
+.flow-bar{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px 28px;display:flex;justify-content:center;align-items:center;gap:14px;flex-wrap:wrap}
+.flow-step{font-size:13px;color:var(--text)}
+.flow-step.hi{color:var(--primary);font-weight:600}
+.flow-arrow{color:var(--muted)}
+
+/* DEMO */
+.demo-section{background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.demo-wrap{max-width:860px;margin:0 auto;border-radius:12px;overflow:hidden;border:1px solid var(--border);aspect-ratio:16/9;background:var(--text);position:relative;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.play-btn{width:60px;height:60px;border-radius:50%;border:2px solid rgba(255,255,255,.3);display:flex;align-items:center;justify-content:center;transition:border-color .15s}
+.play-btn:hover{border-color:#fff}
+.play-tri{width:0;height:0;border-top:10px solid transparent;border-bottom:10px solid transparent;border-left:16px solid #fff;margin-left:4px}
+.demo-txt{color:rgba(255,255,255,.5);font-size:13px;margin-top:14px}
+.demo-bar{position:absolute;bottom:0;left:0;right:0;background:rgba(255,255,255,.05);padding:10px 20px;font-family:var(--font-m);font-size:10px;color:rgba(255,255,255,.35)}
+.demo-note{text-align:center;font-size:12px;color:var(--muted);margin-top:16px}
+.demo-stats{text-align:center;font-family:var(--font-m);font-size:12px;color:var(--text2);margin-top:24px}
+
+/* COMPARE TABLE */
+.table-scroll{overflow-x:auto;margin-bottom:32px}
+.cmp-table{width:100%;border-collapse:collapse;border:1px solid var(--border);border-radius:12px;overflow:hidden;min-width:700px}
+.cmp-table th{background:var(--surface);font-size:12px;font-weight:500;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;padding:14px 18px;text-align:left;border-bottom:1px solid var(--border)}
+.cmp-table th:last-child{color:var(--primary);font-weight:600}
+.cmp-table td{padding:14px 18px;font-size:13px;color:var(--text2);border-bottom:1px solid var(--border)}
+.cmp-table tr:last-child td{border-bottom:none}
+.cmp-table tr:nth-child(even){background:#fafafa}
+.cmp-table td:first-child{font-weight:500;color:var(--text)}
+.cmp-table td:last-child{color:var(--green);font-weight:500}
+.sym-yes{color:var(--green)}
+.sym-part{color:var(--amber)}
+.sym-no{color:#dc2626;opacity:.6}
+.diff-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.diff-card{border:1px solid var(--border);border-radius:10px;padding:24px;background:#fff;border-top:2px solid var(--primary)}
+.diff-card h4{font-size:14px;font-weight:600;color:var(--text);margin-bottom:8px}
+.diff-card p{font-size:13px;color:var(--text2);line-height:1.72}
+
+/* ROADMAP */
+.roadmap-wrap{max-width:720px;position:relative;padding-left:48px}
+.roadmap-line{position:absolute;left:17px;top:8px;bottom:8px;width:1px;background:var(--border)}
+.rm-item{position:relative;padding-bottom:48px}
+.rm-item:last-child{padding-bottom:0}
+.rm-dot{position:absolute;left:-48px;top:6px;width:12px;height:12px;border-radius:50%;z-index:1}
+.rm-dot.done{background:var(--green)}
+.rm-dot.active{background:var(--primary);animation:ringPulse 1.8s infinite}
+.rm-dot.planned{background:#fff;border:1.5px solid #d1d5db}
+@keyframes ringPulse{0%{box-shadow:0 0 0 0 rgba(26,86,255,.35)}100%{box-shadow:0 0 0 10px rgba(26,86,255,0)}}
+.rm-label{font-family:var(--font-m);font-size:9px;letter-spacing:.14em;text-transform:uppercase;margin-bottom:8px;display:block}
+.rm-title{font-size:16px;font-weight:600;color:var(--text);margin-bottom:8px}
+.rm-desc{font-size:14px;color:var(--text2);line-height:1.72;max-width:580px}
+.rm-pill{display:inline-block;font-family:var(--font-m);font-size:10px;padding:3px 10px;border-radius:4px;margin-top:12px}
+.rm-bar{height:3px;background:var(--border);border-radius:2px;margin-top:12px;max-width:400px;overflow:hidden}
+.rm-bar-fill{height:100%;width:0;transition:width 1.4s ease-out}
+
+/* CONTACT */
+.contact-center{text-align:center;max-width:600px;margin:0 auto}
+.contact-card{max-width:400px;border:1px solid var(--border);border-radius:12px;padding:32px;margin:32px auto 0;text-align:center}
+.contact-card .c-label{font-family:var(--font-m);font-size:10px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:12px}
+.contact-card .c-email{font-family:var(--font-m);font-size:17px;color:var(--primary)}
+.contact-card .c-email:hover{text-decoration:underline}
+.contact-card .c-div{border-top:1px solid var(--border);margin:20px 0}
+.contact-card .c-note{font-size:13px;color:var(--muted);line-height:1.7}
+
+/* FOOTER */
+footer{border-top:1px solid var(--border);padding:48px 0 32px}
+.footer-grid{display:grid;grid-template-columns:1.5fr 1fr 1fr;gap:40px}
+.footer-logo{font-family:var(--font-d);font-size:17px;color:var(--text)}
+.footer-tag{font-size:12px;color:var(--muted);margin-top:6px}
+.footer-em{font-family:var(--font-m);font-size:12px;color:var(--primary);margin-top:10px;display:inline-block}
+.footer-col h5{font-size:12px;font-weight:600;color:var(--text);text-transform:uppercase;letter-spacing:.06em;margin-bottom:14px}
+.footer-col a{display:block;font-size:13px;color:var(--text2);margin-bottom:10px}
+.footer-col a:hover{color:var(--text)}
+.footer-bottom{border-top:1px solid var(--border);padding-top:20px;margin-top:36px;display:flex;justify-content:space-between;font-size:12px;color:var(--muted)}
+
+/* RESPONSIVE */
+@media(max-width:1023px){
+.agent-grid,.diff-grid{grid-template-columns:repeat(2,1fr)}
+.platform-grid{grid-template-columns:repeat(2,1fr)}
+.problem-grid{grid-template-columns:1fr}
+.footer-grid{grid-template-columns:1.5fr 1fr}
+}
+@media(max-width:767px){
+:root{--sec-p:44px}
+.nav-links{display:none}
+.hero{padding-top:100px}
+.hero h1{font-size:2.4rem}
+.hero-stats{flex-direction:column}
+.hero-stat:not(:last-child){border-right:none;border-bottom:1px solid var(--border)}
+.hero-ctas{flex-direction:column;align-items:center}
+.agent-grid,.platform-grid,.capabilities-grid,.diff-grid,.infra-grid{grid-template-columns:1fr}
+.flow-bar{display:none}
+.flow-list{display:block;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px 24px;font-size:13px;color:var(--text);line-height:2}
+.flow-list .hi{color:var(--primary);font-weight:600}
+.footer-grid{grid-template-columns:1fr}
+.footer-bottom{flex-direction:column;gap:8px;text-align:center}
+.cmp-table{font-size:11px}
+.cmp-table th,.cmp-table td{padding:10px 12px}
+}
+@media(min-width:768px){.flow-list{display:none}}
+</style>
+</head>
+<body>
+
+<!-- SECTION 1: NAV -->
+<nav><div class="nav-inner">
+<div class="logo">VigyanLLM</div>
+<div class="nav-links">
+<a href="#problem" class="nav-link">Problem</a>
+<a href="#platform" class="nav-link">Platform</a>
+<a href="#architecture" class="nav-link">Architecture</a>
+<a href="#roadmap" class="nav-link">Roadmap</a>
+<a href="#compare" class="nav-link">Compare</a>
+<a href="#contact" class="nav-link">Contact</a>
+</div>
+<a href="#contact" class="btn-nav">Get in Touch</a>
+</div></nav>
+
+<!-- SECTION 2: HERO -->
+<section class="hero" id="hero">
+<div class="hero-badge"><div class="dot"></div><span>SOVEREIGN · MULTI-AGENT · LIFE SCIENCES AI</span></div>
+<h1>The Research Brain<br>Your <em>Laboratory</em><br>Doesn't Have Yet</h1>
+<p class="hero-sub">VigyanLLM is an autonomous, sovereign multi-agent AI system that handles the full biological research pipeline — from primer design and PCR automation to protein structure prediction, molecular docking, CRISPR analysis, and clinical reasoning. All on-premise. No external APIs. No data leaving your institution.</p>
+<div class="hero-stats">
+<div class="hero-stat"><span class="val" id="c-records">0</span><span class="lbl">Medical & Genomic Records Processed</span></div>
+<div class="hero-stat"><span class="val" id="c-tokens">0</span><span class="lbl">Tokens Trained</span></div>
+<div class="hero-stat"><span class="val" id="c-batches">0</span><span class="lbl">Specialized Training Batches</span></div>
+</div>
+<div class="hero-ctas">
+<a href="#platform" class="btn-primary">Explore the Platform</a>
+<a href="#compare" class="btn-link">See How It Compares →</a>
+</div>
+</section>
+
+<!-- SECTION 3: PROBLEM -->
+<section id="problem"><div class="container"><div class="problem-grid">
+<div>
+<span class="section-tag">THE PROBLEM</span>
+<h2 class="section-h2">Biological Research<br>Is Broken by Silos</h2>
+<p class="section-desc" style="max-width:440px">Researchers today spend 60–70% of their time managing disconnected tools, reformatting data between platforms, and waiting on compute that lives outside their institution. The science is advancing — the infrastructure isn't.<br><br>VigyanLLM was built to collapse the entire research workflow into a single, sovereign, intelligent system.</p>
+</div>
+<div class="problem-cards">
+<div class="problem-card"><h4>Siloed, Single-Purpose Tools</h4><p>Today's biotech AI is fragmented. One tool for protein folding. Another for docking. Another for PCR. Researchers stitch them together manually, losing hours and introducing error at every handoff.</p></div>
+<div class="problem-card"><h4>Data Sovereignty & Privacy Risk</h4><p>Sending sensitive genomic, clinical, and patient data to third-party cloud APIs violates data sovereignty principles. Healthcare institutions cannot afford this exposure — yet most current AI tools demand it.</p></div>
+<div class="problem-card"><h4>Cost Inaccessible to Most Research Institutions</h4><p>Enterprise-grade platforms like Schrödinger cost tens of thousands of dollars annually. The majority of research labs — especially in emerging markets — simply cannot access state-of-the-art computational biology tools.</p></div>
+<div class="problem-card"><h4>No System Covers the Full Research Lifecycle</h4><p>From hypothesis to validated protocol, a researcher touches six or more disconnected systems. No existing platform automates the complete pipeline — primer design, structure prediction, docking, expression analysis, and clinical reasoning — under one sovereign roof.</p></div>
+</div>
+</div></div></section>
+
+<!-- SECTION 4: PLATFORM -->
+<section id="platform"><div class="container">
+<span class="section-tag">VIGYANLLM PLATFORM</span>
+<h2 class="section-h2">One Sovereign System.<br>The Entire Research Pipeline.</h2>
+<p class="section-desc">VigyanLLM replaces six disconnected tools with a single, on-premise, multi-agent AI system — running natively on your hardware, with complete audit trails and zero external data transfer.</p>
+<div class="platform-grid">
+<div class="plat-card"><div class="plat-icon blue">PS</div><h3>Protein Structure Prediction</h3><p>AlphaFold, RosettaFold, and ESMFold integration. Accurate 3D protein conformation analysis and structural anomaly mapping for drug target identification.</p></div>
+<div class="plat-card"><div class="plat-icon green">MD</div><h3>Molecular Docking</h3><p>Vina-GPU accelerated docking pipeline with realistic binding energy calculations (e.g., −8.5 kcal/mol) and full interaction surface analysis.</p></div>
+<div class="plat-card"><div class="plat-icon blue">GE</div><h3>Gene Expression & Pathways</h3><p>RNA-Seq analysis via DESeq2 and edgeR. KEGG and Reactome pathway integration for complete systems biology understanding.</p></div>
+<div class="plat-card"><div class="plat-icon green">PC</div><h3>Primer Design & PCR Automation</h3><p>End-to-end PCR workflow — thermodynamics, off-target screening, and validated protocol generation. No manual handoffs.</p></div>
+<div class="plat-card"><div class="plat-icon blue">CR</div><h3>CRISPR-Cas9 Analysis</h3><p>HNH Nuclease Domain anomaly detection, sgRNA-DNA Heteroduplex Instability analysis, and PAM variation mapping via T4 GPU inference.</p></div>
+<div class="plat-card"><div class="plat-icon green">CL</div><h3>Clinical Reasoning</h3><p>Differential diagnosis, symptom mapping, and clinical decision support — trained on 50,000 dedicated clinical reasoning records.</p></div>
+</div>
+</div></section>
+
+<!-- SECTION 5: ARCHITECTURE -->
+<section id="architecture"><div class="container">
+<span class="section-tag">MULTI-AGENT ARCHITECTURE</span>
+<h2 class="section-h2">Three Agents.<br>One Research Pipeline.</h2>
+<p class="section-desc">VigyanLLM does not rely on a single monolithic model. Three specialized AI agents operate in sequence — each with a distinct role — ensuring that every research output is orchestrated, reasoned, and verified before it reaches the researcher.</p>
+<div class="agent-grid">
+<div class="agent-card blue-top">
+<span class="agent-lbl" style="color:var(--primary)">AGENT 01 · ORCHESTRATION</span>
+<h3 class="agent-name">Core</h3>
+<span class="agent-role" style="background:#eff6ff;color:var(--primary)">Orchestration Layer</span>
+<p class="agent-desc">Parses research intent, decomposes complex multi-step biological queries, and routes sub-tasks to the appropriate specialized agents. Core synthesizes all intermediate outputs into a coherent, structured final report — acting as the primary interface between the researcher and the rest of the AI system.</p>
+<div class="agent-tags"><span class="agent-tag">Prompt Routing</span><span class="agent-tag">Task Decomposition</span><span class="agent-tag">Report Synthesis</span></div>
+</div>
+<div class="agent-card green-top">
+<span class="agent-lbl" style="color:var(--green)">AGENT 02 · DOMAIN REASONING</span>
+<h3 class="agent-name">SubBrain</h3>
+<span class="agent-role" style="background:#ecfdf5;color:var(--green)">Domain Reasoning Engine</span>
+<p class="agent-desc">The deep-domain specialist. SubBrain handles biological knowledge retrieval, sequence analysis, PCR thermodynamics, protein structure prediction, RNA-Seq interpretation, and KEGG/Reactome pathway mapping. Fine-tuned across 46 specialized training batches on 320,000+ biomedical and genomic records.</p>
+<div class="agent-tags"><span class="agent-tag">PCR Logic</span><span class="agent-tag">RNA-Seq</span><span class="agent-tag">AlphaFold Integration</span><span class="agent-tag">Pathway Analysis</span></div>
+</div>
+<div class="agent-card amber-top">
+<span class="agent-lbl" style="color:var(--amber)">AGENT 03 · VERIFICATION</span>
+<h3 class="agent-name">ChinhAI</h3>
+<span class="agent-role" style="background:#fffbeb;color:var(--amber)">Verification & Quality Gate</span>
+<p class="agent-desc">The validation layer that ensures research-grade accuracy at every step. ChinhAI cross-checks primer designs against off-target binding databases, validates molecular docking results, flags sgRNA-DNA Heteroduplex Instability in CRISPR workflows, and enforces full protocol integrity before any output reaches the researcher.</p>
+<div class="agent-tags"><span class="agent-tag">Off-target Checking</span><span class="agent-tag">Docking Validation</span><span class="agent-tag">CRISPR QC</span><span class="agent-tag">Protocol Gate</span></div>
+</div>
+</div>
+<div class="flow-bar">
+<span class="flow-step">Researcher Query</span><span class="flow-arrow">→</span>
+<span class="flow-step hi">Core (Orchestrate)</span><span class="flow-arrow">→</span>
+<span class="flow-step">SubBrain (Reason)</span><span class="flow-arrow">→</span>
+<span class="flow-step">ChinhAI (Validate)</span><span class="flow-arrow">→</span>
+<span class="flow-step">Verified Output</span>
+</div>
+<div class="flow-list">
+<strong>Pipeline:</strong> Researcher Query → <span class="hi">Core (Orchestrate)</span> → SubBrain (Reason) → ChinhAI (Validate) → Verified Output
+</div>
+</div></section>
+
+<!-- SECTION 6: DEMO -->
+<section id="demo" class="demo-section"><div class="container" style="text-align:center">
+<span class="section-tag">PLATFORM DEMO</span>
+<h2 class="section-h2" style="text-align:center">See VigyanLLM in Action</h2>
+<p style="font-size:15px;color:var(--text2);max-width:520px;margin:0 auto 40px;line-height:1.78">Watch the multi-agent pipeline handle a live primer design and PCR validation workflow — from raw researcher query to fully verified, structured protocol output.</p>
+<div class="demo-wrap" id="demo-player">
+<div class="play-btn"><div class="play-tri"></div></div>
+<div class="demo-txt">VigyanLLM Platform Demo · Click to Play</div>
+<div class="demo-bar">MULTI-AGENT PRIMER DESIGN PIPELINE · VIGYANLLM v0.9</div>
+</div>
+<div class="demo-note" id="demo-note"></div>
+<div class="demo-stats">Multi-Agent Pipeline · Core + SubBrain + ChinhAI &nbsp;·&nbsp; Primer Design + PCR Validation &nbsp;·&nbsp; System v0.9 · 90% Complete</div>
+</div></section>
+
+<!-- SECTION 7: COMPARE -->
+<section id="compare"><div class="container">
+<span class="section-tag">HOW WE COMPARE</span>
+<h2 class="section-h2">What Exists Today<br>Isn't Enough</h2>
+<p class="section-desc" style="max-width:560px">The current biotech AI landscape is built on narrow, cloud-dependent, expensive single-purpose tools. VigyanLLM is the first sovereign, multi-agent system to automate the complete biological research pipeline — end to end.</p>
+<div class="table-scroll">
+<table class="cmp-table">
+<thead><tr><th>Capability</th><th>AlphaFold / DeepMind</th><th>Schrödinger</th><th>Benchling</th><th>Recursion Pharma</th><th>VigyanLLM</th></tr></thead>
+<tbody>
+<tr><td>Protein Structure Prediction</td><td class="sym-yes">✓</td><td class="sym-yes">✓</td><td class="sym-no">✗</td><td class="sym-part">◐</td><td class="sym-yes">✓</td></tr>
+<tr><td>Molecular Docking</td><td class="sym-no">✗</td><td class="sym-yes">✓</td><td class="sym-no">✗</td><td class="sym-part">◐</td><td class="sym-yes">✓</td></tr>
+<tr><td>Primer Design & PCR Automation</td><td class="sym-no">✗</td><td class="sym-no">✗</td><td class="sym-part">◐</td><td class="sym-no">✗</td><td class="sym-yes">✓</td></tr>
+<tr><td>RNA-Seq & Gene Expression</td><td class="sym-no">✗</td><td class="sym-part">◐</td><td class="sym-part">◐</td><td class="sym-part">◐</td><td class="sym-yes">✓</td></tr>
+<tr><td>CRISPR-Cas9 Structural Analysis</td><td class="sym-no">✗</td><td class="sym-part">◐</td><td class="sym-no">✗</td><td class="sym-no">✗</td><td class="sym-yes">✓</td></tr>
+<tr><td>Clinical Reasoning & Diagnostics</td><td class="sym-no">✗</td><td class="sym-no">✗</td><td class="sym-no">✗</td><td class="sym-no">✗</td><td class="sym-yes">✓</td></tr>
+<tr><td>Full Multi-Agent Orchestration</td><td class="sym-no">✗</td><td class="sym-no">✗</td><td class="sym-no">✗</td><td class="sym-part">◐</td><td class="sym-yes">✓</td></tr>
+<tr><td>Sovereign / On-Premise Deployment</td><td class="sym-no">✗</td><td class="sym-part">◐</td><td class="sym-no">✗</td><td class="sym-no">✗</td><td class="sym-yes">✓</td></tr>
+<tr><td>No External API Dependency</td><td class="sym-no">✗</td><td class="sym-no">✗</td><td class="sym-no">✗</td><td class="sym-no">✗</td><td class="sym-yes">✓</td></tr>
+<tr><td>Complete Pipeline (Single System)</td><td class="sym-no">✗</td><td class="sym-no">✗</td><td class="sym-no">✗</td><td class="sym-no">✗</td><td class="sym-yes">✓</td></tr>
+</tbody>
+</table>
+</div>
+<div class="diff-grid">
+<div class="diff-card"><h4>Full Pipeline, Not a Point Solution</h4><p>Every existing tool solves one problem. AlphaFold folds proteins. Schrödinger runs docking. Benchling manages lab data. VigyanLLM does all of it — automatically, sequentially, in one system.</p></div>
+<div class="diff-card"><h4>Sovereign by Design — Not an Afterthought</h4><p>Competitors require cloud infrastructure and send data to external servers. VigyanLLM's Cold Core architecture runs entirely on your hardware. Sensitive genomic and patient data never leaves your institution.</p></div>
+<div class="diff-card"><h4>Built for Research, Not Just Drug Discovery</h4><p>Most biotech AI is built for pharmaceutical companies. VigyanLLM is designed for the full research spectrum — academic labs, biotech startups, and clinical institutions — making advanced computational biology accessible without enterprise pricing.</p></div>
+</div>
+</div></section>
+
+<!-- SECTION 8: ROADMAP -->
+<section id="roadmap"><div class="container">
+<span class="section-tag">DEVELOPMENT ROADMAP</span>
+<h2 class="section-h2">From Working System<br>to World-Class Platform</h2>
+<p class="section-desc">VigyanLLM's core scientific engine is trained, deployed, and producing research-grade outputs. The roadmap ahead focuses on enterprise hardening, regulatory compliance, and institutional deployment.</p>
+<div class="roadmap-wrap">
+<div class="roadmap-line"></div>
+<div class="rm-item"><div class="rm-dot done"></div>
+<span class="rm-label" style="color:var(--green)">Phase 1 · Complete</span>
+<h3 class="rm-title">Scientific Engine & Multi-Agent Core</h3>
+<p class="rm-desc">VigyanLLM's foundational AI system is fully operational. 46 specialized training batches completed. 320,000+ medical and genomic records ingested. Three-agent pipeline (Core, SubBrain, ChinhAI) deployed and producing research-grade outputs across protein structure prediction, molecular docking, RNA-Seq analysis, PCR automation, CRISPR structural analysis, and clinical reasoning. Sovereign Cold Core architecture live — bare-metal, no external API dependencies.</p>
+<span class="rm-pill" style="background:#ecfdf5;color:var(--green);border:1px solid #a7f3d0">✓ Operational</span>
+<div class="rm-bar"><div class="rm-bar-fill" id="rm-bar-1" style="background:var(--green)"></div></div>
+</div>
+<div class="rm-item"><div class="rm-dot active"></div>
+<span class="rm-label" style="color:var(--primary)">Phase 2 · Active</span>
+<h3 class="rm-title">Real Client-Side AI/ML</h3>
+<p class="rm-desc">Replacing the current simulated neural network layer in the UI with real TensorFlow.js implementation. Adding advanced search algorithms — TF-IDF, BM25, and semantic embeddings — directly in the React interface. This phase brings client-side intelligence to the frontend, enabling offline-capable inference without server round-trips.</p>
+<span class="rm-pill" style="background:#eff6ff;color:var(--primary);border:1px solid #bfdbfe">⬤ In Progress</span>
+<div class="rm-bar"><div class="rm-bar-fill" id="rm-bar-2" style="background:var(--primary)"></div></div>
+</div>
+<div class="rm-item"><div class="rm-dot planned"></div>
+<span class="rm-label" style="color:var(--muted)">Phase 3 · Planned</span>
+<h3 class="rm-title">Enterprise UX & Multi-Tenant Architecture</h3>
+<p class="rm-desc">Multi-tenant system for institutional deployments. User profiles, role-based access, collaborative research workspaces, and enterprise-grade API access controls with rate limiting. Designed for deployment across universities, biotech startups, and hospital research departments.</p>
+<span class="rm-pill" style="background:var(--surface);color:var(--muted);border:1px solid var(--border)">Planned</span>
+</div>
+<div class="rm-item"><div class="rm-dot planned"></div>
+<span class="rm-label" style="color:var(--muted)">Phase 4 · Planned</span>
+<h3 class="rm-title">Quality Assurance & Automated Testing</h3>
+<p class="rm-desc">Comprehensive automated testing framework covering unit tests, integration tests, end-to-end pipeline tests, and model inference A/B testing. Performance benchmarking against human expert outputs for every supported workflow — protein docking accuracy, primer specificity, CRISPR off-target rates, and clinical diagnostic precision.</p>
+<span class="rm-pill" style="background:var(--surface);color:var(--muted);border:1px solid var(--border)">Planned</span>
+</div>
+<div class="rm-item"><div class="rm-dot planned"></div>
+<span class="rm-label" style="color:var(--muted)">Phase 5 · Planned</span>
+<h3 class="rm-title">Healthcare Regulatory Compliance</h3>
+<p class="rm-desc">Full implementation of FDA 21 CFR Part 11 (electronic records), HIPAA (patient data protection), and GDPR compliance architectures. Hardened audit trail systems, role-based access control, encrypted data handling, and clinical-grade documentation for institutional and hospital deployments.</p>
+<span class="rm-pill" style="background:var(--surface);color:var(--muted);border:1px solid var(--border)">Planned</span>
+</div>
+<div class="rm-item"><div class="rm-dot planned"></div>
+<span class="rm-label" style="color:var(--muted)">Phase 6 · Planned</span>
+<h3 class="rm-title">Cloud Deployment & Real-World Product Trials</h3>
+<p class="rm-desc">Migration from the current 15GB local engine to a cloud-native, distributed infrastructure. Public API beta for research institutions and biotech labs. Pilot deployments with partnered research hospitals and universities. Validation of every workflow against expert human benchmarks under real laboratory conditions.</p>
+<span class="rm-pill" style="background:var(--surface);color:var(--muted);border:1px solid var(--border)">Planned</span>
+</div>
+</div>
+</div></section>
+
+<!-- SECTION 9: CONTACT -->
+<section id="contact"><div class="container contact-center">
+<span class="section-tag">GET IN TOUCH</span>
+<h2 style="font-family:var(--font-d);font-size:clamp(1.8rem,3vw,2.6rem);font-weight:400;color:var(--text);margin-bottom:20px">Interested in VigyanLLM?</h2>
+<p style="font-size:16px;color:var(--text2);line-height:1.78;margin-bottom:0">Whether you're a research institution, biotech lab, or academic partner — we're building VigyanLLM for you. Reach out to discuss a pilot deployment, research collaboration, or institutional access.</p>
+<div class="contact-card">
+<div class="c-label">Official Contact</div>
+<a href="mailto:contact@vigyanllm.in" class="c-email">contact@vigyanllm.in</a>
+<div class="c-div"></div>
+<p class="c-note">For research partnerships, pilot programs, or institutional deployments. Response within 48 hours.</p>
+</div>
+</div></section>
+
+<!-- SECTION 10: FOOTER -->
+<footer><div class="container">
+<div class="footer-grid">
+<div>
+<div class="footer-logo">VigyanLLM</div>
+<div class="footer-tag">Sovereign Healthcare & Life Sciences AI</div>
+<a href="mailto:contact@vigyanllm.in" class="footer-em">contact@vigyanllm.in</a>
+</div>
+<div class="footer-col"><h5>Platform</h5>
+<a href="#problem">Problem</a><a href="#platform">Platform</a><a href="#architecture">Architecture</a><a href="#demo">Demo</a><a href="#compare">Compare</a><a href="#roadmap">Roadmap</a>
+</div>
+<div class="footer-col"><h5>Research</h5>
+<a href="#platform">Protein Structure Prediction</a><a href="#platform">Molecular Docking</a><a href="#platform">Primer Design & PCR</a><a href="#platform">CRISPR-Cas9 Analysis</a><a href="#platform">Clinical Reasoning</a><a href="#platform">Gene Expression</a>
+</div>
+</div>
+<div class="footer-bottom">
+<span>© 2025 VigyanLLM · All rights reserved</span>
+<span>Built in India 🇮🇳</span>
+</div>
+</div></footer>
+
+<script>
+const YOUTUBE_ID = 'YOUR_VIDEO_ID';
+
+document.addEventListener('DOMContentLoaded', () => {
+  // 1. Counter animation with easeOut
+  function countUp(id, end, duration, suffix, fmt) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    let cur = 0;
+    const interval = setInterval(() => {
+      const remaining = end - cur;
+      cur += remaining * 0.08;
+      if (cur >= end - 0.5) { cur = end; clearInterval(interval); }
+      let display = fmt ? fmt(Math.floor(cur)) : Math.floor(cur).toLocaleString();
+      el.textContent = display + (suffix || '');
+    }, 16);
+  }
+  setTimeout(() => {
+    countUp('c-records', 321438, 1200, '+');
+    countUp('c-tokens', 120, 900, 'M+');
+    countUp('c-batches', 46, 900, '');
+  }, 300);
+
+  // 2. Scroll-spy
+  const links = document.querySelectorAll('.nav-link');
+  const secs = document.querySelectorAll('section[id]');
+  const spy = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const match = document.querySelector('.nav-link[href="#' + e.target.id + '"]');
+        if (match) match.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-40% 0px -55% 0px' });
+  secs.forEach(s => spy.observe(s));
+
+  // 3. Progress bars on roadmap
+  const rmObs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        const b1 = document.getElementById('rm-bar-1');
+        const b2 = document.getElementById('rm-bar-2');
+        if (b1) b1.style.width = '100%';
+        if (b2) b2.style.width = '45%';
+        rmObs.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.15 });
+  const rm = document.getElementById('roadmap');
+  if (rm) rmObs.observe(rm);
+
+  // 4. Video demo click handler
+  const player = document.getElementById('demo-player');
+  const note = document.getElementById('demo-note');
+  if (player) {
+    player.addEventListener('click', () => {
+      if (YOUTUBE_ID === 'YOUR_VIDEO_ID') {
+        note.textContent = 'To enable: replace YOUR_VIDEO_ID in the script with your YouTube video ID.';
+      } else {
+        player.innerHTML = '<iframe src="https://www.youtube.com/embed/' + YOUTUBE_ID + '?autoplay=1" style="width:100%;height:100%;border:none" allow="autoplay;fullscreen" allowfullscreen></iframe>';
+        player.style.cursor = 'default';
+      }
+    });
+  }
+});
+</script>
+</body>
+</html>
