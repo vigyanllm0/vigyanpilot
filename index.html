@@ -258,9 +258,11 @@ footer { padding: 80px 0 40px; border-top: 1px solid var(--border); }
     <h2 class="section-h2">Watch VigyanLLM Run<br>a Real Primer Design</h2>
     <p class="section-desc" style="margin: 0 auto 48px;">A researcher inputs a target gene sequence. Core parses the intent. SubBrain designs the primer. ChinhAI validates off-target binding. A verified protocol is returned. Watch it happen in under 3 minutes.</p>
     
-    <div class="demo-wrap" id="video-placeholder">
-      <div class="play-btn"><div class="play-tri"></div></div>
-      <div style="color:rgba(255,255,255,0.4); font-size:13px; margin-top:16px;">VigyanLLM Platform Demo · Click to Play</div>
+    <div class="demo-wrap">
+      <video controls playsinline preload="metadata" poster="https://raw.githubusercontent.com/vigyanllm0/vigyanpilot/main/poster.png" style="width:100%; height:100%; object-fit:cover; display:block;">
+        <source src="https://raw.githubusercontent.com/vigyanllm0/vigyanpilot/main/product%20demo.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+      </video>
     </div>
     
     <div class="demo-labels">
@@ -573,7 +575,6 @@ footer { padding: 80px 0 40px; border-top: 1px solid var(--border); }
 </footer>
 
 <script>
-const YOUTUBE_ID = 'fH3Z7O_Vb8U'; // Updated with provided or placeholder ID
 
 function scrollToId(id) {
   const el = document.getElementById(id);
@@ -581,14 +582,7 @@ function scrollToId(id) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  // 1. Video placeholder handler
-  const videoPlaceholder = document.getElementById('video-placeholder');
-  if (videoPlaceholder) {
-    videoPlaceholder.addEventListener('click', () => {
-      videoPlaceholder.innerHTML = `<iframe src="https://www.youtube.com/embed/${YOUTUBE_ID}?autoplay=1" style="width:100%;height:100%;border:none" allow="autoplay;fullscreen" allowfullscreen></iframe>`;
-      videoPlaceholder.style.cursor = 'default';
-    });
-  }
+
 
   // 2. Proof cards reveal animation
   const proofObserver = new IntersectionObserver((entries) => {
