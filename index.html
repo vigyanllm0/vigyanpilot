@@ -85,13 +85,9 @@ nav{position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--bor
 
 /* DEMO */
 .demo-section{background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
-.demo-wrap{max-width:860px;margin:0 auto;border-radius:12px;overflow:hidden;border:1px solid var(--border);aspect-ratio:16/9;background:var(--text);position:relative;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center}
-.play-btn{width:60px;height:60px;border-radius:50%;border:2px solid rgba(255,255,255,.3);display:flex;align-items:center;justify-content:center;transition:border-color .15s}
-.play-btn:hover{border-color:#fff}
-.play-tri{width:0;height:0;border-top:10px solid transparent;border-bottom:10px solid transparent;border-left:16px solid #fff;margin-left:4px}
-.demo-txt{color:rgba(255,255,255,.5);font-size:13px;margin-top:14px}
-.demo-bar{position:absolute;bottom:0;left:0;right:0;background:rgba(255,255,255,.05);padding:10px 20px;font-family:var(--font-m);font-size:10px;color:rgba(255,255,255,.35)}
-.demo-note{text-align:center;font-size:12px;color:var(--muted);margin-top:16px}
+.demo-video-container { max-width: 1000px; margin: 0 auto; border-radius: 20px; overflow: hidden; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3), 0 0 20px rgba(0, 255, 255, 0.1); transition: all 0.3s ease; position: relative; }
+.demo-video-container:hover { box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3), 0 0 20px rgba(0, 255, 255, 0.2); transform: translateY(-4px); }
+.demo-video-container video { width: 100%; display: block; border-radius: 20px; }
 .demo-stats{text-align:center;font-family:var(--font-m);font-size:12px;color:var(--text2);margin-top:24px}
 
 /* COMPARE TABLE */
@@ -283,12 +279,12 @@ footer{border-top:1px solid var(--border);padding:48px 0 32px}
 <span class="section-tag">PLATFORM DEMO</span>
 <h2 class="section-h2" style="text-align:center">See VigyanLLM in Action</h2>
 <p style="font-size:15px;color:var(--text2);max-width:520px;margin:0 auto 40px;line-height:1.78">Watch the multi-agent pipeline handle a live primer design and PCR validation workflow — from raw researcher query to fully verified, structured protocol output.</p>
-<div class="demo-wrap" id="demo-player">
-<div class="play-btn"><div class="play-tri"></div></div>
-<div class="demo-txt">VigyanLLM Platform Demo · Click to Play</div>
-<div class="demo-bar">MULTI-AGENT PRIMER DESIGN PIPELINE · VIGYANLLM v0.9</div>
+<div class="demo-video-container">
+<video controls muted loop playsinline preload="metadata" poster="https://raw.githubusercontent.com/vigyanllm0/vigyanpilot/main/poster.png">
+<source src="https://raw.githubusercontent.com/vigyanllm0/vigyanpilot/main/product%20demo.mp4" type="video/mp4">
+Your browser does not support the video tag.
+</video>
 </div>
-<div class="demo-note" id="demo-note"></div>
 <div class="demo-stats">Multi-Agent Pipeline · Core + SubBrain + ChinhAI &nbsp;·&nbsp; Primer Design + PCR Validation &nbsp;·&nbsp; System v0.9 · 90% Complete</div>
 </div></section>
 
@@ -404,8 +400,6 @@ footer{border-top:1px solid var(--border);padding:48px 0 32px}
 </div></footer>
 
 <script>
-const YOUTUBE_ID = 'YOUR_VIDEO_ID';
-
 document.addEventListener('DOMContentLoaded', () => {
   // 1. Counter animation with easeOut
   function countUp(id, end, duration, suffix, fmt) {
@@ -454,20 +448,6 @@ document.addEventListener('DOMContentLoaded', () => {
   }, { threshold: 0.15 });
   const rm = document.getElementById('roadmap');
   if (rm) rmObs.observe(rm);
-
-  // 4. Video demo click handler
-  const player = document.getElementById('demo-player');
-  const note = document.getElementById('demo-note');
-  if (player) {
-    player.addEventListener('click', () => {
-      if (YOUTUBE_ID === 'YOUR_VIDEO_ID') {
-        note.textContent = 'To enable: replace YOUR_VIDEO_ID in the script with your YouTube video ID.';
-      } else {
-        player.innerHTML = '<iframe src="https://www.youtube.com/embed/' + YOUTUBE_ID + '?autoplay=1" style="width:100%;height:100%;border:none" allow="autoplay;fullscreen" allowfullscreen></iframe>';
-        player.style.cursor = 'default';
-      }
-    });
-  }
 });
 </script>
 </body>
