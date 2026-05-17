@@ -509,7 +509,7 @@ footer { padding: 80px 0 40px; border-top: 1px solid var(--border); }
           <span id="wf-filename" class="workflow-filename">vigyanllm — consensus_pipeline.mp4</span>
         </div>
         <div class="workflow-video-area">
-          <video id="wf-video" autoplay muted loop playsinline controls preload="metadata" src="https://drive.google.com/uc?export=download&amp;id=1BEjB3_ldI8VMu25GV9TpdBcVJwAx7XYg">
+          <video id="wf-video" autoplay muted loop playsinline controls preload="metadata" src="https://raw.githubusercontent.com/vigyanllm0/vigyanpilot/main/consensus_pipeline.mp4">
             Video loading — if playback doesn't start, check your connection.
           </video>
         </div>
@@ -539,7 +539,7 @@ footer { padding: 80px 0 40px; border-top: 1px solid var(--border); }
           "ESMFold-compatible protein structure preprocessing",
           "Output: ranked binding poses with annotated affinity scores"
         ],
-        src: "https://drive.google.com/uc?export=download&id=1BEjB3_ldI8VMu25GV9TpdBcVJwAx7XYg",
+        src: "https://raw.githubusercontent.com/vigyanllm0/vigyanpilot/main/consensus_pipeline.mp4",
         filename: "vigyanllm — consensus_pipeline.mp4"
       },
       smartswitch: {
@@ -552,7 +552,7 @@ footer { padding: 80px 0 40px; border-top: 1px solid var(--border); }
           "Instant project scaffolding — inputs, outputs, and audit trail auto-generated",
           "Supports 40+ canonical biomedical task types"
         ],
-        src: "https://drive.google.com/uc?export=download&id=1SeVCfhFCGd6-wyPeHVdA4Z4oEdf6kj8P",
+        src: "https://raw.githubusercontent.com/vigyanllm0/vigyanpilot/main/smart_switch_demo.mp4",
         filename: "vigyanllm — smart_switch_demo.mp4"
       },
       primerforge: {
@@ -565,10 +565,47 @@ footer { padding: 80px 0 40px; border-top: 1px solid var(--border); }
           "NCBI and Ensembl database integration for automatic sequence retrieval",
           "Primer specificity scoring and off-target analysis included"
         ],
-        src: "https://drive.google.com/uc?export=download&id=1Pn9MokkNuET5CdIpdSGMcD283lslYAoR",
+        src: "https://raw.githubusercontent.com/vigyanllm0/vigyanpilot/main/primerforge_demo.mp4",
         filename: "vigyanllm — primerforge_demo.mp4"
       }
     };
+
+    function requestVideoPlayback(video) {
+      if (!video) return;
+
+      video.muted = true;
+      video.defaultMuted = true;
+      video.playsInline = true;
+      video.setAttribute('muted', '');
+      video.setAttribute('playsinline', '');
+
+      const play = () => {
+        video.play().catch(() => {});
+      };
+
+      if (video.readyState >= 2) play();
+      video.addEventListener('loadedmetadata', play, { once: true });
+      video.addEventListener('loadeddata', play, { once: true });
+      video.addEventListener('canplay', play, { once: true });
+      [300, 1000, 2500, 5000].forEach(delay => window.setTimeout(play, delay));
+    }
+
+    const workflowVideo = document.getElementById('wf-video');
+
+    if ('IntersectionObserver' in window && workflowVideo) {
+      const videoObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) requestVideoPlayback(entry.target);
+        });
+      }, { threshold: 0.25 });
+      videoObserver.observe(workflowVideo);
+    }
+
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) requestVideoPlayback(workflowVideo);
+    });
+
+    window.addEventListener('focus', () => requestVideoPlayback(workflowVideo));
 
     function switchWorkflow(key) {
       const data = workflows[key];
@@ -589,7 +626,7 @@ footer { padding: 80px 0 40px; border-top: 1px solid var(--border); }
       const video = document.getElementById('wf-video');
       video.src = data.src;
       video.load();
-      video.play().catch(() => {});
+      requestVideoPlayback(video);
 
       // Update filename in chrome bar
       document.getElementById('wf-filename').textContent = data.filename;
