@@ -372,17 +372,20 @@ nav { position: sticky; top: 0; background: rgba(255, 255, 255, 0.95); backdrop-
 .rm-desc { font-size: 14px; color: var(--text2); line-height: 1.7; }
 
 /* FOUNDER */
-.founder-grid { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 80px; align-items: center; }
+.founder-grid { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 80px; align-items: center; }
+.founder-card-list { display: grid; gap: 20px; }
 .founder-card { border: 1px solid var(--border); border-radius: 12px; padding: 36px; background: var(--surface); }
+.founder-card.secondary { background: #fff; }
 .founder-name { font-family: var(--font-d); font-size: 24px; font-weight: 400; margin-bottom: 4px; }
 .founder-role { font-size: 13px; color: var(--text2); margin-bottom: 20px; display: block; }
 .founder-divider { height: 1px; background: var(--border); margin: 24px 0; }
 .founder-specs { display: grid; gap: 12px; }
-.spec-row { display: flex; justify-content: space-between; font-family: var(--font-m); font-size: 11px; }
+.spec-row { display: flex; justify-content: space-between; gap: 16px; font-family: var(--font-m); font-size: 11px; }
 .spec-row .lbl { color: var(--muted); }
-.spec-row .val { color: var(--text); }
+.spec-row .val { color: var(--text); text-align: right; word-break: break-word; }
 .founder-quote { border-left: 2px solid var(--primary); padding-left: 18px; margin-top: 32px; font-style: italic; font-size: 13px; color: var(--text2); line-height: 1.7; }
 .founder-quote span { display: block; margin-top: 10px; font-size: 11px; color: var(--muted); font-style: normal; }
+.founder-note { margin-top: 18px; color: var(--text2); font-size: 13px; line-height: 1.7; }
 
 /* BETA CTA */
 .beta-strip { background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 80px 0; text-align: center; }
@@ -424,6 +427,8 @@ footer { padding: 80px 0 40px; border-top: 1px solid var(--border); }
   .workflow-subheading { font-size: 16px; }
   .workflow-copy { padding: 24px; }
   .workflow-filename { font-size: 10px; }
+  .spec-row { flex-direction: column; gap: 4px; }
+  .spec-row .val { text-align: left; }
 }
 </style>
 </head>
@@ -439,7 +444,7 @@ footer { padding: 80px 0 40px; border-top: 1px solid var(--border); }
       <a href="#architecture">Architecture</a>
       <a href="#compare">Compare</a>
       <a href="#roadmap">Roadmap</a>
-      <a href="#founder">Founder</a>
+      <a href="#founder">Team</a>
     </div>
     <div class="nav-right">
       <span class="link-beta" onclick="scrollToId('contact')">Request Beta Access</span>
@@ -463,7 +468,7 @@ footer { padding: 80px 0 40px; border-top: 1px solid var(--border); }
     </div>
 
     <div class="hero-ctas">
-      <button class="btn-dark" onclick="scrollToId('demo')">Watch 3-Minute Demo</button>
+      <button class="btn-dark" onclick="scrollToId('demo')">Watch Product Demo</button>
       <a href="#proof" class="btn-text-link">See Why It's Not a Wrapper &rarr;</a>
     </div>
   </div>
@@ -475,26 +480,27 @@ footer { padding: 80px 0 40px; border-top: 1px solid var(--border); }
     <div class="workflow-header">
       <span class="workflow-eyebrow">PRODUCT WORKFLOWS</span>
       <h2 class="workflow-heading">See VigyanLLM in Action</h2>
-      <p class="workflow-subheading">Three autonomous pipelines. Each one eliminates days of manual lab work.</p>
+      <p class="workflow-subheading">A full platform tour plus three autonomous pipelines. Each one shows the product working inside real research workflows.</p>
     </div>
 
     <div class="workflow-grid">
       <div>
         <div class="workflow-pills" role="tablist" aria-label="Workflow selector">
-          <button type="button" class="workflow-pill active-pill" data-wf="consensus">Consensus Pipeline</button>
+          <button type="button" class="workflow-pill active-pill" data-wf="platform">Full Platform Tour</button>
+          <button type="button" class="workflow-pill" data-wf="consensus">Consensus Pipeline</button>
           <button type="button" class="workflow-pill" data-wf="smartswitch">Smart Switch</button>
           <button type="button" class="workflow-pill" data-wf="primerforge">PrimerForge</button>
         </div>
 
         <div class="workflow-copy">
-          <h3 id="wf-title">Consensus Pipeline</h3>
-          <p id="wf-tagline" class="workflow-tagline">Multi-engine molecular docking with ranked structural outputs</p>
-          <p id="wf-desc" class="workflow-description">Run Smina, Vina, and Gnina simultaneously against any PDB target. The Consensus Pipeline aggregates binding affinity scores, computes RMSD deviation, and surfaces the top-ranked pose — in under 60 seconds.</p>
+          <h3 id="wf-title">Full Platform Tour</h3>
+          <p id="wf-tagline" class="workflow-tagline">Complete VigyanLLM web features walkthrough</p>
+          <p id="wf-desc" class="workflow-description">Watch the full website and product experience in one walkthrough: the core interface, research workflows, project creation, outputs, and the practical features researchers use across the platform.</p>
           <ul id="wf-bullets" class="workflow-bullets">
-            <li><span>▸</span><span>Simultaneous docking across 3 engines — Smina, Vina, Gnina</span></li>
-            <li><span>▸</span><span>Binding affinity aggregation and RMSD-based pose ranking</span></li>
-            <li><span>▸</span><span>ESMFold-compatible protein structure preprocessing</span></li>
-            <li><span>▸</span><span>Output: ranked binding poses with annotated affinity scores</span></li>
+            <li><span>▸</span><span>End-to-end feature walkthrough from the VigyanLLM web interface</span></li>
+            <li><span>▸</span><span>Research workflow navigation, project creation, and output review</span></li>
+            <li><span>▸</span><span>Built-in biomedical tools shown together in one platform tour</span></li>
+            <li><span>▸</span><span>Best starting point before viewing the individual workflow demos</span></li>
           </ul>
         </div>
       </div>
@@ -506,10 +512,10 @@ footer { padding: 80px 0 40px; border-top: 1px solid var(--border); }
             <span class="workflow-dot" style="background:#f59e0b"></span>
             <span class="workflow-dot" style="background:#22c55e"></span>
           </div>
-          <span id="wf-filename" class="workflow-filename">vigyanllm — consensus_pipeline.mp4</span>
+          <span id="wf-filename" class="workflow-filename">vigyanllm — product demo.mp4</span>
         </div>
         <div class="workflow-video-area">
-          <video id="wf-video" muted playsinline controls preload="metadata" poster="poster.png" src="https://raw.githubusercontent.com/vigyanllm0/vigyanpilot/main/consensus_pipeline.mp4">
+          <video id="wf-video" muted playsinline controls preload="metadata" poster="poster.png" src="product%20demo.mp4">
             Video loading — if playback doesn't start, check your connection.
           </video>
         </div>
@@ -529,6 +535,19 @@ footer { padding: 80px 0 40px; border-top: 1px solid var(--border); }
   // Workflow switcher — no frameworks, no dependencies
   (function() {
     const workflows = {
+      platform: {
+        title: "Full Platform Tour",
+        tagline: "Complete VigyanLLM web features walkthrough",
+        description: "Watch the full website and product experience in one walkthrough: the core interface, research workflows, project creation, outputs, and the practical features researchers use across the platform.",
+        bullets: [
+          "End-to-end feature walkthrough from the VigyanLLM web interface",
+          "Research workflow navigation, project creation, and output review",
+          "Built-in biomedical tools shown together in one platform tour",
+          "Best starting point before viewing the individual workflow demos"
+        ],
+        src: "product%20demo.mp4",
+        filename: "vigyanllm — product demo.mp4"
+      },
       consensus: {
         title: "Consensus Pipeline",
         tagline: "Multi-engine molecular docking with ranked structural outputs",
@@ -539,7 +558,7 @@ footer { padding: 80px 0 40px; border-top: 1px solid var(--border); }
           "ESMFold-compatible protein structure preprocessing",
           "Output: ranked binding poses with annotated affinity scores"
         ],
-        src: "https://raw.githubusercontent.com/vigyanllm0/vigyanpilot/main/consensus_pipeline.mp4",
+        src: "consensus_pipeline.mp4",
         filename: "vigyanllm — consensus_pipeline.mp4"
       },
       smartswitch: {
@@ -552,7 +571,7 @@ footer { padding: 80px 0 40px; border-top: 1px solid var(--border); }
           "Instant project scaffolding — inputs, outputs, and audit trail auto-generated",
           "Supports 40+ canonical biomedical task types"
         ],
-        src: "https://raw.githubusercontent.com/vigyanllm0/vigyanpilot/main/smart_switch_demo.mp4",
+        src: "smart_switch_demo.mp4",
         filename: "vigyanllm — smart_switch_demo.mp4"
       },
       primerforge: {
@@ -565,7 +584,7 @@ footer { padding: 80px 0 40px; border-top: 1px solid var(--border); }
           "NCBI and Ensembl database integration for automatic sequence retrieval",
           "Primer specificity scoring and off-target analysis included"
         ],
-        src: "https://raw.githubusercontent.com/vigyanllm0/vigyanpilot/main/primerforge_demo.mp4",
+        src: "primerforge_demo.mp4",
         filename: "vigyanllm — primerforge_demo.mp4"
       }
     };
@@ -607,8 +626,8 @@ footer { padding: 80px 0 40px; border-top: 1px solid var(--border); }
       btn.addEventListener('click', () => switchWorkflow(btn.dataset.wf));
     });
 
-    // Init with consensus
-    switchWorkflow('consensus');
+    // Init with the full platform tour
+    switchWorkflow('platform');
   })();
   </script>
 </section>
@@ -845,27 +864,40 @@ footer { padding: 80px 0 40px; border-top: 1px solid var(--border); }
   </div>
 </section>
 
-<!-- SECTION 11: FOUNDER -->
+<!-- SECTION 11: FOUNDER AND TEAM -->
 <section id="founder">
   <div class="container">
-    <span class="section-tag">THE FOUNDER</span>
+    <span class="section-tag">FOUNDER &amp; CO-FOUNDING TEAM</span>
     <div class="founder-grid">
       <div>
-        <h2 class="section-h2" style="font-size: clamp(1.6rem, 3vw, 2.3rem)">Built by Someone Who<br>Understands Both<br>the Biology and the Code</h2>
-        <p class="founder-text" style="font-size:15px; color:var(--text2); line-height:1.8">VigyanLLM was designed, architected, and built by Hemant Sharma — a solo founder operating at the intersection of biological research workflows and AI systems engineering.<br><br>The system you see is not a concept or a deck. It is 46 training batches, a native inference engine, a three-agent architecture, and a working demo — all built and maintained by one person with full-stack leverage.<br><br>The first institutional partnership is the priority. The first engineering hire comes immediately after.</p>
+        <h2 class="section-h2" style="font-size: clamp(1.6rem, 3vw, 2.3rem)">Hemant Sharma, Founder,<br>and the Team Building<br>VigyanLLM Pvt. Ltd.</h2>
+        <p class="founder-text" style="font-size:15px; color:var(--text2); line-height:1.8">VigyanLLM Pvt. Ltd. is led by Hemant Sharma, Founder, together with a focused team operating at the intersection of biological research workflows and AI systems engineering.<br><br>The system you see is not a concept or a deck. It includes 46 training batches, a native inference engine, a three-agent architecture, and a working demo — built with focused product, engineering, and deployment effort.<br><br>The first institutional partnership is the priority, with the team expanding carefully around real research-lab deployment needs.</p>
       </div>
-      <div class="founder-card">
-        <div class="founder-name">Hemant Sharma</div>
-        <span class="founder-role">Founder, VigyanLLM</span>
-        <div class="founder-divider"></div>
-        <div class="founder-specs">
-          <div class="spec-row"><span class="lbl">Role:</span> <span class="val">Architect · Engineer · Trainer</span></div>
-          <div class="spec-row"><span class="lbl">System Built:</span> <span class="val">Solo, Zero External Team</span></div>
-          <div class="spec-row"><span class="lbl">Contact:</span> <a href="mailto:contact@vigyanllm.in" class="val" style="color:var(--primary)">contact@vigyanllm.in</a></div>
+      <div class="founder-card-list">
+        <div class="founder-card">
+          <div class="founder-name">Hemant Sharma</div>
+          <span class="founder-role">Founder, VigyanLLM Pvt. Ltd.</span>
+          <div class="founder-divider"></div>
+          <div class="founder-specs">
+            <div class="spec-row"><span class="lbl">Role:</span> <span class="val">Founder · Architect · Engineering Lead</span></div>
+            <div class="spec-row"><span class="lbl">System Built:</span> <span class="val">Hemant Sharma and team</span></div>
+            <div class="spec-row"><span class="lbl">Direct:</span> <a href="mailto:Hemant.vigyanllm@gmail.com" class="val" style="color:var(--primary)">Hemant.vigyanllm@gmail.com</a></div>
+            <div class="spec-row"><span class="lbl">Official:</span> <a href="mailto:contact@vigyanllm.in" class="val" style="color:var(--primary)">contact@vigyanllm.in</a></div>
+          </div>
+          <div class="founder-quote">
+            "Every output in VigyanLLM passes through three agents before a researcher sees it. In biomedical AI, accuracy is not a feature — it is the product."
+            <span>&mdash; Hemant Sharma, Founder</span>
+          </div>
         </div>
-        <div class="founder-quote">
-          "Every output in VigyanLLM passes through three agents before a researcher sees it. In biomedical AI, accuracy is not a feature — it is the product."
-          <span>&mdash; Hemant Sharma, Founder</span>
+        <div class="founder-card secondary">
+          <div class="founder-name">Saurav</div>
+          <span class="founder-role">Product &amp; Partnerships</span>
+          <div class="founder-divider"></div>
+          <div class="founder-specs">
+            <div class="spec-row"><span class="lbl">Focus:</span> <span class="val">Product feedback · Outreach · Coordination</span></div>
+            <div class="spec-row"><span class="lbl">Email:</span> <a href="mailto:saurav.vigyanllm@gmail.com" class="val" style="color:var(--primary)">saurav.vigyanllm@gmail.com</a></div>
+          </div>
+          <p class="founder-note">Supports product communication, early lab conversations, and the practical coordination needed to move VigyanLLM into real research settings.</p>
         </div>
       </div>
     </div>
@@ -910,7 +942,7 @@ footer { padding: 80px 0 40px; border-top: 1px solid var(--border); }
     </div>
 
     <div class="footer-bottom">
-      <span>&copy; 2025 VigyanLLM · Sovereign Research AI</span>
+      <span>&copy; 2026 VigyanLLM Pvt. Ltd. · Sovereign Research AI</span>
       <span>Built in India 🇮🇳</span>
     </div>
   </div>
