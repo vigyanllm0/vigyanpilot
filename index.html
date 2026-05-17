@@ -7,7 +7,12 @@
 <meta name="description" content="Sovereign biomedical AI for biological research. Not a wrapper. 100% on-premise.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&amp;family=Instrument+Serif:ital@0;1&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<script>
+window.tailwind = window.tailwind || {};
+window.tailwind.config = { corePlugins: { preflight: false } };
+</script>
+<script src="https://cdn.tailwindcss.com"></script>
 <style>
 :root {
   --bg: #ffffff;
@@ -75,6 +80,212 @@ nav { position: sticky; top: 0; background: rgba(255, 255, 255, 0.95); backdrop-
 .demo-wrap:hover .play-btn { border-color: #fff; transform: scale(1.05); }
 .play-tri { width: 0; height: 0; border-top: 12px solid transparent; border-bottom: 12px solid transparent; border-left: 18px solid #fff; margin-left: 6px; }
 .demo-labels { display: flex; justify-content: center; gap: 24px; margin-top: 28px; font-family: var(--font-m); font-size: 11px; color: var(--muted); }
+
+/* WORKFLOW SHOWCASES */
+.workflow-showcase {
+  background: #0f172a;
+  padding: 80px 0;
+  color: #e2e8f0;
+}
+.workflow-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+.workflow-header {
+  max-width: 680px;
+  margin: 0 auto 52px;
+  text-align: center;
+}
+.workflow-eyebrow {
+  display: block;
+  margin-bottom: 12px;
+  font-family: var(--font-m);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  color: #22d3ee;
+  text-transform: uppercase;
+}
+.workflow-heading {
+  margin-bottom: 14px;
+  color: #ffffff;
+  font-family: var(--font-d);
+  font-size: 36px;
+  line-height: 1.08;
+  font-weight: 700;
+}
+.workflow-subheading {
+  max-width: 600px;
+  margin: 0 auto;
+  color: #94a3b8;
+  font-size: 18px;
+  line-height: 1.6;
+}
+.workflow-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.88fr) minmax(0, 1.12fr);
+  gap: 48px;
+  align-items: center;
+}
+.workflow-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 28px;
+}
+.workflow-pill {
+  border: 1px solid #334155;
+  border-radius: 999px;
+  background: #1e293b;
+  color: #94a3b8;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+.workflow-pill:hover {
+  border-color: #22d3ee;
+  color: #ffffff;
+}
+.active-pill {
+  background-color: #164e63 !important;
+  border-color: #22d3ee !important;
+  color: #22d3ee !important;
+}
+.workflow-copy {
+  border: 1px solid #1e293b;
+  border-radius: 12px;
+  background: rgba(2, 6, 23, 0.24);
+  padding: 30px;
+}
+.workflow-copy h3 {
+  color: #ffffff;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.25;
+  margin-bottom: 8px;
+}
+.workflow-tagline {
+  margin-bottom: 16px;
+  color: #22d3ee;
+  font-size: 14px;
+  font-style: italic;
+}
+.workflow-description {
+  color: #cbd5e1;
+  font-size: 15px;
+  line-height: 1.75;
+  margin-bottom: 18px;
+}
+.workflow-bullets {
+  display: grid;
+  gap: 10px;
+  list-style: none;
+  color: #e2e8f0;
+  font-size: 14px;
+  line-height: 1.55;
+}
+.workflow-bullets li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+.workflow-bullets li span:first-child {
+  color: #22d3ee;
+  font-size: 12px;
+  margin-top: 2px;
+}
+.workflow-window {
+  overflow: hidden;
+  border: 1px solid #1e293b;
+  border-radius: 12px;
+  background: #0f172a;
+  box-shadow: 0 0 0 1px #1e293b, 0 20px 60px rgba(0,0,0,0.6), 0 0 80px rgba(34,211,238,0.06);
+}
+.workflow-chrome {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 36px;
+  border-radius: 12px 12px 0 0;
+  background: #1e293b;
+}
+.workflow-dots {
+  position: absolute;
+  left: 16px;
+  display: flex;
+  gap: 8px;
+}
+.workflow-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+}
+.workflow-filename {
+  max-width: calc(100% - 140px);
+  overflow: hidden;
+  color: #64748b;
+  font-family: var(--font-m);
+  font-size: 12px;
+  line-height: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.workflow-video-area {
+  background: #020617;
+  border-radius: 0 0 12px 12px;
+}
+.workflow-video-area video {
+  display: block;
+  width: 100%;
+  background: #020617;
+}
+.workflow-cta {
+  display: grid;
+  justify-items: center;
+  gap: 18px;
+  margin-top: 48px;
+  text-align: center;
+}
+.workflow-cta p {
+  color: #ffffff;
+  font-size: 18px;
+}
+.workflow-cta-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+}
+.workflow-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-size: 14px;
+  font-weight: 700;
+  transition: all 150ms ease;
+}
+.workflow-btn.primary {
+  background: #22d3ee;
+  color: #0f172a;
+}
+.workflow-btn.primary:hover {
+  background: #67e8f9;
+}
+.workflow-btn.secondary {
+  border: 1px solid #334155;
+  color: #94a3b8;
+}
+.workflow-btn.secondary:hover {
+  border-color: #22d3ee;
+  color: #ffffff;
+}
 
 /* PROBLEM */
 .problem-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; }
@@ -196,6 +407,7 @@ footer { padding: 80px 0 40px; border-top: 1px solid var(--border); }
 /* RESPONSIVE */
 @media (max-width: 1024px) {
   .problem-grid, .proof-grid, .agent-grid, .plat-grid, .pricing-grid, .founder-grid { grid-template-columns: 1fr; gap: 40px; }
+  .workflow-grid { grid-template-columns: 1fr; gap: 36px; }
   .proof-card, .price-card { transform: none !important; }
 }
 @media (max-width: 768px) {
@@ -206,6 +418,12 @@ footer { padding: 80px 0 40px; border-top: 1px solid var(--border); }
   .ev-pill { width: 100%; max-width: 300px; }
   .beta-ctas { flex-direction: column; gap: 16px; }
   .price-card.featured { order: -1; }
+  .workflow-showcase { padding: 48px 0; }
+  .workflow-header { margin-bottom: 36px; }
+  .workflow-heading { font-size: 28px; }
+  .workflow-subheading { font-size: 16px; }
+  .workflow-copy { padding: 24px; }
+  .workflow-filename { font-size: 10px; }
 }
 </style>
 </head>
@@ -251,24 +469,147 @@ footer { padding: 80px 0 40px; border-top: 1px solid var(--border); }
   </div>
 </section>
 
-<!-- SECTION 3: DEMO VIDEO -->
-<section id="demo" class="demo-section">
-  <div class="container" style="text-align:center">
-    <span class="section-tag">LIVE SYSTEM DEMO</span>
-    <h2 class="section-h2">Watch VigyanLLM Run<br>a Real Primer Design</h2>
-    <p class="section-desc" style="margin: 0 auto 48px;">A researcher inputs a target gene sequence. Core parses the intent. SubBrain designs the primer. ChinhAI validates off-target binding. A verified protocol is returned. Watch it happen in under 3 minutes.</p>
-    
-    <div class="demo-wrap">
-      <video controls playsinline preload="metadata" poster="https://raw.githubusercontent.com/vigyanllm0/vigyanpilot/main/poster.png" style="width:100%; height:100%; object-fit:cover; display:block;">
-        <source src="https://raw.githubusercontent.com/vigyanllm0/vigyanpilot/main/product%20demo.mp4" type="video/mp4">
-        Your browser does not support the video tag.
-      </video>
+<!-- SECTION 3: KEY WORKFLOW SHOWCASES -->
+<section id="demo" class="workflow-showcase">
+  <div class="workflow-container">
+    <div class="workflow-header">
+      <span class="workflow-eyebrow">PRODUCT WORKFLOWS</span>
+      <h2 class="workflow-heading">See VigyanLLM in Action</h2>
+      <p class="workflow-subheading">Three autonomous pipelines. Each one eliminates days of manual lab work.</p>
     </div>
-    
-    <div class="demo-labels">
-      <span>Core Agent Orchestrates</span> · <span>SubBrain Reasons</span> · <span>ChinhAI Validates</span>
+
+    <div class="workflow-grid">
+      <div>
+        <div class="workflow-pills" role="tablist" aria-label="Workflow selector">
+          <button type="button" class="workflow-pill active-pill" data-wf="consensus">Consensus Pipeline</button>
+          <button type="button" class="workflow-pill" data-wf="smartswitch">Smart Switch</button>
+          <button type="button" class="workflow-pill" data-wf="primerforge">PrimerForge</button>
+        </div>
+
+        <div class="workflow-copy">
+          <h3 id="wf-title">Consensus Pipeline</h3>
+          <p id="wf-tagline" class="workflow-tagline">Multi-engine molecular docking with ranked structural outputs</p>
+          <p id="wf-desc" class="workflow-description">Run Smina, Vina, and Gnina simultaneously against any PDB target. The Consensus Pipeline aggregates binding affinity scores, computes RMSD deviation, and surfaces the top-ranked pose — in under 60 seconds.</p>
+          <ul id="wf-bullets" class="workflow-bullets">
+            <li><span>▸</span><span>Simultaneous docking across 3 engines — Smina, Vina, Gnina</span></li>
+            <li><span>▸</span><span>Binding affinity aggregation and RMSD-based pose ranking</span></li>
+            <li><span>▸</span><span>ESMFold-compatible protein structure preprocessing</span></li>
+            <li><span>▸</span><span>Output: ranked binding poses with annotated affinity scores</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="workflow-window">
+        <div class="workflow-chrome">
+          <div class="workflow-dots" aria-hidden="true">
+            <span class="workflow-dot" style="background:#ef4444"></span>
+            <span class="workflow-dot" style="background:#f59e0b"></span>
+            <span class="workflow-dot" style="background:#22c55e"></span>
+          </div>
+          <span id="wf-filename" class="workflow-filename">vigyanllm — consensus_pipeline.mp4</span>
+        </div>
+        <div class="workflow-video-area">
+          <video id="wf-video" autoplay muted loop playsinline controls preload="metadata" src="https://drive.google.com/uc?export=download&amp;id=1BEjB3_ldI8VMu25GV9TpdBcVJwAx7XYg">
+            Video loading — if playback doesn't start, check your connection.
+          </video>
+        </div>
+      </div>
+    </div>
+
+    <div class="workflow-cta">
+      <p>Want the full walkthrough?</p>
+      <div class="workflow-cta-actions">
+        <a href="demo.html" class="workflow-btn primary">Open Demo Suite →</a>
+        <a href="#contact" class="workflow-btn secondary">Request a Lab Demo</a>
+      </div>
     </div>
   </div>
+
+  <script>
+  // Workflow switcher — no frameworks, no dependencies
+  (function() {
+    const workflows = {
+      consensus: {
+        title: "Consensus Pipeline",
+        tagline: "Multi-engine molecular docking with ranked structural outputs",
+        description: "Run Smina, Vina, and Gnina simultaneously against any PDB target. The Consensus Pipeline aggregates binding affinity scores, computes RMSD deviation, and surfaces the top-ranked pose — in under 60 seconds.",
+        bullets: [
+          "Simultaneous docking across 3 engines — Smina, Vina, Gnina",
+          "Binding affinity aggregation and RMSD-based pose ranking",
+          "ESMFold-compatible protein structure preprocessing",
+          "Output: ranked binding poses with annotated affinity scores"
+        ],
+        src: "https://drive.google.com/uc?export=download&id=1BEjB3_ldI8VMu25GV9TpdBcVJwAx7XYg",
+        filename: "vigyanllm — consensus_pipeline.mp4"
+      },
+      smartswitch: {
+        title: "Smart Switch / Project Forge",
+        tagline: "Natural language commands routed to autonomous biomedical workflows",
+        description: "Type a research intent — 'Dock Aspirin to 6Y2E' — and Smart Switch parses the command, identifies the correct pipeline, creates a project, and executes the workflow automatically. Zero configuration required.",
+        bullets: [
+          "Natural language command parsing with biomedical entity extraction",
+          "Automated workflow routing: docking, primer design, literature review",
+          "Instant project scaffolding — inputs, outputs, and audit trail auto-generated",
+          "Supports 40+ canonical biomedical task types"
+        ],
+        src: "https://drive.google.com/uc?export=download&id=1SeVCfhFCGd6-wyPeHVdA4Z4oEdf6kj8P",
+        filename: "vigyanllm — smart_switch_demo.mp4"
+      },
+      primerforge: {
+        title: "PrimerForge",
+        tagline: "Lab-ready genomic primer design in under 30 seconds",
+        description: "Enter a gene target or NCBI accession. PrimerForge runs thermodynamic profiling, checks for self-complementarity, computes GC content, and outputs a validated primer pair with full metrics — ready for the bench.",
+        bullets: [
+          "Input: gene name, accession ID, or raw FASTA sequence",
+          "Outputs: Tm, GC%, amplicon size, ΔG, hairpin and dimer risk scores",
+          "NCBI and Ensembl database integration for automatic sequence retrieval",
+          "Primer specificity scoring and off-target analysis included"
+        ],
+        src: "https://drive.google.com/uc?export=download&id=1Pn9MokkNuET5CdIpdSGMcD283lslYAoR",
+        filename: "vigyanllm — primerforge_demo.mp4"
+      }
+    };
+
+    function switchWorkflow(key) {
+      const data = workflows[key];
+      if (!data) return;
+
+      // Update title, tagline, description
+      document.getElementById('wf-title').textContent = data.title;
+      document.getElementById('wf-tagline').textContent = data.tagline;
+      document.getElementById('wf-desc').textContent = data.description;
+
+      // Update bullets
+      const bulletList = document.getElementById('wf-bullets');
+      bulletList.innerHTML = data.bullets.map(b =>
+        `<li class="flex items-start gap-2"><span class="text-cyan-400 mt-1 text-xs">▸</span><span>${b}</span></li>`
+      ).join('');
+
+      // Update video
+      const video = document.getElementById('wf-video');
+      video.src = data.src;
+      video.load();
+      video.play().catch(() => {});
+
+      // Update filename in chrome bar
+      document.getElementById('wf-filename').textContent = data.filename;
+
+      // Update active pill
+      document.querySelectorAll('[data-wf]').forEach(btn => {
+        const isActive = btn.dataset.wf === key;
+        btn.classList.toggle('active-pill', isActive);
+      });
+    }
+
+    // Bind pill buttons
+    document.querySelectorAll('[data-wf]').forEach(btn => {
+      btn.addEventListener('click', () => switchWorkflow(btn.dataset.wf));
+    });
+
+    // Init with consensus
+    switchWorkflow('consensus');
+  })();
+  </script>
 </section>
 
 <!-- SECTION 4: THE PROBLEM -->
