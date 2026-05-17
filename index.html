@@ -509,7 +509,7 @@ footer { padding: 80px 0 40px; border-top: 1px solid var(--border); }
           <span id="wf-filename" class="workflow-filename">vigyanllm — consensus_pipeline.mp4</span>
         </div>
         <div class="workflow-video-area">
-          <video id="wf-video" autoplay muted loop playsinline controls preload="metadata" src="https://raw.githubusercontent.com/vigyanllm0/vigyanpilot/main/consensus_pipeline.mp4">
+          <video id="wf-video" muted playsinline controls preload="metadata" poster="poster.png" src="https://raw.githubusercontent.com/vigyanllm0/vigyanpilot/main/consensus_pipeline.mp4">
             Video loading — if playback doesn't start, check your connection.
           </video>
         </div>
@@ -570,43 +570,6 @@ footer { padding: 80px 0 40px; border-top: 1px solid var(--border); }
       }
     };
 
-    function requestVideoPlayback(video) {
-      if (!video) return;
-
-      video.muted = true;
-      video.defaultMuted = true;
-      video.playsInline = true;
-      video.setAttribute('muted', '');
-      video.setAttribute('playsinline', '');
-
-      const play = () => {
-        video.play().catch(() => {});
-      };
-
-      if (video.readyState >= 2) play();
-      video.addEventListener('loadedmetadata', play, { once: true });
-      video.addEventListener('loadeddata', play, { once: true });
-      video.addEventListener('canplay', play, { once: true });
-      [300, 1000, 2500, 5000].forEach(delay => window.setTimeout(play, delay));
-    }
-
-    const workflowVideo = document.getElementById('wf-video');
-
-    if ('IntersectionObserver' in window && workflowVideo) {
-      const videoObserver = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) requestVideoPlayback(entry.target);
-        });
-      }, { threshold: 0.25 });
-      videoObserver.observe(workflowVideo);
-    }
-
-    document.addEventListener('visibilitychange', () => {
-      if (!document.hidden) requestVideoPlayback(workflowVideo);
-    });
-
-    window.addEventListener('focus', () => requestVideoPlayback(workflowVideo));
-
     function switchWorkflow(key) {
       const data = workflows[key];
       if (!data) return;
@@ -624,9 +587,10 @@ footer { padding: 80px 0 40px; border-top: 1px solid var(--border); }
 
       // Update video
       const video = document.getElementById('wf-video');
+      video.pause();
+      video.currentTime = 0;
       video.src = data.src;
       video.load();
-      requestVideoPlayback(video);
 
       // Update filename in chrome bar
       document.getElementById('wf-filename').textContent = data.filename;

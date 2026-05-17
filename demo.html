@@ -81,7 +81,7 @@
           <span class="mono max-w-[46%] truncate text-[11px] text-slate-600">consensus_pipeline.mp4</span>
           <span class="rounded bg-[#0c4a6e] px-2 py-0.5 text-[10px] font-semibold tracking-[0.08em] text-sky-300">DOCKING</span>
         </div>
-        <video class="block aspect-video max-h-[280px] w-full bg-[#020617] object-contain" autoplay muted loop playsinline controls preload="metadata" src="https://raw.githubusercontent.com/vigyanllm0/vigyanpilot/main/consensus_pipeline.mp4">
+        <video class="block aspect-video max-h-[280px] w-full bg-[#020617] object-contain" muted playsinline controls preload="metadata" poster="poster.png" src="https://raw.githubusercontent.com/vigyanllm0/vigyanpilot/main/consensus_pipeline.mp4">
           Video loading — if playback doesn't start, check your connection.
         </video>
         <div class="bg-[#111827] p-5">
@@ -113,7 +113,7 @@
           <span class="mono max-w-[46%] truncate text-[11px] text-slate-600">smart_switch_demo.mp4</span>
           <span class="rounded bg-[#0c4a6e] px-2 py-0.5 text-[10px] font-semibold tracking-[0.08em] text-sky-300">NLP ROUTING</span>
         </div>
-        <video class="block aspect-video max-h-[280px] w-full bg-[#020617] object-contain" autoplay muted loop playsinline controls preload="metadata" src="https://raw.githubusercontent.com/vigyanllm0/vigyanpilot/main/smart_switch_demo.mp4">
+        <video class="block aspect-video max-h-[280px] w-full bg-[#020617] object-contain" muted playsinline controls preload="metadata" poster="poster.png" src="https://raw.githubusercontent.com/vigyanllm0/vigyanpilot/main/smart_switch_demo.mp4">
           Video loading — if playback doesn't start, check your connection.
         </video>
         <div class="bg-[#111827] p-5">
@@ -145,7 +145,7 @@
           <span class="mono max-w-[46%] truncate text-[11px] text-slate-600">primerforge_demo.mp4</span>
           <span class="rounded bg-[#0c4a6e] px-2 py-0.5 text-[10px] font-semibold tracking-[0.08em] text-sky-300">GENOMICS</span>
         </div>
-        <video class="block aspect-video max-h-[280px] w-full bg-[#020617] object-contain" autoplay muted loop playsinline controls preload="metadata" src="https://raw.githubusercontent.com/vigyanllm0/vigyanpilot/main/primerforge_demo.mp4">
+        <video class="block aspect-video max-h-[280px] w-full bg-[#020617] object-contain" muted playsinline controls preload="metadata" poster="poster.png" src="https://raw.githubusercontent.com/vigyanllm0/vigyanpilot/main/primerforge_demo.mp4">
           Video loading — if playback doesn't start, check your connection.
         </video>
         <div class="bg-[#111827] p-5">
@@ -190,53 +190,26 @@
     const cards = document.querySelectorAll('[data-category]');
     const videos = document.querySelectorAll('video');
 
-    function requestVideoPlayback(video) {
-      if (!video) return;
+    videos.forEach(video => {
+      video.addEventListener('play', () => {
+        videos.forEach(otherVideo => {
+          if (otherVideo !== video) {
+            otherVideo.pause();
+            otherVideo.currentTime = 0;
+          }
+        });
+      });
+    });
 
-      video.muted = true;
-      video.defaultMuted = true;
-      video.playsInline = true;
-      video.setAttribute('muted', '');
-      video.setAttribute('playsinline', '');
-
-      const play = () => {
-        video.play().catch(() => {});
-      };
-
-      if (video.readyState >= 2) play();
-      video.addEventListener('loadedmetadata', play, { once: true });
-      video.addEventListener('loadeddata', play, { once: true });
-      video.addEventListener('canplay', play, { once: true });
-      [300, 1000, 2500, 5000].forEach(delay => window.setTimeout(play, delay));
-    }
-
-    function requestVisibleVideoPlayback() {
+    function pauseHiddenVideos() {
       cards.forEach(card => {
         const video = card.querySelector('video');
-        if (!video) return;
-
-        if (card.style.display === 'none') {
+        if (video && card.style.display === 'none') {
           video.pause();
-        } else {
-          requestVideoPlayback(video);
+          video.currentTime = 0;
         }
       });
     }
-
-    if ('IntersectionObserver' in window) {
-      const videoObserver = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) requestVideoPlayback(entry.target);
-        });
-      }, { threshold: 0.25 });
-      videos.forEach(video => videoObserver.observe(video));
-    }
-
-    document.addEventListener('visibilitychange', () => {
-      if (!document.hidden) requestVisibleVideoPlayback();
-    });
-
-    window.addEventListener('focus', requestVisibleVideoPlayback);
 
     function filterCards(category) {
       cards.forEach(card => {
@@ -255,7 +228,7 @@
         grid.classList.add('xl:grid-cols-3', 'md:grid-cols-2');
         grid.classList.remove('max-w-3xl', 'mx-auto');
       }
-      requestVisibleVideoPlayback();
+      pauseHiddenVideos();
     }
 
     tabs.forEach(tab => {
@@ -268,7 +241,6 @@
 
     // Default: all visible
     filterCards(null);
-    requestVisibleVideoPlayback();
   })();
   </script>
 </body>
