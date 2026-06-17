@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VigyanLLM — Sovereign Biomedical AI</title>
+<meta name="description" content="Sovereign biomedical AI for biological research. Not a wrapper. 100% on-premises.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&amp;display=swap" rel="stylesheet">
+<script>
+window.tailwind = window.tailwind || {};
+window.tailwind.config = { corePlugins: { preflight: false } };
+</script>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+:root {
+  --bg: #ffffff;
+  --surface: #f8f9fb;
+  --border: #e4e7ec;
+  --primary: #1a56ff;
+  --bio: #059669;
+  --amber: #d97706;
+  --text: #0d1117;
+  --text2: #4b5563;
+  --muted: #9ca3af;
+  --font-s: 'DM Sans', sans-serif;
+  --max-w: 1100px;
+  --sec-p: 100px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { background: var(--bg); color: var(--text); font-family: var(--font-s); line-height: 1.6; -webkit-font-smoothing: antialiased; }
+a { text-decoration: none; color: inherit; transition: color 0.15s ease; }
+.container { max-width: var(--max-w); margin: 0 auto; padding: 0 24px; }
+section { padding: var(--sec-p) 0; }
+
+.section-tag { font-family: var(--font-s); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--primary); margin-bottom: 20px; display: block; }
+.section-h2 { font-family: var(--font-s); font-size: clamp(2rem, 4vw, 2.8rem); line-height: 1.1; font-weight: 400; margin-bottom: 24px; }
+.section-desc { font-size: 15px; color: var(--text2); line-height: 1.8; max-width: 540px; }
+
+/* NAV */
+nav { position: sticky; top: 0; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(8px); border-bottom: 1px solid var(--border); z-index: 1000; height: 72px; }
+.nav-inner { display: flex; justify-content: space-between; align-items: center; height: 100%; max-width: var(--max-w); margin: 0 auto; padding: 0 24px; }
+.logo { font-family: var(--font-s); font-size: 22px; font-weight: 400; color: var(--text); }
+.nav-links { display: flex; gap: 32px; align-items: center; }
+.nav-links a { font-size: 13px; color: var(--text2); font-weight: 400; }
+.nav-links a:hover, .nav-links a.active { color: var(--text); }
+.nav-right { display: flex; align-items: center; gap: 24px; }
+.link-beta { font-size: 13px; color: var(--primary); font-weight: 500; cursor: pointer; }
+.btn-nav { border: 1.5px solid var(--text); border-radius: 6px; padding: 10px 24px; font-size: 13px; font-weight: 500; background: transparent; cursor: pointer; transition: all 0.2s; }
+.btn-nav:hover { background: var(--text); color: #fff; }
+
+/* HERO */
+.hero { text-align: center; padding: 140px 24px 80px; }
+.hero-badge { display: inline-flex; align-items: center; gap: 8px; background: var(--surface); border: 1px solid var(--border); border-radius: 99px; padding: 6px 18px; margin-bottom: 32px; }
+.hero-badge span { font-family: var(--font-s); font-size: 10px; letter-spacing: 0.12em; color: var(--text2); }
+.hero h1 { font-family: var(--font-s); font-size: clamp(3rem, 7vw, 5.2rem); line-height: 1.05; font-weight: 400; letter-spacing: -0.03em; margin-bottom: 32px; }
+.hero h1 em { font-style: italic; color: var(--primary); }
+.hero-sub { font-size: clamp(16px, 2vw, 19px); color: var(--text2); max-width: 700px; margin: 0 auto 56px; }
+.hero-evidence { display: flex; justify-content: center; gap: 16px; margin-bottom: 60px; flex-wrap: wrap; }
+.ev-pill { border: 1px solid var(--border); border-radius: 99px; padding: 8px 20px; text-align: center; background: #fff; }
+.ev-pill .val { font-family: var(--font-s); font-size: 16px; font-weight: 500; color: var(--text); display: block; }
+.ev-pill .lbl { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 2px; }
+.ev-pill.sovereign { border-color: rgba(5, 150, 105, 0.3); }
+.ev-pill.sovereign .val, .ev-pill.sovereign .lbl { color: var(--bio); }
+
+.hero-ctas { display: flex; justify-content: center; gap: 16px; align-items: center; }
+.btn-dark { background: var(--text); color: #fff; border-radius: 8px; padding: 16px 36px; font-size: 15px; font-weight: 500; border: none; cursor: pointer; }
+.btn-dark:hover { background: #222; }
+.btn-text-link { font-size: 15px; color: var(--text); font-weight: 500; display: flex; align-items: center; }
+
+/* DEMO */
+.demo-section { padding-top: 40px; }
+.demo-wrap { max-width: 860px; margin: 0 auto; border: 1px solid var(--border); border-radius: 12px; aspect-ratio: 16/9; background: #0d1117; position: relative; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; }
+.play-btn { width: 72px; height: 72px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; transition: all 0.3s; }
+.demo-wrap:hover .play-btn { border-color: #fff; transform: scale(1.05); }
+.play-tri { width: 0; height: 0; border-top: 12px solid transparent; border-bottom: 12px solid transparent; border-left: 18px solid #fff; margin-left: 6px; }
+.demo-labels { display: flex; justify-content: center; gap: 24px; margin-top: 28px; font-family: var(--font-s); font-size: 11px; color: var(--muted); }
+
+/* WORKFLOW SHOWCASES */
+.workflow-showcase {
+  background: #0f172a;
+  padding: 80px 0;
+  color: #e2e8f0;
+}
+.workflow-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+.workflow-header {
+  max-width: 680px;
+  margin: 0 auto 52px;
+  text-align: center;
+}
+.workflow-eyebrow {
+  display: block;
+  margin-bottom: 12px;
+  font-family: var(--font-s);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  color: #22d3ee;
+  text-transform: uppercase;
+}
+.workflow-heading {
+  margin-bottom: 14px;
+  color: #ffffff;
+  font-family: var(--font-s);
+  font-size: 36px;
+  line-height: 1.08;
+  font-weight: 700;
+}
+.workflow-subheading {
+  max-width: 600px;
+  margin: 0 auto;
+  color: #94a3b8;
+  font-size: 18px;
+  line-height: 1.6;
+}
+.workflow-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.88fr) minmax(0, 1.12fr);
+  gap: 48px;
+  align-items: center;
+}
+.workflow-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 28px;
+}
+.workflow-pill {
+  border: 1px solid #334155;
+  border-radius: 999px;
+  background: #1e293b;
+  color: #94a3b8;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+.workflow-pill:hover {
+  border-color: #22d3ee;
+  color: #ffffff;
+}
+.active-pill {
+  background-color: #164e63 !important;
+  border-color: #22d3ee !important;
+  color: #22d3ee !important;
+}
+.workflow-copy {
+  border: 1px solid #1e293b;
+  border-radius: 12px;
+  background: rgba(2, 6, 23, 0.24);
+  padding: 30px;
+}
+.workflow-copy h3 {
+  color: #ffffff;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.25;
+  margin-bottom: 8px;
+}
+.workflow-tagline {
+  margin-bottom: 16px;
+  color: #22d3ee;
+  font-size: 14px;
+  font-style: italic;
+}
+.workflow-description {
+  color: #cbd5e1;
+  font-size: 15px;
+  line-height: 1.75;
+  margin-bottom: 18px;
+}
+.workflow-bullets {
+  display: grid;
+  gap: 10px;
+  list-style: none;
+  color: #e2e8f0;
+  font-size: 14px;
+  line-height: 1.55;
+}
+.workflow-bullets li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+.workflow-bullets li span:first-child {
+  color: #22d3ee;
+  font-size: 12px;
+  margin-top: 2px;
+}
+.workflow-window {
+  overflow: hidden;
+  border: 1px solid #1e293b;
+  border-radius: 12px;
+  background: #0f172a;
+  box-shadow: 0 0 0 1px #1e293b, 0 20px 60px rgba(0,0,0,0.6), 0 0 80px rgba(34,211,238,0.06);
+}
+.workflow-chrome {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 36px;
+  border-radius: 12px 12px 0 0;
+  background: #1e293b;
+}
+.workflow-dots {
+  position: absolute;
+  left: 16px;
+  display: flex;
+  gap: 8px;
+}
+.workflow-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+}
+.workflow-filename {
+  max-width: calc(100% - 140px);
+  overflow: hidden;
+  color: #64748b;
+  font-family: var(--font-s);
+  font-size: 12px;
+  line-height: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.workflow-video-area {
+  background: #020617;
+  border-radius: 0 0 12px 12px;
+}
+.workflow-video-area video {
+  display: block;
+  width: 100%;
+  background: #020617;
+}
+.workflow-cta {
+  display: grid;
+  justify-items: center;
+  gap: 18px;
+  margin-top: 48px;
+  text-align: center;
+}
+.workflow-cta p {
+  color: #ffffff;
+  font-size: 18px;
+}
+.workflow-cta-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+}
+.workflow-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-size: 14px;
+  font-weight: 700;
+  transition: all 150ms ease;
+}
+.workflow-btn.primary {
+  background: #22d3ee;
+  color: #0f172a;
+}
+.workflow-btn.primary:hover {
+  background: #67e8f9;
+}
+.workflow-btn.secondary {
+  border: 1px solid #334155;
+  color: #94a3b8;
+}
+.workflow-btn.secondary:hover {
+  border-color: #22d3ee;
+  color: #ffffff;
+}
+
+/* PROBLEM */
+.problem-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; }
+.problem-cards { display: grid; gap: 20px; }
+.problem-card { border: 1px solid var(--border); border-left: 3px solid var(--primary); border-radius: 8px; padding: 24px; background: #fff; }
+.problem-card h4 { font-size: 15px; font-weight: 600; margin-bottom: 8px; }
+.problem-card p { font-size: 13px; color: var(--text2); line-height: 1.7; }
+
+/* PROOF */
+.proof-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 48px; }
+.proof-card { border: 1px solid var(--border); border-top: 2px solid var(--primary); border-radius: 12px; padding: 32px; background: #fff; transition: all 0.5s ease; opacity: 0; transform: translateY(20px); }
+.proof-label { font-family: var(--font-s); font-size: 9px; letter-spacing: 0.12em; color: var(--muted); margin-bottom: 16px; display: block; }
+.proof-card h3 { font-size: 16px; font-weight: 600; margin-bottom: 14px; line-height: 1.4; }
+.proof-card p { font-size: 13px; color: var(--text2); line-height: 1.75; margin-bottom: 24px; }
+.proof-footer { font-family: var(--font-s); font-size: 10px; color: var(--bio); margin-top: auto; padding-top: 20px; border-top: 1px solid var(--border); }
+
+/* AGENTS */
+.agent-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-bottom: 32px; }
+.agent-card { border: 1px solid var(--border); border-radius: 12px; padding: 32px; background: #fff; }
+.agent-card.blue { border-top: 2px solid var(--primary); }
+.agent-card.green { border-top: 2px solid var(--bio); }
+.agent-card.amber { border-top: 2px solid var(--amber); }
+.agent-tag-lbl { font-family: var(--font-s); font-size: 9px; letter-spacing: 0.12em; margin-bottom: 12px; display: block; }
+.agent-name { font-family: var(--font-s); font-size: 28px; font-weight: 400; margin-bottom: 8px; }
+.agent-role { font-size: 11px; font-weight: 500; padding: 3px 10px; border-radius: 4px; display: inline-block; margin-bottom: 16px; }
+.agent-desc { font-size: 13px; color: var(--text2); line-height: 1.7; }
+
+.defense-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 32px; margin-top: 24px; }
+.defense-title { font-size: 15px; font-weight: 600; margin-bottom: 12px; }
+.defense-text { font-size: 14px; color: var(--text2); line-height: 1.8; }
+
+/* CAPABILITIES */
+.plat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+.plat-card { border: 1px solid var(--border); border-radius: 12px; padding: 28px; }
+.plat-card h3 { font-size: 15px; font-weight: 600; margin-bottom: 10px; }
+.plat-card p { font-size: 13px; color: var(--text2); line-height: 1.7; margin-bottom: 20px; }
+.plat-tech { font-family: var(--font-s); font-size: 10px; color: var(--muted); border-top: 1px solid var(--border); pt: 12px; display: block; padding-top: 12px; }
+
+/* COMPARE */
+.cmp-table-wrap { overflow-x: auto; margin-bottom: 32px; border: 1px solid var(--border); border-radius: 12px; }
+.cmp-table { width: 100%; border-collapse: collapse; background: #fff; min-width: 800px; }
+.cmp-table th { background: var(--surface); padding: 16px 24px; text-align: left; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid var(--border); }
+.cmp-table td { padding: 16px 24px; font-size: 13px; border-bottom: 1px solid var(--border); }
+.cmp-table tr.top-row td { font-weight: 600; color: var(--text); background: #fdfdff; }
+.cmp-table tr:last-child td { border-bottom: none; }
+.cmp-table td:last-child { font-weight: 600; color: var(--primary); }
+.sym-check { color: var(--bio); font-weight: 700; }
+.sym-cross { color: #dc2626; opacity: 0.5; }
+
+/* LIVE STATS */
+.live-stats { padding: 40px 0 80px; background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
+.stat-card { text-align: center; padding: 32px 16px; background: #fff; border-radius: 12px; border: 1px solid var(--border); }
+.stat-val { font-family: var(--font-s); font-size: 36px; font-weight: 600; color: var(--primary); display: block; }
+.stat-label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-top: 8px; display: block; }
+.stat-update { font-size: 10px; color: var(--muted); margin-top: 12px; }
+@media (max-width: 768px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
+
+/* BUSINESS MODEL */
+.pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 48px; }
+.price-card { border: 1px solid var(--border); border-radius: 12px; padding: 36px; background: #fff; display: flex; flex-direction: column; }
+.price-card.featured { border: 2px solid var(--primary); transform: scale(1.02); }
+.price-label { font-family: var(--font-s); font-size: 10px; letter-spacing: 0.1em; margin-bottom: 20px; display: block; }
+.price-val { font-family: var(--font-s); font-size: 32px; color: var(--text); margin-bottom: 4px; }
+.price-sub { font-size: 12px; color: var(--muted); margin-bottom: 32px; }
+.price-features { list-style: none; margin-bottom: 40px; flex-grow: 1; }
+.price-features li { font-size: 13px; color: var(--text2); padding: 10px 0; border-bottom: 1px solid #f0f0f0; }
+.price-features li:last-child { border-bottom: none; }
+.btn-price { border-radius: 6px; padding: 12px 24px; font-size: 13px; font-weight: 600; text-align: center; cursor: pointer; transition: all 0.2s; }
+.btn-price.outline-green { border: 1.5px solid var(--bio); color: var(--bio); background: transparent; }
+.btn-price.outline-green:hover { background: var(--bio); color: #fff; }
+.btn-price.fill-blue { background: var(--primary); color: #fff; border: none; }
+.btn-price.fill-blue:hover { background: #0044ff; }
+.btn-price.outline-dark { border: 1.5px solid var(--text); color: var(--text); background: transparent; }
+.btn-price.outline-dark:hover { background: var(--text); color: #fff; }
+.price-footer-note { text-align: center; font-family: var(--font-s); font-size: 11px; color: var(--muted); margin-top: 40px; }
+
+/* ROADMAP */
+.roadmap-status { display: flex; justify-content: space-between; max-width: 600px; margin: 0 auto 40px; border: 1px solid var(--border); border-radius: 50px; padding: 12px 24px; background: var(--surface); }
+.status-item { display: flex; align-items: center; gap: 8px; font-family: var(--font-s); font-size: 11px; }
+.status-dot { width: 8px; height: 8px; border-radius: 50%; }
+.status-dot.green { background: var(--bio); }
+.status-dot.blue { background: var(--primary); animation: pulse 2s infinite; }
+@keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+
+.roadmap-wrap { max-width: 700px; margin: 0 auto; position: relative; padding-left: 48px; border-left: 1px solid var(--border); }
+.rm-item { position: relative; padding-bottom: 60px; }
+.rm-dot { position: absolute; left: -54.5px; top: 0; width: 12px; height: 12px; border-radius: 50%; background: #fff; border: 2px solid var(--border); z-index: 2; }
+.rm-dot.done { background: var(--bio); border-color: var(--bio); }
+.rm-dot.active { background: var(--primary); border-color: var(--primary); }
+.rm-label { font-family: var(--font-s); font-size: 9px; letter-spacing: 0.1em; margin-bottom: 8px; display: block; }
+.rm-title { font-size: 17px; font-weight: 600; margin-bottom: 10px; }
+.rm-desc { font-size: 14px; color: var(--text2); line-height: 1.7; }
+
+/* FOUNDER */
+.founder-grid { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 80px; align-items: center; }
+.founder-card-list { display: grid; gap: 20px; }
+.founder-card { border: 1px solid var(--border); border-radius: 12px; padding: 36px; background: var(--surface); }
+.founder-card.secondary { background: #fff; }
+.founder-name { font-family: var(--font-s); font-size: 24px; font-weight: 400; margin-bottom: 4px; }
+.founder-role { font-size: 13px; color: var(--text2); margin-bottom: 20px; display: block; }
+.founder-divider { height: 1px; background: var(--border); margin: 24px 0; }
+.founder-specs { display: grid; gap: 12px; }
+.spec-row { display: flex; justify-content: space-between; gap: 16px; font-family: var(--font-s); font-size: 11px; }
+.spec-row .lbl { color: var(--muted); }
+.spec-row .val { color: var(--text); text-align: right; word-break: break-word; }
+.founder-quote { border-left: 2px solid var(--primary); padding-left: 18px; margin-top: 32px; font-style: italic; font-size: 13px; color: var(--text2); line-height: 1.7; }
+.founder-quote span { display: block; margin-top: 10px; font-size: 11px; color: var(--muted); font-style: normal; }
+.founder-note { margin-top: 18px; color: var(--text2); font-size: 13px; line-height: 1.7; }
+
+/* BETA CTA */
+.beta-strip { background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 80px 0; text-align: center; }
+.beta-ctas { display: flex; justify-content: center; gap: 24px; align-items: center; margin-top: 40px; }
+
+/* FOOTER */
+footer { padding: 80px 0 40px; border-top: 1px solid var(--border); }
+.footer-grid { display: grid; grid-template-columns: 1.5fr 1fr 1fr; gap: 60px; margin-bottom: 60px; }
+.footer-logo { font-family: var(--font-s); font-size: 20px; margin-bottom: 12px; }
+.footer-tagline { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
+.footer-contact { font-family: var(--font-s); font-size: 13px; color: var(--primary); }
+.footer-col h5 { font-size: 12px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text); margin-bottom: 24px; }
+.footer-col a { display: block; font-size: 13px; color: var(--text2); margin-bottom: 14px; }
+.footer-bottom { border-top: 1px solid var(--border); padding-top: 32px; display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); }
+
+/* CONTACT CARD */
+.contact-card { border: 1px solid var(--border); border-radius: 12px; padding: 40px; background: #fff; max-width: 460px; margin: 40px auto 0; text-align: center; }
+.contact-label { font-family: var(--font-s); font-size: 10px; color: var(--muted); margin-bottom: 16px; display: block; }
+.contact-email { font-family: var(--font-s); font-size: 19px; color: var(--primary); display: block; margin-bottom: 12px; }
+.contact-meta { font-size: 12px; color: var(--muted); }
+
+/* RESPONSIVE */
+@media (max-width: 1024px) {
+  .problem-grid, .proof-grid, .agent-grid, .plat-grid, .pricing-grid, .founder-grid { grid-template-columns: 1fr; gap: 40px; }
+  .workflow-grid { grid-template-columns: 1fr; gap: 36px; }
+  .proof-card, .price-card { transform: none !important; }
+}
+@media (max-width: 768px) {
+  :root { --sec-p: 60px; }
+  .nav-links { display: none; }
+  .hero { padding-top: 100px; }
+  .hero-evidence { flex-direction: column; align-items: center; }
+  .ev-pill { width: 100%; max-width: 300px; }
+  .beta-ctas { flex-direction: column; gap: 16px; }
+  .price-card.featured { order: -1; }
+  .workflow-showcase { padding: 48px 0; }
+  .workflow-header { margin-bottom: 36px; }
+  .workflow-heading { font-size: 28px; }
+  .workflow-subheading { font-size: 16px; }
+  .workflow-copy { padding: 24px; }
+  .workflow-filename { font-size: 10px; }
+  .spec-row { flex-direction: column; gap: 4px; }
+  .spec-row .val { text-align: left; }
+}
+</style>
+</head>
+<body>
+
+<!-- SECTION 1: NAV -->
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="logo" style="display:inline-flex;align-items:center;gap:9px;text-decoration:none;color:inherit">
+      <img src="logo.svg" alt="VigyanLLM Logo" style="width:36px;height:36px;border-radius:6px;background:#0d1117;padding:3px;object-fit:contain;flex-shrink:0">
+      <span style="font-family:var(--font-s);font-size:20px;color:var(--text)">VigyanLLM</span>
+    </a>
+    <div class="nav-links">
+      <a href="#problem">Problem</a>
+      <a href="#platform">Platform</a>
+      <a href="#architecture">Architecture</a>
+      <a href="#compare">Compare</a>
+      <a href="#roadmap">Roadmap</a>
+      <a href="#team">Contact</a>
+      <a href="primer.html" style="color:var(--primary);font-weight:500;">VigyanLLM ↗</a>
+    </div>
+    <div class="nav-right">
+      <span class="link-beta" onclick="scrollToId('contact')">Request Beta Access</span>
+      <button class="btn-nav" onclick="scrollToId('contact')">Get in Touch</button>
+    </div>
+  </div>
+</nav>
+
+<!-- SECTION 2: HERO -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-badge"><span>SOVEREIGN BIOMEDICAL AI · BUILT IN INDIA · NOT A WRAPPER</span></div>
+    <h1>Your Research Lab<br>Spends 4 Hours<br>on a <em>4-Minute Problem</em></h1>
+    <p class="hero-sub">Primer design. PCR validation. Protein docking. CRISPR analysis. Clinical reasoning. VigyanLLM automates the full biological research pipeline — on your hardware, with no external API, no data leaving your institution, and a dedicated verification agent checking every output before it reaches you.</p>
+    
+    <div class="hero-evidence">
+      <div class="ev-pill"><span class="val">320,000+</span><span class="lbl">Biomedical Records Trained</span></div>
+      <div class="ev-pill"><span class="val">46</span><span class="lbl">Domain-Specific Batches</span></div>
+      <div class="ev-pill"><span class="val">3</span><span class="lbl">Coordinated AI Agents</span></div>
+      <div class="ev-pill sovereign"><span class="val">0</span><span class="lbl">External APIs Required</span></div>
+    </div>
+
+    <div class="hero-ctas">
+      <button class="btn-dark" onclick="scrollToId('demo')">Watch Product Demo</button>
+      <a href="#proof" class="btn-text-link">See Why It's Not a Wrapper &rarr;</a>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 3: LIVE STATS COUNTER -->
+<section class="live-stats" id="live-stats">
+  <div class="container">
+    <span class="section-tag" style="text-align:center">REAL-TIME PLATFORM STATS</span>
+    <h2 class="section-h2" style="text-align:center">Trusted by Researchers</h2>
+    <p class="section-desc" style="text-align:center;margin:0 auto 40px">Live counts of validated primer designs processed through VigyanLLM's 22-step pipeline.</p>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <span class="stat-val" id="stat-designs">—</span>
+        <span class="stat-label">Validated Designs</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-val" id="stat-users">—</span>
+        <span class="stat-label">Researchers</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-val" id="stat-active">—</span>
+        <span class="stat-label">Active Today</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-val" id="stat-reports">—</span>
+        <span class="stat-label">Saved Reports</span>
+      </div>
+    </div>
+    <div class="stat-update" style="text-align:center;margin-top:24px">Auto-updates every 30 seconds</div>
+  </div>
+</section>
+<script>
+(async function loadStats() {
+  async function fetchStats() {
+    try {
+      const r = await fetch('http://localhost:11436/api/stats/public');
+      if (!r.ok) return;
+      const d = await r.json();
+      const anim = (el, val) => {
+        const el2 = document.getElementById(el);
+        if (!el2) return;
+        const current = parseInt(el2.textContent.replace(/,/g, '')) || 0;
+        if (current === val) return;
+        el2.textContent = val.toLocaleString();
+      };
+      anim('stat-designs', d.total_designs || 0);
+      anim('stat-users', d.total_users || 0);
+      anim('stat-active', d.active_today || 0);
+      anim('stat-reports', d.total_reports || 0);
+    } catch(e) { /* server not reachable — will retry */ }
+  }
+  await fetchStats();
+  setInterval(fetchStats, 30000);
+})();
+</script>
+
+<!-- SECTION 4: KEY WORKFLOW SHOWCASES -->
+<section id="demo" class="workflow-showcase">
+  <div class="workflow-container">
+    <div class="workflow-header">
+      <span class="workflow-eyebrow">PRODUCT WORKFLOWS</span>
+      <h2 class="workflow-heading">See VigyanLLM in Action</h2>
+      <p class="workflow-subheading">A full platform tour plus three autonomous pipelines. Each one shows the product working inside real research workflows.</p>
+    </div>
+
+    <div class="workflow-grid">
+      <div>
+        <div class="workflow-pills" role="tablist" aria-label="Workflow selector">
+          <button type="button" class="workflow-pill active-pill" data-wf="platform">Full Platform Tour</button>
+          <button type="button" class="workflow-pill" data-wf="consensus">Consensus Pipeline</button>
+          <button type="button" class="workflow-pill" data-wf="smartswitch">Smart Switch</button>
+          <button type="button" class="workflow-pill" data-wf="primerforge">VigyanLLM Primer</button>
+        </div>
+
+        <div class="workflow-copy">
+          <h3 id="wf-title">Full Platform Tour</h3>
+          <p id="wf-tagline" class="workflow-tagline">Complete VigyanLLM web features walkthrough</p>
+          <p id="wf-desc" class="workflow-description">Watch the full website and product experience in one walkthrough: the core interface, research workflows, project creation, outputs, and the practical features researchers use across the platform.</p>
+          <ul id="wf-bullets" class="workflow-bullets">
+            <li><span>▸</span><span>End-to-end feature walkthrough from the VigyanLLM web interface</span></li>
+            <li><span>▸</span><span>Research workflow navigation, project creation, and output review</span></li>
+            <li><span>▸</span><span>Built-in biomedical tools shown together in one platform tour</span></li>
+            <li><span>▸</span><span>The best starting point before viewing the individual workflow demos</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="workflow-window">
+        <div class="workflow-chrome">
+          <div class="workflow-dots" aria-hidden="true">
+            <span class="workflow-dot" style="background:#ef4444"></span>
+            <span class="workflow-dot" style="background:#f59e0b"></span>
+            <span class="workflow-dot" style="background:#22c55e"></span>
+          </div>
+          <span id="wf-filename" class="workflow-filename">vigyanllm — product demo.mp4</span>
+        </div>
+        <div class="workflow-video-area">
+          <video id="wf-video" muted playsinline controls preload="metadata" poster="poster.png" src="product%20demo.mp4">
+            Video loading — if playback doesn't start, check your connection.
+          </video>
+        </div>
+      </div>
+    </div>
+
+    <div class="workflow-cta">
+      <p>Want the full walkthrough?</p>
+      <div class="workflow-cta-actions">
+        <a href="demo.html" class="workflow-btn primary">Open Demo Suite →</a>
+        <a href="#contact" class="workflow-btn secondary">Request a Lab Demo</a>
+      </div>
+    </div>
+
+    <!-- VigyanLLM CTA Card -->
+    <div style="max-width:700px;margin:48px auto 0;border:1px solid #1e293b;border-radius:12px;background:rgba(2,6,23,0.4);padding:32px;display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap;">
+      <div>
+        <div style="font-family:var(--font-s);font-size:10px;letter-spacing:0.14em;color:#22d3ee;text-transform:uppercase;margin-bottom:8px;">Live Tool · CPU Only · No GPU Required</div>
+        <h3 style="color:#fff;font-size:20px;font-weight:700;margin-bottom:6px;">VigyanLLM Primer is live</h3>
+        <p style="color:#94a3b8;font-size:14px;line-height:1.6;">Design lab-ready primer pairs in under 30 seconds. SantaLucia 1998 thermodynamics, NCBI/Ensembl fetch, hairpin and dimer checks — free to try.</p>
+      </div>
+      <a href="primer.html" style="display:inline-flex;align-items:center;justify-content:center;min-height:48px;border-radius:8px;padding:12px 28px;font-size:14px;font-weight:700;background:#22d3ee;color:#0f172a;white-space:nowrap;text-decoration:none;transition:background 0.15s;" onmouseover="this.style.background='#67e8f9'" onmouseout="this.style.background='#22d3ee'">Try VigyanLLM →</a>
+    </div>
+  </div>
+
+  <script>
+  // Workflow switcher — no frameworks, no dependencies
+  (function() {
+    const workflows = {
+      platform: {
+        title: "Full Platform Tour",
+        tagline: "Complete VigyanLLM web features walkthrough",
+        description: "Watch the full website and product experience in one walkthrough: the core interface, research workflows, project creation, outputs, and the practical features researchers use across the platform.",
+        bullets: [
+          "End-to-end feature walkthrough from the VigyanLLM web interface",
+          "Research workflow navigation, project creation, and output review",
+          "Built-in biomedical tools shown together in one platform tour",
+          "The best starting point before viewing the individual workflow demos"
+        ],
+        src: "product%20demo.mp4",
+        filename: "vigyanllm — product demo.mp4"
+      },
+      consensus: {
+        title: "Consensus Pipeline",
+        tagline: "Multi-engine molecular docking with ranked structural outputs",
+        description: "Runs Smina, Vina, and Gnina simultaneously against any PDB target. The Consensus Pipeline aggregates binding affinity scores, computes RMSD deviation, and surfaces the top-ranked pose — in under 60 seconds.",
+        bullets: [
+          "Simultaneous docking across 3 engines — Smina, Vina, Gnina",
+          "Binding affinity aggregation and RMSD-based pose ranking",
+          "ESMFold-compatible protein structure preprocessing",
+          "Output: ranked binding poses with annotated affinity scores"
+        ],
+        src: "consensus_pipeline.mp4",
+        filename: "vigyanllm — consensus_pipeline.mp4"
+      },
+      smartswitch: {
+        title: "Smart Switch / Project Forge",
+        tagline: "Natural language commands routed to autonomous biomedical workflows",
+        description: "Type a research intent — 'Dock Aspirin to 6Y2E' — and Smart Switch parses the command, identifies the correct pipeline, creates a project, and executes the workflow automatically with zero configuration.",
+        bullets: [
+          "Natural language command parsing with biomedical entity extraction",
+          "Automated workflow routing: docking, primer design, literature review",
+          "Instant project scaffolding — inputs, outputs, and audit trail auto-generated",
+          "Supports 40+ canonical biomedical task types"
+        ],
+        src: "smart_switch_demo.mp4",
+        filename: "vigyanllm — smart_switch_demo.mp4"
+      },
+      primerforge: {
+        title: "VigyanLLM Primer",
+        tagline: "Lab-ready genomic primer design in under 30 seconds",
+        description: "Enter a gene target or NCBI accession. VigyanLLM runs thermodynamic profiling, checks for self-complementarity, computes GC content, and outputs a validated primer pair with full metrics — ready for the bench.",
+        bullets: [
+          "Input: gene name, accession ID, or raw FASTA sequence",
+          "Outputs: Tm, GC%, amplicon size, ΔG, hairpin and dimer risk scores",
+          "NCBI and Ensembl database integration for automatic sequence retrieval",
+          "Primer specificity scoring and off-target analysis included"
+        ],
+        src: "primerforge_demo.mp4",
+        filename: "vigyanllm — primerforge_demo.mp4"
+      }
+    };
+
+    function switchWorkflow(key) {
+      const data = workflows[key];
+      if (!data) return;
+
+      // Update title, tagline, description
+      document.getElementById('wf-title').textContent = data.title;
+      document.getElementById('wf-tagline').textContent = data.tagline;
+      document.getElementById('wf-desc').textContent = data.description;
+
+      // Update bullets
+      const bulletList = document.getElementById('wf-bullets');
+      bulletList.innerHTML = data.bullets.map(b =>
+        `<li class="flex items-start gap-2"><span class="text-cyan-400 mt-1 text-xs">▸</span><span>${b}</span></li>`
+      ).join('');
+
+      // Update video
+      const video = document.getElementById('wf-video');
+      video.pause();
+      video.currentTime = 0;
+      video.src = data.src;
+      video.load();
+
+      // Update filename in chrome bar
+      document.getElementById('wf-filename').textContent = data.filename;
+
+      // Update active pill
+      document.querySelectorAll('[data-wf]').forEach(btn => {
+        const isActive = btn.dataset.wf === key;
+        btn.classList.toggle('active-pill', isActive);
+      });
+    }
+
+    // Bind pill buttons
+    document.querySelectorAll('[data-wf]').forEach(btn => {
+      btn.addEventListener('click', () => switchWorkflow(btn.dataset.wf));
+    });
+
+    // Init with the full platform tour
+    switchWorkflow('platform');
+  })();
+  </script>
+</section>
+
+<!-- SECTION 4: THE PROBLEM -->
+<section id="problem">
+  <div class="container">
+    <div class="problem-grid">
+      <div>
+        <span class="section-tag">THE PROBLEM</span>
+        <h2 class="section-h2">Six Tools. Six Workflows.<br>Zero Integration.</h2>
+        <p class="section-desc">Today's molecular biology researcher runs six or more disconnected software tools in a single experiment: a primer design tool that doesn't talk to the PCR optimizer, a docking platform that can't read the structure predictor's output, and a clinical database with no connection to the genomic pipeline.<br><br>Every handoff is a manual reformatting job. Every tool charges separately, and every one of them sends your data to a cloud server you don't control.<br><br>This is not a productivity problem. It is a structural failure of the biotech software industry — and it costs researchers 60%–70% of their time.</p>
+      </div>
+      <div class="problem-cards">
+        <div class="problem-card">
+          <h4>Siloed, Single-Purpose Tools</h4>
+          <p>Every major biotech AI solves one problem. AlphaFold folds proteins. Schrödinger runs docking. Benchling logs lab data. The researcher manually stitches outputs together — introducing error and wasting hours at every handoff.</p>
+        </div>
+        <div class="problem-card">
+          <h4>Your Genomic Data Is Not Safe in the Cloud</h4>
+          <p>Sending patient genomic sequences, clinical trial data, or proprietary compound structures to third-party APIs is a legal and ethical exposure. HIPAA, GDPR, and institutional data governance policies are incompatible with most current biotech AI platforms.</p>
+        </div>
+        <div class="problem-card">
+          <h4>Enterprise Pricing Excludes Most Labs</h4>
+          <p>Schrödinger's platform costs tens of thousands of dollars annually. The majority of research labs worldwide — and virtually every academic lab in India — cannot access state-of-the-art computational biology tools.</p>
+        </div>
+        <div class="problem-card">
+          <h4>No System Covers the Full Research Lifecycle</h4>
+          <p>From gene sequence to validated experimental protocol, a researcher touches at minimum six systems. No platform today automates primer design, structure prediction, molecular docking, and clinical reasoning under one sovereign roof.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 5: WHY NOT A WRAPPER -->
+<section id="proof">
+  <div class="container">
+    <span class="section-tag">TECHNICAL PROOF POINTS</span>
+    <h2 class="section-h2">Not a Wrapper.<br>Here Is the Evidence.</h2>
+    <p class="section-desc">"ChatGPT for biotech" is not a company. VigyanLLM is a purpose-built, domain-trained, multi-agent system with a proprietary inference engine, 46 batches of curated biomedical training data, and a dedicated verification agent that no off-the-shelf AI product has.</p>
+    
+    <div class="proof-grid">
+      <div class="proof-card" id="proof-1">
+        <span class="proof-label">DATA MOAT</span>
+        <h3>320,000+ Purpose-Built<br>Biomedical Records</h3>
+        <p>46 specialized training batches — each targeting a precise biological subdomain. Batch 19: 50,000 clinical reasoning records. Batch 20: 50,000 genomic design records. Batch 46: 110,025 CRISPR structural anomaly records processed on T4 GPU. Not scraped. Not generic.</p>
+        <div class="proof-footer">&rarr; Proprietary JSONL pipeline · 85% confidence</div>
+      </div>
+      <div class="proof-card" id="proof-2">
+        <span class="proof-label">INFRASTRUCTURE MOAT</span>
+        <h3>No External API.<br>Ever.</h3>
+        <p>VigyanLLM runs on the VigyanInferenceEngine — a native GGUF inference engine that replaced all external proxy processes. Every inference request is processed locally or on a dedicated T4 GPU. No OpenAI. No Anthropic. No Cohere. Your data stays on-premises.</p>
+        <div class="proof-footer">&rarr; VigyanInferenceEngine · Bare-metal · Sovereign</div>
+      </div>
+      <div class="proof-card" id="proof-3">
+        <span class="proof-label">ACCURACY MOAT</span>
+        <h3>ChinhAI: The Validation Layer<br>No Single Model Has</h3>
+        <p>A single LLM cannot check its own hallucinations. VigyanLLM's ChinhAI agent is a dedicated verification layer — cross-checking primer off-target binding, validating molecular docking energetics (e.g., −8.5 kcal/mol), and flagging sgRNA instability.</p>
+        <div class="proof-footer">&rarr; 3-agent architecture · Sequential validation</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 6: ARCHITECTURE -->
+<section id="architecture">
+  <div class="container">
+    <span class="section-tag">MULTI-AGENT ARCHITECTURE</span>
+    <h2 class="section-h2">Three Agents.<br>One Research Pipeline.</h2>
+    <div class="agent-grid">
+      <div class="agent-card blue">
+        <span class="agent-tag-lbl" style="color:var(--primary)">AGENT 01</span>
+        <h3 class="agent-name">Core</h3>
+        <span class="agent-role" style="background:#eff6ff; color:var(--primary)">Orchestration Layer</span>
+        <p class="agent-desc">Parses research intent, decomposes complex biological queries, and routes sub-tasks. Synthesizes outputs into a coherent final report.</p>
+      </div>
+      <div class="agent-card green">
+        <span class="agent-tag-lbl" style="color:var(--bio)">AGENT 02</span>
+        <h3 class="agent-name">SubBrain</h3>
+        <span class="agent-role" style="background:#ecfdf5; color:var(--bio)">Domain Reasoning</span>
+        <p class="agent-desc">The specialist. Handles biological knowledge retrieval, sequence analysis, protein prediction, and pathway mapping.</p>
+      </div>
+      <div class="agent-card amber">
+        <span class="agent-tag-lbl" style="color:var(--amber)">AGENT 03</span>
+        <h3 class="agent-name">ChinhAI</h3>
+        <span class="agent-role" style="background:#fffbeb; color:var(--amber)">Verification Gate</span>
+        <p class="agent-desc">The validation layer. Cross-checks results against off-target databases and physics-based benchmarks before release.</p>
+      </div>
+    </div>
+    <div class="defense-card">
+      <div class="defense-title">The Hallucination Defense</div>
+      <div class="defense-text">In biomedical AI, a wrong answer is not an inconvenience — it corrupts an experiment, wastes weeks of lab work, or in a clinical context, causes harm. VigyanLLM's architecture is built around this constraint. No single model is the last word. Every output passes through Core's orchestration, SubBrain's domain reasoning, and ChinhAI's validation before the researcher sees it. This is structurally different from a chatbot with a disclaimer.</div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 7: CAPABILITIES -->
+<section id="platform">
+  <div class="container">
+    <span class="section-tag">PLATFORM CAPABILITIES</span>
+    <h2 class="section-h2">Built for the Scientific<br>Method, Not Just Search.</h2>
+    <div class="plat-grid">
+      <div class="plat-card"><h3>Protein Structure</h3><p>Predict accurate 3D protein conformations and identify structural anomalies for drug target discovery.</p><span class="plat-tech">AlphaFold · RosettaFold · ESMFold</span></div>
+      <div class="plat-card"><h3>Molecular Docking</h3><p>GPU-accelerated docking with realistic binding energy calculations and interaction surface mapping.</p><span class="plat-tech">Vina-GPU · −8.5 kcal/mol benchmarks</span></div>
+      <div class="plat-card"><h3>Gene Expression</h3><p>RNA-Seq analysis and pathway integration for complete systems biology understanding.</p><span class="plat-tech">DESeq2 · edgeR · KEGG · Reactome</span></div>
+      <div class="plat-card"><h3>PCR & Primer</h3><p>Automated design with thermodynamics validation and off-target screening for laboratory protocols.</p><span class="plat-tech">Off-target screening · Thermo validation</span></div>
+      <div class="plat-card"><h3>CRISPR</h3><p>sgRNA-DNA Heteroduplex instability analysis and PAM variation mapping for precise editing.</p><span class="plat-tech">HNH Domain · sgRNA Instability · PAM Mapping</span></div>
+      <div class="plat-card"><h3>Clinical Reasoning</h3><p>Differential diagnosis and symptom mapping trained on 50,000 dedicated clinical reasoning records.</p><span class="plat-tech">Trained on 50k Clinical Records</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 8: COMPARE -->
+<section id="compare">
+  <div class="container">
+    <span class="section-tag">HOW WE COMPARE</span>
+    <h2 class="section-h2">Sovereignty Is the<br>Core Differentiator</h2>
+    <div class="cmp-table-wrap">
+      <table class="cmp-table">
+        <thead>
+          <tr><th>Capability</th><th>AlphaFold</th><th>Schrödinger</th><th>Benchling</th><th>Recursion</th><th>VigyanLLM</th></tr>
+        </thead>
+        <tbody>
+          <tr class="top-row"><td>No External API Required</td><td><span class="sym-cross">✗</span></td><td><span class="sym-cross">✗</span></td><td><span class="sym-cross">✗</span></td><td><span class="sym-cross">✗</span></td><td><span class="sym-check">✓</span></td></tr>
+          <tr><td>Full Pipeline (Single System)</td><td><span class="sym-cross">✗</span></td><td><span class="sym-cross">✗</span></td><td><span class="sym-cross">✗</span></td><td><span class="sym-cross">✗</span></td><td><span class="sym-check">✓</span></td></tr>
+          <tr><td>Primer & PCR Automation</td><td><span class="sym-cross">✗</span></td><td><span class="sym-cross">✗</span></td><td>◐</td><td><span class="sym-cross">✗</span></td><td><span class="sym-check">✓</span></td></tr>
+          <tr><td>Clinical Reasoning</td><td><span class="sym-cross">✗</span></td><td><span class="sym-cross">✗</span></td><td><span class="sym-cross">✗</span></td><td><span class="sym-cross">✗</span></td><td><span class="sym-check">✓</span></td></tr>
+          <tr><td>Multi-Agent Orchestration</td><td><span class="sym-cross">✗</span></td><td><span class="sym-cross">✗</span></td><td><span class="sym-cross">✗</span></td><td>◐</td><td><span class="sym-check">✓</span></td></tr>
+          <tr><td>On-Premise Deployment</td><td><span class="sym-cross">✗</span></td><td>◐</td><td><span class="sym-cross">✗</span></td><td><span class="sym-cross">✗</span></td><td><span class="sym-check">✓</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="plat-grid">
+      <div class="plat-card" style="grid-column: span 3; background: var(--surface);">
+        <h3>Built for the Full Research Spectrum, Not Just Pharma</h3>
+        <p>AlphaFold serves protein research. Schrödinger serves drug discovery. Recursion serves pharmaceutical pipelines. VigyanLLM is built for every molecular biology researcher — academic labs, biotech startups, clinical institutions, and agricultural biotech — making advanced computational biology accessible without enterprise pricing or cloud dependency.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 9: BUSINESS MODEL -->
+<section id="business">
+  <div class="container">
+    <span class="section-tag">BUSINESS MODEL</span>
+    <h2 class="section-h2">India-First Pricing.<br>Validated Research Workflows.</h2>
+    <p class="section-desc">VigyanLLM Primer keeps entry pricing simple while giving labs higher monthly design capacity, audit-ready reports, and a 22-step validation workflow that goes beyond basic primer picking.</p>
+    
+    <div class="pricing-grid">
+      <div class="price-card">
+        <span class="price-label" style="color:var(--bio)">FREE TRIAL</span>
+        <div class="price-val">₹0 / month</div>
+        <div class="price-sub">For first-time researchers</div>
+        <ul class="price-features">
+          <li>— 2 validated primer/probe designs</li>
+          <li>— 22-step primer pipeline access</li>
+          <li>— NCBI/Ensembl sequence fetch</li>
+          <li>— CSV and JSON export</li>
+          <li>— Research Use Only</li>
+        </ul>
+        <button class="btn-price outline-green" onclick="window.location.href='primer.html'">Start Free Designs</button>
+      </div>
+      <div class="price-card featured">
+        <span class="price-label" style="color:var(--primary)">RECOMMENDED · LAB</span>
+        <div class="price-val">₹14,999 / month</div>
+        <div class="price-sub">5 researcher seats · 2,000 designs</div>
+        <ul class="price-features">
+          <li>All free features plus:</li>
+          <li>— Batch design and shared history</li>
+          <li>— Priority design queue</li>
+          <li>— Audit-ready report exports</li>
+          <li>— Priority support</li>
+        </ul>
+        <button class="btn-price fill-blue" onclick="window.location.href='primer.html#pricing'">View Lab Plan</button>
+      </div>
+      <div class="price-card">
+        <span class="price-label" style="color:var(--amber)">CORPORATE R&D</span>
+        <div class="price-val">₹49,999 / month</div>
+        <div class="price-sub">Unlimited seats · 7,500 designs</div>
+        <ul class="price-features">
+          <li>All lab features plus:</li>
+          <li>— Dedicated API throughput</li>
+          <li>— SLA and dedicated support</li>
+          <li>— Private deployment option</li>
+          <li>— Audit trail and data governance</li>
+        </ul>
+        <button class="btn-price outline-dark" onclick="window.location.href='primer.html#pricing'">View Corporate Plan</button>
+      </div>
+    </div>
+    <div class="price-footer-note">
+      Top-ups are ₹49/design · Individual plan ₹2,499/month for 250 designs · Fair-use queue limits apply
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 10: ROADMAP -->
+<section id="roadmap">
+  <div class="container">
+    <span class="section-tag">DEVELOPMENT ROADMAP</span>
+    <h2 class="section-h2" style="text-align:center">The Path to Scale</h2>
+    
+    <div class="roadmap-status">
+      <div class="status-item"><div class="status-dot green"></div> Phase 1 Complete</div>
+      <div class="status-item"><div class="status-dot blue"></div> Phase 2 Active</div>
+    </div>
+
+    <div class="roadmap-wrap">
+      <div class="rm-item">
+        <div class="rm-dot done"></div>
+        <span class="rm-label" style="color:var(--bio)">PHASE 1 · COMPLETE</span>
+        <h3 class="rm-title">Scientific Engine & Multi-Agent Core</h3>
+        <p class="rm-desc">46 specialized training batches. 320,000+ medical and genomic records ingested. Three-agent pipeline (Core, SubBrain, ChinhAI) producing research-grade outputs. Sovereign Cold Core architecture live.</p>
+      </div>
+      <div class="rm-item">
+        <div class="rm-dot active"></div>
+        <span class="rm-label" style="color:var(--primary)">PHASE 2 · ACTIVE</span>
+        <h3 class="rm-title">Real Client-Side AI/ML</h3>
+        <p class="rm-desc">Replacing simulated layers with TensorFlow.js. Adding advanced search (TF-IDF, BM25) and semantic embeddings directly in the interface for offline-capable inference.</p>
+      </div>
+      <div class="rm-item">
+        <div class="rm-dot"></div>
+        <span class="rm-label">PHASE 3 · PLANNED</span>
+        <h3 class="rm-title">Enterprise UX & Multi-Tenant Architecture</h3>
+        <p class="rm-desc">Institutional deployments with role-based access, collaborative workspaces, and enterprise API controls for universities and biotech startups.</p>
+      </div>
+      <div class="rm-item">
+        <div class="rm-dot"></div>
+        <span class="rm-label">PHASE 4 · PLANNED</span>
+        <h3 class="rm-title">Healthcare Regulatory Compliance</h3>
+        <p class="rm-desc">Full implementation of HIPAA, GDPR, and FDA 21 CFR Part 11 architectures. Hardened audit trails for hospital deployments.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 11: CONTACT -->
+<section id="team">
+  <div class="container" style="text-align:center">
+    <span class="section-tag">CONTACT</span>
+    <h2 class="section-h2">Get in Touch</h2>
+    <p class="section-desc" style="margin:0 auto 32px">For research collaborations, beta access, or general inquiries — reach out to our team.</p>
+    <div class="contact-card">
+      <span class="contact-label">Official Contact</span>
+      <a href="mailto:contact@vigyanllm.in" class="contact-email">contact@vigyanllm.in</a>
+      <div class="contact-meta">Response within 48 hours. We review every message personally.</div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 12: BETA CTA -->
+<div class="beta-strip">
+  <div class="container">
+    <h2 class="section-h2" style="text-align:center">Research Labs Are the First to Know</h2>
+    <p style="font-size:15px; color:var(--text2); max-width:480px; margin:0 auto 32px; text-align:center">We are offering 60-day free access to PhD researchers and lab PIs for real-world validation. In return: honest feedback and early access to every feature we ship.</p>
+    <div class="beta-ctas">
+      <button class="btn-dark" onclick="scrollToId('contact')">Apply for Beta Access</button>
+      <a href="mailto:contact@vigyanllm.in" style="color:var(--primary); font-size:15px; font-weight:500;">Or email contact@vigyanllm.in directly</a>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 13: CONTACT + FOOTER -->
+<footer id="contact">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <div class="footer-logo" style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+          <img src="logo.svg" alt="VigyanLLM" style="width:36px;height:36px;border-radius:6px;background:#0d1117;padding:3px;object-fit:contain">
+          <span>VigyanLLM</span>
+        </div>
+        <p class="footer-tagline">Sovereign Healthcare & Life Sciences AI</p>
+        <div class="footer-contact">contact@vigyanllm.in</div>
+      </div>
+      <div class="footer-col">
+        <h5>Platform</h5>
+        <a href="#problem">Problem</a><a href="#platform">Platform</a><a href="#architecture">Architecture</a><a href="#demo">Demo</a><a href="#compare">Compare</a><a href="#roadmap">Roadmap</a>
+      </div>
+      <div class="footer-col">
+        <h5>Research</h5>
+        <a href="#platform">Structure Prediction</a><a href="#platform">Molecular Docking</a><a href="#platform">Primer Design</a><a href="#platform">CRISPR Analysis</a><a href="#platform">Clinical Reasoning</a>
+      </div>
+    </div>
+
+    <div class="contact-card">
+      <span class="contact-label">Official Contact</span>
+      <a href="mailto:contact@vigyanllm.in" class="contact-email">contact@vigyanllm.in</a>
+      <div class="contact-meta">Response within 48 hours. We review every message personally.</div>
+    </div>
+
+    <div class="footer-bottom">
+      <span>&copy; 2026 VigyanLLM Pvt. Ltd. · Sovereign Research AI</span>
+      <span>Built in India 🇮🇳</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+
+function scrollToId(id) {
+  const el = document.getElementById(id);
+  if (el) el.scrollIntoView({ behavior: 'smooth' });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+
+
+  // 2. Proof cards reveal animation
+  const proofObserver = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        const cards = entry.target.querySelectorAll('.proof-card');
+        cards.forEach((card, index) => {
+          setTimeout(() => {
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+          }, index * 100);
+        });
+        proofObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1 });
+
+  const proofGrid = document.querySelector('.proof-grid');
+  if (proofGrid) proofObserver.observe(proofGrid);
+
+  // 3. Scroll spy for nav
+  const links = document.querySelectorAll('.nav-links a');
+  const sections = document.querySelectorAll('section[id]');
+  const spyObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        links.forEach(link => link.classList.remove('active'));
+        const activeLink = document.querySelector(`.nav-links a[href="#${entry.target.id}"]`);
+        if (activeLink) activeLink.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-40% 0px -55% 0px' });
+
+  sections.forEach(sec => spyObserver.observe(sec));
+});
+</script>
+
+</body>
+</html>

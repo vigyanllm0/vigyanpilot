@@ -1,0 +1,2447 @@
+{
+  "run_dir": "/Users/macbookpro/Desktop/vigyanpilot/qa_runs/real_pipeline_20260609_001245",
+  "tool_versions": {
+    "blastn": "blastn: 2.17.0+",
+    "makeblastdb": "makeblastdb: 2.17.0+",
+    "bowtie2": "/usr/local/bin/../Cellar/bowtie2/2.5.5/bin/bowtie2-align-s-v256 version 2.5.5",
+    "bowtie2-build": "/usr/local/Cellar/bowtie2/2.5.5/bin/bowtie2-build-s version 2.5.5",
+    "tabix": "tabix (htslib) 1.23.1"
+  },
+  "makeblastdb_output_first_line": "Building a new DB, current time: 06/09/2026 00:12:48",
+  "bowtie2_build_output_tail": [
+    "    color: 0",
+    "    reverse: 1",
+    "Total time for backward call to driver() for mirror index: 00:00:00"
+  ],
+  "tabix_probe": "KRAS\t100\tqa_KRAS_100\tG\tT\t.\tPASS\tAF=0.001;CLNSIG=Benign;GENE=KRAS",
+  "sequences": {
+    "KRAS": {
+      "accession": "NM_004985.5",
+      "title": "NM_004985.5 Homo sapiens KRAS proto-oncogene, GTPase (KRAS), transcript variant b, mRNA",
+      "length": 5306,
+      "md5": "47864ea41bdf55c6de49d6978861460f",
+      "ncbi_efetch_url": "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nuccore&id=NM_004985.5&rettype=fasta&retmode=text"
+    },
+    "ACTB": {
+      "accession": "NM_001101.5",
+      "title": "NM_001101.5 Homo sapiens actin beta (ACTB), mRNA",
+      "length": 1812,
+      "md5": "7067c04c651a2481cffbb25096e73575",
+      "ncbi_efetch_url": "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nuccore&id=NM_001101.5&rettype=fasta&retmode=text"
+    }
+  },
+  "pipeline_runs": {
+    "KRAS": {
+      "status_counts": {
+        "passed": 22,
+        "failed": 0,
+        "skipped": 0
+      },
+      "steps": [
+        {
+          "step": 1,
+          "name": "Transcript Isoform Filter",
+          "status": "passed",
+          "duration_ms": 0,
+          "error": null,
+          "keys": [
+            "exon_map",
+            "isoform_count",
+            "selected_regions",
+            "sequence_length",
+            "target_sequence",
+            "targeting_mode",
+            "transcripts"
+          ]
+        },
+        {
+          "step": 2,
+          "name": "Exon-Intron Junction Mapping",
+          "status": "passed",
+          "duration_ms": 0,
+          "error": null,
+          "keys": [
+            "intron_flanking_pairs",
+            "junction_note",
+            "junction_positions",
+            "junction_spanning_sites",
+            "junction_strategy",
+            "preferred_zones",
+            "valid_regions"
+          ]
+        },
+        {
+          "step": 3,
+          "name": "Bisulfite Conversion Simulation",
+          "status": "passed",
+          "duration_ms": 0,
+          "error": null,
+          "keys": [
+            "bisulfite_applied"
+          ]
+        },
+        {
+          "step": 4,
+          "name": "Degenerate Base Parsing",
+          "status": "passed",
+          "duration_ms": 1,
+          "error": null,
+          "keys": [
+            "consensus_sequence",
+            "degenerate_positions",
+            "max_degeneracy_per_window",
+            "total_degenerate_count"
+          ]
+        },
+        {
+          "step": 5,
+          "name": "Repeat Masking",
+          "status": "passed",
+          "duration_ms": 2,
+          "error": null,
+          "keys": [
+            "flagged_primers",
+            "low_complexity_regions",
+            "masked_fraction",
+            "masked_sequence",
+            "masking_source",
+            "repeat_count",
+            "repeat_regions"
+          ]
+        },
+        {
+          "step": 6,
+          "name": "Primer3 Parameter Constraints",
+          "status": "passed",
+          "duration_ms": 76,
+          "error": null,
+          "keys": [
+            "candidate_pairs",
+            "low_candidate_yield",
+            "pair_count"
+          ]
+        },
+        {
+          "step": 7,
+          "name": "Nearest-Neighbor Tm (SantaLucia)",
+          "status": "passed",
+          "duration_ms": 1,
+          "error": null,
+          "keys": [
+            "refined_pairs",
+            "refinement_note"
+          ]
+        },
+        {
+          "step": 8,
+          "name": "Dynamic Buffer & Salt Adjustments",
+          "status": "passed",
+          "duration_ms": 0,
+          "error": null,
+          "keys": [
+            "buffer_conditions_used",
+            "free_mg_mm",
+            "primer_candidates"
+          ]
+        },
+        {
+          "step": 9,
+          "name": "Divalent Cation Mg2+ Scaling",
+          "status": "passed",
+          "duration_ms": 0,
+          "error": null,
+          "keys": [
+            "mg_correction_applied",
+            "mg_correction_note",
+            "primer_candidates"
+          ]
+        },
+        {
+          "step": 10,
+          "name": "Target Specificity (BLAST)",
+          "status": "passed",
+          "duration_ms": 65254,
+          "error": null,
+          "keys": [
+            "blast_available",
+            "blast_note",
+            "filtered_pairs",
+            "specificity_checked"
+          ]
+        },
+        {
+          "step": 11,
+          "name": "Structural Alignment (Bowtie2)",
+          "status": "passed",
+          "duration_ms": 435,
+          "error": null,
+          "keys": [
+            "aligned_pairs",
+            "alignment_checked",
+            "bowtie2_available",
+            "bowtie2_note"
+          ]
+        },
+        {
+          "step": 12,
+          "name": "Organelle & Pseudogene Screening",
+          "status": "passed",
+          "duration_ms": 0,
+          "error": null,
+          "keys": [
+            "aligned_pairs",
+            "organelle_hits",
+            "organelle_screening_note",
+            "primer_candidates",
+            "pseudogene_hits",
+            "screening_status"
+          ]
+        },
+        {
+          "step": 13,
+          "name": "Primer Secondary Structure (dG)",
+          "status": "passed",
+          "duration_ms": 26,
+          "error": null,
+          "keys": [
+            "structure_checked",
+            "structure_note"
+          ]
+        },
+        {
+          "step": 14,
+          "name": "Amplicon Structural Verification",
+          "status": "passed",
+          "duration_ms": 11,
+          "error": null,
+          "keys": [
+            "amplicon_checked",
+            "amplicon_note"
+          ]
+        },
+        {
+          "step": 15,
+          "name": "Population Variant Filter (dbSNP)",
+          "status": "passed",
+          "duration_ms": 121,
+          "error": null,
+          "keys": [
+            "dbsnp_available",
+            "snp_note",
+            "variant_filtered"
+          ]
+        },
+        {
+          "step": 16,
+          "name": "Clinical Hotspot Filter (ClinVar)",
+          "status": "passed",
+          "duration_ms": 1,
+          "error": null,
+          "keys": [
+            "clinical_checked",
+            "clinical_note",
+            "clinvar_available"
+          ]
+        },
+        {
+          "step": 17,
+          "name": "5' Overhang Adapter Tailing",
+          "status": "passed",
+          "duration_ms": 0,
+          "error": null,
+          "keys": [
+            "adapter_foldback_flags",
+            "adapter_note",
+            "purification_recommendations",
+            "tailed_primers"
+          ]
+        },
+        {
+          "step": 18,
+          "name": "Multiplex Cross-Reaction (PrimerPooler)",
+          "status": "passed",
+          "duration_ms": 0,
+          "error": null,
+          "keys": [
+            "multiplex_note",
+            "multiplex_scored"
+          ]
+        },
+        {
+          "step": 19,
+          "name": "Automated Penalty & Ranking Matrix",
+          "status": "passed",
+          "duration_ms": 3,
+          "error": null,
+          "keys": [
+            "ranked_pairs",
+            "ranking_note",
+            "ranking_source",
+            "ranking_summary",
+            "top_pairs"
+          ]
+        },
+        {
+          "step": 20,
+          "name": "Thermocycling Profile Generation",
+          "status": "passed",
+          "duration_ms": 6,
+          "error": null,
+          "keys": [
+            "cycling_profiles",
+            "thermocycling_note"
+          ]
+        },
+        {
+          "step": 21,
+          "name": "Manufacturing Feasibility Screening",
+          "status": "passed",
+          "duration_ms": 1,
+          "error": null,
+          "keys": [
+            "feasibility_scores",
+            "manufacturing_results"
+          ]
+        },
+        {
+          "step": 22,
+          "name": "Probe Design (qPCR/TaqMan)",
+          "status": "passed",
+          "duration_ms": 420,
+          "error": null,
+          "keys": [
+            "probe_note",
+            "probe_results"
+          ]
+        }
+      ],
+      "pair_count": 20,
+      "notes": {
+        "blast": "19/20 pairs passed BLAST specificity filter.",
+        "bowtie2": "20/20 pairs are unique mappers without pseudogene hits.",
+        "snp": "20/20 pairs clear of critical 3' SNPs. 0 total variants annotated.",
+        "clinical": "20/20 pairs avoid clinical hotspots. 0 flagged with clinical_hotspot_overlap (soft penalty)."
+      },
+      "availability": {
+        "blast_available": true,
+        "bowtie2_available": true,
+        "dbsnp_available": true,
+        "clinvar_available": true
+      },
+      "first_pair": {
+        "forward": {
+          "sequence": "GTCATCCAGTGTTGTCATGC",
+          "tm": 59.98,
+          "gc": 50.0,
+          "length": 20,
+          "tm_nn": 53.58,
+          "tm_salt_adjusted": 53.58,
+          "tm_mg_adjusted": 5.67,
+          "delta_h": -156.9,
+          "delta_s": -426.3,
+          "delta_g_37": -24.68,
+          "blast_hits": [
+            {
+              "subject_id": "KRAS",
+              "percent_identity": 100.0,
+              "alignment_length": 20,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 1,
+              "query_end": 20,
+              "subject_start": 1820,
+              "subject_end": 1839,
+              "evalue": 2.49e-07,
+              "bitscore": 38.1,
+              "query_coverage": 100.0
+            },
+            {
+              "subject_id": "KRAS",
+              "percent_identity": 100.0,
+              "alignment_length": 8,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 6,
+              "query_end": 13,
+              "subject_start": 2105,
+              "subject_end": 2098,
+              "evalue": 1.2,
+              "bitscore": 15.9
+            },
+            {
+              "subject_id": "KRAS",
+              "percent_identity": 100.0,
+              "alignment_length": 8,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 4,
+              "query_end": 11,
+              "subject_start": 2872,
+              "subject_end": 2879,
+              "evalue": 1.2,
+              "bitscore": 15.9
+            },
+            {
+              "subject_id": "KRAS",
+              "percent_identity": 100.0,
+              "alignment_length": 8,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 10,
+              "query_end": 17,
+              "subject_start": 4328,
+              "subject_end": 4335,
+              "evalue": 1.2,
+              "bitscore": 15.9
+            },
+            {
+              "subject_id": "KRAS",
+              "percent_identity": 100.0,
+              "alignment_length": 8,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 12,
+              "query_end": 19,
+              "subject_start": 5249,
+              "subject_end": 5256,
+              "evalue": 1.2,
+              "bitscore": 15.9
+            },
+            {
+              "subject_id": "KRAS",
+              "percent_identity": 90.909,
+              "alignment_length": 11,
+              "mismatches": 0,
+              "gap_opens": 1,
+              "query_start": 8,
+              "query_end": 18,
+              "subject_start": 1253,
+              "subject_end": 1262,
+              "evalue": 4.2,
+              "bitscore": 14.0
+            },
+            {
+              "subject_id": "KRAS",
+              "percent_identity": 100.0,
+              "alignment_length": 7,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 1,
+              "query_end": 7,
+              "subject_start": 1258,
+              "subject_end": 1264,
+              "evalue": 4.2,
+              "bitscore": 14.0
+            },
+            {
+              "subject_id": "KRAS",
+              "percent_identity": 100.0,
+              "alignment_length": 7,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 5,
+              "query_end": 11,
+              "subject_start": 2260,
+              "subject_end": 2254,
+              "evalue": 4.2,
+              "bitscore": 14.0
+            },
+            {
+              "subject_id": "KRAS",
+              "percent_identity": 100.0,
+              "alignment_length": 7,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 7,
+              "query_end": 13,
+              "subject_start": 3874,
+              "subject_end": 3868,
+              "evalue": 4.2,
+              "bitscore": 14.0
+            },
+            {
+              "subject_id": "KRAS",
+              "percent_identity": 90.0,
+              "alignment_length": 10,
+              "mismatches": 1,
+              "gap_opens": 0,
+              "query_start": 4,
+              "query_end": 13,
+              "subject_start": 4635,
+              "subject_end": 4626,
+              "evalue": 4.2,
+              "bitscore": 14.0
+            },
+            {
+              "subject_id": "KRAS",
+              "percent_identity": 100.0,
+              "alignment_length": 7,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 7,
+              "query_end": 13,
+              "subject_start": 4888,
+              "subject_end": 4894,
+              "evalue": 4.2,
+              "bitscore": 14.0
+            },
+            {
+              "subject_id": "KRAS",
+              "percent_identity": 85.714,
+              "alignment_length": 14,
+              "mismatches": 1,
+              "gap_opens": 1,
+              "query_start": 1,
+              "query_end": 13,
+              "subject_start": 5099,
+              "subject_end": 5112,
+              "evalue": 4.2,
+              "bitscore": 14.0
+            },
+            {
+              "subject_id": "ACTB",
+              "percent_identity": 100.0,
+              "alignment_length": 7,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 2,
+              "query_end": 8,
+              "subject_start": 92,
+              "subject_end": 86,
+              "evalue": 4.2,
+              "bitscore": 14.0
+            }
+          ],
+          "blast_significant_hits": 1,
+          "is_specific": true,
+          "mapping_count": 1,
+          "alignment_locations": [
+            {
+              "chromosome": "KRAS",
+              "position": 1820,
+              "mapq": 255,
+              "strand": "+"
+            }
+          ],
+          "is_unique_mapper": true,
+          "pseudogene_hit": false,
+          "flags": [],
+          "hairpin_dg": 0.0,
+          "self_dimer_dg": -2.68,
+          "snp_3prime": [],
+          "snp_interior": [],
+          "snp_5prime": [],
+          "snp_3prime_count": 0,
+          "clinvar_hits": 0,
+          "gc_clamp_ok": true,
+          "start": 1819,
+          "start_pos": 1820,
+          "stop_pos": 1839
+        },
+        "reverse": {
+          "sequence": "GCTCTTGATTTGTCAGCAGG",
+          "tm": 59.98,
+          "gc": 50.0,
+          "length": 20,
+          "tm_nn": 53.57,
+          "tm_salt_adjusted": 53.57,
+          "tm_mg_adjusted": 5.65,
+          "delta_h": -156.5,
+          "delta_s": -425.1,
+          "delta_g_37": -24.66,
+          "blast_hits": [
+            {
+              "subject_id": "KRAS",
+              "percent_identity": 100.0,
+              "alignment_length": 20,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 1,
+              "query_end": 20,
+              "subject_start": 1934,
+              "subject_end": 1915,
+              "evalue": 2.49e-07,
+              "bitscore": 38.1,
+              "query_coverage": 100.0
+            },
+            {
+              "subject_id": "KRAS",
+              "percent_identity": 92.308,
+              "alignment_length": 13,
+              "mismatches": 0,
+              "gap_opens": 1,
+              "query_start": 8,
+              "query_end": 20,
+              "subject_start": 192,
+              "subject_end": 181,
+              "evalue": 0.32,
+              "bitscore": 17.7
+            },
+            {
+              "subject_id": "KRAS",
+              "percent_identity": 91.667,
+              "alignment_length": 12,
+              "mismatches": 0,
+              "gap_opens": 1,
+              "query_start": 4,
+              "query_end": 15,
+              "subject_start": 2424,
+              "subject_end": 2434,
+              "evalue": 1.2,
+              "bitscore": 15.9
+            },
+            {
+              "subject_id": "KRAS",
+              "percent_identity": 100.0,
+              "alignment_length": 8,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 8,
+              "query_end": 15,
+              "subject_start": 4525,
+              "subject_end": 4532,
+              "evalue": 1.2,
+              "bitscore": 15.9
+            },
+            {
+              "subject_id": "KRAS",
+              "percent_identity": 100.0,
+              "alignment_length": 7,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 14,
+              "query_end": 20,
+              "subject_start": 363,
+              "subject_end": 369,
+              "evalue": 4.2,
+              "bitscore": 14.0
+            },
+            {
+              "subject_id": "KRAS",
+              "percent_identity": 100.0,
+              "alignment_length": 7,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 2,
+              "query_end": 8,
+              "subject_start": 376,
+              "subject_end": 370,
+              "evalue": 4.2,
+              "bitscore": 14.0
+            },
+            {
+              "subject_id": "KRAS",
+              "percent_identity": 100.0,
+              "alignment_length": 7,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 6,
+              "query_end": 12,
+              "subject_start": 544,
+              "subject_end": 550,
+              "evalue": 4.2,
+              "bitscore": 14.0
+            },
+            {
+              "subject_id": "KRAS",
+              "percent_identity": 100.0,
+              "alignment_length": 7,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 9,
+              "query_end": 15,
+              "subject_start": 1255,
+              "subject_end": 1261,
+              "evalue": 4.2,
+              "bitscore": 14.0
+            },
+            {
+              "subject_id": "KRAS",
+              "percent_identity": 100.0,
+              "alignment_length": 7,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 2,
+              "query_end": 8,
+              "subject_start": 2733,
+              "subject_end": 2727,
+              "evalue": 4.2,
+              "bitscore": 14.0
+            },
+            {
+              "subject_id": "KRAS",
+              "percent_identity": 100.0,
+              "alignment_length": 7,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 1,
+              "query_end": 7,
+              "subject_start": 3051,
+              "subject_end": 3057,
+              "evalue": 4.2,
+              "bitscore": 14.0
+            },
+            {
+              "subject_id": "KRAS",
+              "percent_identity": 100.0,
+              "alignment_length": 7,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 4,
+              "query_end": 10,
+              "subject_start": 3601,
+              "subject_end": 3607,
+              "evalue": 4.2,
+              "bitscore": 14.0
+            },
+            {
+              "subject_id": "KRAS",
+              "percent_identity": 90.909,
+              "alignment_length": 11,
+              "mismatches": 0,
+              "gap_opens": 1,
+              "query_start": 2,
+              "query_end": 11,
+              "subject_start": 3976,
+              "subject_end": 3986,
+              "evalue": 4.2,
+              "bitscore": 14.0
+            },
+            {
+              "subject_id": "KRAS",
+              "percent_identity": 100.0,
+              "alignment_length": 7,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 7,
+              "query_end": 13,
+              "subject_start": 4059,
+              "subject_end": 4065,
+              "evalue": 4.2,
+              "bitscore": 14.0
+            },
+            {
+              "subject_id": "KRAS",
+              "percent_identity": 100.0,
+              "alignment_length": 7,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 5,
+              "query_end": 11,
+              "subject_start": 4427,
+              "subject_end": 4433,
+              "evalue": 4.2,
+              "bitscore": 14.0
+            },
+            {
+              "subject_id": "KRAS",
+              "percent_identity": 100.0,
+              "alignment_length": 7,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 3,
+              "query_end": 9,
+              "subject_start": 4546,
+              "subject_end": 4552,
+              "evalue": 4.2,
+              "bitscore": 14.0
+            },
+            {
+              "subject_id": "KRAS",
+              "percent_identity": 100.0,
+              "alignment_length": 7,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 9,
+              "query_end": 15,
+              "subject_start": 5248,
+              "subject_end": 5254,
+              "evalue": 4.2,
+              "bitscore": 14.0
+            },
+            {
+              "subject_id": "ACTB",
+              "percent_identity": 100.0,
+              "alignment_length": 8,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 12,
+              "query_end": 19,
+              "subject_start": 401,
+              "subject_end": 394,
+              "evalue": 1.2,
+              "bitscore": 15.9
+            },
+            {
+              "subject_id": "ACTB",
+              "percent_identity": 100.0,
+              "alignment_length": 7,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 3,
+              "query_end": 9,
+              "subject_start": 1069,
+              "subject_end": 1063,
+              "evalue": 4.2,
+              "bitscore": 14.0
+            },
+            {
+              "subject_id": "ACTB",
+              "percent_identity": 100.0,
+              "alignment_length": 7,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 9,
+              "query_end": 15,
+              "subject_start": 1253,
+              "subject_end": 1247,
+              "evalue": 4.2,
+              "bitscore": 14.0
+            }
+          ],
+          "blast_significant_hits": 1,
+          "is_specific": true,
+          "mapping_count": 1,
+          "alignment_locations": [
+            {
+              "chromosome": "KRAS",
+              "position": 1915,
+              "mapq": 255,
+              "strand": "-"
+            }
+          ],
+          "is_unique_mapper": true,
+          "pseudogene_hit": false,
+          "flags": [],
+          "hairpin_dg": 0.0,
+          "self_dimer_dg": -2.84,
+          "snp_3prime": [],
+          "snp_interior": [],
+          "snp_5prime": [],
+          "snp_3prime_count": 0,
+          "clinvar_hits": 0,
+          "gc_clamp_ok": true,
+          "start": 1914,
+          "start_pos": 1915,
+          "stop_pos": 1934
+        },
+        "product_size": 115,
+        "penalty": 0.045,
+        "forward_tm": 59.98,
+        "reverse_tm": 59.98,
+        "delta_tm": 0.0,
+        "delta_tm_nn": 0.01,
+        "thermo_pass": true,
+        "penalties": {},
+        "off_target_amplicon": false,
+        "specificity_pass": true,
+        "blast_status": "checked",
+        "pseudogene_hit": false,
+        "bowtie2_pass": true,
+        "flags": [
+          "organelle_pseudogene_unchecked"
+        ],
+        "annotations": {
+          "organelle_screening": "skipped_db_unavailable"
+        },
+        "cross_dimer_dg": -2.34,
+        "structure_pass": true,
+        "structure_flags": [],
+        "amplicon_dg_72C": 0.0,
+        "amplicon_stall_risk": false,
+        "amplicon_pass": true,
+        "amplicon_length": 115,
+        "amplicon_structure_position": null,
+        "amplicon_structure_length": null,
+        "amplicon_detail": "No problematic folding at extension temperature",
+        "snp_pass": true,
+        "snp_total_variants": 0,
+        "clinvar_overlaps": [],
+        "clinical_hotspot_overlap": false,
+        "clinical_pass": true,
+        "multiplex_compatible": true,
+        "cross_pool_worst_dg": -2.34,
+        "pool_assignment": 1,
+        "product_start": 1820,
+        "product_end": 1934,
+        "forward_primer": {
+          "sequence": "GTCATCCAGTGTTGTCATGC",
+          "tm": 59.98,
+          "gc": 50.0,
+          "length": 20,
+          "tm_nn": 53.58,
+          "tm_salt_adjusted": 53.58,
+          "tm_mg_adjusted": 5.67,
+          "delta_h": -156.9,
+          "delta_s": -426.3,
+          "delta_g_37": -24.68,
+          "blast_hits": [
+            {
+              "subject_id": "KRAS",
+              "percent_identity": 100.0,
+              "alignment_length": 20,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 1,
+              "query_end": 20,
+              "subject_start": 1820,
+              "subject_end": 1839,
+              "evalue": 2.49e-07,
+              "bitscore": 38.1,
+              "query_coverage": 100.0
+            },
+            {
+              "subject_id": "KRAS",
+              "percent_identity": 100.0,
+              "alignment_length": 8,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 6,
+              "query_end": 13,
+              "subject_start": 2105,
+              "subject_end": 2098,
+              "evalue": 1.2,
+              "bitscore": 15.9
+            },
+            {
+              "subject_id": "KRAS",
+              "percent_identity": 100.0,
+              "alignment_length": 8,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 4,
+              "query_end": 11,
+              "subject_start": 2872,
+              "subject_end": 2879,
+              "evalue": 1.2,
+              "bitscore": 15.9
+            },
+            {
+              "subject_id": "KRAS",
+              "percent_identity": 100.0,
+              "alignment_length": 8,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 10,
+              "query_end": 17,
+              "subject_start": 4328,
+              "subject_end": 4335,
+              "evalue": 1.2,
+              "bitscore": 15.9
+            },
+            {
+              "subject_id": "KRAS",
+              "percent_identity": 100.0,
+              "alignment_length": 8,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 12,
+              "query_end": 19,
+              "subject_start": 5249,
+              "subject_end": 5256,
+              "evalue": 1.2,
+              "bitscore": 15.9
+            },
+            {
+              "subject_id": "KRAS",
+              "percent_identity": 90.909,
+              "alignment_length": 11,
+              "mismatches": 0,
+              "gap_opens": 1,
+              "query_start": 8,
+              "query_end": 18,
+              "subject_start": 1253,
+              "subject_end": 1262,
+              "evalue": 4.2,
+              "bitscore": 14.0
+            },
+            {
+              "subject_id": "KRAS",
+              "percent_identity": 100.0,
+              "alignment_length": 7,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 1,
+              "query_end": 7,
+              "subject_start": 1258,
+              "subject_end": 1264,
+              "evalue": 4.2,
+              "bitscore": 14.0
+            },
+            {
+              "subject_id": "KRAS",
+              "percent_identity": 100.0,
+              "alignment_length": 7,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 5,
+              "query_end": 11,
+              "subject_start": 2260,
+              "subject_end": 2254,
+              "evalue": 4.2,
+              "bitscore": 14.0
+            },
+            {
+              "subject_id": "KRAS",
+              "percent_identity": 100.0,
+              "alignment_length": 7,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 7,
+              "query_end": 13,
+              "subject_start": 3874,
+              "subject_end": 3868,
+              "evalue": 4.2,
+              "bitscore": 14.0
+            },
+            {
+              "subject_id": "KRAS",
+              "percent_identity": 90.0,
+              "alignment_length": 10,
+              "mismatches": 1,
+              "gap_opens": 0,
+              "query_start": 4,
+              "query_end": 13,
+              "subject_start": 4635,
+              "subject_end": 4626,
+              "evalue": 4.2,
+              "bitscore": 14.0
+            },
+            {
+              "subject_id": "KRAS",
+              "percent_identity": 100.0,
+              "alignment_length": 7,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 7,
+              "query_end": 13,
+              "subject_start": 4888,
+              "subject_end": 4894,
+              "evalue": 4.2,
+              "bitscore": 14.0
+            },
+            {
+              "subject_id": "KRAS",
+              "percent_identity": 85.714,
+              "alignment_length": 14,
+              "mismatches": 1,
+              "gap_opens": 1,
+              "query_start": 1,
+              "query_end": 13,
+              "subject_start": 5099,
+              "subject_end": 5112,
+              "evalue": 4.2,
+              "bitscore": 14.0
+            },
+            {
+              "subject_id": "ACTB",
+              "percent_identity": 100.0,
+              "alignment_length": 7,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 2,
+              "query_end": 8,
+              "subject_start": 92,
+              "subject_end": 86,
+              "evalue": 4.2,
+              "bitscore": 14.0
+            }
+          ],
+          "blast_significant_hits": 1,
+          "is_specific": true,
+          "mapping_count": 1,
+          "alignment_locations": [
+            {
+              "chromosome": "KRAS",
+              "position": 1820,
+              "mapq": 255,
+              "strand": "+"
+            }
+          ],
+          "is_unique_mapper": true,
+          "pseudogene_hit": false,
+          "flags": [],
+          "hairpin_dg": 0.0,
+          "self_dimer_dg": -2.68,
+          "snp_3prime": [],
+          "snp_interior": [],
+          "snp_5prime": [],
+          "snp_3prime_count": 0,
+          "clinvar_hits": 0,
+          "gc_clamp_ok": true,
+          "start": 1819,
+          "start_pos": 1820,
+          "stop_pos": 1839
+        },
+        "reverse_primer": {
+          "sequence": "GCTCTTGATTTGTCAGCAGG",
+          "tm": 59.98,
+          "gc": 50.0,
+          "length": 20,
+          "tm_nn": 53.57,
+          "tm_salt_adjusted": 53.57,
+          "tm_mg_adjusted": 5.65,
+          "delta_h": -156.5,
+          "delta_s": -425.1,
+          "delta_g_37": -24.66,
+          "blast_hits": [
+            {
+              "subject_id": "KRAS",
+              "percent_identity": 100.0,
+              "alignment_length": 20,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 1,
+              "query_end": 20,
+              "subject_start": 1934,
+              "subject_end": 1915,
+              "evalue": 2.49e-07,
+              "bitscore": 38.1,
+              "query_coverage": 100.0
+            },
+            {
+              "subject_id": "KRAS",
+              "percent_identity": 92.308,
+              "alignment_length": 13,
+              "mismatches": 0,
+              "gap_opens": 1,
+              "query_start": 8,
+              "query_end": 20,
+              "subject_start": 192,
+              "subject_end": 181,
+              "evalue": 0.32,
+              "bitscore": 17.7
+            },
+            {
+              "subject_id": "KRAS",
+              "percent_identity": 91.667,
+              "alignment_length": 12,
+              "mismatches": 0,
+              "gap_opens": 1,
+              "query_start": 4,
+              "query_end": 15,
+              "subject_start": 2424,
+              "subject_end": 2434,
+              "evalue": 1.2,
+              "bitscore": 15.9
+            },
+            {
+              "subject_id": "KRAS",
+              "percent_identity": 100.0,
+              "alignment_length": 8,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 8,
+              "query_end": 15,
+              "subject_start": 4525,
+              "subject_end": 4532,
+              "evalue": 1.2,
+              "bitscore": 15.9
+            },
+            {
+              "subject_id": "KRAS",
+              "percent_identity": 100.0,
+              "alignment_length": 7,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 14,
+              "query_end": 20,
+              "subject_start": 363,
+              "subject_end": 369,
+              "evalue": 4.2,
+              "bitscore": 14.0
+            },
+            {
+              "subject_id": "KRAS",
+              "percent_identity": 100.0,
+              "alignment_length": 7,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 2,
+              "query_end": 8,
+              "subject_start": 376,
+              "subject_end": 370,
+              "evalue": 4.2,
+              "bitscore": 14.0
+            },
+            {
+              "subject_id": "KRAS",
+              "percent_identity": 100.0,
+              "alignment_length": 7,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 6,
+              "query_end": 12,
+              "subject_start": 544,
+              "subject_end": 550,
+              "evalue": 4.2,
+              "bitscore": 14.0
+            },
+            {
+              "subject_id": "KRAS",
+              "percent_identity": 100.0,
+              "alignment_length": 7,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 9,
+              "query_end": 15,
+              "subject_start": 1255,
+              "subject_end": 1261,
+              "evalue": 4.2,
+              "bitscore": 14.0
+            },
+            {
+              "subject_id": "KRAS",
+              "percent_identity": 100.0,
+              "alignment_length": 7,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 2,
+              "query_end": 8,
+              "subject_start": 2733,
+              "subject_end": 2727,
+              "evalue": 4.2,
+              "bitscore": 14.0
+            },
+            {
+              "subject_id": "KRAS",
+              "percent_identity": 100.0,
+              "alignment_length": 7,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 1,
+              "query_end": 7,
+              "subject_start": 3051,
+              "subject_end": 3057,
+              "evalue": 4.2,
+              "bitscore": 14.0
+            },
+            {
+              "subject_id": "KRAS",
+              "percent_identity": 100.0,
+              "alignment_length": 7,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 4,
+              "query_end": 10,
+              "subject_start": 3601,
+              "subject_end": 3607,
+              "evalue": 4.2,
+              "bitscore": 14.0
+            },
+            {
+              "subject_id": "KRAS",
+              "percent_identity": 90.909,
+              "alignment_length": 11,
+              "mismatches": 0,
+              "gap_opens": 1,
+              "query_start": 2,
+              "query_end": 11,
+              "subject_start": 3976,
+              "subject_end": 3986,
+              "evalue": 4.2,
+              "bitscore": 14.0
+            },
+            {
+              "subject_id": "KRAS",
+              "percent_identity": 100.0,
+              "alignment_length": 7,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 7,
+              "query_end": 13,
+              "subject_start": 4059,
+              "subject_end": 4065,
+              "evalue": 4.2,
+              "bitscore": 14.0
+            },
+            {
+              "subject_id": "KRAS",
+              "percent_identity": 100.0,
+              "alignment_length": 7,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 5,
+              "query_end": 11,
+              "subject_start": 4427,
+              "subject_end": 4433,
+              "evalue": 4.2,
+              "bitscore": 14.0
+            },
+            {
+              "subject_id": "KRAS",
+              "percent_identity": 100.0,
+              "alignment_length": 7,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 3,
+              "query_end": 9,
+              "subject_start": 4546,
+              "subject_end": 4552,
+              "evalue": 4.2,
+              "bitscore": 14.0
+            },
+            {
+              "subject_id": "KRAS",
+              "percent_identity": 100.0,
+              "alignment_length": 7,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 9,
+              "query_end": 15,
+              "subject_start": 5248,
+              "subject_end": 5254,
+              "evalue": 4.2,
+              "bitscore": 14.0
+            },
+            {
+              "subject_id": "ACTB",
+              "percent_identity": 100.0,
+              "alignment_length": 8,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 12,
+              "query_end": 19,
+              "subject_start": 401,
+              "subject_end": 394,
+              "evalue": 1.2,
+              "bitscore": 15.9
+            },
+            {
+              "subject_id": "ACTB",
+              "percent_identity": 100.0,
+              "alignment_length": 7,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 3,
+              "query_end": 9,
+              "subject_start": 1069,
+              "subject_end": 1063,
+              "evalue": 4.2,
+              "bitscore": 14.0
+            },
+            {
+              "subject_id": "ACTB",
+              "percent_identity": 100.0,
+              "alignment_length": 7,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 9,
+              "query_end": 15,
+              "subject_start": 1253,
+              "subject_end": 1247,
+              "evalue": 4.2,
+              "bitscore": 14.0
+            }
+          ],
+          "blast_significant_hits": 1,
+          "is_specific": true,
+          "mapping_count": 1,
+          "alignment_locations": [
+            {
+              "chromosome": "KRAS",
+              "position": 1915,
+              "mapq": 255,
+              "strand": "-"
+            }
+          ],
+          "is_unique_mapper": true,
+          "pseudogene_hit": false,
+          "flags": [],
+          "hairpin_dg": 0.0,
+          "self_dimer_dg": -2.84,
+          "snp_3prime": [],
+          "snp_interior": [],
+          "snp_5prime": [],
+          "snp_3prime_count": 0,
+          "clinvar_hits": 0,
+          "gc_clamp_ok": true,
+          "start": 1914,
+          "start_pos": 1915,
+          "stop_pos": 1934
+        },
+        "amplicon_size": 115,
+        "amplicon_sequence": "GTCATCCAGTGTTGTCATGCATTGGTTAGTCAAAATGGGGAGGGACTAGGGCAGTTTGGATAGCTCAACAAGATACAATCTCACTCTGTGGTGGTCCTGCTGACAAATCAAGAGC",
+        "amplicon_gc": 46.96,
+        "product_gc": 46.96,
+        "tm_delta": 0.01,
+        "annealing_ta": 55.0,
+        "specificity": {
+          "off_target_count": 0
+        },
+        "total_penalty": 0.04,
+        "overall_status": "PASS",
+        "status": "PASS",
+        "overall_pass": true,
+        "penalty_breakdown": [],
+        "penalty_score": 0.04,
+        "score": 99.95,
+        "rank": 1,
+        "pair_id": 1
+      }
+    },
+    "ACTB": {
+      "status_counts": {
+        "passed": 22,
+        "failed": 0,
+        "skipped": 0
+      },
+      "steps": [
+        {
+          "step": 1,
+          "name": "Transcript Isoform Filter",
+          "status": "passed",
+          "duration_ms": 0,
+          "error": null,
+          "keys": [
+            "exon_map",
+            "isoform_count",
+            "selected_regions",
+            "sequence_length",
+            "target_sequence",
+            "targeting_mode",
+            "transcripts"
+          ]
+        },
+        {
+          "step": 2,
+          "name": "Exon-Intron Junction Mapping",
+          "status": "passed",
+          "duration_ms": 0,
+          "error": null,
+          "keys": [
+            "intron_flanking_pairs",
+            "junction_note",
+            "junction_positions",
+            "junction_spanning_sites",
+            "junction_strategy",
+            "preferred_zones",
+            "valid_regions"
+          ]
+        },
+        {
+          "step": 3,
+          "name": "Bisulfite Conversion Simulation",
+          "status": "passed",
+          "duration_ms": 0,
+          "error": null,
+          "keys": [
+            "bisulfite_applied"
+          ]
+        },
+        {
+          "step": 4,
+          "name": "Degenerate Base Parsing",
+          "status": "passed",
+          "duration_ms": 0,
+          "error": null,
+          "keys": [
+            "consensus_sequence",
+            "degenerate_positions",
+            "max_degeneracy_per_window",
+            "total_degenerate_count"
+          ]
+        },
+        {
+          "step": 5,
+          "name": "Repeat Masking",
+          "status": "passed",
+          "duration_ms": 1,
+          "error": null,
+          "keys": [
+            "flagged_primers",
+            "low_complexity_regions",
+            "masked_fraction",
+            "masked_sequence",
+            "masking_source",
+            "repeat_count",
+            "repeat_regions"
+          ]
+        },
+        {
+          "step": 6,
+          "name": "Primer3 Parameter Constraints",
+          "status": "passed",
+          "duration_ms": 48,
+          "error": null,
+          "keys": [
+            "candidate_pairs",
+            "low_candidate_yield",
+            "pair_count"
+          ]
+        },
+        {
+          "step": 7,
+          "name": "Nearest-Neighbor Tm (SantaLucia)",
+          "status": "passed",
+          "duration_ms": 0,
+          "error": null,
+          "keys": [
+            "refined_pairs",
+            "refinement_note"
+          ]
+        },
+        {
+          "step": 8,
+          "name": "Dynamic Buffer & Salt Adjustments",
+          "status": "passed",
+          "duration_ms": 0,
+          "error": null,
+          "keys": [
+            "buffer_conditions_used",
+            "free_mg_mm",
+            "primer_candidates"
+          ]
+        },
+        {
+          "step": 9,
+          "name": "Divalent Cation Mg2+ Scaling",
+          "status": "passed",
+          "duration_ms": 0,
+          "error": null,
+          "keys": [
+            "mg_correction_applied",
+            "mg_correction_note",
+            "primer_candidates"
+          ]
+        },
+        {
+          "step": 10,
+          "name": "Target Specificity (BLAST)",
+          "status": "passed",
+          "duration_ms": 35750,
+          "error": null,
+          "keys": [
+            "blast_available",
+            "blast_note",
+            "filtered_pairs",
+            "specificity_checked"
+          ]
+        },
+        {
+          "step": 11,
+          "name": "Structural Alignment (Bowtie2)",
+          "status": "passed",
+          "duration_ms": 244,
+          "error": null,
+          "keys": [
+            "aligned_pairs",
+            "alignment_checked",
+            "bowtie2_available",
+            "bowtie2_note"
+          ]
+        },
+        {
+          "step": 12,
+          "name": "Organelle & Pseudogene Screening",
+          "status": "passed",
+          "duration_ms": 0,
+          "error": null,
+          "keys": [
+            "aligned_pairs",
+            "organelle_hits",
+            "organelle_screening_note",
+            "primer_candidates",
+            "pseudogene_hits",
+            "screening_status"
+          ]
+        },
+        {
+          "step": 13,
+          "name": "Primer Secondary Structure (dG)",
+          "status": "passed",
+          "duration_ms": 37,
+          "error": null,
+          "keys": [
+            "structure_checked",
+            "structure_note"
+          ]
+        },
+        {
+          "step": 14,
+          "name": "Amplicon Structural Verification",
+          "status": "passed",
+          "duration_ms": 8,
+          "error": null,
+          "keys": [
+            "amplicon_checked",
+            "amplicon_note"
+          ]
+        },
+        {
+          "step": 15,
+          "name": "Population Variant Filter (dbSNP)",
+          "status": "passed",
+          "duration_ms": 0,
+          "error": null,
+          "keys": [
+            "dbsnp_available",
+            "snp_note",
+            "variant_filtered"
+          ]
+        },
+        {
+          "step": 16,
+          "name": "Clinical Hotspot Filter (ClinVar)",
+          "status": "passed",
+          "duration_ms": 0,
+          "error": null,
+          "keys": [
+            "clinical_checked",
+            "clinical_note",
+            "clinvar_available"
+          ]
+        },
+        {
+          "step": 17,
+          "name": "5' Overhang Adapter Tailing",
+          "status": "passed",
+          "duration_ms": 0,
+          "error": null,
+          "keys": [
+            "adapter_foldback_flags",
+            "adapter_note",
+            "purification_recommendations",
+            "tailed_primers"
+          ]
+        },
+        {
+          "step": 18,
+          "name": "Multiplex Cross-Reaction (PrimerPooler)",
+          "status": "passed",
+          "duration_ms": 0,
+          "error": null,
+          "keys": [
+            "multiplex_note",
+            "multiplex_scored"
+          ]
+        },
+        {
+          "step": 19,
+          "name": "Automated Penalty & Ranking Matrix",
+          "status": "passed",
+          "duration_ms": 1,
+          "error": null,
+          "keys": [
+            "ranked_pairs",
+            "ranking_note",
+            "ranking_source",
+            "ranking_summary",
+            "top_pairs"
+          ]
+        },
+        {
+          "step": 20,
+          "name": "Thermocycling Profile Generation",
+          "status": "passed",
+          "duration_ms": 2,
+          "error": null,
+          "keys": [
+            "cycling_profiles",
+            "thermocycling_note"
+          ]
+        },
+        {
+          "step": 21,
+          "name": "Manufacturing Feasibility Screening",
+          "status": "passed",
+          "duration_ms": 1,
+          "error": null,
+          "keys": [
+            "feasibility_scores",
+            "manufacturing_results"
+          ]
+        },
+        {
+          "step": 22,
+          "name": "Probe Design (qPCR/TaqMan)",
+          "status": "passed",
+          "duration_ms": 389,
+          "error": null,
+          "keys": [
+            "probe_note",
+            "probe_results"
+          ]
+        }
+      ],
+      "pair_count": 12,
+      "notes": {
+        "blast": "9/12 pairs passed BLAST specificity filter.",
+        "bowtie2": "12/12 pairs are unique mappers without pseudogene hits.",
+        "snp": "12/12 pairs clear of critical 3' SNPs. 0 total variants annotated.",
+        "clinical": "12/12 pairs avoid clinical hotspots. 0 flagged with clinical_hotspot_overlap (soft penalty)."
+      },
+      "availability": {
+        "blast_available": true,
+        "bowtie2_available": true,
+        "dbsnp_available": true,
+        "clinvar_available": true
+      },
+      "first_pair": {
+        "forward": {
+          "sequence": "CATCCTCACCCTGAAGTACC",
+          "tm": 59.97,
+          "gc": 55.0,
+          "length": 20,
+          "tm_nn": 53.41,
+          "tm_salt_adjusted": 53.41,
+          "tm_mg_adjusted": 5.5,
+          "delta_h": -152.8,
+          "delta_s": -414.0,
+          "delta_g_37": -24.4,
+          "blast_hits": [
+            {
+              "subject_id": "ACTB",
+              "percent_identity": 100.0,
+              "alignment_length": 20,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 1,
+              "query_end": 20,
+              "subject_start": 273,
+              "subject_end": 292,
+              "evalue": 2.49e-07,
+              "bitscore": 38.1,
+              "query_coverage": 100.0
+            },
+            {
+              "subject_id": "ACTB",
+              "percent_identity": 100.0,
+              "alignment_length": 9,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 2,
+              "query_end": 10,
+              "subject_start": 658,
+              "subject_end": 666,
+              "evalue": 0.32,
+              "bitscore": 17.7
+            },
+            {
+              "subject_id": "ACTB",
+              "percent_identity": 100.0,
+              "alignment_length": 7,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 9,
+              "query_end": 15,
+              "subject_start": 410,
+              "subject_end": 416,
+              "evalue": 4.2,
+              "bitscore": 14.0
+            },
+            {
+              "subject_id": "KRAS",
+              "percent_identity": 100.0,
+              "alignment_length": 9,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 10,
+              "query_end": 18,
+              "subject_start": 3944,
+              "subject_end": 3936,
+              "evalue": 0.32,
+              "bitscore": 17.7
+            },
+            {
+              "subject_id": "KRAS",
+              "percent_identity": 100.0,
+              "alignment_length": 8,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 6,
+              "query_end": 13,
+              "subject_start": 3216,
+              "subject_end": 3223,
+              "evalue": 1.2,
+              "bitscore": 15.9
+            },
+            {
+              "subject_id": "KRAS",
+              "percent_identity": 100.0,
+              "alignment_length": 7,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 7,
+              "query_end": 13,
+              "subject_start": 644,
+              "subject_end": 638,
+              "evalue": 4.2,
+              "bitscore": 14.0
+            },
+            {
+              "subject_id": "KRAS",
+              "percent_identity": 90.0,
+              "alignment_length": 10,
+              "mismatches": 1,
+              "gap_opens": 0,
+              "query_start": 4,
+              "query_end": 13,
+              "subject_start": 2244,
+              "subject_end": 2235,
+              "evalue": 4.2,
+              "bitscore": 14.0
+            }
+          ],
+          "blast_significant_hits": 1,
+          "is_specific": true,
+          "mapping_count": 1,
+          "alignment_locations": [
+            {
+              "chromosome": "ACTB",
+              "position": 273,
+              "mapq": 255,
+              "strand": "+"
+            }
+          ],
+          "is_unique_mapper": true,
+          "pseudogene_hit": false,
+          "flags": [],
+          "hairpin_dg": 0.0,
+          "self_dimer_dg": -2.76,
+          "snp_3prime": [],
+          "snp_interior": [],
+          "snp_5prime": [],
+          "snp_3prime_count": 0,
+          "clinvar_hits": 0,
+          "gc_clamp_ok": true,
+          "start": 272,
+          "start_pos": 273,
+          "stop_pos": 292
+        },
+        "reverse": {
+          "sequence": "GGATAGCACAGCCTGGATAG",
+          "tm": 60.19,
+          "gc": 55.0,
+          "length": 20,
+          "tm_nn": 53.66,
+          "tm_salt_adjusted": 53.66,
+          "tm_mg_adjusted": 5.74,
+          "delta_h": -153.7,
+          "delta_s": -416.4,
+          "delta_g_37": -24.55,
+          "blast_hits": [
+            {
+              "subject_id": "ACTB",
+              "percent_identity": 100.0,
+              "alignment_length": 20,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 1,
+              "query_end": 20,
+              "subject_start": 507,
+              "subject_end": 488,
+              "evalue": 2.49e-07,
+              "bitscore": 38.1,
+              "query_coverage": 100.0
+            },
+            {
+              "subject_id": "ACTB",
+              "percent_identity": 100.0,
+              "alignment_length": 9,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 4,
+              "query_end": 12,
+              "subject_start": 737,
+              "subject_end": 729,
+              "evalue": 0.32,
+              "bitscore": 17.7
+            },
+            {
+              "subject_id": "ACTB",
+              "percent_identity": 100.0,
+              "alignment_length": 8,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 1,
+              "query_end": 8,
+              "subject_start": 493,
+              "subject_end": 486,
+              "evalue": 1.2,
+              "bitscore": 15.9
+            },
+            {
+              "subject_id": "ACTB",
+              "percent_identity": 100.0,
+              "alignment_length": 7,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 5,
+              "query_end": 11,
+              "subject_start": 27,
+              "subject_end": 33,
+              "evalue": 4.2,
+              "bitscore": 14.0
+            },
+            {
+              "subject_id": "ACTB",
+              "percent_identity": 100.0,
+              "alignment_length": 7,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 2,
+              "query_end": 8,
+              "subject_start": 1573,
+              "subject_end": 1579,
+              "evalue": 4.2,
+              "bitscore": 14.0
+            },
+            {
+              "subject_id": "KRAS",
+              "percent_identity": 100.0,
+              "alignment_length": 8,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 13,
+              "query_end": 20,
+              "subject_start": 2877,
+              "subject_end": 2870,
+              "evalue": 1.2,
+              "bitscore": 15.9
+            },
+            {
+              "subject_id": "KRAS",
+              "percent_identity": 100.0,
+              "alignment_length": 8,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 9,
+              "query_end": 16,
+              "subject_start": 3069,
+              "subject_end": 3062,
+              "evalue": 1.2,
+              "bitscore": 15.9
+            },
+            {
+              "subject_id": "KRAS",
+              "percent_identity": 100.0,
+              "alignment_length": 8,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 9,
+              "query_end": 16,
+              "subject_start": 3235,
+              "subject_end": 3228,
+              "evalue": 1.2,
+              "bitscore": 15.9
+            },
+            {
+              "subject_id": "KRAS",
+              "percent_identity": 100.0,
+              "alignment_length": 8,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 13,
+              "query_end": 20,
+              "subject_start": 4630,
+              "subject_end": 4637,
+              "evalue": 1.2,
+              "bitscore": 15.9
+            },
+            {
+              "subject_id": "KRAS",
+              "percent_identity": 100.0,
+              "alignment_length": 8,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 1,
+              "query_end": 8,
+              "subject_start": 4632,
+              "subject_end": 4639,
+              "evalue": 1.2,
+              "bitscore": 15.9
+            },
+            {
+              "subject_id": "KRAS",
+              "percent_identity": 100.0,
+              "alignment_length": 7,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 14,
+              "query_end": 20,
+              "subject_start": 1876,
+              "subject_end": 1882,
+              "evalue": 4.2,
+              "bitscore": 14.0
+            },
+            {
+              "subject_id": "KRAS",
+              "percent_identity": 100.0,
+              "alignment_length": 7,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 1,
+              "query_end": 7,
+              "subject_start": 1877,
+              "subject_end": 1883,
+              "evalue": 4.2,
+              "bitscore": 14.0
+            },
+            {
+              "subject_id": "KRAS",
+              "percent_identity": 100.0,
+              "alignment_length": 7,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 14,
+              "query_end": 20,
+              "subject_start": 2335,
+              "subject_end": 2329,
+              "evalue": 4.2,
+              "bitscore": 14.0
+            },
+            {
+              "subject_id": "KRAS",
+              "percent_identity": 100.0,
+              "alignment_length": 7,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 8,
+              "query_end": 14,
+              "subject_start": 4121,
+              "subject_end": 4127,
+              "evalue": 4.2,
+              "bitscore": 14.0
+            }
+          ],
+          "blast_significant_hits": 1,
+          "is_specific": true,
+          "mapping_count": 1,
+          "alignment_locations": [
+            {
+              "chromosome": "ACTB",
+              "position": 488,
+              "mapq": 255,
+              "strand": "-"
+            }
+          ],
+          "is_unique_mapper": true,
+          "pseudogene_hit": false,
+          "flags": [],
+          "hairpin_dg": 0.0,
+          "self_dimer_dg": -4.61,
+          "snp_3prime": [],
+          "snp_interior": [],
+          "snp_5prime": [],
+          "snp_3prime_count": 0,
+          "clinvar_hits": 0,
+          "gc_clamp_ok": true,
+          "start": 487,
+          "start_pos": 488,
+          "stop_pos": 507
+        },
+        "product_size": 235,
+        "penalty": 0.218,
+        "forward_tm": 59.97,
+        "reverse_tm": 60.19,
+        "delta_tm": 0.22,
+        "delta_tm_nn": 0.25,
+        "thermo_pass": true,
+        "penalties": {},
+        "off_target_amplicon": false,
+        "specificity_pass": true,
+        "blast_status": "checked",
+        "pseudogene_hit": false,
+        "bowtie2_pass": true,
+        "flags": [
+          "organelle_pseudogene_unchecked"
+        ],
+        "annotations": {
+          "organelle_screening": "skipped_db_unavailable"
+        },
+        "cross_dimer_dg": -3.05,
+        "structure_pass": true,
+        "structure_flags": [],
+        "amplicon_dg_72C": 0.0,
+        "amplicon_stall_risk": false,
+        "amplicon_pass": true,
+        "amplicon_length": 235,
+        "amplicon_structure_position": null,
+        "amplicon_structure_length": null,
+        "amplicon_detail": "No problematic folding at extension temperature",
+        "snp_pass": true,
+        "snp_total_variants": 0,
+        "clinvar_overlaps": [],
+        "clinical_hotspot_overlap": false,
+        "clinical_pass": true,
+        "multiplex_compatible": true,
+        "cross_pool_worst_dg": -3.05,
+        "pool_assignment": 1,
+        "product_start": 273,
+        "product_end": 507,
+        "forward_primer": {
+          "sequence": "CATCCTCACCCTGAAGTACC",
+          "tm": 59.97,
+          "gc": 55.0,
+          "length": 20,
+          "tm_nn": 53.41,
+          "tm_salt_adjusted": 53.41,
+          "tm_mg_adjusted": 5.5,
+          "delta_h": -152.8,
+          "delta_s": -414.0,
+          "delta_g_37": -24.4,
+          "blast_hits": [
+            {
+              "subject_id": "ACTB",
+              "percent_identity": 100.0,
+              "alignment_length": 20,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 1,
+              "query_end": 20,
+              "subject_start": 273,
+              "subject_end": 292,
+              "evalue": 2.49e-07,
+              "bitscore": 38.1,
+              "query_coverage": 100.0
+            },
+            {
+              "subject_id": "ACTB",
+              "percent_identity": 100.0,
+              "alignment_length": 9,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 2,
+              "query_end": 10,
+              "subject_start": 658,
+              "subject_end": 666,
+              "evalue": 0.32,
+              "bitscore": 17.7
+            },
+            {
+              "subject_id": "ACTB",
+              "percent_identity": 100.0,
+              "alignment_length": 7,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 9,
+              "query_end": 15,
+              "subject_start": 410,
+              "subject_end": 416,
+              "evalue": 4.2,
+              "bitscore": 14.0
+            },
+            {
+              "subject_id": "KRAS",
+              "percent_identity": 100.0,
+              "alignment_length": 9,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 10,
+              "query_end": 18,
+              "subject_start": 3944,
+              "subject_end": 3936,
+              "evalue": 0.32,
+              "bitscore": 17.7
+            },
+            {
+              "subject_id": "KRAS",
+              "percent_identity": 100.0,
+              "alignment_length": 8,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 6,
+              "query_end": 13,
+              "subject_start": 3216,
+              "subject_end": 3223,
+              "evalue": 1.2,
+              "bitscore": 15.9
+            },
+            {
+              "subject_id": "KRAS",
+              "percent_identity": 100.0,
+              "alignment_length": 7,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 7,
+              "query_end": 13,
+              "subject_start": 644,
+              "subject_end": 638,
+              "evalue": 4.2,
+              "bitscore": 14.0
+            },
+            {
+              "subject_id": "KRAS",
+              "percent_identity": 90.0,
+              "alignment_length": 10,
+              "mismatches": 1,
+              "gap_opens": 0,
+              "query_start": 4,
+              "query_end": 13,
+              "subject_start": 2244,
+              "subject_end": 2235,
+              "evalue": 4.2,
+              "bitscore": 14.0
+            }
+          ],
+          "blast_significant_hits": 1,
+          "is_specific": true,
+          "mapping_count": 1,
+          "alignment_locations": [
+            {
+              "chromosome": "ACTB",
+              "position": 273,
+              "mapq": 255,
+              "strand": "+"
+            }
+          ],
+          "is_unique_mapper": true,
+          "pseudogene_hit": false,
+          "flags": [],
+          "hairpin_dg": 0.0,
+          "self_dimer_dg": -2.76,
+          "snp_3prime": [],
+          "snp_interior": [],
+          "snp_5prime": [],
+          "snp_3prime_count": 0,
+          "clinvar_hits": 0,
+          "gc_clamp_ok": true,
+          "start": 272,
+          "start_pos": 273,
+          "stop_pos": 292
+        },
+        "reverse_primer": {
+          "sequence": "GGATAGCACAGCCTGGATAG",
+          "tm": 60.19,
+          "gc": 55.0,
+          "length": 20,
+          "tm_nn": 53.66,
+          "tm_salt_adjusted": 53.66,
+          "tm_mg_adjusted": 5.74,
+          "delta_h": -153.7,
+          "delta_s": -416.4,
+          "delta_g_37": -24.55,
+          "blast_hits": [
+            {
+              "subject_id": "ACTB",
+              "percent_identity": 100.0,
+              "alignment_length": 20,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 1,
+              "query_end": 20,
+              "subject_start": 507,
+              "subject_end": 488,
+              "evalue": 2.49e-07,
+              "bitscore": 38.1,
+              "query_coverage": 100.0
+            },
+            {
+              "subject_id": "ACTB",
+              "percent_identity": 100.0,
+              "alignment_length": 9,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 4,
+              "query_end": 12,
+              "subject_start": 737,
+              "subject_end": 729,
+              "evalue": 0.32,
+              "bitscore": 17.7
+            },
+            {
+              "subject_id": "ACTB",
+              "percent_identity": 100.0,
+              "alignment_length": 8,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 1,
+              "query_end": 8,
+              "subject_start": 493,
+              "subject_end": 486,
+              "evalue": 1.2,
+              "bitscore": 15.9
+            },
+            {
+              "subject_id": "ACTB",
+              "percent_identity": 100.0,
+              "alignment_length": 7,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 5,
+              "query_end": 11,
+              "subject_start": 27,
+              "subject_end": 33,
+              "evalue": 4.2,
+              "bitscore": 14.0
+            },
+            {
+              "subject_id": "ACTB",
+              "percent_identity": 100.0,
+              "alignment_length": 7,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 2,
+              "query_end": 8,
+              "subject_start": 1573,
+              "subject_end": 1579,
+              "evalue": 4.2,
+              "bitscore": 14.0
+            },
+            {
+              "subject_id": "KRAS",
+              "percent_identity": 100.0,
+              "alignment_length": 8,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 13,
+              "query_end": 20,
+              "subject_start": 2877,
+              "subject_end": 2870,
+              "evalue": 1.2,
+              "bitscore": 15.9
+            },
+            {
+              "subject_id": "KRAS",
+              "percent_identity": 100.0,
+              "alignment_length": 8,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 9,
+              "query_end": 16,
+              "subject_start": 3069,
+              "subject_end": 3062,
+              "evalue": 1.2,
+              "bitscore": 15.9
+            },
+            {
+              "subject_id": "KRAS",
+              "percent_identity": 100.0,
+              "alignment_length": 8,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 9,
+              "query_end": 16,
+              "subject_start": 3235,
+              "subject_end": 3228,
+              "evalue": 1.2,
+              "bitscore": 15.9
+            },
+            {
+              "subject_id": "KRAS",
+              "percent_identity": 100.0,
+              "alignment_length": 8,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 13,
+              "query_end": 20,
+              "subject_start": 4630,
+              "subject_end": 4637,
+              "evalue": 1.2,
+              "bitscore": 15.9
+            },
+            {
+              "subject_id": "KRAS",
+              "percent_identity": 100.0,
+              "alignment_length": 8,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 1,
+              "query_end": 8,
+              "subject_start": 4632,
+              "subject_end": 4639,
+              "evalue": 1.2,
+              "bitscore": 15.9
+            },
+            {
+              "subject_id": "KRAS",
+              "percent_identity": 100.0,
+              "alignment_length": 7,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 14,
+              "query_end": 20,
+              "subject_start": 1876,
+              "subject_end": 1882,
+              "evalue": 4.2,
+              "bitscore": 14.0
+            },
+            {
+              "subject_id": "KRAS",
+              "percent_identity": 100.0,
+              "alignment_length": 7,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 1,
+              "query_end": 7,
+              "subject_start": 1877,
+              "subject_end": 1883,
+              "evalue": 4.2,
+              "bitscore": 14.0
+            },
+            {
+              "subject_id": "KRAS",
+              "percent_identity": 100.0,
+              "alignment_length": 7,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 14,
+              "query_end": 20,
+              "subject_start": 2335,
+              "subject_end": 2329,
+              "evalue": 4.2,
+              "bitscore": 14.0
+            },
+            {
+              "subject_id": "KRAS",
+              "percent_identity": 100.0,
+              "alignment_length": 7,
+              "mismatches": 0,
+              "gap_opens": 0,
+              "query_start": 8,
+              "query_end": 14,
+              "subject_start": 4121,
+              "subject_end": 4127,
+              "evalue": 4.2,
+              "bitscore": 14.0
+            }
+          ],
+          "blast_significant_hits": 1,
+          "is_specific": true,
+          "mapping_count": 1,
+          "alignment_locations": [
+            {
+              "chromosome": "ACTB",
+              "position": 488,
+              "mapq": 255,
+              "strand": "-"
+            }
+          ],
+          "is_unique_mapper": true,
+          "pseudogene_hit": false,
+          "flags": [],
+          "hairpin_dg": 0.0,
+          "self_dimer_dg": -4.61,
+          "snp_3prime": [],
+          "snp_interior": [],
+          "snp_5prime": [],
+          "snp_3prime_count": 0,
+          "clinvar_hits": 0,
+          "gc_clamp_ok": true,
+          "start": 487,
+          "start_pos": 488,
+          "stop_pos": 507
+        },
+        "amplicon_size": 235,
+        "amplicon_sequence": "CATCCTCACCCTGAAGTACCCCATCGAGCACGGCATCGTCACCAACTGGGACGACATGGAGAAAATCTGGCACCACACCTTCTACAATGAGCTGCGTGTGGCTCCCGAGGAGCACCCCGTGCTGCTGACCGAGGCCCCCCTGAACCCCAAGGCCAACCGCGAGAAGATGACCCAGATCATGTTTGAGACCTTCAACACCCCAGCCATGTACGTTGCTATCCAGGCTGTGCTATCC",
+        "amplicon_gc": 58.3,
+        "product_gc": 58.3,
+        "tm_delta": 0.25,
+        "annealing_ta": 55.1,
+        "specificity": {
+          "off_target_count": 0
+        },
+        "total_penalty": 0.22,
+        "overall_status": "PASS",
+        "status": "PASS",
+        "overall_pass": true,
+        "penalty_breakdown": [],
+        "penalty_score": 0.22,
+        "score": 99.78,
+        "rank": 1,
+        "pair_id": 1
+      }
+    }
+  }
+}

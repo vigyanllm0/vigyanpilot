@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VigyanLLM — Admin Command Center</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0b0e14;--surface:#141820;--surface2:#1c2230;--border:#252d3a;--text:#e8ecf4;--muted:#6b7a94;--primary:#3b82f6;--green:#10b981;--red:#ef4444;--orange:#f59e0b;--purple:#8b5cf6;--cyan:#06b6d4}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.mono{font-family:'DM Sans',sans-serif;font-weight:600;letter-spacing:0.02em}
+
+/* Login */
+.login-wrap{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:var(--bg);z-index:9999}
+.login-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:2.5rem;width:380px}
+.login-card h2{font-size:1.4rem;margin-bottom:.5rem}
+.login-card p{color:var(--muted);font-size:.85rem;margin-bottom:1.5rem}
+.input{width:100%;padding:.7rem 1rem;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:.9rem;margin-bottom:1rem;outline:none}
+.input:focus{border-color:var(--primary)}
+.btn{padding:.7rem 1.5rem;border-radius:8px;border:none;font-weight:600;cursor:pointer;font-size:.85rem;transition:all .15s}
+.btn-primary{background:var(--primary);color:#fff;width:100%}
+.btn-primary:hover{background:#2563eb}
+.btn-sm{padding:.4rem .8rem;font-size:.75rem;border-radius:6px}
+.login-err{color:var(--red);font-size:.8rem;margin-top:.5rem;min-height:1.2rem}
+
+/* Layout */
+.shell{display:none}
+header{background:var(--surface);border-bottom:1px solid var(--border);padding:.75rem 2rem;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100}
+header h1{font-size:1rem;font-weight:600}
+header h1 span{color:var(--primary)}
+.hdr-right{display:flex;align-items:center;gap:1rem}
+.live-dot{width:8px;height:8px;border-radius:50%;background:var(--green);animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.container{max-width:1440px;margin:0 auto;padding:1.5rem 2rem}
+
+/* Stat Cards */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem;margin-bottom:2rem}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.2rem}
+.stat-label{font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:.4rem}
+.stat-val{font-size:1.8rem;font-weight:700}
+.stat-sub{font-size:.7rem;color:var(--muted);margin-top:.2rem}
+.stat-val.green{color:var(--green)}.stat-val.red{color:var(--red)}.stat-val.orange{color:var(--orange)}.stat-val.purple{color:var(--purple)}.stat-val.cyan{color:var(--cyan)}
+
+/* Chart Grid */
+.charts{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:2rem}
+@media(max-width:900px){.charts{grid-template-columns:1fr}}
+.chart-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.25rem}
+.chart-title{font-size:.8rem;font-weight:600;margin-bottom:1rem;display:flex;align-items:center;gap:.5rem}
+.chart-title .dot{width:8px;height:8px;border-radius:50%}
+
+/* Bar Chart */
+.bar-chart{display:flex;align-items:flex-end;gap:6px;height:120px;padding-top:10px}
+.bar-col{display:flex;flex-direction:column;align-items:center;flex:1;gap:4px}
+.bar{width:100%;border-radius:4px 4px 0 0;min-height:4px;transition:height .5s}
+.bar-label{font-size:.6rem;color:var(--muted);text-align:center}
+
+/* Donut */
+.donut-wrap{display:flex;align-items:center;gap:2rem}
+.donut{width:100px;height:100px;border-radius:50%;position:relative}
+.donut-center{position:absolute;inset:20px;border-radius:50%;background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:1rem;font-weight:700}
+.donut-legend{display:flex;flex-direction:column;gap:.5rem}
+.legend-item{display:flex;align-items:center;gap:.5rem;font-size:.75rem}
+.legend-dot{width:10px;height:10px;border-radius:3px}
+
+/* Table */
+.tbl-wrap{overflow-x:auto;border-radius:8px;border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;font-size:.8rem}
+th{background:var(--surface2);padding:.6rem .8rem;text-align:left;color:var(--muted);font-weight:500;font-size:.7rem;text-transform:uppercase;letter-spacing:.06em}
+td{padding:.55rem .8rem;border-top:1px solid var(--border)}
+tr:hover td{background:rgba(59,130,246,.03)}
+
+/* Section */
+.section{margin-bottom:2rem}
+.section-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem}
+.section-title{font-size:.95rem;font-weight:600}
+
+/* Pills/Tags */
+.pill{display:inline-block;padding:2px 8px;border-radius:4px;font-size:.65rem;font-weight:600}
+.pill-green{background:rgba(16,185,129,.15);color:var(--green)}
+.pill-red{background:rgba(239,68,68,.15);color:var(--red)}
+.pill-orange{background:rgba(245,158,11,.15);color:var(--orange)}
+.pill-blue{background:rgba(59,130,246,.15);color:var(--primary)}
+
+/* Actions row */
+.actions{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1.5rem}
+.actions .btn{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
+.actions .btn:hover{border-color:var(--primary);color:var(--primary)}
+.actions .btn.active{border-color:var(--primary);color:var(--primary);background:rgba(59,130,246,.08)}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-wrap" id="loginWrap">
+<div class="login-card">
+  <h2>🛡️ Command Center</h2>
+  <p>VigyanLLM Admin Dashboard</p>
+  <input class="input" id="l-email" type="email" placeholder="Admin email" value="contact@vigyanllm.in">
+  <input class="input" id="l-pass" type="password" placeholder="Password" onkeydown="if(event.key==='Enter')doLogin()">
+  <button class="btn btn-primary" onclick="doLogin()">Authenticate</button>
+  <div class="login-err" id="l-err"></div>
+</div>
+</div>
+
+<!-- DASHBOARD -->
+<div class="shell" id="shell">
+<header>
+  <h1>🛡️ Primer<span>Forge</span> Command Center</h1>
+  <div class="hdr-right">
+    <div class="live-dot"></div>
+    <span style="font-size:.75rem;color:var(--green)" id="hdr-status">Live</span>
+    <button class="btn btn-sm" style="background:var(--surface2);color:var(--muted)" onclick="location.href='/'">← App</button>
+    <button class="btn btn-sm" style="background:var(--surface2);color:var(--muted)" onclick="doLogout()">Logout</button>
+  </div>
+</header>
+
+<div class="container">
+  <!-- TOP STATS -->
+  <div class="stats" id="stats-row">
+    <div class="stat"><div class="stat-label">Uptime</div><div class="stat-val green" id="s-uptime">—</div><div class="stat-sub">Server runtime</div></div>
+    <div class="stat"><div class="stat-label">Total Users</div><div class="stat-val" id="s-users">—</div><div class="stat-sub">Registered accounts</div></div>
+    <div class="stat"><div class="stat-label">Total Revenue</div><div class="stat-val green" id="s-revenue">—</div><div class="stat-sub">Razorpay payments received</div></div>
+    <div class="stat"><div class="stat-label">Total Cost</div><div class="stat-val orange" id="s-cogs">—</div><div class="stat-sub">Pipeline infrastructure cost</div></div>
+    <div class="stat"><div class="stat-label">Gross Margin</div><div class="stat-val cyan" id="s-margin">—</div><div class="stat-sub">Revenue - COGS</div></div>
+    <div class="stat"><div class="stat-label">API Requests</div><div class="stat-val" id="s-requests">—</div><div class="stat-sub">Since startup</div></div>
+    <div class="stat"><div class="stat-label">Active Bans</div><div class="stat-val red" id="s-bans">—</div><div class="stat-sub">Blocked IPs</div></div>
+    <div class="stat"><div class="stat-label">Threats</div><div class="stat-val orange" id="s-threats">—</div><div class="stat-sub">Detected attacks</div></div>
+  </div>
+
+  <!-- CHARTS -->
+  <div class="charts">
+    <!-- Revenue vs COGS Bar Chart -->
+    <div class="chart-card">
+      <div class="chart-title"><span class="dot" style="background:var(--green)"></span>Cost Per User (Infrastructure)</div>
+      <div class="bar-chart" id="chart-rev-cost"></div>
+    </div>
+
+    <!-- Token Usage Donut -->
+    <div class="chart-card">
+      <div class="chart-title"><span class="dot" style="background:var(--purple)"></span>Token Distribution</div>
+      <div class="donut-wrap" id="chart-tokens"></div>
+    </div>
+
+    <!-- Endpoint Performance -->
+    <div class="chart-card">
+      <div class="chart-title"><span class="dot" style="background:var(--cyan)"></span>Endpoint Response Time</div>
+      <div class="bar-chart" id="chart-perf"></div>
+    </div>
+
+    <!-- Security Overview Donut -->
+    <div class="chart-card">
+      <div class="chart-title"><span class="dot" style="background:var(--red)"></span>Security Events</div>
+      <div class="donut-wrap" id="chart-security"></div>
+    </div>
+  </div>
+
+  <!-- ACTIONS -->
+  <div class="actions">
+    <button class="btn active" onclick="showSection('threats')">🚨 Threats</button>
+    <button class="btn" onclick="showSection('users')">👥 Users</button>
+    <button class="btn" onclick="showSection('scanner')">🔍 Scanner</button>
+    <button class="btn" onclick="showSection('errors')">🐛 Errors</button>
+    <button class="btn" onclick="showSection('bans')">🚫 IP Bans</button>
+    <button class="btn" onclick="refreshAll()">↻ Refresh</button>
+  </div>
+
+  <!-- THREATS -->
+  <div class="section" id="sec-threats">
+    <div class="section-hdr"><div class="section-title">Recent Threat Detections</div></div>
+    <div class="tbl-wrap"><table><thead><tr><th>Time</th><th>IP</th><th>Type</th><th>Path</th><th>Detail</th></tr></thead><tbody id="tbl-threats"><tr><td colspan="5" style="text-align:center;color:var(--muted);padding:2rem">No threats</td></tr></tbody></table></div>
+  </div>
+
+  <!-- USERS -->
+  <div class="section" id="sec-users" style="display:none">
+    <div class="section-hdr"><div class="section-title">All Users</div></div>
+    <div class="tbl-wrap"><table><thead><tr><th>Email</th><th>Role</th><th>Tokens</th><th>Paid (₹)</th><th>Infra Cost (₹)</th><th>Profit</th><th>Joined</th></tr></thead><tbody id="tbl-users"></tbody></table></div>
+  </div>
+
+  <!-- SCANNER -->
+  <div class="section" id="sec-scanner" style="display:none">
+    <div style="display:flex;gap:.5rem;margin-bottom:1rem">
+      <button class="btn btn-sm" style="background:var(--primary);color:#fff" onclick="runScan()">🔍 Malware Scan</button>
+      <button class="btn btn-sm" style="background:var(--surface2);color:var(--text)" onclick="runIntegrity()">📋 Integrity Check</button>
+      <button class="btn btn-sm" style="background:var(--surface2);color:var(--text)" onclick="runBaseline()">📸 Baseline</button>
+    </div>
+    <div id="scan-output" style="font-size:.8rem;color:var(--muted)">Click a button to run.</div>
+  </div>
+
+  <!-- ERRORS -->
+  <div class="section" id="sec-errors" style="display:none">
+    <div class="section-hdr"><div class="section-title">Application Errors</div></div>
+    <div id="error-list" style="font-size:.8rem">No errors</div>
+  </div>
+
+  <!-- BANS -->
+  <div class="section" id="sec-bans" style="display:none">
+    <div style="display:flex;gap:.5rem;margin-bottom:1rem;align-items:center">
+      <input class="input" id="ban-ip-input" placeholder="IP to ban" style="width:180px;margin:0;padding:.4rem .7rem;font-size:.8rem">
+      <button class="btn btn-sm" style="background:var(--red);color:#fff" onclick="banIp()">Ban</button>
+    </div>
+    <div class="tbl-wrap"><table><thead><tr><th>IP</th><th>Expires In</th><th>Action</th></tr></thead><tbody id="tbl-bans"><tr><td colspan="3" style="text-align:center;color:var(--muted)">No bans</td></tr></tbody></table></div>
+  </div>
+
+</div>
+</div>
+
+<script>
+const API=window.location.origin;
+let TOKEN=localStorage.getItem('admin_tk')||'';
+
+function $(id){return document.getElementById(id)}
+function authH(){return{'Authorization':'Bearer '+TOKEN,'Content-Type':'application/json'}}
+async function api(p,m='GET',b=null){const o={method:m,headers:authH()};if(b)o.body=JSON.stringify(b);const r=await fetch(API+p,o);if(r.status===401){doLogout();return null}return r.json()}
+
+// Auth
+async function doLogin(){
+  const r=await fetch(API+'/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:$('l-email').value,password:$('l-pass').value})});
+  const d=await r.json();
+  if(r.ok&&d.token){TOKEN=d.token;localStorage.setItem('admin_tk',TOKEN);$('loginWrap').style.display='none';$('shell').style.display='block';refreshAll()}
+  else{$('l-err').textContent=d.error||'Failed'}
+}
+function doLogout(){TOKEN='';localStorage.removeItem('admin_tk');location.reload()}
+
+// Sections
+function showSection(name){
+  document.querySelectorAll('.section').forEach(s=>s.style.display='none');
+  $('sec-'+name).style.display='';
+  document.querySelectorAll('.actions .btn').forEach(b=>{b.classList.remove('active')});
+  event.target.classList.add('active');
+  if(name==='users')loadUsers();
+  if(name==='errors')loadErrors();
+  if(name==='bans')loadBans();
+}
+
+// Data loading
+async function refreshAll(){
+  const[threats,debug,users]=await Promise.all([api('/api/admin/threats'),api('/api/admin/debug/stats'),api('/api/admin/users')]);
+  if(!threats||!debug||!users)return;
+
+  // Stats
+  const h=Math.floor((debug.uptime_seconds||0)/3600);const m=Math.floor(((debug.uptime_seconds||0)%3600)/60);
+  $('s-uptime').textContent=h>0?h+'h '+m+'m':m+'m';
+  $('s-users').textContent=users.count||0;
+  $('s-requests').textContent=(debug.total_requests||0).toLocaleString();
+  $('s-bans').textContent=threats.active_bans||0;
+  $('s-threats').textContent=threats.total_violations_tracked||0;
+
+  // Revenue & Cost from dedicated endpoint (revenue=payments only, cost=infra only)
+  const revStats=await api('/api/payments/revenue-stats');
+  const totalRev=revStats?revStats.revenue.total_inr:0;
+  const totalCogs=revStats?revStats.cost.total_inr:0;
+  const marginPct=revStats?revStats.margin.margin_percent:0;
+  $('s-revenue').textContent='₹'+Math.round(totalRev).toLocaleString('en-IN');
+  $('s-cogs').textContent='₹'+Math.round(totalCogs).toLocaleString('en-IN');
+  $('s-margin').textContent=marginPct+'%';
+
+  // Revenue vs Cost chart (top 6 users by cost generated)
+  const ulist=users.users||[];
+  const top=ulist.filter(u=>parseFloat(u.lifetime_cogs_inr||0)>0).sort((a,b)=>parseFloat(b.lifetime_cogs_inr||0)-parseFloat(a.lifetime_cogs_inr||0)).slice(0,6);
+  const maxCost=Math.max(...top.map(u=>parseFloat(u.lifetime_cogs_inr||1)),1);
+  $('chart-rev-cost').innerHTML=top.length>0?top.map(u=>{
+    const cog=parseFloat(u.lifetime_cogs_inr||0);
+    return`<div class="bar-col"><div class="bar" style="height:${Math.max(cog/maxCost*100,4)}%;background:var(--orange);width:70%"></div><div class="bar-label">${(u.email||'').split('@')[0].slice(0,6)}</div></div>`;
+  }).join(''):'<div style="color:var(--muted);padding:2rem;text-align:center;width:100%">No cost data yet</div>';
+
+  // Token donut
+  const totalTokens=ulist.reduce((s,u)=>s+parseInt(u.total_purchased||0),0);
+  const consumed=ulist.reduce((s,u)=>s+parseInt(u.total_consumed||0),0);
+  const remaining=ulist.reduce((s,u)=>s+parseInt(u.balance||0),0);
+  const pctUsed=totalTokens>0?Math.round(consumed/totalTokens*100):0;
+  $('chart-tokens').innerHTML=`
+    <div class="donut" style="background:conic-gradient(var(--purple) 0% ${pctUsed}%, var(--surface2) ${pctUsed}% 100%)"><div class="donut-center">${pctUsed}%</div></div>
+    <div class="donut-legend">
+      <div class="legend-item"><div class="legend-dot" style="background:var(--purple)"></div>Used: ${consumed}</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--surface2)"></div>Remaining: ${remaining}</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--muted)"></div>Total purchased: ${totalTokens}</div>
+    </div>`;
+
+  // Performance chart
+  if(debug.slowest_endpoints&&debug.slowest_endpoints.length>0){
+    const maxMs=Math.max(...debug.slowest_endpoints.map(e=>e.avg_ms),1);
+    $('chart-perf').innerHTML=debug.slowest_endpoints.slice(0,8).map(e=>{
+      const pct=Math.max(e.avg_ms/maxMs*100,5);
+      const color=e.avg_ms>1000?'var(--red)':e.avg_ms>500?'var(--orange)':'var(--cyan)';
+      return`<div class="bar-col"><div class="bar" style="height:${pct}%;background:${color}"></div><div class="bar-label" style="writing-mode:vertical-rl;transform:rotate(180deg);height:40px;overflow:hidden">${e.endpoint.split(' ')[1]?.split('/').pop()||e.endpoint}</div></div>`;
+    }).join('');
+  }else{$('chart-perf').innerHTML='<div style="color:var(--muted);text-align:center;width:100%;padding:2rem">No data yet</div>'}
+
+  // Security donut
+  const totalEvents=parseInt(threats.total_violations_tracked||0);
+  const bans=parseInt(threats.active_bans||0);
+  const safe=Math.max(0,100-Math.min(totalEvents,100));
+  $('chart-security').innerHTML=`
+    <div class="donut" style="background:conic-gradient(var(--green) 0% ${safe}%, var(--orange) ${safe}% ${safe+Math.min(totalEvents,80)}%, var(--red) ${safe+Math.min(totalEvents,80)}% 100%)"><div class="donut-center">${bans>0?'⚠️':'✓'}</div></div>
+    <div class="donut-legend">
+      <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div>Clean requests</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--orange)"></div>Threats: ${totalEvents}</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div>Banned: ${bans}</div>
+    </div>`;
+
+  // Threats table
+  const tbody=$('tbl-threats');
+  if(threats.recent_threats&&threats.recent_threats.length>0){
+    tbody.innerHTML=threats.recent_threats.slice(0,15).map(t=>`<tr><td class="mono" style="font-size:.7rem">${t.timestamp?.split('T')[1]?.split('.')[0]||'—'}</td><td class="mono" style="font-size:.7rem">${t.ip||'—'}</td><td><span class="pill pill-red">${t.threat_type||'—'}</span></td><td class="mono" style="font-size:.7rem">${t.path||'—'}</td><td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;font-size:.7rem">${t.detail||''}</td></tr>`).join('');
+  }else{tbody.innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--green);padding:1.5rem">✓ No threats detected</td></tr>'}
+}
+
+async function loadUsers(){
+  const d=await api('/api/admin/users');if(!d)return;
+  $('tbl-users').innerHTML=(d.users||[]).map(u=>{
+    const rev=parseFloat(u.lifetime_revenue_inr||0);const cog=parseFloat(u.lifetime_cogs_inr||0);const mg=rev-cog;
+    return`<tr><td>${u.email}</td><td><span class="pill ${u.role==='admin'?'pill-blue':'pill-green'}">${u.role}</span></td><td class="mono">${u.balance??0}</td><td class="mono" style="color:var(--green)">₹${Math.round(rev)}</td><td class="mono" style="color:var(--orange)">₹${Math.round(cog)}</td><td class="mono" style="color:${mg>=0?'var(--green)':'var(--red)'}">₹${Math.round(mg)}</td><td style="font-size:.7rem">${u.created_at?new Date(u.created_at).toLocaleDateString():''}</td></tr>`;
+  }).join('');
+}
+
+async function loadErrors(){
+  const d=await api('/api/admin/debug/errors');if(!d)return;
+  $('error-list').innerHTML=(d.errors||[]).length>0?d.errors.slice(0,10).map(e=>`<div style="border:1px solid var(--border);border-radius:8px;padding:.75rem;margin-bottom:.5rem"><div style="display:flex;justify-content:space-between"><strong style="color:var(--red)">${e.error_type}</strong><span class="mono" style="font-size:.65rem;color:var(--muted)">${e.timestamp?.split('T')[1]?.split('.')[0]||''}</span></div><div style="font-size:.75rem;color:var(--muted);margin-top:4px">${(e.message||'').slice(0,100)} — ${e.method} ${e.path}</div></div>`).join(''):'<div style="color:var(--green);text-align:center;padding:2rem">✓ No errors</div>';
+}
+
+async function loadBans(){
+  const d=await api('/api/admin/threats');if(!d)return;
+  $('tbl-bans').innerHTML=(d.banned_ips||[]).length>0?d.banned_ips.map(b=>`<tr><td class="mono">${b.ip}</td><td>${Math.floor(b.expires_in_seconds/60)}m ${b.expires_in_seconds%60}s</td><td><button class="btn btn-sm" style="background:var(--surface2);color:var(--green)" onclick="unbanIp('${b.ip}')">Unban</button></td></tr>`).join(''):'<tr><td colspan="3" style="text-align:center;color:var(--green);padding:1rem">No active bans</td></tr>';
+}
+
+async function runScan(){$('scan-output').innerHTML='<span style="color:var(--primary)">Scanning...</span>';const d=await api('/api/admin/scanner/scan','POST');if(!d)return;$('scan-output').innerHTML=`<div>Files: <strong>${d.files_scanned}</strong> | Status: <span style="color:${d.threats_found>0?'var(--red)':'var(--green)'}">${d.status}</span></div>${d.findings?.length>0?'<div style="margin-top:8px;color:var(--red)">'+d.findings.map(f=>`• ${f.category}: ${f.file}:${f.line}`).join('<br>')+'</div>':''}`}
+async function runIntegrity(){$('scan-output').innerHTML='Checking...';const d=await api('/api/admin/scanner/integrity');if(!d)return;$('scan-output').innerHTML=`Changes: <strong style="color:${(d.changes_detected||0)>0?'var(--orange)':'var(--green)'}">${d.changes_detected||0}</strong>${d.error?'<div style="color:var(--orange)">'+d.error+'</div>':''}`}
+async function runBaseline(){const d=await api('/api/admin/scanner/baseline','POST');if(d)$('scan-output').innerHTML=`<span style="color:var(--green)">✓ Baseline: ${d.files_baselined} files</span>`}
+async function unbanIp(ip){await api('/api/admin/threats/unban','POST',{ip});loadBans();refreshAll()}
+async function banIp(){const ip=$('ban-ip-input').value.trim();if(!ip)return;await api('/api/admin/threats/ban','POST',{ip,duration:3600});$('ban-ip-input').value='';loadBans();refreshAll()}
+
+// Init
+if(TOKEN){fetch(API+'/api/auth/me',{headers:authH()}).then(r=>{if(r.ok){$('loginWrap').style.display='none';$('shell').style.display='block';refreshAll();setInterval(refreshAll,30000)}else doLogout()})}
+</script>
+</body>
+</html>

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Payment Failed — VigyanLLM</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root { --bg:#fff; --primary:#1a56ff; --red:#dc2626; --text:#0d1117; --text2:#4b5563; --border:#e4e7ec; }
+* { box-sizing:border-box; margin:0; padding:0; }
+body { font-family:'DM Sans',sans-serif; background:var(--bg); min-height:100vh; display:flex; align-items:center; justify-content:center; }
+.card { max-width:480px; width:90%; text-align:center; padding:48px 36px; border:1px solid var(--border); border-radius:16px; box-shadow:0 8px 30px rgba(0,0,0,0.08); }
+.icon { width:72px; height:72px; border-radius:50%; background:#fef2f2; display:flex; align-items:center; justify-content:center; margin:0 auto 20px; font-size:36px; }
+h1 { font-family:'DM Sans',sans-serif; font-size:28px; font-weight:700; margin-bottom:8px; color:var(--text); }
+.sub { font-size:15px; color:var(--text2); margin-bottom:24px; line-height:1.6; }
+.error-box { background:#fef2f2; border:1px solid #fecaca; border-radius:10px; padding:16px; margin-bottom:24px; text-align:left; font-size:13px; color:#991b1b; }
+.error-box strong { display:block; margin-bottom:4px; }
+.btn { display:inline-block; background:var(--primary); color:#fff; border:none; border-radius:8px; padding:14px 32px; font-size:15px; font-weight:600; cursor:pointer; text-decoration:none; transition:background 0.15s; margin:0 8px; }
+.btn:hover { background:#0044ff; }
+.btn-outline { background:#fff; color:var(--text); border:1.5px solid var(--border); }
+.btn-outline:hover { border-color:var(--text); }
+.note { margin-top:16px; font-size:11px; color:#9ca3af; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="icon">❌</div>
+  <h1>Payment Failed</h1>
+  <p class="sub">Your payment could not be processed. No amount has been deducted from your account.</p>
+  <div class="error-box" id="error-details">
+    <strong>Error Details:</strong>
+    <span id="error-msg">Payment was cancelled or declined by the payment provider.</span>
+  </div>
+  <div>
+    <a href="primer.html" class="btn">Try Again</a>
+    <a href="mailto:contact@vigyanllm.in" class="btn btn-outline">Contact Support</a>
+  </div>
+  <p class="note">If an amount was deducted, it will be refunded within 5-7 business days. Contact us at contact@vigyanllm.in with your order details.</p>
+</div>
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const stored = JSON.parse(sessionStorage.getItem('pf_payment_error') || '{}');
+  const msg = params.get('reason') || stored.reason || 'Payment was cancelled or declined.';
+  document.getElementById('error-msg').textContent = msg;
+</script>
+</body>
+</html>

@@ -1,0 +1,55 @@
+User-agent: *
+Allow: /
+
+# Public pages to crawl
+Allow: /index.html
+Allow: /primer.html
+Allow: /demo.html
+Allow: /terms.html
+Allow: /privacy.html
+Allow: /refund.html
+Allow: /security.html
+Allow: /sitemap.html
+Allow: /sitemap.xml
+Allow: /robots.txt
+
+# Admin and internal pages - block from search engines
+Disallow: /admin-security.html
+Disallow: /payment-success.html
+Disallow: /payment-failed.html
+Disallow: /db-redirect.html
+Disallow: /qa_runs/
+Disallow: /api/
+Disallow: /.env
+Disallow: /.git/
+Disallow: /.pytest_cache/
+Disallow: /.venv/
+Disallow: /.vscode/
+Disallow: /primerforge.db
+
+# Slow crawling directives (optional - helps with rate limiting)
+Crawl-delay: 1
+Request-rate: 1/5s
+
+# Sitemap location
+Sitemap: https://vigyanllm.in/sitemap.xml
+
+# Specific bot rules
+User-agent: Bingbot
+Crawl-delay: 2
+
+User-agent: Slurp
+Crawl-delay: 2
+
+User-agent: DuckDuckBot
+Allow: /
+
+# Disallow bad bots (optional)
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: SemrushBot
+Disallow: /
+
+User-agent: MJ12bot
+Disallow: /
