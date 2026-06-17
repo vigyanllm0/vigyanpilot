@@ -32,7 +32,7 @@ if NCBI_API_KEY:
 else:
     logger.info("No NCBI API key — rate limit: 3 req/sec")
 
-HEADERS = {"User-Agent": "VigyanLLM-PrimerMSA/1.0 (https://vigyanllm.ai; vigyanllm@example.com)"}
+HEADERS = {"User-Agent": "VigyanLLM-PrimerMSA/1.0 (https://vigyanllm.in; contact@vigyanllm.in)"}
 
 
 def _rate_limit_ncbi():

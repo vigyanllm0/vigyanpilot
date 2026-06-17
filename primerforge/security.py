@@ -73,22 +73,24 @@ def get_production_origins():
     """Return CORS origins based on environment."""
     if ALLOWED_ORIGINS:
         return [o.strip() for o in ALLOWED_ORIGINS if o.strip()]
-    if IS_PRODUCTION:
-        return [
-            "https://vigyanllm.in",
-            "https://www.vigyanllm.in",
-            "https://app.vigyanllm.in",
-        ]
-    # Development — allow both frontend dev server and direct file:// access
-    return [
-        "http://localhost:8080",
-        "http://127.0.0.1:8080",
-        "http://localhost:11436",
-        "http://127.0.0.1:11436",
-        "http://localhost:3000",
-        "http://localhost:5500",
-        "http://127.0.0.1:5500",
+    # Production domains — always included regardless of mode (Vercel + ngrok)
+    origins = [
+        "https://vigyanllm.in",
+        "https://www.vigyanllm.in",
+        "https://app.vigyanllm.in",
     ]
+    if not IS_PRODUCTION:
+        origins += [
+            "http://localhost:8080",
+            "http://127.0.0.1:8080",
+            "http://localhost:11436",
+            "http://127.0.0.1:11436",
+            "http://localhost:3000",
+            "http://localhost:5500",
+            "http://127.0.0.1:5500",
+            "https://vigyanpilot.vercel.app",
+        ]
+    return origins
 
 
 def _get_rate_limit_storage():

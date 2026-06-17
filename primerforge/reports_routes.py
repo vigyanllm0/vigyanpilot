@@ -606,7 +606,7 @@ def get_referral_code():
 
     return jsonify({
         "referral_code": code,
-        "referral_url": f"https://vigyanllm.ai/primer.html?ref={code}",
+        "referral_url": f"https://vigyanllm.in/primer.html?ref={code}",
         "tokens_per_referral": 5,
         "stats": {
             "successful_referrals": stats["successful"] if stats else 0,
