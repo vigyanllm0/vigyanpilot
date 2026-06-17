@@ -1228,10 +1228,11 @@ footer{padding:32px 0;border-top:1px solid var(--border)}
   </div>
 </div>
 
+<script src="config.js"></script>
 <script>
 (function VigyanLLM(){
 'use strict';
-const API='http://localhost:11436';
+const API = window.VIGYAN_BACKEND_URL || 'http://localhost:11436';
 const HEALTH_MS=10000;
 let PF_CONFIG=null;
 const state={online:false,results:[],slowTimer:null,hTimer:null,pipelineTimers:[],templateSeq:'',templateLength:0,lastJobId:'',lastResult:null};
