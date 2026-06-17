@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="google-site-verification" content="WP61CgW3hd6FNvLabkXLmVU0rNzXpkK8ynYRxr5FqBo">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="index, follow">
+<title>qPCR Primer Design — VigyanLLM</title>
+<meta name="description" content="Design qPCR primers and probes with 22-step biophysical validation, SNP filtering, repeat masking, and multiplex compatibility checks.">
+<link rel="canonical" href="https://vigyanllm.in/qpcr-primer-design.html">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://vigyanllm.in/qpcr-primer-design.html">
+<meta property="og:title" content="qPCR Primer Design — VigyanLLM">
+<meta property="og:description" content="Design qPCR primers and probes with 22-step biophysical validation, SNP filtering, repeat masking, and multiplex compatibility checks.">
+<meta property="og:image" content="https://vigyanllm.in/poster.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="qPCR Primer Design — VigyanLLM">
+<meta name="twitter:description" content="Design qPCR primers and probes with 22-step biophysical validation, SNP filtering, repeat masking, and multiplex compatibility checks.">
+<meta name="twitter:image" content="https://vigyanllm.in/poster.png">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "VigyanLLM Pvt. Ltd.",
+  "url": "https://vigyanllm.in",
+  "logo": "https://vigyanllm.in/logo.svg",
+  "email": "contact@vigyanllm.in",
+  "description": "Sovereign healthcare and life sciences AI platform for biological research.",
+  "foundingDate": "2026",
+  "founders": [{ "name": "Hemant Sharma" }],
+  "address": { "@type": "PostalAddress", "addressCountry": "IN" }
+}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0b0e14;--surface:#131a24;--surface2:#1a2332;--border:#262f3d;--primary:#3b82f6;--primary-soft:#1e2d4a;--text:#e8ecf4;--text2:#9aa4b8;--muted:#5c6a7e;--font-s:'DM Sans',sans-serif;--max-w:900px}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--font-s);line-height:1.7;-webkit-font-smoothing:antialiased;font-size:15px}
+a{text-decoration:none;color:inherit}
+.container{max-width:var(--max-w);margin:0 auto;padding:0 24px}
+nav{position:sticky;top:0;background:rgba(11,14,20,.96);backdrop-filter:blur(10px);border-bottom:1px solid var(--border);z-index:100;height:64px}
+.nav-inner{display:flex;justify-content:space-between;align-items:center;height:100%;max-width:1100px;margin:0 auto;padding:0 24px}
+.logo{font-size:20px;font-weight:600;display:inline-flex;align-items:center;gap:9px}
+.logo-img{width:32px;height:32px;border-radius:6px;background:#0d1117;padding:3px;object-fit:contain;flex-shrink:0}
+.nav-links{display:flex;gap:24px;align-items:center}
+.nav-links a{font-size:13px;color:var(--text2);transition:color .15s}
+.nav-links a:hover,.nav-links a.active{color:var(--primary)}
+main{padding:80px 0}
+h1{font-size:clamp(1.8rem,4vw,2.6rem);font-weight:600;line-height:1.2;margin-bottom:16px;letter-spacing:-.01em}
+h2{font-size:clamp(1.2rem,2.5vw,1.6rem);font-weight:600;margin-top:48px;margin-bottom:16px;color:var(--primary)}
+h3{font-size:1.1rem;font-weight:600;margin-top:32px;margin-bottom:10px}
+p{margin-bottom:16px;color:var(--text2)}
+.hero{text-align:center;padding:60px 0 40px}
+.hero p{font-size:16px;max-width:680px;margin:0 auto 32px;color:var(--text2)}
+.cta{display:inline-flex;align-items:center;gap:8px;background:var(--primary);color:#fff;padding:14px 32px;border-radius:8px;font-size:15px;font-weight:600;transition:opacity .15s;border:none;cursor:pointer}
+.cta:hover{opacity:.9}
+.section{max-width:var(--max-w);margin:0 auto;padding:0 24px}
+.step-list{list-style:none;padding:0;margin:24px 0}
+.step-list li{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px 20px;margin-bottom:10px;display:flex;gap:12px;align-items:flex-start}
+.step-num{background:var(--primary);color:#fff;border-radius:6px;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0}
+.step-list li p{font-size:14px;margin:0;color:var(--text2)}
+.step-list li strong{color:var(--text)}
+.highlight{color:var(--primary)}
+hr{border:none;border-top:1px solid var(--border);margin:48px 0}
+footer{background:var(--surface);border-top:1px solid var(--border);padding:40px 0;text-align:center}
+footer p{font-size:13px;color:var(--muted);margin-bottom:4px}
+.footer-email{color:var(--primary)}
+</style>
+</head>
+<body>
+
+<nav>
+<div class="nav-inner">
+<a href="index.html" class="logo"><img src="logo.svg" alt="V" class="logo-img">VigyanLLM</a>
+<div class="nav-links">
+<a href="index.html">Home</a>
+<a href="primer.html">Primer Design</a>
+<a href="demo.html">Demo Suite</a>
+<a href="index.html#contact">Contact</a>
+</div>
+</div>
+</nav>
+
+<main>
+<div class="hero">
+<div class="container">
+<h1>qPCR Primer and Probe Design with Full Validation</h1>
+<p>Design lab-ready qPCR primers and hydrolysis probes with a comprehensive 22-step biophysical validation pipeline. VigyanLLM handles Tm matching, amplicon sizing, SNP filtering, repeat masking, and multiplex compatibility — producing audit-ready reports for every design.</p>
+<a href="primer.html" class="cta">Design qPCR Primers Now &rarr;</a>
+</div>
+</div>
+
+<div class="section">
+
+<h2>qPCR-Specific Design Considerations</h2>
+<p>Quantitative PCR demands stricter design parameters than conventional PCR. VigyanLLM's pipeline applies qPCR-specific constraints throughout the design process to ensure high amplification efficiency, reproducible Ct values, and minimal non-specific amplification. Every primer pair and probe is evaluated against a comprehensive set of biophysical and sequence-based criteria before being presented to the user.</p>
+<p>Amplicon size is constrained to the optimal qPCR range of 70–150 base pairs, with a preference for 80–120 bp targets. This ensures efficient amplification during the short extension times typical of qPCR protocols. The pipeline evaluates multiple candidate amplicons within the target region and ranks them by predicted performance, taking into account GC content distribution, melting temperature uniformity, and the absence of secondary structure in the amplification product.</p>
+<p>Melting temperature matching between forward and reverse primers is held to within 1&deg;C, using the SantaLucia unified nearest-neighbour thermodynamic model. Primer Tm targets are configurable, with the default range set to 58–62&deg;C to suit standard SYBR Green and probe-based chemistries. Probe Tm is designed to be 5–8&deg;C higher than the primer Tm to ensure the probe binds before primer extension begins.</p>
+
+<h2>Probe Design for Hydrolysis and TaqMan Assays</h2>
+<p>VigyanLLM supports dual-labelled hydrolysis probe design for TaqMan and related assay formats. The probe design module evaluates candidate probe sequences within the amplicon interval, prioritising locations near the primer binding sites to minimise amplicon length while maintaining specificity. Probes are screened against common design rules: length of 18–25 nucleotides, GC content between 35% and 65%, no runs of more than three consecutive identical nucleotides, and no G at the 5&prime; end to avoid quenching of the reporter fluorophore.</p>
+<p>Secondary structure prediction is performed for all probe candidates. Probes with significant hairpin formation or self-dimer potential are excluded. Heterodimer formation between the probe and either primer is also evaluated, as probe-primer interactions can lead to reduced assay sensitivity. The final probe selection is presented alongside the primer pair in a consolidated validation report.</p>
+
+<h2>The 22-Step Validation Pipeline</h2>
+<ul class="step-list">
+<li><span class="step-num">1</span><p><strong>Gene Fetch</strong> — Retrieve target sequence from NCBI or user-provided FASTA.</p></li>
+<li><span class="step-num">2</span><p><strong>Primer3 Design</strong> — Generate candidate primers with optimised parameters for qPCR.</p></li>
+<li><span class="step-num">3</span><p><strong>Amplicon Size Filter</strong> — Reject candidates outside the 70–150 bp qPCR range.</p></li>
+<li><span class="step-num">4</span><p><strong>Tm Matching</strong> — Ensure &le;1&deg;C difference between forward and reverse primer Tm.</p></li>
+<li><span class="step-num">5</span><p><strong>GC Content Check</strong> — Verify 40–60% GC content with no long GC/AT runs.</p></li>
+<li><span class="step-num">6</span><p><strong>BLAST Specificity</strong> — Screen against reference genome to confirm unique binding.</p></li>
+<li><span class="step-num">7</span><p><strong>Hairpin Analysis</strong> — Predict intramolecular secondary structure using SantaLucia thermodynamics.</p></li>
+<li><span class="step-num">8</span><p><strong>Self-Dimer Check</strong> — Evaluate each primer's tendency to homodimerise.</p></li>
+<li><span class="step-num">9</span><p><strong>Heterodimer Check</strong> — Assess cross-dimer formation between forward and reverse primers.</p></li>
+<li><span class="step-num">10</span><p><strong>Cross-Dimer with Probe</strong> — Check primer-probe interactions for multiplex compatibility.</p></li>
+<li><span class="step-num">11</span><p><strong>SNP Filtering</strong> — Mask positions with known SNPs in the primer or probe binding regions.</p></li>
+<li><span class="step-num">12</span><p><strong>Repeat Masking</strong> — Exclude primers overlapping low-complexity or repetitive elements.</p></li>
+<li><span class="step-num">13</span><p><strong>Multiplex Compatibility</strong> — Verify absence of cross-reactivity in multiplex panels.</p></li>
+</ul>
+
+<h2>Validation Report Features</h2>
+<p>Every primer and probe design produced by VigyanLLM includes a comprehensive HTML validation report suitable for lab notebooks, regulatory submissions, and collaborative review. The report documents each step of the validation pipeline, providing pass/fail status for every check, detailed thermodynamic data including Tm, delta-G values for secondary structures, and alignment visualisations for BLAST specificity results.</p>
+<p>Reports are structured to be self-contained and printable. They include a summary table showing the final primer pair and probe sequences with their key metrics, followed by detailed sections for each validation step. Researchers can export or share reports directly from the platform without needing additional tools.</p>
+<p>For multiplex assays, the report includes cross-compatibility matrices showing pairwise interaction scores between all primer and probe combinations in the panel. This allows researchers to verify that each set operates independently without interference, which is critical for high-plex qPCR experiments.</p>
+
+<h2>Getting Started with qPCR Primer Design</h2>
+<p>Using VigyanLLM for qPCR primer design requires no specialised training. Enter the target gene symbol, accession number, or paste a sequence directly. The platform automatically selects the best primer-probe combination based on the comprehensive validation pipeline. Results are typically available within seconds, depending on the target length and the number of candidate primers evaluated.</p>
+<p>VigyanLLM is deployed on-premises, so all sequence data remains within your network. No data is uploaded to external servers, and no internet connection is required after installation. This makes the platform suitable for sensitive or proprietary target sequences that cannot be processed through web-based tools.</p>
+
+<hr>
+
+<div style="text-align:center;padding:32px 0">
+<a href="primer.html" class="cta">Start Designing qPCR Primers &rarr;</a>
+</div>
+
+</div>
+</main>
+
+<footer>
+<div class="container">
+<p>&copy; 2026 VigyanLLM Pvt. Ltd.</p>
+<p><a href="mailto:contact@vigyanllm.in" class="footer-email">contact@vigyanllm.in</a></p>
+</div>
+</footer>
+
+</body>
+</html>
