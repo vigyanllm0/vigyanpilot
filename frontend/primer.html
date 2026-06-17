@@ -1297,12 +1297,12 @@ function setReportButtons(enabled){
 }
 
 async function checkHealth(){
-  try{const r=await fetch(API+'/health',{signal:AbortSignal.timeout(4000)});setStatus(r.ok,false);}
+  try{const r=await fetch(API+'/health',{headers:{'ngrok-skip-browser-warning':'true'}, signal:AbortSignal.timeout(4000)});setStatus(r.ok,false);}
   catch{setStatus(false,false);}
 }
 
 async function apiPost(ep,body){
-  const headers = {'Content-Type':'application/json'};
+  const headers = {'Content-Type':'application/json', 'ngrok-skip-browser-warning':'true'};
   if(auth.token) headers['Authorization'] = 'Bearer ' + auth.token;
   const r=await fetch(API+ep,{method:'POST',headers,
     body:JSON.stringify(body),signal:AbortSignal.timeout(120000)});
