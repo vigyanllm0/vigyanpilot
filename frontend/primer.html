@@ -1748,7 +1748,7 @@ async function runAutoDesign() {
       await new Promise(r => setTimeout(r, 2000));
       pollCount++;
 
-      const headers = {'Content-Type': 'application/json'};
+      const headers = {'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true'};
       if (auth.token) headers['Authorization'] = 'Bearer ' + auth.token;
       const statusResp = await fetch(API + '/api/pipeline/status/' + jobId, {headers, signal: AbortSignal.timeout(10000)});
       const statusData = await statusResp.json();
@@ -1785,7 +1785,7 @@ async function runAutoDesign() {
     if (!finalStatus) throw new Error('Pipeline timed out — check status later');
 
     // 3. Fetch full results
-    const headers2 = {'Content-Type': 'application/json'};
+    const headers2 = {'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true'};
     if (auth.token) headers2['Authorization'] = 'Bearer ' + auth.token;
     const resultResp = await fetch(API + '/api/pipeline/result/' + jobId, {headers: headers2, signal: AbortSignal.timeout(15000)});
     const resultData = await resultResp.json();
