@@ -3,4 +3,4 @@
 // DO NOT commit real ngrok/tunnel URLs — update locally only.
 // .gitignore keeps this file out of git.
 
-window.VIGYAN_BACKEND_URL = 'http://localhost:11436';
+window.VIGYAN_BACKEND_URL = 'https://magnesium-nutcase-fade.ngrok-free.dev';
