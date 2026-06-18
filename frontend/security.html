@@ -5,6 +5,17 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Security · VigyanLLM</title>
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://vigyanllm.in/security.html">
+<meta property="og:title" content="Security · VigyanLLM">
+<meta property="og:description" content="VigyanLLM security commitments — HTTPS, rate limiting, Razorpay payment security, responsible disclosure.">
+<meta property="og:image" content="https://vigyanllm.in/poster.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Security · VigyanLLM">
+<meta name="twitter:description" content="VigyanLLM security commitments — HTTPS, rate limiting, Razorpay payment security, responsible disclosure.">
+<meta name="twitter:image" content="https://vigyanllm.in/poster.png">
 <meta name="description" content="VigyanLLM security commitments — HTTPS, rate limiting, Razorpay payment security, responsible disclosure.">
 <link rel="canonical" href="https://vigyanllm.in/security.html">
 <meta name="robots" content="index, follow"><link rel="preconnect" href="https://fonts.googleapis.com">
@@ -20,18 +31,20 @@ ul{padding-left:22px}
 <a href="primer.html">← Back to VigyanLLM Primer</a>
 <h1>Security</h1>
 <p>Last updated: 2026-06-09</p>
-<h2>Production Security Commitments</h2>
-<ul>
-  <li>HTTPS-only public deployment.</li>
-  <li>Server-authoritative pricing and quota calculation.</li>
-  <li>Razorpay payment signature verification before crediting runs.</li>
-  <li>Rate limiting for authentication, payment, and API endpoints.</li>
-  <li>Admin tools protected by authenticated admin access.</li>
-  <li>Audit logging for security, payment, and restricted-use events.</li>
-</ul>
-<h2>Responsible Disclosure</h2>
-<p>Please report suspected vulnerabilities to <a href="mailto:contact@vigyanllm.in">contact@vigyanllm.in</a>. Include a clear description, steps to reproduce, and impact. Do not access or modify other users' data.</p>
+<h2>Encryption</h2>
+<p><strong>Data in Transit.</strong> All communication between your browser and VigyanLLM servers is encrypted using TLS 1.2 or higher. Every public endpoint — including the web application, API routes, and authentication callbacks — enforces HTTPS. HTTP requests are automatically redirected to HTTPS. We use modern cipher suites and regularly review our TLS configuration against industry best practices.</p>
+<p><strong>Data at Rest.</strong> All persistent data stored in our PostgreSQL database and file storage systems is encrypted at rest using AES-256 encryption. Database backups are similarly encrypted. Encryption keys are managed through secure key-management infrastructure with restricted access and automatic rotation.</p>
+<h2>Authentication</h2>
+<p>User passwords are hashed using bcrypt with a cost factor of 10 or higher before being stored. No plaintext passwords are ever stored or logged. For users who prefer social login, we support Google OAuth 2.0, which delegates credential handling to Google's authentication infrastructure. Rate limiting is applied to all authentication endpoints — including login, registration, and password reset — to mitigate brute-force and credential-stuffing attacks. Session tokens are generated using cryptographically secure random number generators, stored in HTTP-only secure cookies, and invalidated on logout.</p>
 <h2>Payment Security</h2>
-<p>VigyanLLM does not store card details. Payment credentials are handled by Razorpay checkout and bank/payment-provider systems.</p>
+<p>All payments are processed through Razorpay, a PCI-DSS Level 1 compliant payment gateway — the highest level of payment security certification. Payment card details, UPI credentials, and net-banking passwords are captured directly by Razorpay's hosted checkout page and never transmitted to or stored on VigyanLLM servers. Our backend verifies payment signatures using Razorpay's webhook signature verification to ensure that only legitimate payment confirmations result in credit allocation. This prevents fraud, replay attacks, and unauthorised credit manipulation.</p>
+<h2>Infrastructure Security</h2>
+<p>VigyanLLM is deployed on Vercel's edge network, which provides DDoS mitigation, WAF (Web Application Firewall) filtering, and automatic HTTPS enforcement at the CDN layer. Application logic runs in serverless functions with no persistent local filesystem, reducing the attack surface. Our PostgreSQL database is hosted on managed infrastructure with automated patching, encrypted storage volumes, and network-level access controls that restrict connections to authorised application servers only. We do not share infrastructure or data with third parties beyond the explicit integrations described in our Privacy Policy. Access to production systems and administrative dashboards is restricted to authenticated personnel and logged for audit.</p>
+<h2>Vulnerability Disclosure Policy</h2>
+<p>We welcome responsible disclosure of security vulnerabilities. If you discover a security issue, please report it privately to <a href="mailto:security@vigyanllm.in">security@vigyanllm.in</a>. Include a clear description of the vulnerability, steps to reproduce, and your assessment of potential impact. Do not access, modify, or exfiltrate data belonging to other users during your research. Do not perform denial-of-service, social engineering, or physical security tests without prior coordination. We commit to acknowledging your report within 72 hours, providing regular updates on remediation progress, and offering appropriate recognition for verified disclosures.</p>
+<h2>Incident Response</h2>
+<p>In the event of a security incident — including data breach, unauthorised access, or service compromise — we follow a structured incident response plan: containment to limit further exposure, forensic investigation to determine root cause and scope, remediation to close the vulnerability and restore normal operations, and notification to affected users and relevant authorities as required by applicable law. We maintain internal audit logs that record authentication events, payment verifications, administrative actions, and privilege escalations to facilitate rapid investigation.</p>
+<h2>Contact</h2>
+<p>For security concerns, vulnerability reports, or incident-related inquiries, contact <a href="mailto:security@vigyanllm.in">security@vigyanllm.in</a>.</p>
 </body>
 </html>
