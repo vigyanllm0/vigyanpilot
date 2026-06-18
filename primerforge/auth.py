@@ -36,7 +36,9 @@ if not SECRET_KEY:
 TOKEN_EXPIRY = 86400 * 7  # 7 days
 
 # Admin credentials (from environment — REQUIRED, no hardcoded defaults)
-ADMIN_EMAIL = os.environ.get("PRIMERFORGE_ADMIN_EMAIL", "contact@vigyanllm.in")
+ADMIN_EMAIL = os.environ.get("PRIMERFORGE_ADMIN_EMAIL")
+if not ADMIN_EMAIL:
+    raise RuntimeError("PRIMERFORGE_ADMIN_EMAIL environment variable is required")
 ADMIN_PASSWORD = os.environ.get("PRIMERFORGE_ADMIN_PASSWORD")
 if not ADMIN_PASSWORD:
     import warnings
@@ -82,6 +84,11 @@ def init_db():
             paid_runs INTEGER DEFAULT 0,
             created_at REAL DEFAULT (strftime('%s','now')),
             last_login REAL DEFAULT 0
+        );
+
+        CREATE TABLE IF NOT EXISTS token_blacklist (
+            token_hash TEXT PRIMARY KEY,
+            expires_at REAL NOT NULL
         );
 
         CREATE TABLE IF NOT EXISTS usage_log (
@@ -181,13 +188,13 @@ def init_db():
 
 # ── Token Management ──────────────────────────────────────────────────────
 def _sign(payload: str) -> str:
-    return hmac.new(SECRET_KEY.encode(), payload.encode(), hashlib.sha256).hexdigest()[:16]
+    return hmac.new(SECRET_KEY.encode(), payload.encode(), hashlib.sha256).hexdigest()
 
 
 def create_token(email: str, role: str) -> str:
     """Create a signed session token."""
     payload = json.dumps({"email": email, "role": role, "exp": time.time() + TOKEN_EXPIRY})
-    sig = hmac.new(SECRET_KEY.encode(), payload.encode(), hashlib.sha256).hexdigest()[:16]
+    sig = hmac.new(SECRET_KEY.encode(), payload.encode(), hashlib.sha256).hexdigest()
     import base64
     token = base64.urlsafe_b64encode(payload.encode()).decode() + "." + sig
     return token
@@ -204,15 +211,58 @@ def verify_token(token: str) -> dict:
             return None
         payload_b64, sig = parts
         payload = base64.urlsafe_b64decode(payload_b64).decode()
-        expected_sig = hmac.new(SECRET_KEY.encode(), payload.encode(), hashlib.sha256).hexdigest()[:16]
+        expected_sig = hmac.new(SECRET_KEY.encode(), payload.encode(), hashlib.sha256).hexdigest()
         if not hmac.compare_digest(sig, expected_sig):
             return None
         data = json.loads(payload)
         if data.get("exp", 0) < time.time():
             return None
+        if _token_is_blacklisted(token):
+            return None
         return {"email": data["email"], "role": data["role"]}
     except Exception:
         return None
+
+
+def _token_is_blacklisted(token: str) -> bool:
+    """Check if a token has been revoked."""
+    import hashlib
+    token_hash = hashlib.sha256(token.encode()).hexdigest()
+    db = get_db()
+    row = db.execute("SELECT 1 FROM token_blacklist WHERE token_hash=? AND expires_at>?",
+                     (token_hash, time.time())).fetchone()
+    return row is not None
+
+
+def revoke_token(token: str):
+    """Add a token to the blacklist so it can no longer be used."""
+    import hashlib
+    token_hash = hashlib.sha256(token.encode()).hexdigest()
+    data = _decode_token_payload(token)
+    expires_at = data.get("exp", time.time() + 3600) if data else time.time() + 3600
+    db = get_db()
+    db.execute("INSERT OR IGNORE INTO token_blacklist (token_hash, expires_at) VALUES (?, ?)",
+               (token_hash, expires_at))
+    db.commit()
+
+
+def _decode_token_payload(token: str) -> dict:
+    """Extract payload from a token without verifying signature."""
+    try:
+        import base64
+        parts = token.split(".")
+        if len(parts) == 2:
+            payload = base64.urlsafe_b64decode(parts[0]).decode()
+            return json.loads(payload)
+    except Exception:
+        return None
+
+
+def cleanup_expired_blacklist():
+    """Remove expired blacklist entries (call periodically)."""
+    db = get_db()
+    db.execute("DELETE FROM token_blacklist WHERE expires_at <= ?", (time.time(),))
+    db.commit()
 
 
 def get_current_user():

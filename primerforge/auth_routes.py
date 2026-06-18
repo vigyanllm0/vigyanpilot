@@ -126,6 +126,17 @@ def check_usage_route():
     return jsonify(usage), 200
 
 
+@auth_bp.route('/api/auth/logout', methods=['POST'])
+@require_auth
+def logout():
+    """Revoke the current token."""
+    auth = request.headers.get("Authorization", "")
+    if auth.startswith("Bearer "):
+        from primerforge.auth import revoke_token
+        revoke_token(auth[7:])
+    return jsonify({"message": "Logged out successfully."}), 200
+
+
 @auth_bp.route('/api/auth/google', methods=['POST'])
 def google_auth():
     """Verify Google OAuth2 access token and create/login user."""

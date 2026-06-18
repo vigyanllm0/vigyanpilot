@@ -591,14 +591,13 @@ def create_app() -> Flask:
     from primerforge.file_scanner import init_file_scanner
     from primerforge.debugger import init_debugger
 
-    # CORS — handle manually (Flask-CORS has issues with Talisman)
+    # CORS — validate against allowlist, never echo arbitrary origins
     allowed_origins = get_production_origins()
 
     @app.after_request
     def cors_headers(response):
         origin = request.headers.get("Origin", "")
-        # Allow the incoming origin to support Vercel connecting to local ngrok
-        if origin:
+        if origin in allowed_origins:
             response.headers["Access-Control-Allow-Origin"] = origin
             response.headers["Access-Control-Allow-Credentials"] = "true"
             response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, ngrok-skip-browser-warning"
@@ -983,7 +982,7 @@ def create_app() -> Flask:
             return err("Optimal Tm must be between minimum and maximum Tm.", "VALIDATION_ERROR", 422)
 
         # ── Auth & Usage Check ────────────────────────────────────────────
-        test_mode = app.config.get("TESTING") or os.environ.get("PYTEST_CURRENT_TEST")
+        test_mode = app.config.get("TESTING")
         if test_mode:
             user = {"email": "test@example.com", "role": "admin"}
             usage = {"can_run": True}
@@ -1056,16 +1055,17 @@ def create_app() -> Flask:
             elapsed_ms = round((time.time() - t0) * 1000)
             num_returned = p3_result.get('PRIMER_PAIR_NUM_RETURNED', 0)
         except ValueError as exc:
+            logger.warning(f"Design validation: {exc}")
             return err(str(exc), "VALIDATION_ERROR", 422)
         except Exception as exc:
             logger.error(f"Design error: {exc}", exc_info=True)
-            env = _build_pipeline_status([], 0, str(exc))
+            env = _build_pipeline_status([], 0, "Internal error")
             return jsonify({
                 "pipeline_status": env["pipeline_status"],
                 "stages": env["stages"],
                 "primers_found": [],
                 "pairs": [],
-                "error": str(exc),
+                "error": "Design failed due to an internal error.",
                 "code": "DESIGN_FAILED",
             }), 500
 
@@ -1244,6 +1244,10 @@ def create_app() -> Flask:
     def manual_analysis():
         if not READY:
             return err("Core not available.", "DESIGN_FAILED", 503)
+        user = get_current_user()
+        if not user:
+            return jsonify({"error": "Authentication required. Please login first.",
+                           "code": "AUTH_REQUIRED", "action": "show_auth"}), 401
         data = request.get_json(silent=True) or {}
         forward = data.get("forward", "").strip()
         reverse = data.get("reverse", "").strip()
@@ -1312,10 +1316,11 @@ def create_app() -> Flask:
                 "penalty_score": _penalty_score(fwd_out, rev_out or fwd_out, pair_meta) if rev_out else None,
             }), 200
         except ValueError as exc:
+            logger.warning(f"Manual analysis validation: {exc}")
             return err(str(exc), "VALIDATION_ERROR", 400)
         except Exception as exc:
             logger.error(f"Manual analysis error: {exc}", exc_info=True)
-            return err(str(exc), "DESIGN_FAILED", 500)
+            return err("Analysis failed due to an internal error.", "DESIGN_FAILED", 500)
 
     @app.route("/api/primer/fetch-sequence", methods=["POST"])
     def fetch_sequence():
@@ -1436,7 +1441,8 @@ def create_app() -> Flask:
                 ),
             }), 200
         except Exception as exc:
-            return err(str(exc), "DESIGN_FAILED", 500)
+            logger.error(f"Thermodynamics error: {exc}", exc_info=True)
+            return err("Analysis failed due to an internal error.", "DESIGN_FAILED", 500)
 
     # WSGI middleware to strip Server header (runs after gunicorn adds it)
     class _ServerHeaderMiddleware:

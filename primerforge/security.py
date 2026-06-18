@@ -217,7 +217,7 @@ def apply_rate_limits(app):
         endpoint_map = {
             "auth.login": "5 per minute",
             "auth.register": "3 per minute",
-            "auth.verify_payment_route": "10 per minute",
+            "payments.verify_payment": "10 per minute",
             "payments.create_order": "10 per minute",
         }
         for endpoint, limit_str in endpoint_map.items():
