@@ -78,6 +78,7 @@ def get_production_origins():
         "https://vigyanllm.in",
         "https://www.vigyanllm.in",
         "https://app.vigyanllm.in",
+        "https://magnesium-nutcase-fade.ngrok-free.dev",
     ]
     if not IS_PRODUCTION:
         origins += [
