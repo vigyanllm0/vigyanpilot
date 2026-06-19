@@ -16,6 +16,7 @@ import time
 import json
 import base64
 import logging
+from pathlib import Path
 from functools import wraps
 from datetime import datetime, timezone
 
@@ -28,6 +29,16 @@ logger = logging.getLogger("primerforge.auth")
 
 # ── Configuration ─────────────────────────────────────────────────────────
 SECRET_KEY = os.environ.get("PRIMERFORGE_SECRET", "")
+if not SECRET_KEY:
+    # Fallback: read directly from .env file
+    _dotenv = Path(__file__).resolve().parent.parent / ".env"
+    if _dotenv.exists():
+        for _line in _dotenv.read_text().splitlines():
+            _line = _line.strip()
+            if _line.startswith("PRIMERFORCE_SECRET="):
+                SECRET_KEY = _line.split("=", 1)[1].strip()
+                os.environ["PRIMERFORCE_SECRET"] = SECRET_KEY
+                break
 if not SECRET_KEY:
     raise RuntimeError("PRIMERFORGE_SECRET environment variable is required")
 TOKEN_EXPIRY = 86400 * 7  # 7 days
