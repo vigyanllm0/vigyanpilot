@@ -1400,7 +1400,7 @@ function setReportButtons(enabled){
 }
 
 async function checkHealth(){
-  try{const r=await fetch(API+'/health',{headers:, signal:AbortSignal.timeout(4000)});setStatus(r.ok,false);}
+  try{const r=await fetch(API+'/health',{headers:{}, signal:AbortSignal.timeout(4000)});setStatus(r.ok,false);}
   catch{setStatus(false,false);}
 }
 
