@@ -65,17 +65,16 @@ jobs:
             pip install -r requirements.txt --no-cache-dir --quiet
 
             # Write .env file from GitHub Secrets
-            cat > .env << ENVEOF
-            PRIMERFORCE_SECRET=${{ secrets.PRIMERFORCE_SECRET }}
-            PRIMERFORCE_ADMIN_EMAIL=${{ secrets.PRIMERFORCE_ADMIN_EMAIL }}
-            PRIMERFORCE_ADMIN_PASSWORD=${{ secrets.PRIMERFORCE_ADMIN_PASSWORD }}
-            DATABASE_URL=${{ secrets.DATABASE_URL }}
-            RAZORPAY_KEY_ID=${{ secrets.RAZORPAY_KEY_ID }}
-            RAZORPAY_KEY_SECRET=${{ secrets.RAZORPAY_KEY_SECRET }}
-            RAZORPAY_WEBHOOK_SECRET=${{ secrets.RAZORPAY_WEBHOOK_SECRET }}
-            GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
-            PRIMERFORCE_UPI_ID=${{ secrets.PRIMERFORCE_UPI_ID }}
-            ENVEOF
+            : > .env
+            printf '%s\n' "PRIMERFORCE_SECRET=${{ secrets.PRIMERFORCE_SECRET }}" >> .env
+            printf '%s\n' "PRIMERFORCE_ADMIN_EMAIL=${{ secrets.PRIMERFORCE_ADMIN_EMAIL }}" >> .env
+            printf '%s\n' "PRIMERFORCE_ADMIN_PASSWORD=${{ secrets.PRIMERFORCE_ADMIN_PASSWORD }}" >> .env
+            printf '%s\n' "DATABASE_URL=${{ secrets.DATABASE_URL }}" >> .env
+            printf '%s\n' "RAZORPAY_KEY_ID=${{ secrets.RAZORPAY_KEY_ID }}" >> .env
+            printf '%s\n' "RAZORPAY_KEY_SECRET=${{ secrets.RAZORPAY_KEY_SECRET }}" >> .env
+            printf '%s\n' "RAZORPAY_WEBHOOK_SECRET=${{ secrets.RAZORPAY_WEBHOOK_SECRET }}" >> .env
+            printf '%s\n' "GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}" >> .env
+            printf '%s\n' "PRIMERFORCE_UPI_ID=${{ secrets.PRIMERFORCE_UPI_ID }}" >> .env
 
             # Start PostgreSQL
             if command -v pg_isready &>/dev/null && pg_isready -q 2>/dev/null; then
