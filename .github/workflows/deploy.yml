@@ -35,15 +35,18 @@ jobs:
             git fetch origin main
             git reset --hard origin/main
 
-            # Activate virtual env and install deps
+            # Create virtual env if missing
+            if [ ! -d .venv ]; then
+              python3 -m venv .venv
+            fi
             source .venv/bin/activate
             pip install -r requirements.txt --quiet
 
-            # Start PostgreSQL if Docker is being used
-            sudo docker start vigyanpilot-postgres-1 2>/dev/null || \
-              sudo docker start vigyanpilot_postgres_1 2>/dev/null || \
-              echo "PostgreSQL container not found — assuming it's running natively"
-            sleep 2
+            # Clean up disk space
+            sudo apt-get clean -y 2>/dev/null
+            sudo journalctl --rotate --vacuum-size=50M 2>/dev/null
+            docker system prune -f 2>/dev/null || true
+            df -h / | tail -1
 
             # Write .env file from GitHub Secrets
             cat > .env << ENVEOF
@@ -57,6 +60,20 @@ jobs:
             GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
             PRIMERFORCE_UPI_ID=${{ secrets.PRIMERFORCE_UPI_ID }}
             ENVEOF
+
+            # Start PostgreSQL
+            if command -v pg_isready &>/dev/null && pg_isready -q 2>/dev/null; then
+              echo "PostgreSQL is running"
+            elif command -v pg_ctlcluster &>/dev/null; then
+              sudo pg_ctlcluster $(pg_lsclusters -h | head -1 | awk '{print $1, $2}') start 2>/dev/null || true
+            elif command -v docker &>/dev/null; then
+              sudo docker start vigyanpilot-postgres-1 2>/dev/null || \
+                sudo docker start vigyanpilot_postgres_1 2>/dev/null || \
+                echo "PostgreSQL container not found"
+            else
+              echo "WARNING: No PostgreSQL found — ensure DATABASE_URL points to a running instance"
+            fi
+            sleep 2
 
             # Run database migrations
             python deploy/migrations/migrate.py
