@@ -595,7 +595,7 @@ footer { padding: 80px 0 40px; border-top: 1px solid var(--border); }
 (async function loadStats() {
   async function fetchStats() {
     try {
-      const r = await fetch((window.VIGYAN_BACKEND_URL || '/api') + '/api/stats/public', {headers:{}}});
+      const r = await fetch((window.VIGYAN_BACKEND_URL || '') + '/api/stats/public');
       if (!r.ok) return;
       const d = await r.json();
       const anim = (el, val) => {
