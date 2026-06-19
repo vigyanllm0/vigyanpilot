@@ -1335,7 +1335,7 @@ footer{padding:32px 0;border-top:1px solid var(--border)}
 <script>
 (function VigyanLLM(){
 'use strict';
-const API = window.VIGYAN_BACKEND_URL || '/api';
+const API = window.VIGYAN_BACKEND_URL || '';
 const HEALTH_MS=10000;
 let PF_CONFIG=null;
 const state={online:false,results:[],slowTimer:null,hTimer:null,pipelineTimers:[],templateSeq:'',templateLength:0,lastJobId:'',lastResult:null};
@@ -2515,7 +2515,7 @@ const auth = { token: sessionStorage.getItem('pf_token')||'', user: null, mode: 
 
 async function initAuth() {
   // Fetch public config (Google Client ID, etc.)
-  try { const r=await fetch(API+'/api/config/public', {headers:}); if(r.ok) PF_CONFIG=await r.json(); } catch(_)
+  try { const r=await fetch(API+'/api/config/public', {}); if(r.ok) PF_CONFIG=await r.json(); } catch(_)
   // Restore session
   if (auth.token) { fetchMe(); }
   updateAuthUI();
