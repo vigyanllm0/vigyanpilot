@@ -1459,11 +1459,11 @@ def create_app() -> Flask:
 
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PRIMERFORGE_PORT", 11436))
-    host = os.environ.get("PRIMERFORGE_HOST", "127.0.0.1")
-    debug = os.environ.get("PRIMERFORGE_DEBUG", "").lower() == "true"
+    port = int(os.environ.get("PRIMERFORCE_PORT", 11436))
+    host = os.environ.get("PRIMERFORCE_HOST", "127.0.0.1")
+    debug = os.environ.get("PRIMERFORCE_DEBUG", "").lower() == "true"
     if os.environ.get("FORCE_HTTPS", "").lower() == "true" and debug:
-        raise RuntimeError("PRIMERFORGE_DEBUG=true is not allowed when FORCE_HTTPS=true")
+        raise RuntimeError("PRIMERFORCE_DEBUG=true is not allowed when FORCE_HTTPS=true")
     wsgi_app = create_app()
     # create_app() returns a _ServerHeaderMiddleware wrapper; unwrap to get the Flask app for .run()
     flask_app = wsgi_app.wsgi_app if hasattr(wsgi_app, "wsgi_app") else wsgi_app

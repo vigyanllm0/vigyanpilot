@@ -32,8 +32,8 @@ if not SECRET_KEY:
     raise RuntimeError("PRIMERFORCE_SECRET environment variable is required")
 TOKEN_EXPIRY = 86400 * 7  # 7 days
 
-ADMIN_EMAIL = os.environ.get("PRIMERFORGE_ADMIN_EMAIL", "")
-ADMIN_PASSWORD = os.environ.get("PRIMERFORGE_ADMIN_PASSWORD", "")
+ADMIN_EMAIL = os.environ.get("PRIMERFORCE_ADMIN_EMAIL", "")
+ADMIN_PASSWORD = os.environ.get("PRIMERFORCE_ADMIN_PASSWORD", "")
 
 # In-memory token store per user (for session limits). In production use Redis.
 # Format: {user_id: [token1, token2, ...]}
