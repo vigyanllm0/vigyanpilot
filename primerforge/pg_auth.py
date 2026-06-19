@@ -27,9 +27,9 @@ from .database import get_db, fetch_one, fetch_all, execute, execute_returning, 
 logger = logging.getLogger("primerforge.auth")
 
 # ── Configuration ─────────────────────────────────────────────────────────
-SECRET_KEY = os.environ.get("PRIMERFORGE_SECRET", "")
+SECRET_KEY = os.environ.get("PRIMERFORCE_SECRET", "")
 if not SECRET_KEY:
-    raise RuntimeError("PRIMERFORGE_SECRET environment variable is required")
+    raise RuntimeError("PRIMERFORCE_SECRET environment variable is required")
 TOKEN_EXPIRY = 86400 * 7  # 7 days
 
 ADMIN_EMAIL = os.environ.get("PRIMERFORGE_ADMIN_EMAIL", "")

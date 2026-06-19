@@ -70,6 +70,10 @@ jobs:
             printf '%s\n' "PRIMERFORCE_ADMIN_EMAIL=${{ secrets.PRIMERFORCE_ADMIN_EMAIL }}" >> .env
             printf '%s\n' "PRIMERFORCE_ADMIN_PASSWORD=${{ secrets.PRIMERFORCE_ADMIN_PASSWORD }}" >> .env
             printf '%s\n' "DATABASE_URL=${{ secrets.DATABASE_URL }}" >> .env
+            
+            # Clean up DATABASE_URL if the secret contains the key prefix
+            # (e.g. "DATABASE_URL=postgresql://..." instead of "postgresql://...")
+            sed -i 's/^DATABASE_URL=DATABASE_URL=/DATABASE_URL=/' .env
             printf '%s\n' "RAZORPAY_KEY_ID=${{ secrets.RAZORPAY_KEY_ID }}" >> .env
             printf '%s\n' "RAZORPAY_KEY_SECRET=${{ secrets.RAZORPAY_KEY_SECRET }}" >> .env
             printf '%s\n' "RAZORPAY_WEBHOOK_SECRET=${{ secrets.RAZORPAY_WEBHOOK_SECRET }}" >> .env

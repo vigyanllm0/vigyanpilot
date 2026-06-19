@@ -26,13 +26,13 @@ logger = logging.getLogger("primerforge.auth")
 
 # ── Configuration ─────────────────────────────────────────────────────────
 DB_PATH = os.environ.get("PRIMERFORGE_DB", str(Path(__file__).parent.parent / "primerforge.db"))
-SECRET_KEY = os.environ.get("PRIMERFORGE_SECRET", "")
+SECRET_KEY = os.environ.get("PRIMERFORCE_SECRET", "")
 if not SECRET_KEY:
     if os.environ.get("FORCE_HTTPS", "").lower() == "true":
-        raise RuntimeError("PRIMERFORGE_SECRET is required when FORCE_HTTPS=true")
+        raise RuntimeError("PRIMERFORCE_SECRET is required when FORCE_HTTPS=true")
     import secrets
     SECRET_KEY = secrets.token_hex(32)
-    logger.warning("PRIMERFORGE_SECRET not set — using random ephemeral secret (sessions invalidated on restart)")
+    logger.warning("PRIMERFORCE_SECRET not set — using random ephemeral secret (sessions invalidated on restart)")
 TOKEN_EXPIRY = 86400 * 7  # 7 days
 
 # Admin credentials (from environment — REQUIRED, no hardcoded defaults)
