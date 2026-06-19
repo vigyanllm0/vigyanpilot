@@ -1,0 +1,81 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: vigyan
+      POSTGRES_PASSWORD: ${PGPASSWORD}
+      POSTGRES_DB: vigyanpilot
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U vigyan -d vigyanpilot"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+  app:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:11436:11436"
+    environment:
+      FORCE_HTTPS: "true"
+      PRIMERFORGE_SECRET: ${PRIMERFORGE_SECRET}
+      PRIMERFORGE_ADMIN_EMAIL: ${PRIMERFORGE_ADMIN_EMAIL}
+      PRIMERFORGE_ADMIN_PASSWORD: ${PRIMERFORGE_ADMIN_PASSWORD}
+      DATABASE_URL: postgresql://vigyan:${PGPASSWORD}@postgres:5432/vigyanpilot
+      REDIS_URL: redis://redis:6379/0
+      RAZORPAY_KEY_ID: ${RAZORPAY_KEY_ID}
+      RAZORPAY_KEY_SECRET: ${RAZORPAY_KEY_SECRET}
+      RAZORPAY_WEBHOOK_SECRET: ${RAZORPAY_WEBHOOK_SECRET}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      CORS_ORIGINS: https://vigyanllm.in
+      PRIMERFORGE_PORT: "11436"
+      PRIMERFORGE_HOST: "0.0.0.0"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - backend
+
+  nginx:
+    image: nginx:alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+    depends_on:
+      - app
+    networks:
+      - backend
+
+networks:
+  backend:
+    driver: bridge
+
+volumes:
+  pgdata:

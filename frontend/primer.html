@@ -2511,7 +2511,7 @@ document.addEventListener('DOMContentLoaded',function(){
 // ═══════════════════════════════════════════════════════════════════════════
 // AUTH MODULE
 // ═══════════════════════════════════════════════════════════════════════════
-const auth = { token: localStorage.getItem('pf_token')||'', user: null, mode: 'login' };
+const auth = { token: sessionStorage.getItem('pf_token')||'', user: null, mode: 'login' };
 
 async function initAuth() {
   // Fetch public config (Google Client ID, etc.)
@@ -2642,7 +2642,7 @@ async function handleAuthSubmit() {
 
     auth.token = d.token;
     auth.user = d.user;
-    localStorage.setItem('pf_token', d.token);
+    sessionStorage.setItem('pf_token', d.token);
     hideAuthModal();
     updateAuthUI();
 
@@ -2700,7 +2700,7 @@ async function handleGoogleSignIn() {
           }
           auth.token = d.token;
           auth.user = d.user;
-          localStorage.setItem('pf_token', d.token);
+          sessionStorage.setItem('pf_token', d.token);
           hideAuthModal();
           updateAuthUI();
           if (state._pendingRun) { state._pendingRun = false; runAutoDesign(); }
@@ -2728,14 +2728,14 @@ async function fetchMe() {
     } else {
       // Token expired
       auth.token = ''; auth.user = null;
-      localStorage.removeItem('pf_token');
+      sessionStorage.removeItem('pf_token');
     }
   } catch(e) { /* silent */ }
 }
 
 function logout() {
   auth.token = ''; auth.user = null;
-  localStorage.removeItem('pf_token');
+  sessionStorage.removeItem('pf_token');
   updateAuthUI();
   $('user-menu')?.classList.remove('show');
 }

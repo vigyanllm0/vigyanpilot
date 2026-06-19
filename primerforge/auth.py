@@ -266,10 +266,14 @@ def cleanup_expired_blacklist():
 
 
 def get_current_user():
-    """Extract user from Authorization header."""
+    """Extract user from Authorization header or pf_token cookie."""
     auth = request.headers.get("Authorization", "")
+    token = ""
     if auth.startswith("Bearer "):
         token = auth[7:]
+    elif request.cookies.get("pf_token"):
+        token = request.cookies.get("pf_token", "")
+    if token:
         return verify_token(token)
     return None
 

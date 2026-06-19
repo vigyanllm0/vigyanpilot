@@ -83,11 +83,17 @@ def login():
                 "code": "IP_MISMATCH",
             }), 403
 
-    return jsonify({
+    resp = jsonify({
         "success": True,
         "token": result["token"],
         "user": result["user"],
-    }), 200
+    })
+    resp.set_cookie(
+        'pf_token', result["token"],
+        httponly=True, secure=True, samesite='None',
+        max_age=86400 * 7, path='/'
+    )
+    return resp, 200
 
 
 @auth_bp.route("/api/auth/logout", methods=["POST"])
@@ -98,7 +104,9 @@ def logout():
     if auth.startswith("Bearer "):
         token = auth[7:]
         invalidate_token(token)
-    return jsonify({"success": True, "message": "Logged out successfully."}), 200
+    resp = jsonify({"success": True, "message": "Logged out successfully."})
+    resp.set_cookie('pf_token', '', httponly=True, secure=True, samesite='None', max_age=0, path='/')
+    return resp, 200
 
 
 @auth_bp.route("/api/auth/change-password", methods=["POST"])

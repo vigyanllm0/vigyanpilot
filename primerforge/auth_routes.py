@@ -90,12 +90,18 @@ def login():
 
     usage = check_usage(email)
 
-    return jsonify({
+    resp = jsonify({
         "token": token,
         "user": {"email": email, "name": row['name'], "role": role},
         "usage": usage,
         "is_admin": role == "admin",
-    }), 200
+    })
+    resp.set_cookie(
+        'pf_token', token,
+        httponly=True, secure=True, samesite='None',
+        max_age=86400 * 7, path='/'
+    )
+    return resp, 200
 
 
 @auth_bp.route('/api/auth/me', methods=['GET'])
@@ -134,7 +140,9 @@ def logout():
     if auth.startswith("Bearer "):
         from primerforge.auth import revoke_token
         revoke_token(auth[7:])
-    return jsonify({"message": "Logged out successfully."}), 200
+    resp = jsonify({"message": "Logged out successfully."})
+    resp.set_cookie('pf_token', '', httponly=True, secure=True, samesite='None', max_age=0, path='/')
+    return resp, 200
 
 
 @auth_bp.route('/api/auth/google', methods=['POST'])
