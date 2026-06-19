@@ -55,8 +55,8 @@ jobs:
 
             # Install pysam — prefer pre-built wheel, fall back to system package
             pip install pysam==0.23.3 --only-binary :all: --quiet 2>/dev/null || \
-              sudo apt-get install -y python3-pysam 2>/dev/null || \
-              echo "pysam fallback: will try from source with swap"
+              (sudo apt-get update -qq && sudo apt-get install -y python3-pysam 2>/dev/null) || \
+              echo "WARNING: pysam not installed — primer design will fail for some features"
             pip install -r requirements.txt --quiet
 
             # Write .env file from GitHub Secrets
