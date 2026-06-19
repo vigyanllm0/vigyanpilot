@@ -90,15 +90,23 @@ jobs:
             fi
             sleep 2
 
+            # Ensure log directory exists
+            sudo mkdir -p /var/log/vigyan
+            sudo chown ubuntu:ubuntu /var/log/vigyan
+
+            # Install systemd service on first deploy
+            if [ ! -f /etc/systemd/system/vigyan.service ]; then
+              sudo cp deploy/vigyan.service /etc/systemd/system/vigyan.service
+              sudo systemctl daemon-reload
+              sudo systemctl enable vigyan
+              echo "Installed systemd service"
+            fi
+
             # Run database migrations
             python deploy/migrations/migrate.py
 
-            # Restart backend
-            pkill gunicorn 2>/dev/null || true
-            sleep 1
-            nohup gunicorn --bind 0.0.0.0:5000 --workers 1 --timeout 120 \
-              --access-logfile - --error-logfile - wsgi:app \
-              > /tmp/vigyan_backend.log 2>&1 &
+            # Restart backend via systemd
+            sudo systemctl restart vigyan
 
             # Verify
             sleep 4
