@@ -39,12 +39,14 @@ jobs:
             source .venv/bin/activate
             pip install -r requirements.txt --quiet
 
-            # Run database migrations
-            export DATABASE_URL="${{ secrets.DATABASE_URL }}"
-            python deploy/migrations/migrate.py
+            # Start PostgreSQL if Docker is being used
+            sudo docker start vigyanpilot-postgres-1 2>/dev/null || \
+              sudo docker start vigyanpilot_postgres_1 2>/dev/null || \
+              echo "PostgreSQL container not found — assuming it's running natively"
+            sleep 2
 
             # Write .env file from GitHub Secrets
-            cat > .env << 'ENVEOF'
+            cat > .env << ENVEOF
             PRIMERFORCE_SECRET=${{ secrets.PRIMERFORCE_SECRET }}
             PRIMERFORCE_ADMIN_EMAIL=${{ secrets.PRIMERFORCE_ADMIN_EMAIL }}
             PRIMERFORCE_ADMIN_PASSWORD=${{ secrets.PRIMERFORCE_ADMIN_PASSWORD }}
@@ -54,8 +56,10 @@ jobs:
             RAZORPAY_WEBHOOK_SECRET=${{ secrets.RAZORPAY_WEBHOOK_SECRET }}
             GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
             PRIMERFORCE_UPI_ID=${{ secrets.PRIMERFORCE_UPI_ID }}
-            PRIMERFORCE_SECRET=${{ secrets.PRIMERFORCE_SECRET }}
             ENVEOF
+
+            # Run database migrations
+            python deploy/migrations/migrate.py
 
             # Restart backend
             pkill gunicorn 2>/dev/null || true
@@ -65,7 +69,7 @@ jobs:
               > /tmp/vigyan_backend.log 2>&1 &
 
             # Verify
-            sleep 3
+            sleep 4
             curl -sf http://localhost:5000/health && echo " OK" || echo " FAIL"
           ENDSSH
 
