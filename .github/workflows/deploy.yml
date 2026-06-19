@@ -6,7 +6,6 @@ on:
     paths-ignore:
       - "frontend/**"
       - "**.md"
-      - ".github/**"
 
 jobs:
   deploy:
@@ -58,12 +57,12 @@ jobs:
             source .venv/bin/activate
 
             # Install pysam — prefer pre-built wheel, fall back to system package
-            pip install pysam==0.23.3 --only-binary :all: --quiet 2>/dev/null || \
+            pip install pysam==0.23.3 --only-binary :all: --no-cache-dir --quiet 2>/dev/null || \
               (sudo apt-get update -qq && sudo apt-get install -y python3-pysam 2>/dev/null) || \
               echo "WARNING: pysam not installed — primer design will fail for some features"
 
-            # Install remaining Python deps
-            pip install -r requirements.txt --quiet
+            # Install remaining Python deps (no cache to save disk)
+            pip install -r requirements.txt --no-cache-dir --quiet
 
             # Write .env file from GitHub Secrets
             cat > .env << ENVEOF
