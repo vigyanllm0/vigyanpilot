@@ -20,21 +20,10 @@ if not DATABASE_URL:
     sys.exit(0)
 
 import urllib.parse
-result = urllib.parse.urlparse(DATABASE_URL)
-
-if result.scheme not in ("postgresql", "postgres"):
-    print(f"Unsupported scheme: {result.scheme}")
-    sys.exit(1)
 
 import psycopg2
 
-conn = psycopg2.connect(
-    host=result.hostname or "localhost",
-    port=result.port or 5432,
-    user=result.username or "vigyan",
-    password=result.password or "",
-    dbname=result.path.lstrip("/") or "vigyanpilot",
-)
+conn = psycopg2.connect(DATABASE_URL)
 conn.autocommit = True
 cur = conn.cursor()
 
@@ -75,9 +64,10 @@ def apply_file(version, name, sql):
 
 
 def main():
+    p = urllib.parse.urlparse(DATABASE_URL)
     print("VigyanLLM Migration Runner")
-    print(f"  Host: {result.hostname}:{result.port}")
-    print(f"  DB:   {result.path.lstrip('/')}")
+    print(f"  Host: {p.hostname}:{p.port}")
+    print(f"  DB:   {p.path.lstrip('/')}")
 
     applied = get_applied()
 
