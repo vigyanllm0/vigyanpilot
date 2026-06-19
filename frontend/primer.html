@@ -1630,8 +1630,8 @@ function renderPairs(pairs,elapsedMs){
 
   const cards=pairs.map((p,idx)=>{
     // Use canonical schema fields, fall back to legacy aliases
-    let fwd = p.forward_primer || p.forward ||;
-    let rev = p.reverse_primer || p.reverse ||;
+    let fwd = p.forward_primer || p.forward || '';
+    let rev = p.reverse_primer || p.reverse || '';
     // Handle Step 6 format where forward/reverse are plain strings
     if (typeof fwd === 'string') {
       fwd = {sequence: fwd, tm: p.forward_tm ?? null, gc: null, length: fwd.length, hairpin_dg: null, self_dimer_dg: null, gc_clamp_ok: null};
@@ -1713,9 +1713,9 @@ function getSavedReports(){
 
 function saveDesignReport(jobId, pairs, sequenceLength){
   if(!pairs || !pairs.length) return;
-  const top = pairs[0] ||;
-  const fwd = top.forward_primer || top.forward ||;
-  const rev = top.reverse_primer || top.reverse ||;
+  const top = pairs[0] || {};
+  const fwd = top.forward_primer || top.forward || '';
+  const rev = top.reverse_primer || top.reverse || '';
   const item = {
     jobId,
     savedAt: new Date().toISOString(),
@@ -2038,8 +2038,8 @@ function downloadCSV(){
     'Delta_Tm_C','Cross_Dimer_dG','Overall_Pass'
   ];
   const rows=state.results.map(p=>{
-    const fp=p.forward_primer||p.forward||;
-    const rp=p.reverse_primer||p.reverse||;
+    const fp=p.forward_primer||p.forward|| '';
+    const rp=p.reverse_primer||p.reverse|| '';
     return [
       p.pair_id||p.rank, p.score, p.penalty_score, p.status,
       p.amplicon_size, p.amplicon_gc, p.amplicon_tm, p.annealing_ta,
@@ -2068,8 +2068,8 @@ function downloadJSON(){
     total_pairs: state.results.length,
     preferred_best_sequence: buildPreferredSequenceExport(),
     primers: state.results.map(p=>{
-      const fp=p.forward_primer||p.forward||;
-      const rp=p.reverse_primer||p.reverse||;
+      const fp=p.forward_primer||p.forward|| '';
+      const rp=p.reverse_primer||p.reverse|| '';
       return {
         pair_id: p.pair_id||p.rank,
         score: p.score,
@@ -2112,8 +2112,8 @@ function buildRunReportText(){
   lines.push('Checks covered: Primer3-style design, thermodynamics, specificity/alignment where available, repeats, SNP risk, multiplex risk, manufacturing feasibility, probe readiness.');
   lines.push('');
   state.results.forEach((p,idx)=>{
-    const fp=p.forward_primer||p.forward||;
-    const rp=p.reverse_primer||p.reverse||;
+    const fp=p.forward_primer||p.forward|| '';
+    const rp=p.reverse_primer||p.reverse|| '';
     const score=asNum(p.score ?? (p.penalty_score != null ? Math.max(0,100-p.penalty_score) : null));
     lines.push(`Pair ${p.pair_id||p.rank||idx+1}`);
     lines.push(`  Status: ${p.status || (p.overall_pass?'PASS':'REVIEW')} | Pair score: ${fmtScore(score,1)}`);
@@ -2208,8 +2208,8 @@ function buildVendorPayload(vendor){
   const scale='25nmol';
   const oligos=[];
   state.results.forEach((p,idx)=>{
-    const fp=p.forward_primer||p.forward||;
-    const rp=p.reverse_primer||p.reverse||;
+    const fp=p.forward_primer||p.forward|| '';
+    const rp=p.reverse_primer||p.reverse|| '';
     const pairId=p.pair_id||p.rank||idx+1;
     if(fp.sequence)oligos.push(makeVendorOligo(vendor,`VL_${pairId}_FWD`,fp.sequence,fp,scale));
     if(rp.sequence)oligos.push(makeVendorOligo(vendor,`VL_${pairId}_REV`,rp.sequence,rp,scale));
@@ -3412,7 +3412,7 @@ async function deleteReport(reportId) {
 async function autoSaveReport(jobId, pairs, sequenceLength, geneInput) {
   if (!auth.token || !jobId || !pairs || !pairs.length) return;
   try {
-    const top = pairs[0] ||;
+    const top = pairs[0] || {};
     const title = geneInput
       ? `${geneInput} — ${new Date().toLocaleDateString()}`
       : `Design ${new Date().toLocaleString()}`;
@@ -3455,7 +3455,7 @@ async function loadReferralPanel() {
     const d = await r.json();
     if (!r.ok) throw new Error(d.error || 'Failed to load referral info');
     const url = d.referral_url || `${window.location.origin}/primer.html?ref=${d.referral_code}`;
-    const stats = d.stats ||;
+    const stats = d.stats || {};
     body.innerHTML = `
       <div style="margin-bottom:12px">
         <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text2);margin-bottom:6px">Your Referral Link</div>
