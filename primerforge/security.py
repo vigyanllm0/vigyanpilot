@@ -73,12 +73,11 @@ def get_production_origins():
     """Return CORS origins based on environment."""
     if ALLOWED_ORIGINS:
         return [o.strip() for o in ALLOWED_ORIGINS if o.strip()]
-    # Production domains — always included regardless of mode (Vercel + ngrok)
+    # Production domains — always included regardless of mode
     origins = [
         "https://vigyanllm.in",
         "https://www.vigyanllm.in",
         "https://app.vigyanllm.in",
-        "https://magnesium-nutcase-fade.ngrok-free.dev",
     ]
     if not IS_PRODUCTION:
         origins += [

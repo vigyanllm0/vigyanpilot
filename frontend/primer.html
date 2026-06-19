@@ -68,7 +68,7 @@ nav{position:sticky;top:0;background:rgba(255,255,255,.96);backdrop-filter:blur(
 /* PAGE HEADER */
 .page-header{padding:32px 0 24px;border-bottom:1px solid var(--border);background:var(--surface)}
 .page-header .container{max-width:var(--max-w);margin:0 auto;padding:0 24px;display:flex;align-items:flex-start;justify-content:space-between;gap:20px;flex-wrap:wrap}
-.ph-title-block{}
+.ph-title-block
 .ph-eyebrow{font-family:var(--font-s);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--primary);margin-bottom:6px;display:flex;align-items:center;gap:10px}
 .pipeline-badge{background:var(--primary);color:#fff;border-radius:4px;padding:2px 7px;font-size:9px;font-weight:700;letter-spacing:.06em}
 .ph-title{font-family:var(--font-s);font-size:clamp(1.6rem,3.5vw,2.2rem);font-weight:400;margin-bottom:6px}
@@ -1400,12 +1400,12 @@ function setReportButtons(enabled){
 }
 
 async function checkHealth(){
-  try{const r=await fetch(API+'/health',{headers:{'ngrok-skip-browser-warning':'true'}, signal:AbortSignal.timeout(4000)});setStatus(r.ok,false);}
+  try{const r=await fetch(API+'/health',{headers:, signal:AbortSignal.timeout(4000)});setStatus(r.ok,false);}
   catch{setStatus(false,false);}
 }
 
 async function apiPost(ep,body){
-  const headers = {'Content-Type':'application/json', 'ngrok-skip-browser-warning':'true'};
+  const headers = {'Content-Type':'application/json'};
   if(auth.token) headers['Authorization'] = 'Bearer ' + auth.token;
   const r=await fetch(API+ep,{method:'POST',headers,
     body:JSON.stringify(body),signal:AbortSignal.timeout(120000)});
@@ -1632,8 +1632,8 @@ function renderPairs(pairs,elapsedMs){
 
   const cards=pairs.map((p,idx)=>{
     // Use canonical schema fields, fall back to legacy aliases
-    let fwd = p.forward_primer || p.forward || {};
-    let rev = p.reverse_primer || p.reverse || {};
+    let fwd = p.forward_primer || p.forward ||;
+    let rev = p.reverse_primer || p.reverse ||;
     // Handle Step 6 format where forward/reverse are plain strings
     if (typeof fwd === 'string') {
       fwd = {sequence: fwd, tm: p.forward_tm ?? null, gc: null, length: fwd.length, hairpin_dg: null, self_dimer_dg: null, gc_clamp_ok: null};
@@ -1715,9 +1715,9 @@ function getSavedReports(){
 
 function saveDesignReport(jobId, pairs, sequenceLength){
   if(!pairs || !pairs.length) return;
-  const top = pairs[0] || {};
-  const fwd = top.forward_primer || top.forward || {};
-  const rev = top.reverse_primer || top.reverse || {};
+  const top = pairs[0] ||;
+  const fwd = top.forward_primer || top.forward ||;
+  const rev = top.reverse_primer || top.reverse ||;
   const item = {
     jobId,
     savedAt: new Date().toISOString(),
@@ -1851,7 +1851,7 @@ async function runAutoDesign() {
       await new Promise(r => setTimeout(r, 2000));
       pollCount++;
 
-      const headers = {'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true'};
+      const headers = {'Content-Type': 'application/json', };
       if (auth.token) headers['Authorization'] = 'Bearer ' + auth.token;
       const statusResp = await fetch(API + '/api/pipeline/status/' + jobId, {headers, signal: AbortSignal.timeout(10000)});
       const statusData = await statusResp.json();
@@ -1888,7 +1888,7 @@ async function runAutoDesign() {
     if (!finalStatus) throw new Error('Pipeline timed out — check status later');
 
     // 3. Fetch full results
-    const headers2 = {'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true'};
+    const headers2 = {'Content-Type': 'application/json', };
     if (auth.token) headers2['Authorization'] = 'Bearer ' + auth.token;
     const resultResp = await fetch(API + '/api/pipeline/result/' + jobId, {headers: headers2, signal: AbortSignal.timeout(15000)});
     const resultData = await resultResp.json();
@@ -2040,8 +2040,8 @@ function downloadCSV(){
     'Delta_Tm_C','Cross_Dimer_dG','Overall_Pass'
   ];
   const rows=state.results.map(p=>{
-    const fp=p.forward_primer||p.forward||{};
-    const rp=p.reverse_primer||p.reverse||{};
+    const fp=p.forward_primer||p.forward||;
+    const rp=p.reverse_primer||p.reverse||;
     return [
       p.pair_id||p.rank, p.score, p.penalty_score, p.status,
       p.amplicon_size, p.amplicon_gc, p.amplicon_tm, p.annealing_ta,
@@ -2070,8 +2070,8 @@ function downloadJSON(){
     total_pairs: state.results.length,
     preferred_best_sequence: buildPreferredSequenceExport(),
     primers: state.results.map(p=>{
-      const fp=p.forward_primer||p.forward||{};
-      const rp=p.reverse_primer||p.reverse||{};
+      const fp=p.forward_primer||p.forward||;
+      const rp=p.reverse_primer||p.reverse||;
       return {
         pair_id: p.pair_id||p.rank,
         score: p.score,
@@ -2114,8 +2114,8 @@ function buildRunReportText(){
   lines.push('Checks covered: Primer3-style design, thermodynamics, specificity/alignment where available, repeats, SNP risk, multiplex risk, manufacturing feasibility, probe readiness.');
   lines.push('');
   state.results.forEach((p,idx)=>{
-    const fp=p.forward_primer||p.forward||{};
-    const rp=p.reverse_primer||p.reverse||{};
+    const fp=p.forward_primer||p.forward||;
+    const rp=p.reverse_primer||p.reverse||;
     const score=asNum(p.score ?? (p.penalty_score != null ? Math.max(0,100-p.penalty_score) : null));
     lines.push(`Pair ${p.pair_id||p.rank||idx+1}`);
     lines.push(`  Status: ${p.status || (p.overall_pass?'PASS':'REVIEW')} | Pair score: ${fmtScore(score,1)}`);
@@ -2210,8 +2210,8 @@ function buildVendorPayload(vendor){
   const scale='25nmol';
   const oligos=[];
   state.results.forEach((p,idx)=>{
-    const fp=p.forward_primer||p.forward||{};
-    const rp=p.reverse_primer||p.reverse||{};
+    const fp=p.forward_primer||p.forward||;
+    const rp=p.reverse_primer||p.reverse||;
     const pairId=p.pair_id||p.rank||idx+1;
     if(fp.sequence)oligos.push(makeVendorOligo(vendor,`VL_${pairId}_FWD`,fp.sequence,fp,scale));
     if(rp.sequence)oligos.push(makeVendorOligo(vendor,`VL_${pairId}_REV`,rp.sequence,rp,scale));
@@ -2335,8 +2335,8 @@ function buildBindingMapData(pair, templateSeq) {
   const clean = String(templateSeq || '').replace(/\s/g, '').toUpperCase();
   if (!pair || !clean) return null;
   const templateLength = clean.length;
-  const fp = normalisePrimerForMap(pair.forward_primer || pair.forward || {}, 'forward', pair, clean);
-  const rp = normalisePrimerForMap(pair.reverse_primer || pair.reverse || {}, 'reverse', pair, clean);
+  const fp = normalisePrimerForMap(pair.forward_primer || pair.forward ||, 'forward', pair, clean);
+  const rp = normalisePrimerForMap(pair.reverse_primer || pair.reverse ||, 'reverse', pair, clean);
   if (!fp.sequence || !rp.sequence) return null;
 
   const fStart0 = clampInt((fp.start_pos || 1) - 1, 0, templateLength - 1);
@@ -2404,7 +2404,7 @@ function buildPreferredSequenceExport() {
 }
 
 function normalisePrimerForMap(primer, type, pair, cleanTemplate) {
-  const p = typeof primer === 'string' ? {sequence: primer} : {...(primer || {})};
+  const p = typeof primer === 'string' ? {sequence: primer} : {...(primer ||)};
   p.sequence = String(p.sequence || '').toUpperCase();
   p.length = Number(p.length || p.sequence.length || pair[`${type}_length`] || 0);
   p.start_pos = Number(p.start_pos || pair[`${type}_start_pos`] || 0);
@@ -2515,7 +2515,7 @@ const auth = { token: sessionStorage.getItem('pf_token')||'', user: null, mode: 
 
 async function initAuth() {
   // Fetch public config (Google Client ID, etc.)
-  try { const r=await fetch(API+'/api/config/public', {headers:{'ngrok-skip-browser-warning':'true','ngrok-skip-browser-warning':'true'}}); if(r.ok) PF_CONFIG=await r.json(); } catch(_){}
+  try { const r=await fetch(API+'/api/config/public', {headers:}); if(r.ok) PF_CONFIG=await r.json(); } catch(_)
   // Restore session
   if (auth.token) { fetchMe(); }
   updateAuthUI();
@@ -2636,7 +2636,7 @@ async function handleAuthSubmit() {
   const body = auth.mode === 'register' ? {email,password,name} : {email,password};
 
   try {
-    const r = await fetch(API+endpoint, {method:'POST',headers:{'ngrok-skip-browser-warning':'true','Content-Type':'application/json'},body:JSON.stringify(body)});
+    const r = await fetch(API+endpoint, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
     const d = await r.json();
     if (!r.ok) { errEl.textContent = d.error || 'Authentication failed'; errEl.classList.add('show'); return; }
 
@@ -2689,7 +2689,7 @@ async function handleGoogleSignIn() {
         try {
           const r = await fetch(API+'/api/auth/google', {
             method:'POST',
-            headers:{'ngrok-skip-browser-warning':'true','Content-Type':'application/json'},
+            headers:{'Content-Type':'application/json'},
             body: JSON.stringify({access_token: tokenResponse.access_token})
           });
           const d = await r.json();
@@ -2719,7 +2719,7 @@ async function handleGoogleSignIn() {
 
 async function fetchMe() {
   try {
-    const r = await fetch(API+'/api/auth/me', {headers:{'ngrok-skip-browser-warning':'true','Authorization':'Bearer '+auth.token}});
+    const r = await fetch(API+'/api/auth/me', {headers:{'Authorization':'Bearer '+auth.token}});
     if (r.ok) {
       const d = await r.json();
       auth.user = d.user;
@@ -2778,17 +2778,17 @@ async function buyCustomTopup() {
 async function createPaymentOrder(body) {
   const r = await fetch(API + '/api/payments/create-order', {
     method: 'POST',
-    headers: { 'ngrok-skip-browser-warning': 'true', 'Content-Type':'application/json', 'Authorization':'Bearer '+auth.token},
+    headers: { 'Content-Type':'application/json', 'Authorization':'Bearer '+auth.token},
     body: JSON.stringify(body)
   });
-  const d = await r.json().catch(() => ({}));
+  const d = await r.json().catch(() => ());
   if (!r.ok) {
     throw new Error(d.error || 'Failed to create Razorpay order');
   }
   return d;
 }
 
-async function startRazorpayCheckout(body, context={}) {
+async function startRazorpayCheckout(body, context=) {
   if (!state.online) {
     const message = 'Backend unavailable. Please try again later.';
     if (context.errorEl) {
@@ -2813,7 +2813,7 @@ async function startRazorpayCheckout(body, context={}) {
   }
 }
 
-function openRazorpayCheckout(order, context={}) {
+function openRazorpayCheckout(order, context=) {
   if (!window.Razorpay) {
     const message = 'Razorpay checkout script did not load. Please check your network and try again.';
     if (context.errorEl) {
@@ -2834,7 +2834,7 @@ function openRazorpayCheckout(order, context={}) {
     description: order.description || `${purchasedRuns} design run(s)`,
     order_id: order.order_id,
     theme: order.theme || { color: '#2563EB' },
-    prefill: order.prefill || {},
+    prefill: order.prefill ||,
     config: {
       display: {
         blocks: {
@@ -2852,7 +2852,7 @@ function openRazorpayCheckout(order, context={}) {
       try {
         const vr = await fetch(API + verifyEndpoint, {
           method: 'POST',
-          headers: { 'ngrok-skip-browser-warning': 'true', 'Content-Type':'application/json', 'Authorization':'Bearer '+auth.token},
+          headers: { 'Content-Type':'application/json', 'Authorization':'Bearer '+auth.token},
           body: JSON.stringify({
             razorpay_payment_id: response.razorpay_payment_id,
             razorpay_order_id: response.razorpay_order_id,
@@ -2928,7 +2928,7 @@ function showAdminSub(name) {
 
 async function adminApi(path, method='GET', body=null) {
   if (!auth.user || auth.user.role !== 'admin') return null;
-  const opts = {method, headers: { 'ngrok-skip-browser-warning': 'true', 'Authorization': `Bearer ${auth.token}`, 'Content-Type': 'application/json'}};
+  const opts = {method, headers: { 'Authorization': `Bearer ${auth.token}`, 'Content-Type': 'application/json'}};
   if (body) opts.body = JSON.stringify(body);
   const r = await fetch(API + path, opts);
   if (r.status === 401 || r.status === 403) return null;
@@ -3165,7 +3165,7 @@ async function maybeShowAcademicPopup() {
   if (!auth.token || !auth.user) return;
   try {
     const r = await fetch(API + '/api/academic/status', {
-      headers: { 'ngrok-skip-browser-warning': 'true',  'Authorization': 'Bearer ' + auth.token }
+      headers: { 'Authorization': 'Bearer ' + auth.token }
     });
     if (!r.ok) return;
     const d = await r.json();
@@ -3231,7 +3231,7 @@ async function submitAcademicClaim() {
   try {
     const r = await fetch(API + '/api/academic/claim', {
       method: 'POST',
-      headers: { 'ngrok-skip-browser-warning': 'true',  'Content-Type': 'application/json', 'Authorization': 'Bearer ' + auth.token },
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + auth.token },
       body: JSON.stringify({ institution, department, email_edu: emailEdu, use_case: useCase })
     });
     const d = await r.json();
@@ -3275,7 +3275,7 @@ async function submitFeedback(context = 'general') {
 async function fetchUsageForMenu() {
   if (!auth.token) return;
   try {
-    const r = await fetch(API + '/api/auth/usage', { headers: { 'ngrok-skip-browser-warning': 'true',  'Authorization': 'Bearer ' + auth.token } });
+    const r = await fetch(API + '/api/auth/usage', { headers: { 'Authorization': 'Bearer ' + auth.token } });
     if (!r.ok) return;
     const d = await r.json();
     const menuUsage = $('menu-usage');
@@ -3305,7 +3305,7 @@ async function loadReportHistory() {
 
   try {
     const r = await fetch(API + '/api/reports/history?limit=50', {
-      headers: { 'ngrok-skip-browser-warning': 'true',  'Authorization': 'Bearer ' + auth.token }
+      headers: { 'Authorization': 'Bearer ' + auth.token }
     });
     if (!r.ok) throw new Error('Failed to load history');
     const d = await r.json();
@@ -3379,7 +3379,7 @@ async function downloadReport(reportId, format) {
   if (!auth.token) { showAuthModal(); return; }
   try {
     const r = await fetch(`${API}/api/reports/${reportId}/${format === 'csv' ? 'csv' : 'download'}`, {
-      headers: { 'ngrok-skip-browser-warning': 'true',  'Authorization': 'Bearer ' + auth.token }
+      headers: { 'Authorization': 'Bearer ' + auth.token }
     });
     if (!r.ok) throw new Error('Download failed');
     const blob = await r.blob();
@@ -3401,7 +3401,7 @@ async function deleteReport(reportId) {
   try {
     const r = await fetch(`${API}/api/reports/${reportId}`, {
       method: 'DELETE',
-      headers: { 'ngrok-skip-browser-warning': 'true',  'Authorization': 'Bearer ' + auth.token }
+      headers: { 'Authorization': 'Bearer ' + auth.token }
     });
     if (!r.ok) throw new Error('Delete failed');
     await loadReportHistory();
@@ -3414,13 +3414,13 @@ async function deleteReport(reportId) {
 async function autoSaveReport(jobId, pairs, sequenceLength, geneInput) {
   if (!auth.token || !jobId || !pairs || !pairs.length) return;
   try {
-    const top = pairs[0] || {};
+    const top = pairs[0] ||;
     const title = geneInput
       ? `${geneInput} — ${new Date().toLocaleDateString()}`
       : `Design ${new Date().toLocaleString()}`;
     await fetch(API + '/api/reports/save', {
       method: 'POST',
-      headers: { 'ngrok-skip-browser-warning': 'true',  'Content-Type': 'application/json', 'Authorization': 'Bearer ' + auth.token },
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + auth.token },
       body: JSON.stringify({ job_id: jobId, title, gene_input: geneInput || '', sequence_length: sequenceLength })
     });
     // After first successful save, try to complete any pending referral
@@ -3433,7 +3433,7 @@ async function triggerReferralComplete() {
   try {
     await fetch(API + '/api/referral/complete', {
       method: 'POST',
-      headers: { 'ngrok-skip-browser-warning': 'true',  'Authorization': 'Bearer ' + auth.token }
+      headers: { 'Authorization': 'Bearer ' + auth.token }
     });
   } catch(e) { /* silent */ }
 }
@@ -3452,12 +3452,12 @@ async function loadReferralPanel() {
   body.innerHTML = '<div style="text-align:center;color:var(--muted)">Loading…</div>';
   try {
     const r = await fetch(API + '/api/referral/code', {
-      headers: { 'ngrok-skip-browser-warning': 'true',  'Authorization': 'Bearer ' + auth.token }
+      headers: { 'Authorization': 'Bearer ' + auth.token }
     });
     const d = await r.json();
     if (!r.ok) throw new Error(d.error || 'Failed to load referral info');
     const url = d.referral_url || `${window.location.origin}/primer.html?ref=${d.referral_code}`;
-    const stats = d.stats || {};
+    const stats = d.stats ||;
     body.innerHTML = `
       <div style="margin-bottom:12px">
         <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text2);margin-bottom:6px">Your Referral Link</div>
@@ -3525,7 +3525,7 @@ async function applyPendingReferral(email) {
   try {
     await fetch(API + '/api/referral/apply', {
       method: 'POST',
-      headers: { 'ngrok-skip-browser-warning': 'true',  'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ code, email })
     });
     sessionStorage.removeItem('pending_ref_code');
