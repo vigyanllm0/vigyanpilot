@@ -1,0 +1,10 @@
+-- Fix user_reports: add columns that code expects but 0105 missed
+ALTER TABLE IF EXISTS user_reports ADD COLUMN IF NOT EXISTS gene_input TEXT;
+ALTER TABLE IF EXISTS user_reports ADD COLUMN IF NOT EXISTS sequence_length INTEGER;
+ALTER TABLE IF EXISTS user_reports ADD COLUMN IF NOT EXISTS pair_count INTEGER;
+ALTER TABLE IF EXISTS user_reports ADD COLUMN IF NOT EXISTS top_score NUMERIC(6,2);
+ALTER TABLE IF EXISTS user_reports ADD COLUMN IF NOT EXISTS top_forward TEXT;
+ALTER TABLE IF EXISTS user_reports ADD COLUMN IF NOT EXISTS top_reverse TEXT;
+ALTER TABLE IF EXISTS user_reports ADD COLUMN IF NOT EXISTS amplicon_size INTEGER;
+ALTER TABLE IF EXISTS user_reports ADD COLUMN IF NOT EXISTS pipeline_mode VARCHAR(16);
+ALTER TABLE IF EXISTS user_reports ADD COLUMN IF NOT EXISTS design_mode VARCHAR(16);
