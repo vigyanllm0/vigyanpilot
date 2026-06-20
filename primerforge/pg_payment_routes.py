@@ -222,13 +222,16 @@ def create_order():
         return jsonify({"error": "Payment service unavailable."}), 500
 
     # Persist order in database
-    execute(
-        """INSERT INTO payments
-           (user_id, gateway_order_id, amount, currency, status, product_type, tokens_purchased, metadata)
-           VALUES (%s, %s, %s, 'INR', 'initiated', %s, %s, %s)""",
-        (user_id, rz_order["id"], amount_paise / 100, product_id, designs,
-         json.dumps({"quantity": quantity, "receipt": receipt}))
-    )
+    try:
+        execute(
+            """INSERT INTO payments
+               (user_id, gateway_order_id, amount, currency, status, product_type, tokens_purchased, metadata)
+               VALUES (%s, %s, %s, 'INR', 'initiated', %s, %s, %s)""",
+            (user_id, rz_order["id"], amount_paise / 100, product_id, designs,
+             json.dumps({"quantity": quantity, "receipt": receipt}))
+        )
+    except Exception:
+        logger.warning("Failed to persist payment order (table may not exist)")
 
     log_action(g.user["email"], "order_created",
                f"Order {rz_order['id']} for {product_id} ({designs} designs), ₹{amount_paise // 100}")
@@ -264,11 +267,14 @@ def verify_payment():
     # Verify HMAC-SHA256 signature
     if not _verify_signature(razorpay_order_id, razorpay_payment_id, razorpay_signature):
         logger.warning(f"Signature mismatch for order {razorpay_order_id} by {g.user['email']}")
-        execute(
-            """INSERT INTO system_events (severity, module, message, context)
-               VALUES ('WARNING', 'payments', 'Signature verification failed', %s)""",
-            (json.dumps({"order_id": razorpay_order_id, "email": g.user["email"]}),)
-        )
+        try:
+            execute(
+                """INSERT INTO system_events (severity, module, message, context)
+                   VALUES ('WARNING', 'payments', 'Signature verification failed', %s)""",
+                (json.dumps({"order_id": razorpay_order_id, "email": g.user["email"]}),)
+            )
+        except Exception:
+            pass
         return jsonify({"error": "Payment verification failed."}), 400
 
     # Look up order
@@ -289,16 +295,26 @@ def verify_payment():
     quantity = int(metadata.get("quantity", 1))
 
     # Atomic idempotent credit
-    tokens_credited = _credit_tokens_atomic(
-        order["user_id"], razorpay_order_id, order["product_type"],
-        quantity, razorpay_payment_id
-    )
+    try:
+        tokens_credited = _credit_tokens_atomic(
+            order["user_id"], razorpay_order_id, order["product_type"],
+            quantity, razorpay_payment_id
+        )
+    except Exception as e:
+        logger.error(f"Token credit failed: {e}")
+        return jsonify({"error": "Token credit failed. Contact support."}), 500
 
-    log_action(g.user["email"], "payment_verified",
-               f"order={razorpay_order_id} payment={razorpay_payment_id} tokens={tokens_credited}")
+    try:
+        log_action(g.user["email"], "payment_verified",
+                   f"order={razorpay_order_id} payment={razorpay_payment_id} tokens={tokens_credited}")
+    except Exception:
+        pass
 
     # Return updated balance
-    usage = check_usage(g.user["email"])
+    try:
+        usage = check_usage(g.user["email"])
+    except Exception:
+        usage = {"can_run": True, "balance": tokens_credited}
     return jsonify({
         "success": True,
         "tokens_credited": tokens_credited,

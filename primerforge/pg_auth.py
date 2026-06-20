@@ -371,18 +371,32 @@ def check_usage(email: str) -> dict:
     if not isinstance(email, str):
         return {"can_run": False, "error": "Invalid input"}
 
-    row = fetch_one(
-        """SELECT u.id, u.role, tb.balance, tb.total_purchased, tb.total_consumed,
-                  s.is_active AS has_subscription, s.plan_id, s.monthly_quota,
-                  s.quota_used, s.quota_reset_at, s.expires_at
-           FROM users u
-           LEFT JOIN token_balances tb ON tb.user_id = u.id
-           LEFT JOIN subscriptions s ON s.user_id = u.id
-           WHERE u.email = %s""",
-        (email,)
-    )
+    try:
+        row = fetch_one(
+            """SELECT u.id, u.role, tb.balance, tb.total_purchased, tb.total_consumed,
+                      s.is_active AS has_subscription, s.plan_id, s.monthly_quota,
+                      s.quota_used, s.quota_reset_at, s.expires_at
+               FROM users u
+               LEFT JOIN token_balances tb ON tb.user_id = u.id
+               LEFT JOIN subscriptions s ON s.user_id = u.id
+               WHERE u.email = %s""",
+            (email,)
+        )
+    except Exception:
+        row = None
     if not row:
-        return {"can_run": False, "error": "User not found"}
+        row = fetch_one(
+            """SELECT u.id, u.role, tb.balance, tb.total_purchased, tb.total_consumed
+               FROM users u
+               LEFT JOIN token_balances tb ON tb.user_id = u.id
+               WHERE u.email = %s""",
+            (email,)
+        )
+        if not row:
+            return {"can_run": False, "error": "User not found"}
+        balance = row.get("balance") or 0
+        is_admin = row.get("role") == "admin"
+        return {"can_run": is_admin or balance > 0, "balance": balance, "plan": "none"}
 
     balance = row.get("balance") or 0  # Top-up + free trial designs
     is_admin = row.get("role") == "admin"
@@ -437,12 +451,15 @@ def consume_token(user_id: int, email: str) -> bool:
         return True
 
     # Try subscription quota first
-    rowcount = execute(
-        """UPDATE subscriptions
-           SET quota_used = quota_used + 1
-           WHERE user_id = %s AND is_active = TRUE AND quota_used < monthly_quota""",
-        (user_id,)
-    )
+    try:
+        rowcount = execute(
+            """UPDATE subscriptions
+               SET quota_used = quota_used + 1
+               WHERE user_id = %s AND is_active = TRUE AND quota_used < monthly_quota""",
+            (user_id,)
+        )
+    except Exception:
+        rowcount = 0
     if rowcount > 0:
         # Also increment total_consumed in token_balances for lifetime tracking
         execute(
@@ -467,26 +484,29 @@ def record_operation_cost(user_id: int, trigger_type: str, agent_work_log_id: in
                           cpu_seconds: float = 0, llm_input_tokens: int = 0,
                           llm_output_tokens: int = 0, api_calls_external: int = 0,
                           primers_generated: int = 0, tokens_consumed: int = 1,
-                          revenue_per_token: float = 49.0) -> int:
+                          revenue_per_token: float = 49.0) -> int | None:
     """Record operation cost in cost_ledger. Auto-flags admin usage."""
-    result = execute_returning(
-        """SELECT fn_record_operation_cost(
-               p_user_id := %s,
-               p_trigger_type := %s,
-               p_agent_work_log_id := %s,
-               p_cpu_seconds := %s,
-               p_llm_input_tokens := %s,
-               p_llm_output_tokens := %s,
-               p_api_calls_external := %s,
-               p_primers_generated := %s,
-               p_tokens_consumed := %s,
-               p_revenue_per_token := %s
-           ) AS cost_id""",
-        (user_id, trigger_type, agent_work_log_id,
-         cpu_seconds, llm_input_tokens, llm_output_tokens,
-         api_calls_external, primers_generated, tokens_consumed, revenue_per_token)
-    )
-    return result["cost_id"] if result else None
+    try:
+        result = execute_returning(
+            """SELECT fn_record_operation_cost(
+                   p_user_id := %s,
+                   p_trigger_type := %s,
+                   p_agent_work_log_id := %s,
+                   p_cpu_seconds := %s,
+                   p_llm_input_tokens := %s,
+                   p_llm_output_tokens := %s,
+                   p_api_calls_external := %s,
+                   p_primers_generated := %s,
+                   p_tokens_consumed := %s,
+                   p_revenue_per_token := %s
+               ) AS cost_id""",
+            (user_id, trigger_type, agent_work_log_id,
+             cpu_seconds, llm_input_tokens, llm_output_tokens,
+             api_calls_external, primers_generated, tokens_consumed, revenue_per_token)
+        )
+        return result["cost_id"] if result else None
+    except Exception:
+        return None
 
 
 # ── Admin Initialization ──────────────────────────────────────────────────
