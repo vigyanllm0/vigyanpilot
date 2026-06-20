@@ -36,13 +36,16 @@ def get_registered_ip(user_id: int) -> str:
     Return the IP address this account first registered/logged in from.
     Uses the first successful login_log entry.
     """
-    row = fetch_one(
-        """SELECT ip_address::text FROM login_logs
-           WHERE user_id = %s AND result = 'success'
-           ORDER BY logged_at ASC LIMIT 1""",
-        (user_id,)
-    )
-    return row["ip_address"] if row else None
+    try:
+        row = fetch_one(
+            """SELECT ip_address::text FROM login_logs
+               WHERE user_id = %s AND result = 'success'
+               ORDER BY logged_at ASC LIMIT 1""",
+            (user_id,)
+        )
+        return row["ip_address"] if row else None
+    except Exception:
+        return None
 
 
 def check_ip_allowed(user_id: int, current_ip: str, role: str = "user") -> dict:

@@ -71,17 +71,20 @@ def login():
     user_data = result.get("user", {})
     user_id = user_data.get("id")
     if user_id and user_data.get("role") != "admin":
-        from .reports_routes import check_ip_allowed
-        ip_check = check_ip_allowed(user_id, ip_address, user_data.get("role", "user"))
-        if not ip_check["allowed"]:
-            logger.warning(
-                "VigyanLLM: IP mismatch login blocked — user %s, current IP %s, registered IP %s",
-                email, ip_address, ip_check.get("registered_ip")
-            )
-            return jsonify({
-                "error": ip_check["message"],
-                "code": "IP_MISMATCH",
-            }), 403
+        try:
+            from .reports_routes import check_ip_allowed
+            ip_check = check_ip_allowed(user_id, ip_address, user_data.get("role", "user"))
+            if not ip_check["allowed"]:
+                logger.warning(
+                    "VigyanLLM: IP mismatch login blocked — user %s, current IP %s, registered IP %s",
+                    email, ip_address, ip_check.get("registered_ip")
+                )
+                return jsonify({
+                    "error": ip_check["message"],
+                    "code": "IP_MISMATCH",
+                }), 403
+        except Exception as e:
+            logger.warning(f"IP check failed (skipping): {e}")
 
     resp = jsonify({
         "success": True,
