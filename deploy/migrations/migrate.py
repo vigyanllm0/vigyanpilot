@@ -84,8 +84,12 @@ def split_sql(sql: str):
 
 
 def apply_file(version, name, sql):
-    for stmt in split_sql(sql):
-        cur.execute(stmt)
+    for i, stmt in enumerate(split_sql(sql)):
+        try:
+            cur.execute(stmt)
+        except Exception as e:
+            print(f"\n  ERROR in statement #{i}: [{stmt[:300]}]\n  {e}")
+            raise
     cur.execute(
         "INSERT INTO schema_version (version, name) VALUES (%s, %s)",
         (version, name),
