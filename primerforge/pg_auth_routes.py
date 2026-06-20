@@ -240,16 +240,20 @@ def forgot_password():
 @require_auth
 def me():
     """Get current user profile and usage data."""
-    user = fetch_one(
-        """SELECT u.id, u.email, u.full_name, u.role, u.organization, u.created_at,
-                  tb.balance, tb.total_purchased, tb.total_consumed,
-                  s.is_active AS has_subscription, s.expires_at
-           FROM users u
-           LEFT JOIN token_balances tb ON tb.user_id = u.id
-           LEFT JOIN subscriptions s ON s.user_id = u.id
-           WHERE u.email = %s""",
-        (g.user["email"],)
-    )
+    try:
+        user = fetch_one(
+            """SELECT u.id, u.email, u.full_name, u.role, u.organization, u.created_at,
+                      tb.balance, tb.total_purchased, tb.total_consumed,
+                      s.is_active AS has_subscription, s.expires_at
+               FROM users u
+               LEFT JOIN token_balances tb ON tb.user_id = u.id
+               LEFT JOIN subscriptions s ON s.user_id = u.id
+               WHERE u.email = %s""",
+            (g.user["email"],)
+        )
+    except Exception as e:
+        return jsonify({"error": f"Query failed: {str(e)[:200]}"}), 500
+
     if not user:
         return jsonify({"error": "User not found."}), 404
 
