@@ -3,6 +3,21 @@
 -- Covers all tables referenced by Python code that were missing
 -- =============================================================
 
+-- Extend token_balances (created by 0100) with columns needed by views/code
+ALTER TABLE IF EXISTS token_balances ADD COLUMN IF NOT EXISTS total_expired INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE IF EXISTS token_balances ADD COLUMN IF NOT EXISTS lifetime_revenue_inr NUMERIC(12,2) NOT NULL DEFAULT 0;
+ALTER TABLE IF EXISTS token_balances ADD COLUMN IF NOT EXISTS lifetime_cogs_inr NUMERIC(12,4) NOT NULL DEFAULT 0;
+ALTER TABLE IF EXISTS token_balances ADD COLUMN IF NOT EXISTS last_credited_at TIMESTAMPTZ;
+ALTER TABLE IF EXISTS token_balances ADD COLUMN IF NOT EXISTS last_consumed_at TIMESTAMPTZ;
+
+-- Drop tables created by 0100 with incompatible SQLite-style schema, so 0105
+-- can recreate them with the proper PostgreSQL schema. Safe to drop because
+-- no real production data exists in these tables.
+DROP TABLE IF EXISTS payments CASCADE;
+DROP TABLE IF EXISTS user_reports CASCADE;
+
+
+
 -- -----------------------------------------------------------
 -- 1. PAYMENT TABLES
 -- -----------------------------------------------------------
