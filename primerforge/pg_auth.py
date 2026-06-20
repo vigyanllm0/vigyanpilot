@@ -249,7 +249,7 @@ def register_user(email: str, password: str, name: str = "") -> dict:
         user = dict(cur.fetchone())
 
         cur.execute(
-            """INSERT INTO token_balances (user_id, balance, lifetime_purchased)
+            """INSERT INTO token_balances (user_id, balance, total_purchased)
                VALUES (%s, 2, 2)""",
             (user["id"],)
         )

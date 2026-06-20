@@ -27,7 +27,8 @@ CREATE TABLE IF NOT EXISTS token_balances (
     id SERIAL PRIMARY KEY,
     user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     balance INTEGER DEFAULT 0,
-    lifetime_purchased INTEGER DEFAULT 0,
+    total_purchased INTEGER DEFAULT 0,
+    total_consumed INTEGER DEFAULT 0,
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW()
 );
