@@ -585,6 +585,14 @@ def _build_pipeline_status(pairs: list, elapsed_ms: int, error: str = None) -> d
 def create_app() -> Flask:
     app = Flask(__name__)
 
+    # ── Session security ──
+    app.secret_key = os.environ.get("PRIMERFORGE_SECRET", "dev-secret-key")
+    app.config.update(
+        SESSION_COOKIE_SECURE=bool(os.environ.get("FORCE_HTTPS", "false") == "true"),
+        SESSION_COOKIE_HTTPONLY=True,
+        SESSION_COOKIE_SAMESITE="Lax",
+    )
+
     # ── Security Hardening ────────────────────────────────────────────────
     from primerforge.security import init_security, get_production_origins
     from primerforge.threat_detection import init_threat_detection

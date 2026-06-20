@@ -39,7 +39,11 @@ DB_CONFIG = {
     "user": os.environ.get("PGUSER", "vigyanpilot_app"),
     "password": os.environ.get("PGPASSWORD", ""),
     "connect_timeout": 5,
-    "options": "-c statement_timeout=30000",  # 30s query timeout
+    "keepalives": 1,
+    "keepalives_idle": 30,
+    "keepalives_interval": 10,
+    "keepalives_count": 5,
+    "options": "-c statement_timeout=30000 -c idle_in_transaction_session_timeout=30000",
 }
 
 
@@ -48,7 +52,11 @@ def _get_connection():
     try:
         # Try DATABASE_URL first (standard format)
         if DATABASE_URL and "://" in DATABASE_URL:
-            conn = psycopg2.connect(DATABASE_URL, cursor_factory=psycopg2.extras.RealDictCursor)
+            conn = psycopg2.connect(DATABASE_URL,
+                cursor_factory=psycopg2.extras.RealDictCursor,
+                keepalives=1, keepalives_idle=30,
+                keepalives_interval=10, keepalives_count=5,
+                connect_timeout=5)
         else:
             conn = psycopg2.connect(**DB_CONFIG, cursor_factory=psycopg2.extras.RealDictCursor)
 
