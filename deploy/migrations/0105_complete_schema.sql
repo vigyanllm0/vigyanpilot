@@ -13,9 +13,21 @@ ALTER TABLE IF EXISTS token_balances ADD COLUMN IF NOT EXISTS last_consumed_at T
 -- Drop tables created by 0100 with incompatible SQLite-style schema, so 0105
 -- can recreate them with the proper PostgreSQL schema. Safe to drop because
 -- no real production data exists in these tables.
+-- Drop ALL tables that 0105 is about to create, to ensure fresh creation
 DROP TABLE IF EXISTS payments CASCADE;
 DROP TABLE IF EXISTS user_reports CASCADE;
-
+DROP TABLE IF EXISTS gateway_webhooks CASCADE;
+DROP TABLE IF EXISTS subscriptions CASCADE;
+DROP TABLE IF EXISTS cost_ledger CASCADE;
+DROP TABLE IF EXISTS revenue_ledger CASCADE;
+DROP TABLE IF EXISTS fixed_expenses CASCADE;
+DROP TABLE IF EXISTS infra_rate_card CASCADE;
+DROP TABLE IF EXISTS agent_work_logs CASCADE;
+DROP TABLE IF EXISTS password_resets CASCADE;
+DROP TABLE IF EXISTS token_blacklist CASCADE;
+DROP TABLE IF EXISTS academic_claims CASCADE;
+DROP TABLE IF EXISTS referrals CASCADE;
+DROP TABLE IF EXISTS feedback_submissions CASCADE;
 
 
 -- -----------------------------------------------------------
