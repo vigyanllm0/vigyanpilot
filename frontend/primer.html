@@ -3145,6 +3145,20 @@ origTabSwitch.forEach(btn => {
   });
 });
 
+async function fetchUsageForMenu() {
+  if (!auth.token) return;
+  try {
+    const r = await fetch(API + '/api/auth/usage', { headers: { 'Authorization': 'Bearer ' + auth.token } });
+    if (!r.ok) return;
+    const d = await r.json();
+    const menuUsage = $('menu-usage');
+    if (menuUsage) {
+      const total = (d.balance || 0) + (d.subscription_remaining || 0);
+      menuUsage.textContent = `Credits: ${total} available`;
+    }
+  } catch(e) { /* silent */ }
+}
+
 })();
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -3267,20 +3281,6 @@ async function submitFeedback(context = 'general') {
     });
     $('academic-feedback-form').style.display = 'none';
     $('feedback-thankyou').style.display = '';
-  } catch(e) { /* silent */ }
-}
-
-async function fetchUsageForMenu() {
-  if (!auth.token) return;
-  try {
-    const r = await fetch(API + '/api/auth/usage', { headers: { 'Authorization': 'Bearer ' + auth.token } });
-    if (!r.ok) return;
-    const d = await r.json();
-    const menuUsage = $('menu-usage');
-    if (menuUsage) {
-      const total = (d.balance || 0) + (d.subscription_remaining || 0);
-      menuUsage.textContent = `Credits: ${total} available`;
-    }
   } catch(e) { /* silent */ }
 }
 
