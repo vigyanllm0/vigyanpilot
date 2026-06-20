@@ -257,7 +257,7 @@ def register_user(email: str, password: str, name: str = "") -> dict:
     except Exception as e:
         db.rollback()
         logger.error(f"Registration failed: {e}")
-        return {"error": "Registration failed. Please try again."}
+        return {"error": f"Registration failed: {e}"}
     finally:
         cur.close()
 
