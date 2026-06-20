@@ -516,10 +516,13 @@ def ensure_admin_exists():
 
 def log_action(email: str, action: str, details: str = ""):
     """Log user action as a system event."""
-    user = fetch_one("SELECT id FROM users WHERE email = %s", (email,))
-    user_id = user["id"] if user else None
-    execute(
-        """INSERT INTO system_events (severity, module, message, context)
-           VALUES ('INFO', 'user_action', %s, %s)""",
-        (f"{action}: {details}", json.dumps({"email": email, "user_id": user_id}))
-    )
+    try:
+        user = fetch_one("SELECT id FROM users WHERE email = %s", (email,))
+        user_id = user["id"] if user else None
+        execute(
+            """INSERT INTO system_events (severity, module, message, context)
+               VALUES ('INFO', 'user_action', %s, %s)""",
+            (f"{action}: {details}", json.dumps({"email": email, "user_id": user_id}))
+        )
+    except Exception:
+        pass  # system_events table may not exist
