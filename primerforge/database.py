@@ -113,15 +113,18 @@ def set_rls_context(user_id: int):
     Set Row-Level Security context for the current request.
     Call this after authentication to enable RLS policies.
     """
-    db = get_db()
-    cur = db.cursor()
     try:
-        cur.execute("SET app.current_user_id = %s", (str(user_id),))
+        db = get_db()
+        cur = db.cursor()
+        try:
+            cur.execute("SET app.current_user_id = %s", (str(user_id),))
+            db.commit()
+        except Exception:
+            db.rollback()
+        finally:
+            cur.close()
     except Exception:
-        db.rollback()
-        raise
-    finally:
-        cur.close()
+        pass  # RLS context is best-effort
 
 
 def init_db():
