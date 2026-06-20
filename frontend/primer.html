@@ -2575,14 +2575,17 @@ function updateAuthUI() {
     menu.className = 'user-menu';
     menu.innerHTML = `
       <div class="user-menu-item" id="menu-usage">Usage: --</div>
-      <div class="user-menu-item" id="menu-history" onclick="openHistoryModal()">📋 Report History</div>
-      <div class="user-menu-item" id="menu-academic" onclick="openAcademicModal()">🎓 Academic Free Access</div>
-      <div class="user-menu-item" id="menu-referral" onclick="openReferralPanel()">🎁 Referral Program</div>
+      <div class="user-menu-item" id="menu-history">📋 Report History</div>
+      <div class="user-menu-item" id="menu-academic">🎓 Academic Free Access</div>
+      <div class="user-menu-item" id="menu-referral">🎁 Referral Program</div>
       <div class="user-menu-item danger" id="menu-logout">Log out</div>
     `;
     pill.style.position = 'relative';
     pill.appendChild(menu);
-    $('menu-logout')?.addEventListener('click', logout);
+    $('menu-history')?.addEventListener('click', e => { e.stopPropagation(); openHistoryModal(); });
+    $('menu-academic')?.addEventListener('click', e => { e.stopPropagation(); openAcademicModal(); });
+    $('menu-referral')?.addEventListener('click', e => { e.stopPropagation(); openReferralPanel(); });
+    $('menu-logout')?.addEventListener('click', e => { e.stopPropagation(); logout(); });
   }
 
   if (auth.user) {
