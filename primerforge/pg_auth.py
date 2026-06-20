@@ -249,7 +249,7 @@ def register_user(email: str, password: str, name: str = "") -> dict:
         user = dict(cur.fetchone())
 
         cur.execute(
-            """INSERT INTO token_balances (user_id, balance, total_purchased)
+            """INSERT INTO token_balances (user_id, balance, lifetime_purchased)
                VALUES (%s, 2, 2)""",
             (user["id"],)
         )
@@ -257,7 +257,7 @@ def register_user(email: str, password: str, name: str = "") -> dict:
     except Exception as e:
         db.rollback()
         logger.error(f"Registration failed: {e}")
-        return {"error": f"Registration failed: {e}"}
+        return {"error": "Registration failed. Please try again."}
     finally:
         cur.close()
 
