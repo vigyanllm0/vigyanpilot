@@ -285,14 +285,21 @@ LEFT JOIN token_balances tb ON tb.user_id = u.id
 LEFT JOIN subscriptions s ON s.user_id = u.id;
 
 CREATE OR REPLACE VIEW v_monthly_pnl AS
-SELECT date_trunc('month', COALESCE(r.created_at, c.created_at, f.created_at)) AS month,
-       COALESCE(SUM(r.net_revenue_inr), 0) AS total_revenue,
-       COALESCE(SUM(c.total_cogs_inr), 0) AS total_variable_cogs,
-       COALESCE(SUM(f.amount_inr), 0) AS total_fixed_costs,
-       COALESCE(SUM(r.net_revenue_inr), 0) - COALESCE(SUM(c.total_cogs_inr), 0) - COALESCE(SUM(f.amount_inr), 0) AS net_profit
-FROM (SELECT DISTINCT date_trunc('month', created_at) AS created_at FROM revenue_ledger) r
-FULL JOIN cost_ledger c ON date_trunc('month', c.created_at) = r.created_at
-FULL JOIN fixed_expenses f ON date_trunc('month', f.created_at) = r.created_at
+SELECT month,
+       COALESCE(SUM(revenue), 0) AS total_revenue,
+       COALESCE(SUM(variable_cogs), 0) AS total_variable_cogs,
+       COALESCE(SUM(fixed_costs), 0) AS total_fixed_costs,
+       COALESCE(SUM(revenue), 0) - COALESCE(SUM(variable_cogs), 0) - COALESCE(SUM(fixed_costs), 0) AS net_profit
+FROM (
+    SELECT date_trunc('month', r.created_at) AS month, r.net_revenue_inr AS revenue, 0::numeric AS variable_cogs, 0::numeric AS fixed_costs
+    FROM revenue_ledger r
+    UNION ALL
+    SELECT date_trunc('month', c.created_at) AS month, 0::numeric, c.total_cogs_inr, 0::numeric
+    FROM cost_ledger c
+    UNION ALL
+    SELECT date_trunc('month', f.created_at) AS month, 0::numeric, 0::numeric, f.amount_inr
+    FROM fixed_expenses f
+) combined
 GROUP BY month ORDER BY month DESC;
 
 CREATE OR REPLACE VIEW v_roi_dashboard AS

@@ -58,11 +58,34 @@ def detect_existing_schema():
     return cur.fetchone()[0]
 
 
+def split_sql(sql: str):
+    """Split SQL on semicolons, respecting $$ dollar-quoting blocks."""
+    stmts, buf = [], []
+    in_dollar = 0
+    i = 0
+    while i < len(sql):
+        if sql[i:i+2] == "$$":
+            in_dollar ^= 1
+            buf.append("$$")
+            i += 2
+            continue
+        if sql[i] == ";" and not in_dollar:
+            s = "".join(buf).strip()
+            if s:
+                stmts.append(s)
+            buf = []
+        else:
+            buf.append(sql[i])
+        i += 1
+    s = "".join(buf).strip()
+    if s:
+        stmts.append(s)
+    return stmts
+
+
 def apply_file(version, name, sql):
-    for stmt in sql.split(";"):
-        s = stmt.strip()
-        if s:
-            cur.execute(s)
+    for stmt in split_sql(sql):
+        cur.execute(stmt)
     cur.execute(
         "INSERT INTO schema_version (version, name) VALUES (%s, %s)",
         (version, name),
