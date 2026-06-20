@@ -122,4 +122,6 @@ jobs:
       - name: Health check via Vercel proxy
         run: |
           sleep 5
-          curl -sf https://vigyanllm.in/api/health && echo " — Vercel proxy OK" || echo " — Vercel proxy FAIL"
+          curl -sf https://vigyanllm.in/health || { echo " — Vercel proxy FAIL"; exit 1; }
+          curl -sf https://vigyanllm.in/api/config/public || { echo " — API config FAIL"; exit 1; }
+          echo " — All endpoints OK"
