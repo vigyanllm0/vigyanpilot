@@ -1321,6 +1321,23 @@ footer{padding:32px 0;border-top:1px solid var(--border)}
   </div>
 </div>
 
+<!-- ══ USER MENU POPUP ════════════════════════════════════════════════════ -->
+<div class="auth-overlay" id="user-menu-overlay" style="z-index:9998">
+  <div class="auth-card" style="max-width:320px;width:90%;position:relative">
+    <button onclick="$('user-menu-overlay').classList.remove('show')" style="position:absolute;top:14px;right:16px;background:none;border:none;font-size:20px;cursor:pointer;color:var(--muted)">×</button>
+    <div style="text-align:center;font-size:28px;margin-bottom:6px">👤</div>
+    <div class="auth-title" style="font-size:18px" id="popup-user-name">User</div>
+    <div class="auth-sub" style="margin-bottom:16px;font-size:11px" id="popup-user-email"></div>
+    <div id="popup-user-usage" style="text-align:center;font-size:11px;color:var(--text2);margin-bottom:16px;padding:8px;background:var(--surface);border-radius:8px"></div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <button class="btn-secondary" id="popup-history" style="width:100%;justify-content:center;font-size:12px">📋 Report History</button>
+      <button class="btn-secondary" id="popup-academic" style="width:100%;justify-content:center;font-size:12px">🎓 Academic Free Access</button>
+      <button class="btn-secondary" id="popup-referral" style="width:100%;justify-content:center;font-size:12px">🎁 Referral Program</button>
+      <button class="btn-secondary" id="popup-logout" style="width:100%;justify-content:center;font-size:12px;color:var(--red);border-color:var(--red)">Log out</button>
+    </div>
+  </div>
+</div>
+
 <!-- PAYMENT MODAL -->
 <div class="pay-overlay" id="pay-overlay">
   <div class="pay-card">
@@ -2558,7 +2575,6 @@ async function initAuth() {
 }
 
 function updateAuthUI() {
-  // Show/hide user pill in nav
   const navRight = document.querySelector('.nav-right');
   if (!navRight) return;
   let pill = $('user-nav-pill');
@@ -2569,37 +2585,23 @@ function updateAuthUI() {
     pill.innerHTML = '<div class="user-avatar" id="user-avatar">?</div><span id="user-nav-email">Guest</span>';
     pill.onclick = toggleUserMenu;
     navRight.prepend(pill);
-    // Add dropdown menu
-    const menu = document.createElement('div');
-    menu.id = 'user-menu';
-    menu.className = 'user-menu';
-    menu.innerHTML = `
-      <div class="user-menu-item" id="menu-usage">Usage: --</div>
-      <div class="user-menu-item" id="menu-history">📋 Report History</div>
-      <div class="user-menu-item" id="menu-academic">🎓 Academic Free Access</div>
-      <div class="user-menu-item" id="menu-referral">🎁 Referral Program</div>
-      <div class="user-menu-item danger" id="menu-logout">Log out</div>
-    `;
-    pill.style.position = 'relative';
-    pill.appendChild(menu);
-    $('menu-history')?.addEventListener('click', e => { e.stopPropagation(); openHistoryModal(); });
-    $('menu-academic')?.addEventListener('click', e => { e.stopPropagation(); openAcademicModal(); });
-    $('menu-referral')?.addEventListener('click', e => { e.stopPropagation(); openReferralPanel(); });
-    $('menu-logout')?.addEventListener('click', e => { e.stopPropagation(); logout(); });
+    $('popup-history')?.addEventListener('click', () => { $('user-menu-overlay').classList.remove('show'); openHistoryModal(); });
+    $('popup-academic')?.addEventListener('click', () => { $('user-menu-overlay').classList.remove('show'); openAcademicModal(); });
+    $('popup-referral')?.addEventListener('click', () => { $('user-menu-overlay').classList.remove('show'); openReferralPanel(); });
+    $('popup-logout')?.addEventListener('click', () => { $('user-menu-overlay').classList.remove('show'); logout(); });
   }
 
   if (auth.user) {
     pill.classList.add('show');
     $('user-avatar').textContent = (auth.user.name||auth.user.email||'U')[0].toUpperCase();
     $('user-nav-email').textContent = auth.user.email.split('@')[0];
-    // Show admin tab for admin users
+    $('popup-user-name').textContent = auth.user.name || auth.user.email;
+    $('popup-user-email').textContent = auth.user.email;
     const adminBtn = $('admin-tab-btn');
     if (adminBtn) {
       adminBtn.style.display = (auth.user.role === 'admin') ? '' : 'none';
     }
-    // Update usage display
     fetchUsageForMenu();
-    // Show academic popup once per session if not yet claimed
     if (!sessionStorage.getItem('acad_popup_shown')) {
       sessionStorage.setItem('acad_popup_shown', '1');
       setTimeout(maybeShowAcademicPopup, 2500);
@@ -2613,7 +2615,9 @@ function updateAuthUI() {
 }
 
 function toggleUserMenu() {
-  $('user-menu')?.classList.toggle('show');
+  if (!auth.token) { showAuthModal(); return; }
+  $('user-menu-overlay')?.classList.add('show');
+  fetchUsageForMenu();
 }
 
 function showAuthModal() {
@@ -2750,7 +2754,7 @@ function logout() {
   auth.token = ''; auth.user = null;
   sessionStorage.removeItem('pf_token');
   updateAuthUI();
-  $('user-menu')?.classList.remove('show');
+  $('user-menu-overlay')?.classList.remove('show');
 }
 
 function showPaymentModal() {
@@ -3166,11 +3170,9 @@ async function fetchUsageForMenu() {
     const r = await fetch(API + '/api/auth/usage', { headers: { 'Authorization': 'Bearer ' + auth.token } });
     if (!r.ok) return;
     const d = await r.json();
-    const menuUsage = $('menu-usage');
-    if (menuUsage) {
-      const total = (d.balance || 0) + (d.subscription_remaining || 0);
-      menuUsage.textContent = `Credits: ${total} available`;
-    }
+    const total = (d.balance || 0) + (d.subscription_remaining || 0);
+    const usageEl = $('popup-user-usage');
+    if (usageEl) usageEl.textContent = `Credits: ${total} available`;
   } catch(e) { /* silent */ }
 }
 
