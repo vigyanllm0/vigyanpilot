@@ -749,6 +749,74 @@ def complete_referral():
     return jsonify({"rewarded": True, "referrer_tokens_awarded": 5}), 200
 
 
+# ── Admin: Academic Claims Review ──────────────────────────────────────────
+
+@reports_bp.route("/api/admin/academic/list", methods=["GET"])
+@require_admin
+def admin_academic_list():
+    """List pending academic claims for admin review."""
+    claims = fetch_all(
+        """SELECT ac.id, ac.user_id, u.email, u.name, ac.institution, ac.department,
+                  ac.use_case, ac.email_edu, ac.document_path, ac.proof_method,
+                  ac.status, ac.tokens_granted, ac.created_at
+           FROM academic_claims ac
+           JOIN users u ON u.id = ac.user_id
+           ORDER BY ac.created_at DESC
+           LIMIT 100"""
+    )
+    return jsonify({"claims": claims}), 200
+
+
+@reports_bp.route("/api/admin/academic/review", methods=["POST"])
+@require_admin
+def admin_academic_review():
+    """Approve or reject a pending academic claim. Grants tokens on approval."""
+    data = request.get_json(silent=True) or {}
+    claim_id = data.get("claim_id")
+    action = (data.get("action") or "").strip().lower()
+
+    if not claim_id or action not in ("approve", "reject"):
+        return jsonify({"error": "claim_id and action (approve|reject) are required"}), 400
+
+    claim = fetch_one(
+        "SELECT id, user_id, status FROM academic_claims WHERE id = %s",
+        (claim_id,)
+    )
+    if not claim:
+        return jsonify({"error": "Claim not found"}), 404
+    if claim["status"] != "pending":
+        return jsonify({"error": f"Claim is already {claim['status']}"}), 400
+
+    admin_id = g.user["user_id"]
+
+    if action == "approve":
+        tokens = 10
+        execute(
+            """UPDATE academic_claims
+               SET status = 'approved', tokens_granted = %s, reviewed_by = %s, reviewed_at = NOW()
+               WHERE id = %s""",
+            (tokens, admin_id, claim_id)
+        )
+        execute(
+            """UPDATE token_balances
+               SET balance = balance + %s, total_purchased = total_purchased + %s
+               WHERE user_id = %s""",
+            (tokens, tokens, claim["user_id"])
+        )
+        logger.info("Academic claim %s approved by admin %s — %d tokens granted to user %s",
+                    claim_id, admin_id, tokens, claim["user_id"])
+        return jsonify({"success": True, "status": "approved", "tokens_granted": tokens}), 200
+    else:
+        execute(
+            """UPDATE academic_claims
+               SET status = 'rejected', reviewed_by = %s, reviewed_at = NOW()
+               WHERE id = %s""",
+            (admin_id, claim_id)
+        )
+        logger.info("Academic claim %s rejected by admin %s", claim_id, admin_id)
+        return jsonify({"success": True, "status": "rejected"}), 200
+
+
 # ── Feedback ───────────────────────────────────────────────────────────────
 
 @reports_bp.route("/api/feedback", methods=["POST"])

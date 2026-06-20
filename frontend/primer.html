@@ -938,6 +938,7 @@ footer{padding:32px 0;border-top:1px solid var(--border)}
     <button class="btn-secondary" data-asub="performance" onclick="showAdminSub('performance')">⚡ Performance</button>
     <button class="btn-secondary" data-asub="bans" onclick="showAdminSub('bans')">🚫 IP Bans</button>
     <button class="btn-secondary" data-asub="finance" onclick="showAdminSub('finance')">💰 Finance</button>
+    <button class="btn-secondary" data-asub="academic" onclick="showAdminSub('academic')">🎓 Academic</button>
   </div>
 
   <!-- Threats Sub -->
@@ -1005,6 +1006,12 @@ footer{padding:32px 0;border-top:1px solid var(--border)}
   <div class="admin-sub-panel" id="asub-finance" style="display:none">
     <h3 style="font-size:14px;font-weight:700;margin-bottom:12px;">Financial Summary</h3>
     <div id="admin-finance-content" style="font-size:13px;color:var(--text2);">Loading...</div>
+  </div>
+
+  <!-- Academic Claims Sub -->
+  <div class="admin-sub-panel" id="asub-academic" style="display:none">
+    <h3 style="font-size:14px;font-weight:700;margin-bottom:12px;">Academic Claims</h3>
+    <div id="admin-academic-content" style="font-size:13px;color:var(--text2);">Loading...</div>
   </div>
 
 </div>
@@ -2540,6 +2547,37 @@ document.addEventListener('DOMContentLoaded',function(){
 // ═══════════════════════════════════════════════════════════════════════════
 const auth = { token: sessionStorage.getItem('pf_token')||'', user: null, mode: 'login' };
 
+// ── Fetch wrapper with auto-refresh ───────────────────────────────────────
+const _origFetch = window.fetch;
+let _refreshing = null;
+window.fetch = function(input, init) {
+  return _origFetch(input, init).then(async res => {
+    if (res.status === 401 && !input?.includes?.('/api/auth/refresh') && auth.token) {
+      if (!_refreshing) {
+        _refreshing = _origFetch(API + '/api/auth/refresh', {method:'POST', credentials:'include'})
+          .then(r => r.json())
+          .then(d => {
+            if (d.success) { auth.token = d.token; auth.user = d.user; _saveAuth(); }
+            else { auth.token = ''; auth.user = null; _saveAuth(); }
+            return d.success;
+          })
+          .finally(() => { _refreshing = null; });
+      }
+      const ok = await _refreshing;
+      if (ok) {
+        if (!init) init = {};
+        if (!init.headers) init.headers = {};
+        init.headers['Authorization'] = 'Bearer ' + auth.token;
+        return _origFetch(input, init);
+      }
+    }
+    return res;
+  });
+};
+function _saveAuth() {
+  try { sessionStorage.setItem('pf_token', auth.token || ''); } catch(e) {}
+}
+
 async function initAuth() {
   // Fetch public config (Google Client ID, etc.)
   try { const r=await fetch(API+'/api/config/public', {}); if(r.ok) PF_CONFIG=await r.json(); } catch(_) {}
@@ -2755,6 +2793,7 @@ function logout() {
   sessionStorage.removeItem('pf_token');
   updateAuthUI();
   $('user-menu-overlay')?.classList.remove('show');
+  fetch(API+'/api/auth/logout', {method:'POST',headers:{'Content-Type':'application/json'},credentials:'include'}).catch(()=>{});
 }
 
 function showPaymentModal() {
@@ -2941,11 +2980,12 @@ function showAdminSub(name) {
   if (name === 'performance') loadAdminPerformance();
   if (name === 'bans') loadAdminBans();
   if (name === 'finance') loadAdminFinance();
+  if (name === 'academic') loadAdminAcademic();
 }
 
 async function adminApi(path, method='GET', body=null) {
   if (!auth.user || auth.user.role !== 'admin') return null;
-  const opts = {method, headers: { 'Authorization': `Bearer ${auth.token}`, 'Content-Type': 'application/json'}};
+  const opts = {method, credentials: 'include', headers: { 'Authorization': `Bearer ${auth.token}`, 'Content-Type': 'application/json'}};
   if (body) opts.body = JSON.stringify(body);
   const r = await fetch(API + path, opts);
   if (r.status === 401 || r.status === 403) return null;
@@ -3099,6 +3139,48 @@ async function loadAdminFinance() {
   if (!html) html = '<div style="color:var(--muted);text-align:center;padding:20px;">No financial data yet. Revenue appears after payments are captured.</div>';
   el.innerHTML = html;
 }
+
+async function loadAdminAcademic() {
+  const data = await adminApi('/api/admin/academic/list');
+  const el = $('admin-academic-content');
+  if (!data || !data.claims) { el.innerHTML = '<div style="color:var(--muted)">Unable to load academic claims.</div>'; return; }
+  if (data.claims.length === 0) {
+    el.innerHTML = '<div style="color:var(--muted);text-align:center;padding:20px;">No academic claims submitted yet.</div>';
+    return;
+  }
+  let html = '<div style="overflow-x:auto;"><table class="admin-table"><thead><tr><th>User</th><th>Email</th><th>Institution</th><th>Method</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead><tbody>';
+  data.claims.forEach(c => {
+    const statusColor = c.status === 'approved' ? 'var(--bio)' : c.status === 'rejected' ? 'var(--red)' : 'var(--amber)';
+    html += `<tr>
+      <td>${esc(c.name||'—')}</td>
+      <td style="font-size:10px;font-family:var(--font-s);">${esc(c.email)}</td>
+      <td>${esc(c.institution||'—')}</td>
+      <td><span style="background:var(--primary-soft);color:var(--primary);padding:2px 6px;border-radius:4px;font-size:10px;font-weight:600;">${c.proof_method||'email'}</span></td>
+      <td><span style="background:var(--${c.status==='approved'?'bio-soft':'red-soft'});color:${statusColor};padding:2px 6px;border-radius:4px;font-size:10px;font-weight:600;">${c.status}</span></td>
+      <td style="font-size:10px;">${c.created_at?.slice(0,10)||'—'}</td>
+      <td>${c.status === 'pending'
+        ? `<button class="btn-secondary" style="font-size:10px;padding:4px 10px;border-color:var(--bio);color:var(--bio);" onclick="approveAcademicClaim(${c.id})">Approve</button>
+           <button class="btn-secondary" style="font-size:10px;padding:4px 10px;border-color:var(--red);color:var(--red);margin-left:4px;" onclick="rejectAcademicClaim(${c.id})">Reject</button>`
+        : '<span style="color:var(--muted);font-size:10px;">—</span>'
+      }</td>
+    </tr>`;
+  });
+  html += '</tbody></table></div>';
+  el.innerHTML = html;
+}
+
+window.approveAcademicClaim = async function(claimId) {
+  const r = await adminApi('/api/admin/academic/review', 'POST', { claim_id: claimId, action: 'approve' });
+  if (r && r.success) loadAdminAcademic();
+  else alert('Failed to approve claim');
+};
+
+window.rejectAcademicClaim = async function(claimId) {
+  if (!confirm('Reject this academic claim?')) return;
+  const r = await adminApi('/api/admin/academic/review', 'POST', { claim_id: claimId, action: 'reject' });
+  if (r && r.success) loadAdminAcademic();
+  else alert('Failed to reject claim');
+};
 
 async function adminRunScan() {
   $('admin-scan-results').innerHTML = '<div style="color:var(--primary);">Scanning files...</div>';

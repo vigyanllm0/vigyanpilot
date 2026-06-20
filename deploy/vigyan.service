@@ -12,6 +12,10 @@ WorkingDirectory=/home/ubuntu/vigyanpilot
 # Load env vars from .env before the process starts
 EnvironmentFile=/home/ubuntu/vigyanpilot/.env
 
+# Auto-apply pending database migrations before starting
+ExecStartPre=/home/ubuntu/vigyanpilot/.venv/bin/python \
+    /home/ubuntu/vigyanpilot/deploy/migrations/migrate.py
+
 # Activate venv and start gunicorn
 ExecStart=/home/ubuntu/vigyanpilot/.venv/bin/gunicorn \
     -c deploy/gunicorn.conf.py \

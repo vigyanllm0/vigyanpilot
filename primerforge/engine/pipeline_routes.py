@@ -16,6 +16,7 @@ import logging
 import os
 import socket
 import uuid
+from concurrent.futures import ThreadPoolExecutor
 from urllib.parse import urlparse
 
 from flask import Blueprint, request, jsonify, g
@@ -27,6 +28,8 @@ from .branding import brand_response, brand_error
 logger = logging.getLogger("primerforge.engine.pipeline_routes")
 
 pipeline_bp = Blueprint("pipeline", __name__)
+
+_BACKGROUND_EXECUTOR = ThreadPoolExecutor(max_workers=2)
 
 
 def _celery_broker_available(timeout: float = 0.25) -> bool:
@@ -47,23 +50,21 @@ def _celery_broker_available(timeout: float = 0.25) -> bool:
         return False
 
 
-def _run_pipeline_synchronously(job_id: str, reason: str) -> str:
-    """Run the pipeline inline for local/dev mode and return the final status."""
-    logger.warning("VigyanLLM: Running pipeline synchronously for job %s: %s", job_id, reason)
+def _run_pipeline_background(job_id: str, reason: str) -> None:
+    """Run the pipeline in a background thread. Updates DB as it goes."""
+    logger.info("VigyanLLM: Running pipeline in background for job %s: %s", job_id, reason)
     try:
         from .tasks import run_pipeline
 
         result = run_pipeline(job_id)
         status = result.get("status", "unknown") if isinstance(result, dict) else "unknown"
-        logger.info("VigyanLLM: Pipeline %s completed synchronously: %s", job_id, status)
-    except Exception as sync_err:
-        logger.error("VigyanLLM: Synchronous pipeline run failed for %s: %s", job_id, sync_err)
+        logger.info("VigyanLLM: Pipeline %s completed in background: %s", job_id, status)
+    except Exception as bg_err:
+        logger.error("VigyanLLM: Background pipeline run failed for %s: %s", job_id, bg_err)
         execute(
             "UPDATE pipeline_jobs SET status = 'failed', error_log = %s, completed_at = NOW() WHERE id = %s",
-            (str(sync_err), job_id),
+            (str(bg_err), job_id),
         )
-    updated_job = fetch_one("SELECT status FROM pipeline_jobs WHERE id = %s", (job_id,))
-    return updated_job["status"] if updated_job else "failed"
 
 
 def _coerce_int(value, default: int) -> int:
@@ -283,23 +284,25 @@ def submit_pipeline():
 
     # Enqueue Celery task only when Redis broker is reachable. Local/dev mode
     # often has no Redis, and Celery can otherwise spend seconds retrying.
+    # Fallback: ThreadPoolExecutor runs the pipeline in a background thread.
     if _celery_broker_available():
         try:
             from .tasks import run_pipeline
             run_pipeline.delay(job_id)
-            final_status = "queued"
-            logger.info(f"VigyanLLM: Pipeline job {job_id} queued for user {user_id} (mode={mode})")
+            logger.info(f"VigyanLLM: Pipeline job {job_id} queued via Celery for user {user_id} (mode={mode})")
         except Exception as e:
-            final_status = _run_pipeline_synchronously(job_id, f"Celery enqueue failed: {e}")
+            _BACKGROUND_EXECUTOR.submit(_run_pipeline_background, job_id, f"Celery enqueue failed: {e}")
+            logger.warning("VigyanLLM: Celery enqueue failed for %s, falling back to ThreadPoolExecutor: %s", job_id, e)
     else:
-        final_status = _run_pipeline_synchronously(job_id, "Redis broker unavailable")
+        _BACKGROUND_EXECUTOR.submit(_run_pipeline_background, job_id, "Redis broker unavailable")
+        logger.info("VigyanLLM: Pipeline job %s dispatched to background thread (mode=%s)", job_id, mode)
 
     return jsonify(brand_response({
         "job_id": job_id,
-        "status": final_status,
+        "status": "queued",
         "mode": mode,
         "total_steps": 22,
-        "message": "Pipeline job submitted." + (" Poll /api/pipeline/status for progress." if final_status == "queued" else f" Status: {final_status}"),
+        "message": "Pipeline job submitted. Poll /api/pipeline/status for progress.",
     })), 202
 @pipeline_bp.route("/api/pipeline/status/<job_id>", methods=["GET"])
 @require_auth

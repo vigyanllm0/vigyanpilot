@@ -31,6 +31,7 @@ SECRET_KEY = os.environ.get("PRIMERFORGE_SECRET", "")
 if not SECRET_KEY:
     raise RuntimeError("PRIMERFORGE_SECRET environment variable is required")
 TOKEN_EXPIRY = 86400 * 7  # 7 days
+REFRESH_TOKEN_EXPIRY = 86400 * 30  # 30 days
 
 ADMIN_EMAIL = os.environ.get("PRIMERFORGE_ADMIN_EMAIL", "")
 ADMIN_PASSWORD = os.environ.get("PRIMERFORGE_ADMIN_PASSWORD", "")
@@ -83,6 +84,57 @@ def create_token(email: str, role: str, user_id: int) -> str:
 
     sessions.append(token)
     return token
+
+
+def create_refresh_token(user_id: int) -> str:
+    """Create a long-lived refresh token stored as HTTP-only cookie."""
+    payload = json.dumps({
+        "user_id": user_id,
+        "type": "refresh",
+        "iat": int(time.time()),
+        "exp": int(time.time() + REFRESH_TOKEN_EXPIRY),
+    })
+    sig = hmac.new(SECRET_KEY.encode(), payload.encode(), hashlib.sha256).hexdigest()
+    return base64.urlsafe_b64encode(payload.encode()).decode() + "." + sig
+
+
+def verify_refresh_token(token: str) -> dict | None:
+    """Verify a refresh token. Returns {'user_id'} or None."""
+    if not token or not isinstance(token, str):
+        return None
+    try:
+        parts = token.split(".")
+        if len(parts) != 2:
+            return None
+        payload_b64, sig = parts
+        payload = base64.urlsafe_b64decode(payload_b64 + "==").decode()
+        expected_sig = hmac.new(SECRET_KEY.encode(), payload.encode(), hashlib.sha256).hexdigest()
+        if not hmac.compare_digest(sig, expected_sig):
+            return None
+        data = json.loads(payload)
+        if data.get("type") != "refresh":
+            return None
+        if data.get("exp", 0) < time.time():
+            return None
+        return {"user_id": data["user_id"]}
+    except Exception:
+        return None
+
+
+def refresh_access_token(refresh_token: str) -> dict | None:
+    """Exchange a refresh token for a new access token. Returns {'token', 'user'} or None on failure."""
+    data = verify_refresh_token(refresh_token)
+    if not data:
+        return None
+    user_id = data["user_id"]
+    user = fetch_one("SELECT email, role FROM users WHERE id = %s AND status = 'active'", (user_id,))
+    if not user:
+        return None
+    token = create_token(user["email"], user["role"], user_id)
+    return {
+        "token": token,
+        "user": {"email": user["email"], "role": user["role"], "id": user_id},
+    }
 
 
 def _token_not_expired(token: str) -> bool:

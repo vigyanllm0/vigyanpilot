@@ -12,7 +12,8 @@ from flask import Blueprint, request, jsonify, g
 
 from .pg_auth import (
     register_user, login_user, change_password, invalidate_token,
-    get_current_user, require_auth, require_admin, check_usage, log_action
+    get_current_user, require_auth, require_admin, check_usage, log_action,
+    create_refresh_token, refresh_access_token
 )
 from .database import fetch_one, fetch_all, execute
 
@@ -86,6 +87,7 @@ def login():
         except Exception as e:
             logger.warning(f"IP check failed (skipping): {e}")
 
+    refresh_token = create_refresh_token(result["user"]["id"])
     resp = jsonify({
         "success": True,
         "token": result["token"],
@@ -96,19 +98,52 @@ def login():
         httponly=True, secure=True, samesite='None',
         max_age=86400 * 7, path='/'
     )
+    resp.set_cookie(
+        'pf_refresh', refresh_token,
+        httponly=True, secure=True, samesite='None',
+        max_age=86400 * 30, path='/api/auth'
+    )
+    return resp, 200
+
+
+@auth_bp.route("/api/auth/refresh", methods=["POST"])
+def refresh():
+    """Exchange refresh token cookie for a new access token."""
+    refresh_token = request.cookies.get("pf_refresh", "")
+    if not refresh_token:
+        return jsonify({"error": "No refresh token", "code": "NO_REFRESH"}), 401
+    result = refresh_access_token(refresh_token)
+    if not result:
+        resp = jsonify({"error": "Invalid or expired refresh token", "code": "BAD_REFRESH"})
+        resp.set_cookie('pf_refresh', '', httponly=True, secure=True, samesite='None', max_age=0, path='/api/auth')
+        return resp, 401
+    resp = jsonify({
+        "success": True,
+        "token": result["token"],
+        "user": result["user"],
+    })
+    resp.set_cookie(
+        'pf_token', result["token"],
+        httponly=True, secure=True, samesite='None',
+        max_age=86400 * 7, path='/'
+    )
+    resp.set_cookie(
+        'pf_refresh', refresh_token,
+        httponly=True, secure=True, samesite='None',
+        max_age=86400 * 30, path='/api/auth'
+    )
     return resp, 200
 
 
 @auth_bp.route("/api/auth/logout", methods=["POST"])
-@require_auth
 def logout():
     """Invalidate the current token (logout)."""
-    auth = request.headers.get("Authorization", "")
-    if auth.startswith("Bearer "):
-        token = auth[7:]
-        invalidate_token(token)
+    auth_header = request.headers.get("Authorization", "")
+    if auth_header.startswith("Bearer "):
+        invalidate_token(auth_header[7:])
     resp = jsonify({"success": True, "message": "Logged out successfully."})
     resp.set_cookie('pf_token', '', httponly=True, secure=True, samesite='None', max_age=0, path='/')
+    resp.set_cookie('pf_refresh', '', httponly=True, secure=True, samesite='None', max_age=0, path='/api/auth')
     return resp, 200
 
 
