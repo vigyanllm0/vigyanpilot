@@ -13,6 +13,13 @@ from pathlib import Path
 
 MIGRATIONS_DIR = Path(__file__).parent
 INITDB_DIR = Path(__file__).parent.parent.parent / "infra" / "initdb"
+
+# Load .env from project root
+_env_path = MIGRATIONS_DIR.parent.parent / ".env"
+if _env_path.exists():
+    from dotenv import load_dotenv
+    load_dotenv(_env_path)
+
 DATABASE_URL = os.environ.get("DATABASE_URL", "")
 
 if not DATABASE_URL:
