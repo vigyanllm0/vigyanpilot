@@ -18,8 +18,12 @@ import csv
 import io
 import json
 import logging
+import os
+import secrets
 from datetime import datetime, timezone
+from pathlib import Path
 from flask import Blueprint, request, jsonify, g, make_response
+from werkzeug.utils import secure_filename
 
 from .pg_auth import require_auth
 from .database import fetch_one, fetch_all, execute, execute_returning
@@ -451,13 +455,38 @@ def _is_academic_email(email: str) -> bool:
     return True
 
 
+_UPLOAD_DIR = Path(os.environ.get("ACADEMIC_UPLOAD_DIR", "/var/log/vigyan/uploads"))
+_ALLOWED_EXTENSIONS = {".pdf", ".jpg", ".jpeg", ".png", ".doc", ".docx"}
+
+
+@reports_bp.route("/api/academic/upload-document", methods=["POST"])
+@require_auth
+def upload_academic_document():
+    """Upload a university document as proof of academic affiliation."""
+    user_id = g.user["user_id"]
+    if "document" not in request.files:
+        return jsonify({"error": "No document file provided."}), 400
+    file = request.files["document"]
+    if not file.filename:
+        return jsonify({"error": "Empty filename."}), 400
+    ext = Path(file.filename).suffix.lower()
+    if ext not in _ALLOWED_EXTENSIONS:
+        return jsonify({"error": f"Unsupported file type. Allowed: {', '.join(_ALLOWED_EXTENSIONS)}"}), 400
+    _UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+    safe = secure_filename(f"{user_id}_{secrets.token_hex(8)}{ext}")
+    path = _UPLOAD_DIR / safe
+    file.save(str(path))
+    return jsonify({"document_path": str(path), "filename": safe}), 200
+
+
 @reports_bp.route("/api/academic/claim", methods=["POST"])
 @require_auth
 def claim_academic():
     """
     Submit an academic free-access claim.
-    Requires a valid institutional email (not gmail/yahoo/hotmail).
-    Grants 10 immediate tokens on approval.
+    Two proof methods:
+      - email: provide institutional email -> auto-approved, 10 tokens
+      - document: upload proof document -> pending, admin reviews, grants tokens
     """
     user_id = g.user["user_id"]
     data = request.get_json(silent=True) or {}
@@ -466,24 +495,11 @@ def claim_academic():
     department = (data.get("department") or "").strip()[:256]
     use_case = (data.get("use_case") or "").strip()[:2000]
     email_edu = (data.get("email_edu") or "").strip().lower()[:320]
+    proof_method = (data.get("proof_method") or "email").strip()
+    document_path = (data.get("document_path") or "").strip()
 
     if not institution:
         return jsonify({"error": "Institution name is required."}), 400
-
-    if not email_edu:
-        return jsonify({
-            "error": "Institutional email is required to verify academic affiliation."
-        }), 400
-
-    if not _is_academic_email(email_edu):
-        return jsonify({
-            "error": (
-                "Personal email addresses (Gmail, Yahoo, Hotmail, etc.) are not accepted. "
-                "Please provide your official university or institutional email "
-                "(e.g. yourname@iitd.ac.in, yourname@aiims.edu)."
-            ),
-            "code": "NON_ACADEMIC_EMAIL",
-        }), 400
 
     # Check for existing claim
     existing = fetch_one(
@@ -499,36 +515,55 @@ def claim_academic():
             "message": f"You already submitted an academic claim (status: {existing['status']}).",
         }), 200
 
-    # Insert claim — auto-approved on valid institutional email
+    if proof_method == "document":
+        if not document_path:
+            return jsonify({"error": "Document proof required. Upload a document first via /api/academic/upload-document."}), 400
+        status, tokens = "pending", 0
+    else:
+        if not email_edu:
+            return jsonify({"error": "Institutional email is required for email proof."}), 400
+        if not _is_academic_email(email_edu):
+            return jsonify({
+                "error": (
+                    "Personal email addresses (Gmail, Yahoo, Hotmail, etc.) are not accepted. "
+                    "Please provide your official university or institutional email "
+                    "(e.g. yourname@iitd.ac.in, yourname@aiims.edu)."
+                ),
+                "code": "NON_ACADEMIC_EMAIL",
+            }), 400
+        status, tokens = "approved", 10
+
     claim = execute_returning(
         """INSERT INTO academic_claims
-           (user_id, institution, department, use_case, email_edu, status, tokens_granted)
-           VALUES (%s, %s, %s, %s, %s, 'approved', 10)
+           (user_id, institution, department, use_case, email_edu, document_path, proof_method, status, tokens_granted)
+           VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
            RETURNING id, created_at""",
-        (user_id, institution, department, use_case, email_edu)
+        (user_id, institution, department, use_case, email_edu, document_path, proof_method, status, tokens)
     )
 
-    # Credit 10 free tokens immediately
-    execute(
-        """UPDATE token_balances
-           SET balance = balance + 10,
-               total_purchased = total_purchased + 10
-           WHERE user_id = %s""",
-        (user_id,)
-    )
+    if tokens > 0:
+        execute(
+            """UPDATE token_balances
+               SET balance = balance + %s, total_purchased = total_purchased + %s
+               WHERE user_id = %s""",
+            (tokens, tokens, user_id)
+        )
 
-    logger.info("Academic claim approved — user %s, institution: %s, email: %s",
-                user_id, institution, email_edu)
+    logger.info("Academic claim %s — user %s, institution: %s, method: %s, tokens: %d",
+                status, user_id, institution, proof_method, tokens)
 
     return jsonify({
         "success": True,
         "claim_id": claim["id"],
-        "tokens_granted": 10,
+        "tokens_granted": tokens,
+        "status": status,
         "message": (
-            "Academic access approved! 10 free design runs have been credited to your account. "
-            "Please share your experience after using the tool."
+            "Academic access approved! 10 free design runs have been credited."
+            if status == "approved" else
+            "Your academic claim has been submitted with document proof. "
+            "An administrator will review it shortly."
         ),
-    }), 201
+    }), 201 if status == "approved" else 202
 
 
 @reports_bp.route("/api/academic/status", methods=["GET"])
@@ -609,7 +644,7 @@ def get_referral_code():
 
     return jsonify({
         "referral_code": code,
-        "referral_url": f"https://vigyanllm.in/primer.html?ref={code}",
+        "referral_url": f"https://vigyanllm.in/r/{code}",
         "tokens_per_referral": 5,
         "stats": {
             "successful_referrals": stats["successful"] if stats else 0,

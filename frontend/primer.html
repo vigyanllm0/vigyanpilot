@@ -1243,6 +1243,10 @@ footer{padding:32px 0;border-top:1px solid var(--border)}
       VigyanLLM offers <strong>10 free validated primer design runs</strong> to researchers, students, and faculty at academic institutions. No credit card required.
     </div>
     <div id="academic-claim-form">
+      <div style="display:flex;gap:8px;margin-bottom:14px;border:1px solid var(--border);border-radius:8px;overflow:hidden">
+        <button type="button" id="acad-proof-email" class="btn-secondary" style="flex:1;border-radius:0;border:none;background:var(--primary);color:#fff" onclick="setAcademicProof('email')">📧 Email Proof</button>
+        <button type="button" id="acad-proof-doc" class="btn-secondary" style="flex:1;border-radius:0;border:none" onclick="setAcademicProof('document')">📄 Document Proof</button>
+      </div>
       <div class="form-group">
         <label class="form-label">Institution / University *</label>
         <input type="text" id="acad-institution" class="form-input" placeholder="e.g. IIT Delhi, AIIMS, University of Pune">
@@ -1251,10 +1255,19 @@ footer{padding:32px 0;border-top:1px solid var(--border)}
         <label class="form-label">Department</label>
         <input type="text" id="acad-department" class="form-input" placeholder="e.g. Biochemistry, Genetics, Molecular Biology">
       </div>
-      <div class="form-group">
+      <div class="form-group" id="acad-email-group">
         <label class="form-label">Institutional Email Address *</label>
         <input type="email" id="acad-email" class="form-input" placeholder="yourname@iitd.ac.in / yourname@aiims.edu">
         <div class="form-hint" style="color:var(--amber)">⚠ Gmail, Yahoo, Hotmail, and other personal emails are NOT accepted. Use your official university or institution email only.</div>
+      </div>
+      <div class="form-group" id="acad-doc-group" style="display:none">
+        <label class="form-label">Upload Document Proof *</label>
+        <div style="border:2px dashed var(--border);border-radius:8px;padding:16px;text-align:center;cursor:pointer" onclick="document.getElementById('acad-file-input').click()">
+          <div style="font-size:28px;margin-bottom:6px">📎</div>
+          <div style="font-size:12px;color:var(--muted)" id="acad-file-name">Click to upload ID card, bonafide certificate, or any proof of academic affiliation (PDF, JPG, PNG)</div>
+        </div>
+        <input type="file" id="acad-file-input" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" style="display:none" onchange="handleAcademicFileUpload(this)">
+        <div id="acad-upload-status" style="font-size:11px;margin-top:6px;color:var(--muted)"></div>
       </div>
       <div class="form-group">
         <label class="form-label">Brief research use case</label>
@@ -1266,13 +1279,12 @@ footer{padding:32px 0;border-top:1px solid var(--border)}
         <span id="acad-btn-text">Claim 10 Free Runs</span>
       </button>
       <div style="margin-top:10px;font-size:11px;color:var(--muted);text-align:center">
-        By submitting, you confirm you are affiliated with an academic institution.<br>
-        Runs are credited immediately upon verification of institutional email.
+        By submitting, you confirm you are affiliated with an academic institution.
       </div>
     </div>
     <div id="academic-claim-success" style="display:none;text-align:center;padding:20px 0">
-      <div style="font-size:40px;margin-bottom:8px">✅</div>
-      <div style="font-size:16px;font-weight:700;color:var(--bio);margin-bottom:8px">10 free runs credited!</div>
+      <div style="font-size:40px;margin-bottom:8px" id="acad-success-icon">✅</div>
+      <div style="font-size:16px;font-weight:700;color:var(--bio);margin-bottom:8px" id="acad-success-msg">10 free runs credited!</div>
       <div style="font-size:13px;color:var(--text2);margin-bottom:16px">Please share your experience after using the tool. Your feedback helps us improve.</div>
       <div id="academic-feedback-form">
         <div class="form-group">
@@ -3159,8 +3171,6 @@ async function fetchUsageForMenu() {
   } catch(e) { /* silent */ }
 }
 
-})();
-
 // ═══════════════════════════════════════════════════════════════════════════
 // ACADEMIC POPUP, REPORT HISTORY, FEEDBACK, IP ENFORCEMENT
 // ═══════════════════════════════════════════════════════════════════════════
@@ -3197,6 +3207,55 @@ function closeAcademicModal() {
   $('academic-overlay')?.classList.remove('show');
 }
 
+let _academicProofMethod = 'email';
+let _academicDocPath = '';
+
+function setAcademicProof(method) {
+  _academicProofMethod = method;
+  const emailBtn = $('acad-proof-email');
+  const docBtn = $('acad-proof-doc');
+  const emailGroup = $('acad-email-group');
+  const docGroup = $('acad-doc-group');
+  if (method === 'email') {
+    emailBtn.style.background = 'var(--primary)'; emailBtn.style.color = '#fff';
+    docBtn.style.background = ''; docBtn.style.color = '';
+    emailGroup.style.display = ''; docGroup.style.display = 'none';
+  } else {
+    docBtn.style.background = 'var(--primary)'; docBtn.style.color = '#fff';
+    emailBtn.style.background = ''; emailBtn.style.color = '';
+    emailGroup.style.display = 'none'; docGroup.style.display = '';
+  }
+}
+
+async function handleAcademicFileUpload(input) {
+  const file = input.files?.[0];
+  if (!file) return;
+  const maxSize = 5 * 1024 * 1024; // 5MB
+  if (file.size > maxSize) {
+    $('acad-upload-status').textContent = 'File too large (max 5MB)';
+    return;
+  }
+  $('acad-upload-status').textContent = 'Uploading…';
+  const fd = new FormData();
+  fd.append('document', file);
+  try {
+    const r = await fetch(API + '/api/academic/upload-document', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + auth.token },
+      body: fd
+    });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.error);
+    _academicDocPath = d.document_path;
+    $('acad-file-name').textContent = '✅ ' + file.name;
+    $('acad-upload-status').textContent = 'Document uploaded successfully';
+    $('acad-upload-status').style.color = 'var(--bio)';
+  } catch(e) {
+    $('acad-upload-status').textContent = 'Upload failed: ' + e.message;
+    $('acad-upload-status').style.color = 'var(--bad)';
+  }
+}
+
 async function submitAcademicClaim() {
   const institution = $('acad-institution')?.value.trim();
   const department = $('acad-department')?.value.trim();
@@ -3208,26 +3267,32 @@ async function submitAcademicClaim() {
     if (errEl) { errEl.textContent = 'Institution name is required'; errEl.classList.add('show'); }
     return;
   }
-  if (!emailEdu) {
-    if (errEl) { errEl.textContent = 'Institutional email is required'; errEl.classList.add('show'); }
-    return;
-  }
 
-  // Client-side free-mail check
-  const freeDomains = ['gmail.com','yahoo.com','yahoo.in','yahoo.co.in','hotmail.com',
-    'outlook.com','live.com','msn.com','rediffmail.com','icloud.com','proton.me',
-    'protonmail.com','aol.com','me.com','mac.com'];
-  const emailDomain = emailEdu.includes('@') ? emailEdu.split('@')[1] : '';
-  if (freeDomains.some(d => emailDomain === d || emailDomain.endsWith('.'+d))) {
-    if (errEl) {
-      errEl.textContent = 'Personal email addresses (Gmail, Yahoo, Hotmail, etc.) are not accepted. Please use your official university or institutional email (e.g. yourname@iitd.ac.in).';
-      errEl.classList.add('show');
+  if (_academicProofMethod === 'email') {
+    if (!emailEdu) {
+      if (errEl) { errEl.textContent = 'Institutional email is required'; errEl.classList.add('show'); }
+      return;
     }
-    return;
-  }
-  if (!emailDomain.includes('.')) {
-    if (errEl) { errEl.textContent = 'Please enter a valid institutional email address'; errEl.classList.add('show'); }
-    return;
+    const freeDomains = ['gmail.com','yahoo.com','yahoo.in','yahoo.co.in','hotmail.com',
+      'outlook.com','live.com','msn.com','rediffmail.com','icloud.com','proton.me',
+      'protonmail.com','aol.com','me.com','mac.com'];
+    const emailDomain = emailEdu.includes('@') ? emailEdu.split('@')[1] : '';
+    if (freeDomains.some(d => emailDomain === d || emailDomain.endsWith('.'+d))) {
+      if (errEl) {
+        errEl.textContent = 'Personal email addresses (Gmail, Yahoo, Hotmail, etc.) are not accepted. Please use your official university or institutional email (e.g. yourname@iitd.ac.in).';
+        errEl.classList.add('show');
+      }
+      return;
+    }
+    if (!emailDomain.includes('.')) {
+      if (errEl) { errEl.textContent = 'Please enter a valid institutional email address'; errEl.classList.add('show'); }
+      return;
+    }
+  } else {
+    if (!_academicDocPath) {
+      if (errEl) { errEl.textContent = 'Please upload a document as proof'; errEl.classList.add('show'); }
+      return;
+    }
   }
 
   if (!auth.token) { showAuthModal(); closeAcademicModal(); return; }
@@ -3244,7 +3309,13 @@ async function submitAcademicClaim() {
     const r = await fetch(API + '/api/academic/claim', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + auth.token },
-      body: JSON.stringify({ institution, department, email_edu: emailEdu, use_case: useCase })
+      body: JSON.stringify({
+        institution, department,
+        email_edu: _academicProofMethod === 'email' ? emailEdu : '',
+        use_case: useCase,
+        proof_method: _academicProofMethod,
+        document_path: _academicDocPath
+      })
     });
     const d = await r.json();
     if (!r.ok && !d.already_claimed) {
@@ -3254,10 +3325,15 @@ async function submitAcademicClaim() {
       if (btnText) btnText.textContent = 'Claim 10 Free Runs';
       return;
     }
-    // Success — show the success panel
     $('academic-claim-form').style.display = 'none';
     $('academic-claim-success').style.display = '';
-    // Refresh usage in menu
+    if (d.status === 'approved') {
+      $('acad-success-icon').textContent = '✅';
+      $('acad-success-msg').textContent = '10 free runs credited!';
+    } else {
+      $('acad-success-icon').textContent = '📋';
+      $('acad-success-msg').textContent = 'Claim submitted — awaiting admin review';
+    }
     fetchUsageForMenu();
   } catch(e) {
     if (errEl) { errEl.textContent = 'Network error: ' + e.message; errEl.classList.add('show'); }
@@ -3454,7 +3530,7 @@ async function loadReferralPanel() {
     });
     const d = await r.json();
     if (!r.ok) throw new Error(d.error || 'Failed to load referral info');
-    const url = d.referral_url || `${window.location.origin}/primer.html?ref=${d.referral_code}`;
+    const url = d.referral_url || `${window.location.origin}/r/${d.referral_code}`;
     const stats = d.stats || {};
     body.innerHTML = `
       <div style="margin-bottom:12px">
@@ -3529,6 +3605,34 @@ async function applyPendingReferral(email) {
     sessionStorage.removeItem('pending_ref_code');
   } catch(e) { /* silent */ }
 }
+
+// ── Expose globals for HTML onclick attributes ──────────────────────────
+window.$ = $;
+window.esc = esc;
+window.auth = auth;
+window.openReferralPanel = openReferralPanel;
+window.openAcademicModal = openAcademicModal;
+window.closeAcademicModal = closeAcademicModal;
+window.setAcademicProof = setAcademicProof;
+window.submitAcademicClaim = submitAcademicClaim;
+window.handleAcademicFileUpload = handleAcademicFileUpload;
+window.setStarRating = setStarRating;
+window.submitFeedback = submitFeedback;
+window.openHistoryModal = openHistoryModal;
+window.refreshAdminPanel = refreshAdminPanel;
+window.showAdminSub = showAdminSub;
+window.adminRunScan = adminRunScan;
+window.adminCheckIntegrity = adminCheckIntegrity;
+window.adminCreateBaseline = adminCreateBaseline;
+window.adminBanIp = adminBanIp;
+window.adminBlockUser = adminBlockUser;
+window.adminUnblockUser = adminUnblockUser;
+window.adminUnban = adminUnban;
+window.deleteReport = deleteReport;
+window.copyReferralLink = copyReferralLink;
+window.toggleUserMenu = toggleUserMenu;
+
+})();
 </script>
 </body>
 </html>

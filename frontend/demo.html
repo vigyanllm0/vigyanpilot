@@ -21,303 +21,220 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="apple-touch-icon" href="/logo.svg">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&amp;display=swap" rel="stylesheet">
-<script src="https://cdn.tailwindcss.com"></script>
-<style>
-  body {
-    background-color: #0b1120;
-    color: #e2e8f0;
-    font-family: 'DM Sans', system-ui, sans-serif;
-  }
-  .serif-heading {
-    font-family: 'DM Sans', system-ui, sans-serif;
-    font-weight: 700;
-  }
-  .mono {
-    font-family: 'DM Sans', system-ui, sans-serif;
-    font-weight: 600;
-    letter-spacing: 0.04em;
-  }
-  .video-glow {
-    box-shadow: 0 0 0 1px #1e293b, 0 20px 40px rgba(0,0,0,0.7), 0 0 60px rgba(34,211,238,0.05);
-  }
-  .card-hover {
-    transition: box-shadow 0.3s ease, border-color 0.3s ease;
-  }
-  .card-hover:hover {
-    box-shadow: 0 0 0 1px #22d3ee, 0 20px 40px rgba(0,0,0,0.7), 0 0 60px rgba(34,211,238,0.12);
-  }
-  .active-tab {
-    border-bottom: 2px solid #22d3ee !important;
-    color: #22d3ee !important;
-  }
-  video::-webkit-media-controls-panel {
-    background: #0f172a;
-  }
-</style>
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "BreadcrumbList",
-  "itemListElement": [
-    { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://vigyanllm.in/" },
-    { "@type": "ListItem", "position": 2, "name": "Product Demo Suite", "item": "https://vigyanllm.in/demo.html" }
-  ]
-}
-</script>
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "VideoObject",
-  "name": "VigyanLLM Platform Demo",
-  "description": "Full platform tour showing the Consensus Pipeline, Smart Switch, and VigyanLLM Primer design workflows.",
-  "thumbnailUrl": "https://vigyanllm.in/poster.png",
-  "uploadDate": "2026-06-10",
-  "contentUrl": "https://vigyanllm.in/product%20demo.mp4",
-  "embedUrl": "https://vigyanllm.in/demo.html"
-}
-</script>
 <link rel="manifest" href="/manifest.json">
 <script>if('serviceWorker'in navigator)navigator.serviceWorker.register('/sw.js')</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#ffffff;--surface:#f8f9fb;--surface2:#f1f4f9;--border:#e4e7ec;--primary:#1a56ff;--primary-soft:#eff3ff;--bio:#059669;--bio-soft:#ecfdf5;--amber:#d97706;--amber-soft:#fffbeb;--red:#dc2626;--red-soft:#fef2f2;--text:#0d1117;--text2:#4b5563;--muted:#9ca3af;--font-s:'DM Sans',sans-serif;--max-w:1280px}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--font-s);line-height:1.6;-webkit-font-smoothing:antialiased}
+a{text-decoration:none;color:inherit}
+nav{position:sticky;top:0;background:rgba(255,255,255,.96);backdrop-filter:blur(10px);border-bottom:1px solid var(--border);z-index:100;height:64px}
+.nav-inner{display:flex;justify-content:space-between;align-items:center;height:100%;max-width:var(--max-w);margin:0 auto;padding:0 24px}
+.logo{font-size:20px;color:var(--text);display:inline-flex;align-items:center;gap:9px}
+.nav-links{display:flex;gap:24px;align-items:center}
+.nav-links a{font-size:13px;color:var(--text2);transition:color .15s}
+.nav-links a:hover,.nav-links a.active{color:var(--primary)}
+.demo-hero{text-align:center;padding:48px 24px 32px;background:var(--surface);border-bottom:1px solid var(--border)}
+.demo-hero h1{font-size:clamp(1.6rem,3.5vw,2.2rem);font-weight:700;margin-bottom:8px}
+.demo-hero p{color:var(--text2);max-width:600px;margin:0 auto 24px;font-size:14px;line-height:1.7}
+.eyebrow{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--primary);margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:10px}
+.tab-bar{display:flex;gap:0;border-bottom:2px solid var(--border);justify-content:center;flex-wrap:wrap}
+.tab-btn{background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;padding:10px 18px;font-size:12px;font-weight:500;color:var(--text2);cursor:pointer;transition:all .15s;font-family:var(--font-s)}
+.tab-btn:hover{color:var(--text)}
+.tab-btn.active{border-bottom-color:var(--primary);color:var(--primary)}
+main{max-width:var(--max-w);margin:0 auto;padding:24px}
+.card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:20px}
+.card{border:1px solid var(--border);border-radius:12px;overflow:hidden;background:var(--surface);transition:box-shadow .2s,border-color .2s}
+.card:hover{border-color:var(--primary);box-shadow:0 4px 20px rgba(26,86,255,.08)}
+.card-video-header{display:flex;align-items:center;justify-content:space-between;height:36px;background:var(--surface2);padding:0 12px;border-bottom:1px solid var(--border)}
+.card-video-header .dots{display:flex;gap:5px}
+.card-video-header .dot{width:10px;height:10px;border-radius:50%}
+.card-video-header .label{font-size:10px;color:var(--muted);font-family:var(--font-s);font-weight:600;letter-spacing:.04em;max-width:40%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.card-video-header .badge{background:var(--primary-soft);color:var(--primary);border-radius:4px;padding:2px 8px;font-size:9px;font-weight:700;letter-spacing:.06em}
+video{display:block;width:100%;aspect-ratio:16/9;object-fit:contain;background:#020617}
+.card-body{padding:16px}
+.card-body h2{font-size:16px;font-weight:700;margin-bottom:2px}
+.card-body .sub{font-size:12px;color:var(--primary);font-style:italic;margin-bottom:10px}
+.card-body .desc{font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:12px}
+.card-body .section-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:6px}
+.card-body ul{list-style:none;display:flex;flex-direction:column;gap:4px;margin-bottom:12px}
+.card-body ul li{font-size:12px;color:var(--text2);display:flex;gap:8px;line-height:1.5}
+.card-body ul li span:first-child{color:var(--primary);font-size:10px}
+.card-footer{display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--border);padding-top:10px;margin-top:2px}
+.card-footer .runtime{font-size:11px;color:var(--muted)}
+.card-footer .cta{font-size:12px;color:var(--primary);font-weight:500}
+.card-footer .cta:hover{text-decoration:underline}
+footer{border-top:1px solid var(--border);padding:20px 24px;text-align:center;font-size:12px;color:var(--muted);margin-top:24px}
+footer span{display:inline-block;margin:0 12px}
+@media(max-width:600px){.card-grid{grid-template-columns:1fr}.tab-btn{padding:10px 12px;font-size:11px}}
+</style>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://vigyanllm.in/"},{"@type":"ListItem","position":2,"name":"Product Demo Suite","item":"https://vigyanllm.in/demo.html"}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"VideoObject","name":"VigyanLLM Platform Demo","description":"Full platform tour showing the Consensus Pipeline, Smart Switch, and VigyanLLM Primer design workflows.","thumbnailUrl":"https://vigyanllm.in/poster.png","uploadDate":"2026-06-10","contentUrl":"https://vigyanllm.in/product%20demo.mp4","embedUrl":"https://vigyanllm.in/demo.html"}</script>
 </head>
-<body class="min-h-screen">
-  <nav class="sticky top-0 z-50 border-b border-[#1e293b] bg-[#0b1120]">
-    <div class="mx-auto flex h-16 max-w-[1200px] items-center justify-between px-6">
-      <a href="index.html" class="serif-heading text-[22px] font-bold text-white">VigyanLLM</a>
-      <div class="hidden items-center gap-7 md:flex">
-        <a href="index.html" class="text-sm text-slate-400 hover:text-white">Home</a>
-        <a href="primer.html" class="text-sm text-slate-400 hover:text-white">Primer Tool</a>
-        <a href="index.html#contact" class="text-sm text-slate-400 hover:text-white">Contact</a>
+<body>
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="logo"><img src="logo.svg" alt="" style="width:32px;height:32px;border-radius:6px;background:#0d1117;padding:2px">VigyanLLM</a>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="primer.html">Primer Tool</a>
+      <a href="demo.html" class="active">Demos</a>
+      <a href="index.html#contact">Contact</a>
+    </div>
+    <a href="primer.html" class="btn-nav" style="border:1.5px solid var(--border);border-radius:6px;padding:7px 18px;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;color:var(--text)">Try Primer →</a>
+  </div>
+</nav>
+
+<section class="demo-hero">
+  <div class="eyebrow"><span>⬥</span> LIVE PRODUCT DEMONSTRATIONS</div>
+  <h1>Product Demo Suite</h1>
+  <p>A full platform tour plus three autonomous biomedical AI workflows — each recorded live inside VigyanLLM. No narration, no overlays, no staging. This is the real product.</p>
+  <div class="tab-bar">
+    <button type="button" class="tab-btn active" data-tab="all">All Workflows</button>
+    <button type="button" class="tab-btn" data-tab="platform">Platform Tour</button>
+    <button type="button" class="tab-btn" data-tab="docking">Molecular Docking</button>
+    <button type="button" class="tab-btn" data-tab="nlp">Command Interface</button>
+    <button type="button" class="tab-btn" data-tab="genomics">Primer Design</button>
+  </div>
+</section>
+
+<main>
+  <div class="card-grid" id="card-grid">
+    <article class="card" data-category="platform">
+      <div class="card-video-header">
+        <div class="dots"><span class="dot" style="background:#ef4444"></span><span class="dot" style="background:#f59e0b"></span><span class="dot" style="background:#22c55e"></span></div>
+        <span class="label">product demo.mp4</span>
+        <span class="badge">PLATFORM</span>
       </div>
-      <a href="index.html" class="rounded border border-[#1e293b] px-4 py-1.5 text-sm text-slate-300 hover:border-cyan-400 hover:text-white">← Back to Site</a>
-    </div>
-  </nav>
-
-  <header class="bg-[#0b1120] px-6 py-16 text-center">
-    <div class="mx-auto max-w-[800px]">
-      <span class="mono mb-5 block text-xs font-semibold uppercase tracking-[0.15em] text-cyan-400">LIVE PRODUCT DEMONSTRATIONS</span>
-      <h1 class="serif-heading text-[28px] font-bold leading-tight text-white md:text-[42px]">Product Demo Suite</h1>
-      <p class="mx-auto mt-5 max-w-[600px] text-[17px] leading-7 text-slate-400">A full platform tour plus three autonomous biomedical AI workflows — each recorded live inside VigyanLLM. No narration, no overlays, no staging. This is the real product.</p>
-
-      <div class="mt-10 overflow-x-auto border-b border-[#1e293b]">
-        <div class="mx-auto flex min-w-max justify-center">
-          <button type="button" class="active-tab border-b-2 border-transparent px-4 py-3 text-sm font-medium text-slate-500 hover:text-slate-300" data-tab="all">All Workflows</button>
-          <button type="button" class="border-b-2 border-transparent px-4 py-3 text-sm font-medium text-slate-500 hover:text-slate-300" data-tab="platform">Platform Tour</button>
-          <button type="button" class="border-b-2 border-transparent px-4 py-3 text-sm font-medium text-slate-500 hover:text-slate-300" data-tab="docking">Molecular Docking</button>
-          <button type="button" class="border-b-2 border-transparent px-4 py-3 text-sm font-medium text-slate-500 hover:text-slate-300" data-tab="nlp">Command Interface</button>
-          <button type="button" class="border-b-2 border-transparent px-4 py-3 text-sm font-medium text-slate-500 hover:text-slate-300" data-tab="genomics">Primer Design</button>
+      <video muted playsinline controls preload="none" poster="poster.png" src="product%20demo.mp4">Video loading — check connection.</video>
+      <div class="card-body">
+        <h2>Full Platform Tour</h2>
+        <div class="sub">Complete VigyanLLM web features walkthrough</div>
+        <div class="desc">A complete product walkthrough covering the VigyanLLM web interface, feature navigation, research workflows, project creation, and output review in one place.</div>
+        <div class="section-label">What you're seeing</div>
+        <ul>
+          <li><span>▸</span><span>End-to-end website and product feature overview</span></li>
+          <li><span>▸</span><span>Workflow navigation and project-level user experience</span></li>
+          <li><span>▸</span><span>Biomedical tools shown together as one platform experience</span></li>
+          <li><span>▸</span><span>Recommended first watch before the individual workflow demos</span></li>
+        </ul>
+        <div class="card-footer">
+          <span class="runtime">Runtime: product tour</span>
+          <a href="index.html#contact" class="cta">Request a Lab Demo →</a>
         </div>
       </div>
-    </div>
-  </header>
+    </article>
 
-  <main class="mx-auto max-w-[1200px] px-6 pb-20">
-    <div id="card-grid" class="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
-      <article class="card-hover video-glow overflow-hidden rounded-xl border border-[#1e293b] bg-[#111827]" data-category="platform">
-        <div class="flex h-10 items-center justify-between bg-[#1e293b] px-4">
-          <div class="flex gap-1.5" aria-hidden="true">
-            <span class="h-2.5 w-2.5 rounded-full bg-[#ef4444]"></span>
-            <span class="h-2.5 w-2.5 rounded-full bg-[#f59e0b]"></span>
-            <span class="h-2.5 w-2.5 rounded-full bg-[#22c55e]"></span>
-          </div>
-          <span class="mono max-w-[46%] truncate text-[11px] text-slate-600">product demo.mp4</span>
-          <span class="rounded bg-[#0c4a6e] px-2 py-0.5 text-[10px] font-semibold tracking-[0.08em] text-sky-300">PLATFORM</span>
+    <article class="card" data-category="docking">
+      <div class="card-video-header">
+        <div class="dots"><span class="dot" style="background:#ef4444"></span><span class="dot" style="background:#f59e0b"></span><span class="dot" style="background:#22c55e"></span></div>
+        <span class="label">consensus_pipeline.mp4</span>
+        <span class="badge">DOCKING</span>
+      </div>
+      <video muted playsinline controls preload="none" poster="poster.png" src="consensus_pipeline.mp4">Video loading — check connection.</video>
+      <div class="card-body">
+        <h2>Consensus Pipeline</h2>
+        <div class="sub">Multi-engine molecular docking with structural consensus scoring</div>
+        <div class="desc">Runs Smina, Vina, and Gnina in parallel against a PDB target. Scores are aggregated, poses ranked by RMSD deviation, and the top-binding conformation is returned.</div>
+        <div class="section-label">What you're seeing</div>
+        <ul>
+          <li><span>▸</span><span>Smina, Vina, Gnina running simultaneously against PDB: 6Y2E</span></li>
+          <li><span>▸</span><span>Binding affinity (kcal/mol) aggregated across all three engines</span></li>
+          <li><span>▸</span><span>RMSD matrix computed — top consensus pose identified</span></li>
+          <li><span>▸</span><span>ESMFold preprocessing for apo-structure inputs</span></li>
+          <li><span>▸</span><span>Output downloadable as ranked SDF / PDBQT file set</span></li>
+        </ul>
+        <div class="card-footer">
+          <span class="runtime">Runtime: ~2 min</span>
+          <a href="primer.html" class="cta">Try VigyanLLM Primer →</a>
         </div>
-        <video class="block aspect-video max-h-[280px] w-full bg-[#020617] object-contain" muted playsinline controls preload="none" poster="poster.png" src="product%20demo.mp4">
-          Video loading — if playback doesn't start, check your connection.
-        </video>
-        <div class="bg-[#111827] p-5">
-          <h2 class="mb-1 text-lg font-bold text-white">Full Platform Tour</h2>
-          <p class="mb-3 text-[13px] italic text-cyan-400">Complete VigyanLLM web features walkthrough</p>
-          <p class="mb-4 text-sm leading-6 text-slate-400">A complete product walkthrough covering the VigyanLLM web interface, feature navigation, research workflows, project creation, and output review in one place.</p>
-          <p class="mono mb-2 text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-500">What you're seeing</p>
-          <ul class="space-y-2">
-            <li class="flex gap-2 text-[13px] leading-5 text-slate-300"><span class="text-[10px] text-cyan-400">▸</span><span>End-to-end website and product feature overview</span></li>
-            <li class="flex gap-2 text-[13px] leading-5 text-slate-300"><span class="text-[10px] text-cyan-400">▸</span><span>Workflow navigation and project-level user experience</span></li>
-            <li class="flex gap-2 text-[13px] leading-5 text-slate-300"><span class="text-[10px] text-cyan-400">▸</span><span>Biomedical tools shown together as one platform experience</span></li>
-            <li class="flex gap-2 text-[13px] leading-5 text-slate-300"><span class="text-[10px] text-cyan-400">▸</span><span>Recommended first watch before the individual workflow demos</span></li>
-          </ul>
-          <div class="mt-4 flex items-center justify-between border-t border-[#1e293b] pt-3">
-            <span class="text-xs text-slate-500">Runtime: product tour</span>
-            <a href="index.html#contact" class="text-xs text-cyan-400 hover:underline">Request a Lab Demo →</a>
-          </div>
-        </div>
-      </article>
+      </div>
+    </article>
 
-      <article class="card-hover video-glow overflow-hidden rounded-xl border border-[#1e293b] bg-[#111827]" data-category="docking">
-        <div class="flex h-10 items-center justify-between bg-[#1e293b] px-4">
-          <div class="flex gap-1.5" aria-hidden="true">
-            <span class="h-2.5 w-2.5 rounded-full bg-[#ef4444]"></span>
-            <span class="h-2.5 w-2.5 rounded-full bg-[#f59e0b]"></span>
-            <span class="h-2.5 w-2.5 rounded-full bg-[#22c55e]"></span>
-          </div>
-          <span class="mono max-w-[46%] truncate text-[11px] text-slate-600">consensus_pipeline.mp4</span>
-          <span class="rounded bg-[#0c4a6e] px-2 py-0.5 text-[10px] font-semibold tracking-[0.08em] text-sky-300">DOCKING</span>
+    <article class="card" data-category="nlp">
+      <div class="card-video-header">
+        <div class="dots"><span class="dot" style="background:#ef4444"></span><span class="dot" style="background:#f59e0b"></span><span class="dot" style="background:#22c55e"></span></div>
+        <span class="label">smart_switch_demo.mp4</span>
+        <span class="badge">NLP ROUTING</span>
+      </div>
+      <video muted playsinline controls preload="none" poster="poster.png" src="smart_switch_demo.mp4">Video loading — check connection.</video>
+      <div class="card-body">
+        <h2>Smart Switch / Project Forge</h2>
+        <div class="sub">Intent-based workflow routing from a single natural language command</div>
+        <div class="desc">A researcher types 'Dock Aspirin to 6Y2E'. Smart Switch parses the biomedical intent, routes to the Consensus Pipeline, scaffolds a project, and begins execution — no form-filling, no configuration.</div>
+        <div class="section-label">What you're seeing</div>
+        <ul>
+          <li><span>▸</span><span>NLP parser extracts: ligand name, target ID, task type</span></li>
+          <li><span>▸</span><span>Routing engine maps intent → correct workflow module</span></li>
+          <li><span>▸</span><span>Project Forge auto-creates job with inputs, outputs, and audit log</span></li>
+          <li><span>▸</span><span>Supports: docking, primer design, literature mining, ADR detection</span></li>
+          <li><span>▸</span><span>Fallback disambiguation: ambiguous commands prompt a structured clarification</span></li>
+        </ul>
+        <div class="card-footer">
+          <span class="runtime">Runtime: ~2 min</span>
+          <a href="primer.html" class="cta">Try VigyanLLM Primer →</a>
         </div>
-        <video class="block aspect-video max-h-[280px] w-full bg-[#020617] object-contain" muted playsinline controls preload="none" poster="poster.png" src="consensus_pipeline.mp4">
-          Video loading — if playback doesn't start, check your connection.
-        </video>
-        <div class="bg-[#111827] p-5">
-          <h2 class="mb-1 text-lg font-bold text-white">Consensus Pipeline</h2>
-          <p class="mb-3 text-[13px] italic text-cyan-400">Multi-engine molecular docking with structural consensus scoring</p>
-          <p class="mb-4 text-sm leading-6 text-slate-400">Runs Smina, Vina, and Gnina in parallel against a PDB target. Scores are aggregated, poses ranked by RMSD deviation, and the top-binding conformation is returned.</p>
-          <p class="mono mb-2 text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-500">What you're seeing</p>
-          <ul class="space-y-2">
-            <li class="flex gap-2 text-[13px] leading-5 text-slate-300"><span class="text-[10px] text-cyan-400">▸</span><span>Smina, Vina, Gnina running simultaneously against PDB: 6Y2E</span></li>
-            <li class="flex gap-2 text-[13px] leading-5 text-slate-300"><span class="text-[10px] text-cyan-400">▸</span><span>Binding affinity (kcal/mol) aggregated across all three engines</span></li>
-            <li class="flex gap-2 text-[13px] leading-5 text-slate-300"><span class="text-[10px] text-cyan-400">▸</span><span>RMSD matrix computed — top consensus pose identified</span></li>
-            <li class="flex gap-2 text-[13px] leading-5 text-slate-300"><span class="text-[10px] text-cyan-400">▸</span><span>ESMFold preprocessing for apo-structure inputs</span></li>
-            <li class="flex gap-2 text-[13px] leading-5 text-slate-300"><span class="text-[10px] text-cyan-400">▸</span><span>Output downloadable as ranked SDF / PDBQT file set</span></li>
-          </ul>
-          <div class="mt-4 flex items-center justify-between border-t border-[#1e293b] pt-3">
-            <span class="text-xs text-slate-500">Runtime: ~2 min</span>
-            <a href="primer.html" class="text-xs text-cyan-400 hover:underline">Try VigyanLLM Primer →</a>
-          </div>
+      </div>
+    </article>
+
+    <article class="card" data-category="genomics">
+      <div class="card-video-header">
+        <div class="dots"><span class="dot" style="background:#ef4444"></span><span class="dot" style="background:#f59e0b"></span><span class="dot" style="background:#22c55e"></span></div>
+        <span class="label">primerforge_demo.mp4</span>
+        <span class="badge">GENOMICS</span>
+      </div>
+      <video muted playsinline controls preload="none" poster="poster.png" src="primerforge_demo.mp4">Video loading — check connection.</video>
+      <div class="card-body">
+        <h2>VigyanLLM Primer</h2>
+        <div class="sub">Thermodynamically validated primer pairs delivered in under 30 seconds</div>
+        <div class="desc">Enter a gene name or NCBI accession. VigyanLLM retrieves the sequence, runs thermodynamic profiling, checks for secondary structures, and returns a validated primer pair — lab-ready.</div>
+        <div class="section-label">What you're seeing</div>
+        <ul>
+          <li><span>▸</span><span>Accepts: gene symbol, NCBI accession, Ensembl ID, or raw FASTA</span></li>
+          <li><span>▸</span><span>Outputs: Tm (°C), GC%, amplicon size (bp), ΔG (kcal/mol)</span></li>
+          <li><span>▸</span><span>Hairpin and primer-dimer risk scores computed via nearest-neighbor model</span></li>
+          <li><span>▸</span><span>Off-target BLAST check against reference genome</span></li>
+          <li><span>▸</span><span>Output format: table + downloadable CSV for lab orders</span></li>
+        </ul>
+        <div class="card-footer">
+          <span class="runtime">Runtime: ~2 min</span>
+          <a href="primer.html" class="cta">Try VigyanLLM Primer →</a>
         </div>
-      </article>
+      </div>
+    </article>
+  </div>
+</main>
 
-      <article class="card-hover video-glow overflow-hidden rounded-xl border border-[#1e293b] bg-[#111827]" data-category="nlp">
-        <div class="flex h-10 items-center justify-between bg-[#1e293b] px-4">
-          <div class="flex gap-1.5" aria-hidden="true">
-            <span class="h-2.5 w-2.5 rounded-full bg-[#ef4444]"></span>
-            <span class="h-2.5 w-2.5 rounded-full bg-[#f59e0b]"></span>
-            <span class="h-2.5 w-2.5 rounded-full bg-[#22c55e]"></span>
-          </div>
-          <span class="mono max-w-[46%] truncate text-[11px] text-slate-600">smart_switch_demo.mp4</span>
-          <span class="rounded bg-[#0c4a6e] px-2 py-0.5 text-[10px] font-semibold tracking-[0.08em] text-sky-300">NLP ROUTING</span>
-        </div>
-        <video class="block aspect-video max-h-[280px] w-full bg-[#020617] object-contain" muted playsinline controls preload="none" poster="poster.png" src="smart_switch_demo.mp4">
-          Video loading — if playback doesn't start, check your connection.
-        </video>
-        <div class="bg-[#111827] p-5">
-          <h2 class="mb-1 text-lg font-bold text-white">Smart Switch / Project Forge</h2>
-          <p class="mb-3 text-[13px] italic text-cyan-400">Intent-based workflow routing from a single natural language command</p>
-          <p class="mb-4 text-sm leading-6 text-slate-400">A researcher types 'Dock Aspirin to 6Y2E'. Smart Switch parses the biomedical intent, routes to the Consensus Pipeline, scaffolds a project, and begins execution — no form-filling, no configuration.</p>
-          <p class="mono mb-2 text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-500">What you're seeing</p>
-          <ul class="space-y-2">
-            <li class="flex gap-2 text-[13px] leading-5 text-slate-300"><span class="text-[10px] text-cyan-400">▸</span><span>NLP parser extracts: ligand name, target ID, task type</span></li>
-            <li class="flex gap-2 text-[13px] leading-5 text-slate-300"><span class="text-[10px] text-cyan-400">▸</span><span>Routing engine maps intent → correct workflow module</span></li>
-            <li class="flex gap-2 text-[13px] leading-5 text-slate-300"><span class="text-[10px] text-cyan-400">▸</span><span>Project Forge auto-creates job with inputs, outputs, and audit log</span></li>
-            <li class="flex gap-2 text-[13px] leading-5 text-slate-300"><span class="text-[10px] text-cyan-400">▸</span><span>Supports: docking, primer design, literature mining, ADR detection</span></li>
-            <li class="flex gap-2 text-[13px] leading-5 text-slate-300"><span class="text-[10px] text-cyan-400">▸</span><span>Fallback disambiguation: ambiguous commands prompt a structured clarification</span></li>
-          </ul>
-          <div class="mt-4 flex items-center justify-between border-t border-[#1e293b] pt-3">
-            <span class="text-xs text-slate-500">Runtime: ~2 min</span>
-            <a href="primer.html" class="text-xs text-cyan-400 hover:underline">Try VigyanLLM Primer →</a>
-          </div>
-        </div>
-      </article>
+<footer>
+  <span>© 2026 VigyanLLM. All rights reserved.</span>
+  <span><a href="index.html" style="color:var(--primary)">vigyanllm.in</a></span>
+  <span>✓ DPIIT Startup India Recognised</span>
+</footer>
 
-      <article class="card-hover video-glow overflow-hidden rounded-xl border border-[#1e293b] bg-[#111827]" data-category="genomics">
-        <div class="flex h-10 items-center justify-between bg-[#1e293b] px-4">
-          <div class="flex gap-1.5" aria-hidden="true">
-            <span class="h-2.5 w-2.5 rounded-full bg-[#ef4444]"></span>
-            <span class="h-2.5 w-2.5 rounded-full bg-[#f59e0b]"></span>
-            <span class="h-2.5 w-2.5 rounded-full bg-[#22c55e]"></span>
-          </div>
-          <span class="mono max-w-[46%] truncate text-[11px] text-slate-600">primerforge_demo.mp4</span>
-          <span class="rounded bg-[#0c4a6e] px-2 py-0.5 text-[10px] font-semibold tracking-[0.08em] text-sky-300">GENOMICS</span>
-        </div>
-        <video class="block aspect-video max-h-[280px] w-full bg-[#020617] object-contain" muted playsinline controls preload="none" poster="poster.png" src="primerforge_demo.mp4">
-          Video loading — if playback doesn't start, check your connection.
-        </video>
-        <div class="bg-[#111827] p-5">
-          <h2 class="mb-1 text-lg font-bold text-white">VigyanLLM Primer</h2>
-          <p class="mb-3 text-[13px] italic text-cyan-400">Thermodynamically validated primer pairs delivered in under 30 seconds</p>
-          <p class="mb-4 text-sm leading-6 text-slate-400">Enter a gene name or NCBI accession. VigyanLLM retrieves the sequence, runs thermodynamic profiling, checks for secondary structures, and returns a validated primer pair — lab-ready.</p>
-          <p class="mono mb-2 text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-500">What you're seeing</p>
-          <ul class="space-y-2">
-            <li class="flex gap-2 text-[13px] leading-5 text-slate-300"><span class="text-[10px] text-cyan-400">▸</span><span>Accepts: gene symbol, NCBI accession, Ensembl ID, or raw FASTA</span></li>
-            <li class="flex gap-2 text-[13px] leading-5 text-slate-300"><span class="text-[10px] text-cyan-400">▸</span><span>Outputs: Tm (°C), GC%, amplicon size (bp), ΔG (kcal/mol)</span></li>
-            <li class="flex gap-2 text-[13px] leading-5 text-slate-300"><span class="text-[10px] text-cyan-400">▸</span><span>Hairpin and primer-dimer risk scores computed via nearest-neighbor model</span></li>
-            <li class="flex gap-2 text-[13px] leading-5 text-slate-300"><span class="text-[10px] text-cyan-400">▸</span><span>Off-target BLAST check against reference genome</span></li>
-            <li class="flex gap-2 text-[13px] leading-5 text-slate-300"><span class="text-[10px] text-cyan-400">▸</span><span>Output format: table + downloadable CSV for lab orders</span></li>
-          </ul>
-          <div class="mt-4 flex items-center justify-between border-t border-[#1e293b] pt-3">
-            <span class="text-xs text-slate-500">Runtime: ~2 min</span>
-            <a href="primer.html" class="text-xs text-cyan-400 hover:underline">Try VigyanLLM Primer →</a>
-          </div>
-        </div>
-      </article>
-    </div>
-  </main>
-
-  <footer class="border-t border-[#1e293b] bg-[#0b1120] px-6 py-8">
-    <div class="mx-auto flex max-w-[1200px] flex-col items-center justify-between gap-4 text-center text-[13px] text-slate-500 md:flex-row">
-      <span>© 2026 VigyanLLM. All rights reserved.</span>
-      <a href="index.html" class="text-cyan-400 hover:underline">vigyanllm.in</a>
-      <span>✓ DPIIT Startup India Recognised</span>
-    </div>
-  </footer>
-
-  <script>
-  (function() {
-    const tabMap = {
-      'all': null,
-      'platform': 'platform',
-      'docking': 'docking',
-      'nlp': 'nlp',
-      'genomics': 'genomics'
-    };
-
-    const tabs = document.querySelectorAll('[data-tab]');
-    const cards = document.querySelectorAll('[data-category]');
-    const videos = document.querySelectorAll('video');
-
-    videos.forEach(video => {
-      video.addEventListener('play', () => {
-        videos.forEach(otherVideo => {
-          if (otherVideo !== video) {
-            otherVideo.pause();
-            otherVideo.currentTime = 0;
-          }
-        });
-      });
+<script>
+(function(){
+  const tabMap={all:null,platform:'platform',docking:'docking',nlp:'nlp',genomics:'genomics'};
+  const tabs=document.querySelectorAll('.tab-btn');
+  const cards=document.querySelectorAll('[data-category]');
+  const videos=document.querySelectorAll('video');
+  videos.forEach(v=>v.addEventListener('play',()=>{videos.forEach(o=>{if(o!==v){o.pause();o.currentTime=0}})}));
+  function filter(cat){
+    cards.forEach(c=>{
+      c.style.display=(!cat||c.dataset.category===cat)?'':'none';
+      const v=c.querySelector('video');
+      if(v&&c.style.display==='none'){v.pause();v.currentTime=0}
     });
-
-    function pauseHiddenVideos() {
-      cards.forEach(card => {
-        const video = card.querySelector('video');
-        if (video && card.style.display === 'none') {
-          video.pause();
-          video.currentTime = 0;
-        }
-      });
-    }
-
-    function filterCards(category) {
-      cards.forEach(card => {
-        if (!category || card.dataset.category === category) {
-          card.style.display = '';
-        } else {
-          card.style.display = 'none';
-        }
-      });
-      // Layout: if single card visible, center it
-      const grid = document.getElementById('card-grid');
-      if (category) {
-        grid.classList.remove('xl:grid-cols-3', 'md:grid-cols-2');
-        grid.classList.add('max-w-3xl', 'mx-auto');
-      } else {
-        grid.classList.add('xl:grid-cols-3', 'md:grid-cols-2');
-        grid.classList.remove('max-w-3xl', 'mx-auto');
-      }
-      pauseHiddenVideos();
-    }
-
-    tabs.forEach(tab => {
-      tab.addEventListener('click', () => {
-        tabs.forEach(t => t.classList.remove('active-tab'));
-        tab.classList.add('active-tab');
-        filterCards(tabMap[tab.dataset.tab]);
-      });
-    });
-
-    // Default: all visible
-    filterCards(null);
-  })();
-  </script>
+  }
+  tabs.forEach(t=>t.addEventListener('click',()=>{
+    tabs.forEach(x=>x.classList.remove('active'));
+    t.classList.add('active');
+    filter(tabMap[t.dataset.tab]);
+  }));
+})();
+</script>
 </body>
 </html>
