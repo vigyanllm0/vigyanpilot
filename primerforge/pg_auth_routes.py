@@ -251,8 +251,8 @@ def me():
                WHERE u.email = %s""",
             (g.user["email"],)
         )
-    except Exception as e:
-        return jsonify({"error": f"Query failed: {str(e)[:200]}"}), 500
+    except Exception:
+        return jsonify({"error": "Internal server error."}), 500
 
     if not user:
         return jsonify({"error": "User not found."}), 404

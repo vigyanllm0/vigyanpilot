@@ -3,10 +3,6 @@
 -- Covers all tables referenced by Python code that were missing
 -- =============================================================
 
--- Extend users (created by 0100) with columns needed by code
-ALTER TABLE IF EXISTS users ADD COLUMN IF NOT EXISTS organization VARCHAR(256);
-ALTER TABLE IF EXISTS users ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW();
-
 -- Extend token_balances (created by 0100) with columns needed by views/code
 ALTER TABLE IF EXISTS token_balances ADD COLUMN IF NOT EXISTS total_expired INTEGER NOT NULL DEFAULT 0;
 ALTER TABLE IF EXISTS token_balances ADD COLUMN IF NOT EXISTS lifetime_revenue_inr NUMERIC(12,2) NOT NULL DEFAULT 0;
