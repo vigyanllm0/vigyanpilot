@@ -128,7 +128,7 @@ def init_security(app):
             "https://accounts.google.com",
             "https://www.googleapis.com",
         ],
-        "frame-src": ["https://api.razorpay.com", "https://accounts.google.com"],
+        "frame-src": ["https://api.razorpay.com", "https://checkout.razorpay.com", "https://accounts.google.com"],
     }
 
     if Talisman is None:
