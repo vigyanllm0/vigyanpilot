@@ -25,7 +25,7 @@ from pathlib import Path
 from flask import Blueprint, request, jsonify, g, make_response
 from werkzeug.utils import secure_filename
 
-from .pg_auth import require_auth
+from .pg_auth import require_auth, require_admin
 from .database import fetch_one, fetch_all, execute, execute_returning
 
 logger = logging.getLogger("primerforge.reports")
