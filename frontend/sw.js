@@ -1,4 +1,4 @@
-const CACHE = 'vigyanllm-v2';
+const CACHE = 'vigyanllm-v3';
 const ASSETS = [
   '/',
   '/index.html',
