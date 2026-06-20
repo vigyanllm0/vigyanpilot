@@ -30,8 +30,11 @@ pipeline_bp = Blueprint("pipeline", __name__)
 
 
 def _celery_broker_available(timeout: float = 0.25) -> bool:
-    """Return True when the configured Redis broker can accept connections."""
-    broker_url = os.environ.get("REDIS_URL", "redis://localhost:6379/0")
+    """Return True when the configured Redis broker can accept connections.
+    Only returns True if REDIS_URL is explicitly set (not the default fallback)."""
+    broker_url = os.environ.get("REDIS_URL", "")
+    if not broker_url:
+        return False  # Redis not configured — always run synchronously
     parsed = urlparse(broker_url)
     if parsed.scheme not in {"redis", "rediss"}:
         return False
