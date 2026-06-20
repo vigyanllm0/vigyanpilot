@@ -27,13 +27,13 @@ from .database import get_db, fetch_one, fetch_all, execute, execute_returning, 
 logger = logging.getLogger("primerforge.auth")
 
 # ── Configuration ─────────────────────────────────────────────────────────
-SECRET_KEY = os.environ.get("PRIMERFORCE_SECRET", "")
+SECRET_KEY = os.environ.get("PRIMERFORGE_SECRET", "")
 if not SECRET_KEY:
-    raise RuntimeError("PRIMERFORCE_SECRET environment variable is required")
+    raise RuntimeError("PRIMERFORGE_SECRET environment variable is required")
 TOKEN_EXPIRY = 86400 * 7  # 7 days
 
-ADMIN_EMAIL = os.environ.get("PRIMERFORCE_ADMIN_EMAIL", "")
-ADMIN_PASSWORD = os.environ.get("PRIMERFORCE_ADMIN_PASSWORD", "")
+ADMIN_EMAIL = os.environ.get("PRIMERFORGE_ADMIN_EMAIL", "")
+ADMIN_PASSWORD = os.environ.get("PRIMERFORGE_ADMIN_PASSWORD", "")
 
 # In-memory token store per user (for session limits). In production use Redis.
 # Format: {user_id: [token1, token2, ...]}

@@ -66,19 +66,20 @@ jobs:
 
             # Write .env file from GitHub Secrets
             : > .env
-            printf '%s\n' "PRIMERFORCE_SECRET=${{ secrets.PRIMERFORCE_SECRET }}" >> .env
-            printf '%s\n' "PRIMERFORCE_ADMIN_EMAIL=${{ secrets.PRIMERFORCE_ADMIN_EMAIL }}" >> .env
-            printf '%s\n' "PRIMERFORCE_ADMIN_PASSWORD=${{ secrets.PRIMERFORCE_ADMIN_PASSWORD }}" >> .env
+            printf '%s\n' "PRIMERFORGE_SECRET=${{ secrets.PRIMERFORGE_SECRET }}" >> .env
+            printf '%s\n' "PRIMERFORGE_ADMIN_EMAIL=${{ secrets.PRIMERFORGE_ADMIN_EMAIL }}" >> .env
+            printf '%s\n' "PRIMERFORGE_ADMIN_PASSWORD=${{ secrets.PRIMERFORGE_ADMIN_PASSWORD }}" >> .env
             printf '%s\n' "DATABASE_URL=${{ secrets.DATABASE_URL }}" >> .env
             
             # Clean up DATABASE_URL if the secret contains the key prefix
             # (e.g. "DATABASE_URL=postgresql://..." instead of "postgresql://...")
             sed -i 's/^DATABASE_URL=DATABASE_URL=/DATABASE_URL=/' .env
+            printf '%s\n' "FORCE_HTTPS=true" >> .env
             printf '%s\n' "RAZORPAY_KEY_ID=${{ secrets.RAZORPAY_KEY_ID }}" >> .env
             printf '%s\n' "RAZORPAY_KEY_SECRET=${{ secrets.RAZORPAY_KEY_SECRET }}" >> .env
             printf '%s\n' "RAZORPAY_WEBHOOK_SECRET=${{ secrets.RAZORPAY_WEBHOOK_SECRET }}" >> .env
             printf '%s\n' "GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}" >> .env
-            printf '%s\n' "PRIMERFORCE_UPI_ID=${{ secrets.PRIMERFORCE_UPI_ID }}" >> .env
+            printf '%s\n' "PRIMERFORGE_UPI_ID=${{ secrets.PRIMERFORGE_UPI_ID }}" >> .env
 
             # Start PostgreSQL
             if command -v pg_isready &>/dev/null && pg_isready -q 2>/dev/null; then

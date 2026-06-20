@@ -7,7 +7,7 @@ compliance enforcement, scale assignment, length limits, and probe fields.
 
 import os
 
-os.environ.setdefault("PRIMERFORCE_SECRET", "unit-test-secret-for-route-import")
+os.environ.setdefault("PRIMERFORGE_SECRET", "unit-test-secret-for-route-import")
 
 import pytest
 

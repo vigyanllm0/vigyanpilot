@@ -25,21 +25,21 @@ from flask import request, jsonify, g
 logger = logging.getLogger("primerforge.auth")
 
 # ── Configuration ─────────────────────────────────────────────────────────
-DB_PATH = os.environ.get("PRIMERFORCE_DB", str(Path(__file__).parent.parent / "primerforge.db"))
-SECRET_KEY = os.environ.get("PRIMERFORCE_SECRET", "")
+DB_PATH = os.environ.get("PRIMERFORGE_DB", str(Path(__file__).parent.parent / "primerforge.db"))
+SECRET_KEY = os.environ.get("PRIMERFORGE_SECRET", "")
 if not SECRET_KEY:
     if os.environ.get("FORCE_HTTPS", "").lower() == "true":
-        raise RuntimeError("PRIMERFORCE_SECRET is required when FORCE_HTTPS=true")
+        raise RuntimeError("PRIMERFORGE_SECRET is required when FORCE_HTTPS=true")
     import secrets
     SECRET_KEY = secrets.token_hex(32)
-    logger.warning("PRIMERFORCE_SECRET not set — using random ephemeral secret (sessions invalidated on restart)")
+    logger.warning("PRIMERFORGE_SECRET not set — using random ephemeral secret (sessions invalidated on restart)")
 TOKEN_EXPIRY = 86400 * 7  # 7 days
 
 # Admin credentials (from environment — REQUIRED, no hardcoded defaults)
-ADMIN_EMAIL = os.environ.get("PRIMERFORCE_ADMIN_EMAIL")
+ADMIN_EMAIL = os.environ.get("PRIMERFORGE_ADMIN_EMAIL")
 if not ADMIN_EMAIL:
-    raise RuntimeError("PRIMERFORCE_ADMIN_EMAIL environment variable is required")
-ADMIN_PASSWORD = os.environ.get("PRIMERFORCE_ADMIN_PASSWORD")
+    raise RuntimeError("PRIMERFORGE_ADMIN_EMAIL environment variable is required")
+ADMIN_PASSWORD = os.environ.get("PRIMERFORGE_ADMIN_PASSWORD")
 if not ADMIN_PASSWORD:
     import warnings
     warnings.warn(
@@ -51,7 +51,7 @@ if not ADMIN_PASSWORD:
 # Pricing
 PRICE_PER_DESIGN = 49  # ₹49 per primer design run
 FREE_RUNS = 2          # 2 free runs per new user
-UPI_ID = os.environ.get("PRIMERFORCE_UPI_ID", "vigyanllm@upi")
+UPI_ID = os.environ.get("PRIMERFORGE_UPI_ID", "vigyanllm@upi")
 
 
 def get_db():

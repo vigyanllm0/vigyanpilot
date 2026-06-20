@@ -2333,8 +2333,8 @@ function buildBindingMapData(pair, templateSeq) {
   const clean = String(templateSeq || '').replace(/\s/g, '').toUpperCase();
   if (!pair || !clean) return null;
   const templateLength = clean.length;
-  const fp = normalisePrimerForMap(pair.forward_primer || pair.forward ||, 'forward', pair, clean);
-  const rp = normalisePrimerForMap(pair.reverse_primer || pair.reverse ||, 'reverse', pair, clean);
+  const fp = normalisePrimerForMap(pair.forward_primer || pair.forward || '', 'forward', pair, clean);
+  const rp = normalisePrimerForMap(pair.reverse_primer || pair.reverse || '', 'reverse', pair, clean);
   if (!fp.sequence || !rp.sequence) return null;
 
   const fStart0 = clampInt((fp.start_pos || 1) - 1, 0, templateLength - 1);
@@ -2832,7 +2832,7 @@ function openRazorpayCheckout(order, context=) {
     description: order.description || `${purchasedRuns} design run(s)`,
     order_id: order.order_id,
     theme: order.theme || { color: '#2563EB' },
-    prefill: order.prefill ||,
+    prefill: order.prefill || {},
     config: {
       display: {
         blocks: {
