@@ -47,7 +47,7 @@ _TOKEN_BLACKLIST = set()
 # attacks that could reveal whether an email exists in the system.
 # This is NOT placeholder data — it is an intentional security measure.
 # Reference: OWASP Authentication Cheatsheet — Prevent User Enumeration
-_DUMMY_HASH = bcrypt.hashpw(b"dummy_password_for_timing", bcrypt.gensalt(rounds=12)).decode()
+_DUMMY_HASH = "$2b$12$R9h7cIPz0gi.URNNX3kh2OPST9/PgBkqquzi.Ee97gYy2EF5m7uLe"
 
 # Max concurrent sessions per user
 MAX_SESSIONS = int(os.environ.get("MAX_SESSIONS", "5"))

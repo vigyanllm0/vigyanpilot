@@ -98,6 +98,12 @@ def login():
         httponly=True, secure=True, samesite='None',
         max_age=86400 * 7, path='/'
     )
+    if result["user"].get("role") == "admin":
+        resp.set_cookie(
+            'admin_tk', result["token"],
+            httponly=True, secure=True, samesite='Strict',
+            max_age=1800, path='/'
+        )
     resp.set_cookie(
         'pf_refresh', refresh_token,
         httponly=True, secure=True, samesite='None',
@@ -143,6 +149,7 @@ def logout():
         invalidate_token(auth_header[7:])
     resp = jsonify({"success": True, "message": "Logged out successfully."})
     resp.set_cookie('pf_token', '', httponly=True, secure=True, samesite='None', max_age=0, path='/')
+    resp.set_cookie('admin_tk', '', httponly=True, secure=True, samesite='Strict', max_age=0, path='/')
     resp.set_cookie('pf_refresh', '', httponly=True, secure=True, samesite='None', max_age=0, path='/api/auth')
     return resp, 200
 

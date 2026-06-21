@@ -43,6 +43,7 @@ if _env_path.exists():
     logger.info("Loaded environment from %s", _env_path)
 
 from flask import Flask, request, jsonify
+from rate_limiter import rate_limit
 from flask_cors import CORS
 
 # ── No .env file loading — all config via environment variables only ──
@@ -588,10 +589,21 @@ def create_app() -> Flask:
     # ── Session security ──
     app.secret_key = os.environ.get("PRIMERFORGE_SECRET", "dev-secret-key")
     app.config.update(
-        SESSION_COOKIE_SECURE=bool(os.environ.get("FORCE_HTTPS", "false") == "true"),
+        SESSION_COOKIE_SECURE=True,
         SESSION_COOKIE_HTTPONLY=True,
-        SESSION_COOKIE_SAMESITE="Lax",
+        SESSION_COOKIE_SAMESITE='Strict',
     )
+    
+    from rate_limiter import global_rate_limit_hook
+    @app.before_request
+    def rate_limit_check():
+        from flask import request
+        return global_rate_limit_hook(request)
+        
+    @app.errorhandler(Exception)
+    def handle_global_error(e):
+        logger.error(f"Unhandled Exception: {e}", exc_info=True)
+        return jsonify({"error": "Internal server error", "code": "500"}), 500
 
     # ── Security Hardening ────────────────────────────────────────────────
     from primerforge.security import init_security, get_production_origins

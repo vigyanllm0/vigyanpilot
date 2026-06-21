@@ -38,6 +38,8 @@ self.addEventListener('activate', e => {
 
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
+  const url = new URL(e.request.url);
+  if (url.pathname.startsWith('/api/')) return; // Task 10: ignore API
   if (e.request.url.startsWith(self.location.origin) && !e.request.url.includes('cdn.') && !e.request.url.includes('googleapis') && !e.request.url.includes('razorpay')) {
     e.respondWith(
       caches.match(e.request).then(cached => cached || fetch(e.request).then(res => {

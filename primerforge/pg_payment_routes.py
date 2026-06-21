@@ -264,6 +264,19 @@ def verify_payment():
     if not all([razorpay_payment_id, razorpay_order_id, razorpay_signature]):
         return jsonify({"error": "Missing payment verification fields."}), 400
 
+    # Look up order FIRST to prevent CPU exhaustion on fake payloads (Task 15)
+    order = fetch_one(
+        """SELECT p.id, p.user_id, p.product_type, p.tokens_purchased, p.status,
+                  p.metadata
+           FROM payments p
+           JOIN users u ON u.id = p.user_id
+           WHERE p.gateway_order_id = %s AND u.email = %s""",
+        (razorpay_order_id, g.user["email"])
+    )
+
+    if not order:
+        return jsonify({"error": "Order not found."}), 404
+
     # Verify HMAC-SHA256 signature
     if not _verify_signature(razorpay_order_id, razorpay_payment_id, razorpay_signature):
         logger.warning(f"Signature mismatch for order {razorpay_order_id} by {g.user['email']}")
@@ -276,19 +289,6 @@ def verify_payment():
         except Exception:
             pass
         return jsonify({"error": "Payment verification failed."}), 400
-
-    # Look up order
-    order = fetch_one(
-        """SELECT p.id, p.user_id, p.product_type, p.tokens_purchased, p.status,
-                  p.metadata
-           FROM payments p
-           JOIN users u ON u.id = p.user_id
-           WHERE p.gateway_order_id = %s AND u.email = %s""",
-        (razorpay_order_id, g.user["email"])
-    )
-
-    if not order:
-        return jsonify({"error": "Order not found."}), 404
 
     # Get quantity from metadata
     metadata = json.loads(order.get("metadata") or "{}") if isinstance(order.get("metadata"), str) else (order.get("metadata") or {})

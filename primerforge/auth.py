@@ -25,7 +25,8 @@ from flask import request, jsonify, g
 logger = logging.getLogger("primerforge.auth")
 
 # ── Configuration ─────────────────────────────────────────────────────────
-DB_PATH = os.environ.get("PRIMERFORGE_DB", str(Path(__file__).parent.parent / "primerforge.db"))
+_default_db = "/tmp/primerforge.db" if os.environ.get("VERCEL") == "1" else str(Path(__file__).parent.parent / "primerforge.db")
+DB_PATH = os.environ.get("PRIMERFORGE_DB", _default_db)
 SECRET_KEY = os.environ.get("PRIMERFORGE_SECRET", "")
 if not SECRET_KEY:
     if os.environ.get("FORCE_HTTPS", "").lower() == "true":

@@ -24,7 +24,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
-<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -901,7 +900,7 @@ footer{padding:32px 0;border-top:1px solid var(--border)}
     <div class="trust-list">
       <div class="trust-item"><strong>Server-authoritative pricing</strong> Plan amounts and design credits come from the backend price registry, not from browser form values.</div>
       <div class="trust-item"><strong>Razorpay-secured checkout</strong> UPI, cards, net banking, and wallet flows are handled through Razorpay checkout.</div>
-      <div class="trust-item"><strong>Research data privacy</strong> Lab sequences are used for design workflows and should be covered by project retention and deletion controls in production.</div>
+      <div class="trust-item"><strong>Research data privacy</strong> Lab sequences are used for design workflows and should be covered by project retention and deletion controls controlslist="nodownload" in production.</div>
       <div class="trust-item"><strong>Research Use Only</strong> Outputs are in silico recommendations and must be independently experimentally verified before lab or diagnostic use.</div>
       <div class="trust-item"><strong>HTTPS production deployment</strong> Public deployment must run behind HTTPS, secure cookies, Redis-backed rate limits, and Nginx/Gunicorn.</div>
       <div class="trust-item"><strong>Support and disclosure</strong> Production site should publish support, refund, privacy, terms, and security disclosure paths.</div>
@@ -1057,6 +1056,7 @@ footer{padding:32px 0;border-top:1px solid var(--border)}
     </div>
     <!-- ── Lab ── -->
     <div class="price-card featured">
+      <div style="position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--primary);color:#fff;font-size:9px;font-weight:800;letter-spacing:.08em;padding:2px 10px;border-radius:99px;white-space:nowrap;box-shadow:0 2px 8px rgba(26,86,255,.3)">Most Popular</div>
       <span class="price-tier">Lab / Academic Institute</span>
       <div class="price-amount">₹14,999</div>
       <div class="price-period">per month</div>
@@ -1409,7 +1409,7 @@ function setStatus(online,checking){
   state.online=online;
   if(checking){pill.className='status-pill';dot.className='s-dot grey';txt.textContent='Checking…';}
   else if(online){pill.className='status-pill online';dot.className='s-dot green';txt.textContent='Backend connected';}
-  else{pill.className='status-pill offline';dot.className='s-dot amber';txt.textContent='Backend offline';}
+  else{pill.className='status-pill offline';dot.className='s-dot amber';txt.textContent='Connecting...';}
   ['btn-run','btn-analyze','btn-fetch'].forEach(id=>{const b=$(id);if(b)b.disabled=!online;});
   setReportButtons(state.results.length > 0 && online);
   setCommerceAvailability(online, checking);
@@ -1442,12 +1442,24 @@ async function apiPost(ep,body){
   const headers = {'Content-Type':'application/json'};
   if(auth.token) headers['Authorization'] = 'Bearer ' + auth.token;
   const r=await fetch(API+ep,{method:'POST',headers,
-    body:JSON.stringify(body),signal:AbortSignal.timeout(120000)});
-  const d=await r.json();
-  if(r.status===401 && d.action==='show_auth') { showAuthModal(); state._pendingRun=true; throw new Error('__AUTH__'); }
-  if(r.status===402 && d.action==='show_payment') { showPaymentModal(); throw new Error('__PAYMENT__'); }
-  if(!r.ok)throw new Error(d.error||`HTTP ${r.status}`);
-  return d;
+    body:JSON.stringify(body),signal:AbortSignal.timeout(60000)});
+  
+  if (!r.ok) {
+    // Generic error - don't expose specific auth/payment state
+    const errorMap = {
+      401: { action: 'show_auth', message: 'Please sign in to continue.' },
+      402: { action: 'show_payment', message: 'Insufficient credits. Please purchase more.' },
+      429: { action: null, message: 'Too many requests. Please wait a moment.' }
+    };
+    const handler = errorMap[r.status];
+    if (handler) {
+      if (handler.action === 'show_auth') showAuthModal();
+      if (handler.action === 'show_payment') showPaymentModal();
+      throw new Error(handler.message);
+    }
+    throw new Error('Something went wrong. Please try again.');
+  }
+  return await r.json();
 }
 
 // ── Tab switching ─────────────────────────────────────────────────────────
@@ -2869,8 +2881,21 @@ async function startRazorpayCheckout(body, context={}) {
   }
 }
 
-function openRazorpayCheckout(order, context={}) {
-  if (!window.Razorpay) {
+function loadRazorpay() {
+  return new Promise((resolve, reject) => {
+    if (window.Razorpay) return resolve();
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.onload = resolve;
+    script.onerror = () => reject(new Error('Failed to load Razorpay SDK'));
+    document.body.appendChild(script);
+  });
+}
+
+async function openRazorpayCheckout(order, context={}) {
+  try {
+    await loadRazorpay();
+  } catch (e) {
     const message = 'Razorpay checkout script did not load. Please check your network and try again.';
     if (context.errorEl) {
       context.errorEl.textContent = message;
