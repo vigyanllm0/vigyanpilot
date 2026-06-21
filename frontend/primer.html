@@ -3149,10 +3149,10 @@ async function loadAdminAcademic() {
     return;
   }
   let html = '<div style="overflow-x:auto;"><table class="admin-table"><thead><tr><th>User</th><th>Email</th><th>Institution</th><th>Method</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead><tbody>';
-  data.claims.forEach(c => {
+    data.claims.forEach(c => {
     const statusColor = c.status === 'approved' ? 'var(--bio)' : c.status === 'rejected' ? 'var(--red)' : 'var(--amber)';
     html += `<tr>
-      <td>${esc(c.name||'—')}</td>
+      <td>${esc(c.full_name||'—')}</td>
       <td style="font-size:10px;font-family:var(--font-s);">${esc(c.email)}</td>
       <td>${esc(c.institution||'—')}</td>
       <td><span style="background:var(--primary-soft);color:var(--primary);padding:2px 6px;border-radius:4px;font-size:10px;font-weight:600;">${c.proof_method||'email'}</span></td>

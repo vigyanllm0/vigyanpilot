@@ -756,7 +756,7 @@ def complete_referral():
 def admin_academic_list():
     """List pending academic claims for admin review."""
     claims = fetch_all(
-        """SELECT ac.id, ac.user_id, u.email, u.name, ac.institution, ac.department,
+        """SELECT ac.id, ac.user_id, u.email, u.full_name, ac.institution, ac.department,
                   ac.use_case, ac.email_edu, ac.document_path, ac.proof_method,
                   ac.status, ac.tokens_granted, ac.created_at
            FROM academic_claims ac
