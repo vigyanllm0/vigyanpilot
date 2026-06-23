@@ -593,12 +593,6 @@ def create_app() -> Flask:
         SESSION_COOKIE_SAMESITE='Strict',
     )
     
-    from rate_limiter import global_rate_limit_hook
-    @app.before_request
-    def rate_limit_check():
-        from flask import request
-        return global_rate_limit_hook(request)
-        
     @app.errorhandler(Exception)
     def handle_global_error(e):
         logger.error(f"Unhandled Exception: {e}", exc_info=True)
