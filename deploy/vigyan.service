@@ -1,7 +1,9 @@
 [Unit]
-Description=VigyanLLM Primer Design Backend
-After=network.target postgresql.target
-Wants=postgresql.target
+Description=VigyanLLM Primer Design Backend (Hardened)
+Documentation=https://vigyanllm.in/docs
+After=network-online.target postgresql.service
+Wants=postgresql.service
+Requires=network-online.target
 
 [Service]
 Type=simple
@@ -9,26 +11,76 @@ User=ubuntu
 Group=ubuntu
 WorkingDirectory=/home/ubuntu/vigyanpilot
 
-# Load env vars from .env before the process starts
+# ── Environment ────────────────────────────────────────────────────────────
+Environment=PATH=/home/ubuntu/vigyanpilot/.venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 EnvironmentFile=/home/ubuntu/vigyanpilot/.env
 
-# Auto-apply pending database migrations before starting
+# ── Pre-start ──────────────────────────────────────────────────────────────
 ExecStartPre=/home/ubuntu/vigyanpilot/.venv/bin/python \
     /home/ubuntu/vigyanpilot/deploy/migrations/migrate.py
 
-# Activate venv and start gunicorn
+# ── Application ────────────────────────────────────────────────────────────
 ExecStart=/home/ubuntu/vigyanpilot/.venv/bin/gunicorn \
-    -c deploy/gunicorn.conf.py \
+    -c /home/ubuntu/vigyanpilot/deploy/gunicorn.conf.py \
     wsgi:app
 
-# Restart on failure
-Restart=always
+# ── Process Lifecycle ──────────────────────────────────────────────────────
+Restart=on-failure
 RestartSec=5
+RestartSteps=3
+RestartMaxDelaySec=30
+TimeoutStartSec=60
+TimeoutStopSec=30
 
-# Hardening
-# Disabled: NoNewPrivileges=true — blocks certbot renewal hooks
+# ── Resource Limits ────────────────────────────────────────────────────────
+LimitNOFILE=65536
+LimitNPROC=4096
+LimitCORE=0
+LimitRSS=0
+LimitFSIZE=infinity
+TasksMax=infinity
+
+# ── Security Hardening ─────────────────────────────────────────────────────
+# Prevent privilege escalation via setuid binaries
+NoNewPrivileges=true
+
+# Restrict filesystem access
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/home/ubuntu/vigyanpilot /var/log/vigyan /tmp
+
+# Mount /tmp and /var/tmp as noexec, nosuid, nodev
 PrivateTmp=true
-ProtectSystem=full
+ProtectControlGroups=true
+ProtectKernelModules=true
+ProtectKernelTunables=true
+ProtectKernelLogs=true
+ProtectHostname=true
+
+# Restrict device access
+PrivateDevices=true
+
+# Restrict capabilities to only what's needed
+CapabilityBoundingSet=
+AmbientCapabilities=
+
+# Restrict network syscalls and address families
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+RestrictNamespaces=true
+LockPersonality=true
+
+# Restrict system call architectures to native only
+SystemCallArchitectures=native
+SystemCallFilter=@system-service @pkey
+
+# W^X enforcement (no write+execute memory pages)
+MemoryDenyWriteExecute=true
+
+# Remove inherited capabilities
+RemoveIPC=true
+
+# UTS namespace isolation (cannot change hostname)
+ProtectClock=true
 
 [Install]
 WantedBy=multi-user.target

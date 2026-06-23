@@ -631,6 +631,8 @@ def create_app() -> Flask:
         return "", 204
 
     init_security(app)
+    from primerforge.security import init_admin_rbac
+    init_admin_rbac(app)
     init_threat_detection(app)
     init_debugger(app)
     init_file_scanner(app)

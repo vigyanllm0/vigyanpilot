@@ -285,6 +285,65 @@ def register_cors_headers(app):
         return response
 
 
+# ── Centralized Admin RBAC Middleware ──────────────────────────────────────
+# All paths matching /api/admin/*, /api/admin/threats/*, /api/admin/scanner/*,
+# /api/admin/debug/*, and financial/schema routes are gated here BEFORE any
+# route handler executes. Returns 401/403 without revealing schema details.
+
+ADMIN_PROTECTED_PREFIXES = (
+    "/api/admin/",
+    "/api/internal/",
+    "/api/metadata/",
+    "/api/schema/",
+    "/api/telemetry/",
+)
+
+
+def _is_admin_protected_path(path: str) -> bool:
+    """Return True if the path requires admin-level RBAC check."""
+    for prefix in ADMIN_PROTECTED_PREFIXES:
+        if path.startswith(prefix):
+            return True
+    return False
+
+
+def init_admin_rbac(app):
+    """Register a before_request handler that enforces admin RBAC globally.
+
+    This runs BEFORE route handlers and BEFORE the per-route @require_admin
+    decorator, providing defense-in-depth. If the decorator is accidentally
+    omitted on a new admin route, this middleware still blocks it.
+    """
+    from primerforge.pg_auth import verify_token
+
+    @app.before_request
+    def _admin_rbac_check():
+        path = request.path
+
+        if not _is_admin_protected_path(path):
+            return
+
+        if request.method == "OPTIONS":
+            return
+
+        auth = request.headers.get("Authorization", "")
+        token = ""
+        if auth.startswith("Bearer "):
+            token = auth[7:]
+        elif request.cookies.get("pf_token"):
+            token = request.cookies.get("pf_token", "")
+
+        if not token:
+            return jsonify({"error": "Authentication required", "code": "AUTH_REQUIRED"}), 401
+
+        user = verify_token(token)
+        if not user or user.get("role") != "admin":
+            return jsonify({"error": "Admin access required", "code": "FORBIDDEN"}), 403
+
+    logger.info("Admin RBAC middleware initialized — protecting %d path prefixes",
+                len(ADMIN_PROTECTED_PREFIXES))
+
+
 # ── Input Sanitization Utilities ──────────────────────────────────────────
 
 def sanitize_string(value, max_length: int = 256) -> str:

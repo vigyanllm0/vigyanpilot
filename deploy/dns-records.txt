@@ -1,0 +1,115 @@
+═══════════════════════════════════════════════════════════════════
+  VigyanLLM — Hardened DNS Email Security Records
+  Domain: vigyanllm.in
+  Provider: Hostinger DNS
+═══════════════════════════════════════════════════════════════════
+
+Apply these DNS records at your domain registrar/DNS provider
+(Hostinger hPanel → Domains → vigyanllm.in → DNS Zone Editor).
+
+────────────────────────────────────────────────────────────────
+  1. SPF RECORD (TXT)
+────────────────────────────────────────────────────────────────
+  Host/Name: @
+  Type:       TXT
+  Value:      v=spf1 mx include:_spf.hostinger.com -all
+
+  ━━━ Hardening Notes ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  • HARD FAIL (-all) — rejects all mail from unauthorised senders
+    (replaces the prior softfail ~all that allowed spoofing).
+  • include:_spf.hostinger.com — authorises Hostinger's mail
+    relay infrastructure to send on your behalf.
+  • mx — authorises any server listed in the domain's MX records.
+  • No third-party ESP includes (Mailgun, SendGrid, etc.) unless
+    explicitly needed. Add only as required.
+
+────────────────────────────────────────────────────────────────
+  2. DKIM RECORD (TXT)
+────────────────────────────────────────────────────────────────
+  Host/Name: hostinger._domainkey
+  Type:       TXT
+  Value:      v=DKIM1; h=sha256; k=rsa; p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC1...
+
+  ━━━ Setup Instructions (Hostinger) ━━━━━━━━━━━━━━━━━━━━━━━━━
+  1. Log in to Hostinger hPanel → Emails → Email Mail Services
+  2. Click "Manage" on your vigyanllm.in email plan
+  3. Go to "Authentication" → "DKIM"
+  4. Enable DKIM signing
+  5. The public key will be displayed — copy it as-is
+  6. Create a TXT record in DNS Zone:
+       Host/Name: hostinger._domainkey
+       Value:     (paste the full DKIM public key string)
+  7. DKIM alignment: Use "relaxed" alignment mode (Hostinger default)
+     This means the d=domain in the DKIM signature must be a
+     subdomain of the From: domain (vigyanllm.in).
+
+  ━━━ Verification ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Test with: dig TXT hostinger._domainkey.vigyanllm.in
+
+────────────────────────────────────────────────────────────────
+  3. DMARC RECORD (TXT)
+────────────────────────────────────────────────────────────────
+  Host/Name: _dmarc
+  Type:       TXT
+  Value:      v=DMARC1; p=quarantine; sp=quarantine; rua=mailto:dmarc@vigyanllm.in; ruf=mailto:dmarc@vigyanllm.in; pct=100; fo=1
+
+  ━━━ DMARC Policy Interpretation ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  • v=DMARC1                          — DMARC version
+  • p=quarantine                      — Policy for the organisational domain:
+                                        mail failing SPF+DKIM should go to
+                                        spam/quarantine (upgrade to p=reject
+                                        after 30 days of monitoring).
+  • sp=quarantine                     — Same policy for subdomains
+  • rua=mailto:dmarc@vigyanllm.in    — Aggregate (daily) reports sent here
+  • ruf=mailto:dmarc@vigyanllm.in    — Forensic (per-failure) reports
+  • pct=100                           — Policy applies to 100% of mail
+  • fo=1                              — Generate forensic reports on any
+                                        authentication failure
+
+  ━━━ Rollout Strategy ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Phase 1 (Monitor — 7 days):
+    v=DMARC1; p=none; rua=mailto:dmarc@vigyanllm.in; fo=1
+    → Observe report data without affecting delivery.
+
+  Phase 2 (Quarantine — 14 days): ← CURRENT RECOMMENDATION
+    v=DMARC1; p=quarantine; sp=quarantine; rua=mailto:dmarc@vigyanllm.in; ...
+
+  Phase 3 (Reject):
+    v=DMARC1; p=reject; sp=reject; rua=mailto:dmarc@vigyanllm.in; ...
+
+────────────────────────────────────────────────────────────────
+  4. MX RECORD (if not already set)
+────────────────────────────────────────────────────────────────
+  Host/Name: @
+  Type:       MX
+  Priority:   0
+  Value:      mx.hostinger.com
+
+────────────────────────────────────────────────────────────────
+  5. APPLYING RECORDS
+────────────────────────────────────────────────────────────────
+  In Hostinger hPanel:
+    1. Go to "Domains" → click vigyanllm.in → "DNS Zone Editor"
+    2. Delete any existing SPF records (keep only the one above)
+    3. Add the TXT records one by one as specified
+    4. Wait 5–30 minutes for DNS propagation
+    5. Verify with:
+       dig TXT vigyanllm.in         # SPF
+       dig TXT hostinger._domainkey.vigyanllm.in  # DKIM
+       dig TXT _dmarc.vigyanllm.in  # DMARC
+
+────────────────────────────────────────────────────────────────
+  EMAIL SPOOFING — RISK MITIGATION SUMMARY
+────────────────────────────────────────────────────────────────
+  Before fix: SPF = ~all (softfail), DKIM = absent, DMARC = absent
+              → Grade F. Anyone could spoof @vigyanllm.in.
+  After fix:  SPF = -all (hardfail), DKIM = signing enabled,
+              DMARC = p=quarantine (→ p=reject)
+              → Grade A. Spoofed emails are rejected/quarantined.
+
+  Alignment check structure:
+  - SPF alignment: Return-Path domain must match From domain
+    (Hostinger sets Return-Path automatically)
+  - DKIM alignment: d=domain in signature must match From domain
+    (relaxed mode allows subdomain match)
+  - DMARC requires at least one of SPF or DKIM to align

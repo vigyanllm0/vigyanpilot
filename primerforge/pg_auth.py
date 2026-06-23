@@ -260,17 +260,126 @@ def require_admin(f):
 
 # ── User Registration & Login ─────────────────────────────────────────────
 
+# ── Email Verification ─────────────────────────────────────────────────────
+
+def send_verification_email(email: str, verification_token: str) -> bool:
+    """Send email verification link to newly registered user."""
+    import smtplib
+    from email.mime.text import MIMEText
+
+    smtp_host = os.environ.get("SMTP_HOST")
+    smtp_port = int(os.environ.get("SMTP_PORT", "587"))
+    smtp_user = os.environ.get("SMTP_USER")
+    smtp_password = os.environ.get("SMTP_PASSWORD")
+    from_email = os.environ.get("SMTP_FROM_EMAIL", "noreply@vigyanllm.in")
+    app_url = os.environ.get("APP_URL", "https://vigyanllm.com")
+
+    if not smtp_host or not smtp_user or not smtp_password:
+        env = os.environ.get("VIGYANLLM_ENV", "production")
+        if env == "development":
+            logger.warning(
+                "SMTP not configured — verification token for %s: %s (dev mode)",
+                email, verification_token,
+            )
+            return True
+        logger.error("SMTP not configured. Cannot send verification email.")
+        return False
+
+    try:
+        msg = MIMEText(
+            f"Welcome to VigyanLLM!\n\n"
+            f"Please verify your email address by clicking this link:\n"
+            f"{app_url}/verify-email?token={verification_token}\n\n"
+            f"This link expires in 24 hours.\n\n"
+            f"If you did not create this account, please ignore this email.\n\n"
+            f"— VigyanLLM Team"
+        )
+        msg["From"] = from_email
+        msg["To"] = email
+        msg["Subject"] = "VigyanLLM — Verify Your Email Address"
+
+        with smtplib.SMTP(smtp_host, smtp_port) as server:
+            server.starttls()
+            server.login(smtp_user, smtp_password)
+            server.sendmail(from_email, email, msg.as_string())
+
+        logger.info("Verification email sent to %s", email)
+        return True
+    except Exception as e:
+        logger.error("Failed to send verification email to %s: %s", email, e)
+        return False
+
+
+def create_verification_token(user_id: int) -> str:
+    """Create a secure email verification token with 24-hour expiry."""
+    import secrets as _secrets
+    token = _secrets.token_urlsafe(48)
+    try:
+        execute(
+            """INSERT INTO email_verifications (user_id, token, expires_at)
+               VALUES (%s, %s, NOW() + INTERVAL '24 hours')
+               ON CONFLICT (user_id) DO UPDATE
+               SET token = EXCLUDED.token, expires_at = EXCLUDED.expires_at,
+                   verified_at = NULL""",
+            (user_id, token),
+        )
+    except Exception as e:
+        logger.error("Failed to store verification token: %s", e)
+        return ""
+    return token
+
+
+def verify_email_with_token(token: str) -> bool:
+    """Verify a user's email using a verification token. Returns True on success."""
+    if not token or not isinstance(token, str):
+        return False
+    try:
+        row = fetch_one(
+            """SELECT ev.user_id, ev.expires_at, u.status
+               FROM email_verifications ev
+               JOIN users u ON u.id = ev.user_id
+               WHERE ev.token = %s AND ev.verified_at IS NULL""",
+            (token,)
+        )
+        if not row:
+            return False
+        expires_at = row["expires_at"]
+        if isinstance(expires_at, datetime):
+            if expires_at.timestamp() < time.time():
+                return False
+        if row["status"] != "pending":
+            return True
+        user_id = row["user_id"]
+        execute("UPDATE email_verifications SET verified_at = NOW() WHERE token = %s", (token,))
+        execute("UPDATE users SET status = 'active' WHERE id = %s", (user_id,))
+        execute(
+            """INSERT INTO token_balances (user_id, balance, total_purchased)
+               VALUES (%s, 2, 2)
+               ON CONFLICT (user_id) DO UPDATE
+               SET balance = token_balances.balance + 2,
+                   total_purchased = token_balances.total_purchased + 2""",
+            (user_id,)
+        )
+        logger.info("Email verified for user_id=%s", user_id)
+        return True
+    except Exception as e:
+        logger.error("Verification failed: %s", e)
+        return False
+
+
 def register_user(email: str, password: str, name: str = "") -> dict:
-    """Register a new user. Returns user dict or error."""
+    """Register a new user. Returns user dict or error.
+
+    Users are created in 'pending' status until their email is verified.
+    No session token is returned — user must verify email first.
+    """
     from .security import validate_email, validate_password, sanitize_string
 
-    # Type safety
     if not isinstance(email, str) or not isinstance(password, str):
         return {"error": "Invalid input types."}
     if not isinstance(name, str):
         name = ""
 
-    # Validate inputs
     valid, err = validate_email(email)
     if not valid:
         return {"error": err}
@@ -279,32 +388,27 @@ def register_user(email: str, password: str, name: str = "") -> dict:
     if not valid:
         return {"error": err}
 
-    # Sanitize name (strip HTML)
     name = sanitize_string(name, max_length=256)
 
-    # Check if exists
-    existing = fetch_one("SELECT id FROM users WHERE email = %s", (email,))
+    existing = fetch_one("SELECT id, status FROM users WHERE email = %s", (email,))
     if existing:
+        if existing["status"] == "pending":
+            return {"error": "Please check your email to verify your account before logging in."}
         return {"error": "Email already registered."}
 
     password_hash = bcrypt.hashpw(password.encode(), bcrypt.gensalt(rounds=12)).decode()
 
     db = get_db()
     cur = db.cursor()
+    user = None
     try:
         cur.execute(
             """INSERT INTO users (email, password_hash, full_name, role, status)
-               VALUES (%s, %s, %s, 'user', 'active')
+               VALUES (%s, %s, %s, 'user', 'pending')
                RETURNING id, email, role""",
             (email, password_hash, name)
         )
         user = dict(cur.fetchone())
-
-        cur.execute(
-            """INSERT INTO token_balances (user_id, balance, total_purchased)
-               VALUES (%s, 2, 2)""",
-            (user["id"],)
-        )
         db.commit()
     except Exception as e:
         db.rollback()
@@ -313,8 +417,19 @@ def register_user(email: str, password: str, name: str = "") -> dict:
     finally:
         cur.close()
 
-    token = create_token(user["email"], user["role"], user["id"])
-    return {"user": user, "token": token}
+    if not user:
+        return {"error": "Registration failed."}
+
+    verify_token = create_verification_token(user["id"])
+    if verify_token:
+        email_sent = send_verification_email(email, verify_token)
+        if not email_sent:
+            env = os.environ.get("VIGYANLLM_ENV", "production")
+            if env == "development":
+                logger.warning("Email sending failed — verification token: %s", verify_token)
+
+    log_action(email, "registration", f"User registered (status: pending, verification sent)")
+    return {"user": {"email": user["email"], "id": user["id"]}, "requires_verification": True}
 
 
 def login_user(email: str, password: str, ip_address: str = "0.0.0.0", user_agent: str = "") -> dict:
@@ -345,6 +460,11 @@ def login_user(email: str, password: str, ip_address: str = "0.0.0.0", user_agen
         # This makes the response time identical whether email exists or not.
         bcrypt.checkpw(password.encode(), _DUMMY_HASH.encode())
         return {"error": "Invalid email or password."}
+
+    # Check if email is verified (pending = not yet verified)
+    if user.get("status") == "pending":
+        _log_login(user["id"], ip_address, user_agent, "blocked_unverified")
+        return {"error": "Please verify your email address before logging in. Check your inbox for the verification link.", "code": "EMAIL_UNVERIFIED"}
 
     # Check if account is locked
     locked_until = user.get("locked_until")

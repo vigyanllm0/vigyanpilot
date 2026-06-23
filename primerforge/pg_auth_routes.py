@@ -33,7 +33,12 @@ def _safe_str(value, default: str = "") -> str:
 
 @auth_bp.route("/api/auth/register", methods=["POST"])
 def register():
-    """Register a new user account."""
+    """Register a new user account.
+
+    Users are created in 'pending' status and must verify their email
+    address before they can log in. A verification email is sent to the
+    provided address with a 24-hour expiry link.
+    """
     data = request.get_json(silent=True) or {}
     email = _safe_str(data.get("email")).strip().lower()
     password = _safe_str(data.get("password"))
@@ -43,12 +48,85 @@ def register():
     if "error" in result:
         return jsonify({"error": result["error"]}), 400
 
+    if result.get("requires_verification"):
+        return jsonify({
+            "success": True,
+            "requires_verification": True,
+            "user": result["user"],
+            "message": "Account created. Please check your email to verify your account before logging in. "
+                       "Verification link expires in 24 hours.",
+        }), 201
+
     return jsonify({
         "success": True,
         "token": result["token"],
         "user": result["user"],
         "message": "Account created successfully. 2 free design tokens included.",
     }), 201
+
+
+@auth_bp.route("/api/auth/verify-email", methods=["GET"])
+def verify_email():
+    """Verify a user's email address using a verification token.
+
+    Called when the user clicks the link in their verification email.
+    Token is a secure URL-safe string, valid for 24 hours.
+    """
+    from .pg_auth import verify_email_with_token
+
+    token = request.args.get("token", "")
+    if not token:
+        return jsonify({"error": "Verification token is required."}), 400
+
+    if verify_email_with_token(token):
+        return jsonify({
+            "success": True,
+            "message": "Email verified successfully. You can now log in to your account.",
+        }), 200
+
+    return jsonify({
+        "error": "Invalid or expired verification token. Please try registering again.",
+        "code": "VERIFICATION_FAILED",
+    }), 400
+
+
+@auth_bp.route("/api/auth/resend-verification", methods=["POST"])
+def resend_verification():
+    """Resend the verification email for a pending account."""
+    from .pg_auth import create_verification_token, send_verification_email
+    from .database import fetch_one
+
+    data = request.get_json(silent=True) or {}
+    email = _safe_str(data.get("email")).strip().lower()
+
+    if not email:
+        return jsonify({"error": "Email is required."}), 400
+
+    user = fetch_one("SELECT id, status FROM users WHERE email = %s", (email,))
+    if not user:
+        return jsonify({
+            "success": True,
+            "message": "If this email is registered and pending verification, a new verification link has been sent.",
+        }), 200
+
+    if user["status"] != "pending":
+        return jsonify({
+            "success": True,
+            "message": "This account is already verified. Please log in.",
+        }), 200
+
+    verify_token = create_verification_token(user["id"])
+    if not verify_token:
+        return jsonify({"error": "Failed to generate verification token."}), 500
+
+    email_sent = send_verification_email(email, verify_token)
+    if not email_sent:
+        logger.error("Failed to resend verification email to %s", email)
+
+    return jsonify({
+        "success": True,
+        "message": "If this email is registered and pending verification, a new verification link has been sent.",
+    }), 200
 
 
 @auth_bp.route("/api/auth/login", methods=["POST"])
@@ -187,7 +265,7 @@ def _send_reset_email(email: str, reset_token: str) -> bool:
     smtp_port = int(os.environ.get("SMTP_PORT", "587"))
     smtp_user = os.environ.get("SMTP_USER")
     smtp_password = os.environ.get("SMTP_PASSWORD")
-    from_email = os.environ.get("SMTP_FROM_EMAIL", "noreply@vigyanllm.com")
+    from_email = os.environ.get("SMTP_FROM_EMAIL", "noreply@vigyanllm.in")
     app_url = os.environ.get("APP_URL", "https://vigyanllm.com")
 
     if not smtp_host or not smtp_user or not smtp_password:
@@ -363,12 +441,24 @@ def google_auth():
     from .database import get_db
     import bcrypt, os
 
-    existing = fetch_one("SELECT id, email, role FROM users WHERE email = %s", (email,))
+    existing = fetch_one("SELECT id, email, role, status FROM users WHERE email = %s", (email,))
 
     if existing:
-        # Existing user — login
+        # Existing user — login (auto-activate if was pending, Google-verified)
         user_id = existing["id"]
         role = existing["role"]
+        if existing["status"] == "pending":
+            execute("UPDATE users SET status = 'active' WHERE id = %s", (user_id,))
+            execute("UPDATE email_verifications SET verified_at = NOW() WHERE user_id = %s", (user_id,))
+            execute(
+                """INSERT INTO token_balances (user_id, balance, total_purchased)
+                   VALUES (%s, 2, 2)
+                   ON CONFLICT (user_id) DO UPDATE
+                   SET balance = token_balances.balance + 2,
+                       total_purchased = token_balances.total_purchased + 2""",
+                (user_id,)
+            )
+            logger.info("Google auth auto-verified pending user %s", email)
         execute("UPDATE users SET last_active_at = NOW() WHERE id = %s", (user_id,))
     else:
         # New user — register via Google

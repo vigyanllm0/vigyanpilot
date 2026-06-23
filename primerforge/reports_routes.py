@@ -20,6 +20,10 @@ import json
 import logging
 import os
 import secrets
+import hmac
+import hashlib
+import time
+import base64
 from datetime import datetime, timezone
 from pathlib import Path
 from flask import Blueprint, request, jsonify, g, make_response
@@ -31,6 +35,75 @@ from .database import fetch_one, fetch_all, execute, execute_returning
 logger = logging.getLogger("primerforge.reports")
 
 reports_bp = Blueprint("reports", __name__)
+
+# ── Secure Download Tokens ─────────────────────────────────────────────────
+# Short-lived (5 min), single-use, HMAC-signed tokens for report downloads.
+# Replaces any prior pattern of embedding long-lived bearer tokens in URLs.
+
+_DOWNLOAD_TOKEN_EXPIRY = 300  # 5 minutes
+_DOWNLOAD_TOKEN_SECRET = os.environ.get("PRIMERFORGE_SECRET", "")
+_USED_DOWNLOAD_TOKENS = set()
+
+
+def _generate_download_token(report_id: int, user_id: int) -> str:
+    """Generate a short-lived, single-use download token."""
+    payload = json.dumps({
+        "report_id": report_id,
+        "user_id": user_id,
+        "iat": int(time.time()),
+        "exp": int(time.time() + _DOWNLOAD_TOKEN_EXPIRY),
+        "purpose": "download",
+    })
+    sig = hmac.new(_DOWNLOAD_TOKEN_SECRET.encode(), payload.encode(), hashlib.sha256).hexdigest()
+    return base64.urlsafe_b64encode(payload.encode()).decode().rstrip("=") + "." + sig
+
+
+def _verify_download_token(token: str, report_id: int, user_id: int) -> bool:
+    """Verify a download token. Returns True if valid, fresh, and single-use."""
+    if not token or not isinstance(token, str):
+        return False
+    if token in _USED_DOWNLOAD_TOKENS:
+        return False
+    try:
+        parts = token.split(".")
+        if len(parts) != 2:
+            return False
+        payload_b64, sig = parts
+        payload = base64.urlsafe_b64decode(payload_b64 + "==").decode()
+        expected_sig = hmac.new(_DOWNLOAD_TOKEN_SECRET.encode(), payload.encode(), hashlib.sha256).hexdigest()
+        if not hmac.compare_digest(sig, expected_sig):
+            return False
+        data = json.loads(payload)
+        if data.get("purpose") != "download":
+            return False
+        if data.get("report_id") != report_id:
+            return False
+        if data.get("user_id") != user_id:
+            return False
+        if data.get("exp", 0) < time.time():
+            return False
+        _USED_DOWNLOAD_TOKENS.add(token)
+        if len(_USED_DOWNLOAD_TOKENS) > 10000:
+            _prune_used_tokens()
+        return True
+    except Exception:
+        return False
+
+
+def _prune_used_tokens():
+    """Remove expired tokens from the used-token set periodically."""
+    now = time.time()
+    to_remove = set()
+    for t in _USED_DOWNLOAD_TOKENS:
+        try:
+            parts = t.split(".")
+            if len(parts) == 2:
+                payload = json.loads(base64.urlsafe_b64decode(parts[0] + "==").decode())
+                if payload.get("exp", 0) < now:
+                    to_remove.add(t)
+        except Exception:
+            to_remove.add(t)
+    _USED_DOWNLOAD_TOKENS.difference_update(to_remove)
 
 
 # ── IP enforcement: stored in login_logs, checked at auth time ─────────────
@@ -281,11 +354,72 @@ def get_history():
     }), 200
 
 
-@reports_bp.route("/api/reports/<int:report_id>/download", methods=["GET"])
+@reports_bp.route("/api/reports/<int:report_id>/request-download", methods=["POST"])
 @require_auth
-def download_report_json(report_id: int):
-    """Download a report as full JSON including all pipeline step outputs."""
+def request_download_token(report_id: int):
+    """Generate a short-lived, single-use download token for this report.
+
+    Returns the token which can be used as ?token=<value> on the download
+    endpoints. Token expires in 5 minutes and can only be used once.
+    This replaces any pattern of embedding long-lived bearer tokens in URLs.
+    """
     user_id = g.user["user_id"]
+
+    report = fetch_one(
+        "SELECT id FROM user_reports WHERE id = %s AND user_id = %s",
+        (report_id, user_id)
+    )
+    if not report:
+        return jsonify({"error": "Report not found"}), 404
+
+    token = _generate_download_token(report_id, user_id)
+    return jsonify({
+        "token": token,
+        "expires_in_seconds": _DOWNLOAD_TOKEN_EXPIRY,
+        "download_urls": {
+            "json": f"/api/reports/{report_id}/download?token={token}",
+            "csv": f"/api/reports/{report_id}/csv?token={token}",
+        },
+    }), 200
+
+
+def _resolve_download_user(report_id: int):
+    """Resolve (user_id, error_response) for download access.
+
+    Supports two authentication modes:
+    1. Standard auth (Authorization header or pf_token cookie) — existing flow.
+    2. Short-lived download token (?token= query parameter) — secure share flow.
+    """
+    from .pg_auth import verify_token, get_current_user
+
+    token_param = request.args.get("token", "")
+    if token_param:
+        user = get_current_user()
+        if not user:
+            return None, (jsonify({"error": "Authentication required", "code": "AUTH_REQUIRED"}), 401)
+        user_id = user.get("user_id")
+        if not user_id:
+            return None, (jsonify({"error": "Authentication required", "code": "AUTH_REQUIRED"}), 401)
+        if not _verify_download_token(token_param, report_id, user_id):
+            return None, (jsonify({"error": "Invalid or expired download token", "code": "BAD_TOKEN"}), 403)
+        return user_id, None
+
+    user = get_current_user()
+    if not user:
+        return None, (jsonify({"error": "Authentication required", "code": "AUTH_REQUIRED"}), 401)
+    return user.get("user_id"), None
+
+
+@reports_bp.route("/api/reports/<int:report_id>/download", methods=["GET"])
+def download_report_json(report_id: int):
+    """Download a report as full JSON including all pipeline step outputs.
+
+    Accepts either standard auth (Authorization header) or a short-lived
+    download token (?token= query parameter).
+    """
+    user_id, error = _resolve_download_user(report_id)
+    if error:
+        return error
 
     report = fetch_one(
         "SELECT * FROM user_reports WHERE id = %s AND user_id = %s",
@@ -328,10 +462,15 @@ def download_report_json(report_id: int):
 
 
 @reports_bp.route("/api/reports/<int:report_id>/csv", methods=["GET"])
-@require_auth
 def download_report_csv(report_id: int):
-    """Download top primer pairs from a report as CSV."""
-    user_id = g.user["user_id"]
+    """Download top primer pairs from a report as CSV.
+
+    Accepts either standard auth (Authorization header) or a short-lived
+    download token (?token= query parameter).
+    """
+    user_id, error = _resolve_download_user(report_id)
+    if error:
+        return error
 
     report = fetch_one(
         "SELECT * FROM user_reports WHERE id = %s AND user_id = %s",
@@ -462,7 +601,11 @@ _ALLOWED_EXTENSIONS = {".pdf", ".jpg", ".jpeg", ".png", ".doc", ".docx"}
 @reports_bp.route("/api/academic/upload-document", methods=["POST"])
 @require_auth
 def upload_academic_document():
-    """Upload a university document as proof of academic affiliation."""
+    """Upload a university document as proof of academic affiliation.
+
+    Returns a UUID file reference instead of the raw filesystem path to
+    prevent information disclosure of the server directory layout.
+    """
     user_id = g.user["user_id"]
     if "document" not in request.files:
         return jsonify({"error": "No document file provided."}), 400
@@ -473,10 +616,12 @@ def upload_academic_document():
     if ext not in _ALLOWED_EXTENSIONS:
         return jsonify({"error": f"Unsupported file type. Allowed: {', '.join(_ALLOWED_EXTENSIONS)}"}), 400
     _UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
-    safe = secure_filename(f"{user_id}_{secrets.token_hex(8)}{ext}")
+    file_uuid = secrets.token_hex(16)
+    safe = secure_filename(f"{user_id}_{file_uuid}{ext}")
     path = _UPLOAD_DIR / safe
     file.save(str(path))
-    return jsonify({"document_path": str(path), "filename": safe}), 200
+    # Return only a UUID reference — never expose the server filesystem path
+    return jsonify({"file_ref": file_uuid, "filename": safe}), 200
 
 
 @reports_bp.route("/api/academic/claim", methods=["POST"])
@@ -496,7 +641,7 @@ def claim_academic():
     use_case = (data.get("use_case") or "").strip()[:2000]
     email_edu = (data.get("email_edu") or "").strip().lower()[:320]
     proof_method = (data.get("proof_method") or "email").strip()
-    document_path = (data.get("document_path") or "").strip()
+    document_path = (data.get("document_path") or data.get("file_ref") or "").strip()
 
     if not institution:
         return jsonify({"error": "Institution name is required."}), 400
