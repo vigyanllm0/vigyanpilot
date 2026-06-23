@@ -43,7 +43,6 @@ if _env_path.exists():
     logger.info("Loaded environment from %s", _env_path)
 
 from flask import Flask, request, jsonify
-from rate_limiter import rate_limit
 from flask_cors import CORS
 
 # ── No .env file loading — all config via environment variables only ──
