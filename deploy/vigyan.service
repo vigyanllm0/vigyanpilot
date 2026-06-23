@@ -1,5 +1,5 @@
 [Unit]
-Description=VigyanLLM Primer Design Backend (Hardened)
+Description=VigyanLLM Primer Design Backend
 Documentation=https://vigyanllm.in/docs
 After=network-online.target postgresql.service
 Wants=postgresql.service
@@ -36,51 +36,38 @@ TimeoutStopSec=30
 LimitNOFILE=65536
 LimitNPROC=4096
 LimitCORE=0
-LimitRSS=0
-LimitFSIZE=infinity
-TasksMax=infinity
 
 # ── Security Hardening ─────────────────────────────────────────────────────
+# Moderate hardening — keeps the app functional while preventing common
+# privilege escalation and information disclosure vectors.
+
 # Prevent privilege escalation via setuid binaries
 NoNewPrivileges=true
 
-# Restrict filesystem access
+# Restrict filesystem access — writeable only where needed
 ProtectSystem=strict
-ProtectHome=true
 ReadWritePaths=/home/ubuntu/vigyanpilot /var/log/vigyan /tmp
 
-# Mount /tmp and /var/tmp as noexec, nosuid, nodev
+# Isolate /tmp — noexec, nosuid, nodev
 PrivateTmp=true
-ProtectControlGroups=true
+
+# Kernel protection (safe on all systems)
 ProtectKernelModules=true
 ProtectKernelTunables=true
 ProtectKernelLogs=true
+ProtectClock=true
+
+# Isolate from hostname changes
 ProtectHostname=true
 
-# Restrict device access
-PrivateDevices=true
-
-# Restrict capabilities to only what's needed
-CapabilityBoundingSet=
-AmbientCapabilities=
-
-# Restrict network syscalls and address families
-RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
-RestrictNamespaces=true
-LockPersonality=true
-
-# Restrict system call architectures to native only
-SystemCallArchitectures=native
-SystemCallFilter=@system-service @pkey
-
-# W^X enforcement (no write+execute memory pages)
-MemoryDenyWriteExecute=true
-
-# Remove inherited capabilities
+# Remove inherited IPC resources on exit
 RemoveIPC=true
 
-# UTS namespace isolation (cannot change hostname)
-ProtectClock=true
+# NOTE: ProtectHome=true is intentionally omitted — it blocks access to
+# /home/ubuntu/vigyanpilot even with ReadWritePaths on some systemd versions.
+# MemoryDenyWriteExecute is omitted — it breaks Python C extensions.
+# SystemCallFilter/CapabilityBoundingSet are omitted — they interfere with
+# gunicorn worker spawning and database driver socket connections.
 
 [Install]
 WantedBy=multi-user.target
