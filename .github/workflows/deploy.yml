@@ -62,16 +62,22 @@ jobs:
               (sudo apt-get update -qq && sudo apt-get install -y python3-pysam 2>/dev/null) || \
               echo "WARNING: pysam not installed — primer design will fail for some features"
 
-            # Install libpq-dev (provides pg_config) so psycopg2 can build from source
-            # if the binary wheel is not available for this platform/Python version.
+            # Install libpq-dev (provides pg_config) so psycopg2 can compile if needed
             sudo apt-get install -y libpq-dev 2>/dev/null || true
 
-            # Pre-install psycopg2-binary with --only-binary to prefer the wheel
-            pip install psycopg2-binary==2.9.10 --only-binary :all: --no-cache-dir --quiet || \
-              echo "WARNING: psycopg2-binary wheel not found — will build from source via requirements.txt"
+            # Detect whether uv or pip is the active package installer
+            if command -v uv &>/dev/null; then
+              INSTALL_CMD="uv pip install"
+            else
+              INSTALL_CMD="pip install"
+            fi
+
+            # Pre-install psycopg2-binary wheel before the main requirements batch
+            $INSTALL_CMD psycopg2-binary==2.9.10 --only-binary :all: --no-cache-dir --quiet 2>/dev/null || \
+              echo "Will build psycopg2 from source (libpq-dev is available)"
 
             # Install remaining Python deps (no cache to save disk)
-            pip install -r requirements.txt --no-cache-dir --quiet
+            $INSTALL_CMD -r requirements.txt --no-cache-dir --quiet
 
             # Write .env file from GitHub Secrets
             : > .env
