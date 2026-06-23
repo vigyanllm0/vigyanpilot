@@ -62,12 +62,13 @@ jobs:
               (sudo apt-get update -qq && sudo apt-get install -y python3-pysam 2>/dev/null) || \
               echo "WARNING: pysam not installed — primer design will fail for some features"
 
-            # Ensure psycopg2-binary is installed BEFORE requirements resolve to avoid
-            # pip trying to build psycopg2 from source (which requires pg_config/libpq-dev).
+            # Install libpq-dev (provides pg_config) so psycopg2 can build from source
+            # if the binary wheel is not available for this platform/Python version.
+            sudo apt-get install -y libpq-dev 2>/dev/null || true
+
+            # Pre-install psycopg2-binary with --only-binary to prefer the wheel
             pip install psycopg2-binary==2.9.10 --only-binary :all: --no-cache-dir --quiet || \
-              (sudo apt-get install -y libpq-dev 2>/dev/null && \
-               pip install psycopg2-binary==2.9.10 --only-binary :all: --no-cache-dir --quiet) || \
-              echo "WARNING: psycopg2-binary install failed — check libpq-dev"
+              echo "WARNING: psycopg2-binary wheel not found — will build from source via requirements.txt"
 
             # Install remaining Python deps (no cache to save disk)
             pip install -r requirements.txt --no-cache-dir --quiet
