@@ -25,7 +25,7 @@ logger = logging.getLogger("primerforge.debugger")
 # ── Configuration ─────────────────────────────────────────────────────────
 SLOW_REQUEST_THRESHOLD_MS = int(os.environ.get("SLOW_REQUEST_MS", "2000"))  # 2 seconds
 MAX_ERROR_STORE = 500  # Keep last 500 errors in memory
-DEBUG_MODE = os.environ.get("DEBUG_MONITOR", "true").lower() == "true"
+DEBUG_MODE = os.environ.get("DEBUG_MONITOR", "false").lower() == "true"
 
 
 # ── Error Store ───────────────────────────────────────────────────────────

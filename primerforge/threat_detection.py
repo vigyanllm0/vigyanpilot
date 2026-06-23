@@ -293,7 +293,12 @@ def init_threat_detection(app):
                 return jsonify({"error": "Access denied.", "code": "IP_BANNED"}), 403
 
         # 4. Scan request body (for POST/PUT/PATCH)
-        if request.method in ("POST", "PUT", "PATCH"):
+        # Skip pipeline and health endpoints — their bodies carry sequence data,
+        # not untrusted user input, and scanning large sequences with 35+ regex
+        # patterns causes severe latency (>20s on multi-KB payloads).
+        if request.method in ("POST", "PUT", "PATCH") \
+                and not request.path.startswith("/api/pipeline/") \
+                and request.path != "/health":
             body = request.get_data(as_text=True)
             if body and len(body) < 50000:  # Only scan reasonable-size bodies
                 body_threats = scan_request_payload(body)
