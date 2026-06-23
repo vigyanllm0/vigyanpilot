@@ -68,10 +68,18 @@ def _get_connection():
 
 
 def get_db():
-    """Get request-scoped database connection (stored in Flask's g)."""
-    if "db" not in g:
-        g.db = _get_connection()
-    return g.db
+    """Get request-scoped database connection (stored in Flask's g).
+
+    Falls back to a standalone connection when no Flask request context is
+    available (e.g., background threads running the pipeline). Callers in
+    background contexts are responsible for closing the connection.
+    """
+    try:
+        if "db" not in g:
+            g.db = _get_connection()
+        return g.db
+    except RuntimeError:
+        return _get_connection()
 
 
 def close_db(e=None):
