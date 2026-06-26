@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en-IN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VigyanLLM Blog — Primer Design, PCR & Molecular Biology Guides</title>
+  <meta name="description" content="Expert guides on primer design, PCR validation, qPCR, TaqMan probes, molecular docking, CRISPR analysis, and biomedical AI. Written by molecular biology researchers for researchers.">
+  <meta name="keywords" content="primer design blog, PCR guide, molecular biology blog, qPCR tutorial, TaqMan probe design, bioinformatics blog India">
+  <link rel="canonical" href="https://vigyanllm.in/blog">
+  
+  <!-- Open Graph -->
+  <meta property="og:title" content="VigyanLLM Blog — Primer Design & Molecular Biology Guides">
+  <meta property="og:description" content="Expert guides on primer design, PCR, qPCR, and biomedical AI. Written for molecular biology researchers.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://vigyanllm.in/blog">
+  <meta property="og:image" content="https://vigyanllm.in/assets/og-vigyanllm-blog.png">
+  <meta property="og:site_name" content="VigyanLLM">
+  
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="VigyanLLM Blog — Primer Design & Molecular Biology Guides">
+  <meta name="twitter:description" content="Expert guides on primer design, PCR, qPCR, and biomedical AI for researchers.">
+  <meta name="twitter:image" content="https://vigyanllm.in/assets/og-vigyanllm-blog.png">
+  
+  <link rel="alternate" hreflang="en-IN" href="https://vigyanllm.in/blog">
+  
+  <style>
+    :root {
+      --navy: #0D2B55;
+      --blue: #1A56A3;
+      --accent: #2E75B6;
+      --gold: #C8A951;
+      --red: #C0392B;
+      --green: #1E7D45;
+      --white: #FFFFFF;
+      --black: #111111;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: linear-gradient(180deg, #0a1628 0%, #0D2B55 100%);
+      color: #e0e8f0;
+      line-height: 1.7;
+      min-height: 100vh;
+    }
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+    
+    .top-nav {
+      background: rgba(13,43,85,0.95);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(200,169,81,0.3);
+      padding: 16px 0;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .top-nav .container { display: flex; justify-content: space-between; align-items: center; }
+    .logo { font-size: 22px; font-weight: 700; color: var(--white); text-decoration: none; }
+    .logo span { color: var(--gold); }
+    .nav-links { display: flex; gap: 28px; list-style: none; }
+    .nav-links a { color: #b0c4de; text-decoration: none; font-size: 14px; font-weight: 500; transition: color 0.2s; }
+    .nav-links a:hover { color: var(--gold); }
+    
+    .hero { padding: 60px 0 30px; text-align: center; border-bottom: 1px solid rgba(200,169,81,0.2); }
+    .hero h1 { font-size: 38px; font-weight: 700; color: var(--white); margin-bottom: 12px; }
+    .hero h1 span { color: var(--gold); }
+    .hero p { font-size: 17px; color: #8ba3c7; max-width: 650px; margin: 0 auto 20px; }
+    .badge { display: inline-block; background: rgba(30,125,69,0.2); color: #4ade80; padding: 6px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; border: 1px solid rgba(74,222,128,0.3); }
+    
+    .filter-bar { display: flex; gap: 10px; justify-content: center; padding: 24px 0; flex-wrap: wrap; }
+    .filter-bar a { padding: 8px 18px; border-radius: 20px; background: rgba(255,255,255,0.05); color: #8ba3c7; text-decoration: none; font-size: 13px; font-weight: 500; border: 1px solid rgba(255,255,255,0.08); transition: all 0.2s; }
+    .filter-bar a:hover, .filter-bar a.active { background: rgba(200,169,81,0.15); color: var(--gold); border-color: rgba(200,169,81,0.3); }
+    
+    .blog-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 24px; padding: 30px 0; }
+    .blog-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 16px;
+      overflow: hidden;
+      transition: transform 0.2s, border-color 0.2s;
+      display: flex;
+      flex-direction: column;
+    }
+    .blog-card:hover { transform: translateY(-4px); border-color: rgba(200,169,81,0.25); }
+    .blog-card-header {
+      padding: 24px 24px 12px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .blog-tag {
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    .tag-primer { background: rgba(26,86,163,0.3); color: #6bb3ff; }
+    .tag-qpcr { background: rgba(30,125,69,0.3); color: #4ade80; }
+    .tag-advanced { background: rgba(192,57,43,0.3); color: #ff9999; }
+    .tag-india { background: rgba(200,169,81,0.2); color: var(--gold); }
+    .blog-card h3 { padding: 0 24px 12px; font-size: 18px; color: var(--white); }
+    .blog-card p { padding: 0 24px 20px; color: #8ba3c7; font-size: 14px; line-height: 1.65; flex-grow: 1; }
+    .blog-card-footer { padding: 16px 24px; border-top: 1px solid rgba(255,255,255,0.04); display: flex; justify-content: space-between; align-items: center; }
+    .read-time { color: #556677; font-size: 12px; }
+    .read-link { color: var(--gold); text-decoration: none; font-weight: 600; font-size: 14px; }
+    .read-link:hover { text-decoration: underline; }
+    
+    .cta-box {
+      background: linear-gradient(135deg, rgba(26,86,163,0.3), rgba(13,43,85,0.5));
+      border: 1px solid rgba(200,169,81,0.3);
+      border-radius: 16px;
+      padding: 40px;
+      text-align: center;
+      margin: 40px 0;
+    }
+    .cta-box h3 { font-size: 24px; color: var(--white); margin-bottom: 10px; }
+    .cta-box p { color: #8ba3c7; margin-bottom: 20px; }
+    .cta-btn {
+      display: inline-block; padding: 14px 32px;
+      background: linear-gradient(135deg, var(--gold), #b8942a);
+      color: var(--navy); text-decoration: none;
+      border-radius: 8px; font-weight: 700; font-size: 15px;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .cta-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(200,169,81,0.3); }
+    
+    footer {
+      background: rgba(10,22,40,0.8);
+      border-top: 1px solid rgba(255,255,255,0.06);
+      padding: 40px 0 24px;
+      margin-top: 60px;
+    }
+    .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 40px; }
+    .footer-brand { color: #6b7f9e; font-size: 14px; }
+    .footer-brand .logo { margin-bottom: 12px; display: inline-block; }
+    .footer-col h4 { color: var(--white); font-size: 14px; margin-bottom: 14px; }
+    .footer-col a { display: block; color: #6b7f9e; text-decoration: none; font-size: 13px; margin-bottom: 8px; }
+    .footer-col a:hover { color: var(--gold); }
+    .footer-bottom { border-top: 1px solid rgba(255,255,255,0.06); margin-top: 30px; padding-top: 20px; text-align: center; color: #556677; font-size: 13px; }
+    
+    @media (max-width: 768px) {
+      .hero h1 { font-size: 26px; }
+      .nav-links { display: none; }
+      .footer-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+  
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Blog",
+    "name": "VigyanLLM Blog",
+    "description": "Expert guides on primer design, PCR validation, qPCR, TaqMan probes, and biomedical AI.",
+    "url": "https://vigyanllm.in/blog",
+    "publisher": {
+      "@type": "Organization",
+      "name": "VigyanLLM Private Limited",
+      "logo": { "@type": "ImageObject", "url": "https://vigyanllm.in/assets/logo.png" }
+    }
+  }
+  </script>
+  
+  <script type="application/ld+json">
+  {
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "VigyanLLM", "item": "https://vigyanllm.in/" },
+      { "@type": "ListItem", "position": 2, "name": "Blog", "item": "https://vigyanllm.in/blog" }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <nav class="top-nav">
+    <div class="container">
+      <a href="/" class="logo">Vigyan<span>LLM</span></a>
+      <ul class="nav-links">
+        <li><a href="/">Home</a></li>
+        <li><a href="/primer">Primer Tool</a></li>
+        <li><a href="/blog" style="color: var(--gold);">Blog</a></li>
+        <li><a href="/faq">FAQ</a></li>
+        <li><a href="/demo">Demos</a></li>
+        <li><a href="/about">About</a></li>
+        <li><a href="/contact">Contact</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <section class="hero">
+    <div class="container">
+      <div class="badge">Research-Grade Guides for Molecular Biologists</div>
+      <h1>VigyanLLM <span>Blog</span></h1>
+      <p>Expert guides on primer design, PCR validation, qPCR, TaqMan probes, molecular docking, and biomedical AI — written by researchers, for researchers.</p>
+    </div>
+  </section>
+
+  <div class="container">
+    <div class="filter-bar">
+      <a href="#" class="active">All</a>
+      <a href="#primer">Primer Design</a>
+      <a href="#qpcr">qPCR & TaqMan</a>
+      <a href="#advanced">Advanced</a>
+      <a href="#india">India Research</a>
+    </div>
+
+    <div class="blog-grid">
+      <article class="blog-card">
+        <div class="blog-card-header">
+          <span class="blog-tag tag-primer">Primer Design</span>
+          <span class="read-time">June 2026</span>
+        </div>
+        <h3>What Is Primer Design Software? A Complete Guide for Molecular Biology Labs</h3>
+        <p>Learn what primer design software is, why it matters, the 7 parameters every tool must evaluate, and how to choose the right one for your application.</p>
+        <div class="blog-card-footer">
+          <span class="read-time">3,200 words · 15 min read</span>
+          <a href="/blog/primer-design-complete-guide" class="read-link">Read →</a>
+        </div>
+      </article>
+
+      <article class="blog-card">
+        <div class="blog-card-header">
+          <span class="blog-tag tag-primer">Primer Design</span>
+          <span class="read-time">June 2026</span>
+        </div>
+        <h3>PCR Primer Design Rules: The 7 Parameters Every Researcher Should Know</h3>
+        <p>Master the 7 essential parameters: Tm, GC content, amplicon size, hairpin avoidance, dimer prevention, specificity, and repeat masking.</p>
+        <div class="blog-card-footer">
+          <span class="read-time">2,500 words · 12 min read</span>
+          <a href="/blog/pcr-primer-design-rules" class="read-link">Read →</a>
+        </div>
+      </article>
+
+      <article class="blog-card">
+        <div class="blog-card-header">
+          <span class="blog-tag tag-primer">Primer Design</span>
+          <span class="read-time">June 2026</span>
+        </div>
+        <h3>How to Calculate Primer Melting Temperature: Methods and Accuracy</h3>
+        <p>Compare Tm calculation methods from basic formulas to the SantaLucia nearest-neighbor model. Learn which method gives accurate results for your PCR conditions.</p>
+        <div class="blog-card-footer">
+          <span class="read-time">2,200 words · 11 min read</span>
+          <a href="/blog/tm-calculation-methods" class="read-link">Read →</a>
+        </div>
+      </article>
+
+      <article class="blog-card">
+        <div class="blog-card-header">
+          <span class="blog-tag tag-primer">Primer Design</span>
+          <span class="read-time">June 2026</span>
+        </div>
+        <h3>GC Content in Primer Design: Guidelines, Calculations, and Edge Cases</h3>
+        <p>Why 40-60% GC content matters, how to calculate it, what to do with AT-rich genomes, and special cases like bisulfite-converted DNA.</p>
+        <div class="blog-card-footer">
+          <span class="read-time">2,000 words · 10 min read</span>
+          <a href="/blog/gc-content-guidelines" class="read-link">Read →</a>
+        </div>
+      </article>
+
+      <article class="blog-card">
+        <div class="blog-card-header">
+          <span class="blog-tag tag-qpcr">qPCR</span>
+          <span class="read-time">June 2026</span>
+        </div>
+        <h3>How to Design Primers for qPCR — Step by Step Guide for Lab Researchers</h3>
+        <p>Complete qPCR primer design workflow: amplicon sizing, exon junction spanning, probe Tm differential, and specificity optimization.</p>
+        <div class="blog-card-footer">
+          <span class="read-time">2,800 words · 14 min read</span>
+          <a href="/blog/qpcr-primer-probe-design" class="read-link">Read →</a>
+        </div>
+      </article>
+
+      <article class="blog-card">
+        <div class="blog-card-header">
+          <span class="blog-tag tag-qpcr">qPCR</span>
+          <span class="read-time">June 2026</span>
+        </div>
+        <h3>TaqMan Probe vs SYBR Green: Which Should You Use for qPCR?</h3>
+        <p>Detailed comparison of detection chemistries, costs, multiplexing capability, and when to choose each for your quantitative PCR assay.</p>
+        <div class="blog-card-footer">
+          <span class="read-time">2,200 words · 11 min read</span>
+          <a href="/blog/taqman-vs-sybr-green" class="read-link">Read →</a>
+        </div>
+      </article>
+
+      <article class="blog-card">
+        <div class="blog-card-header">
+          <span class="blog-tag tag-advanced">Advanced</span>
+          <span class="read-time">June 2026</span>
+        </div>
+        <h3>Primer Design for Multiplex PCR — What Changes in a 4-Plex Assay?</h3>
+        <p>Master multiplex primer design: size differentiation, Tm harmonization, cross-dimer avoidance, and primer concentration balancing.</p>
+        <div class="blog-card-footer">
+          <span class="read-time">2,400 words · 12 min read</span>
+          <a href="/blog/multiplex-pcr-design" class="read-link">Read →</a>
+        </div>
+      </article>
+
+      <article class="blog-card">
+        <div class="blog-card-header">
+          <span class="blog-tag tag-advanced">Advanced</span>
+          <span class="read-time">June 2026</span>
+        </div>
+        <h3>What Is Primer Dimer and How Do You Prevent It?</h3>
+        <p>Understand primer dimer formation, thermodynamic thresholds, detection methods, and 5 proven strategies to eliminate dimers from your PCR.</p>
+        <div class="blog-card-footer">
+          <span class="read-time">2,000 words · 10 min read</span>
+          <a href="/blog/primer-dimer-prevention" class="read-link">Read →</a>
+        </div>
+      </article>
+
+      <article class="blog-card">
+        <div class="blog-card-header">
+          <span class="blog-tag tag-india">India</span>
+          <span class="read-time">June 2026</span>
+        </div>
+        <h3>Why Indian Research Labs Need Affordable Primer Design Software</h3>
+        <p>How USD pricing excludes Indian academic labs, and why India-first INR pricing with DPDP compliance matters for institutional adoption.</p>
+        <div class="blog-card-footer">
+          <span class="read-time">1,800 words · 9 min read</span>
+          <a href="/blog/primer-design-india-affordable" class="read-link">Read →</a>
+        </div>
+      </article>
+    </div>
+
+    <div class="cta-box">
+      <h3>Design Validated Primers in Under 30 Seconds</h3>
+      <p>Try VigyanLLM Primer's 22-step validation pipeline — free for PhD researchers and professors.</p>
+      <a href="/primer" class="cta-btn">Try VigyanLLM Primer Free →</a>
+    </div>
+  </div>
+
+  <footer>
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="/" class="logo">Vigyan<span>LLM</span></a>
+          <p>Sovereign biomedical AI for research labs. Built in India. Not a wrapper.</p>
+        </div>
+        <div class="footer-col">
+          <h4>Product</h4>
+          <a href="/primer">Primer Design</a>
+          <a href="/demo">Demo Suite</a>
+          <a href="/pricing">Pricing</a>
+        </div>
+        <div class="footer-col">
+          <h4>Resources</h4>
+          <a href="/blog">Blog</a>
+          <a href="/faq">FAQ</a>
+          <a href="/about">About</a>
+        </div>
+        <div class="footer-col">
+          <h4>Legal</h4>
+          <a href="/privacy">Privacy Policy</a>
+          <a href="/terms">Terms of Use</a>
+          <a href="/security">Security</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2026 VigyanLLM Private Limited. DPIIT Startup India Recognised. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
