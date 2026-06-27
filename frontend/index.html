@@ -461,11 +461,19 @@ footer { background: var(--navy); color: #CBD5E1; padding: 80px 0 32px; }
 
   function drawSphere(x, y, r, color, alpha) {
     if (r < 0.3) return;
+    var al = alpha || 1;
+    if (r <= 1.8) {
+      ctx.globalAlpha = al;
+      ctx.fillStyle = color;
+      ctx.beginPath(); ctx.arc(x, y, r, 0, 6.2832); ctx.fill();
+      ctx.globalAlpha = 1;
+      return;
+    }
     var g = ctx.createRadialGradient(x, y, 0, x, y, r * 2.5);
     g.addColorStop(0, color); g.addColorStop(0.15, color); g.addColorStop(1, 'transparent');
-    ctx.globalAlpha = (alpha || 1) * 0.15;
+    ctx.globalAlpha = al * 0.15;
     ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, r * 2.5, 0, 6.2832); ctx.fill();
-    ctx.globalAlpha = (alpha || 1);
+    ctx.globalAlpha = al;
     var lg = ctx.createRadialGradient(x - r*0.35, y - r*0.35, 0, x, y, r);
     lg.addColorStop(0, '#FFFFFF'); lg.addColorStop(0.12, color); lg.addColorStop(0.75, color); lg.addColorStop(1, 'rgba(0,0,0,0.15)');
     ctx.fillStyle = lg; ctx.beginPath(); ctx.arc(x, y, r, 0, 6.2832); ctx.fill();
@@ -479,52 +487,85 @@ footer { background: var(--navy); color: #CBD5E1; padding: 80px 0 32px; }
 
   function drawDNA(dna, alpha) {
     if (!dna || alpha === 0) return;
-    var cx = dna.cx, cy = dna.cy, rad = dna.rad, h = dna.h, rot = dna.rotation, bps = dna.bps, topY = cy - h*0.5, a = alpha || 1;
+    var cx = dna.cx, cy = dna.cy, rad = dna.rad, h = dna.h, rot = dna.rotation, bps = dna.bps, a = alpha || 1;
+    var topY = cy - h * 0.5;
+    var time = Date.now() * 0.001;
+    var groove = dna.grooveOffset;
+    var jAmp = dna.jitterAmp, jFreq = dna.jitterFreq;
+    var bendAmp = dna.bendAmp, bendFreq = dna.bendFreq;
 
+    // Backbone glow (subtle ambient)
     for (var s = 0; s < 2; s++) {
-      ctx.globalAlpha = a * 0.5;
-      ctx.strokeStyle = s === 0 ? 'rgba(37,99,235,0.06)' : 'rgba(20,184,166,0.06)';
-      ctx.lineWidth = 20; ctx.beginPath();
-      for (var b = 0; b <= bps; b++) {
-        var t = b/bps, y = topY + t*h, ang = t*6.2832*4 + rot, x = cx + Math.cos(ang + s*3.1416) * rad;
-        b === 0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+      ctx.globalAlpha = a * 0.2;
+      ctx.strokeStyle = 'rgba(180,180,195,0.03)';
+      ctx.lineWidth = 12;
+      ctx.beginPath();
+      for (var b = 0; b <= bps * 4; b++) {
+        var t = b / (bps * 4), y = topY + t * h;
+        var ang = t * 6.2832 * 4 + rot;
+        var bend = Math.sin(t * 6.2832 * bendFreq + rot * 0.3) * bendAmp;
+        var taper = Math.sin(t * 3.1416);
+        var x = cx + Math.cos(ang + s * groove) * rad + bend * taper;
+        b === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
       }
       ctx.stroke();
     }
+    ctx.globalAlpha = 1;
 
-    for (var b = 0; b <= bps; b++) {
-      var t = b/bps, y = topY + t*h, ang = t*6.2832*4 + rot, depth = Math.cos(ang);
-      var zs = 0.5 + (depth + 1) * 0.25, x1 = cx + Math.cos(ang)*rad, x2 = cx + Math.cos(ang+3.1416)*rad, ra = (0.3 + Math.abs(depth)*0.5) * a;
-      var c1 = b%2===0 ? '#E67E22' : '#0984E3', c2 = b%2===0 ? '#F39C12' : '#0652DD';
+    // Draw atoms at each base position
+    for (var b = 0; b < bps; b++) {
+      var t = b / bps, y = topY + t * h;
+      var ang = t * 6.2832 * 4 + rot;
+      var bend = Math.sin(t * 6.2832 * bendFreq + rot * 0.3) * bendAmp;
+      var taper = Math.sin(t * 3.1416);
+      var bx = bend * taper;
 
-      ctx.globalAlpha = ra * 0.75; ctx.lineWidth = 2.2 * zs;
-      ctx.strokeStyle = c1; ctx.beginPath(); ctx.moveTo(x1,y); ctx.lineTo((x1+x2)*0.5-3,y); ctx.stroke();
-      ctx.strokeStyle = c2; ctx.beginPath(); ctx.moveTo((x1+x2)*0.5+3,y); ctx.lineTo(x2,y); ctx.stroke();
+      var ang1 = ang, ang2 = ang + groove;
 
-      ctx.globalAlpha = ra * 0.5; ctx.fillStyle = '#94A3B8';
-      ctx.beginPath(); ctx.arc((x1+x2)*0.5-1.5,y,1*zs,0,6.2832); ctx.fill();
-      ctx.beginPath(); ctx.arc((x1+x2)*0.5+1.5,y,1*zs,0,6.2832); ctx.fill();
-
-      for (var s = 0; s < 2; s++) {
-        var sx = cx + Math.cos(ang + s*3.1416)*rad, sr = (2.5 + Math.abs(depth)*2.5) * zs, sc = s===0 ? dna.colors.s1 : dna.colors.s2;
-        drawSphere(sx, y, sr, sc, ra * 0.9);
+      // --- Backbone atoms strand 1 ---
+      for (var ai = 0; ai < 3; ai++) {
+        var at = t + (ai - 1) * 0.012;
+        if (at < 0 || at > 1) continue;
+        var aAng = ang1 + (ai - 1) * 0.25;
+        var aDepth = Math.cos(aAng);
+        var aZs = 0.5 + (aDepth + 1) * 0.25;
+        var aax = cx + Math.cos(aAng) * rad + bx;
+        var aay = topY + at * h;
+        var aJx = Math.sin(time * jFreq + b * 0.7 + ai * 3.1) * jAmp * aZs;
+        var aJy = Math.cos(time * jFreq * 0.9 + b * 1.1 + ai * 2.7) * jAmp * aZs;
+        var isP = (b * 3 + ai + 1) % 4 === 0;
+        drawSphere(aax + aJx, aay + aJy, (isP ? 3.0 : 1.8) * aZs, isP ? '#F59E0B' : '#D1D5DB', a * (0.5 + Math.abs(aDepth) * 0.35));
       }
-    }
 
-    for (var s = 0; s < 2; s++) {
-      var col = s === 0 ? dna.colors.b1 : dna.colors.b2;
-      ctx.globalAlpha = a * 0.5; ctx.strokeStyle = col; ctx.lineWidth = 5; ctx.beginPath();
-      for (var b = 0; b <= bps; b++) {
-        var t = b/bps, y = topY + t*h, ang = t*6.2832*4 + rot, x = cx + Math.cos(ang + s*3.1416)*rad;
-        b === 0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+      // --- Backbone atoms strand 2 ---
+      for (var ai = 0; ai < 3; ai++) {
+        var at = t + (ai - 1) * 0.012;
+        if (at < 0 || at > 1) continue;
+        var aAng = ang2 + (ai - 1) * 0.25;
+        var aDepth = Math.cos(aAng);
+        var aZs = 0.5 + (aDepth + 1) * 0.25;
+        var aax = cx + Math.cos(aAng) * rad + bx;
+        var aay = topY + at * h;
+        var aJx = Math.sin(time * jFreq + b * 0.7 + ai * 3.1 + 50) * jAmp * aZs;
+        var aJy = Math.cos(time * jFreq * 0.9 + b * 1.1 + ai * 2.7 + 50) * jAmp * aZs;
+        var isP = (b * 3 + ai + 2) % 4 === 0;
+        drawSphere(aax + aJx, aay + aJy, (isP ? 3.0 : 1.8) * aZs, isP ? '#F59E0B' : '#D1D5DB', a * (0.5 + Math.abs(aDepth) * 0.35));
       }
-      ctx.stroke();
-      ctx.globalAlpha = a * 0.18; ctx.strokeStyle = '#FFFFFF'; ctx.lineWidth = 1.5; ctx.beginPath();
-      for (var b = 0; b <= bps; b++) {
-        var t = b/bps, y = topY + t*h, ang = t*6.2832*4 + rot, x = cx + Math.cos(ang + s*3.1416)*rad - 1.5;
-        b === 0 ? ctx.moveTo(x,y-2) : ctx.lineTo(x,y-2);
+
+      // --- Base pair atoms (clustered between strands) ---
+      for (var bi = 0; bi < 4; bi++) {
+        var bFrac = (bi + 1) / 5;
+        var bAng = ang1 + bFrac * (ang2 - ang1);
+        var bDepth = Math.cos(bAng);
+        var bZs = 0.5 + (bDepth + 1) * 0.25;
+        var bRad = rad * (1 - bFrac * 0.55);
+        var batX = cx + Math.cos(bAng) * bRad + bx;
+        var batY = y + (bi - 1.5) * 1.0;
+        var bJx = Math.sin(time * jFreq * 1.2 + b * 0.7 + bi * 5.1) * jAmp * 0.6 * bZs;
+        var bJy = Math.cos(time * jFreq * 1.1 + b * 1.1 + bi * 4.3) * jAmp * 0.6 * bZs;
+        var bColor = bi < 2 ? '#1E3A5F' : (bi < 3 ? '#C0392B' : '#2D5A87');
+        drawSphere(batX + bJx, batY + bJy, 1.6 * bZs, bColor, a * (0.45 + Math.abs(bDepth) * 0.3));
       }
-      ctx.stroke();
     }
     ctx.globalAlpha = 1;
   }
@@ -538,7 +579,8 @@ footer { background: var(--navy); color: #CBD5E1; padding: 80px 0 32px; }
     poly.rnaLen = Math.min(poly.maxRna, poly.rnaLen + 0.05);
 
     var pt = poly.t, y = topY + pt*dna.h, pa = pt*6.2832*4 + dna.rotation, pd = Math.cos(pa), pz = 0.5 + (pd+1)*0.25;
-    var px1 = dna.cx + Math.cos(pa)*dna.rad, px2 = dna.cx + Math.cos(pa+3.1416)*dna.rad, pX = (px1+px2)*0.5, pY = y, pR = 22*pz, al = (0.5 + Math.abs(pd)*0.5);
+    var grv = dna.grooveOffset || 3.1416;
+    var px1 = dna.cx + Math.cos(pa)*dna.rad, px2 = dna.cx + Math.cos(pa+grv)*dna.rad, pX = (px1+px2)*0.5, pY = y, pR = 22*pz, al = (0.5 + Math.abs(pd)*0.5);
 
     var pg = ctx.createRadialGradient(pX,pY,0, pX,pY,pR*3.5);
     pg.addColorStop(0, 'rgba(124,58,237,'+(0.12*al)+')'); pg.addColorStop(1,'transparent');
@@ -577,12 +619,13 @@ footer { background: var(--navy); color: #CBD5E1; padding: 80px 0 32px; }
 
   function initScene() {
     var m = Math.min(W, H);
+    var grv = 2.9; // groove offset (~166°) for major/minor grooves
     dnaStrands = [
-      { cx: W*0.22, cy: H*0.5, rad: m*0.10, h: m*0.65, rotation: 0, speed: 0.0016, bps: 42, colors: { s1:'#1D4ED8', s2:'#0E7490', b1:'#2563EB', b2:'#14B8A6' } },
-      { cx: W*0.44, cy: H*0.48, rad: m*0.09, h: m*0.55, rotation: 0.6, speed: -0.0014, bps: 36, colors: { s1:'#0369A1', s2:'#0F766E', b1:'#0284C7', b2:'#0D9488' } },
-      { cx: W*0.64, cy: H*0.52, rad: m*0.08, h: m*0.45, rotation: 1.2, speed: 0.0013, bps: 30, colors: { s1:'#6D28D9', s2:'#0E7490', b1:'#7C3AED', b2:'#14B8A6' } },
-      { cx: W*0.80, cy: H*0.47, rad: m*0.06, h: m*0.35, rotation: 1.8, speed: -0.0012, bps: 24, alpha: 0.45, colors: { s1:'#1D4ED8', s2:'#0E7490', b1:'#2563EB', b2:'#14B8A6' } },
-      { cx: W*0.92, cy: H*0.53, rad: m*0.045, h: m*0.25, rotation: 2.4, speed: 0.0010, bps: 18, alpha: 0.3, colors: { s1:'#0369A1', s2:'#0F766E', b1:'#0284C7', b2:'#0D9488' } }
+      { cx: W*0.22, cy: H*0.5, rad: m*0.10, h: m*0.65, rotation: 0, speed: 0.0016, bps: 42, grooveOffset: grv, bendAmp: 8, bendFreq: 0.35, jitterAmp: 1.0, jitterFreq: 2.5 },
+      { cx: W*0.44, cy: H*0.48, rad: m*0.09, h: m*0.55, rotation: 0.6, speed: -0.0014, bps: 36, grooveOffset: grv, bendAmp: 7, bendFreq: 0.33, jitterAmp: 0.9, jitterFreq: 2.4 },
+      { cx: W*0.64, cy: H*0.52, rad: m*0.08, h: m*0.45, rotation: 1.2, speed: 0.0013, bps: 30, grooveOffset: 2.85, bendAmp: 6, bendFreq: 0.30, jitterAmp: 0.8, jitterFreq: 2.3 },
+      { cx: W*0.80, cy: H*0.47, rad: m*0.06, h: m*0.35, rotation: 1.8, speed: -0.0012, bps: 24, grooveOffset: 2.85, bendAmp: 5, bendFreq: 0.28, jitterAmp: 0.7, jitterFreq: 2.2, alpha: 0.45 },
+      { cx: W*0.92, cy: H*0.53, rad: m*0.045, h: m*0.25, rotation: 2.4, speed: 0.0010, bps: 18, grooveOffset: 2.8, bendAmp: 4, bendFreq: 0.25, jitterAmp: 0.6, jitterFreq: 2.0, alpha: 0.3 }
     ];
     polymerases = [
       { dnaIdx:0, t:0.2, dir:1, speed:0.0005, rnaLen:0, maxRna:45, phase:0 },
