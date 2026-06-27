@@ -1516,14 +1516,14 @@ function esc(s){return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').
 // ── Backend status ────────────────────────────────────────────────────────
 function setStatus(online,checking){
   state.online=online;
+  ['btn-run','btn-analyze','btn-fetch'].forEach(id=>{const b=$(id);if(b)b.disabled=!online;});
+  setReportButtons(state.results.length > 0 && online);
+  setCommerceAvailability(online, checking);
   const pill=$('status-pill'),dot=$('s-dot'),txt=$('s-text');
   if(!pill||!dot||!txt)return;
   if(checking){pill.className='status-pill';dot.className='s-dot grey';txt.textContent='Checking…';}
   else if(online){pill.className='status-pill online';dot.className='s-dot green';txt.textContent='Backend connected';}
   else{pill.className='status-pill offline';dot.className='s-dot amber';txt.textContent='Connecting...';}
-  ['btn-run','btn-analyze','btn-fetch'].forEach(id=>{const b=$(id);if(b)b.disabled=!online;});
-  setReportButtons(state.results.length > 0 && online);
-  setCommerceAvailability(online, checking);
   const checked=$('db-last-checked');
   if(checked && !checking) checked.textContent=online
     ? `Last checked: ${new Date().toLocaleString()} — backend and public database links available.`
