@@ -43,6 +43,8 @@
   --font-b: 'Inter', sans-serif;
   --max-w: 1100px;
   --sec-p: 100px;
+  --sidebar-l: 280px;
+  --sidebar-r: 260px;
   --red: #ef4444;
   --red-soft: #fef2f2;
   --amber-soft: #fffbeb;
@@ -103,7 +105,8 @@ nav{position:sticky;top:0;background:var(--navy);z-index:100;height:72px}
 
 /* THREE-COLUMN TOOL LAYOUT */
 .tool-wrap{max-width:var(--max-w);margin:0 auto;padding:28px 24px;display:grid;grid-template-columns:var(--sidebar-l) 1fr var(--sidebar-r);gap:24px;align-items:flex-start}
-.tool-left,.tool-right{position:sticky;top:80px}
+.tool-left,.tool-right{position:sticky;top:80px;align-self:start}
+.sidebar-section+.sidebar-section{margin-top:16px}
 
 /* SIDEBAR SECTIONS */
 .sidebar-section{border:1px solid var(--slate-border);border-radius:10px;background:#fff;margin-bottom:16px}
@@ -141,7 +144,7 @@ nav{position:sticky;top:0;background:var(--navy);z-index:100;height:72px}
 @keyframes spin{to{transform:rotate(360deg)}}
 
 /* PIPELINE STEPS */
-.pipeline-steps{display:grid;gap:6px;max-height:60vh;overflow-y:auto}
+.pipeline-steps{display:grid;gap:6px;max-height:50vh;overflow-y:auto;position:relative}
 .p-step{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:7px;border:1px solid var(--slate-border);background:#fff;transition:all .25s}
 .p-step.done{border-color:rgba(5,150,105,.3);background:var(--bio-soft)}
 .p-step.running{border-color:rgba(26,86,255,.4);background:var(--primary-soft);animation:step-pulse 1.5s ease infinite}
