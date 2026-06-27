@@ -618,10 +618,10 @@ def create_app() -> Flask:
             response.headers["Access-Control-Max-Age"] = "3600"
         return response
 
-    @app.route("/api/<path:path>", methods=["OPTIONS"])
-    @app.route("/health", methods=["OPTIONS"])
-    def handle_preflight(**kwargs):
-        return "", 204
+    @app.before_request
+    def handle_preflight():
+        if request.method == "OPTIONS" and request.path.startswith("/"):
+            return "", 204
 
     init_security(app)
     from primerforge.security import init_admin_rbac

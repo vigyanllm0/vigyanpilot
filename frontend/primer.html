@@ -1553,7 +1553,8 @@ async function apiPost(ep,body){
     body:JSON.stringify(body),signal:AbortSignal.timeout(60000)});
   
   if (!r.ok) {
-    // Generic error - don't expose specific auth/payment state
+    const body = await r.text().catch(() => '');
+    console.error(`apiPost ${ep} failed: ${r.status} ${r.statusText}`, body);
     const errorMap = {
       401: { action: 'show_auth', message: 'Please sign in to continue.' },
       402: { action: 'show_payment', message: 'Insufficient credits. Please purchase more.' },

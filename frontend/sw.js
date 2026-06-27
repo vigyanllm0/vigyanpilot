@@ -1,4 +1,4 @@
-const CACHE = 'vigyanllm-v4';
+const CACHE = 'vigyanllm-v5';
 const OFFLINE_URL = '/index.html';
 
 const PRECACHE_ASSETS = [
@@ -38,7 +38,7 @@ self.addEventListener('fetch', e => {
 
   const url = new URL(e.request.url);
 
-  // Never cache API calls
+  // Never intercept API calls
   if (url.pathname.startsWith('/api/')) return;
   // Never cache external CDN resources
   if (url.hostname !== self.location.hostname) return;
