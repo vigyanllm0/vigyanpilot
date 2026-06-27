@@ -15,7 +15,7 @@ CREATE INDEX IF NOT EXISTS idx_email_verifications_token ON email_verifications(
 CREATE INDEX IF NOT EXISTS idx_email_verifications_user_id ON email_verifications(user_id);
 
 -- Ensure existing users have active status
-UPDATE users SET status = 'active' WHERE status IS NULL OR status = '';
+UPDATE users SET status = 'active' WHERE status IS NULL;
 
 -- Add verification_sent_at column to track reminders
 ALTER TABLE users ADD COLUMN IF NOT EXISTS verification_sent_at TIMESTAMP;
