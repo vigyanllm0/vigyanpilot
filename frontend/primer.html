@@ -1554,13 +1554,13 @@ async function apiPost(ep,body){
   
   if (!r.ok) {
     const text = await r.text().catch(() => '');
-    let errMsg = '';
-    try { const j = JSON.parse(text); errMsg = j.error || j.message || ''; } catch {}
-    console.error(`apiPost ${ep} ${r.status} ${r.statusText}`, errMsg || text);
-    if (r.status === 401) { showAuthModal(); throw new Error(errMsg || 'Authentication required.'); }
+    let errMsg = '', action = '', code = '';
+    try { const j = JSON.parse(text); errMsg = j.error || j.message || ''; action = j.action || ''; code = j.code || ''; } catch {}
+    console.error(`apiPost ${ep} ${r.status} code=${code} action=${action}`, errMsg || text);
+    if (code === 'AUTH_REQUIRED' || r.status === 401) { showAuthModal(); throw new Error(errMsg || 'Please sign in to continue.'); }
     if (r.status === 402) { showPaymentModal(); throw new Error(errMsg || 'Insufficient credits.'); }
-    if (r.status === 429) { throw new Error(errMsg || 'Too many requests. Please wait.'); }
-    throw new Error(errMsg || `Request failed (${r.status}). Check console for details.`);
+    if (r.status === 429) { throw new Error(errMsg || 'Too many requests.'); }
+    throw new Error(errMsg || `Request failed (${r.status}).`);
   }
   return await r.json();
 }
@@ -3077,10 +3077,10 @@ async function openRazorpayCheckout(order, context={}) {
 }
 
 async function handlePayment() {
-  if (!state.online) { alert('Backend unavailable. Please try again later.'); return; }
   const runs = Math.max(1, parseInt($('pay-runs')?.value)||1);
   const errEl = $('pay-error');
   errEl?.classList.remove('show');
+  if (!state.online) console.warn('handlePayment: state.online is false, attempting anyway');
   await startRazorpayCheckout({product_id: 'top_up', quantity: runs}, {errorEl: errEl, runs});
 }
 
