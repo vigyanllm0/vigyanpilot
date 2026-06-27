@@ -438,50 +438,47 @@ footer { background: var(--navy); color: #CBD5E1; padding: 80px 0 32px; }
     H = canvas.height = parent.offsetHeight;
   }
   resize();
-  window.addEventListener('resize', resize);
 
-  // ─── DNA parameters ──────────────────────────────────────────────
-  var dna = {
-    rotation: 0,
-    speed: 0.002
-  };
+  // ─── DNA ─────────────────────────────────────────────────────────
+  var dna = { rotation: 0, speed: 0.0018 };
 
   // ─── RNA Polymerase ──────────────────────────────────────────────
   var polymerase = {
-    t: 0.3,            // position along DNA (0-1)
-    direction: 1,
-    speed: 0.001,
-    rnaLength: 0,      // how much RNA has been synthesized
-    maxRna: 45
+    t: 0.3, direction: 1, speed: 0.0008,
+    rnaLength: 0, maxRna: 50
   };
 
-  // ─── Protein palettes ────────────────────────────────────────────
+  // ─── Colour palettes for white background ────────────────────────
   var proteinPalettes = [
-    { main: '#FF6B6B', acc: ['#FF9F43', '#FECA57', '#FF4757', '#FF6348'] },
-    { main: '#A29BFE', acc: ['#6C5CE7', '#48DBFB', '#FDCB6E', '#8854D0'] },
-    { main: '#55EFC4', acc: ['#00B894', '#FECA57', '#81ECEC', '#00D2D3'] },
-    { main: '#FD79A8', acc: ['#E84393', '#FF9F43', '#FDCB6E', '#D63031'] },
-    { main: '#48DBFB', acc: ['#0984E3', '#00CEC9', '#A29BFE', '#74B9FF'] },
-    { main: '#FECA57', acc: ['#FF9F43', '#FF6B6B', '#00CEC9', '#FDCB6E'] },
-    { main: '#E17055', acc: ['#D63031', '#FDCB6E', '#00B894', '#6C5CE7'] },
-    { main: '#00CEC9', acc: ['#0984E3', '#55EFC4', '#81ECEC', '#48DBFB'] }
+    { main: '#E74C3C', acc: ['#F39C12', '#F1C40F', '#C0392B', '#E67E22'] },
+    { main: '#8E44AD', acc: ['#6C3483', '#2E86C1', '#F1C40F', '#A569BD'] },
+    { main: '#1ABC9C', acc: ['#16A085', '#27AE60', '#F1C40F', '#2ECC71'] },
+    { main: '#E84393', acc: ['#C44569', '#E74C3C', '#F39C12', '#FD79A8'] },
+    { main: '#0984E3', acc: ['#0652DD', '#1ABC9C', '#2E86C1', '#74B9FF'] },
+    { main: '#F39C12', acc: ['#E67E22', '#E74C3C', '#1ABC9C', '#FDCB6E'] },
+    { main: '#D35400', acc: ['#C0392B', '#F39C12', '#16A085', '#E67E22'] },
+    { main: '#00B894', acc: ['#006266', '#27AE60', '#0984E3', '#55EFC4'] },
+    { main: '#6C5CE7', acc: ['#4834D4', '#E84393', '#FDCB6E', '#A29BFE'] },
+    { main: '#E17055', acc: ['#D63031', '#FDCB6E', '#00B894', '#FAB1A0'] }
   ];
 
-  // ─── Initialize floating proteins ────────────────────────────────
-  var proteins = [];
-  var proteinCount = 14;
+  var rnaNucleotideColors = ['#E74C3C', '#0984E3', '#27AE60', '#8E44AD'];
 
-  function createProteinCluster(palette) {
+  // ─── Floating proteins (20 clusters) ─────────────────────────────
+  var proteins = [];
+  var proteinCount = 20;
+
+  function createProteinCluster(pal) {
     var residues = [];
-    var count = 10 + Math.floor(Math.random() * 8);
+    var count = 12 + Math.floor(Math.random() * 10);
     for (var r = 0; r < count; r++) {
       var angle = Math.random() * Math.PI * 2;
-      var dist = 5 + Math.random() * 20;
+      var dist = 4 + Math.random() * 22;
       residues.push({
-        ox: Math.cos(angle) * dist + (Math.random() - 0.5) * 8,
-        oy: Math.sin(angle) * dist + (Math.random() - 0.5) * 8,
-        r: 3 + Math.random() * 5,
-        color: r === 0 ? palette.main : palette.acc[r % palette.acc.length]
+        ox: Math.cos(angle) * dist + (Math.random() - 0.5) * 10,
+        oy: Math.sin(angle) * dist + (Math.random() - 0.5) * 10,
+        r: 2.5 + Math.random() * 4.5,
+        color: r === 0 ? pal.main : pal.acc[r % pal.acc.length]
       });
     }
     return residues;
@@ -492,92 +489,136 @@ footer { background: var(--navy); color: #CBD5E1; padding: 80px 0 32px; }
     for (var p = 0; p < proteinCount; p++) {
       var pal = proteinPalettes[p % proteinPalettes.length];
       proteins.push({
-        x: 50 + Math.random() * (W - 100),
-        y: 50 + Math.random() * (H - 100),
-        vx: (Math.random() - 0.5) * 0.4,
-        vy: (Math.random() - 0.5) * 0.4,
-        driftTimer: Math.floor(Math.random() * 60),
+        x: 30 + Math.random() * (Math.max(W - 60, 100)),
+        y: 30 + Math.random() * (Math.max(H - 60, 100)),
+        vx: (Math.random() - 0.5) * 0.35,
+        vy: (Math.random() - 0.5) * 0.35,
+        driftTimer: Math.floor(Math.random() * 50),
         residues: createProteinCluster(pal),
         rotation: Math.random() * Math.PI * 2,
-        rotSpeed: (Math.random() - 0.5) * 0.025,
-        scale: 0.6 + Math.random() * 0.7
+        rotSpeed: (Math.random() - 0.5) * 0.022,
+        scale: 0.5 + Math.random() * 0.8
       });
     }
   }
   initProteins();
 
-  // ─── Re-init on resize ───────────────────────────────────────────
+  // Re-init on resize
   window.addEventListener('resize', function() {
     resize();
     initProteins();
   });
 
-  // ─── Helper: draw glowing sphere ─────────────────────────────────
-  function drawGlowSphere(x, y, r, color, alpha) {
+  // ─── Helper: draw a sphere with soft gradient (no shadowBlur) ────
+  function drawSphere(x, y, r, color, alpha) {
     alpha = alpha || 1;
-    var grad = ctx.createRadialGradient(x, y, 0, x, y, r * 3);
+    // Outer soft halo
+    var grad = ctx.createRadialGradient(x, y, 0, x, y, r * 2.5);
     grad.addColorStop(0, color);
-    grad.addColorStop(0.25, color);
+    grad.addColorStop(0.15, color);
     grad.addColorStop(1, 'transparent');
-    ctx.globalAlpha = alpha * 0.2;
+    ctx.globalAlpha = alpha * 0.15;
     ctx.fillStyle = grad;
     ctx.beginPath();
-    ctx.arc(x, y, r * 3, 0, Math.PI * 2);
+    ctx.arc(x, y, r * 2.5, 0, Math.PI * 2);
     ctx.fill();
+
+    // Core sphere with highlight
     ctx.globalAlpha = alpha;
-    ctx.shadowColor = color;
-    ctx.shadowBlur = r * 3;
-    ctx.fillStyle = color;
+    var lg = ctx.createRadialGradient(x - r * 0.3, y - r * 0.3, 0, x, y, r);
+    lg.addColorStop(0, '#FFFFFF');
+    lg.addColorStop(0.15, color);
+    lg.addColorStop(0.8, color);
+    lg.addColorStop(1, '#000000' + Math.round(alpha * 30).toString(16).padStart(2, '0'));
+    ctx.fillStyle = lg;
     ctx.beginPath();
     ctx.arc(x, y, r, 0, Math.PI * 2);
     ctx.fill();
-    ctx.shadowBlur = 0;
   }
 
-  // ─── Main render loop ────────────────────────────────────────────
+  // ─── Main loop ───────────────────────────────────────────────────
   function draw() {
     ctx.clearRect(0, 0, W, H);
 
-    // ── Background (matching website --navy #0F172A) ───────────────
-    ctx.fillStyle = '#0F172A';
-    ctx.fillRect(0, 0, W, H);
-    var vig = ctx.createRadialGradient(W * 0.5, H * 0.5, 0, W * 0.5, H * 0.5, Math.max(W, H) * 0.7);
-    vig.addColorStop(0, 'rgba(37, 99, 235, 0.08)');
-    vig.addColorStop(0.5, 'rgba(15, 23, 42, 0.3)');
-    vig.addColorStop(1, 'rgba(0, 0, 0, 0.5)');
-    ctx.fillStyle = vig;
+    // White background (matches website)
+    ctx.fillStyle = '#FFFFFF';
     ctx.fillRect(0, 0, W, H);
 
-    // ── Ambient particles ──────────────────────────────────────────
-    for (var i = 0; i < 35; i++) {
-      var seed = i * 137.5;
-      var px = (Math.sin(seed + Date.now() * 0.00012) * 0.5 + 0.5) * W;
-      var py = (Math.cos(seed * 1.3 + Date.now() * 0.00009) * 0.5 + 0.5) * H;
-      var br = 0.1 + Math.sin(seed + Date.now() * 0.0004) * 0.08;
-      ctx.globalAlpha = br;
-      ctx.fillStyle = '#22D3EE';
+    // Subtle cell-like background texture
+    for (var ci = 0; ci < 6; ci++) {
+      var cx2 = Math.sin(ci * 1.7 + Date.now() * 0.00003) * 0.3 + 0.5;
+      var cy2 = Math.cos(ci * 2.3 + Date.now() * 0.00002) * 0.3 + 0.5;
+      var cg = ctx.createRadialGradient(cx2 * W, cy2 * H, 0, cx2 * W, cy2 * H, Math.min(W, H) * 0.25);
+      cg.addColorStop(0, 'rgba(37, 99, 235, 0.03)');
+      cg.addColorStop(1, 'transparent');
+      ctx.fillStyle = cg;
       ctx.beginPath();
-      ctx.arc(px, py, 0.8 + Math.sin(seed + Date.now() * 0.0003) * 0.5, 0, Math.PI * 2);
+      ctx.arc(cx2 * W, cy2 * H, Math.min(W, H) * 0.25, 0, Math.PI * 2);
       ctx.fill();
+    }
+
+    // Ambient small molecules (dense)
+    for (var i = 0; i < 60; i++) {
+      var seed = i * 73.3;
+      var px = (Math.sin(seed + Date.now() * 0.00015) * 0.5 + 0.5) * W;
+      var py = (Math.cos(seed * 1.7 + Date.now() * 0.0001) * 0.5 + 0.5) * H;
+      var br = 0.08 + Math.sin(seed + Date.now() * 0.0005) * 0.06;
+      ctx.globalAlpha = br;
+      ctx.fillStyle = '#1E293B';
+      ctx.beginPath();
+      ctx.arc(px, py, 0.6 + Math.sin(seed + Date.now() * 0.0004) * 0.4, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Connection lines between nearby ambient particles
+      for (var j = i + 1; j < 60; j++) {
+        var seed2 = j * 73.3;
+        var px2 = (Math.sin(seed2 + Date.now() * 0.00015) * 0.5 + 0.5) * W;
+        var py2 = (Math.cos(seed2 * 1.7 + Date.now() * 0.0001) * 0.5 + 0.5) * H;
+        var dx = px - px2, dy = py - py2;
+        var dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 40) {
+          ctx.globalAlpha = (1 - dist / 40) * 0.04;
+          ctx.strokeStyle = '#2563EB';
+          ctx.lineWidth = 0.5;
+          ctx.beginPath();
+          ctx.moveTo(px, py);
+          ctx.lineTo(px2, py2);
+          ctx.stroke();
+        }
+      }
     }
     ctx.globalAlpha = 1;
 
     // ── DNA Double Helix ───────────────────────────────────────────
-    var cx = W * 0.46;
+    var cx = W * 0.42;
     var cy = H * 0.5;
-    var rad = Math.min(W, H) * 0.13;
-    var h = Math.min(W, H) * 0.55;
+    var rad = Math.min(W, H) * 0.14;
+    var h = Math.min(W, H) * 0.6;
     var topY = cy - h * 0.5;
-    var botY = cy + h * 0.5;
-    var bps = 36;
+    var bps = 44;
 
     dna.rotation += dna.speed;
 
-    // Strand colours
-    var strandColors = ['#2563EB', '#22D3EE'];
-    var backColors = ['#1D4ED8', '#0E7490'];
+    var strandColors = ['#1D4ED8', '#0E7490'];
+    var backColors = ['#2563EB', '#14B8A6'];
+    var backGlow = ['rgba(37,99,235,0.06)', 'rgba(20,184,166,0.06)'];
 
-    // ── Draw base-pair rungs ───────────────────────────────────────
+    // Draw backbone glow underneath
+    for (var s = 0; s < 2; s++) {
+      ctx.strokeStyle = backGlow[s];
+      ctx.lineWidth = 18;
+      ctx.beginPath();
+      for (var b = 0; b <= bps; b++) {
+        var t = b / bps;
+        var y = topY + t * h;
+        var angle = t * Math.PI * 2 * 4 + dna.rotation;
+        var x = cx + Math.cos(angle + s * Math.PI) * rad;
+        if (b === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+    }
+
+    // Base-pair rungs
     for (var b = 0; b <= bps; b++) {
       var t = b / bps;
       var y = topY + t * h;
@@ -588,89 +629,77 @@ footer { background: var(--navy); color: #CBD5E1; padding: 80px 0 32px; }
       var x2 = cx + Math.cos(angle + Math.PI) * rad;
       var rungAlpha = 0.3 + Math.abs(depth) * 0.5;
 
-      // Base pair colours (alternating A-T / G-C)
-      var bpColor = (b % 2 === 0) ? '#FF9F43' : '#48DBFB';
-      var bpColor2 = (b % 2 === 0) ? '#FECA57' : '#0984E3';
+      var bpColor = (b % 2 === 0) ? '#E67E22' : '#0984E3';
+      var bpColor2 = (b % 2 === 0) ? '#F39C12' : '#0652DD';
 
-      // Draw base pair as two connected half-lines with a gap (hydrogen bond)
-      ctx.globalAlpha = rungAlpha * 0.7;
-      ctx.lineWidth = 2 * zScale;
-      ctx.shadowColor = bpColor;
-      ctx.shadowBlur = 4 * zScale;
-
-      // Left half
+      ctx.globalAlpha = rungAlpha * 0.75;
+      ctx.lineWidth = 2.2 * zScale;
       ctx.strokeStyle = bpColor;
       ctx.beginPath();
       ctx.moveTo(x1, y);
       ctx.lineTo((x1 + x2) * 0.5 - 3, y);
       ctx.stroke();
-      // Right half
       ctx.strokeStyle = bpColor2;
       ctx.beginPath();
       ctx.moveTo((x1 + x2) * 0.5 + 3, y);
       ctx.lineTo(x2, y);
       ctx.stroke();
-      ctx.shadowBlur = 0;
 
-      // Small hydrogen bond dot in centre
-      ctx.globalAlpha = rungAlpha * 0.6;
-      ctx.fillStyle = '#FFFFFF';
+      // Hydrogen bond dots
+      ctx.globalAlpha = rungAlpha * 0.5;
+      ctx.fillStyle = '#94A3B8';
       ctx.beginPath();
-      ctx.arc((x1 + x2) * 0.5, y, 1.2 * zScale, 0, Math.PI * 2);
+      ctx.arc((x1 + x2) * 0.5 - 1.5, y, 1 * zScale, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc((x1 + x2) * 0.5 + 1.5, y, 1 * zScale, 0, Math.PI * 2);
       ctx.fill();
 
-      // Nucleotide spheres on each strand
+      // Nucleotide spheres
       for (var s = 0; s < 2; s++) {
         var sx = cx + Math.cos(angle + s * Math.PI) * rad;
         var sphereR = (2.5 + Math.abs(depth) * 2.5) * zScale;
-        var col = strandColors[s];
-        var sg = ctx.createRadialGradient(sx, y, 0, sx, y, sphereR * 3);
-        sg.addColorStop(0, col);
-        sg.addColorStop(0.3, col);
-        sg.addColorStop(1, 'transparent');
-        ctx.globalAlpha = rungAlpha * 0.25;
-        ctx.fillStyle = sg;
-        ctx.beginPath();
-        ctx.arc(sx, y, sphereR * 3, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.globalAlpha = rungAlpha * 0.95;
-        ctx.shadowColor = col;
-        ctx.shadowBlur = sphereR * 4;
-        ctx.fillStyle = col;
-        ctx.beginPath();
-        ctx.arc(sx, y, sphereR, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.shadowBlur = 0;
+        drawSphere(sx, y, sphereR, strandColors[s], rungAlpha * 0.9);
       }
     }
 
-    // ── Draw backbone strands ──────────────────────────────────────
+    // Backbone solid lines
     for (var s = 0; s < 2; s++) {
       var col = backColors[s];
-      ctx.globalAlpha = 0.6;
+      ctx.globalAlpha = 0.55;
       ctx.strokeStyle = col;
-      ctx.lineWidth = 6;
-      ctx.shadowColor = col;
-      ctx.shadowBlur = 15;
+      ctx.lineWidth = 5;
       ctx.beginPath();
       for (var b = 0; b <= bps; b++) {
         var t = b / bps;
         var y = topY + t * h;
         var angle = t * Math.PI * 2 * 4 + dna.rotation;
         var x = cx + Math.cos(angle + s * Math.PI) * rad;
-        if (b === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
+        if (b === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
       }
       ctx.stroke();
-      ctx.shadowBlur = 0;
+
+      // Highlight on backbone
+      ctx.globalAlpha = 0.2;
+      ctx.strokeStyle = '#FFFFFF';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      for (var b = 0; b <= bps; b++) {
+        var t = b / bps;
+        var y = topY + t * h;
+        var angle = t * Math.PI * 2 * 4 + dna.rotation;
+        var x = cx + Math.cos(angle + s * Math.PI) * rad - 1.5;
+        if (b === 0) ctx.moveTo(x, y - 2); else ctx.lineTo(x, y - 2);
+      }
+      ctx.stroke();
     }
     ctx.globalAlpha = 1;
 
-    // ── Find polymerase position on DNA ────────────────────────────
+    // ── RNA Polymerase position ────────────────────────────────────
     polymerase.t += polymerase.direction * polymerase.speed;
-    if (polymerase.t > 0.85) polymerase.direction = -1;
-    if (polymerase.t < 0.15) polymerase.direction = 1;
-    polymerase.rnaLength = Math.min(polymerase.maxRna, polymerase.rnaLength + 0.08);
+    if (polymerase.t > 0.82) polymerase.direction = -1;
+    if (polymerase.t < 0.18) polymerase.direction = 1;
+    polymerase.rnaLength = Math.min(polymerase.maxRna, polymerase.rnaLength + 0.06);
 
     var pt = polymerase.t;
     var py1 = topY + pt * h;
@@ -679,167 +708,126 @@ footer { background: var(--navy); color: #CBD5E1; padding: 80px 0 32px; }
     var pz = 0.5 + (pDepth + 1) * 0.25;
     var px1 = cx + Math.cos(pa) * rad;
     var px2 = cx + Math.cos(pa + Math.PI) * rad;
-
-    // ── RNA Polymerase enzyme complex ──────────────────────────────
     var polyX = (px1 + px2) * 0.5;
     var polyY = py1;
-    var polyR = 20 * pz;
+    var polyR = 22 * pz;
 
-    // Enzyme glow aura
-    var pg = ctx.createRadialGradient(polyX, polyY, 0, polyX, polyY, polyR * 4);
-    pg.addColorStop(0, 'rgba(168, 85, 247, 0.25)');
-    pg.addColorStop(0.5, 'rgba(168, 85, 247, 0.1)');
+    // ── RNA Polymerase complex ─────────────────────────────────────
+    // Outer halo
+    var pg = ctx.createRadialGradient(polyX, polyY, 0, polyX, polyY, polyR * 3.5);
+    pg.addColorStop(0, 'rgba(124, 58, 237, 0.12)');
     pg.addColorStop(1, 'transparent');
     ctx.fillStyle = pg;
     ctx.beginPath();
-    ctx.arc(polyX, polyY, polyR * 4, 0, Math.PI * 2);
+    ctx.arc(polyX, polyY, polyR * 3.5, 0, Math.PI * 2);
     ctx.fill();
 
-    // Polymerase body — multi-subunit enzyme
-    // Central clamp (large ring)
-    ctx.shadowColor = '#A855F7';
-    ctx.shadowBlur = 25;
-    ctx.strokeStyle = '#A855F7';
-    ctx.lineWidth = 4 * pz;
-    ctx.globalAlpha = 0.9;
-    ctx.beginPath();
-    ctx.arc(polyX, polyY, polyR * 0.9, 0, Math.PI * 2);
-    ctx.stroke();
-
-    // Inner ring
-    ctx.strokeStyle = '#C084FC';
-    ctx.lineWidth = 2 * pz;
-    ctx.globalAlpha = 0.6;
-    ctx.beginPath();
-    ctx.arc(polyX, polyY, polyR * 0.6, 0, Math.PI * 2);
-    ctx.stroke();
-
-    // Core subunits (coloured blobs around the ring)
-    var subunitColors = ['#A855F7', '#C084FC', '#8B5CF6', '#7C3AED', '#A78BFA', '#DDD6FE'];
-    for (var su = 0; su < 6; su++) {
-      var sa = su * Math.PI / 3 + dna.rotation * 0.5;
-      var sd = polyR * 0.75;
-      var sux = polyX + Math.cos(sa) * sd;
-      var suy = polyY + Math.sin(sa) * sd;
-      var sur = 5 * pz + Math.sin(sa + Date.now() * 0.002) * 1.5;
-      drawGlowSphere(sux, suy, sur, subunitColors[su], 0.85);
+    // Clamp rings (multi-subunit architecture)
+    var ringColors = ['#7C3AED', '#8B5CF6', '#A78BFA', '#C4B5FD', '#7C3AED', '#6D28D9'];
+    for (var ri = 0; ri < 6; ri++) {
+      var rr = polyR * (0.95 - ri * 0.1);
+      ctx.globalAlpha = 0.7 - ri * 0.08;
+      ctx.strokeStyle = ringColors[ri];
+      ctx.lineWidth = (3 - ri * 0.3) * pz;
+      ctx.beginPath();
+      ctx.arc(polyX, polyY, rr, 0, Math.PI * 2);
+      ctx.stroke();
     }
 
-    // Central channel (active site)
-    ctx.shadowBlur = 0;
-    ctx.globalAlpha = 0.4;
+    // Subunit blobs
+    var subunitColors = ['#7C3AED', '#8B5CF6', '#A78BFA', '#6D28D9', '#C084FC', '#9B59B6'];
+    for (var su = 0; su < 6; su++) {
+      var sa = su * Math.PI / 3 + dna.rotation * 0.4;
+      var sd = polyR * 0.78;
+      var sux = polyX + Math.cos(sa) * sd;
+      var suy = polyY + Math.sin(sa) * sd;
+      var sur = 5 * pz + Math.sin(sa + Date.now() * 0.002) * 1.2;
+      drawSphere(sux, suy, sur, subunitColors[su], 0.85);
+    }
+
+    // Active site cleft
+    ctx.globalAlpha = 0.35;
     ctx.fillStyle = '#2DD4BF';
     ctx.beginPath();
-    ctx.arc(polyX, polyY, polyR * 0.3, 0, Math.PI * 2);
+    ctx.arc(polyX, polyY, polyR * 0.28, 0, Math.PI * 2);
     ctx.fill();
 
-    // ── RNA strand being synthesized ───────────────────────────────
-    // RNA peels off from the polymerase and trails upward/back
-    ctx.shadowBlur = 0;
+    // ── RNA synthesis ──────────────────────────────────────────────
     for (var ri = 0; ri < polymerase.rnaLength; ri++) {
       var rt = ri / polymerase.rnaLength;
-      // RNA curves away from the DNA
-      var rnaAngle = pa + Math.PI * 0.3 + rt * 1.2;
-      var rnaX = polyX + Math.cos(rnaAngle) * (polyR * 1.2 + rt * 30);
-      var rnaY = polyY - rt * 12 - 5 * Math.sin(rt * Math.PI * 2 + Date.now() * 0.002);
-      var rnaR = 2.5 * pz * (1 - rt * 0.3);
-      var rnaAlpha = 1 - rt * 0.3;
+      var bendAngle = pa + Math.PI * 0.25 + rt * 1.0 + Math.sin(rt * Math.PI * 0.5) * 0.3;
+      var rnaX = polyX + Math.cos(bendAngle) * (polyR * 1.3 + rt * 32);
+      var rnaY = polyY - rt * 14 - 3 * Math.sin(rt * Math.PI * 3 + Date.now() * 0.001);
+      var rnaR = 2.8 * pz * (1 - rt * 0.35);
+      var rnaAlpha = 1 - rt * 0.35;
 
-      // RNA nucleotide colours (AUGC)
-      var rnaColor = (Math.floor(ri * 3.7) % 4 === 0) ? '#FF9F43' :
-                     (Math.floor(ri * 3.7) % 4 === 1) ? '#48DBFB' :
-                     (Math.floor(ri * 3.7) % 4 === 2) ? '#55EFC4' : '#A29BFE';
+      var rnaColor = rnaNucleotideColors[Math.floor(ri * 3.7) % 4];
+      drawSphere(rnaX, rnaY, rnaR, rnaColor, rnaAlpha * 0.8);
 
-      drawGlowSphere(rnaX, rnaY, rnaR, rnaColor, rnaAlpha * 0.8);
-
-      // RNA backbone line
+      // RNA backbone
       if (ri > 0) {
         var prevRt = (ri - 1) / polymerase.rnaLength;
-        var prevAngle = pa + Math.PI * 0.3 + prevRt * 1.2;
-        var prevX = polyX + Math.cos(prevAngle) * (polyR * 1.2 + prevRt * 30);
-        var prevY = polyY - prevRt * 12 - 5 * Math.sin(prevRt * Math.PI * 2 + Date.now() * 0.002);
-        ctx.globalAlpha = rnaAlpha * 0.4;
-        ctx.strokeStyle = '#F472B6';
+        var prevAngle = pa + Math.PI * 0.25 + prevRt * 1.0 + Math.sin(prevRt * Math.PI * 0.5) * 0.3;
+        var prevX = polyX + Math.cos(prevAngle) * (polyR * 1.3 + prevRt * 32);
+        var prevY = polyY - prevRt * 14 - 3 * Math.sin(prevRt * Math.PI * 3 + Date.now() * 0.001);
+        ctx.globalAlpha = rnaAlpha * 0.35;
+        ctx.strokeStyle = '#E84393';
         ctx.lineWidth = 2 * pz;
-        ctx.shadowColor = '#F472B6';
-        ctx.shadowBlur = 6;
         ctx.beginPath();
         ctx.moveTo(prevX, prevY);
         ctx.lineTo(rnaX, rnaY);
         ctx.stroke();
-        ctx.shadowBlur = 0;
       }
     }
     ctx.globalAlpha = 1;
 
-    // ── Floating Proteins (Brownian motion) ────────────────────────
+    // ── Floating proteins ──────────────────────────────────────────
     for (var p = 0; p < proteins.length; p++) {
       var prot = proteins[p];
 
-      // Brownian drift
       prot.driftTimer++;
-      if (prot.driftTimer > 50 + Math.floor(Math.random() * 20)) {
+      if (prot.driftTimer > 40 + Math.floor(Math.random() * 20)) {
         prot.driftTimer = 0;
-        prot.vx += (Math.random() - 0.5) * 0.25;
-        prot.vy += (Math.random() - 0.5) * 0.25;
-        prot.vx *= 0.85;
-        prot.vy *= 0.85;
+        prot.vx += (Math.random() - 0.5) * 0.3;
+        prot.vy += (Math.random() - 0.5) * 0.3;
+        prot.vx *= 0.82;
+        prot.vy *= 0.82;
         var spd = Math.sqrt(prot.vx * prot.vx + prot.vy * prot.vy);
-        if (spd > 0.7) {
-          prot.vx = (prot.vx / spd) * 0.7;
-          prot.vy = (prot.vy / spd) * 0.7;
-        }
+        if (spd > 0.6) { prot.vx = (prot.vx / spd) * 0.6; prot.vy = (prot.vy / spd) * 0.6; }
       }
-
       prot.x += prot.vx;
       prot.y += prot.vy;
       prot.rotation += prot.rotSpeed;
 
-      // Edge repulsion
-      var margin = 50;
-      if (prot.x < margin) prot.vx += 0.05;
-      if (prot.x > W - margin) prot.vx -= 0.05;
-      if (prot.y < margin) prot.vy += 0.05;
-      if (prot.y > H - margin) prot.vy -= 0.05;
-      prot.x = Math.max(30, Math.min(W - 30, prot.x));
-      prot.y = Math.max(30, Math.min(H - 30, prot.y));
+      var margin = 40;
+      if (prot.x < margin) prot.vx += 0.04;
+      if (prot.x > W - margin) prot.vx -= 0.04;
+      if (prot.y < margin) prot.vy += 0.04;
+      if (prot.y > H - margin) prot.vy -= 0.04;
+      prot.x = Math.max(25, Math.min(W - 25, prot.x));
+      prot.y = Math.max(25, Math.min(H - 25, prot.y));
 
-      // Protein glow aura
-      var auraR = 45 * prot.scale;
-      var ag = ctx.createRadialGradient(prot.x, prot.y, 0, prot.x, prot.y, auraR * 1.5);
-      ag.addColorStop(0, prot.residues[0].color + '33');
+      // Soft aura
+      var auraR = 40 * prot.scale;
+      var ag = ctx.createRadialGradient(prot.x, prot.y, 0, prot.x, prot.y, auraR * 1.8);
+      ag.addColorStop(0, prot.residues[0].color + '18');
       ag.addColorStop(1, 'transparent');
       ctx.fillStyle = ag;
       ctx.beginPath();
-      ctx.arc(prot.x, prot.y, auraR * 1.5, 0, Math.PI * 2);
+      ctx.arc(prot.x, prot.y, auraR * 1.8, 0, Math.PI * 2);
       ctx.fill();
 
-      // Draw amino acid residues
-      for (var r = 0; r < prot.residues.length; r++) {
-        var aa = prot.residues[r];
-        var cosR = Math.cos(prot.rotation);
-        var sinR = Math.sin(prot.rotation);
-        var rx = aa.ox * cosR - aa.oy * sinR;
-        var ry = aa.ox * sinR + aa.oy * cosR;
-        var ax = prot.x + rx * prot.scale;
-        var ay = prot.y + ry * prot.scale;
-        var ar = aa.r * prot.scale;
-
-        drawGlowSphere(ax, ay, ar, aa.color, 0.85);
-      }
-
-      // Connecting lines between nearby residues (secondary structure)
-      ctx.globalAlpha = 0.15;
+      // Secondary structure connections
+      ctx.globalAlpha = 0.12;
       for (var r1 = 0; r1 < prot.residues.length; r1++) {
         for (var r2 = r1 + 2; r2 < Math.min(r1 + 4, prot.residues.length); r2++) {
-          var aa1 = prot.residues[r1];
-          var aa2 = prot.residues[r2];
-          var cR1 = Math.cos(prot.rotation), sR1 = Math.sin(prot.rotation);
-          var a1x = prot.x + (aa1.ox * cR1 - aa1.oy * sR1) * prot.scale;
-          var a1y = prot.y + (aa1.ox * sR1 + aa1.oy * cR1) * prot.scale;
-          var a2x = prot.x + (aa2.ox * cR1 - aa2.oy * sR1) * prot.scale;
-          var a2y = prot.y + (aa2.ox * sR1 + aa2.oy * cR1) * prot.scale;
-          ctx.strokeStyle = '#FFFFFF';
+          var aa1 = prot.residues[r1], aa2 = prot.residues[r2];
+          var cR = Math.cos(prot.rotation), sR = Math.sin(prot.rotation);
+          var a1x = prot.x + (aa1.ox * cR - aa1.oy * sR) * prot.scale;
+          var a1y = prot.y + (aa1.ox * sR + aa1.oy * cR) * prot.scale;
+          var a2x = prot.x + (aa2.ox * cR - aa2.oy * sR) * prot.scale;
+          var a2y = prot.y + (aa2.ox * sR + aa2.oy * cR) * prot.scale;
+          ctx.strokeStyle = '#64748B';
           ctx.lineWidth = 0.5;
           ctx.beginPath();
           ctx.moveTo(a1x, a1y);
@@ -848,6 +836,18 @@ footer { background: var(--navy); color: #CBD5E1; padding: 80px 0 32px; }
         }
       }
       ctx.globalAlpha = 1;
+
+      // Amino acid residues
+      for (var r = 0; r < prot.residues.length; r++) {
+        var aa = prot.residues[r];
+        var cosR = Math.cos(prot.rotation), sinR = Math.sin(prot.rotation);
+        var rx = aa.ox * cosR - aa.oy * sinR;
+        var ry = aa.ox * sinR + aa.oy * cosR;
+        var ax = prot.x + rx * prot.scale;
+        var ay = prot.y + ry * prot.scale;
+        var ar = aa.r * prot.scale;
+        drawSphere(ax, ay, ar, aa.color, 0.9);
+      }
     }
 
     requestAnimationFrame(draw);
