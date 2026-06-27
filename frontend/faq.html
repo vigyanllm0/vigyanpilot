@@ -28,22 +28,39 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
   <style>
-    :root { --bg: #ffffff; --surface: #f8f9fb; --border: #e4e7ec; --primary: #1a56ff; --bio: #059669; --amber: #d97706; --text: #0d1117; --text2: #4b5563; --muted: #9ca3af; --font-s: 'DM Sans', sans-serif; --max-w: 1100px; --sec-p: 100px; }
+    :root :root {
+  --navy: #0F172A;
+  --navy-light: #1E293B;
+  --white: #FFFFFF;
+  --slate: #F8FAFC;
+  --slate-border: #E2E8F0;
+  --text: #0F172A;
+  --text2: #475569;
+  --muted: #94A3B8;
+  --primary: #2563EB;
+  --bio: #059669;
+  --amber: #D97706;
+  --accent: #22D3EE;
+  --font-h: 'Plus Jakarta Sans', sans-serif;
+  --font-b: 'Inter', sans-serif;
+  --max-w: 1100px;
+  --sec-p: 100px;
+}
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html { scroll-behavior: smooth; }
-    body { background: var(--bg); color: var(--text); font-family: var(--font-s); line-height: 1.6; -webkit-font-smoothing: antialiased; }
+    body { background: var(--bg); color: var(--text); font-family: var(--font-b); line-height: 1.6; -webkit-font-smoothing: antialiased; }
     a { text-decoration: none; color: inherit; transition: color 0.15s ease; }
     .container { max-width: var(--max-w); margin: 0 auto; padding: 0 24px; }
     section { padding: var(--sec-p) 0; }
-    .section-tag { font-family: var(--font-s); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--primary); margin-bottom: 20px; display: block; }
-    .section-h2 { font-family: var(--font-s); font-size: clamp(2rem, 4vw, 2.8rem); line-height: 1.1; font-weight: 400; margin-bottom: 24px; }
+    .section-tag { font-family: var(--font-b); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--primary); margin-bottom: 20px; display: block; }
+    .section-h2 { font-family: var(--font-b); font-size: clamp(2rem, 4vw, 2.8rem); line-height: 1.1; font-weight: 400; margin-bottom: 24px; }
     .section-desc { font-size: 15px; color: var(--text2); line-height: 1.8; max-width: 540px; }
     nav { position: sticky; top: 0; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(8px); border-bottom: 1px solid var(--border); z-index: 1000; height: 72px; }
     @media (max-width: 768px) { .nav-links { display: none; } }
     .hero { padding: 80px 0 60px; text-align: center; }
-    .hero h1 { font-family: var(--font-s); font-size: clamp(2.4rem, 5vw, 3.2rem); line-height: 1.1; font-weight: 400; margin-bottom: 16px; }
+    .hero h1 { font-family: var(--font-b); font-size: clamp(2.4rem, 5vw, 3.2rem); line-height: 1.1; font-weight: 400; margin-bottom: 16px; }
     .hero p { font-size: 16px; color: var(--text2); max-width: 700px; margin: 0 auto; line-height: 1.8; }
     .badge { display: inline-block; background: var(--surface); color: var(--primary); padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: 500; border: 1px solid var(--border); margin-bottom: 24px; }
     .search-box { max-width: 600px; margin: 30px auto; position: relative; }
@@ -240,21 +257,21 @@
   </script>
 </head>
 <body>
-  <nav>
-    <div class="nav-inner" style="display:flex;justify-content:space-between;align-items:center;height:100%;max-width:var(--max-w);margin:0 auto;padding:0 24px">
-      <a href="index.html" class="logo" style="display:inline-flex;align-items:center;gap:9px;text-decoration:none;color:inherit">
-        <img src="logo.svg" alt="VigyanLLM Logo" style="width:36px;height:36px;border-radius:6px;background:#0d1117;padding:3px;object-fit:contain;flex-shrink:0">
-        <span style="font-family:var(--font-s);font-size:20px;color:var(--text)">VigyanLLM</span>
+      <nav>
+    <div class="nav-inner" style="display:flex;justify-content:space-between;align-items:center;height:100%;max-width:1200px;margin:0 auto;padding:0 24px">
+      <a href="index.html" class="nav-brand" style="display:flex;align-items:center;gap:10px;color:#fff;font-family:var(--font-h);font-size:20px;font-weight:700;text-decoration:none">
+        <img src="logo.svg" alt="VigyanLLM Logo" style="width:32px;height:32px;border-radius:4px">
+        <span>VigyanLLM</span>
       </a>
       <div class="nav-links" style="display:flex;gap:32px;align-items:center">
-        <a href="index.html" style="font-size:13px;color:var(--text2);font-weight:400">Home</a>
-        <a href="primer.html" style="font-size:13px;color:var(--primary);font-weight:500">VPrime 1.0 ↗</a>
-        <a href="blog/index.html" style="font-size:13px;color:var(--text2);font-weight:400">Blog</a>
-        <a href="faq.html" style="font-size:13px;color:var(--primary);font-weight:500">FAQ</a>
-        <a href="about.html" style="font-size:13px;color:var(--text2);font-weight:400">About</a>
+        <a href="index.html" style="font-family:var(--font-b);font-size:13px;color:#CBD5E1;font-weight:500;letter-spacing:0.02em">Home</a>
+        <a href="primer.html" style="font-family:var(--font-b);font-size:13px;color:#22D3EE;font-weight:600;letter-spacing:0.02em">VPrime 1.0 ↗</a>
+        <a href="blog/index.html" style="font-family:var(--font-b);font-size:13px;color:#CBD5E1;font-weight:500;letter-spacing:0.02em">Blog</a>
+        <a href="faq.html" style="font-family:var(--font-b);font-size:13px;color:#CBD5E1;font-weight:500;letter-spacing:0.02em">FAQ</a>
+        <a href="about.html" style="font-family:var(--font-b);font-size:13px;color:#CBD5E1;font-weight:500;letter-spacing:0.02em">About</a>
       </div>
-      <div class="nav-right" style="display:flex;align-items:center;gap:24px">
-        <button class="btn-nav" onclick="window.location.href='primer.html'" style="border:1.5px solid var(--text);border-radius:6px;padding:10px 24px;font-size:13px;font-weight:500;background:transparent;cursor:pointer">Design Primers</button>
+      <div class="nav-right" style="display:flex;align-items:center;gap:16px">
+        <button class="nav-login" onclick="window.location.href='primer.html'" style="border:1.5px solid rgba(255,255,255,0.3);border-radius:4px;padding:8px 20px;font-family:var(--font-b);font-size:13px;font-weight:600;color:#fff;background:transparent;cursor:pointer">Login</button>
       </div>
     </div>
   </nav>
@@ -753,32 +770,48 @@
     </section>
   </div>
 
-  <footer style="padding:80px 0 40px;border-top:1px solid var(--border)">
-    <div class="container">
-      <div style="display:grid;grid-template-columns:1.5fr 1fr 1fr;gap:60px;margin-bottom:60px">
+      <footer style="background:var(--navy);color:#CBD5E1;padding:80px 0 32px">
+    <div style="max-width:1200px;margin:0 auto;padding:0 24px">
+      <div style="display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr;gap:48px;margin-bottom:60px">
         <div>
-          <div style="font-family:var(--font-s);font-size:20px;margin-bottom:12px;display:flex;align-items:center;gap:10px">
-            <img src="logo.svg" alt="VigyanLLM" style="width:36px;height:36px;border-radius:6px;background:#0d1117;padding:3px;object-fit:contain">
-            <span>VigyanLLM</span>
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+            <img src="logo.svg" alt="VigyanLLM Logo" style="width:32px;height:32px;border-radius:4px">
+            <span style="font-family:var(--font-h);font-size:20px;font-weight:700;color:#fff">VigyanLLM</span>
           </div>
-          <p style="font-size:13px;color:var(--muted);margin-bottom:20px">Sovereign Healthcare & Life Sciences AI</p>
-          <div style="font-family:var(--font-s);font-size:13px;color:var(--primary)">contact@vigyanllm.in</div>
+          <p style="font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:20px;line-height:1.6">Sovereign Healthcare &amp; Life Sciences AI.<br>Built in India. For the world.</p>
+          <a href="mailto:contact@vigyanllm.in" style="font-family:var(--font-b);font-size:13px;color:var(--accent);display:block;margin-bottom:6px">contact@vigyanllm.in</a>
+          <div style="display:flex;gap:12px;margin-top:24px">
+            <a href="#" aria-label="Facebook" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:8px;border:1px solid rgba(255,255,255,0.15);color:#94A3B8;text-decoration:none"><svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></a>
+            <a href="#" aria-label="X" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:8px;border:1px solid rgba(255,255,255,0.15);color:#94A3B8;text-decoration:none"><svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:currentColor"><path d="M4 4l6.5 8.5L4 20h2l5.5-7 4.5 7h5l-7-9.5L20 4h-2l-5 6.5L9 4H4zm3 1.5h3l10 13h-3L7 5.5z"/></svg></a>
+            <a href="#" aria-label="YouTube" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:8px;border:1px solid rgba(255,255,255,0.15);color:#94A3B8;text-decoration:none"><svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:currentColor"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6a3 3 0 0 0-2.1 2.1C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1c.5-1.9.5-5.8.5-5.8s0-3.9-.5-5.8zM9.5 15.5V8.5l6.3 3.5-6.3 3.5z"/></svg></a>
+            <a href="#" aria-label="Instagram" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:8px;border:1px solid rgba(255,255,255,0.15);color:#94A3B8;text-decoration:none"><svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:currentColor"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg></a>
+          </div>
         </div>
         <div>
-          <h5 style="font-size:12px;text-transform:uppercase;letter-spacing:0.1em;color:var(--text);margin-bottom:24px">Product</h5>
-          <a href="primer.html" style="display:block;font-size:13px;color:var(--text2);margin-bottom:14px">Primer Design</a>
-          <a href="demo.html" style="display:block;font-size:13px;color:var(--text2);margin-bottom:14px">Demos</a>
+          <h5 style="font-family:var(--font-h);font-size:12px;text-transform:uppercase;letter-spacing:0.1em;color:#fff;margin-bottom:24px;font-weight:700">Platform</h5>
+          <a href="index.html#problem" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Problem</a>
+          <a href="index.html#platform" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Platform</a>
+          <a href="index.html#architecture" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Architecture</a>
+          <a href="demo.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Demo</a>
         </div>
         <div>
-          <h5 style="font-size:12px;text-transform:uppercase;letter-spacing:0.1em;color:var(--text);margin-bottom:24px">Resources</h5>
-          <a href="blog/index.html" style="display:block;font-size:13px;color:var(--text2);margin-bottom:14px">Blog</a>
-          <a href="faq.html" style="display:block;font-size:13px;color:var(--text2);margin-bottom:14px">FAQ</a>
-          <a href="about.html" style="display:block;font-size:13px;color:var(--text2);margin-bottom:14px">About</a>
+          <h5 style="font-family:var(--font-h);font-size:12px;text-transform:uppercase;letter-spacing:0.1em;color:#fff;margin-bottom:24px;font-weight:700">Resources</h5>
+          <a href="primer.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">VPrime 1.0</a>
+          <a href="blog/index.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Blog</a>
+          <a href="faq.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">FAQ</a>
+          <a href="about.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">About</a>
+        </div>
+        <div>
+          <h5 style="font-family:var(--font-h);font-size:12px;text-transform:uppercase;letter-spacing:0.1em;color:#fff;margin-bottom:24px;font-weight:700">Contact</h5>
+          <a href="mailto:contact@vigyanllm.in" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">contact@vigyanllm.in</a>
+          <a href="privacy.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Privacy</a>
+          <a href="terms.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Terms</a>
+          <a href="refund.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Refund</a>
         </div>
       </div>
-      <div style="border-top:1px solid var(--border);padding-top:32px;display:flex;justify-content:space-between;font-size:12px;color:var(--muted)">
-        <span>&copy; 2026 VigyanLLM Pvt. Ltd. · Sovereign Research AI</span>
-        <span>Built in India</span>
+      <div style="border-top:1px solid rgba(255,255,255,0.1);padding-top:24px;display:flex;justify-content:space-between;font-family:var(--font-b);font-size:12px;color:#64748B">
+        <span>&copy; <script>document.write(new Date().getFullYear())</script> VigyanLLM Pvt. Ltd. · Sovereign Research AI</span>
+        <span>WWW.VIGYANLLM.IN</span>
       </div>
     </div>
   </footer>

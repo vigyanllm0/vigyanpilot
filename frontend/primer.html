@@ -24,32 +24,42 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
 <style>
-:root {
-  --bg:#ffffff; --surface:#f8f9fb; --surface2:#f1f4f9; --border:#e4e7ec;
-  --primary:#1a56ff; --primary-soft:#eff3ff; --bio:#059669; --bio-soft:#ecfdf5;
-  --amber:#d97706; --amber-soft:#fffbeb; --red:#dc2626; --red-soft:#fef2f2;
-  --text:#0d1117; --text2:#4b5563; --muted:#9ca3af;
-  --font-s:'DM Sans',sans-serif;
-  --max-w:1280px; --sidebar-l:300px; --sidebar-r:256px;
+:root :root {
+  --navy: #0F172A;
+  --navy-light: #1E293B;
+  --white: #FFFFFF;
+  --slate: #F8FAFC;
+  --slate-border: #E2E8F0;
+  --text: #0F172A;
+  --text2: #475569;
+  --muted: #94A3B8;
+  --primary: #2563EB;
+  --bio: #059669;
+  --amber: #D97706;
+  --accent: #22D3EE;
+  --font-h: 'Plus Jakarta Sans', sans-serif;
+  --font-b: 'Inter', sans-serif;
+  --max-w: 1100px;
+  --sec-p: 100px;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
-body{background:var(--bg);color:var(--text);font-family:var(--font-s);line-height:1.6;-webkit-font-smoothing:antialiased}
+body{background:var(--bg);color:var(--text);font-family:var(--font-b);line-height:1.6;-webkit-font-smoothing:antialiased}
 a{text-decoration:none;color:inherit}
 
 /* NAV */
 nav{position:sticky;top:0;background:rgba(255,255,255,.96);backdrop-filter:blur(10px);border-bottom:1px solid var(--border);z-index:100;height:64px}
 .nav-inner{display:flex;justify-content:space-between;align-items:center;height:100%;max-width:var(--max-w);margin:0 auto;padding:0 24px}
-.logo{font-family:var(--font-s);font-size:20px;color:var(--text);display:inline-flex;align-items:center;gap:9px;text-decoration:none}
+.logo{font-family:var(--font-b);font-size:20px;color:var(--text);display:inline-flex;align-items:center;gap:9px;text-decoration:none}
 .logo-img{width:36px;height:36px;border-radius:6px;background:#0d1117;padding:3px;object-fit:contain;flex-shrink:0}
-.logo-text{font-family:var(--font-s);font-size:20px;color:var(--text);line-height:1}
+.logo-text{font-family:var(--font-b);font-size:20px;color:var(--text);line-height:1}
 .nav-links{display:flex;gap:24px;align-items:center}
 .nav-links a{font-size:13px;color:var(--text2);transition:color .15s}
 .nav-links a:hover,.nav-links a.active{color:var(--primary)}
 .nav-right{display:flex;align-items:center;gap:12px}
-.status-pill{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--border);border-radius:99px;padding:5px 14px;font-family:var(--font-s);font-size:11px;background:var(--surface);white-space:nowrap;transition:all .3s}
+.status-pill{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--border);border-radius:99px;padding:5px 14px;font-family:var(--font-b);font-size:11px;background:var(--surface);white-space:nowrap;transition:all .3s}
 .status-pill.online{border-color:rgba(5,150,105,.3);color:var(--bio)}
 .status-pill.offline{border-color:rgba(217,119,6,.3);color:var(--amber)}
 .s-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
@@ -68,12 +78,12 @@ nav{position:sticky;top:0;background:rgba(255,255,255,.96);backdrop-filter:blur(
 .page-header{padding:32px 0 24px;border-bottom:1px solid var(--border);background:var(--surface)}
 .page-header .container{max-width:var(--max-w);margin:0 auto;padding:0 24px;display:flex;align-items:flex-start;justify-content:space-between;gap:20px;flex-wrap:wrap}
 .ph-title-block
-.ph-eyebrow{font-family:var(--font-s);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--primary);margin-bottom:6px;display:flex;align-items:center;gap:10px}
+.ph-eyebrow{font-family:var(--font-b);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--primary);margin-bottom:6px;display:flex;align-items:center;gap:10px}
 .pipeline-badge{background:var(--primary);color:#fff;border-radius:4px;padding:2px 7px;font-size:9px;font-weight:700;letter-spacing:.06em}
-.ph-title{font-family:var(--font-s);font-size:clamp(1.6rem,3.5vw,2.2rem);font-weight:400;margin-bottom:6px}
+.ph-title{font-family:var(--font-b);font-size:clamp(1.6rem,3.5vw,2.2rem);font-weight:400;margin-bottom:6px}
 .ph-sub{font-size:14px;color:var(--text2);max-width:520px}
 .ph-meta{display:flex;gap:16px;margin-top:10px;flex-wrap:wrap}
-.ph-chip{font-family:var(--font-s);font-size:10px;background:#fff;border:1px solid var(--border);border-radius:6px;padding:3px 10px;color:var(--text2)}
+.ph-chip{font-family:var(--font-b);font-size:10px;background:#fff;border:1px solid var(--border);border-radius:6px;padding:3px 10px;color:var(--text2)}
 
 /* TABS */
 .tab-bar{background:#fff;border-bottom:2px solid var(--border)}
@@ -96,12 +106,12 @@ nav{position:sticky;top:0;background:rgba(255,255,255,.96);backdrop-filter:blur(
 .form-group{margin-bottom:14px}
 .form-label{font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px;display:flex;align-items:center;justify-content:space-between}
 .form-hint{font-size:10px;color:var(--muted);margin-top:3px}
-.form-input,.form-textarea{width:100%;border:1px solid var(--border);border-radius:7px;padding:9px 12px;font-size:13px;font-family:var(--font-s);background:#fff;color:var(--text);transition:border-color .15s}
+.form-input,.form-textarea{width:100%;border:1px solid var(--border);border-radius:7px;padding:9px 12px;font-size:13px;font-family:var(--font-b);background:#fff;color:var(--text);transition:border-color .15s}
 .form-input:focus,.form-textarea:focus{border-color:var(--primary);outline:none}
 .form-input.error,.form-textarea.error{border-color:var(--red)}
-.form-textarea{font-family:var(--font-s);font-size:12px;resize:vertical;min-height:150px;line-height:1.7}
+.form-textarea{font-family:var(--font-b);font-size:12px;resize:vertical;min-height:150px;line-height:1.7}
 .form-row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.char-count{font-family:var(--font-s);font-size:10px;color:var(--muted);text-align:right;margin-top:3px}
+.char-count{font-family:var(--font-b);font-size:10px;color:var(--muted);text-align:right;margin-top:3px}
 .error-msg{font-size:11px;color:var(--red);margin-top:4px;display:none}
 .error-msg.show{display:block}
 .toggle-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-top:1px solid var(--border)}
@@ -138,7 +148,7 @@ nav{position:sticky;top:0;background:rgba(255,255,255,.96);backdrop-filter:blur(
 .step-text{flex:1;min-width:0}
 .step-name{font-size:11px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .step-sub{font-size:10px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.step-status{font-family:var(--font-s);font-size:9px;font-weight:600;flex-shrink:0}
+.step-status{font-family:var(--font-b);font-size:9px;font-weight:600;flex-shrink:0}
 .step-status.pass{color:var(--bio)}.step-status.fail{color:var(--red)}.step-status.stub-s{color:var(--muted)}.step-status.run{color:var(--primary)}
 
 /* QUALITY LEGEND */
@@ -150,7 +160,7 @@ nav{position:sticky;top:0;background:rgba(255,255,255,.96);backdrop-filter:blur(
 .results-wrap{min-height:200px}
 .results-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:8px;padding-bottom:14px;border-bottom:1px solid var(--border)}
 .results-title{font-size:15px;font-weight:700}
-.elapsed-chip{font-family:var(--font-s);font-size:10px;color:var(--muted)}
+.elapsed-chip{font-family:var(--font-b);font-size:10px;color:var(--muted)}
 
 .result-card{border:1px solid var(--border);border-radius:12px;background:#fff;margin-bottom:20px;overflow:hidden;transition:box-shadow .2s}
 .result-card:hover{box-shadow:0 4px 20px rgba(0,0,0,.07)}
@@ -163,7 +173,7 @@ nav{position:sticky;top:0;background:rgba(255,255,255,.96);backdrop-filter:blur(
 .rank-badge{width:30px;height:30px;border-radius:50%;background:var(--primary);color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .rank-badge.top{background:var(--bio)}
 .rc-badges{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
-.badge{font-family:var(--font-s);font-size:10px;border:1px solid var(--border);border-radius:6px;padding:3px 9px;background:#fff;color:var(--text2);white-space:nowrap}
+.badge{font-family:var(--font-b);font-size:10px;border:1px solid var(--border);border-radius:6px;padding:3px 9px;background:#fff;color:var(--text2);white-space:nowrap}
 .badge.amplicon{border-color:rgba(26,86,255,.2);background:var(--primary-soft);color:var(--primary)}
 .badge.gc{border-color:rgba(5,150,105,.2);background:var(--bio-soft);color:var(--bio)}
 .badge.ta{border-color:rgba(217,119,6,.2);background:var(--amber-soft);color:var(--amber);font-weight:700}
@@ -172,7 +182,7 @@ nav{position:sticky;top:0;background:rgba(255,255,255,.96);backdrop-filter:blur(
 .badge.pass-b{border-color:rgba(5,150,105,.3);background:var(--bio-soft);color:var(--bio)}
 .badge.fail-b{border-color:rgba(217,119,6,.3);background:var(--amber-soft);color:var(--amber)}
 .rc-head-right{text-align:right}
-.ta-val{font-family:var(--font-s);font-size:18px;font-weight:700;color:var(--amber)}
+.ta-val{font-family:var(--font-b);font-size:18px;font-weight:700;color:var(--amber)}
 .ta-label{font-size:10px;color:var(--muted)}
 
 /* Primer blocks */
@@ -182,12 +192,12 @@ nav{position:sticky;top:0;background:rgba(255,255,255,.96);backdrop-filter:blur(
 .primer-block.fwd{border-left:3px solid var(--bio)}
 .primer-block.rev{border-left:3px solid var(--amber)}
 .primer-block-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
-.primer-dir{font-family:var(--font-s);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em}
+.primer-dir{font-family:var(--font-b);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em}
 .primer-dir.fwd{color:var(--bio)}.primer-dir.rev{color:var(--amber)}
 .gc-clamp-ok{font-size:10px;color:var(--bio)}.gc-clamp-fail{font-size:10px;color:var(--red)}
-.primer-seq{font-family:var(--font-s);font-size:12px;color:var(--text);word-break:break-all;background:var(--surface);padding:8px 10px;border-radius:6px;margin-bottom:10px;line-height:1.6;cursor:text;user-select:all}
+.primer-seq{font-family:var(--font-b);font-size:12px;color:var(--text);word-break:break-all;background:var(--surface);padding:8px 10px;border-radius:6px;margin-bottom:10px;line-height:1.6;cursor:text;user-select:all}
 .metrics-row{display:flex;flex-wrap:wrap;gap:5px}
-.mc{font-family:var(--font-s);font-size:10px;border:1px solid var(--border);border-radius:5px;padding:2px 7px;background:#fff;color:var(--text2);position:relative;cursor:default}
+.mc{font-family:var(--font-b);font-size:10px;border:1px solid var(--border);border-radius:5px;padding:2px 7px;background:#fff;color:var(--text2);position:relative;cursor:default}
 .mc.ok{border-color:rgba(5,150,105,.25);background:var(--bio-soft);color:#065f46}
 .mc.warn{border-color:rgba(217,119,6,.3);background:var(--amber-soft);color:#92400e}
 .mc.bad{border-color:rgba(220,38,38,.3);background:var(--red-soft);color:#991b1b}
@@ -205,8 +215,8 @@ nav{position:sticky;top:0;background:rgba(255,255,255,.96);backdrop-filter:blur(
 .pf-row:last-child{border-bottom:none}
 .pf-row:nth-child(odd){background:var(--surface)}
 .pf-step-name{font-weight:600;white-space:nowrap;color:var(--text)}
-.pf-note{color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:var(--font-s)}
-.pf-result{font-family:var(--font-s);font-size:9px;font-weight:700;white-space:nowrap}
+.pf-note{color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:var(--font-b)}
+.pf-result{font-family:var(--font-b);font-size:9px;font-weight:700;white-space:nowrap}
 .pf-pass{color:var(--bio)}.pf-fail{color:var(--red)}.pf-stub{color:var(--muted)}.pf-warn{color:var(--amber)}
 
 /* Warnings */
@@ -228,36 +238,36 @@ nav{position:sticky;top:0;background:rgba(255,255,255,.96);backdrop-filter:blur(
 .panel-head{padding:12px 16px;border-bottom:1px solid var(--border);background:var(--surface)}
 .panel-head h3{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text2)}
 .panel-body{padding:18px}
-.report-block{font-family:var(--font-s);font-size:11px;background:#0d1117;color:#e2e8f0;border-radius:8px;padding:16px;white-space:pre;overflow-x:auto;line-height:1.7;margin-top:12px}
-.seq-display{font-family:var(--font-s);font-size:11px;background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:12px;word-break:break-all;line-height:1.8;color:var(--text2);max-height:180px;overflow-y:auto}
+.report-block{font-family:var(--font-b);font-size:11px;background:#0d1117;color:#e2e8f0;border-radius:8px;padding:16px;white-space:pre;overflow-x:auto;line-height:1.7;margin-top:12px}
+.seq-display{font-family:var(--font-b);font-size:11px;background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:12px;word-break:break-all;line-height:1.8;color:var(--text2);max-height:180px;overflow-y:auto}
 
 /* Quick load */
 .quick-load{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
-.quick-btn{font-family:var(--font-s);font-size:10px;border:1px solid var(--border);border-radius:5px;padding:4px 10px;background:var(--surface);color:var(--text2);cursor:pointer;transition:all .15s}
+.quick-btn{font-family:var(--font-b);font-size:10px;border:1px solid var(--border);border-radius:5px;padding:4px 10px;background:var(--surface);color:var(--text2);cursor:pointer;transition:all .15s}
 .quick-btn:hover{border-color:var(--primary);color:var(--primary)}
 
 /* PRODUCTION PROOF SECTIONS */
 .proof-section{padding:56px 0;border-top:1px solid var(--border);background:#fff}
 .proof-section.alt{background:var(--surface)}
 .proof-inner{max-width:var(--max-w);margin:0 auto;padding:0 24px}
-.section-kicker{font-family:var(--font-s);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--primary);margin-bottom:10px;display:block}
-.section-title{font-family:var(--font-s);font-size:clamp(1.5rem,3vw,2.1rem);font-weight:400;margin-bottom:10px}
+.section-kicker{font-family:var(--font-b);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--primary);margin-bottom:10px;display:block}
+.section-title{font-family:var(--font-b);font-size:clamp(1.5rem,3vw,2.1rem);font-weight:400;margin-bottom:10px}
 .section-copy{font-size:14px;color:var(--text2);max-width:760px}
 .proof-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:24px}
 .proof-card{border:1px solid var(--border);border-radius:10px;background:#fff;padding:18px}
 .proof-card h3{font-size:13px;font-weight:800;margin-bottom:8px}
 .proof-card p{font-size:12px;color:var(--text2);line-height:1.7}
-.proof-meta{font-family:var(--font-s);font-size:10px;color:var(--muted);margin-top:10px}
+.proof-meta{font-family:var(--font-b);font-size:10px;color:var(--muted);margin-top:10px}
 .sample-report{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:24px;align-items:start}
-.report-preview{border:1px solid var(--border);border-radius:10px;background:#0d1117;color:#e2e8f0;padding:18px;font-family:var(--font-s);font-size:11px;line-height:1.8;overflow:auto}
+.report-preview{border:1px solid var(--border);border-radius:10px;background:#0d1117;color:#e2e8f0;padding:18px;font-family:var(--font-b);font-size:11px;line-height:1.8;overflow:auto}
 .report-preview strong{color:#86efac}
 .confidence-card{border:1px solid rgba(5,150,105,.25);border-radius:10px;background:var(--bio-soft);padding:18px}
-.confidence-score{font-family:var(--font-s);font-size:48px;color:var(--bio);line-height:1}
+.confidence-score{font-family:var(--font-b);font-size:48px;color:var(--bio);line-height:1}
 .mini-matrix{display:grid;gap:8px;margin-top:16px}
 .mini-row{display:flex;justify-content:space-between;gap:12px;border-bottom:1px solid rgba(5,150,105,.16);padding-bottom:7px;font-size:12px;color:#065f46}
 .compare-wrap{overflow-x:auto;margin-top:24px;border:1px solid var(--border);border-radius:10px;background:#fff}
 .compare-table{width:100%;border-collapse:collapse;min-width:860px;font-size:12px}
-.compare-table th{background:var(--surface);padding:11px 12px;text-align:left;font-family:var(--font-s);font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);border-bottom:1px solid var(--border)}
+.compare-table th{background:var(--surface);padding:11px 12px;text-align:left;font-family:var(--font-b);font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);border-bottom:1px solid var(--border)}
 .compare-table td{padding:10px 12px;border-bottom:1px solid var(--border);color:var(--text2);vertical-align:top}
 .compare-table tr:last-child td{border-bottom:none}
 .compare-table td:first-child{font-weight:700;color:var(--text)}
@@ -265,7 +275,7 @@ nav{position:sticky;top:0;background:rgba(255,255,255,.96);backdrop-filter:blur(
 .db-health-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:20px}
 .db-health-item{border:1px solid var(--border);border-radius:8px;background:#fff;padding:12px;font-size:12px;color:var(--text2)}
 .db-health-item strong{display:block;color:var(--text);margin-bottom:4px}
-.health-ok{font-family:var(--font-s);font-size:10px;color:var(--bio)}
+.health-ok{font-family:var(--font-b);font-size:10px;color:var(--bio)}
 .trust-list{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:22px}
 .trust-item{border:1px solid var(--border);border-radius:8px;background:#fff;padding:14px;font-size:12px;color:var(--text2);line-height:1.7}
 .trust-item strong{display:block;font-size:13px;color:var(--text);margin-bottom:4px}
@@ -279,20 +289,20 @@ nav{position:sticky;top:0;background:rgba(255,255,255,.96);backdrop-filter:blur(
 /* Tooltip */
 .tooltip-wrap{position:relative;display:inline-flex}
 .tooltip-icon{font-size:11px;color:var(--muted);cursor:help;margin-left:4px}
-.tooltip-box{display:none;position:absolute;bottom:calc(100%+6px);left:50%;transform:translateX(-50%);background:#0d1117;color:#e2e8f0;font-size:11px;font-family:var(--font-s);padding:8px 12px;border-radius:6px;width:260px;line-height:1.5;z-index:50;white-space:normal;font-weight:400}
+.tooltip-box{display:none;position:absolute;bottom:calc(100%+6px);left:50%;transform:translateX(-50%);background:#0d1117;color:#e2e8f0;font-size:11px;font-family:var(--font-b);padding:8px 12px;border-radius:6px;width:260px;line-height:1.5;z-index:50;white-space:normal;font-weight:400}
 .tooltip-wrap:hover .tooltip-box{display:block}
 
 /* PRICING */
 .pricing-section{padding:60px 0;background:var(--surface);border-top:1px solid var(--border)}
 .pricing-header{text-align:center;margin-bottom:36px}
-.pricing-eyebrow{font-family:var(--font-s);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--primary);margin-bottom:10px;display:block}
-.pricing-title{font-family:var(--font-s);font-size:clamp(1.6rem,3vw,2.2rem);font-weight:400;margin-bottom:8px}
+.pricing-eyebrow{font-family:var(--font-b);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--primary);margin-bottom:10px;display:block}
+.pricing-title{font-family:var(--font-b);font-size:clamp(1.6rem,3vw,2.2rem);font-weight:400;margin-bottom:8px}
 .pricing-subtitle{font-size:14px;color:var(--text2)}
 .pricing-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;max-width:var(--max-w);margin:0 auto;padding:0 24px 0}
 .price-card{border:1px solid var(--border);border-radius:12px;padding:24px;background:#fff;display:flex;flex-direction:column}
 .price-card.featured{border:2px solid var(--primary)}
-.price-tier{font-family:var(--font-s);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:12px;display:block}
-.price-amount{font-family:var(--font-s);font-size:26px;color:var(--text);margin-bottom:3px}
+.price-tier{font-family:var(--font-b);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:12px;display:block}
+.price-amount{font-family:var(--font-b);font-size:26px;color:var(--text);margin-bottom:3px}
 .price-period{font-size:11px;color:var(--muted);margin-bottom:16px}
 .price-features{list-style:none;margin-bottom:20px;flex-grow:1}
 .price-features li{font-size:12px;color:var(--text2);padding:6px 0;border-bottom:1px solid #f0f0f0;display:flex;gap:6px}
@@ -303,12 +313,12 @@ nav{position:sticky;top:0;background:rgba(255,255,255,.96);backdrop-filter:blur(
 .btn-price.fill{background:var(--primary);color:#fff}.btn-price.fill:hover{background:#0044ff}
 .btn-price.fill-green{background:var(--bio);color:#fff}.btn-price.fill-green:hover{background:#047857}
 .btn-price:disabled{opacity:.45;cursor:not-allowed;filter:grayscale(.15)}
-.pricing-footer{text-align:center;font-family:var(--font-s);font-size:11px;color:var(--muted);margin-top:20px;max-width:var(--max-w);margin-left:auto;margin-right:auto;padding:0 24px}
+.pricing-footer{text-align:center;font-family:var(--font-b);font-size:11px;color:var(--muted);margin-top:20px;max-width:var(--max-w);margin-left:auto;margin-right:auto;padding:0 24px}
 
 /* Footer */
 footer{padding:32px 0;border-top:1px solid var(--border)}
 .footer-inner{max-width:var(--max-w);margin:0 auto;padding:0 24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;font-size:12px;color:var(--muted)}
-.footer-logo{font-family:var(--font-s);font-size:18px;color:var(--text)}
+.footer-logo{font-family:var(--font-b);font-size:18px;color:var(--text)}
 
 /* Manual analysis full-width */
 .manual-wrap,.fetch-wrap{max-width:var(--max-w);margin:0 auto;padding:28px 24px}
@@ -336,7 +346,7 @@ footer{padding:32px 0;border-top:1px solid var(--border)}
 .auth-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:9999;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
 .auth-overlay.show{display:flex}
 .auth-card{background:#fff;border-radius:16px;padding:36px 32px;max-width:400px;width:90%;max-height:85vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.3)}
-.auth-title{font-family:var(--font-s);font-size:24px;margin-bottom:6px;text-align:center}
+.auth-title{font-family:var(--font-b);font-size:24px;margin-bottom:6px;text-align:center}
 .auth-sub{font-size:13px;color:var(--text2);text-align:center;margin-bottom:24px}
 .auth-toggle{font-size:12px;color:var(--primary);cursor:pointer;text-align:center;margin-top:16px;font-weight:600}
 .auth-error{font-size:12px;color:var(--red);text-align:center;margin-top:10px;display:none}
@@ -347,8 +357,8 @@ footer{padding:32px 0;border-top:1px solid var(--border)}
 .pay-overlay.show{display:flex}
 .pay-card{background:#fff;border-radius:16px;padding:32px;max-width:440px;width:90%;max-height:85vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.3)}
 .pay-title{font-size:18px;font-weight:700;margin-bottom:8px;text-align:center}
-.pay-amount{font-family:var(--font-s);font-size:36px;color:var(--primary);text-align:center;margin:12px 0}
-.pay-upi{font-family:var(--font-s);font-size:14px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center;margin:12px 0;user-select:all;cursor:pointer}
+.pay-amount{font-family:var(--font-b);font-size:36px;color:var(--primary);text-align:center;margin:12px 0}
+.pay-upi{font-family:var(--font-b);font-size:14px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center;margin:12px 0;user-select:all;cursor:pointer}
 .pay-steps{font-size:12px;color:var(--text2);line-height:1.8;margin:12px 0}
 .pay-steps ol{padding-left:20px}
 
@@ -367,7 +377,7 @@ footer{padding:32px 0;border-top:1px solid var(--border)}
 .admin-panel.show{display:block}
 .admin-stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
 .admin-stat{border:1px solid var(--border);border-radius:10px;padding:16px;background:#fff;text-align:center}
-.admin-stat-val{font-family:var(--font-s);font-size:28px;color:var(--primary);margin-bottom:4px}
+.admin-stat-val{font-family:var(--font-b);font-size:28px;color:var(--primary);margin-bottom:4px}
 .admin-stat-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
 .admin-table{width:100%;border-collapse:collapse;font-size:12px;border:1px solid var(--border);border-radius:8px;overflow:hidden}
 .admin-table th{background:var(--surface);padding:10px 12px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);border-bottom:1px solid var(--border)}
@@ -507,27 +517,24 @@ footer{padding:32px 0;border-top:1px solid var(--border)}
 <body>
 
 <!-- NAV -->
-<nav>
-  <div class="nav-inner">
-    <a href="index.html" class="logo">
-      <img src="logo.svg" alt="VigyanLLM Logo" class="logo-img">
-      <span class="logo-text">VigyanLLM</span>
-    </a>
-    <div class="nav-links">
-      <a href="index.html">Home</a>
-      <a href="primer.html" class="active">VigyanLLM</a>
-      <a href="demo.html">Demos</a>
-      <a href="index.html#contact">Contact</a>
-    </div>
-    <div class="nav-right">
-      <div id="status-pill" class="status-pill">
-        <span class="s-dot grey" id="s-dot"></span>
-        <span id="s-text" style="font-family:var(--font-s)">Checking…</span>
+    <nav>
+    <div class="nav-inner" style="display:flex;justify-content:space-between;align-items:center;height:100%;max-width:1200px;margin:0 auto;padding:0 24px">
+      <a href="index.html" class="nav-brand" style="display:flex;align-items:center;gap:10px;color:#fff;font-family:var(--font-h);font-size:20px;font-weight:700;text-decoration:none">
+        <img src="logo.svg" alt="VigyanLLM Logo" style="width:32px;height:32px;border-radius:4px">
+        <span>VigyanLLM</span>
+      </a>
+      <div class="nav-links" style="display:flex;gap:32px;align-items:center">
+        <a href="index.html" style="font-family:var(--font-b);font-size:13px;color:#CBD5E1;font-weight:500;letter-spacing:0.02em">Home</a>
+        <a href="primer.html" style="font-family:var(--font-b);font-size:13px;color:#22D3EE;font-weight:600;letter-spacing:0.02em">VPrime 1.0 ↗</a>
+        <a href="blog/index.html" style="font-family:var(--font-b);font-size:13px;color:#CBD5E1;font-weight:500;letter-spacing:0.02em">Blog</a>
+        <a href="faq.html" style="font-family:var(--font-b);font-size:13px;color:#CBD5E1;font-weight:500;letter-spacing:0.02em">FAQ</a>
+        <a href="about.html" style="font-family:var(--font-b);font-size:13px;color:#CBD5E1;font-weight:500;letter-spacing:0.02em">About</a>
       </div>
-      <button class="btn-nav" onclick="document.getElementById('pricing').scrollIntoView({behavior:'smooth'})">Pricing</button>
+      <div class="nav-right" style="display:flex;align-items:center;gap:16px">
+        <button class="nav-login" onclick="window.location.href='primer.html'" style="border:1.5px solid rgba(255,255,255,0.3);border-radius:4px;padding:8px 20px;font-family:var(--font-b);font-size:13px;font-weight:600;color:#fff;background:transparent;cursor:pointer">Login</button>
+      </div>
     </div>
-  </div>
-</nav>
+  </nav>
 
 <!-- DISCLAIMER -->
 <div class="disclaimer">
@@ -630,7 +637,7 @@ footer{padding:32px 0;border-top:1px solid var(--border)}
               <div class="toggle-label">Pipeline Mode</div>
               <div class="toggle-sub">Express = 6 key steps only</div>
             </div>
-            <select id="pipeline-mode" style="border:1px solid var(--border);border-radius:5px;padding:4px 8px;font-size:11px;font-family:var(--font-s)">
+            <select id="pipeline-mode" style="border:1px solid var(--border);border-radius:5px;padding:4px 8px;font-size:11px;font-family:var(--font-b)">
               <option value="full">Full (22 steps)</option>
               <option value="express">Express (6 steps)</option>
             </select>
@@ -640,7 +647,7 @@ footer{padding:32px 0;border-top:1px solid var(--border)}
               <div class="toggle-label">Design Mode</div>
               <div class="toggle-sub">Standard, Bisulfite, or Multiplex</div>
             </div>
-            <select id="design-mode" style="border:1px solid var(--border);border-radius:5px;padding:4px 8px;font-size:11px;font-family:var(--font-s)">
+            <select id="design-mode" style="border:1px solid var(--border);border-radius:5px;padding:4px 8px;font-size:11px;font-family:var(--font-b)">
               <option value="standard">Standard PCR</option>
               <option value="bisulfite">Bisulfite (MSP)</option>
               <option value="multiplex">Multiplex</option>
@@ -658,7 +665,7 @@ footer{padding:32px 0;border-top:1px solid var(--border)}
               <div class="toggle-label">NGS Adapter Platform</div>
               <div class="toggle-sub">5' overhang for library prep</div>
             </div>
-            <select id="adapter-platform" style="border:1px solid var(--border);border-radius:5px;padding:4px 8px;font-size:11px;font-family:var(--font-s)">
+            <select id="adapter-platform" style="border:1px solid var(--border);border-radius:5px;padding:4px 8px;font-size:11px;font-family:var(--font-b)">
               <option value="">None</option>
               <option value="illumina_nextera">Illumina Nextera</option>
               <option value="illumina_truseq">Illumina TruSeq</option>
@@ -723,7 +730,7 @@ footer{padding:32px 0;border-top:1px solid var(--border)}
           </div>
           <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border)">
             <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text2);margin-bottom:8px">Strict Thresholds</div>
-            <div style="font-family:var(--font-s);font-size:10px;color:var(--text2);line-height:1.9">
+            <div style="font-family:var(--font-b);font-size:10px;color:var(--text2);line-height:1.9">
               Tm: 58–65°C<br>
               ΔTm (F–R): ≤1.5°C<br>
               Hairpin dG: &gt;−2.0<br>
@@ -776,12 +783,12 @@ footer{padding:32px 0;border-top:1px solid var(--border)}
           <div class="panel-body">
             <div class="form-group">
               <label class="form-label">Forward Primer (5'→3')</label>
-              <input type="text" id="fwd-primer" class="form-input" style="font-family:var(--font-s);font-size:12px" placeholder="e.g. ATGCGATCGATCGATCGATCG">
+              <input type="text" id="fwd-primer" class="form-input" style="font-family:var(--font-b);font-size:12px" placeholder="e.g. ATGCGATCGATCGATCGATCG">
               <div class="error-msg" id="fwd-error">Forward primer is required.</div>
             </div>
             <div class="form-group">
               <label class="form-label">Reverse Primer (5'→3') <span style="color:var(--muted);text-transform:none;font-weight:400">optional</span></label>
-              <input type="text" id="rev-primer" class="form-input" style="font-family:var(--font-s);font-size:12px" placeholder="e.g. CGATCGATCGATCGATCGCAT">
+              <input type="text" id="rev-primer" class="form-input" style="font-family:var(--font-b);font-size:12px" placeholder="e.g. CGATCGATCGATCGATCGCAT">
             </div>
             <button class="btn-primary" id="btn-analyze">
               <span class="spinner" id="manual-spinner"></span>
@@ -807,7 +814,7 @@ footer{padding:32px 0;border-top:1px solid var(--border)}
           <div class="panel-body">
             <div class="form-group">
               <label class="form-label">Accession ID or Gene Symbol</label>
-              <input type="text" id="accession-input" class="form-input" style="font-family:var(--font-s);font-size:12px" placeholder="NM_007294, BRCA1, ENST00000357654…">
+              <input type="text" id="accession-input" class="form-input" style="font-family:var(--font-b);font-size:12px" placeholder="NM_007294, BRCA1, ENST00000357654…">
               <div class="form-hint">Supports NM_/NC_/NG_, ENSG/ENST, Ensembl coordinates, ENA/DDBJ accessions, NCBI Virus accessions, UniProt IDs, or gene symbols</div>
             </div>
             <div class="quick-load" style="margin-bottom:14px">
@@ -968,7 +975,7 @@ footer{padding:32px 0;border-top:1px solid var(--border)}
 <div id="tab-admin" class="tab-panel" style="display:none">
 <div class="admin-panel show" style="display:block">
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
-    <h2 style="font-family:var(--font-s);font-size:1.6rem;">🛡️ Admin Security & Operations</h2>
+    <h2 style="font-family:var(--font-b);font-size:1.6rem;">🛡️ Admin Security & Operations</h2>
     <button class="btn-secondary" onclick="refreshAdminPanel()">↻ Refresh</button>
   </div>
 
@@ -1162,7 +1169,7 @@ footer{padding:32px 0;border-top:1px solid var(--border)}
       <input type="range" id="topup-slider" min="1" max="100" value="5" oninput="updateTopup()" style="width:200px">
       <input type="number" id="topup-input" min="1" max="100" value="5" oninput="updateTopupFromInput()" class="form-input" style="width:70px;text-align:center;margin:0;padding:6px">
     </div>
-    <div style="font-family:var(--font-s);font-size:14px;margin:10px 0;color:var(--primary)" id="topup-display">Pay ₹245 for 5 Designs</div>
+    <div style="font-family:var(--font-b);font-size:14px;margin:10px 0;color:var(--primary)" id="topup-display">Pay ₹245 for 5 Designs</div>
     <button class="btn-price fill" id="bulk-topup-btn" style="margin-top:8px">Buy <span id="topup-count">5</span> Designs — ₹<span id="topup-total">245</span></button>
   </div>
 
@@ -1237,22 +1244,51 @@ footer{padding:32px 0;border-top:1px solid var(--border)}
 </section>
 
 <!-- FOOTER -->
-<footer>
-  <div class="footer-inner">
-    <span class="footer-logo" style="display:inline-flex;align-items:center;gap:8px">
-      <img src="logo.svg" alt="VigyanLLM" style="width:28px;height:28px;border-radius:5px;background:#0d1117;padding:2px;object-fit:contain">
-      VigyanLLM
-    </span>
-      <span>VigyanLLM v2.0 · 22-Step Pipeline · SantaLucia 1998 NN Thermodynamics</span>
-    <span>
-      © <script>document.write(new Date().getFullYear())</script> VigyanLLM ·
-      <a href="terms.html" style="color:var(--primary)">Terms</a> ·
-      <a href="privacy.html" style="color:var(--primary)">Privacy</a> ·
-      <a href="refund.html" style="color:var(--primary)">Refund</a> ·
-      <a href="security.html" style="color:var(--primary)">Security</a>
-    </span>
-  </div>
-</footer>
+    <footer style="background:var(--navy);color:#CBD5E1;padding:80px 0 32px">
+    <div style="max-width:1200px;margin:0 auto;padding:0 24px">
+      <div style="display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr;gap:48px;margin-bottom:60px">
+        <div>
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+            <img src="logo.svg" alt="VigyanLLM Logo" style="width:32px;height:32px;border-radius:4px">
+            <span style="font-family:var(--font-h);font-size:20px;font-weight:700;color:#fff">VigyanLLM</span>
+          </div>
+          <p style="font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:20px;line-height:1.6">Sovereign Healthcare &amp; Life Sciences AI.<br>Built in India. For the world.</p>
+          <a href="mailto:contact@vigyanllm.in" style="font-family:var(--font-b);font-size:13px;color:var(--accent);display:block;margin-bottom:6px">contact@vigyanllm.in</a>
+          <div style="display:flex;gap:12px;margin-top:24px">
+            <a href="#" aria-label="Facebook" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:8px;border:1px solid rgba(255,255,255,0.15);color:#94A3B8;text-decoration:none"><svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></a>
+            <a href="#" aria-label="X" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:8px;border:1px solid rgba(255,255,255,0.15);color:#94A3B8;text-decoration:none"><svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:currentColor"><path d="M4 4l6.5 8.5L4 20h2l5.5-7 4.5 7h5l-7-9.5L20 4h-2l-5 6.5L9 4H4zm3 1.5h3l10 13h-3L7 5.5z"/></svg></a>
+            <a href="#" aria-label="YouTube" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:8px;border:1px solid rgba(255,255,255,0.15);color:#94A3B8;text-decoration:none"><svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:currentColor"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6a3 3 0 0 0-2.1 2.1C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1c.5-1.9.5-5.8.5-5.8s0-3.9-.5-5.8zM9.5 15.5V8.5l6.3 3.5-6.3 3.5z"/></svg></a>
+            <a href="#" aria-label="Instagram" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:8px;border:1px solid rgba(255,255,255,0.15);color:#94A3B8;text-decoration:none"><svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:currentColor"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg></a>
+          </div>
+        </div>
+        <div>
+          <h5 style="font-family:var(--font-h);font-size:12px;text-transform:uppercase;letter-spacing:0.1em;color:#fff;margin-bottom:24px;font-weight:700">Platform</h5>
+          <a href="index.html#problem" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Problem</a>
+          <a href="index.html#platform" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Platform</a>
+          <a href="index.html#architecture" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Architecture</a>
+          <a href="demo.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Demo</a>
+        </div>
+        <div>
+          <h5 style="font-family:var(--font-h);font-size:12px;text-transform:uppercase;letter-spacing:0.1em;color:#fff;margin-bottom:24px;font-weight:700">Resources</h5>
+          <a href="primer.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">VPrime 1.0</a>
+          <a href="blog/index.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Blog</a>
+          <a href="faq.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">FAQ</a>
+          <a href="about.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">About</a>
+        </div>
+        <div>
+          <h5 style="font-family:var(--font-h);font-size:12px;text-transform:uppercase;letter-spacing:0.1em;color:#fff;margin-bottom:24px;font-weight:700">Contact</h5>
+          <a href="mailto:contact@vigyanllm.in" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">contact@vigyanllm.in</a>
+          <a href="privacy.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Privacy</a>
+          <a href="terms.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Terms</a>
+          <a href="refund.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Refund</a>
+        </div>
+      </div>
+      <div style="border-top:1px solid rgba(255,255,255,0.1);padding-top:24px;display:flex;justify-content:space-between;font-family:var(--font-b);font-size:12px;color:#64748B">
+        <span>&copy; <script>document.write(new Date().getFullYear())</script> VigyanLLM Pvt. Ltd. · Sovereign Research AI</span>
+        <span>WWW.VIGYANLLM.IN</span>
+      </div>
+    </div>
+  </footer>
 
 <!-- AUTH MODAL -->
 <div class="auth-overlay" id="auth-overlay">
@@ -1674,7 +1710,7 @@ function primerBlock(p,dir){
     <div class="qs-bar" style="background:var(--border)">
       <div style="height:4px;border-radius:2px;background:${color};width:${qsWidth}%"></div>
     </div>
-    <div style="font-size:10px;margin-top:3px;color:${color};font-family:var(--font-s)">
+    <div style="font-size:10px;margin-top:3px;color:${color};font-family:var(--font-b)">
       Primer quality ${fmtScore(qs,0)} — ${qsLabel(qs)}
     </div>
     ${(p.warnings||[]).length?`<div class="warn-list">${p.warnings.map(w=>`<div class="warn-item">⚠ ${esc(w)}</div>`).join('')}</div>`:''}
@@ -1785,7 +1821,7 @@ function renderPairs(pairs,elapsedMs){
         <div class="rc-head-right">
           <div class="ta-val">${fmtNum(ta,1,'°C')}</div>
           <div class="ta-label">Annealing Ta</div>
-          <div style="font-family:var(--font-s);font-size:10px;color:var(--muted);margin-top:2px">Pair score ${fmtScore(score,1)}</div>
+          <div style="font-family:var(--font-b);font-size:10px;color:var(--muted);margin-top:2px">Pair score ${fmtScore(score,1)}</div>
         </div>
       </div>
       <div class="rc-body">
@@ -1846,8 +1882,8 @@ function renderSavedReports(){
   el.innerHTML=reports.map(r=>`
     <div style="border-bottom:1px solid var(--border);padding:8px 0">
       <div style="font-weight:700;color:var(--text)">Pair score ${fmtScore(r.score,0)} · ${r.amplicon||'—'} bp</div>
-      <div style="font-family:var(--font-s);font-size:9px;color:var(--muted)">${esc(new Date(r.savedAt).toLocaleString())}</div>
-      <div style="font-family:var(--font-s);font-size:9px;color:var(--text2);word-break:break-all;margin-top:4px">${esc((r.forward||'').slice(0,32))}${r.forward&&r.forward.length>32?'…':''}</div>
+      <div style="font-family:var(--font-b);font-size:9px;color:var(--muted)">${esc(new Date(r.savedAt).toLocaleString())}</div>
+      <div style="font-family:var(--font-b);font-size:9px;color:var(--text2);word-break:break-all;margin-top:4px">${esc((r.forward||'').slice(0,32))}${r.forward&&r.forward.length>32?'…':''}</div>
     </div>
   `).join('');
 }
@@ -2083,7 +2119,7 @@ async function runManualAnalysis(){
         html+=`<div class="warn-list">${d.pair_warnings.map(w=>`<div class="warn-item">⚠ ${esc(w)}</div>`).join('')}</div>`;
       if(d.pipeline)html+=pfMatrix(d.pipeline,'manual');
       if(d.penalty_score!==null&&d.penalty_score!==undefined)
-        html+=`<div style="margin-top:10px;font-family:var(--font-s);font-size:11px;color:var(--text2)">Penalty score: ${d.penalty_score.toFixed(3)} (lower = better)</div>`;
+        html+=`<div style="margin-top:10px;font-family:var(--font-b);font-size:11px;color:var(--text2)">Penalty score: ${d.penalty_score.toFixed(3)} (lower = better)</div>`;
     }
     if(d.report)html+=`<div class="report-block">${esc(d.report)}</div>`;
     $('manual-results').innerHTML=html;
@@ -2392,7 +2428,7 @@ function renderPreferredBestSequence(pairs, templateSeq) {
         <div style="font-size:12px;font-weight:800;color:var(--primary);text-transform:uppercase;letter-spacing:.06em">Preferred Best Sequence</div>
         <div style="font-size:15px;font-weight:800;color:var(--text);margin-top:2px">Primer Binding Map — Template (${map.templateLength} bp)</div>
       </div>
-      <div style="font-family:var(--font-s);font-size:11px;color:var(--text2);background:#fff;border:1px solid var(--border);border-radius:6px;padding:6px 8px">
+      <div style="font-family:var(--font-b);font-size:11px;color:var(--text2);background:#fff;border:1px solid var(--border);border-radius:6px;padding:6px 8px">
         ${map.forward.start_pos}${map.reverse.start_pos}${map.reverse.stop_pos}
       </div>
     </div>
@@ -2400,15 +2436,15 @@ function renderPreferredBestSequence(pairs, templateSeq) {
     <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:12px">
       <div style="background:#fff;border:1px solid var(--border);border-radius:6px;padding:9px">
         <div style="font-size:10px;color:var(--muted);text-transform:uppercase;font-weight:700">Forward</div>
-        <div style="font-family:var(--font-s);font-size:12px;color:var(--bio);margin-top:3px">pos ${map.forward.start_pos}→${map.forward.stop_pos}, ${map.forward.length}nt</div>
+        <div style="font-family:var(--font-b);font-size:12px;color:var(--bio);margin-top:3px">pos ${map.forward.start_pos}→${map.forward.stop_pos}, ${map.forward.length}nt</div>
       </div>
       <div style="background:#fff;border:1px solid var(--border);border-radius:6px;padding:9px">
         <div style="font-size:10px;color:var(--muted);text-transform:uppercase;font-weight:700">Reverse</div>
-        <div style="font-family:var(--font-s);font-size:12px;color:var(--amber);margin-top:3px">pos ${map.reverse.start_pos}→${map.reverse.stop_pos}, ${map.reverse.length}nt</div>
+        <div style="font-family:var(--font-b);font-size:12px;color:var(--amber);margin-top:3px">pos ${map.reverse.start_pos}→${map.reverse.stop_pos}, ${map.reverse.length}nt</div>
       </div>
       <div style="background:#fff;border:1px solid var(--border);border-radius:6px;padding:9px">
         <div style="font-size:10px;color:var(--muted);text-transform:uppercase;font-weight:700">Amplicon</div>
-        <div style="font-family:var(--font-s);font-size:12px;color:var(--primary);margin-top:3px">${map.ampliconSize}bp</div>
+        <div style="font-family:var(--font-b);font-size:12px;color:var(--primary);margin-top:3px">${map.ampliconSize}bp</div>
       </div>
     </div>
 
@@ -2417,16 +2453,16 @@ function renderPreferredBestSequence(pairs, templateSeq) {
       <div style="position:absolute;top:21px;left:${map.amplicon.leftPct}%;width:${map.amplicon.widthPct}%;height:10px;background:rgba(26,86,255,0.15);border:1px solid rgba(26,86,255,0.3);border-radius:3px" title="Amplicon: ${map.ampliconSize}bp"></div>
       <div style="position:absolute;top:14px;left:${map.forward.leftPct}%;width:${map.forward.widthPct}%;height:8px;background:var(--bio);border-radius:2px" title="Forward: pos ${map.forward.start_pos}-${map.forward.stop_pos}"></div>
       <div style="position:absolute;top:29px;left:${map.reverse.leftPct}%;width:${map.reverse.widthPct}%;height:8px;background:var(--amber);border-radius:2px" title="Reverse: pos ${map.reverse.start_pos}-${map.reverse.stop_pos}"></div>
-      <div style="position:absolute;top:40px;left:2px;font-family:var(--font-s);font-size:9px;color:var(--muted)">1</div>
-      <div style="position:absolute;top:40px;right:2px;font-family:var(--font-s);font-size:9px;color:var(--muted)">${map.templateLength}</div>
-      <div style="position:absolute;top:2px;left:${map.forward.leftPct}%;font-family:var(--font-s);font-size:9px;color:var(--bio)">${map.forward.start_pos}</div>
-      <div style="position:absolute;top:38px;left:${map.reverse.leftPct}%;font-family:var(--font-s);font-size:9px;color:var(--amber)">${map.reverse.start_pos}</div>
+      <div style="position:absolute;top:40px;left:2px;font-family:var(--font-b);font-size:9px;color:var(--muted)">1</div>
+      <div style="position:absolute;top:40px;right:2px;font-family:var(--font-b);font-size:9px;color:var(--muted)">${map.templateLength}</div>
+      <div style="position:absolute;top:2px;left:${map.forward.leftPct}%;font-family:var(--font-b);font-size:9px;color:var(--bio)">${map.forward.start_pos}</div>
+      <div style="position:absolute;top:38px;left:${map.reverse.leftPct}%;font-family:var(--font-b);font-size:9px;color:var(--amber)">${map.reverse.start_pos}</div>
     </div>
 
-    <div style="font-family:var(--font-s);font-size:11px;line-height:1.8;word-break:break-all;background:#fff;padding:10px;border-radius:6px;border:1px solid var(--border)">
+    <div style="font-family:var(--font-b);font-size:11px;line-height:1.8;word-break:break-all;background:#fff;padding:10px;border-radius:6px;border:1px solid var(--border)">
       <span style="color:var(--muted)">pos ${map.contextStart} </span>${map.contextHtml}<span style="color:var(--muted)"> pos ${map.contextEnd}</span>
     </div>
-    <div style="font-family:var(--font-s);font-size:9px;color:var(--muted);margin-top:6px">
+    <div style="font-family:var(--font-b);font-size:9px;color:var(--muted);margin-top:6px">
       <span style="color:var(--bio)">■</span> Forward primer binding site &nbsp;&nbsp;
       <span style="color:var(--amber)">■</span> Reverse primer binding region
     </div>
@@ -3089,9 +3125,9 @@ async function refreshAdminPanel() {
       tbody.innerHTML = threats.recent_threats.slice(0,15).map(t => `
         <tr>
           <td>${t.timestamp?.split('T')[1]?.split('.')[0]||'—'}</td>
-          <td style="font-family:var(--font-s);font-size:11px;">${t.ip||'—'}</td>
+          <td style="font-family:var(--font-b);font-size:11px;">${t.ip||'—'}</td>
           <td><span style="background:var(--red-soft);color:var(--red);padding:2px 6px;border-radius:4px;font-size:10px;font-weight:600;">${t.threat_type||'—'}</span></td>
-          <td style="font-family:var(--font-s);font-size:11px;">${t.path||'—'}</td>
+          <td style="font-family:var(--font-b);font-size:11px;">${t.path||'—'}</td>
           <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;font-size:11px;">${t.detail||''}</td>
         </tr>
       `).join('');
@@ -3123,8 +3159,8 @@ async function loadAdminUsers() {
       <td>${u.email||''}</td>
       <td><span style="background:${u.role==='admin'?'var(--primary-soft)':'var(--surface)'};color:${u.role==='admin'?'var(--primary)':'var(--text2)'};padding:2px 8px;border-radius:4px;font-size:10px;font-weight:600;">${u.role}</span></td>
       <td><span style="background:${u.status==='active'?'var(--bio-soft)':'var(--red-soft)'};color:${u.status==='active'?'var(--bio)':'var(--red)'};padding:2px 8px;border-radius:4px;font-size:10px;font-weight:600;">${u.status||'active'}</span></td>
-      <td style="font-family:var(--font-s);">${u.balance ?? '—'}</td>
-      <td style="font-family:var(--font-s);">₹${Math.round(u.lifetime_revenue_inr||0)}</td>
+      <td style="font-family:var(--font-b);">${u.balance ?? '—'}</td>
+      <td style="font-family:var(--font-b);">₹${Math.round(u.lifetime_revenue_inr||0)}</td>
       <td style="font-size:11px;">${u.created_at ? new Date(u.created_at).toLocaleDateString() : '—'}</td>
       <td>${u.role==='admin'?'<span style="font-size:10px;color:var(--muted)">—</span>': (u.status==='active'
         ? '<button class="btn-secondary" style="font-size:10px;padding:3px 8px;color:var(--red);border-color:var(--red);" onclick="adminBlockUser('+u.id+')">Block</button>'
@@ -3171,12 +3207,12 @@ async function loadAdminPerformance() {
   ]);
   if (stats && stats.slowest_endpoints) {
     $('admin-perf-tbody').innerHTML = stats.slowest_endpoints.map(e => `
-      <tr><td style="font-family:var(--font-s);font-size:11px;">${e.endpoint}</td><td style="font-weight:600;">${e.avg_ms}ms</td></tr>
+      <tr><td style="font-family:var(--font-b);font-size:11px;">${e.endpoint}</td><td style="font-weight:600;">${e.avg_ms}ms</td></tr>
     `).join('') || '<tr><td colspan="2" style="text-align:center;color:var(--muted)">No data</td></tr>';
   }
   if (slow && slow.slow_requests && slow.slow_requests.length > 0) {
     $('admin-slow-tbody').innerHTML = slow.slow_requests.slice(0,10).map(r => `
-      <tr><td>${r.timestamp?.split('T')[1]?.split('.')[0]||''}</td><td style="font-family:var(--font-s);font-size:11px;">${r.method} ${r.path}</td><td style="color:var(--amber);font-weight:700;">${r.duration_ms}ms</td><td>${r.user||'—'}</td></tr>
+      <tr><td>${r.timestamp?.split('T')[1]?.split('.')[0]||''}</td><td style="font-family:var(--font-b);font-size:11px;">${r.method} ${r.path}</td><td style="color:var(--amber);font-weight:700;">${r.duration_ms}ms</td><td>${r.user||'—'}</td></tr>
     `).join('');
   }
 }
@@ -3188,7 +3224,7 @@ async function loadAdminBans() {
   if (data.banned_ips && data.banned_ips.length > 0) {
     tbody.innerHTML = data.banned_ips.map(b => `
       <tr>
-        <td style="font-family:var(--font-s);">${b.ip}</td>
+        <td style="font-family:var(--font-b);">${b.ip}</td>
         <td>${Math.floor(b.expires_in_seconds/60)}m ${b.expires_in_seconds%60}s</td>
         <td><button class="btn-secondary" style="font-size:10px;padding:4px 10px;" onclick="adminUnban('${b.ip}')">Unban</button></td>
       </tr>
@@ -3234,7 +3270,7 @@ async function loadAdminAcademic() {
     const statusColor = c.status === 'approved' ? 'var(--bio)' : c.status === 'rejected' ? 'var(--red)' : 'var(--amber)';
     html += `<tr>
       <td>${esc(c.full_name||'—')}</td>
-      <td style="font-size:10px;font-family:var(--font-s);">${esc(c.email)}</td>
+      <td style="font-size:10px;font-family:var(--font-b);">${esc(c.email)}</td>
       <td>${esc(c.institution||'—')}</td>
       <td><span style="background:var(--primary-soft);color:var(--primary);padding:2px 6px;border-radius:4px;font-size:10px;font-weight:600;">${c.proof_method||'email'}</span></td>
       <td><span style="background:var(--${c.status==='approved'?'bio-soft':'red-soft'});color:${statusColor};padding:2px 6px;border-radius:4px;font-size:10px;font-weight:600;">${c.status}</span></td>
@@ -3271,7 +3307,7 @@ async function adminRunScan() {
   let html = `<div style="margin-bottom:8px;"><strong>Files scanned:</strong> ${data.files_scanned} | <strong>Status:</strong> <span style="color:${data.threats_found>0?'var(--red)':'var(--bio)'};">${data.status}</span></div>`;
   if (data.findings && data.findings.length > 0) {
     html += '<table class="admin-table"><thead><tr><th>Category</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead><tbody>';
-    data.findings.forEach(f => { html += `<tr><td style="color:var(--red);font-weight:600;">${f.category}</td><td style="font-family:var(--font-s);font-size:10px;">${f.file}</td><td>${f.line}</td><td style="font-size:10px;font-family:var(--font-s);">${(f.snippet||'').slice(0,60)}</td></tr>`; });
+    data.findings.forEach(f => { html += `<tr><td style="color:var(--red);font-weight:600;">${f.category}</td><td style="font-family:var(--font-b);font-size:10px;">${f.file}</td><td>${f.line}</td><td style="font-size:10px;font-family:var(--font-b);">${(f.snippet||'').slice(0,60)}</td></tr>`; });
     html += '</tbody></table>';
   } else {
     html += '<div style="color:var(--bio);margin-top:8px;">✓ No malware detected — files are clean.</div>';
@@ -3286,7 +3322,7 @@ async function adminCheckIntegrity() {
   let html = `<div style="margin-bottom:8px;"><strong>Baseline:</strong> ${data.baseline_files||0} files | <strong>Changes:</strong> <span style="color:${(data.changes_detected||0)>0?'var(--amber)':'var(--bio)'};">${data.changes_detected||0}</span></div>`;
   if (data.changes && data.changes.length > 0) {
     html += '<table class="admin-table"><thead><tr><th>File</th><th>Change</th><th>Severity</th></tr></thead><tbody>';
-    data.changes.forEach(c => { html += `<tr><td style="font-family:var(--font-s);font-size:10px;">${c.path}</td><td>${c.change}</td><td style="color:${c.severity==='high'?'var(--red)':c.severity==='medium'?'var(--amber)':'var(--muted)'};">${c.severity}</td></tr>`; });
+    data.changes.forEach(c => { html += `<tr><td style="font-family:var(--font-b);font-size:10px;">${c.path}</td><td>${c.change}</td><td style="color:${c.severity==='high'?'var(--red)':c.severity==='medium'?'var(--amber)':'var(--muted)'};">${c.severity}</td></tr>`; });
     html += '</tbody></table>';
   } else if (!data.error) {
     html += '<div style="color:var(--bio);">✓ All files match baseline — no unauthorized changes.</div>';
@@ -3590,11 +3626,11 @@ function renderHistoryModal(reports, total) {
               ${r.gene_input ? `<span class="badge">${esc(r.gene_input.slice(0,20))}</span>` : ''}
             </div>
             ${r.top_forward ? `
-              <div style="font-family:var(--font-s);font-size:10px;color:var(--bio);margin-top:4px">F: ${esc(fwd)}</div>
-              <div style="font-family:var(--font-s);font-size:10px;color:var(--amber)">R: ${esc(rev)}</div>` : ''}
+              <div style="font-family:var(--font-b);font-size:10px;color:var(--bio);margin-top:4px">F: ${esc(fwd)}</div>
+              <div style="font-family:var(--font-b);font-size:10px;color:var(--amber)">R: ${esc(rev)}</div>` : ''}
           </div>
           <div style="text-align:right;flex-shrink:0">
-            <div style="font-family:var(--font-s);font-size:18px;font-weight:700;color:${scoreColor}">${esc(score)}</div>
+            <div style="font-family:var(--font-b);font-size:18px;font-weight:700;color:${scoreColor}">${esc(score)}</div>
             <div style="font-size:10px;color:var(--muted);margin-bottom:8px">Top pair score</div>
             <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">
               <a href="${API}/api/reports/${r.id}/download?token=${encodeURIComponent(auth.token)}"
@@ -3704,14 +3740,14 @@ async function loadReferralPanel() {
       <div style="margin-bottom:12px">
         <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text2);margin-bottom:6px">Your Referral Link</div>
         <div style="display:flex;gap:8px;align-items:center">
-          <input type="text" id="ref-link-input" class="form-input" value="${esc(url)}" readonly style="font-family:var(--font-s);font-size:11px;flex:1;cursor:text">
+          <input type="text" id="ref-link-input" class="form-input" value="${esc(url)}" readonly style="font-family:var(--font-b);font-size:11px;flex:1;cursor:text">
           <button class="btn-secondary" onclick="copyReferralLink()" style="white-space:nowrap;flex-shrink:0">Copy Link</button>
         </div>
         <div id="ref-copy-msg" style="font-size:11px;color:var(--bio);margin-top:4px;display:none">✓ Copied to clipboard!</div>
       </div>
       <div style="background:var(--surface);border-radius:8px;padding:12px;margin-bottom:12px">
         <div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:8px">Your Referral Code</div>
-        <div style="font-family:var(--font-s);font-size:18px;font-weight:800;color:var(--primary);letter-spacing:.1em">${esc(d.referral_code)}</div>
+        <div style="font-family:var(--font-b);font-size:18px;font-weight:800;color:var(--primary);letter-spacing:.1em">${esc(d.referral_code)}</div>
       </div>
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px">
         <div style="text-align:center;border:1px solid var(--border);border-radius:8px;padding:10px">
