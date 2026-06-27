@@ -1512,9 +1512,9 @@ function esc(s){return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').
 
 // ── Backend status ────────────────────────────────────────────────────────
 function setStatus(online,checking){
-  const pill=$('status-pill'),dot=$('s-dot'),txt=$('s-text');
-  if(!pill||!dot||!txt)return; // guard: elements may not exist during init
   state.online=online;
+  const pill=$('status-pill'),dot=$('s-dot'),txt=$('s-text');
+  if(!pill||!dot||!txt)return;
   if(checking){pill.className='status-pill';dot.className='s-dot grey';txt.textContent='Checking…';}
   else if(online){pill.className='status-pill online';dot.className='s-dot green';txt.textContent='Backend connected';}
   else{pill.className='status-pill offline';dot.className='s-dot amber';txt.textContent='Connecting...';}
