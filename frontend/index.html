@@ -436,19 +436,13 @@ footer { background: var(--navy); color: #CBD5E1; padding: 80px 0 32px; }
     var parent = canvas.parentElement;
     W = canvas.width = parent.offsetWidth;
     H = canvas.height = parent.offsetHeight;
+    initScene();
   }
   resize();
 
-  // ─── DNA ─────────────────────────────────────────────────────────
-  var dna = { rotation: 0, speed: 0.0018 };
+  // ─── Scene state ─────────────────────────────────────────────────
+  var dnaStrands, polymerases, proteins, ambientSeed;
 
-  // ─── RNA Polymerase ──────────────────────────────────────────────
-  var polymerase = {
-    t: 0.3, direction: 1, speed: 0.0008,
-    rnaLength: 0, maxRna: 50
-  };
-
-  // ─── Colour palettes for white background ────────────────────────
   var proteinPalettes = [
     { main: '#E74C3C', acc: ['#F39C12', '#F1C40F', '#C0392B', '#E67E22'] },
     { main: '#8E44AD', acc: ['#6C3483', '#2E86C1', '#F1C40F', '#A569BD'] },
@@ -462,11 +456,7 @@ footer { background: var(--navy); color: #CBD5E1; padding: 80px 0 32px; }
     { main: '#E17055', acc: ['#D63031', '#FDCB6E', '#00B894', '#FAB1A0'] }
   ];
 
-  var rnaNucleotideColors = ['#E74C3C', '#0984E3', '#27AE60', '#8E44AD'];
-
-  // ─── Floating proteins (20 clusters) ─────────────────────────────
-  var proteins = [];
-  var proteinCount = 20;
+  var rnaColors = ['#E74C3C', '#0984E3', '#27AE60', '#8E44AD'];
 
   function createProteinCluster(pal) {
     var residues = [];
@@ -484,35 +474,81 @@ footer { background: var(--navy); color: #CBD5E1; padding: 80px 0 32px; }
     return residues;
   }
 
-  function initProteins() {
+  // ─── Initialize entire scene ─────────────────────────────────────
+  function initScene() {
+    var minDim = Math.min(W, H);
+
+    // ── DNA strands at different positions ─────────────────────────
+    dnaStrands = [
+      {
+        cx: W * 0.32, cy: H * 0.5,
+        rad: minDim * 0.11, h: minDim * 0.52,
+        rotation: 0, speed: 0.0018, bps: 36,
+        colors: { s1: '#1D4ED8', s2: '#0E7490', b1: '#2563EB', b2: '#14B8A6' }
+      },
+      {
+        cx: W * 0.62, cy: H * 0.48,
+        rad: minDim * 0.09, h: minDim * 0.42,
+        rotation: 0.8, speed: -0.0014, bps: 28,
+        colors: { s1: '#0369A1', s2: '#0F766E', b1: '#0284C7', b2: '#0D9488' }
+      },
+      {
+        cx: W * 0.78, cy: H * 0.55,
+        rad: minDim * 0.06, h: minDim * 0.3,
+        rotation: 1.5, speed: 0.0012, bps: 20,
+        alpha: 0.35,
+        colors: { s1: '#1D4ED8', s2: '#0E7490', b1: '#2563EB', b2: '#14B8A6' }
+      }
+    ];
+
+    // ── Polymerases binding to different DNA sites ────────────────
+    polymerases = [
+      { dnaIdx: 0, t: 0.25, dir: 1, speed: 0.0005, rnaLen: 0, maxRna: 40, phase: 0 },
+      { dnaIdx: 0, t: 0.65, dir: -1, speed: 0.0004, rnaLen: 0, maxRna: 30, phase: 2.1 },
+      { dnaIdx: 1, t: 0.35, dir: 1, speed: 0.0006, rnaLen: 0, maxRna: 25, phase: 4.3 }
+    ];
+
+    // ── 24 proteins, some with DNA-binding behaviour ──────────────
     proteins = [];
-    for (var p = 0; p < proteinCount; p++) {
+    for (var p = 0; p < 24; p++) {
       var pal = proteinPalettes[p % proteinPalettes.length];
+      var isBinder = p < 8; // first 8 proteins can bind to DNA
       proteins.push({
-        x: 30 + Math.random() * (Math.max(W - 60, 100)),
-        y: 30 + Math.random() * (Math.max(H - 60, 100)),
-        vx: (Math.random() - 0.5) * 0.35,
-        vy: (Math.random() - 0.5) * 0.35,
-        driftTimer: Math.floor(Math.random() * 50),
+        x: 20 + Math.random() * (W - 40),
+        y: 20 + Math.random() * (H - 40),
+        vx: (Math.random() - 0.5) * 0.3,
+        vy: (Math.random() - 0.5) * 0.3,
+        driftTimer: Math.floor(Math.random() * 40),
         residues: createProteinCluster(pal),
         rotation: Math.random() * Math.PI * 2,
         rotSpeed: (Math.random() - 0.5) * 0.022,
-        scale: 0.5 + Math.random() * 0.8
+        scale: 0.45 + Math.random() * 0.7,
+        isBinder: isBinder,
+        // Binding state machine
+        bindState: 'free',     // 'free' | 'approach' | 'bound' | 'release'
+        bindTimer: 0,
+        bindTarget: null,      // { x, y }
+        bindDnaIdx: -1,
+        bindT: 0,
+        bindCooldown: 100 + Math.floor(Math.random() * 200)
       });
     }
-  }
-  initProteins();
 
-  // Re-init on resize
+    ambientSeed = Date.now();
+  }
+
+  initScene();
+
+  // Re-init on resize with debounce
+  var resizeTimer;
   window.addEventListener('resize', function() {
-    resize();
-    initProteins();
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(function() { resize(); initScene(); }, 200);
   });
 
-  // ─── Helper: draw a sphere with soft gradient (no shadowBlur) ────
+  // ─── Draw sphere with 3D highlight ───────────────────────────────
   function drawSphere(x, y, r, color, alpha) {
     alpha = alpha || 1;
-    // Outer soft halo
     var grad = ctx.createRadialGradient(x, y, 0, x, y, r * 2.5);
     grad.addColorStop(0, color);
     grad.addColorStop(0.15, color);
@@ -522,96 +558,39 @@ footer { background: var(--navy); color: #CBD5E1; padding: 80px 0 32px; }
     ctx.beginPath();
     ctx.arc(x, y, r * 2.5, 0, Math.PI * 2);
     ctx.fill();
-
-    // Core sphere with highlight
     ctx.globalAlpha = alpha;
-    var lg = ctx.createRadialGradient(x - r * 0.3, y - r * 0.3, 0, x, y, r);
+    var lg = ctx.createRadialGradient(x - r * 0.35, y - r * 0.35, 0, x, y, r);
     lg.addColorStop(0, '#FFFFFF');
-    lg.addColorStop(0.15, color);
-    lg.addColorStop(0.8, color);
-    lg.addColorStop(1, '#000000' + Math.round(alpha * 30).toString(16).padStart(2, '0'));
+    lg.addColorStop(0.12, color);
+    lg.addColorStop(0.75, color);
+    lg.addColorStop(1, 'rgba(0,0,0,0.15)');
     ctx.fillStyle = lg;
     ctx.beginPath();
     ctx.arc(x, y, r, 0, Math.PI * 2);
     ctx.fill();
   }
 
-  // ─── Main loop ───────────────────────────────────────────────────
-  function draw() {
-    ctx.clearRect(0, 0, W, H);
-
-    // White background (matches website)
-    ctx.fillStyle = '#FFFFFF';
-    ctx.fillRect(0, 0, W, H);
-
-    // Subtle cell-like background texture
-    for (var ci = 0; ci < 6; ci++) {
-      var cx2 = Math.sin(ci * 1.7 + Date.now() * 0.00003) * 0.3 + 0.5;
-      var cy2 = Math.cos(ci * 2.3 + Date.now() * 0.00002) * 0.3 + 0.5;
-      var cg = ctx.createRadialGradient(cx2 * W, cy2 * H, 0, cx2 * W, cy2 * H, Math.min(W, H) * 0.25);
-      cg.addColorStop(0, 'rgba(37, 99, 235, 0.03)');
-      cg.addColorStop(1, 'transparent');
-      ctx.fillStyle = cg;
-      ctx.beginPath();
-      ctx.arc(cx2 * W, cy2 * H, Math.min(W, H) * 0.25, 0, Math.PI * 2);
-      ctx.fill();
-    }
-
-    // Ambient small molecules (dense)
-    for (var i = 0; i < 60; i++) {
-      var seed = i * 73.3;
-      var px = (Math.sin(seed + Date.now() * 0.00015) * 0.5 + 0.5) * W;
-      var py = (Math.cos(seed * 1.7 + Date.now() * 0.0001) * 0.5 + 0.5) * H;
-      var br = 0.08 + Math.sin(seed + Date.now() * 0.0005) * 0.06;
-      ctx.globalAlpha = br;
-      ctx.fillStyle = '#1E293B';
-      ctx.beginPath();
-      ctx.arc(px, py, 0.6 + Math.sin(seed + Date.now() * 0.0004) * 0.4, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Connection lines between nearby ambient particles
-      for (var j = i + 1; j < 60; j++) {
-        var seed2 = j * 73.3;
-        var px2 = (Math.sin(seed2 + Date.now() * 0.00015) * 0.5 + 0.5) * W;
-        var py2 = (Math.cos(seed2 * 1.7 + Date.now() * 0.0001) * 0.5 + 0.5) * H;
-        var dx = px - px2, dy = py - py2;
-        var dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist < 40) {
-          ctx.globalAlpha = (1 - dist / 40) * 0.04;
-          ctx.strokeStyle = '#2563EB';
-          ctx.lineWidth = 0.5;
-          ctx.beginPath();
-          ctx.moveTo(px, py);
-          ctx.lineTo(px2, py2);
-          ctx.stroke();
-        }
-      }
-    }
-    ctx.globalAlpha = 1;
-
-    // ── DNA Double Helix ───────────────────────────────────────────
-    var cx = W * 0.42;
-    var cy = H * 0.5;
-    var rad = Math.min(W, H) * 0.14;
-    var h = Math.min(W, H) * 0.6;
+  // ─── Draw a single DNA helix ─────────────────────────────────────
+  function drawDNA(dna, globalAlpha) {
+    globalAlpha = globalAlpha || 1;
+    var cx = dna.cx, cy = dna.cy, rad = dna.rad, h = dna.h;
     var topY = cy - h * 0.5;
-    var bps = 44;
+    var bps = dna.bps;
+    var rot = dna.rotation;
+    var cols = dna.colors;
+    var turns = 4;
 
-    dna.rotation += dna.speed;
-
-    var strandColors = ['#1D4ED8', '#0E7490'];
-    var backColors = ['#2563EB', '#14B8A6'];
-    var backGlow = ['rgba(37,99,235,0.06)', 'rgba(20,184,166,0.06)'];
-
-    // Draw backbone glow underneath
+    // Backbone glow
     for (var s = 0; s < 2; s++) {
-      ctx.strokeStyle = backGlow[s];
-      ctx.lineWidth = 18;
+      var glowCol = s === 0 ? 'rgba(37,99,235,0.05)' : 'rgba(20,184,166,0.05)';
+      ctx.globalAlpha = globalAlpha * 0.6;
+      ctx.strokeStyle = glowCol;
+      ctx.lineWidth = 20;
       ctx.beginPath();
       for (var b = 0; b <= bps; b++) {
         var t = b / bps;
         var y = topY + t * h;
-        var angle = t * Math.PI * 2 * 4 + dna.rotation;
+        var angle = t * Math.PI * 2 * turns + rot;
         var x = cx + Math.cos(angle + s * Math.PI) * rad;
         if (b === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
       }
@@ -622,12 +601,12 @@ footer { background: var(--navy); color: #CBD5E1; padding: 80px 0 32px; }
     for (var b = 0; b <= bps; b++) {
       var t = b / bps;
       var y = topY + t * h;
-      var angle = t * Math.PI * 2 * 4 + dna.rotation;
+      var angle = t * Math.PI * 2 * turns + rot;
       var depth = Math.cos(angle);
       var zScale = 0.5 + (depth + 1) * 0.25;
       var x1 = cx + Math.cos(angle) * rad;
       var x2 = cx + Math.cos(angle + Math.PI) * rad;
-      var rungAlpha = 0.3 + Math.abs(depth) * 0.5;
+      var rungAlpha = (0.3 + Math.abs(depth) * 0.5) * globalAlpha;
 
       var bpColor = (b % 2 === 0) ? '#E67E22' : '#0984E3';
       var bpColor2 = (b % 2 === 0) ? '#F39C12' : '#0652DD';
@@ -645,7 +624,7 @@ footer { background: var(--navy); color: #CBD5E1; padding: 80px 0 32px; }
       ctx.lineTo(x2, y);
       ctx.stroke();
 
-      // Hydrogen bond dots
+      // Hydrogen bonds
       ctx.globalAlpha = rungAlpha * 0.5;
       ctx.fillStyle = '#94A3B8';
       ctx.beginPath();
@@ -655,78 +634,85 @@ footer { background: var(--navy); color: #CBD5E1; padding: 80px 0 32px; }
       ctx.arc((x1 + x2) * 0.5 + 1.5, y, 1 * zScale, 0, Math.PI * 2);
       ctx.fill();
 
-      // Nucleotide spheres
+      // Nucleotides
       for (var s = 0; s < 2; s++) {
         var sx = cx + Math.cos(angle + s * Math.PI) * rad;
         var sphereR = (2.5 + Math.abs(depth) * 2.5) * zScale;
-        drawSphere(sx, y, sphereR, strandColors[s], rungAlpha * 0.9);
+        var sc = s === 0 ? cols.s1 : cols.s2;
+        drawSphere(sx, y, sphereR, sc, rungAlpha * 0.9);
       }
     }
 
     // Backbone solid lines
     for (var s = 0; s < 2; s++) {
-      var col = backColors[s];
-      ctx.globalAlpha = 0.55;
+      var col = s === 0 ? cols.b1 : cols.b2;
+      ctx.globalAlpha = globalAlpha * 0.5;
       ctx.strokeStyle = col;
       ctx.lineWidth = 5;
       ctx.beginPath();
       for (var b = 0; b <= bps; b++) {
         var t = b / bps;
         var y = topY + t * h;
-        var angle = t * Math.PI * 2 * 4 + dna.rotation;
+        var angle = t * Math.PI * 2 * turns + rot;
         var x = cx + Math.cos(angle + s * Math.PI) * rad;
         if (b === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
       }
       ctx.stroke();
 
-      // Highlight on backbone
-      ctx.globalAlpha = 0.2;
+      // Highlight
+      ctx.globalAlpha = globalAlpha * 0.18;
       ctx.strokeStyle = '#FFFFFF';
-      ctx.lineWidth = 2;
+      ctx.lineWidth = 1.5;
       ctx.beginPath();
       for (var b = 0; b <= bps; b++) {
         var t = b / bps;
         var y = topY + t * h;
-        var angle = t * Math.PI * 2 * 4 + dna.rotation;
+        var angle = t * Math.PI * 2 * turns + rot;
         var x = cx + Math.cos(angle + s * Math.PI) * rad - 1.5;
         if (b === 0) ctx.moveTo(x, y - 2); else ctx.lineTo(x, y - 2);
       }
       ctx.stroke();
     }
     ctx.globalAlpha = 1;
+  }
 
-    // ── RNA Polymerase position ────────────────────────────────────
-    polymerase.t += polymerase.direction * polymerase.speed;
-    if (polymerase.t > 0.82) polymerase.direction = -1;
-    if (polymerase.t < 0.18) polymerase.direction = 1;
-    polymerase.rnaLength = Math.min(polymerase.maxRna, polymerase.rnaLength + 0.06);
+  // ─── Draw RNA Polymerase + RNA ───────────────────────────────────
+  function drawPolymerase(poly) {
+    var dna = dnaStrands[poly.dnaIdx];
+    if (!dna) return;
+    var topY = dna.cy - dna.h * 0.5;
+    var turns = 4;
+    poly.t += poly.dir * poly.speed;
+    if (poly.t > 0.82) poly.dir = -1;
+    if (poly.t < 0.18) poly.dir = 1;
+    poly.rnaLen = Math.min(poly.maxRna, poly.rnaLen + 0.05);
 
-    var pt = polymerase.t;
-    var py1 = topY + pt * h;
-    var pa = pt * Math.PI * 2 * 4 + dna.rotation;
+    var pt = poly.t;
+    var py = topY + pt * dna.h;
+    var pa = pt * Math.PI * 2 * turns + dna.rotation;
     var pDepth = Math.cos(pa);
     var pz = 0.5 + (pDepth + 1) * 0.25;
-    var px1 = cx + Math.cos(pa) * rad;
-    var px2 = cx + Math.cos(pa + Math.PI) * rad;
+    var px1 = dna.cx + Math.cos(pa) * dna.rad;
+    var px2 = dna.cx + Math.cos(pa + Math.PI) * dna.rad;
     var polyX = (px1 + px2) * 0.5;
-    var polyY = py1;
-    var polyR = 22 * pz;
+    var polyY = py;
+    var polyR = 20 * pz;
+    var alpha = 0.5 + Math.abs(pDepth) * 0.5;
 
-    // ── RNA Polymerase complex ─────────────────────────────────────
     // Outer halo
     var pg = ctx.createRadialGradient(polyX, polyY, 0, polyX, polyY, polyR * 3.5);
-    pg.addColorStop(0, 'rgba(124, 58, 237, 0.12)');
+    pg.addColorStop(0, 'rgba(124, 58, 237, ' + (0.12 * alpha) + ')');
     pg.addColorStop(1, 'transparent');
     ctx.fillStyle = pg;
     ctx.beginPath();
     ctx.arc(polyX, polyY, polyR * 3.5, 0, Math.PI * 2);
     ctx.fill();
 
-    // Clamp rings (multi-subunit architecture)
+    // 6 concentric clamp rings
     var ringColors = ['#7C3AED', '#8B5CF6', '#A78BFA', '#C4B5FD', '#7C3AED', '#6D28D9'];
     for (var ri = 0; ri < 6; ri++) {
       var rr = polyR * (0.95 - ri * 0.1);
-      ctx.globalAlpha = 0.7 - ri * 0.08;
+      ctx.globalAlpha = (0.7 - ri * 0.08) * alpha;
       ctx.strokeStyle = ringColors[ri];
       ctx.lineWidth = (3 - ri * 0.3) * pz;
       ctx.beginPath();
@@ -737,39 +723,38 @@ footer { background: var(--navy); color: #CBD5E1; padding: 80px 0 32px; }
     // Subunit blobs
     var subunitColors = ['#7C3AED', '#8B5CF6', '#A78BFA', '#6D28D9', '#C084FC', '#9B59B6'];
     for (var su = 0; su < 6; su++) {
-      var sa = su * Math.PI / 3 + dna.rotation * 0.4;
+      var sa = su * Math.PI / 3 + poly.phase + dna.rotation * 0.3;
       var sd = polyR * 0.78;
       var sux = polyX + Math.cos(sa) * sd;
       var suy = polyY + Math.sin(sa) * sd;
-      var sur = 5 * pz + Math.sin(sa + Date.now() * 0.002) * 1.2;
-      drawSphere(sux, suy, sur, subunitColors[su], 0.85);
+      var sur = (5 + Math.sin(sa + Date.now() * 0.002) * 1.2) * pz;
+      drawSphere(sux, suy, sur, subunitColors[su], 0.85 * alpha);
     }
 
-    // Active site cleft
-    ctx.globalAlpha = 0.35;
+    // Active site
+    ctx.globalAlpha = 0.35 * alpha;
     ctx.fillStyle = '#2DD4BF';
     ctx.beginPath();
     ctx.arc(polyX, polyY, polyR * 0.28, 0, Math.PI * 2);
     ctx.fill();
 
-    // ── RNA synthesis ──────────────────────────────────────────────
-    for (var ri = 0; ri < polymerase.rnaLength; ri++) {
-      var rt = ri / polymerase.rnaLength;
+    // RNA synthesis
+    for (var ri = 0; ri < poly.rnaLen; ri++) {
+      var rt = ri / poly.rnaLen;
       var bendAngle = pa + Math.PI * 0.25 + rt * 1.0 + Math.sin(rt * Math.PI * 0.5) * 0.3;
-      var rnaX = polyX + Math.cos(bendAngle) * (polyR * 1.3 + rt * 32);
-      var rnaY = polyY - rt * 14 - 3 * Math.sin(rt * Math.PI * 3 + Date.now() * 0.001);
-      var rnaR = 2.8 * pz * (1 - rt * 0.35);
-      var rnaAlpha = 1 - rt * 0.35;
+      var rnaX = polyX + Math.cos(bendAngle) * (polyR * 1.3 + rt * 28);
+      var rnaY = polyY - rt * 12 - 3 * Math.sin(rt * Math.PI * 3 + Date.now() * 0.001);
+      var rnaR = (2.8 * (1 - rt * 0.35)) * pz;
+      var rnaAlpha = (1 - rt * 0.35) * alpha;
 
-      var rnaColor = rnaNucleotideColors[Math.floor(ri * 3.7) % 4];
+      var rnaColor = rnaColors[Math.floor(ri * 3.7) % 4];
       drawSphere(rnaX, rnaY, rnaR, rnaColor, rnaAlpha * 0.8);
 
-      // RNA backbone
       if (ri > 0) {
-        var prevRt = (ri - 1) / polymerase.rnaLength;
+        var prevRt = (ri - 1) / poly.rnaLen;
         var prevAngle = pa + Math.PI * 0.25 + prevRt * 1.0 + Math.sin(prevRt * Math.PI * 0.5) * 0.3;
-        var prevX = polyX + Math.cos(prevAngle) * (polyR * 1.3 + prevRt * 32);
-        var prevY = polyY - prevRt * 14 - 3 * Math.sin(prevRt * Math.PI * 3 + Date.now() * 0.001);
+        var prevX = polyX + Math.cos(prevAngle) * (polyR * 1.3 + prevRt * 28);
+        var prevY = polyY - prevRt * 12 - 3 * Math.sin(prevRt * Math.PI * 3 + Date.now() * 0.001);
         ctx.globalAlpha = rnaAlpha * 0.35;
         ctx.strokeStyle = '#E84393';
         ctx.lineWidth = 2 * pz;
@@ -780,45 +765,201 @@ footer { background: var(--navy); color: #CBD5E1; padding: 80px 0 32px; }
       }
     }
     ctx.globalAlpha = 1;
+  }
 
-    // ── Floating proteins ──────────────────────────────────────────
+  // ─── Get a point on a DNA strand ─────────────────────────────────
+  function getDnaPoint(dna, t) {
+    var topY = dna.cy - dna.h * 0.5;
+    var y = topY + t * dna.h;
+    var angle = t * Math.PI * 2 * 4 + dna.rotation;
+    var x = dna.cx + Math.cos(angle) * dna.rad;
+    return { x: x, y: y };
+  }
+
+  // ─── Main loop ───────────────────────────────────────────────────
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(0, 0, W, H);
+
+    // Cellular background texture
+    var now = Date.now();
+    for (var ci = 0; ci < 8; ci++) {
+      var cx2 = Math.sin(ci * 1.7 + now * 0.00003) * 0.3 + 0.5;
+      var cy2 = Math.cos(ci * 2.3 + now * 0.00002) * 0.3 + 0.5;
+      var cg = ctx.createRadialGradient(cx2 * W, cy2 * H, 0, cx2 * W, cy2 * H, Math.min(W, H) * 0.2);
+      cg.addColorStop(0, 'rgba(37, 99, 235, 0.025)');
+      cg.addColorStop(1, 'transparent');
+      ctx.fillStyle = cg;
+      ctx.beginPath();
+      ctx.arc(cx2 * W, cy2 * H, Math.min(W, H) * 0.2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // ── Ambient molecular network ──────────────────────────────────
+    var pts = [];
+    for (var i = 0; i < 80; i++) {
+      var seed = i * 73.3;
+      var px = (Math.sin(seed + now * 0.00012) * 0.5 + 0.5) * W;
+      var py = (Math.cos(seed * 1.7 + now * 0.00008) * 0.5 + 0.5) * H;
+      pts.push({ x: px, y: py });
+      var br = 0.06 + Math.sin(seed + now * 0.0004) * 0.05;
+      ctx.globalAlpha = br;
+      ctx.fillStyle = '#1E293B';
+      ctx.beginPath();
+      ctx.arc(px, py, 0.5 + Math.sin(seed + now * 0.0003) * 0.3, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    // Connections
+    for (var i = 0; i < pts.length; i++) {
+      for (var j = i + 1; j < pts.length; j++) {
+        var dx = pts[i].x - pts[j].x;
+        var dy = pts[i].y - pts[j].y;
+        var dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 35) {
+          ctx.globalAlpha = (1 - dist / 35) * 0.035;
+          ctx.strokeStyle = '#2563EB';
+          ctx.lineWidth = 0.5;
+          ctx.beginPath();
+          ctx.moveTo(pts[i].x, pts[i].y);
+          ctx.lineTo(pts[j].x, pts[j].y);
+          ctx.stroke();
+        }
+      }
+    }
+    ctx.globalAlpha = 1;
+
+    // ── Update DNA rotations ───────────────────────────────────────
+    for (var d = 0; d < dnaStrands.length; d++) {
+      dnaStrands[d].rotation += dnaStrands[d].speed;
+    }
+
+    // ── Draw DNA strands (back to front) ───────────────────────────
+    // Draw 3rd DNA first (background, low alpha)
+    drawDNA(dnaStrands[2], dnaStrands[2].alpha);
+
+    // ── Update protein binding state machine ───────────────────────
     for (var p = 0; p < proteins.length; p++) {
       var prot = proteins[p];
+      if (!prot.isBinder) continue;
+
+      if (prot.bindState === 'free') {
+        prot.bindCooldown--;
+        if (prot.bindCooldown <= 0) {
+          // Pick a random DNA and position to target
+          var targetDna = dnaStrands[Math.floor(Math.random() * 2)]; // only first 2 DNAs
+          var targetT = 0.1 + Math.random() * 0.8;
+          var point = getDnaPoint(targetDna, targetT);
+          prot.bindTarget = { x: point.x, y: point.y };
+          prot.bindDnaIdx = dnaStrands.indexOf(targetDna);
+          prot.bindT = targetT;
+          prot.bindState = 'approach';
+          prot.bindTimer = 0;
+        }
+      } else if (prot.bindState === 'approach') {
+        prot.bindTimer++;
+        var targetDna = dnaStrands[prot.bindDnaIdx];
+        // Recalculate target since DNA moves
+        var point = getDnaPoint(targetDna, prot.bindT);
+        prot.bindTarget = { x: point.x, y: point.y };
+
+        // Move toward target
+        var dx = prot.bindTarget.x - prot.x;
+        var dy = prot.bindTarget.y - prot.y;
+        var dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist > 5) {
+          prot.vx += (dx / dist) * 0.06;
+          prot.vy += (dy / dist) * 0.06;
+          prot.vx *= 0.92;
+          prot.vy *= 0.92;
+        } else {
+          prot.bindState = 'bound';
+          prot.bindTimer = 0;
+        }
+        // Clamp velocity
+        var spd = Math.sqrt(prot.vx * prot.vx + prot.vy * prot.vy);
+        if (spd > 1.2) { prot.vx = (prot.vx / spd) * 1.2; prot.vy = (prot.vy / spd) * 1.2; }
+      } else if (prot.bindState === 'bound') {
+        prot.bindTimer++;
+        // Stay attached to moving DNA
+        var targetDna = dnaStrands[prot.bindDnaIdx];
+        var point = getDnaPoint(targetDna, prot.bindT);
+        prot.bindTarget = { x: point.x, y: point.y };
+        prot.x += (prot.bindTarget.x - prot.x) * 0.1;
+        prot.y += (prot.bindTarget.y - prot.y) * 0.1;
+        prot.vx *= 0.9;
+        prot.vy *= 0.9;
+
+        if (prot.bindTimer > 180) { // bound for ~3 seconds
+          prot.bindState = 'release';
+          prot.bindTimer = 0;
+        }
+      } else if (prot.bindState === 'release') {
+        prot.bindTimer++;
+        prot.vx += (Math.random() - 0.5) * 0.2;
+        prot.vy += (Math.random() - 0.5) * 0.2;
+        if (prot.bindTimer > 30) {
+          prot.bindState = 'free';
+          prot.bindCooldown = 150 + Math.floor(Math.random() * 200);
+          prot.bindTarget = null;
+        }
+      }
+    }
+
+    // ── Update protein Brownian motion ─────────────────────────────
+    for (var p = 0; p < proteins.length; p++) {
+      var prot = proteins[p];
+      if (prot.isBinder && prot.bindState !== 'free') continue; // bind logic handles these
 
       prot.driftTimer++;
-      if (prot.driftTimer > 40 + Math.floor(Math.random() * 20)) {
+      if (prot.driftTimer > 35 + Math.floor(Math.random() * 20)) {
         prot.driftTimer = 0;
-        prot.vx += (Math.random() - 0.5) * 0.3;
-        prot.vy += (Math.random() - 0.5) * 0.3;
+        prot.vx += (Math.random() - 0.5) * 0.25;
+        prot.vy += (Math.random() - 0.5) * 0.25;
         prot.vx *= 0.82;
         prot.vy *= 0.82;
         var spd = Math.sqrt(prot.vx * prot.vx + prot.vy * prot.vy);
-        if (spd > 0.6) { prot.vx = (prot.vx / spd) * 0.6; prot.vy = (prot.vy / spd) * 0.6; }
+        if (spd > 0.5) { prot.vx = (prot.vx / spd) * 0.5; prot.vy = (prot.vy / spd) * 0.5; }
       }
       prot.x += prot.vx;
       prot.y += prot.vy;
       prot.rotation += prot.rotSpeed;
 
-      var margin = 40;
+      var margin = 35;
       if (prot.x < margin) prot.vx += 0.04;
       if (prot.x > W - margin) prot.vx -= 0.04;
       if (prot.y < margin) prot.vy += 0.04;
       if (prot.y > H - margin) prot.vy -= 0.04;
-      prot.x = Math.max(25, Math.min(W - 25, prot.x));
-      prot.y = Math.max(25, Math.min(H - 25, prot.y));
+      prot.x = Math.max(20, Math.min(W - 20, prot.x));
+      prot.y = Math.max(20, Math.min(H - 20, prot.y));
+    }
 
-      // Soft aura
-      var auraR = 40 * prot.scale;
-      var ag = ctx.createRadialGradient(prot.x, prot.y, 0, prot.x, prot.y, auraR * 1.8);
-      ag.addColorStop(0, prot.residues[0].color + '18');
+    // ── Draw DNA 1 and 2 ───────────────────────────────────────────
+    drawDNA(dnaStrands[0]);
+    drawDNA(dnaStrands[1]);
+
+    // ── Draw polymerases ───────────────────────────────────────────
+    ctx.globalAlpha = 1;
+    for (var m = 0; m < polymerases.length; m++) {
+      drawPolymerase(polymerases[m]);
+    }
+
+    // ── Draw all proteins ──────────────────────────────────────────
+    for (var p = 0; p < proteins.length; p++) {
+      var prot = proteins[p];
+
+      var auraR = 35 * prot.scale;
+      var auraCol = prot.residues[0].color + '15';
+      var ag = ctx.createRadialGradient(prot.x, prot.y, 0, prot.x, prot.y, auraR * 2);
+      ag.addColorStop(0, auraCol);
       ag.addColorStop(1, 'transparent');
       ctx.fillStyle = ag;
       ctx.beginPath();
-      ctx.arc(prot.x, prot.y, auraR * 1.8, 0, Math.PI * 2);
+      ctx.arc(prot.x, prot.y, auraR * 2, 0, Math.PI * 2);
       ctx.fill();
 
-      // Secondary structure connections
-      ctx.globalAlpha = 0.12;
+      // Secondary structure lines
+      ctx.globalAlpha = 0.1;
       for (var r1 = 0; r1 < prot.residues.length; r1++) {
         for (var r2 = r1 + 2; r2 < Math.min(r1 + 4, prot.residues.length); r2++) {
           var aa1 = prot.residues[r1], aa2 = prot.residues[r2];
@@ -837,7 +978,7 @@ footer { background: var(--navy); color: #CBD5E1; padding: 80px 0 32px; }
       }
       ctx.globalAlpha = 1;
 
-      // Amino acid residues
+      // Residues
       for (var r = 0; r < prot.residues.length; r++) {
         var aa = prot.residues[r];
         var cosR = Math.cos(prot.rotation), sinR = Math.sin(prot.rotation);
@@ -847,6 +988,20 @@ footer { background: var(--navy); color: #CBD5E1; padding: 80px 0 32px; }
         var ay = prot.y + ry * prot.scale;
         var ar = aa.r * prot.scale;
         drawSphere(ax, ay, ar, aa.color, 0.9);
+      }
+
+      // Binding indicator (glow when approaching/bound)
+      if (prot.isBinder && (prot.bindState === 'approach' || prot.bindState === 'bound')) {
+        var pulse = 0.3 + Math.sin(now * 0.005 + p) * 0.2;
+        ctx.globalAlpha = pulse * 0.3;
+        var bg = ctx.createRadialGradient(prot.x, prot.y, 0, prot.x, prot.y, 20);
+        bg.addColorStop(0, '#7C3AED');
+        bg.addColorStop(1, 'transparent');
+        ctx.fillStyle = bg;
+        ctx.beginPath();
+        ctx.arc(prot.x, prot.y, 20, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1;
       }
     }
 
