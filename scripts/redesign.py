@@ -167,18 +167,70 @@ def fix_root_css(content):
     
     def replace_root(match):
         block = match.group(0)
-        # Check if it uses the old DM Sans variables
-        if '--font-s' in block or '--bg:' in block or '--surface:' in block:
+        # Check if it uses the old DM Sans variables or old color vars
+        if '--font-s' in block or '--bg:' in block or '--surface:' in block or '--font-stack:' in block:
             return ':root ' + NEW_ROOT_CSS
         return block
     
     return re.sub(root_pattern, replace_root, content, count=1)
 
 
-def fix_nav_css(content):
-    """Add/modify nav CSS for new dark navy theme"""
-    # This is handled by replacing the :root block and font links
-    # and the nav HTML directly
+def fix_css_block(content):
+    """Fix old CSS block (no :root, direct selectors with DM Sans)"""
+    # 1. Inject :root vars after opening <style>
+    if ':root' not in content and '<style>' in content:
+        content = content.replace('<style>', f'<style>\n{NEW_ROOT_CSS}\n', 1)
+    
+    # 2. Fix body font-family
+    content = re.sub(
+        r"font-family:\s*'DM Sans',\s*-apple-system,\s*BlinkMacSystemFont,\s*sans-serif",
+        "font-family: var(--font-b), -apple-system, BlinkMacSystemFont, sans-serif",
+        content
+    )
+    content = re.sub(
+        r"font-family:\s*'DM Sans',\s*-apple-system,\s*sans-serif",
+        "font-family: var(--font-b), -apple-system, sans-serif",
+        content
+    )
+    
+    # 3. Fix body background and color
+    content = content.replace(
+        "background:#0b0e14;color:#e8ecf4",
+        "background:var(--white);color:var(--text)"
+    )
+    content = content.replace(
+        "background: #0b0e14; color: #e8ecf4",
+        "background: var(--white); color: var(--text)"
+    )
+    
+    # 4. Remove old nav CSS rules (replaced by inline nav)
+    old_nav_css = r'''\s*nav\s*\{[^}]*background:\s*#131820[^}]*\}'''
+    content = re.sub(old_nav_css, '', content)
+    old_nav_css2 = r'''\s*nav\s*\{[^}]*background:\s*#[0-9a-fA-F]{3,6};[^}]*\}'''
+    content = re.sub(old_nav_css2, '', content)
+    
+    # 5. Remove old footer CSS rules (replaced by inline footer)
+    old_footer_css = r'''\s*footer\s*\{[^}]*\}'''
+    content = re.sub(old_footer_css, '', content)
+    
+    # 6. Fix any remaining DM Sans references in CSS
+    content = re.sub(r"'DM Sans'(,\s*)sans-serif", r"Inter\1sans-serif", content)
+    content = content.replace("DM Sans, sans-serif", "Inter, sans-serif")
+    content = content.replace("DM Sans,sans-serif", "Inter,sans-serif")
+    content = content.replace("'DM Sans'", "Inter")
+    content = content.replace("--font-stack:", "--font-stack_old:")
+    
+    # 7. Fix other old color references (hardcoded dark theme colors)
+    # Replace .brand color
+    content = content.replace(
+        "nav .brand{font-weight:600;color:#e8ecf4;font-size:1.1rem}",
+        ""
+    )
+    content = content.replace(
+        'nav .brand { font-weight: 600; color: #e8ecf4; font-size: 1.1rem; }',
+        ''
+    )
+    
     return content
 
 
@@ -225,20 +277,19 @@ def process_group_c(filepath):
     original = content
     
     # 1. Fix font link
-    # These pages might not have a font link - add one if missing
     if 'fonts.googleapis.com' not in content:
-        # Add font link before </head>
         content = content.replace('</head>', f'  {NEW_FONT_LINK}\n</head>')
     else:
         content = fix_font_link(content)
     
-    # 2. Replace nav
+    # 2. Replace nav/footer (already inline navy style in most cases)
     if OLD_NAV_HUB in content:
         content = content.replace(OLD_NAV_HUB, NEW_NAV_HUB)
-    
-    # 3. Replace footer
     if OLD_FOOTER_HUB in content:
         content = content.replace(OLD_FOOTER_HUB, NEW_FOOTER_HUB)
+    
+    # 3. Fix CSS block (inject :root, update DM Sans, fix colors)
+    content = fix_css_block(content)
     
     # 4. Fix font-family in CSS
     content = fix_font_family(content)
@@ -266,25 +317,32 @@ def process_glossary(filepath):
     # 2. Fix font-family in CSS
     content = fix_font_family(content)
     
-    # 3. Replace nav (glossary-specific)
-    old_nav_pattern = r'<nav class="nav"[\s\S]*?</nav>'
+    # 3. Fix CSS block (inject :root, update DM Sans, fix colors)
+    content = fix_css_block(content)
+    
+    # 4. Replace old glossary nav: <nav><span class="brand">VigyanLLM</span><div>...
+    old_nav_pattern = r'<nav><span class="brand">VigyanLLM</span>[\s\S]*?</nav>'
     new_nav = '''  <nav style="background:#0F172A;padding:0.75rem 1.5rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;border-bottom:1px solid rgba(255,255,255,0.08)">
-    <a href="../index.html" style="color:#fff;font-family:\\'Plus Jakarta Sans\\',sans-serif;font-size:1.1rem;font-weight:700;text-decoration:none">VigyanLLM</a>
+    <a href="../index.html" style="color:#fff;font-family:'Plus Jakarta Sans',sans-serif;font-size:1.1rem;font-weight:700;text-decoration:none">VigyanLLM</a>
     <ul style="display:flex;gap:1.25rem;align-items:center;list-style:none;margin:0">
       <li><a href="../glossary-index.html" style="color:#CBD5E1;font-family:Inter,sans-serif;font-size:0.875rem;text-decoration:none">Glossary</a></li>
       <li><a href="../index.html" style="color:#22D3EE;font-family:Inter,sans-serif;font-size:0.875rem;text-decoration:none">Back to VigyanLLM \u2192</a></li>
     </ul>
   </nav>'''
+    # Also try the class="nav" pattern for already-processed files
+    old_nav_pattern2 = r'<nav class="nav"[\s\S]*?</nav>'
     content = re.sub(old_nav_pattern, new_nav, content, count=1)
+    content = re.sub(old_nav_pattern2, new_nav, content, count=1)
     
-    # 4. Replace footer
-    old_footer_pattern = r'<footer>[\s\S]*?</footer>'
-    new_footer = '''  <footer style="background:#0F172A;color:#CBD5E1;padding:32px 24px;text-align:center;margin-top:3rem">
+    # 5. Replace footer if still has old plain <footer> tag
+    if '<footer>' in content and '</footer>' in content and 'background:#0F172A' not in content:
+        old_footer_pattern = r'<footer>[\s\S]*?</footer>'
+        new_footer = '''  <footer style="background:#0F172A;color:#CBD5E1;padding:32px 24px;text-align:center;margin-top:3rem">
     <p style="font-family:Inter,sans-serif;font-size:0.85rem;color:#64748B">&copy; 2026 VigyanLLM &mdash; Biomedical AI Platform. <a href="../index.html" style="color:#22D3EE">vigyanllm.in</a></p>
   </footer>'''
-    content = re.sub(old_footer_pattern, new_footer, content, count=1)
+        content = re.sub(old_footer_pattern, new_footer, content, count=1)
     
-    # 5. Replace :root CSS block
+    # 6. Replace :root CSS block if present (for partially processed files)
     content = fix_root_css(content)
     
     if content != original:
