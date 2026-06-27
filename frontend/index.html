@@ -481,36 +481,51 @@ footer { background: var(--navy); color: #CBD5E1; padding: 80px 0 32px; }
     // ── DNA strands at different positions ─────────────────────────
     dnaStrands = [
       {
-        cx: W * 0.32, cy: H * 0.5,
-        rad: minDim * 0.11, h: minDim * 0.52,
-        rotation: 0, speed: 0.0018, bps: 36,
+        cx: W * 0.22, cy: H * 0.5,
+        rad: minDim * 0.10, h: minDim * 0.65,
+        rotation: 0, speed: 0.0016, bps: 42,
         colors: { s1: '#1D4ED8', s2: '#0E7490', b1: '#2563EB', b2: '#14B8A6' }
       },
       {
-        cx: W * 0.62, cy: H * 0.48,
-        rad: minDim * 0.09, h: minDim * 0.42,
-        rotation: 0.8, speed: -0.0014, bps: 28,
+        cx: W * 0.44, cy: H * 0.48,
+        rad: minDim * 0.09, h: minDim * 0.55,
+        rotation: 0.6, speed: -0.0014, bps: 36,
         colors: { s1: '#0369A1', s2: '#0F766E', b1: '#0284C7', b2: '#0D9488' }
       },
       {
-        cx: W * 0.78, cy: H * 0.55,
-        rad: minDim * 0.06, h: minDim * 0.3,
-        rotation: 1.5, speed: 0.0012, bps: 20,
-        alpha: 0.35,
+        cx: W * 0.64, cy: H * 0.52,
+        rad: minDim * 0.08, h: minDim * 0.45,
+        rotation: 1.2, speed: 0.0013, bps: 30,
+        colors: { s1: '#6D28D9', s2: '#0E7490', b1: '#7C3AED', b2: '#14B8A6' }
+      },
+      {
+        cx: W * 0.80, cy: H * 0.47,
+        rad: minDim * 0.06, h: minDim * 0.35,
+        rotation: 1.8, speed: -0.0012, bps: 24,
+        alpha: 0.45,
         colors: { s1: '#1D4ED8', s2: '#0E7490', b1: '#2563EB', b2: '#14B8A6' }
+      },
+      {
+        cx: W * 0.92, cy: H * 0.53,
+        rad: minDim * 0.045, h: minDim * 0.25,
+        rotation: 2.4, speed: 0.0010, bps: 18,
+        alpha: 0.3,
+        colors: { s1: '#0369A1', s2: '#0F766E', b1: '#0284C7', b2: '#0D9488' }
       }
     ];
 
     // ── Polymerases binding to different DNA sites ────────────────
     polymerases = [
-      { dnaIdx: 0, t: 0.25, dir: 1, speed: 0.0005, rnaLen: 0, maxRna: 40, phase: 0 },
-      { dnaIdx: 0, t: 0.65, dir: -1, speed: 0.0004, rnaLen: 0, maxRna: 30, phase: 2.1 },
-      { dnaIdx: 1, t: 0.35, dir: 1, speed: 0.0006, rnaLen: 0, maxRna: 25, phase: 4.3 }
+      { dnaIdx: 0, t: 0.2, dir: 1, speed: 0.0005, rnaLen: 0, maxRna: 45, phase: 0 },
+      { dnaIdx: 0, t: 0.6, dir: -1, speed: 0.0004, rnaLen: 0, maxRna: 35, phase: 2.1 },
+      { dnaIdx: 1, t: 0.3, dir: 1, speed: 0.0006, rnaLen: 0, maxRna: 30, phase: 4.3 },
+      { dnaIdx: 1, t: 0.7, dir: -1, speed: 0.00045, rnaLen: 0, maxRna: 28, phase: 1.7 },
+      { dnaIdx: 2, t: 0.4, dir: 1, speed: 0.0005, rnaLen: 0, maxRna: 25, phase: 3.2 }
     ];
 
-    // ── 24 proteins, some with DNA-binding behaviour ──────────────
+    // ── 30 proteins, some with DNA-binding behaviour ──────────────
     proteins = [];
-    for (var p = 0; p < 24; p++) {
+    for (var p = 0; p < 30; p++) {
       var pal = proteinPalettes[p % proteinPalettes.length];
       var isBinder = p < 8; // first 8 proteins can bind to DNA
       proteins.push({
@@ -835,8 +850,9 @@ footer { background: var(--navy); color: #CBD5E1; padding: 80px 0 32px; }
     }
 
     // ── Draw DNA strands (back to front) ───────────────────────────
-    // Draw 3rd DNA first (background, low alpha)
-    drawDNA(dnaStrands[2], dnaStrands[2].alpha);
+    // Background DNAs first (low alpha)
+    drawDNA(dnaStrands[4], dnaStrands[4].alpha);
+    drawDNA(dnaStrands[3], dnaStrands[3].alpha);
 
     // ── Update protein binding state machine ───────────────────────
     for (var p = 0; p < proteins.length; p++) {
@@ -847,7 +863,7 @@ footer { background: var(--navy); color: #CBD5E1; padding: 80px 0 32px; }
         prot.bindCooldown--;
         if (prot.bindCooldown <= 0) {
           // Pick a random DNA and position to target
-          var targetDna = dnaStrands[Math.floor(Math.random() * 2)]; // only first 2 DNAs
+          var targetDna = dnaStrands[Math.floor(Math.random() * 4)]; // first 4 DNAs
           var targetT = 0.1 + Math.random() * 0.8;
           var point = getDnaPoint(targetDna, targetT);
           prot.bindTarget = { x: point.x, y: point.y };
@@ -934,9 +950,10 @@ footer { background: var(--navy); color: #CBD5E1; padding: 80px 0 32px; }
       prot.y = Math.max(20, Math.min(H - 20, prot.y));
     }
 
-    // ── Draw DNA 1 and 2 ───────────────────────────────────────────
+    // ── Draw main DNA strands (front layer) ────────────────────────
     drawDNA(dnaStrands[0]);
     drawDNA(dnaStrands[1]);
+    drawDNA(dnaStrands[2]);
 
     // ── Draw polymerases ───────────────────────────────────────────
     ctx.globalAlpha = 1;
