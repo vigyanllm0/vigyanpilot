@@ -1,4 +1,4 @@
-const CACHE = 'vigyanllm-v5';
+const CACHE = 'vigyanllm-v6';
 const OFFLINE_URL = '/index.html';
 
 const PRECACHE_ASSETS = [
@@ -14,6 +14,7 @@ const PRECACHE_ASSETS = [
   '/security.html',
   '/logo.svg',
   '/manifest.json',
+  '/ai-widget.js',
 ];
 
 self.addEventListener('install', e => {
@@ -42,14 +43,31 @@ self.addEventListener('fetch', e => {
   if (url.pathname.startsWith('/api/')) return;
   // Never cache external CDN resources
   if (url.hostname !== self.location.hostname) return;
+  // Always fetch fresh widget JS
+  if (url.pathname === '/ai-widget.js') return;
 
-  // Navigation requests: network-first with offline fallback
+  // Navigation requests: network-first with offline fallback + widget injection
   if (e.request.mode === 'navigate') {
     e.respondWith(
       fetch(e.request)
-        .then(res => {
+        .then(async res => {
           const clone = res.clone();
           caches.open(CACHE).then(c => c.put(e.request, clone));
+
+          // Inject the AI widget script into HTML pages
+          const contentType = res.headers.get('content-type') || '';
+          if (contentType.includes('text/html')) {
+            const text = await res.text();
+            const injected = text.replace(
+              '</body>',
+              '<script src="/ai-widget.js"></script></body>'
+            );
+            return new Response(injected, {
+              status: res.status,
+              statusText: res.statusText,
+              headers: res.headers,
+            });
+          }
           return res;
         })
         .catch(() => caches.match(e.request).then(cached => cached || caches.match(OFFLINE_URL)))
