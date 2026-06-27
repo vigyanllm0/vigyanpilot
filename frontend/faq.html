@@ -25,164 +25,65 @@
   <!-- hreflang -->
   <link rel="alternate" hreflang="en-IN" href="https://vigyanllm.in/faq">
   <link rel="alternate" hreflang="en" href="https://vigyanllm.in/faq">
-  
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
   <style>
-    :root {
-      --navy: #0D2B55;
-      --blue: #1A56A3;
-      --accent: #2E75B6;
-      --gold: #C8A951;
-      --red: #C0392B;
-      --green: #1E7D45;
-      --light-blue: #D6E9F8;
-      --light-gold: #FFF8E6;
-      --light-gray: #F4F5F6;
-      --mid-gray: #CCCCCC;
-      --dark-gray: #444444;
-      --white: #FFFFFF;
-      --black: #111111;
-    }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-      background: linear-gradient(180deg, #0a1628 0%, #0D2B55 100%);
-      color: #e0e8f0;
-      line-height: 1.7;
-      min-height: 100vh;
-    }
-    .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
-    
-    /* Header */
-    .top-nav {
-      background: rgba(13,43,85,0.95);
-      backdrop-filter: blur(10px);
-      border-bottom: 1px solid rgba(200,169,81,0.3);
-      padding: 16px 0;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-    }
-    .top-nav .container { display: flex; justify-content: space-between; align-items: center; }
-    .logo { font-size: 22px; font-weight: 700; color: var(--white); text-decoration: none; }
-    .logo span { color: var(--gold); }
-    .nav-links { display: flex; gap: 28px; list-style: none; }
-    .nav-links a { color: #b0c4de; text-decoration: none; font-size: 14px; font-weight: 500; transition: color 0.2s; }
-    .nav-links a:hover { color: var(--gold); }
-    
-    /* Hero */
-    .hero {
-      padding: 60px 0 40px;
-      text-align: center;
-      border-bottom: 1px solid rgba(200,169,81,0.2);
-    }
-    .hero h1 { font-size: 38px; font-weight: 700; color: var(--white); margin-bottom: 12px; }
-    .hero h1 span { color: var(--gold); }
-    .hero p { font-size: 17px; color: #8ba3c7; max-width: 700px; margin: 0 auto 24px; }
-    .badge { display: inline-block; background: rgba(30,125,69,0.2); color: #4ade80; padding: 6px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; border: 1px solid rgba(74,222,128,0.3); }
-    
-    /* Search */
+    :root { --bg: #ffffff; --surface: #f8f9fb; --border: #e4e7ec; --primary: #1a56ff; --bio: #059669; --amber: #d97706; --text: #0d1117; --text2: #4b5563; --muted: #9ca3af; --font-s: 'DM Sans', sans-serif; --max-w: 1100px; --sec-p: 100px; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--text); font-family: var(--font-s); line-height: 1.6; -webkit-font-smoothing: antialiased; }
+    a { text-decoration: none; color: inherit; transition: color 0.15s ease; }
+    .container { max-width: var(--max-w); margin: 0 auto; padding: 0 24px; }
+    section { padding: var(--sec-p) 0; }
+    .section-tag { font-family: var(--font-s); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--primary); margin-bottom: 20px; display: block; }
+    .section-h2 { font-family: var(--font-s); font-size: clamp(2rem, 4vw, 2.8rem); line-height: 1.1; font-weight: 400; margin-bottom: 24px; }
+    .section-desc { font-size: 15px; color: var(--text2); line-height: 1.8; max-width: 540px; }
+    nav { position: sticky; top: 0; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(8px); border-bottom: 1px solid var(--border); z-index: 1000; height: 72px; }
+    @media (max-width: 768px) { .nav-links { display: none; } }
+    .hero { padding: 80px 0 60px; text-align: center; }
+    .hero h1 { font-family: var(--font-s); font-size: clamp(2.4rem, 5vw, 3.2rem); line-height: 1.1; font-weight: 400; margin-bottom: 16px; }
+    .hero p { font-size: 16px; color: var(--text2); max-width: 700px; margin: 0 auto; line-height: 1.8; }
+    .badge { display: inline-block; background: var(--surface); color: var(--primary); padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: 500; border: 1px solid var(--border); margin-bottom: 24px; }
     .search-box { max-width: 600px; margin: 30px auto; position: relative; }
-    .search-box input { width: 100%; padding: 14px 24px 14px 48px; border-radius: 30px; border: 1px solid rgba(200,169,81,0.3); background: rgba(255,255,255,0.05); color: var(--white); font-size: 15px; outline: none; }
-    .search-box input::placeholder { color: #6b7f9e; }
-    
-    /* Cluster Navigation */
-    .cluster-nav {
-      display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;
-      padding: 24px 0; border-bottom: 1px solid rgba(255,255,255,0.08);
-    }
-    .cluster-nav a {
-      padding: 8px 18px; border-radius: 20px; background: rgba(255,255,255,0.05);
-      color: #8ba3c7; text-decoration: none; font-size: 13px; font-weight: 500;
-      border: 1px solid rgba(255,255,255,0.08); transition: all 0.2s;
-    }
-    .cluster-nav a:hover, .cluster-nav a.active { background: rgba(200,169,81,0.15); color: var(--gold); border-color: rgba(200,169,81,0.3); }
-    
-    /* FAQ Sections */
-    .faq-section { padding: 40px 0; border-bottom: 1px solid rgba(255,255,255,0.06); }
-    .faq-section h2 { font-size: 24px; color: var(--gold); margin-bottom: 8px; }
-    .faq-section .section-desc { color: #7a8fab; font-size: 15px; margin-bottom: 28px; }
-    
-    /* FAQ Item */
-    .faq-item { 
-      background: rgba(255,255,255,0.03); 
-      border: 1px solid rgba(255,255,255,0.06); 
-      border-radius: 12px; 
-      margin-bottom: 14px; 
-      overflow: hidden;
-      transition: border-color 0.2s;
-    }
-    .faq-item:hover { border-color: rgba(200,169,81,0.2); }
-    .faq-question {
-      padding: 18px 24px;
-      cursor: pointer;
-      display: flex; justify-content: space-between; align-items: center;
-      font-weight: 600; font-size: 15px; color: #d0d8e8;
-    }
-    .faq-question:hover { color: var(--white); }
-    .faq-toggle { font-size: 20px; color: var(--gold); transition: transform 0.2s; }
+    .search-box input { width: 100%; padding: 14px 24px 14px 48px; border-radius: 30px; border: 1px solid var(--border); background: var(--surface); color: var(--text); font-size: 15px; outline: none; }
+    .search-box input::placeholder { color: var(--muted); }
+    .cluster-nav { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; padding: 24px 0; border-bottom: 1px solid var(--border); }
+    .cluster-nav a { padding: 8px 18px; border-radius: 20px; background: var(--surface); color: var(--text2); text-decoration: none; font-size: 13px; font-weight: 500; border: 1px solid var(--border); transition: all 0.2s; }
+    .cluster-nav a:hover, .cluster-nav a.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .faq-section { padding: 40px 0; border-bottom: 1px solid var(--border); }
+    .faq-section h2 { font-size: 24px; font-weight: 500; color: var(--text); margin-bottom: 8px; }
+    .faq-section .section-desc { color: var(--text2); font-size: 15px; margin-bottom: 28px; }
+    .faq-item { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 14px; overflow: hidden; transition: border-color 0.2s; }
+    .faq-item:hover { border-color: var(--primary); }
+    .faq-question { padding: 18px 24px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-weight: 500; font-size: 15px; color: var(--text); }
+    .faq-question:hover { color: var(--primary); }
+    .faq-toggle { font-size: 20px; color: var(--primary); transition: transform 0.2s; }
     .faq-item.open .faq-toggle { transform: rotate(45deg); }
-    .faq-answer {
-      padding: 0 24px 18px;
-      color: #9aacbf;
-      font-size: 14px;
-      line-height: 1.75;
-      display: none;
-    }
+    .faq-answer { padding: 0 24px 18px; color: var(--text2); font-size: 14px; line-height: 1.75; display: none; }
     .faq-item.open .faq-answer { display: block; }
     .faq-answer p { margin-bottom: 12px; }
     .faq-answer ul { margin-left: 20px; margin-bottom: 12px; }
+    .faq-answer ol { margin-left: 20px; margin-bottom: 12px; }
     .faq-answer li { margin-bottom: 6px; }
-    .faq-answer strong { color: #c8d4e3; }
-    .faq-answer a { color: var(--gold); text-decoration: none; }
+    .faq-answer strong { color: var(--text); }
+    .faq-answer a { color: var(--primary); }
     .faq-answer a:hover { text-decoration: underline; }
-    .faq-answer code { background: rgba(200,169,81,0.15); padding: 2px 6px; border-radius: 4px; font-size: 13px; }
-    
-    /* CTA Box */
-    .cta-box {
-      background: linear-gradient(135deg, rgba(26,86,163,0.3), rgba(13,43,85,0.5));
-      border: 1px solid rgba(200,169,81,0.3);
-      border-radius: 16px;
-      padding: 36px;
-      text-align: center;
-      margin: 40px 0;
-    }
-    .cta-box h3 { font-size: 22px; color: var(--white); margin-bottom: 10px; }
-    .cta-box p { color: #8ba3c7; margin-bottom: 20px; }
-    .cta-btn {
-      display: inline-block; padding: 14px 32px;
-      background: linear-gradient(135deg, var(--gold), #b8942a);
-      color: var(--navy); text-decoration: none;
-      border-radius: 8px; font-weight: 700; font-size: 15px;
-      transition: transform 0.2s, box-shadow 0.2s;
-    }
-    .cta-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(200,169,81,0.3); }
-    
-    /* References */
+    .faq-answer code { background: var(--surface); padding: 2px 6px; border-radius: 4px; font-size: 13px; }
+    .faq-answer table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 14px; }
+    .faq-answer th { background: var(--surface); color: var(--text); padding: 10px; border: 1px solid var(--border); text-align: left; font-weight: 500; }
+    .faq-answer td { padding: 10px; border: 1px solid var(--border); color: var(--text2); }
+    .cta-box { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 48px; text-align: center; margin: 48px 0; }
+    .cta-box h3 { font-size: 22px; font-weight: 500; color: var(--text); margin-bottom: 12px; }
+    .cta-box p { color: var(--text2); margin-bottom: 24px; font-size: 15px; max-width: 480px; margin-left: auto; margin-right: auto; }
+    .cta-btn { display: inline-block; padding: 12px 28px; background: var(--primary); color: #fff; border-radius: 6px; font-weight: 500; font-size: 14px; }
+    .cta-btn:hover { opacity: 0.9; }
     .references { padding: 40px 0; }
-    .references h2 { font-size: 22px; color: var(--gold); margin-bottom: 20px; }
-    .references ol { margin-left: 24px; color: #8ba3c7; font-size: 14px; }
+    .references h2 { font-size: 22px; font-weight: 500; color: var(--text); margin-bottom: 20px; }
+    .references ol { margin-left: 24px; color: var(--text2); font-size: 14px; }
     .references li { margin-bottom: 10px; }
-    
-    /* Footer */
-    footer {
-      background: rgba(10,22,40,0.8);
-      border-top: 1px solid rgba(255,255,255,0.06);
-      padding: 40px 0 24px;
-      margin-top: 60px;
-    }
-    .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 40px; }
-    .footer-brand { color: #6b7f9e; font-size: 14px; }
-    .footer-brand .logo { margin-bottom: 12px; display: inline-block; }
-    .footer-col h4 { color: var(--white); font-size: 14px; margin-bottom: 14px; }
-    .footer-col a { display: block; color: #6b7f9e; text-decoration: none; font-size: 13px; margin-bottom: 8px; }
-    .footer-col a:hover { color: var(--gold); }
-    .footer-bottom { border-top: 1px solid rgba(255,255,255,0.06); margin-top: 30px; padding-top: 20px; text-align: center; color: #556677; font-size: 13px; }
-    
-    @media (max-width: 768px) {
-      .hero h1 { font-size: 26px; }
-      .nav-links { display: none; }
-      .footer-grid { grid-template-columns: 1fr 1fr; }
-    }
+    @media (max-width: 768px) { .hero h1 { font-size: 26px; } .nav-links { display: none; } }
   </style>
   
   <!-- FAQPage Schema -->
@@ -339,19 +240,22 @@
   </script>
 </head>
 <body>
-  <!-- Navigation -->
-  <nav class="top-nav">
-    <div class="container">
-      <a href="/" class="logo">Vigyan<span>LLM</span></a>
-      <ul class="nav-links">
-        <li><a href="/">Home</a></li>
-        <li><a href="/primer">Primer Tool</a></li>
-        <li><a href="/blog">Blog</a></li>
-        <li><a href="/faq" style="color: var(--gold);">FAQ</a></li>
-        <li><a href="/demo">Demos</a></li>
-        <li><a href="/about">About</a></li>
-        <li><a href="/contact">Contact</a></li>
-      </ul>
+  <nav>
+    <div class="nav-inner" style="display:flex;justify-content:space-between;align-items:center;height:100%;max-width:var(--max-w);margin:0 auto;padding:0 24px">
+      <a href="index.html" class="logo" style="display:inline-flex;align-items:center;gap:9px;text-decoration:none;color:inherit">
+        <img src="logo.svg" alt="VigyanLLM Logo" style="width:36px;height:36px;border-radius:6px;background:#0d1117;padding:3px;object-fit:contain;flex-shrink:0">
+        <span style="font-family:var(--font-s);font-size:20px;color:var(--text)">VigyanLLM</span>
+      </a>
+      <div class="nav-links" style="display:flex;gap:32px;align-items:center">
+        <a href="index.html" style="font-size:13px;color:var(--text2);font-weight:400">Home</a>
+        <a href="primer.html" style="font-size:13px;color:var(--primary);font-weight:500">VPrime 1.0 ↗</a>
+        <a href="blog/index.html" style="font-size:13px;color:var(--text2);font-weight:400">Blog</a>
+        <a href="faq.html" style="font-size:13px;color:var(--primary);font-weight:500">FAQ</a>
+        <a href="about.html" style="font-size:13px;color:var(--text2);font-weight:400">About</a>
+      </div>
+      <div class="nav-right" style="display:flex;align-items:center;gap:24px">
+        <button class="btn-nav" onclick="window.location.href='primer.html'" style="border:1.5px solid var(--text);border-radius:6px;padding:10px 24px;font-size:13px;font-weight:500;background:transparent;cursor:pointer">Design Primers</button>
+      </div>
     </div>
   </nav>
 
@@ -359,7 +263,7 @@
   <section class="hero">
     <div class="container">
       <div class="badge">50+ Expert Answers for Molecular Biology Researchers</div>
-      <h1>Primer Design <span>FAQ</span></h1>
+      <h1>Primer Design FAQ</h1>
       <p>Complete answers to the most common questions about PCR primer design, qPCR, TaqMan probes, multiplex PCR, thermodynamic validation, and using VigyanLLM Primer.</p>
     </div>
   </section>
@@ -593,36 +497,36 @@
           <span class="faq-toggle">+</span>
         </div>
         <div class="faq-answer">
-          <table style="width:100%;border-collapse:collapse;margin:12px 0;font-size:14px;">
-            <tr style="background:rgba(200,169,81,0.15);">
-              <th style="padding:10px;border:1px solid rgba(255,255,255,0.1);text-align:left;color:#d0d8e8;">Feature</th>
-              <th style="padding:10px;border:1px solid rgba(255,255,255,0.1);text-align:left;color:#d0d8e8;">SYBR Green</th>
-              <th style="padding:10px;border:1px solid rgba(255,255,255,0.1);text-align:left;color:#d0d8e8;">TaqMan</th>
+          <table>
+            <tr>
+              <th>Feature</th>
+              <th>SYBR Green</th>
+              <th>TaqMan</th>
             </tr>
             <tr>
-              <td style="padding:10px;border:1px solid rgba(255,255,255,0.06);">Detection method</td>
-              <td style="padding:10px;border:1px solid rgba(255,255,255,0.06);">DNA-binding dye</td>
-              <td style="padding:10px;border:1px solid rgba(255,255,255,0.06);">Sequence-specific probe</td>
-            </tr>
-            <tr style="background:rgba(255,255,255,0.02);">
-              <td style="padding:10px;border:1px solid rgba(255,255,255,0.06);">Specificity</td>
-              <td style="padding:10px;border:1px solid rgba(255,255,255,0.06);">Low (binds any dsDNA)</td>
-              <td style="padding:10px;border:1px solid rgba(255,255,255,0.06);">High (probe sequence)</td>
+              <td>Detection method</td>
+              <td>DNA-binding dye</td>
+              <td>Sequence-specific probe</td>
             </tr>
             <tr>
-              <td style="padding:10px;border:1px solid rgba(255,255,255,0.06);">Multiplex capability</td>
-              <td style="padding:10px;border:1px solid rgba(255,255,255,0.06);">No</td>
-              <td style="padding:10px;border:1px solid rgba(255,255,255,0.06);">Yes (different fluorophores)</td>
-            </tr>
-            <tr style="background:rgba(255,255,255,0.02);">
-              <td style="padding:10px;border:1px solid rgba(255,255,255,0.06);">Cost</td>
-              <td style="padding:10px;border:1px solid rgba(255,255,255,0.06);">Lower</td>
-              <td style="padding:10px;border:1px solid rgba(255,255,255,0.06);">Higher (probe synthesis)</td>
+              <td>Specificity</td>
+              <td>Low (binds any dsDNA)</td>
+              <td>High (probe sequence)</td>
             </tr>
             <tr>
-              <td style="padding:10px;border:1px solid rgba(255,255,255,0.06);">Melt curve analysis</td>
-              <td style="padding:10px;border:1px solid rgba(255,255,255,0.06);">Required for specificity</td>
-              <td style="padding:10px;border:1px solid rgba(255,255,255,0.06);">Not required</td>
+              <td>Multiplex capability</td>
+              <td>No</td>
+              <td>Yes (different fluorophores)</td>
+            </tr>
+            <tr>
+              <td>Cost</td>
+              <td>Lower</td>
+              <td>Higher (probe synthesis)</td>
+            </tr>
+            <tr>
+              <td>Melt curve analysis</td>
+              <td>Required for specificity</td>
+              <td>Not required</td>
             </tr>
           </table>
           <p><strong>Recommendation:</strong> Use SYBR Green for research screening and method development. Use TaqMan for diagnostic applications, multiplex assays, and when absolute specificity is required.</p>
@@ -728,7 +632,7 @@
           <span class="faq-toggle">+</span>
         </div>
         <div class="faq-answer">
-          <p><strong style="color: var(--red);">No.</strong> VigyanLLM outputs are explicitly <strong>research-use-only (RUO)</strong> in silico recommendations. All primer and probe designs require independent experimental validation before any laboratory application. VigyanLLM is not validated for clinical diagnostic use, therapeutic decision-making, or regulatory submission. Users must independently verify all recommendations through appropriate wet-lab validation.</p>
+          <p><strong style="color: var(--amber);">No.</strong> VigyanLLM outputs are explicitly <strong>research-use-only (RUO)</strong> in silico recommendations. All primer and probe designs require independent experimental validation before any laboratory application. VigyanLLM is not validated for clinical diagnostic use, therapeutic decision-making, or regulatory submission. Users must independently verify all recommendations through appropriate wet-lab validation.</p>
         </div>
       </div>
 
@@ -849,36 +753,32 @@
     </section>
   </div>
 
-  <!-- Footer -->
-  <footer>
+  <footer style="padding:80px 0 40px;border-top:1px solid var(--border)">
     <div class="container">
-      <div class="footer-grid">
-        <div class="footer-col">
-          <a href="/" class="logo">Vigyan<span>LLM</span></a>
-          <p class="footer-brand">Sovereign biomedical AI for research labs. On-premise, no external API. DPIIT Startup India recognised.</p>
+      <div style="display:grid;grid-template-columns:1.5fr 1fr 1fr;gap:60px;margin-bottom:60px">
+        <div>
+          <div style="font-family:var(--font-s);font-size:20px;margin-bottom:12px;display:flex;align-items:center;gap:10px">
+            <img src="logo.svg" alt="VigyanLLM" style="width:36px;height:36px;border-radius:6px;background:#0d1117;padding:3px;object-fit:contain">
+            <span>VigyanLLM</span>
+          </div>
+          <p style="font-size:13px;color:var(--muted);margin-bottom:20px">Sovereign Healthcare & Life Sciences AI</p>
+          <div style="font-family:var(--font-s);font-size:13px;color:var(--primary)">contact@vigyanllm.in</div>
         </div>
-        <div class="footer-col">
-          <h4>Product</h4>
-          <a href="/primer">Primer Design</a>
-          <a href="/demo">Demos</a>
-          <a href="/pricing">Pricing</a>
+        <div>
+          <h5 style="font-size:12px;text-transform:uppercase;letter-spacing:0.1em;color:var(--text);margin-bottom:24px">Product</h5>
+          <a href="primer.html" style="display:block;font-size:13px;color:var(--text2);margin-bottom:14px">Primer Design</a>
+          <a href="demo.html" style="display:block;font-size:13px;color:var(--text2);margin-bottom:14px">Demos</a>
         </div>
-        <div class="footer-col">
-          <h4>Resources</h4>
-          <a href="/blog">Blog</a>
-          <a href="/faq">FAQ</a>
-          <a href="/glossary">Glossary</a>
-        </div>
-        <div class="footer-col">
-          <h4>Company</h4>
-          <a href="/about">About</a>
-          <a href="/contact">Contact</a>
-          <a href="/privacy">Privacy</a>
-          <a href="/terms">Terms</a>
+        <div>
+          <h5 style="font-size:12px;text-transform:uppercase;letter-spacing:0.1em;color:var(--text);margin-bottom:24px">Resources</h5>
+          <a href="blog/index.html" style="display:block;font-size:13px;color:var(--text2);margin-bottom:14px">Blog</a>
+          <a href="faq.html" style="display:block;font-size:13px;color:var(--text2);margin-bottom:14px">FAQ</a>
+          <a href="about.html" style="display:block;font-size:13px;color:var(--text2);margin-bottom:14px">About</a>
         </div>
       </div>
-      <div class="footer-bottom">
-        <p>© 2026 VigyanLLM Private Limited. All rights reserved. DPIIT Startup India Recognised. Research-use-only platform.</p>
+      <div style="border-top:1px solid var(--border);padding-top:32px;display:flex;justify-content:space-between;font-size:12px;color:var(--muted)">
+        <span>&copy; 2026 VigyanLLM Pvt. Ltd. · Sovereign Research AI</span>
+        <span>Built in India</span>
       </div>
     </div>
   </footer>
