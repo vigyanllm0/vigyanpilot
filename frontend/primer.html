@@ -1553,20 +1553,14 @@ async function apiPost(ep,body){
     body:JSON.stringify(body),signal:AbortSignal.timeout(60000)});
   
   if (!r.ok) {
-    const body = await r.text().catch(() => '');
-    console.error(`apiPost ${ep} failed: ${r.status} ${r.statusText}`, body);
-    const errorMap = {
-      401: { action: 'show_auth', message: 'Please sign in to continue.' },
-      402: { action: 'show_payment', message: 'Insufficient credits. Please purchase more.' },
-      429: { action: null, message: 'Too many requests. Please wait a moment.' }
-    };
-    const handler = errorMap[r.status];
-    if (handler) {
-      if (handler.action === 'show_auth') showAuthModal();
-      if (handler.action === 'show_payment') showPaymentModal();
-      throw new Error(handler.message);
-    }
-    throw new Error('Something went wrong. Please try again.');
+    const text = await r.text().catch(() => '');
+    let errMsg = '';
+    try { const j = JSON.parse(text); errMsg = j.error || j.message || ''; } catch {}
+    console.error(`apiPost ${ep} ${r.status} ${r.statusText}`, errMsg || text);
+    if (r.status === 401) { showAuthModal(); throw new Error(errMsg || 'Authentication required.'); }
+    if (r.status === 402) { showPaymentModal(); throw new Error(errMsg || 'Insufficient credits.'); }
+    if (r.status === 429) { throw new Error(errMsg || 'Too many requests. Please wait.'); }
+    throw new Error(errMsg || `Request failed (${r.status}). Check console for details.`);
   }
   return await r.json();
 }
@@ -2938,17 +2932,17 @@ function updateTopupFromInput() {
 }
 
 async function buyPlan(productId) {
-  if (!state.online) { alert('Backend unavailable. Please try again later.'); return; }
   if (!auth.token) { showAuthModal(); return; }
   const body = {product_id: productId};
   if (productId === 'top_up') body.quantity = 1;
+  if (!state.online) console.warn('buyPlan: state.online is false, attempting anyway');
   await startRazorpayCheckout(body);
 }
 
 async function buyCustomTopup() {
-  if (!state.online) { alert('Backend unavailable. Please try again later.'); return; }
   if (!auth.token) { showAuthModal(); return; }
   const qty = parseInt($('topup-input')?.value) || 1;
+  if (!state.online) console.warn('buyCustomTopup: state.online is false, attempting anyway');
   await startRazorpayCheckout({product_id: 'top_up', quantity: qty});
 }
 
@@ -2966,16 +2960,7 @@ async function createPaymentOrder(body) {
 }
 
 async function startRazorpayCheckout(body, context={}) {
-  if (!state.online) {
-    const message = 'Backend unavailable. Please try again later.';
-    if (context.errorEl) {
-      context.errorEl.textContent = message;
-      context.errorEl.classList.add('show');
-    } else {
-      alert(message);
-    }
-    return;
-  }
+  if (!state.online) console.warn('startRazorpayCheckout: state.online is false, attempting anyway');
   try {
     const order = await createPaymentOrder(body);
     openRazorpayCheckout(order, context);
