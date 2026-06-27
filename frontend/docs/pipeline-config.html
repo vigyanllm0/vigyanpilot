@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pipeline Configuration — VigyanLLM</title>
+<meta name="description" content="Configure the VigyanLLM 22-step primer design pipeline: parameters, thresholds, design modes, and advanced options.">
+<link rel="canonical" href="https://vigyanllm.in/docs/pipeline-config">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#F8FAFC;color:#0F172A;font-family:'Inter',sans-serif;line-height:1.6;-webkit-font-smoothing:antialiased}
+nav{position:sticky;top:0;background:#0F172A;z-index:100;height:64px}
+.nav-inner{display:flex;justify-content:space-between;align-items:center;height:100%;max-width:1100px;margin:0 auto;padding:0 24px}
+.logo{font-family:'Plus Jakarta Sans',sans-serif;font-size:18px;color:#fff;display:flex;align-items:center;gap:9px;text-decoration:none;font-weight:700}
+.logo-img{width:32px;height:32px;border-radius:6px;background:#0d1117;padding:2px}
+.nav-links{display:flex;gap:24px}
+.nav-links a{font-size:13px;color:#CBD5E1;text-decoration:none;font-weight:500}
+.nav-links a:hover{color:#fff}
+.hero{background:linear-gradient(135deg,#0F172A 0%,#1E293B 100%);padding:56px 24px 40px;text-align:center}
+.hero h1{font-family:'Plus Jakarta Sans',sans-serif;font-size:clamp(1.6rem,3.5vw,2.2rem);color:#fff;margin-bottom:10px;font-weight:800}
+.hero p{font-size:14px;color:#94A3B8;max-width:600px;margin:0 auto}
+.container{max-width:800px;margin:0 auto;padding:40px 24px}
+section{margin-bottom:40px}
+section h2{font-family:'Plus Jakarta Sans',sans-serif;font-size:18px;color:#0F172A;margin-bottom:16px;padding-bottom:8px;border-bottom:2px solid #2563EB}
+.param-list{list-style:none}
+.param-list li{padding:14px;background:#fff;border:1px solid #E2E8F0;border-radius:8px;margin-bottom:8px}
+.param-list li strong{display:block;font-size:14px;color:#0F172A;margin-bottom:4px}
+.param-list li span{font-size:13px;color:#475569;display:block}
+.param-list li .val{font-size:12px;color:#2563EB;font-weight:600;margin-top:4px}
+.mode-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.mode-card{border:1px solid #E2E8F0;border-radius:8px;padding:16px;background:#fff;text-align:center}
+.mode-card h4{font-size:14px;color:#0F172A;margin-bottom:6px}
+.mode-card p{font-size:12px;color:#475569;line-height:1.5}
+footer{text-align:center;padding:32px 24px;font-size:12px;color:#94A3B8;border-top:1px solid #E2E8F0}
+@media(max-width:600px){.mode-grid{grid-template-columns:1fr}}
+</style>
+<script>if('serviceWorker'in navigator)navigator.serviceWorker.register('/sw.js')</script>
+<style>
+#ai-widget{position:fixed;bottom:24px;right:24px;z-index:9999;font-family:'Inter',sans-serif}#ai-widget-toggle{width:56px;height:56px;border-radius:50%;background:#0F172A;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;box-shadow:0 4px 20px rgba(15,23,42,.3);transition:transform .2s,box-shadow .2s}#ai-widget-toggle:hover{transform:scale(1.05)}#ai-widget-toggle svg{width:24px;height:24px}#ai-widget-panel{position:absolute;bottom:72px;right:0;width:320px;background:#fff;border-radius:12px;box-shadow:0 10px 40px rgba(0,0,0,.15);border:1px solid #E2E8F0;overflow:hidden;opacity:0;transform:translateY(10px);pointer-events:none;transition:opacity .2s,transform .2s}#ai-widget-panel[hidden]{display:none}#ai-widget-panel.visible{opacity:1;transform:translateY(0);pointer-events:auto}.ai-widget-header{display:flex;justify-content:space-between;align-items:center;padding:16px;border-bottom:1px solid #E2E8F0;background:#F8FAFC}.ai-widget-header span{font-weight:600;font-size:15px;color:#0F172A}.ai-widget-close{background:none;border:none;font-size:20px;cursor:pointer;color:#475569;line-height:1;padding:4px}.ai-widget-close:hover{color:#0F172A}.ai-widget-body{padding:16px}.ai-widget-body p{margin:0 0 12px;font-size:13px;color:#475569;font-weight:500}.ai-widget-options{display:flex;flex-direction:column;gap:8px}.ai-widget-btn{width:100%;text-align:left;padding:12px 14px;border:1px solid #E2E8F0;border-radius:8px;background:#fff;font-size:13px;font-weight:500;color:#0F172A;cursor:pointer;transition:background .15s,border-color .15s,transform .1s;font-family:'Inter',sans-serif}.ai-widget-btn:hover{background:#eff6ff;border-color:#2563EB}@media(max-width:480px){#ai-widget{bottom:16px;right:16px}#ai-widget-panel{width:calc(100vw - 48px);max-width:320px}}
+</style>
+</head>
+<body>
+<nav>
+<div class="nav-inner">
+<a href="/" class="logo"><img src="/logo.svg" alt="VigyanLLM" class="logo-img">VigyanLLM</a>
+<div class="nav-links">
+<a href="/primer">Pipeline</a>
+<a href="/faq">FAQ</a>
+<a href="/contact">Contact</a>
+</div>
+</div>
+</nav>
+
+<section class="hero">
+<h1>Pipeline Configuration</h1>
+<p>Fine-tune every parameter of the 22-step primer design engine to match your experimental requirements.</p>
+</section>
+
+<div class="container">
+
+<section>
+<h2>Design Modes</h2>
+<div class="mode-grid">
+<div class="mode-card">
+<h4>Standard PCR</h4>
+<p>Default mode for routine primer design. Optimised for Taq and proofreading polymerases with standard cycling conditions.</p>
+</div>
+<div class="mode-card">
+<h4>Bisulfite (MSP)</h4>
+<p>Methylation-specific PCR. Accounts for C-to-T conversion, avoids CpG dinucleotides in primer 3&prime; ends, and adjusts Tm calculations for reduced sequence complexity.</p>
+</div>
+<div class="mode-card">
+<h4>Multiplex</h4>
+<p>Designs compatible primer pairs for multi-target panels. Cross-dimer checks enforced across all pairs with strict &Delta;G &gt; &minus;5.0 kcal/mol threshold.</p>
+</div>
+</div>
+</section>
+
+<section>
+<h2>Primer Parameters</h2>
+<ul class="param-list">
+<li><strong>Optimal Tm</strong><span>Target melting temperature for primers (default: 62&deg;C)</span><span class="val">Range: 58&ndash;65&deg;C | &Delta;Tm &le; 1.5&deg;C enforced</span></li>
+<li><strong>Amplicon Size</strong><span>Desired product length range</span><span class="val">Default: 100&ndash;400 bp | Max: 5,000 bp</span></li>
+<li><strong>Primer Length</strong><span>Nucleotide length of each primer</span><span class="val">Range: 18&ndash;25 nt | 3&prime; GC clamp required</span></li>
+<li><strong>GC Content</strong><span>Percentage of G/C bases in the primer</span><span class="val">Range: 40&ndash;60%</span></li>
+<li><strong>Salt &amp; Buffer Conditions</strong><span>Monovalent cation concentration for Tm calculation (SantaLucia 1998 NN model)</span><span class="val">Default: 50 mM Na&sup2;&zwj;&zwj;&zwj;&#8288; 1.5 mM Mg&sup2;&zwj;&zwj;&zwj;&#8288; 250 nM primer</span></li>
+</ul>
+</section>
+
+<section>
+<h2>Quality Thresholds</h2>
+<ul class="param-list">
+<li><strong>Hairpin &Delta;G</strong><span>Minimum free energy for hairpin formation &mdash; less stable is better</span><span class="val">Threshold: &gt; &minus;2.0 kcal/mol</span></li>
+<li><strong>Self-Dimer &Delta;G</strong><span>Minimum free energy for primer self-dimerisation</span><span class="val">Threshold: &gt; &minus;8.0 kcal/mol</span></li>
+<li><strong>Cross-Dimer &Delta;G</strong><span>Minimum free energy for cross-dimer between forward and reverse primers</span><span class="val">Threshold: &gt; &minus;8.0 kcal/mol</span></li>
+<li><strong>BLAST Off-Targets</strong><span>Maximum allowed off-target matches in the reference genome</span><span class="val">Strict: &le; 2 mismatches in last 5 bp</span></li>
+</ul>
+</section>
+
+<section>
+<h2>Advanced Options</h2>
+<ul class="param-list">
+<li><strong>Probe Design (TaqMan)</strong><span>Dual-labelled hydrolysis probe with 5&prime; reporter and 3&prime; quencher. Tm 68&ndash;70&deg;C, 15&ndash;25 nt, no G at 5&prime; end.</span></li>
+<li><strong>NGS Adapter Tailing</strong><span>Automatically adds 5&prime; overhang sequences for Illumina Nextera, TruSeq, or Ion Torrent library prep.</span></li>
+<li><strong>SNP Filtering</strong><span>Cross-references primer positions against dbSNP to avoid common variants that may affect binding.</span></li>
+<li><strong>Repeat Masking</strong><span>Filters primers overlapping with Dfam repeat elements and low-complexity regions.</span></li>
+</ul>
+</section>
+
+</div>
+
+<footer>
+<p>&copy; 2026 VigyanLLM Pvt. Ltd. &mdash; Sovereign Biomedical AI Platform</p>
+</footer>
+
+<div id="ai-widget">
+<button id="ai-widget-toggle" aria-label="AI Assistant" title="AI Assistant"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg></button>
+<div id="ai-widget-panel" class="ai-widget-panel" hidden>
+<div class="ai-widget-header"><span>AI Assistant</span><button class="ai-widget-close" id="ai-widget-close" aria-label="Close">&times;</button></div>
+<div class="ai-widget-body">
+<p>How can I help you?</p>
+<div class="ai-widget-options">
+<button class="ai-widget-btn" data-href="/docs/getting-started">Getting Started Guide</button>
+<button class="ai-widget-btn" data-href="/docs/pipeline-config">Pipeline Configuration</button>
+<button class="ai-widget-btn" data-href="/contact">Report an Issue</button>
+<button class="ai-widget-btn" data-href="/faq">View FAQ</button>
+</div>
+</div>
+</div>
+</div>
+<script>
+(function(){var t=document.getElementById('ai-widget-toggle'),p=document.getElementById('ai-widget-panel'),c=document.getElementById('ai-widget-close'),b=document.querySelectorAll('.ai-widget-btn');function o(){p.hidden=false;requestAnimationFrame(function(){p.classList.add('visible')})}function l(){p.classList.remove('visible');setTimeout(function(){p.hidden=true},200)}t&&t.addEventListener('click',function(){p.classList.contains('visible')?l():o()});c&&c.addEventListener('click',l);document.addEventListener('click',function(e){if(!document.getElementById('ai-widget').contains(e.target))l()});b.forEach(function(n){n.addEventListener('click',function(){window.location.href=n.getAttribute('data-href')})});document.addEventListener('keydown',function(e){if(e.key==='Escape'&&p.classList.contains('visible'))l()})})();
+</script>
+</body>
+</html>
