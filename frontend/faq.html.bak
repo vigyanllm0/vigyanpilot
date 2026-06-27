@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="en-IN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Primer Design FAQ — 50+ Questions Answered | VigyanLLM</title>
+  <meta name="description" content="Complete primer design FAQ: PCR primer design rules, Tm calculation, GC content, primer dimer prevention, qPCR, TaqMan probes, multiplex PCR, and more. Expert answers for molecular biology researchers.">
+  <meta name="keywords" content="primer design FAQ, PCR primer questions, primer design rules, Tm GC content, primer dimer, qPCR primer design, TaqMan probe, multiplex PCR, primer specificity">
+  <link rel="canonical" href="https://vigyanllm.in/faq">
+  
+  <!-- Open Graph -->
+  <meta property="og:title" content="Primer Design FAQ — 50+ Questions Answered | VigyanLLM">
+  <meta property="og:description" content="Expert answers to the most common primer design questions. PCR, qPCR, TaqMan, multiplex, and more.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://vigyanllm.in/faq">
+  <meta property="og:image" content="https://vigyanllm.in/assets/og-vigyanllm-faq.png">
+  <meta property="og:site_name" content="VigyanLLM">
+  
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Primer Design FAQ — 50+ Questions Answered | VigyanLLM">
+  <meta name="twitter:description" content="Expert answers to the most common primer design questions for molecular biology researchers.">
+  <meta name="twitter:image" content="https://vigyanllm.in/assets/og-vigyanllm-faq.png">
+  
+  <!-- hreflang -->
+  <link rel="alternate" hreflang="en-IN" href="https://vigyanllm.in/faq">
+  <link rel="alternate" hreflang="en" href="https://vigyanllm.in/faq">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+  <style>
+    :root { --bg: #ffffff; --surface: #f8f9fb; --border: #e4e7ec; --primary: #1a56ff; --bio: #059669; --amber: #d97706; --text: #0d1117; --text2: #4b5563; --muted: #9ca3af; --font-s: 'DM Sans', sans-serif; --max-w: 1100px; --sec-p: 100px; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--text); font-family: var(--font-s); line-height: 1.6; -webkit-font-smoothing: antialiased; }
+    a { text-decoration: none; color: inherit; transition: color 0.15s ease; }
+    .container { max-width: var(--max-w); margin: 0 auto; padding: 0 24px; }
+    section { padding: var(--sec-p) 0; }
+    .section-tag { font-family: var(--font-s); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--primary); margin-bottom: 20px; display: block; }
+    .section-h2 { font-family: var(--font-s); font-size: clamp(2rem, 4vw, 2.8rem); line-height: 1.1; font-weight: 400; margin-bottom: 24px; }
+    .section-desc { font-size: 15px; color: var(--text2); line-height: 1.8; max-width: 540px; }
+    nav { position: sticky; top: 0; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(8px); border-bottom: 1px solid var(--border); z-index: 1000; height: 72px; }
+    @media (max-width: 768px) { .nav-links { display: none; } }
+    .hero { padding: 80px 0 60px; text-align: center; }
+    .hero h1 { font-family: var(--font-s); font-size: clamp(2.4rem, 5vw, 3.2rem); line-height: 1.1; font-weight: 400; margin-bottom: 16px; }
+    .hero p { font-size: 16px; color: var(--text2); max-width: 700px; margin: 0 auto; line-height: 1.8; }
+    .badge { display: inline-block; background: var(--surface); color: var(--primary); padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: 500; border: 1px solid var(--border); margin-bottom: 24px; }
+    .search-box { max-width: 600px; margin: 30px auto; position: relative; }
+    .search-box input { width: 100%; padding: 14px 24px 14px 48px; border-radius: 30px; border: 1px solid var(--border); background: var(--surface); color: var(--text); font-size: 15px; outline: none; }
+    .search-box input::placeholder { color: var(--muted); }
+    .cluster-nav { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; padding: 24px 0; border-bottom: 1px solid var(--border); }
+    .cluster-nav a { padding: 8px 18px; border-radius: 20px; background: var(--surface); color: var(--text2); text-decoration: none; font-size: 13px; font-weight: 500; border: 1px solid var(--border); transition: all 0.2s; }
+    .cluster-nav a:hover, .cluster-nav a.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .faq-section { padding: 40px 0; border-bottom: 1px solid var(--border); }
+    .faq-section h2 { font-size: 24px; font-weight: 500; color: var(--text); margin-bottom: 8px; }
+    .faq-section .section-desc { color: var(--text2); font-size: 15px; margin-bottom: 28px; }
+    .faq-item { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 14px; overflow: hidden; transition: border-color 0.2s; }
+    .faq-item:hover { border-color: var(--primary); }
+    .faq-question { padding: 18px 24px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-weight: 500; font-size: 15px; color: var(--text); }
+    .faq-question:hover { color: var(--primary); }
+    .faq-toggle { font-size: 20px; color: var(--primary); transition: transform 0.2s; }
+    .faq-item.open .faq-toggle { transform: rotate(45deg); }
+    .faq-answer { padding: 0 24px 18px; color: var(--text2); font-size: 14px; line-height: 1.75; display: none; }
+    .faq-item.open .faq-answer { display: block; }
+    .faq-answer p { margin-bottom: 12px; }
+    .faq-answer ul { margin-left: 20px; margin-bottom: 12px; }
+    .faq-answer ol { margin-left: 20px; margin-bottom: 12px; }
+    .faq-answer li { margin-bottom: 6px; }
+    .faq-answer strong { color: var(--text); }
+    .faq-answer a { color: var(--primary); }
+    .faq-answer a:hover { text-decoration: underline; }
+    .faq-answer code { background: var(--surface); padding: 2px 6px; border-radius: 4px; font-size: 13px; }
+    .faq-answer table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 14px; }
+    .faq-answer th { background: var(--surface); color: var(--text); padding: 10px; border: 1px solid var(--border); text-align: left; font-weight: 500; }
+    .faq-answer td { padding: 10px; border: 1px solid var(--border); color: var(--text2); }
+    .cta-box { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 48px; text-align: center; margin: 48px 0; }
+    .cta-box h3 { font-size: 22px; font-weight: 500; color: var(--text); margin-bottom: 12px; }
+    .cta-box p { color: var(--text2); margin-bottom: 24px; font-size: 15px; max-width: 480px; margin-left: auto; margin-right: auto; }
+    .cta-btn { display: inline-block; padding: 12px 28px; background: var(--primary); color: #fff; border-radius: 6px; font-weight: 500; font-size: 14px; }
+    .cta-btn:hover { opacity: 0.9; }
+    .references { padding: 40px 0; }
+    .references h2 { font-size: 22px; font-weight: 500; color: var(--text); margin-bottom: 20px; }
+    .references ol { margin-left: 24px; color: var(--text2); font-size: 14px; }
+    .references li { margin-bottom: 10px; }
+    @media (max-width: 768px) { .hero h1 { font-size: 26px; } .nav-links { display: none; } }
+  </style>
+  
+  <!-- FAQPage Schema -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is primer design in molecular biology?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Primer design is the computational process of creating short single-stranded DNA sequences (18-25 nucleotides) that specifically bind to flanking regions of a target DNA sequence. These primers are essential for PCR, qPCR, sequencing, and cloning applications. Proper primer design ensures specific amplification of the target region while minimizing off-target binding, primer dimers, and secondary structures." }
+      },
+      {
+        "@type": "Question",
+        "name": "How do you design a PCR primer?",
+        "acceptedAnswer": { "@type": "Answer", "text": "To design a PCR primer: (1) Identify your target DNA sequence, (2) Select primer length of 18-25 nucleotides, (3) Ensure GC content of 40-60%, (4) Calculate melting temperature (Tm) of 57-63°C using the SantaLucia nearest-neighbor model, (5) Add a GC clamp (1-2 G/C nucleotides) at the 3' end, (6) Check for hairpin structures (delta-G > -2.0 kcal/mol), (7) Verify self-dimer and cross-dimer potential (delta-G > -5.0 kcal/mol), (8) Run BLAST specificity check to confirm unique binding, (9) Validate amplicon size (100-500 bp for standard PCR)." }
+      },
+      {
+        "@type": "Question",
+        "name": "What are the 7 rules for primer design?",
+        "acceptedAnswer": { "@type": "Answer", "text": "The 7 essential primer design rules are: (1) Length: 18-25 nucleotides, (2) GC Content: 40-60% overall, (3) Melting Temperature (Tm): 57-63°C for both primers with delta-Tm ≤ 1.5°C, (4) GC Clamp: 1-2 G or C nucleotides at the 3' end for stable initiation, (5) Avoid secondary structures: hairpin delta-G > -2.0 kcal/mol, (6) Prevent primer dimers: self-dimer and cross-dimer delta-G > -5.0 kcal/mol, (7) Ensure specificity: use BLAST to check for off-target binding sites." }
+      },
+      {
+        "@type": "Question",
+        "name": "What is a good Tm (melting temperature) for a PCR primer?",
+        "acceptedAnswer": { "@type": "Answer", "text": "A good melting temperature (Tm) for PCR primers is 57-63°C. The Tm of forward and reverse primers should be within 1.5°C of each other (ideally ≤ 1°C difference). The annealing temperature (Ta) is typically set 3-5°C below the lower Tm value. Tm is calculated using the SantaLucia (1998) nearest-neighbor thermodynamic model, which accounts for salt concentration (50mM Na+), Mg2+ concentration (1.5mM), and primer concentration (250nM)." }
+      },
+      {
+        "@type": "Question",
+        "name": "What is a GC clamp in primer design?",
+        "acceptedAnswer": { "@type": "Answer", "text": "A GC clamp refers to the presence of 1-2 guanine (G) or cytosine (C) nucleotides at the 3' end of a primer. This provides stable binding initiation for DNA polymerase during PCR. Too many G/C nucleotides at the 3' end can cause non-specific priming and secondary structures. The ideal GC clamp has exactly 1-2 G or C bases at the terminal 3' position, with no more than 3 consecutive G or C nucleotides anywhere in the primer." }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I check if my primers will form dimers?",
+        "acceptedAnswer": { "@type": "Answer", "text": "To check for primer dimers, use thermodynamic analysis software that calculates the Gibbs free energy (delta-G) of potential primer-primer interactions. A self-dimer or cross-dimer with delta-G > -5.0 kcal/mol is generally considered safe. More negative values indicate stable dimer formation that can compete with target amplification. Tools like VigyanLLM Primer, IDT OligoAnalyzer, or Primer3 check for complementary 3' overlaps of 3+ bases, which are most problematic as they allow polymerase extension on dimer products." }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the ideal GC content for a PCR primer?",
+        "acceptedAnswer": { "@type": "Answer", "text": "The ideal GC content for PCR primers is 40-60%. GC content below 40% can result in low Tm and weak primer binding, while content above 60% increases the risk of secondary structures and non-specific binding. For qPCR primers, aim for 45-55% GC content. For primers targeting AT-rich genomes (e.g., Plasmodium falciparum at ~80% AT), you may need to extend primer length to 25-30 nucleotides to achieve adequate Tm." }
+      },
+      {
+        "@type": "Question",
+        "name": "What is amplicon size in PCR?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Amplicon size is the length of the DNA fragment amplified between the forward and reverse primers. For standard PCR, the optimal amplicon size is 100-500 base pairs (bp). For qPCR, use 80-200 bp for optimal efficiency. For Sanger sequencing, 500-1000 bp is ideal. Multiplex PCR typically uses 100-400 bp with size differentiation of 50+ bp between targets. Longer amplicons (>1000 bp) require extended extension times and special polymerases." }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I design primers for qPCR?",
+        "acceptedAnswer": { "@type": "Answer", "text": "qPCR primer design follows standard PCR rules with additional constraints: (1) Amplicon size: 80-200 bp (optimal 100-150 bp), (2) Primer Tm: 58-63°C, (3) Design primers to span exon-exon junctions to avoid genomic DNA amplification, (4) Avoid known SNP regions in the binding site, (5) Check for secondary structures at the assay annealing temperature, (6) For TaqMan probe design, ensure the probe Tm is 5-10°C higher than primer Tm (typically 65-70°C), (7) Place the probe close to either primer (within 1-5 nucleotides)." }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between SYBR Green and TaqMan?",
+        "acceptedAnswer": { "@type": "Answer", "text": "SYBR Green is a DNA-binding dye that fluoresces when bound to any double-stranded DNA, making it cheaper and simpler but less specific. TaqMan uses a sequence-specific probe with a fluorophore and quencher that separates during amplification, providing higher specificity and enabling multiplex detection. SYBR Green requires melt curve analysis to confirm specificity, while TaqMan provides inherent specificity through the probe sequence. TaqMan is preferred for diagnostic applications; SYBR Green is suitable for research screening." }
+      },
+      {
+        "@type": "Question",
+        "name": "What is VigyanLLM Primer?",
+        "acceptedAnswer": { "@type": "Answer", "text": "VigyanLLM Primer is a research-use-only primer and probe design platform that runs a 22-step validation pipeline. It combines Primer3-style primer design with thermodynamic validation (SantaLucia 1998 nearest-neighbor model), specificity checking via NCBI BLAST, SNP screening against dbSNP, repeat masking, multiplex compatibility scoring, and TaqMan probe design — generating audit-ready PDF reports and vendor-ready export files for IDT and Twist. All outputs are in silico recommendations requiring independent wet-lab validation." }
+      },
+      {
+        "@type": "Question",
+        "name": "What does VigyanLLM's 22-step pipeline check?",
+        "acceptedAnswer": { "@type": "Answer", "text": "The 22 steps cover: (1) Transcript isoform filtering, (2) Exon-intron junction mapping, (3) Bisulfite conversion (methylation assays), (4) Degenerate base parsing (IUPAC codes), (5) Repeat masking, (6) Primer3 candidate design, (7) Nearest-neighbor Tm calculation, (8) Buffer and salt correction, (9) Mg2+ correction, (10) BLAST specificity check, (11) Bowtie2 alignment validation, (12) Organelle screening, (13) Secondary structure analysis (hairpin/dimer delta-G), (14) Amplicon structure validation, (15) dbSNP filtering, (16) ClinVar clinical hotspot check, (17) Adapter tailing, (18) Multiplex scoring, (19) Penalty ranking with weighted matrix, plus report generation in PDF, CSV, JSON, IDT, and Twist formats." }
+      },
+      {
+        "@type": "Question",
+        "name": "Can VigyanLLM be used for clinical diagnostics?",
+        "acceptedAnswer": { "@type": "Answer", "text": "No. VigyanLLM outputs are explicitly research-use-only (RUO) in silico recommendations. All primer and probe designs require independent experimental validation before any laboratory application. VigyanLLM is not validated for clinical diagnostic use, therapeutic decision-making, or regulatory submission. Users must independently verify all recommendations through appropriate wet-lab validation." }
+      },
+      {
+        "@type": "Question",
+        "name": "Is VigyanLLM free for Indian researchers?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Yes. VigyanLLM offers a free research tier for PhD students and professors with full access to primer design and PCR validation features. Institutional plans are available with India-first INR pricing via Razorpay. DPIIT Startup India recognized. No credit card required for the free tier." }
+      },
+      {
+        "@type": "Question",
+        "name": "What is Primer3 and how does it work?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Primer3 is an open-source primer design program developed by Steve Rozen and Helen Skaletsky (2000). It uses a branch-and-bound algorithm to search for optimal primer pairs based on user-specified constraints including Tm, GC content, product size, and primer length. Primer3 checks for self-complementarity and calculates Tm using the nearest-neighbor model. It is the most widely cited primer design tool in scientific literature with over 50,000 citations." }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between Primer3 and Primer-BLAST?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Primer3 is a general-purpose primer design tool that finds optimal primer pairs based on thermodynamic parameters but does not check genomic specificity. Primer-BLAST, developed by NCBI, integrates Primer3's design algorithm with BLAST specificity checking against the reference genome. Primer-BLAST automatically checks for off-target binding sites, making it more suitable for genomic DNA amplification. However, Primer-BLAST does not provide SNP masking, audit reports, or vendor export features." }
+      },
+      {
+        "@type": "Question",
+        "name": "What is a preferred-best sequence map in primer design?",
+        "acceptedAnswer": { "@type": "Answer", "text": "A preferred-best sequence map is a visual representation that ranks designed primer pairs by overall quality score, showing the binding positions of forward and reverse primers on the target sequence. It indicates the quality tier (Excellent 80-100, Good 60-79, Marginal 40-59, Poor <40) and highlights potential issues like SNP overlap, repeat regions, or secondary structure risk. VigyanLLM generates this map as part of its PDF report output." }
+      },
+      {
+        "@type": "Question",
+        "name": "How does repeat masking affect primer design?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Repeat masking identifies and excludes low-complexity and repetitive DNA regions (such as SINEs, LINEs, Alu elements, and microsatellites) from primer binding sites. Primers binding within repeat regions often produce non-specific amplification because these sequences appear multiple times throughout the genome. VigyanLLM uses the Dfam database and local complexity algorithms to mask repeats before primer design, significantly improving specificity." }
+      },
+      {
+        "@type": "Question",
+        "name": "What is SNP-aware primer design?",
+        "acceptedAnswer": { "@type": "Answer", "text": "SNP-aware primer design avoids placing primer binding sites over known single nucleotide polymorphisms (SNPs). A SNP in the 3' end of a primer (especially the last 5 nucleotides) can destabilize binding and cause allele-specific amplification bias. VigyanLLM checks primer binding sites against dbSNP and penalizes designs with 3' SNP overlap, ensuring robust amplification across different genetic backgrounds." }
+      },
+      {
+        "@type": "Question",
+        "name": "What should a validated primer design report include?",
+        "acceptedAnswer": { "@type": "Answer", "text": "A validated primer design report should include: (1) Primer sequences (forward and reverse), (2) Melting temperatures (Tm) with calculation method, (3) GC content percentages, (4) Amplicon size and position, (5) Hairpin and dimer delta-G values, (6) Specificity score and BLAST results, (7) SNP screening results, (8) Repeat masking status, (9) Quality score with interpretation guide, (10) Vendor-ready ordering format (IDT or Twist). VigyanLLM generates all of these in audit-ready PDF format." }
+      },
+      {
+        "@type": "Question",
+        "name": "What is multiplex PCR primer design?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Multiplex PCR primer design creates primer sets for amplifying multiple target sequences simultaneously in a single reaction. Key considerations include: (1) All primers must have similar Tm (within 2°C), (2) Amplicon sizes must differ by at least 50 bp for gel or capillary separation, (3) Cross-primer interactions must be minimized (cross-dimer delta-G > -5.0 kcal/mol), (4) Primer concentrations may need balancing to equalize amplification efficiency, (5) Up to 4-plex is routine; higher multiplexing requires specialized software and optimization." }
+      },
+      {
+        "@type": "Question",
+        "name": "How does VigyanLLM compare to IDT PrimerQuest?",
+        "acceptedAnswer": { "@type": "Answer", "text": "VigyanLLM and IDT PrimerQuest both design PCR primers and probes, but differ in key areas: (1) VigyanLLM runs 22 validation steps vs PrimerQuest's standard parameter check, (2) VigyanLLM includes SNP screening, repeat masking, and multiplex scoring that PrimerQuest lacks, (3) VigyanLLM generates audit-ready PDF reports with full validation documentation, (4) VigyanLLM exports to both IDT and Twist formats, (5) VigyanLLM offers on-premise deployment with no external API, (6) VigyanLLM has India-first INR pricing; IDT uses USD pricing." }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the SantaLucia nearest-neighbor model?",
+        "acceptedAnswer": { "@type": "Answer", "text": "The SantaLucia (1998) nearest-neighbor (NN) model is the gold-standard method for predicting DNA duplex stability and calculating primer melting temperature (Tm). It accounts for thermodynamic parameters (delta-H, delta-S, delta-G) of adjacent nucleotide pairs (dinucleotides), salt concentration, and Mg2+ effects. The model is more accurate than simple base-counting methods (like the Wallace formula) because it captures sequence-dependent stacking interactions. VigyanLLM uses this model with Owczarzy (2004) salt correction and von Ahsen (2001) Mg2+ correction." }
+      }
+    ]
+  }
+  </script>
+  
+  <!-- Organization Schema -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "VigyanLLM Private Limited",
+    "alternateName": "VigyanLLM",
+    "url": "https://vigyanllm.in",
+    "logo": "https://vigyanllm.in/assets/logo.png",
+    "description": "Sovereign biomedical AI platform for research labs. 22-step validated primer design, molecular docking, CRISPR analysis, and clinical reasoning. On-premise, no external API.",
+    "foundingDate": "2026",
+    "founder": { "@type": "Person", "name": "Hemant Sharma" },
+    "address": { "@type": "PostalAddress", "addressLocality": "Gurgaon", "addressRegion": "Haryana", "addressCountry": "IN" },
+    "contactPoint": { "@type": "ContactPoint", "email": "contact@vigyanllm.in", "contactType": "customer support" }
+  }
+  </script>
+  
+  <!-- BreadcrumbList Schema -->
+  <script type="application/ld+json">
+  {
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "VigyanLLM", "item": "https://vigyanllm.in/" },
+      { "@type": "ListItem", "position": 2, "name": "FAQ", "item": "https://vigyanllm.in/faq" }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <nav>
+    <div class="nav-inner" style="display:flex;justify-content:space-between;align-items:center;height:100%;max-width:var(--max-w);margin:0 auto;padding:0 24px">
+      <a href="index.html" class="logo" style="display:inline-flex;align-items:center;gap:9px;text-decoration:none;color:inherit">
+        <img src="logo.svg" alt="VigyanLLM Logo" style="width:36px;height:36px;border-radius:6px;background:#0d1117;padding:3px;object-fit:contain;flex-shrink:0">
+        <span style="font-family:var(--font-s);font-size:20px;color:var(--text)">VigyanLLM</span>
+      </a>
+      <div class="nav-links" style="display:flex;gap:32px;align-items:center">
+        <a href="index.html" style="font-size:13px;color:var(--text2);font-weight:400">Home</a>
+        <a href="primer.html" style="font-size:13px;color:var(--primary);font-weight:500">VPrime 1.0 ↗</a>
+        <a href="blog/index.html" style="font-size:13px;color:var(--text2);font-weight:400">Blog</a>
+        <a href="faq.html" style="font-size:13px;color:var(--primary);font-weight:500">FAQ</a>
+        <a href="about.html" style="font-size:13px;color:var(--text2);font-weight:400">About</a>
+      </div>
+      <div class="nav-right" style="display:flex;align-items:center;gap:24px">
+        <button class="btn-nav" onclick="window.location.href='primer.html'" style="border:1.5px solid var(--text);border-radius:6px;padding:10px 24px;font-size:13px;font-weight:500;background:transparent;cursor:pointer">Design Primers</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="container">
+      <div class="badge">50+ Expert Answers for Molecular Biology Researchers</div>
+      <h1>Primer Design FAQ</h1>
+      <p>Complete answers to the most common questions about PCR primer design, qPCR, TaqMan probes, multiplex PCR, thermodynamic validation, and using VigyanLLM Primer.</p>
+    </div>
+  </section>
+
+  <!-- Cluster Navigation -->
+  <div class="container">
+    <div class="cluster-nav">
+      <a href="#basics" class="active">Basics</a>
+      <a href="#parameters">Parameters</a>
+      <a href="#qpcr">qPCR & TaqMan</a>
+      <a href="#advanced">Advanced</a>
+      <a href="#vigyanllm">VigyanLLM</a>
+      <a href="#comparison">Comparisons</a>
+    </div>
+  </div>
+
+  <!-- FAQ Content -->
+  <div class="container">
+    
+    <!-- Cluster 1: Core Primer Design Basics -->
+    <section class="faq-section" id="basics">
+      <h2>Core Primer Design Basics</h2>
+      <p class="section-desc">Essential questions every molecular biologist needs answered.</p>
+      
+      <div class="faq-item open">
+        <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+          What is primer design in molecular biology?
+          <span class="faq-toggle">+</span>
+        </div>
+        <div class="faq-answer">
+          <p>Primer design is the computational process of creating short single-stranded DNA sequences (18-25 nucleotides) that specifically bind to flanking regions of a target DNA sequence. These primers are essential for <strong>PCR, qPCR, sequencing, and cloning</strong> applications.</p>
+          <p>Proper primer design ensures specific amplification of the target region while minimizing off-target binding, primer dimers, and secondary structures. The design process considers thermodynamic parameters (Tm, delta-G), sequence composition (GC content), and genomic context (repeats, SNPs).</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+          How do you design a PCR primer?
+          <span class="faq-toggle">+</span>
+        </div>
+        <div class="faq-answer">
+          <p>To design a PCR primer, follow these steps:</p>
+          <ol>
+            <li><strong>Identify your target DNA sequence</strong> — use NCBI Gene, Ensembl, or paste a FASTA sequence</li>
+            <li><strong>Select primer length</strong> of 18-25 nucleotides</li>
+            <li><strong>Ensure GC content of 40-60%</strong> for stable binding</li>
+            <li><strong>Calculate melting temperature (Tm)</strong> of 57-63°C using the SantaLucia nearest-neighbor model</li>
+            <li><strong>Add a GC clamp</strong> — 1-2 G/C nucleotides at the 3' end</li>
+            <li><strong>Check for hairpin structures</strong> (delta-G &gt; -2.0 kcal/mol)</li>
+            <li><strong>Verify self-dimer and cross-dimer potential</strong> (delta-G &gt; -5.0 kcal/mol)</li>
+            <li><strong>Run BLAST specificity check</strong> to confirm unique binding</li>
+            <li><strong>Validate amplicon size</strong> — 100-500 bp for standard PCR</li>
+          </ol>
+          <p>VigyanLLM Primer automates all 9 steps in its <a href="/primer">22-step validation pipeline</a>.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+          What are the 7 rules for primer design?
+          <span class="faq-toggle">+</span>
+        </div>
+        <div class="faq-answer">
+          <p>The 7 essential primer design rules are:</p>
+          <ul>
+            <li><strong>Length:</strong> 18-25 nucleotides</li>
+            <li><strong>GC Content:</strong> 40-60% overall</li>
+            <li><strong>Melting Temperature (Tm):</strong> 57-63°C for both primers with delta-Tm ≤ 1.5°C</li>
+            <li><strong>GC Clamp:</strong> 1-2 G or C nucleotides at the 3' end for stable initiation</li>
+            <li><strong>Avoid secondary structures:</strong> hairpin delta-G &gt; -2.0 kcal/mol</li>
+            <li><strong>Prevent primer dimers:</strong> self-dimer and cross-dimer delta-G &gt; -5.0 kcal/mol</li>
+            <li><strong>Ensure specificity:</strong> use BLAST to check for off-target binding sites</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+          What is a good Tm (melting temperature) for a PCR primer?
+          <span class="faq-toggle">+</span>
+        </div>
+        <div class="faq-answer">
+          <p>A good melting temperature (Tm) for PCR primers is <strong>57-63°C</strong>. The Tm of forward and reverse primers should be within <strong>1.5°C of each other</strong> (ideally ≤ 1°C difference).</p>
+          <p>The annealing temperature (Ta) used in the PCR protocol is typically set <strong>3-5°C below the lower Tm value</strong>. Tm should be calculated using the <strong>SantaLucia (1998) nearest-neighbor thermodynamic model</strong>, which accounts for salt concentration (50mM Na+), Mg2+ concentration (1.5mM), and primer concentration (250nM).</p>
+          <p>Using simplified formulas (like 2°C × (A+T) + 4°C × (G+C)) can produce errors of 5-10°C compared to the nearest-neighbor method.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+          What is a GC clamp in primer design?
+          <span class="faq-toggle">+</span>
+        </div>
+        <div class="faq-answer">
+          <p>A GC clamp refers to the presence of <strong>1-2 guanine (G) or cytosine (C) nucleotides at the 3' end</strong> of a primer. This provides stable binding initiation for DNA polymerase during PCR extension.</p>
+          <p>Key points about GC clamps:</p>
+          <ul>
+            <li>Too many G/C at the 3' end causes non-specific priming</li>
+            <li>No G/C at the 3' end leads to weak initiation</li>
+            <li>Avoid more than 3 consecutive G or C nucleotides anywhere in the primer</li>
+            <li>Avoid runs of 4+ G/C nucleotides (can cause secondary structures)</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+          How do I check if my primers will form dimers?
+          <span class="faq-toggle">+</span>
+        </div>
+        <div class="faq-answer">
+          <p>To check for primer dimers, use thermodynamic analysis that calculates the <strong>Gibbs free energy (delta-G)</strong> of potential primer-primer interactions.</p>
+          <ul>
+            <li><strong>Safe:</strong> Self-dimer or cross-dimer delta-G &gt; -5.0 kcal/mol</li>
+            <li><strong>Risky:</strong> Delta-G between -5.0 and -8.0 kcal/mol</li>
+            <li><strong>Problematic:</strong> Delta-G &lt; -8.0 kcal/mol</li>
+          </ul>
+          <p>Pay special attention to <strong>3' complementarity</strong> — even 2-3 complementary bases at the 3' ends can allow polymerase extension on dimer products, creating a competing reaction that reduces target amplification efficiency. Tools like VigyanLLM Primer, IDT OligoAnalyzer, or Primer3 include dimer checking.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+          What is the ideal GC content for a PCR primer?
+          <span class="faq-toggle">+</span>
+        </div>
+        <div class="faq-answer">
+          <p>The ideal GC content for PCR primers is <strong>40-60%</strong>. GC content below 40% can result in low Tm and weak primer binding, while content above 60% increases the risk of secondary structures and non-specific binding.</p>
+          <p>For qPCR primers, aim for <strong>45-55% GC content</strong>. For primers targeting AT-rich genomes (e.g., <em>Plasmodium falciparum</em> at ~80% AT), you may need to extend primer length to 25-30 nucleotides to achieve adequate Tm.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Cluster 2: Parameters & Calculations -->
+    <section class="faq-section" id="parameters">
+      <h2>Parameters & Calculations</h2>
+      <p class="section-desc">Deep technical details on thermodynamic parameters and validation thresholds.</p>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+          What is amplicon size in PCR?
+          <span class="faq-toggle">+</span>
+        </div>
+        <div class="faq-answer">
+          <p>Amplicon size is the length of the DNA fragment amplified between the forward and reverse primers:</p>
+          <ul>
+            <li><strong>Standard PCR:</strong> 100-500 bp (optimal: 200-400 bp)</li>
+            <li><strong>qPCR:</strong> 80-200 bp (optimal: 100-150 bp)</li>
+            <li><strong>Sanger sequencing:</strong> 500-1000 bp</li>
+            <li><strong>Multiplex PCR:</strong> 100-400 bp with size differentiation of 50+ bp between targets</li>
+          </ul>
+          <p>Longer amplicons (&gt;1000 bp) require extended extension times (1 min per kb) and specialized polymerases like Taq or Phusion.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+          What is the SantaLucia nearest-neighbor model?
+          <span class="faq-toggle">+</span>
+        </div>
+        <div class="faq-answer">
+          <p>The <strong>SantaLucia (1998) nearest-neighbor (NN) model</strong> is the gold-standard method for predicting DNA duplex stability and calculating primer melting temperature (Tm). It accounts for thermodynamic parameters (delta-H, delta-S, delta-G) of adjacent nucleotide pairs (dinucleotides).</p>
+          <p>Unlike simple base-counting methods (Wallace formula: Tm = 2°C × (A+T) + 4°C × (G+C)), the NN model captures <strong>sequence-dependent stacking interactions</strong>, producing Tm predictions accurate within ±2°C.</p>
+          <p>VigyanLLM uses this model with <strong>Owczarzy (2004) salt correction</strong> and <strong>von Ahsen (2001) Mg2+ correction</strong> for maximum accuracy at standard PCR buffer conditions (50mM Na+, 1.5mM Mg2+).</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+          How does repeat masking affect primer design?
+          <span class="faq-toggle">+</span>
+        </div>
+        <div class="faq-answer">
+          <p>Repeat masking identifies and excludes <strong>low-complexity and repetitive DNA regions</strong> (SINEs, LINEs, Alu elements, microsatellites) from primer binding sites. Primers binding within repeat regions often produce non-specific amplification because these sequences appear multiple times throughout the genome.</p>
+          <p>VigyanLLM uses the <strong>Dfam database</strong> and local complexity algorithms (DUST, SEG) to mask repeats before primer design, significantly improving amplification specificity.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+          What is SNP-aware primer design?
+          <span class="faq-toggle">+</span>
+        </div>
+        <div class="faq-answer">
+          <p><strong>SNP-aware primer design</strong> avoids placing primer binding sites over known single nucleotide polymorphisms (SNPs). A SNP in the 3' end of a primer (especially the last 5 nucleotides) can destabilize binding and cause allele-specific amplification bias.</p>
+          <p>VigyanLLM checks primer binding sites against <strong>dbSNP</strong> and penalizes designs with 3' SNP overlap, ensuring robust amplification across different genetic backgrounds. For clinical or population studies, SNP-aware design is essential.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+          What is the difference between Tm and Ta?
+          <span class="faq-toggle">+</span>
+        </div>
+        <div class="faq-answer">
+          <p><strong>Tm (Melting Temperature):</strong> The temperature at which 50% of the primer-template duplex is dissociated into single strands. This is a thermodynamic property of the primer.</p>
+          <p><strong>Ta (Annealing Temperature):</strong> The temperature used in the PCR protocol during the primer binding step. Ta is typically set <strong>3-5°C below the lowest Tm</strong> of the primer pair.</p>
+          <p>Setting Ta too low increases non-specific binding. Setting Ta too high reduces amplification efficiency. For new primer pairs, run a <strong>temperature gradient PCR</strong> (55-65°C) to find the optimal Ta.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Cluster 3: qPCR & TaqMan -->
+    <section class="faq-section" id="qpcr">
+      <h2>qPCR & TaqMan Probe Design</h2>
+      <p class="section-desc">Specialized guidance for quantitative PCR and probe-based assays.</p>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+          How do I design primers for qPCR?
+          <span class="faq-toggle">+</span>
+        </div>
+        <div class="faq-answer">
+          <p>qPCR primer design follows standard PCR rules with additional constraints:</p>
+          <ol>
+            <li><strong>Amplicon size:</strong> 80-200 bp (optimal 100-150 bp)</li>
+            <li><strong>Primer Tm:</strong> 58-63°C</li>
+            <li><strong>Span exon-exon junctions</strong> to avoid genomic DNA amplification</li>
+            <li><strong>Avoid known SNP regions</strong> in the binding site</li>
+            <li><strong>Check secondary structures</strong> at the assay annealing temperature</li>
+            <li><strong>TaqMan probe Tm:</strong> 5-10°C higher than primer Tm (65-70°C)</li>
+            <li><strong>Place probe close to either primer</strong> (within 1-5 nucleotides)</li>
+          </ol>
+          <p>Short amplicons improve qPCR efficiency because polymerase has less distance to travel during the short extension phase of each cycle.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+          What is the difference between SYBR Green and TaqMan?
+          <span class="faq-toggle">+</span>
+        </div>
+        <div class="faq-answer">
+          <table>
+            <tr>
+              <th>Feature</th>
+              <th>SYBR Green</th>
+              <th>TaqMan</th>
+            </tr>
+            <tr>
+              <td>Detection method</td>
+              <td>DNA-binding dye</td>
+              <td>Sequence-specific probe</td>
+            </tr>
+            <tr>
+              <td>Specificity</td>
+              <td>Low (binds any dsDNA)</td>
+              <td>High (probe sequence)</td>
+            </tr>
+            <tr>
+              <td>Multiplex capability</td>
+              <td>No</td>
+              <td>Yes (different fluorophores)</td>
+            </tr>
+            <tr>
+              <td>Cost</td>
+              <td>Lower</td>
+              <td>Higher (probe synthesis)</td>
+            </tr>
+            <tr>
+              <td>Melt curve analysis</td>
+              <td>Required for specificity</td>
+              <td>Not required</td>
+            </tr>
+          </table>
+          <p><strong>Recommendation:</strong> Use SYBR Green for research screening and method development. Use TaqMan for diagnostic applications, multiplex assays, and when absolute specificity is required.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+          What is a TaqMan probe and how is it designed?
+          <span class="faq-toggle">+</span>
+        </div>
+        <div class="faq-answer">
+          <p>A <strong>TaqMan probe</strong> (also called a hydrolysis probe) is a short oligonucleotide (18-30 bp) labeled with a fluorophore at the 5' end and a quencher at the 3' end. During PCR, the probe binds specifically to the target sequence between the forward and reverse primers. As DNA polymerase extends from the primer, its 5'→3' exonuclease activity cleaves the probe, separating the fluorophore from the quencher and producing fluorescence proportional to amplicon quantity.</p>
+          <p><strong>TaqMan probe design rules:</strong></p>
+          <ul>
+            <li>Length: 18-30 nucleotides</li>
+            <li>Tm: 65-70°C (5-10°C higher than primers)</li>
+            <li>GC content: 30-80%</li>
+            <li>No G at the 5' end (quenches fluorophore)</li>
+            <li>Place within 1-5 bp of either primer</li>
+            <li>Avoid runs of 4+ identical nucleotides</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Cluster 4: Advanced Topics -->
+    <section class="faq-section" id="advanced">
+      <h2>Advanced Primer Design Topics</h2>
+      <p class="section-desc">Multiplex PCR, bisulfite, degenerate primers, and specialized applications.</p>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+          What is multiplex PCR primer design?
+          <span class="faq-toggle">+</span>
+        </div>
+        <div class="faq-answer">
+          <p>Multiplex PCR primer design creates primer sets for <strong>amplifying multiple target sequences simultaneously</strong> in a single reaction. Key considerations:</p>
+          <ul>
+            <li>All primers must have <strong>similar Tm</strong> (within 2°C)</li>
+            <li>Amplicon sizes must <strong>differ by at least 50 bp</strong> for separation</li>
+            <li><strong>Cross-dimer delta-G &gt; -5.0 kcal/mol</strong> for all primer pairs</li>
+            <li>Primer concentrations may need balancing</li>
+            <li>Up to 4-plex is routine; higher requires specialized software</li>
+          </ul>
+          <p>VigyanLLM's multiplex scoring (Step 18 of the pipeline) uses <strong>PrimerPooler</strong> algorithms to evaluate compatibility across all primer combinations.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+          What should a validated primer design report include?
+          <span class="faq-toggle">+</span>
+        </div>
+        <div class="faq-answer">
+          <p>A validated primer design report should include:</p>
+          <ol>
+            <li>Primer sequences (forward and reverse)</li>
+            <li>Melting temperatures (Tm) with calculation method noted</li>
+            <li>GC content percentages</li>
+            <li>Amplicon size and genomic position</li>
+            <li>Hairpin and dimer delta-G values</li>
+            <li>Specificity score and BLAST results</li>
+            <li>SNP screening results</li>
+            <li>Repeat masking status</li>
+            <li>Quality score with interpretation guide (80-100=Excellent, 60-79=Good, 40-59=Marginal, &lt;40=Poor)</li>
+            <li>Vendor-ready ordering format (IDT or Twist)</li>
+          </ol>
+          <p>VigyanLLM generates all of these in <strong>audit-ready PDF format</strong> suitable for grant documentation and regulatory submissions.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Cluster 5: VigyanLLM Specific -->
+    <section class="faq-section" id="vigyanllm">
+      <h2>About VigyanLLM Primer</h2>
+      <p class="section-desc">Product-specific questions about features, pricing, and usage.</p>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+          What is VigyanLLM Primer?
+          <span class="faq-toggle">+</span>
+        </div>
+        <div class="faq-answer">
+          <p>VigyanLLM Primer is a <strong>research-use-only primer and probe design platform</strong> that runs a 22-step validation pipeline. It combines Primer3-style primer design with thermodynamic validation (SantaLucia 1998 nearest-neighbor model), specificity checking via NCBI BLAST, SNP screening against dbSNP, repeat masking, multiplex compatibility scoring, and TaqMan probe design — generating audit-ready PDF reports and vendor-ready export files for IDT and Twist.</p>
+          <p>All outputs are <strong>in silico recommendations</strong> requiring independent wet-lab validation.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+          What does VigyanLLM's 22-step pipeline check?
+          <span class="faq-toggle">+</span>
+        </div>
+        <div class="faq-answer">
+          <p>The 22 steps cover: (1) Transcript isoform filtering, (2) Exon-intron junction mapping, (3) Bisulfite conversion, (4) Degenerate base parsing, (5) Repeat masking, (6) Primer3 candidate design, (7) Nearest-neighbor Tm calculation, (8) Buffer/salt correction, (9) Mg2+ correction, (10) BLAST specificity, (11) Bowtie2 alignment, (12) Organelle screening, (13) Secondary structure analysis, (14) Amplicon validation, (15) dbSNP filtering, (16) ClinVar check, (17) Adapter tailing, (18) Multiplex scoring, (19) Penalty ranking, plus report generation in PDF, CSV, JSON, IDT, and Twist formats.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+          Can VigyanLLM be used for clinical diagnostics?
+          <span class="faq-toggle">+</span>
+        </div>
+        <div class="faq-answer">
+          <p><strong style="color: var(--amber);">No.</strong> VigyanLLM outputs are explicitly <strong>research-use-only (RUO)</strong> in silico recommendations. All primer and probe designs require independent experimental validation before any laboratory application. VigyanLLM is not validated for clinical diagnostic use, therapeutic decision-making, or regulatory submission. Users must independently verify all recommendations through appropriate wet-lab validation.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+          Is VigyanLLM free for Indian researchers?
+          <span class="faq-toggle">+</span>
+        </div>
+        <div class="faq-answer">
+          <p>Yes. VigyanLLM offers a <strong>free research tier</strong> for PhD students and professors with full access to primer design and PCR validation features. Institutional plans are available with <strong>India-first INR pricing</strong> via Razorpay. DPIIT Startup India recognized. No credit card required for the free tier.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+          What is a preferred-best sequence map?
+          <span class="faq-toggle">+</span>
+        </div>
+        <div class="faq-answer">
+          <p>A <strong>preferred-best sequence map</strong> is a visual representation that ranks designed primer pairs by overall quality score, showing the binding positions of forward and reverse primers on the target sequence. It indicates the quality tier (Excellent 80-100, Good 60-79, Marginal 40-59, Poor &lt;40) and highlights potential issues like SNP overlap, repeat regions, or secondary structure risk. VigyanLLM generates this map as part of its PDF report output.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+          Can I export primer designs to IDT or Twist?
+          <span class="faq-toggle">+</span>
+        </div>
+        <div class="faq-answer">
+          <p>Yes. VigyanLLM supports one-click export in <strong>IDT</strong> and <strong>Twist</strong> order formats, including plate layouts and tube labels. This eliminates manual reformatting errors and saves 10-15 minutes per order.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+          Is VigyanLLM Primer available on-premise?
+          <span class="faq-toggle">+</span>
+        </div>
+        <div class="faq-answer">
+          <p>Yes. VigyanLLM enterprise edition supports <strong>on-premise deployment</strong> with zero external API calls. All processing runs within your infrastructure, suitable for DPDP Act compliance and institutional data governance policies.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Cluster 6: Comparisons -->
+    <section class="faq-section" id="comparison">
+      <h2>Tool Comparisons</h2>
+      <p class="section-desc">How VigyanLLM compares with other primer design tools.</p>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+          How does VigyanLLM compare to IDT PrimerQuest?
+          <span class="faq-toggle">+</span>
+        </div>
+        <div class="faq-answer">
+          <p>Both design PCR primers and probes but differ in key areas:</p>
+          <ul>
+            <li><strong>Validation depth:</strong> VigyanLLM runs 22 validation steps vs PrimerQuest's standard check</li>
+            <li><strong>SNP and repeat screening:</strong> Included in VigyanLLM, absent in PrimerQuest</li>
+            <li><strong>Audit reports:</strong> VigyanLLM generates PDF documentation; PrimerQuest does not</li>
+            <li><strong>Export formats:</strong> VigyanLLM supports IDT and Twist; PrimerQuest supports IDT only</li>
+            <li><strong>Deployment:</strong> VigyanLLM offers on-premise; PrimerQuest is cloud-only</li>
+            <li><strong>Pricing:</strong> VigyanLLM offers INR pricing for Indian labs</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+          How does VigyanLLM compare to NCBI Primer-BLAST?
+          <span class="faq-toggle">+</span>
+        </div>
+        <div class="faq-answer">
+          <p>Primer-BLAST is excellent for specificity checking but lacks: thermodynamic validation (hairpins, dimers), SNP/ClinVar screening, repeat masking, multiplex compatibility scoring, TaqMan probe design, audit PDF reports, and vendor exports. VigyanLLM adds all of these. The ideal workflow: use Primer-BLAST for initial specificity screening, then validate through VigyanLLM's 22-step pipeline.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+          How does VigyanLLM compare to Benchling?
+          <span class="faq-toggle">+</span>
+        </div>
+        <div class="faq-answer">
+          <p>Benchling is a broader molecular biology platform with primer design as one module. VigyanLLM focuses specifically on <strong>validated, audit-ready primer and probe design</strong>. Benchling excels at lab workflow management; VigyanLLM excels at primer validation depth (22 steps vs Benchling's 5-6 steps). Many labs use both: Benchling for workflow management and VigyanLLM for validated primer design with documentation.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+          Can I use VigyanLLM alongside other primer tools?
+          <span class="faq-toggle">+</span>
+        </div>
+        <div class="faq-answer">
+          <p>Yes. VigyanLLM accepts primer sequences from any source (Primer3, Primer-BLAST, IDT PrimerQuest, Benchling, manual input) and validates them through its 22-step pipeline. You can design primers in your preferred tool and use VigyanLLM for validation, documentation, and export. This is our most common workflow with existing labs.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA Section -->
+    <div class="cta-box">
+      <h3>Have More Questions?</h3>
+      <p>Contact our team for personalized guidance on primer design, tool selection, or platform features.</p>
+      <a href="/contact" class="cta-btn">Ask a Question →</a>
+    </div>
+
+    <!-- References -->
+    <section class="references">
+      <h2>Scientific References</h2>
+      <ol>
+        <li>SantaLucia J. (1998). A unified view of polymer, dumbbell, and oligonucleotide DNA nearest-neighbor thermodynamics. <em>PNAS</em>, 95(4), 1460-1465.</li>
+        <li>Owczarzy R. et al. (2004). Effects of sodium ions on DNA duplex oligomers. <em>Biochemistry</em>, 43(12), 3537-3554.</li>
+        <li>von Ahsen N. et al. (2001). Oligonucleotide melting temperature under PCR conditions. <em>Clinical Chemistry</em>, 47(11), 1956-1961.</li>
+        <li>Rozen S. & Skaletsky H. (2000). Primer3 on the WWW for general users and for biologist programmers. <em>Methods Mol Biol</em>, 132, 365-386.</li>
+        <li>Ye J. et al. (2012). Primer-BLAST: A tool to design target-specific primers for PCR. <em>BMC Bioinformatics</em>, 13, 134.</li>
+        <li>Untergasser A. et al. (2012). Primer3 — new capabilities and interfaces. <em>Nucleic Acids Res</em>, 40(15), e115.</li>
+        <li>Koressaar T. & Remm M. (2007). Enhancements and modifications of primer design program Primer3. <em>Bioinformatics</em>, 23(10), 1289-1291.</li>
+      </ol>
+    </section>
+  </div>
+
+  <footer style="padding:80px 0 40px;border-top:1px solid var(--border)">
+    <div class="container">
+      <div style="display:grid;grid-template-columns:1.5fr 1fr 1fr;gap:60px;margin-bottom:60px">
+        <div>
+          <div style="font-family:var(--font-s);font-size:20px;margin-bottom:12px;display:flex;align-items:center;gap:10px">
+            <img src="logo.svg" alt="VigyanLLM" style="width:36px;height:36px;border-radius:6px;background:#0d1117;padding:3px;object-fit:contain">
+            <span>VigyanLLM</span>
+          </div>
+          <p style="font-size:13px;color:var(--muted);margin-bottom:20px">Sovereign Healthcare & Life Sciences AI</p>
+          <div style="font-family:var(--font-s);font-size:13px;color:var(--primary)">contact@vigyanllm.in</div>
+        </div>
+        <div>
+          <h5 style="font-size:12px;text-transform:uppercase;letter-spacing:0.1em;color:var(--text);margin-bottom:24px">Product</h5>
+          <a href="primer.html" style="display:block;font-size:13px;color:var(--text2);margin-bottom:14px">Primer Design</a>
+          <a href="demo.html" style="display:block;font-size:13px;color:var(--text2);margin-bottom:14px">Demos</a>
+        </div>
+        <div>
+          <h5 style="font-size:12px;text-transform:uppercase;letter-spacing:0.1em;color:var(--text);margin-bottom:24px">Resources</h5>
+          <a href="blog/index.html" style="display:block;font-size:13px;color:var(--text2);margin-bottom:14px">Blog</a>
+          <a href="faq.html" style="display:block;font-size:13px;color:var(--text2);margin-bottom:14px">FAQ</a>
+          <a href="about.html" style="display:block;font-size:13px;color:var(--text2);margin-bottom:14px">About</a>
+        </div>
+      </div>
+      <div style="border-top:1px solid var(--border);padding-top:32px;display:flex;justify-content:space-between;font-size:12px;color:var(--muted)">
+        <span>&copy; 2026 VigyanLLM Pvt. Ltd. · Sovereign Research AI</span>
+        <span>Built in India</span>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

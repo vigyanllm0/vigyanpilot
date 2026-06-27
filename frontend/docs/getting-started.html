@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Getting Started — VigyanLLM Pipeline Guide</title>
+<meta name="description" content="Complete guide to the VigyanLLM 22-step biophysical primer/probe design pipeline. From sequence input to lab-ready PDF report.">
+<link rel="canonical" href="https://vigyanllm.in/docs/getting-started">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#F8FAFC;color:#0F172A;font-family:'Inter',sans-serif;line-height:1.6;-webkit-font-smoothing:antialiased}
+nav{position:sticky;top:0;background:#0F172A;z-index:100;height:64px}
+.nav-inner{display:flex;justify-content:space-between;align-items:center;height:100%;max-width:1100px;margin:0 auto;padding:0 24px}
+.logo{font-family:'Plus Jakarta Sans',sans-serif;font-size:18px;color:#fff;display:flex;align-items:center;gap:9px;text-decoration:none;font-weight:700}
+.logo-img{width:32px;height:32px;border-radius:6px;background:#0d1117;padding:2px}
+.nav-links{display:flex;gap:24px}
+.nav-links a{font-size:13px;color:#CBD5E1;text-decoration:none;font-weight:500}
+.nav-links a:hover{color:#fff}
+.hero{background:linear-gradient(135deg,#0F172A 0%,#1E293B 100%);padding:64px 24px 48px;text-align:center}
+.hero h1{font-family:'Plus Jakarta Sans',sans-serif;font-size:clamp(1.8rem,4vw,2.6rem);color:#fff;margin-bottom:12px;font-weight:800}
+.hero p{font-size:15px;color:#94A3B8;max-width:640px;margin:0 auto;line-height:1.7}
+.container{max-width:800px;margin:0 auto;padding:48px 24px}
+.step{margin-bottom:36px}
+.step h2{font-family:'Plus Jakarta Sans',sans-serif;font-size:18px;color:#0F172A;margin-bottom:8px;display:flex;align-items:center;gap:10px}
+.step h2 .num{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;background:#2563EB;color:#fff;font-size:14px;font-weight:700;flex-shrink:0}
+.step p{font-size:14px;color:#475569;line-height:1.7}
+.step .tag{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;margin-top:6px;text-transform:uppercase;letter-spacing:.06em}
+.tag-bio{background:#f0fdf4;color:#059669}
+.tag-amber{background:#fffbeb;color:#D97706}
+.tag-primary{background:#eff6ff;color:#2563EB}
+.cta-section{background:#fff;border:1px solid #E2E8F0;border-radius:12px;padding:32px;text-align:center;margin:48px 0}
+.cta-section h3{font-family:'Plus Jakarta Sans',sans-serif;font-size:20px;margin-bottom:8px;color:#0F172A}
+.cta-section p{font-size:14px;color:#475569;margin-bottom:20px}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:12px 28px;border-radius:8px;font-size:14px;font-weight:600;text-decoration:none;cursor:pointer;transition:all .2s;border:none;font-family:'Inter',sans-serif}
+.btn-primary{background:#2563EB;color:#fff}
+.btn-primary:hover{background:#1D4ED8}
+.btn-secondary{background:#F8FAFC;color:#0F172A;border:1px solid #E2E8F0}
+.btn-secondary:hover{background:#E2E8F0}
+.cta-buttons{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+footer{text-align:center;padding:32px 24px;font-size:12px;color:#94A3B8;border-top:1px solid #E2E8F0}
+.pipeline-diagram{background:#fff;border:1px solid #E2E8F0;border-radius:12px;padding:24px;margin:32px 0}
+.pipeline-diagram h3{font-family:'Plus Jakarta Sans',sans-serif;font-size:16px;margin-bottom:16px;color:#0F172A}
+.phase-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.phase-card{border:1px solid #E2E8F0;border-radius:8px;padding:14px;text-align:center}
+.phase-card h4{font-size:12px;color:#2563EB;margin-bottom:4px;text-transform:uppercase;letter-spacing:.08em}
+.phase-card .count{font-size:24px;font-weight:800;color:#0F172A}
+.phase-card p{font-size:11px;color:#94A3B8}
+@media(max-width:600px){.phase-grid{grid-template-columns:1fr}}
+</style>
+<script>if('serviceWorker'in navigator)navigator.serviceWorker.register('/sw.js')</script>
+<style>
+#ai-widget{position:fixed;bottom:24px;right:24px;z-index:9999;font-family:'Inter',sans-serif}#ai-widget-toggle{width:56px;height:56px;border-radius:50%;background:#0F172A;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;box-shadow:0 4px 20px rgba(15,23,42,.3);transition:transform .2s,box-shadow .2s}#ai-widget-toggle:hover{transform:scale(1.05)}#ai-widget-toggle svg{width:24px;height:24px}#ai-widget-panel{position:absolute;bottom:72px;right:0;width:320px;background:#fff;border-radius:12px;box-shadow:0 10px 40px rgba(0,0,0,.15);border:1px solid #E2E8F0;overflow:hidden;opacity:0;transform:translateY(10px);pointer-events:none;transition:opacity .2s,transform .2s}#ai-widget-panel[hidden]{display:none}#ai-widget-panel.visible{opacity:1;transform:translateY(0);pointer-events:auto}.ai-widget-header{display:flex;justify-content:space-between;align-items:center;padding:16px;border-bottom:1px solid #E2E8F0;background:#F8FAFC}.ai-widget-header span{font-weight:600;font-size:15px;color:#0F172A}.ai-widget-close{background:none;border:none;font-size:20px;cursor:pointer;color:#475569;line-height:1;padding:4px}.ai-widget-close:hover{color:#0F172A}.ai-widget-body{padding:16px}.ai-widget-body p{margin:0 0 12px;font-size:13px;color:#475569;font-weight:500}.ai-widget-options{display:flex;flex-direction:column;gap:8px}.ai-widget-btn{width:100%;text-align:left;padding:12px 14px;border:1px solid #E2E8F0;border-radius:8px;background:#fff;font-size:13px;font-weight:500;color:#0F172A;cursor:pointer;transition:background .15s,border-color .15s,transform .1s;font-family:'Inter',sans-serif}.ai-widget-btn:hover{background:#eff6ff;border-color:#2563EB}@media(max-width:480px){#ai-widget{bottom:16px;right:16px}#ai-widget-panel{width:calc(100vw - 48px);max-width:320px}}
+</style>
+</head>
+<body>
+<nav>
+<div class="nav-inner">
+<a href="/" class="logo"><img src="/logo.svg" alt="VigyanLLM" class="logo-img">VigyanLLM</a>
+<div class="nav-links">
+<a href="/primer">Pipeline</a>
+<a href="/faq">FAQ</a>
+<a href="/contact">Contact</a>
+</div>
+</div>
+</nav>
+
+<section class="hero">
+<h1>Getting Started with VigyanLLM</h1>
+<p>Design lab-ready primer and probe pairs with our 22-step biophysical validation pipeline. From sequence input to an audit-ready PDF report in minutes.</p>
+</section>
+
+<div class="container">
+
+<h2 style="font-family:'Plus Jakarta Sans',sans-serif;font-size:20px;color:#0F172A;margin:32px 0 16px">How the Pipeline Works</h2>
+<p style="font-size:14px;color:#475569;line-height:1.8;margin-bottom:24px">
+VigyanLLM's pipeline is a fully automated 22-step primer and probe design engine. It takes a DNA sequence or gene name as input and produces lab-ready primer pairs with an audit-grade PDF report. The entire pipeline runs server-side — the browser submits the job and polls for results.
+</p>
+
+<h3 style="font-size:16px;color:#0F172A;margin:24px 0 12px">Architecture Overview</h3>
+<p style="font-size:14px;color:#475569;line-height:1.8;margin-bottom:20px">
+When you submit a target sequence, the job is dispatched to a Flask backend running Primer3, NCBI BLAST, and the SantaLucia nearest-neighbour thermodynamics engine. Each of the 22 steps is executed sequentially. If any step fails (e.g., BLAST is unreachable), the pipeline marks that job as failed and returns a partial result. Results are stored server-side and fetched by the frontend via polling.
+</p>
+
+<div class="pipeline-diagram">
+<h3>Pipeline at a Glance</h3>
+<div class="phase-grid">
+<div class="phase-card"><h4>Phase A</h4><div class="count">5</div><p>Target Selection &amp; Filtering</p></div>
+<div class="phase-card"><h4>Phase B</h4><div class="count">4</div><p>Primer Design &amp; Thermodynamics</p></div>
+<div class="phase-card"><h4>Phase C</h4><div class="count">3</div><p>Specificity &amp; Alignment</p></div>
+<div class="phase-card"><h4>Phase D</h4><div class="count">7</div><p>Secondary Structure &amp; Validation</p></div>
+<div class="phase-card"><h4>Phase E</h4><div class="count">3</div><p>Ranking &amp; Report</p></div>
+</div>
+</div>
+
+<h3 style="font-size:16px;color:#0F172A;margin:32px 0 16px">Step-by-Step Pipeline Flow</h3>
+
+<table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:32px">
+<thead>
+<tr style="background:#F1F5F9;border-bottom:2px solid #E2E8F0">
+<th style="text-align:left;padding:10px 12px;font-weight:600;color:#0F172A">Step</th>
+<th style="text-align:left;padding:10px 12px;font-weight:600;color:#0F172A">Phase</th>
+<th style="text-align:left;padding:10px 12px;font-weight:600;color:#0F172A">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr style="border-bottom:1px solid #E2E8F0"><td style="padding:8px 12px">1</td><td style="padding:8px 12px">A</td><td style="padding:8px 12px">Fetch reference transcript &amp; genomic sequence from NCBI</td></tr>
+<tr style="border-bottom:1px solid #E2E8F0"><td style="padding:8px 12px">2</td><td style="padding:8px 12px">A</td><td style="padding:8px 12px">Filter low-complexity &amp; repeat-masked regions</td></tr>
+<tr style="border-bottom:1px solid #E2E8F0"><td style="padding:8px 12px">3</td><td style="padding:8px 12px">A</td><td style="padding:8px 12px">Identify conserved &amp; unique regions for primer placement</td></tr>
+<tr style="border-bottom:1px solid #E2E8F0"><td style="padding:8px 12px">4</td><td style="padding:8px 12px">A</td><td style="padding:8px 12px">Exclude known SNP-dense regions from target window</td></tr>
+<tr style="border-bottom:1px solid #E2E8F0"><td style="padding:8px 12px">5</td><td style="padding:8px 12px">A</td><td style="padding:8px 12px">Select optimal amplification window based on GC profile</td></tr>
+<tr style="border-bottom:1px solid #E2E8F0"><td style="padding:8px 12px">6</td><td style="padding:8px 12px">B</td><td style="padding:8px 12px">Run Primer3 with configured Tm, length, and GC% parameters</td></tr>
+<tr style="border-bottom:1px solid #E2E8F0"><td style="padding:8px 12px">7</td><td style="padding:8px 12px">B</td><td style="padding:8px 12px">Apply 3&prime; GC clamp &amp; end-stability filters</td></tr>
+<tr style="border-bottom:1px solid #E2E8F0"><td style="padding:8px 12px">8</td><td style="padding:8px 12px">B</td><td style="padding:8px 12px">Calculate Tm via SantaLucia 1998 nearest-neighbour model</td></tr>
+<tr style="border-bottom:1px solid #E2E8F0"><td style="padding:8px 12px">9</td><td style="padding:8px 12px">B</td><td style="padding:8px 12px">Enforce &Delta;Tm &le; 1.5&deg;C between forward &amp; reverse</td></tr>
+<tr style="border-bottom:1px solid #E2E8F0"><td style="padding:8px 12px">10</td><td style="padding:8px 12px">C</td><td style="padding:8px 12px">BLAST each candidate against reference genome (GRCh38/hg38)</td></tr>
+<tr style="border-bottom:1px solid #E2E8F0"><td style="padding:8px 12px">11</td><td style="padding:8px 12px">C</td><td style="padding:8px 12px">Filter off-targets with &le; 2 mismatches in last 5 bp at 3&prime; end</td></tr>
+<tr style="border-bottom:1px solid #E2E8F0"><td style="padding:8px 12px">12</td><td style="padding:8px 12px">C</td><td style="padding:8px 12px">Cross-reference amplicon against known pseudogenes</td></tr>
+<tr style="border-bottom:1px solid #E2E8F0"><td style="padding:8px 12px">13</td><td style="padding:8px 12px">D</td><td style="padding:8px 12px">Predict hairpin secondary structure (&Delta;G &gt; &minus;2.0 kcal/mol)</td></tr>
+<tr style="border-bottom:1px solid #E2E8F0"><td style="padding:8px 12px">14</td><td style="padding:8px 12px">D</td><td style="padding:8px 12px">Predict self-dimer formation (&Delta;G &gt; &minus;8.0 kcal/mol)</td></tr>
+<tr style="border-bottom:1px solid #E2E8F0"><td style="padding:8px 12px">15</td><td style="padding:8px 12px">D</td><td style="padding:8px 12px">Predict cross-dimer between Fwd &amp; Rev (&Delta;G &gt; &minus;8.0 kcal/mol)</td></tr>
+<tr style="border-bottom:1px solid #E2E8F0"><td style="padding:8px 12px">16</td><td style="padding:8px 12px">D</td><td style="padding:8px 12px">Mask primers overlapping with Dfam repeat elements</td></tr>
+<tr style="border-bottom:1px solid #E2E8F0"><td style="padding:8px 12px">17</td><td style="padding:8px 12px">D</td><td style="padding:8px 12px">Cross-reference positions against dbSNP common variants</td></tr>
+<tr style="border-bottom:1px solid #E2E8F0"><td style="padding:8px 12px">18</td><td style="padding:8px 12px">D</td><td style="padding:8px 12px">Evaluate multiplex compatibility (cross-pair &Delta;G &gt; &minus;5.0)</td></tr>
+<tr style="border-bottom:1px solid #E2E8F0"><td style="padding:8px 12px">19</td><td style="padding:8px 12px">D</td><td style="padding:8px 12px">Design TaqMan probe (if enabled): Tm 68&ndash;70&deg;C, no G at 5&prime;</td></tr>
+<tr style="border-bottom:1px solid #E2E8F0"><td style="padding:8px 12px">20</td><td style="padding:8px 12px">E</td><td style="padding:8px 12px">Compute composite score (0&ndash;100) per primer pair</td></tr>
+<tr style="border-bottom:1px solid #E2E8F0"><td style="padding:8px 12px">21</td><td style="padding:8px 12px">E</td><td style="padding:8px 12px">Rank pairs &amp; filter to top 10 best candidates</td></tr>
+<tr><td style="padding:8px 12px">22</td><td style="padding:8px 12px">E</td><td style="padding:8px 12px">Generate PDF audit report with full traceability</td></tr>
+</tbody>
+</table>
+
+<div class="pipeline-diagram">
+<h3>How Scoring Works</h3>
+<p style="font-size:13px;color:#475569;line-height:1.7;margin:0">
+Each of the 22 steps contributes a weighted sub-score to the final 0&ndash;100 rating.
+Thermodynamic penalties (hairpin, self-dimer, cross-dimer) carry the heaviest weight
+because they directly affect PCR efficiency. BLAST off-target count and SNP overlap
+also reduce the score. Pairs scoring <strong>80+</strong> are marked green (lab-ready),
+<strong>60&ndash;79</strong> are yellow (requires verification),
+<strong>40&ndash;59</strong> are orange (use with caution),
+and <strong>&lt;40</strong> are red (discard).
+</p>
+</div>
+
+<h3 style="font-size:16px;color:#0F172A;margin:32px 0 12px">User Workflow</h3>
+
+<div class="step">
+<h2><span class="num">1</span>Enter Your Sequence</h2>
+<p>Paste a DNA template sequence or a gene name (e.g., <em>TP53</em>, <em>BRCA1</em>). The pipeline auto-fetches the transcript from NCBI. Supported length: 50&ndash;10,000 bp.</p>
+</div>
+
+<div class="step">
+<h2><span class="num">2</span>Configure Parameters</h2>
+<p>Set primer Tm (default 62&deg;C), amplicon size range, and design mode (Standard PCR, Bisulfite MSP, or Multiplex). Enable TaqMan probe design or NGS adapter tailing as needed.</p>
+<span class="tag tag-primary">Optional</span>
+</div>
+
+<div class="step">
+<h2><span class="num">3</span>Run Pipeline</h2>
+<p>Click <strong>Run Pipeline</strong>. The 22-step engine executes server-side in sequence. The frontend polls for progress and updates the UI as each phase completes. Typical runtime: 30&ndash;60 seconds depending on target length and server load.</p>
+<span class="tag tag-bio">~30–60 seconds</span>
+</div>
+
+<div class="step">
+<h2><span class="num">4</span>Review Results</h2>
+<p>Each primer pair is scored 0&ndash;100. Green (80+) pairs are lab-ready. Yellow/orange pairs need verification. Red pairs should be discarded. Expand any row to see full metrics: Tm, GC%, hairpin &Delta;G, self-dimer &Delta;G, cross-dimer &Delta;G, and BLAST off-target hits.</p>
+</div>
+
+<div class="step">
+<h2><span class="num">5</span>Export &amp; Report</h2>
+<p>Download results as CSV, JSON, or a comprehensive PDF audit report. Order-ready reports for IDT and Twist Bioscience are also available for direct synthesis ordering.</p>
+<span class="tag tag-amber">PDF includes full audit trail</span>
+</div>
+
+<div class="cta-section">
+<h3>Try the Pipeline Now</h3>
+<p>No account required for the demo. Enter a sequence and see the 22-step engine in action.</p>
+<div class="cta-buttons">
+<a href="/demo" class="btn btn-primary">&#9654; Launch Demo</a>
+<a href="/primer" class="btn btn-secondary">Open Full Pipeline</a>
+</div>
+</div>
+
+</div>
+
+<footer>
+<p>&copy; 2026 VigyanLLM Pvt. Ltd. &mdash; Sovereign Biomedical AI Platform</p>
+</footer>
+
+<div id="ai-widget">
+<button id="ai-widget-toggle" aria-label="AI Assistant" title="AI Assistant"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg></button>
+<div id="ai-widget-panel" class="ai-widget-panel" hidden>
+<div class="ai-widget-header"><span>AI Assistant</span><button class="ai-widget-close" id="ai-widget-close" aria-label="Close">&times;</button></div>
+<div class="ai-widget-body">
+<p>How can I help you?</p>
+<div class="ai-widget-options">
+<button class="ai-widget-btn" data-href="/docs/getting-started">Getting Started Guide</button>
+<button class="ai-widget-btn" data-href="/docs/pipeline-config">Pipeline Configuration</button>
+<button class="ai-widget-btn" data-href="/contact">Report an Issue</button>
+<button class="ai-widget-btn" data-href="/faq">View FAQ</button>
+</div>
+</div>
+</div>
+</div>
+<script>
+(function(){var t=document.getElementById('ai-widget-toggle'),p=document.getElementById('ai-widget-panel'),c=document.getElementById('ai-widget-close'),b=document.querySelectorAll('.ai-widget-btn');function o(){p.hidden=false;requestAnimationFrame(function(){p.classList.add('visible')})}function l(){p.classList.remove('visible');setTimeout(function(){p.hidden=true},200)}t&&t.addEventListener('click',function(){p.classList.contains('visible')?l():o()});c&&c.addEventListener('click',l);document.addEventListener('click',function(e){if(!document.getElementById('ai-widget').contains(e.target))l()});b.forEach(function(n){n.addEventListener('click',function(){window.location.href=n.getAttribute('data-href')})});document.addEventListener('keydown',function(e){if(e.key==='Escape'&&p.classList.contains('visible'))l()})})();
+</script>
+</body>
+</html>
