@@ -18,7 +18,19 @@ const PRECACHE_ASSETS = [
 self.addEventListener('install', e => {
   self.skipWaiting();
   e.waitUntil(
-    caches.open('vigyanllm-boot').then(c => c.addAll(PRECACHE_ASSETS))
+    caches.open('vigyanllm-boot').then(async cache => {
+      for (const url of PRECACHE_ASSETS) {
+        try {
+          const req = new Request(url, { cache: 'no-store' });
+          const res = await fetch(req);
+          if (res.ok) {
+            await cache.put(req, res);
+          }
+        } catch (_) {
+          // skip failed asset — don't break the install
+        }
+      }
+    })
   );
 });
 
