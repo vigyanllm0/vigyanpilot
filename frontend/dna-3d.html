@@ -213,7 +213,7 @@ function makeCluster(color) {
   return g;
 }
 
-for (let p = 0; p < 8; p++) {
+for (let p = 0; p < 14; p++) {
   const cluster = makeCluster(proteinColors[p % proteinColors.length]);
   const theta = Math.random() * 6.2832;
   const phi = Math.acos(2 * Math.random() - 1);
@@ -230,6 +230,39 @@ for (let p = 0; p < 8; p++) {
     pos: cluster.position.clone(),
     vel: new THREE.Vector3((Math.random()-0.5)*0.004, (Math.random()-0.5)*0.004, (Math.random()-0.5)*0.004),
     rot: new THREE.Vector3((Math.random()-0.5)*0.002, (Math.random()-0.5)*0.002, (Math.random()-0.5)*0.002),
+    phase: Math.random() * 100
+  });
+}
+
+// ─── SMALL FREE PROTEINS (near DNA) ─────────────────────
+const smallProteinMat = new THREE.MeshStandardMaterial({
+  color: 0x7ec8e3, roughness: 0.6, metalness: 0.1
+});
+const smallProteins = [];
+
+for (let p = 0; p < 30; p++) {
+  const g = new THREE.Group();
+  const count = 2 + Math.floor(Math.random() * 3);
+  for (let i = 0; i < count; i++) {
+    const m = new THREE.Mesh(sphereGeo, smallProteinMat);
+    const rad = 0.04 + Math.random() * 0.04;
+    m.scale.set(rad, rad, rad);
+    m.position.set((Math.random()-0.5)*0.12, (Math.random()-0.5)*0.12, (Math.random()-0.5)*0.12);
+    m.castShadow = true;
+    g.add(m);
+  }
+  const angle = Math.random() * 6.2832;
+  const zOff = (Math.random() - 0.5) * h;
+  g.position.set(R * 1.8 * Math.cos(angle), R * 1.8 * Math.sin(angle), zOff);
+  g.rotation.set(Math.random() * 6, Math.random() * 6, Math.random() * 6);
+  scene.add(g);
+  smallProteins.push({
+    group: g,
+    pos: g.position.clone(),
+    vel: new THREE.Vector3((Math.random()-0.5)*0.003, (Math.random()-0.5)*0.003, (Math.random()-0.5)*0.003),
+    angle: angle,
+    zBase: zOff,
+    orbitSpeed: 0.002 + Math.random() * 0.004,
     phase: Math.random() * 100
   });
 }
@@ -314,6 +347,29 @@ function animate() {
     prot.group.rotation.x += prot.rot.x;
     prot.group.rotation.y += prot.rot.y;
     prot.group.rotation.z += prot.rot.z;
+  }
+
+  // Small protein orbital motion near DNA
+  for (const sp of smallProteins) {
+    sp.vel.x += (Math.random() - 0.5) * 0.006;
+    sp.vel.y += (Math.random() - 0.5) * 0.006;
+    sp.vel.z += (Math.random() - 0.5) * 0.006;
+    sp.vel.multiplyScalar(0.94);
+    sp.pos.add(sp.vel);
+
+    // Orbital drift around DNA
+    sp.angle += sp.orbitSpeed;
+    const targetR = 1.5 + Math.sin(t * 0.3 + sp.phase) * 0.3;
+    const tx = R * targetR * Math.cos(sp.angle);
+    const ty = R * targetR * Math.sin(sp.angle);
+    sp.pos.x += (tx - sp.pos.x) * 0.008;
+    sp.pos.y += (ty - sp.pos.y) * 0.008;
+    // Z confinement to DNA length
+    sp.pos.z += (sp.zBase - sp.pos.z) * 0.002;
+
+    sp.group.position.copy(sp.pos);
+    sp.group.rotation.x += 0.005 * Math.sin(t + sp.phase);
+    sp.group.rotation.y += 0.005 * Math.cos(t * 0.7 + sp.phase);
   }
 
   composer.render();
