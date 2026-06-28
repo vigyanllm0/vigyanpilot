@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3D B-DNA Molecular Simulation</title>
+<style>
+  body { margin: 0; overflow: hidden; background: #050914; }
+  canvas { display: block; }
+  #info {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    color: rgba(255,255,255,0.2); font: 12px/1.4 monospace;
+    text-align: center; pointer-events: none;
+    background: rgba(5,9,20,0.5); padding: 6px 16px; border-radius: 5px;
+    backdrop-filter: blur(4px); letter-spacing: 0.4px;
+  }
+</style>
+</head>
+<body>
+<div id="info">B-DNA · RNA Polymerase II · major/minor groove asymmetry</div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { BokehPass } from 'three/addons/postprocessing/BokehPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+
+// ─── B-DNA PARAMETERS (exact) ────────────────────────────
+const R      = 1.0;    // helix radius
+const RISE   = 0.34;   // z-rise per base pair
+const TWIST  = 0.598;  // radians per base pair (34.3°)
+const GROOVE = 2.094;  // 120° = 2*PI/3 rad strand offset
+const NUM_BP = 28;     // total base pairs (~2.7 turns)
+const BACK_R = 0.19;   // backbone sphere radius
+const BP_R   = 0.09;   // base pair sphere radius
+
+// ─── SCENE ───────────────────────────────────────────────
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x050914);
+scene.fog = new THREE.FogExp2(0x050914, 0.035);
+
+const camera = new THREE.PerspectiveCamera(50, innerWidth / innerHeight, 0.1, 40);
+camera.position.set(4, 2.5, 5.5);
+camera.lookAt(0, 0, 0);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, depth: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.0;
+document.body.appendChild(renderer.domElement);
+
+// ─── LIGHTS ──────────────────────────────────────────────
+scene.add(new THREE.HemisphereLight(0x4466aa, 0x080820, 0.5));
+
+const key = new THREE.DirectionalLight(0xffeedd, 1.6);
+key.position.set(4, 6, 5);
+key.castShadow = true;
+key.shadow.mapSize.set(1024, 1024);
+scene.add(key);
+
+scene.add(new THREE.DirectionalLight(0x4488ff, 0.4).position.set(-3, 1, -4));
+scene.add(new THREE.DirectionalLight(0x88ccff, 0.25).position.set(-2, -4, 3));
+const gl = new THREE.PointLight(0x3366ff, 0.3, 12);
+gl.position.set(0, 0, 0);
+scene.add(gl);
+
+// ─── SHARED GEOMETRY ─────────────────────────────────────
+const sphereGeo = new THREE.SphereGeometry(1, 14, 10);
+
+// ─── BUILD DNA ───────────────────────────────────────────
+const dnaGroup = new THREE.Group();
+scene.add(dnaGroup);
+
+const bbMat = new THREE.MeshStandardMaterial({
+  color: 0xc8c8d4, roughness: 0.65, metalness: 0.05
+});
+const phMat = new THREE.MeshStandardMaterial({
+  color: 0xf5b342, roughness: 0.7, metalness: 0.05
+});
+
+const dnaBasePositions = [];
+
+// Strand 1 backbone (4 overlapping spheres per base pair)
+for (let i = 0; i < NUM_BP; i++) {
+  for (let s = 0; s < 4; s++) {
+    const f = (i + s / 4) / NUM_BP;
+    const posZ = (i + s / 4) * RISE - NUM_BP * RISE * 0.5;
+    const posA = (i + s / 4) * TWIST;
+    const x = R * Math.cos(posA);
+    const y = R * Math.sin(posA);
+    const isP = (i * 4 + s) % 5 === 0;
+    const m = new THREE.Mesh(sphereGeo, isP ? phMat : bbMat);
+    const rad = isP ? BACK_R * 1.4 : BACK_R;
+    m.position.set(x, y, posZ);
+    m.scale.set(rad, rad, rad);
+    m.castShadow = true;
+    dnaGroup.add(m);
+    dnaBasePositions.push({ mesh: m, bx: x, by: y, bz: posZ, strand: 1 });
+  }
+}
+
+// Strand 2 backbone (offset by 120°)
+for (let i = 0; i < NUM_BP; i++) {
+  for (let s = 0; s < 4; s++) {
+    const f = (i + s / 4) / NUM_BP;
+    const posZ = (i + s / 4) * RISE - NUM_BP * RISE * 0.5;
+    const posA = (i + s / 4) * TWIST + GROOVE;
+    const x = R * Math.cos(posA);
+    const y = R * Math.sin(posA);
+    const isP = (i * 4 + s + 2) % 5 === 0;
+    const m = new THREE.Mesh(sphereGeo, isP ? phMat : bbMat);
+    const rad = isP ? BACK_R * 1.4 : BACK_R;
+    m.position.set(x, y, posZ);
+    m.scale.set(rad, rad, rad);
+    m.castShadow = true;
+    dnaGroup.add(m);
+    dnaBasePositions.push({ mesh: m, bx: x, by: y, bz: posZ, strand: 2 });
+  }
+}
+
+// ─── BASE PAIRS ──────────────────────────────────────────
+const atColors = [0x4169E1, 0xDC143C, 0x6495ED, 0xCD5C5C];
+const gcColors = [0x2ECC71, 0xF1C40F, 0x27AE60, 0xD4AC0D];
+const matCache = {};
+
+function bMat(color) {
+  if (!matCache[color])
+    matCache[color] = new THREE.MeshStandardMaterial({ color, roughness: 0.7, metalness: 0.05 });
+  return matCache[color];
+}
+
+const basePositions = [];
+const h = NUM_BP * RISE;
+
+for (let i = 0; i < NUM_BP; i++) {
+  const z = (i - NUM_BP * 0.5) * RISE;
+  const a = i * TWIST;
+  const isAT = i % 2 === 0;
+  const cols = isAT ? atColors : gcColors;
+  const x1 = R * Math.cos(a);
+  const y1 = R * Math.sin(a);
+  const x2 = R * Math.cos(a + GROOVE);
+  const y2 = R * Math.sin(a + GROOVE);
+
+  for (let b = 0; b < 5; b++) {
+    const t = (b + 1) / 6;
+    const bx = x1 + (x2 - x1) * t + (Math.random() - 0.5) * 0.12;
+    const by = y1 + (y2 - y1) * t + (Math.random() - 0.5) * 0.12;
+    const bz = z + (Math.random() - 0.5) * 0.08;
+    const m = new THREE.Mesh(sphereGeo, bMat(cols[b % cols.length]));
+    const rad = BP_R * (0.7 + Math.random() * 0.5);
+    m.position.set(bx, by, bz);
+    m.scale.set(rad, rad, rad);
+    m.castShadow = true;
+    dnaGroup.add(m);
+    basePositions.push({ mesh: m, bx, by, bz });
+  }
+}
+
+// ─── AMBIENT CELLULAR PARTICLES ──────────────────────────
+const pMat = new THREE.PointsMaterial({
+  color: 0x4488ff, size: 0.03, transparent: true, opacity: 0.4,
+  blending: THREE.AdditiveBlending, depthWrite: false
+});
+const pGeo = new THREE.BufferGeometry();
+const pCount = 600;
+const pPos = new Float32Array(pCount * 3);
+for (let i = 0; i < pCount * 3; i++) pPos[i] = (Math.random() - 0.5) * 20;
+pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
+const particles = new THREE.Points(pGeo, pMat);
+particles.position.y = 1;
+scene.add(particles);
+
+// ─── PROTEINS (RNA Polymerase clusters) ──────────────────
+const proteinColors = [
+  0x8B5CF6, 0xEC4899, 0xF97316, 0x06B6D4,
+  0x10B981, 0xEAB308, 0xEF4444, 0x3B82F6
+];
+const proteins = [];
+
+function makeCluster(color) {
+  const g = new THREE.Group();
+  const n = 28 + Math.floor(Math.random() * 24);
+  const mat = new THREE.MeshStandardMaterial({ color, roughness: 0.75, metalness: 0.05 });
+  const cc = new THREE.Vector3((Math.random()-0.5)*0.3, (Math.random()-0.5)*0.3, (Math.random()-0.5)*0.3);
+  for (let i = 0; i < n; i++) {
+    const theta = Math.random() * 6.2832;
+    const phi = Math.acos(2 * Math.random() - 1);
+    const r = 0.05 + Math.pow(Math.random(), 1.8) * 0.55;
+    const px = Math.sin(phi) * Math.cos(theta) * r + cc.x;
+    const py = Math.sin(phi) * Math.sin(theta) * r + cc.y;
+    const pz = Math.cos(phi) * r + cc.z;
+    const m = new THREE.Mesh(sphereGeo, mat);
+    const rad = 0.04 + Math.random() * 0.06;
+    m.position.set(px, py, pz);
+    m.scale.set(rad, rad, rad);
+    m.castShadow = true;
+    g.add(m);
+  }
+  return g;
+}
+
+for (let p = 0; p < 8; p++) {
+  const cluster = makeCluster(proteinColors[p % proteinColors.length]);
+  const theta = Math.random() * 6.2832;
+  const phi = Math.acos(2 * Math.random() - 1);
+  const rad = 2.5 + Math.random() * 2.5;
+  cluster.position.set(
+    Math.sin(phi) * Math.cos(theta) * rad,
+    Math.sin(phi) * Math.sin(theta) * rad,
+    Math.cos(phi) * rad * 0.7
+  );
+  cluster.rotation.set(Math.random() * 6, Math.random() * 6, Math.random() * 6);
+  scene.add(cluster);
+  proteins.push({
+    group: cluster,
+    pos: cluster.position.clone(),
+    vel: new THREE.Vector3((Math.random()-0.5)*0.004, (Math.random()-0.5)*0.004, (Math.random()-0.5)*0.004),
+    rot: new THREE.Vector3((Math.random()-0.5)*0.002, (Math.random()-0.5)*0.002, (Math.random()-0.5)*0.002),
+    phase: Math.random() * 100
+  });
+}
+
+// ─── POST-PROCESSING ──────────────────────────────────────
+const composer = new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene, camera));
+
+const camDist = camera.position.length();
+composer.addPass(new BokehPass(scene, camera, {
+  focus: camDist,
+  aperture: 0.04,
+  maxblur: 0.03
+}));
+
+composer.addPass(new OutputPass());
+
+// ─── RESIZE ──────────────────────────────────────────────
+window.addEventListener('resize', () => {
+  const w = innerWidth, h = innerHeight;
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+  renderer.setSize(w, h);
+  composer.setSize(w, h);
+});
+
+// ─── ANIMATION ──────────────────────────────────────────
+const clock = new THREE.Clock();
+
+function animate() {
+  requestAnimationFrame(animate);
+  const t = clock.getElapsedTime();
+
+  // DNA rotation
+  dnaGroup.rotation.y += 0.0018;
+
+  // DNA undulation (sine-wave flexibility)
+  const uFreq = 0.8;
+  const uAmp  = 0.05;
+  for (const bp of dnaBasePositions) {
+    const wave   = Math.sin(bp.bz * uFreq + t * 0.5) * uAmp;
+    const waveX  = Math.sin(bp.bz * 0.6 + t * 0.35) * uAmp * 0.5;
+    bp.mesh.position.x = bp.bx + waveX;
+    bp.mesh.position.y = bp.by + wave;
+    bp.mesh.position.z = bp.bz;
+  }
+  for (const bp of basePositions) {
+    const wave   = Math.sin(bp.bz * uFreq + t * 0.5 + 0.3) * uAmp;
+    const waveX  = Math.sin(bp.bz * 0.6 + t * 0.35 + 0.3) * uAmp * 0.5;
+    bp.mesh.position.x = bp.bx + waveX;
+    bp.mesh.position.y = bp.by + wave;
+    bp.mesh.position.z = bp.bz;
+  }
+
+  // Ambient particle drift
+  particles.rotation.y += 0.0002;
+  particles.rotation.x += 0.0001;
+
+  // Protein Brownian motion + attraction to major groove
+  for (const prot of proteins) {
+    prot.vel.x += (Math.random() - 0.5) * 0.0035;
+    prot.vel.y += (Math.random() - 0.5) * 0.0035;
+    prot.vel.z += (Math.random() - 0.5) * 0.0035;
+    prot.vel.multiplyScalar(0.96);
+    prot.pos.add(prot.vel);
+
+    // Attraction toward DNA when within 5 units
+    const dist = prot.pos.length();
+    if (dist > 1.5 && dist < 5.0) {
+      const angle = Math.atan2(prot.pos.y, prot.pos.x);
+      // Nearest point on DNA surface at same Z
+      const tx = R * 0.85 * Math.cos(angle);
+      const ty = R * 0.85 * Math.sin(angle);
+      const force = new THREE.Vector3(tx - prot.pos.x, ty - prot.pos.y, 0).multiplyScalar(0.0006);
+      prot.vel.add(force);
+    }
+    if (dist > 5.5) {
+      prot.vel.add(prot.pos.clone().negate().normalize().multiplyScalar(0.0015));
+    }
+
+    prot.group.position.copy(prot.pos);
+    prot.group.rotation.x += prot.rot.x;
+    prot.group.rotation.y += prot.rot.y;
+    prot.group.rotation.z += prot.rot.z;
+  }
+
+  composer.render();
+}
+
+animate();
+</script>
+</body>
+</html>
