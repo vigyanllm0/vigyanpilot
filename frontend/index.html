@@ -494,95 +494,126 @@ footer { background: var(--navy); color: #CBD5E1; padding: 80px 0 32px; }
     var jAmp = dna.jitterAmp, jFreq = dna.jitterFreq;
     var stride = 1 / bps;
 
-    // Backbone glow (subtle ambient)
+    // Noise functions for irregular coils
+    function getNoise(t, phase, amp1, amp2) {
+      return Math.sin(t*10.7+phase)*amp1 + Math.sin(t*20.1+phase*1.3)*amp2;
+    }
+
+    // Backbone glow (subtle ambient) with irregular coil noise
     for (var s = 0; s < 2; s++) {
       ctx.globalAlpha = a * 0.15;
       ctx.strokeStyle = 'rgba(180,180,195,0.04)';
-      ctx.lineWidth = 14;
+      ctx.lineWidth = 16;
       ctx.beginPath();
       for (var b = 0; b <= bps * 4; b++) {
         var t = b / (bps * 4);
-        var x = leftX + t * w;
-        var ang = t * 6.2832 * turns + rot;
-        var y = cy + Math.cos(ang + s * groove) * rad;
+        var rn = getNoise(t,0.5,0.22,0.14);
+        var an = getNoise(t,2.1,0.3,0.15);
+        var xw = getNoise(t,0.5,10,5);
+        var yw = getNoise(t,3.2,8,4);
+        var x = leftX + t * w + xw;
+        var ang = t * 6.2832 * turns + rot + an;
+        var y = cy + Math.cos(ang + s * groove) * (rad * (1 + rn)) + yw;
         b === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
       }
       ctx.stroke();
     }
     ctx.globalAlpha = 1;
 
-    // Draw dense backbone line for thread-like appearance
+    // Dense backbone line with irregular coil noise
     for (var s = 0; s < 2; s++) {
       ctx.globalAlpha = a * 0.6;
-      ctx.strokeStyle = s === 0 ? 'rgba(209,213,219,0.5)' : 'rgba(209,213,219,0.5)';
+      ctx.strokeStyle = 'rgba(209,213,219,0.5)';
       ctx.lineWidth = 3;
       ctx.beginPath();
       for (var b = 0; b <= bps; b++) {
         var t = b / bps;
-        var x = leftX + t * w;
-        var ang = t * 6.2832 * turns + rot;
-        var y = cy + Math.cos(ang + s * groove) * rad;
+        var rn = getNoise(t,0.5,0.22,0.14);
+        var an = getNoise(t,2.1,0.3,0.15);
+        var xw = getNoise(t,0.5,10,5);
+        var yw = getNoise(t,3.2,8,4);
+        var x = leftX + t * w + xw;
+        var ang = t * 6.2832 * turns + rot + an;
+        var y = cy + Math.cos(ang + s * groove) * (rad * (1 + rn)) + yw;
         b === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
       }
       ctx.stroke();
     }
     ctx.globalAlpha = 1;
 
-    // Draw atoms at each base position
+    // Draw atoms at each base position with irregular coil noise
     for (var b = 0; b < bps; b++) {
       var t = b / bps;
-      var x = leftX + t * w;
-      var ang = t * 6.2832 * turns + rot;
-      var depth = Math.sin(ang);
-      var zs = 0.5 + (depth + 1) * 0.25;
+      var rn = getNoise(t,0.5,0.22,0.14);
+      var an = getNoise(t,2.1,0.3,0.15);
+      var xw = getNoise(t,0.5,10,5);
+      var yw = getNoise(t,3.2,8,4);
+      var localRad = rad * (1 + rn);
+      var x = leftX + t * w + xw;
+      var ang = t * 6.2832 * turns + rot + an;
 
       var ang1 = ang, ang2 = ang + groove;
-      var y1 = cy + Math.cos(ang1) * rad;
-      var y2 = cy + Math.cos(ang2) * rad;
+      var y1 = cy + Math.cos(ang1) * localRad + yw;
+      var y2 = cy + Math.cos(ang2) * localRad + yw;
       var d1 = Math.sin(ang1), d2 = Math.sin(ang2);
       var zs1 = 0.5 + (d1 + 1) * 0.25, zs2 = 0.5 + (d2 + 1) * 0.25;
+
+      // Per-atom noise offset for this base
+      var baRn = getNoise(t,1.7,0.1,0.06);
+      var baAn = getNoise(t,3.5,0.08,0.04);
 
       // --- Backbone atoms strand 1 (dense: 5 per base) ---
       for (var ai = 0; ai < 5; ai++) {
         var at = t + (ai - 2) * stride * 0.3;
         if (at < 0 || at > 1) continue;
-        var aAng = ang1 + (ai - 2) * 0.15;
+        var aRn = getNoise(at,0.5+ai*0.1,0.22,0.14);
+        var aAn = getNoise(at,2.1+ai*0.1,0.3,0.15);
+        var aXw = getNoise(at,0.5+ai*0.1,10,5);
+        var aYw = getNoise(at,3.2+ai*0.1,8,4);
+        var aAng = ang1 + (ai - 2) * 0.15 + aAn * 0.3;
+        var aRad = localRad * (1 + aRn * 0.5);
         var ad = Math.sin(aAng);
         var azs = 0.5 + (ad + 1) * 0.25;
-        var aax = leftX + at * w;
-        var aay = cy + Math.cos(aAng) * rad;
+        var aax = leftX + at * w + aXw;
+        var aay = cy + Math.cos(aAng) * aRad + aYw;
         var aJx = Math.sin(time * jFreq + b * 0.7 + ai * 3.1) * jAmp * 0.5 * azs;
         var aJy = Math.cos(time * jFreq * 0.9 + b * 1.1 + ai * 2.7) * jAmp * 0.5 * azs;
         var isP = (b * 5 + ai + 1) % 6 === 0;
-        drawSphere(aax + aJx, aay + aJy, (isP ? 4.0 : 2.2) * azs, isP ? '#F59E0B' : '#D1D5DB', a * (0.6 + Math.abs(ad) * 0.3));
+        drawSphere(aax + aJx, aay + aJy, (isP ? 3.5 : 2.0) * azs, isP ? '#F59E0B' : '#D1D5DB', a * (0.6 + Math.abs(ad) * 0.3));
       }
 
       // --- Backbone atoms strand 2 (dense: 5 per base) ---
       for (var ai = 0; ai < 5; ai++) {
         var at = t + (ai - 2) * stride * 0.3;
         if (at < 0 || at > 1) continue;
-        var aAng = ang2 + (ai - 2) * 0.15;
+        var aRn = getNoise(at,0.5+ai*0.1,0.22,0.14);
+        var aAn = getNoise(at,2.1+ai*0.1,0.3,0.15);
+        var aXw = getNoise(at,0.5+ai*0.1,10,5);
+        var aYw = getNoise(at,3.2+ai*0.1,8,4);
+        var aAng = ang2 + (ai - 2) * 0.15 + aAn * 0.3;
+        var aRad = localRad * (1 + aRn * 0.5);
         var ad = Math.sin(aAng);
         var azs = 0.5 + (ad + 1) * 0.25;
-        var aax = leftX + at * w;
-        var aay = cy + Math.cos(aAng) * rad;
+        var aax = leftX + at * w + aXw;
+        var aay = cy + Math.cos(aAng) * aRad + aYw;
         var aJx = Math.sin(time * jFreq + b * 0.7 + ai * 3.1 + 50) * jAmp * 0.5 * azs;
         var aJy = Math.cos(time * jFreq * 0.9 + b * 1.1 + ai * 2.7 + 50) * jAmp * 0.5 * azs;
         var isP = (b * 5 + ai + 3) % 6 === 0;
-        drawSphere(aax + aJx, aay + aJy, (isP ? 4.0 : 2.2) * azs, isP ? '#F59E0B' : '#D1D5DB', a * (0.6 + Math.abs(ad) * 0.3));
+        drawSphere(aax + aJx, aay + aJy, (isP ? 3.5 : 2.0) * azs, isP ? '#F59E0B' : '#D1D5DB', a * (0.6 + Math.abs(ad) * 0.3));
       }
 
       // --- Base pair atoms (clustered between strands) ---
       for (var bi = 0; bi < 4; bi++) {
         var bFrac = (bi + 1) / 5;
-        var bAng = ang1 + bFrac * (ang2 - ang1);
+        var bAng = ang1 + bFrac * (ang2 - ang1) + baAn;
+        var bRad = localRad * (1 - bFrac * 0.55) * (1 + baRn);
         var bd = Math.sin(bAng);
         var bzs = 0.5 + (bd + 1) * 0.25;
-        var by = cy + Math.cos(bAng) * rad * (1 - bFrac * 0.55);
+        var by = cy + Math.cos(bAng) * bRad + yw;
         var bJx = Math.sin(time * jFreq * 1.2 + b * 0.7 + bi * 5.1) * jAmp * 0.4 * bzs;
         var bJy = Math.cos(time * jFreq * 1.1 + b * 1.1 + bi * 4.3) * jAmp * 0.4 * bzs;
         var bColor = bi < 2 ? '#1E3A5F' : (bi < 3 ? '#C0392B' : '#2D5A87');
-        drawSphere(x + bJx, by + bJy, 2.0 * bzs, bColor, a * (0.5 + Math.abs(bd) * 0.3));
+        drawSphere(x + bJx, by + bJy, 1.8 * bzs, bColor, a * (0.5 + Math.abs(bd) * 0.3));
       }
     }
     ctx.globalAlpha = 1;
@@ -682,39 +713,46 @@ footer { background: var(--navy); color: #CBD5E1; padding: 80px 0 32px; }
   function draw() {
     if (!running) return;
     ctx.clearRect(0, 0, W, H);
-    ctx.fillStyle = '#FFFFFF';
+
+    // Warm cellular background gradient
+    var bgGrad = ctx.createRadialGradient(W*0.5,H*0.5,0, W*0.5,H*0.5, Math.max(W,H)*0.75);
+    bgGrad.addColorStop(0, '#FFFDF7');
+    bgGrad.addColorStop(0.5, '#FEFAF0');
+    bgGrad.addColorStop(1, '#F8F0E6');
+    ctx.fillStyle = bgGrad;
     ctx.fillRect(0, 0, W, H);
 
     var now = Date.now();
 
-    // Ambient network
-    var pts = [];
-    for (var i = 0; i < 80; i++) {
-      var seed = i * 73.3;
-      var px = (Math.sin(seed + now*0.00012)*0.5+0.5)*W, py = (Math.cos(seed*1.7+now*0.00008)*0.5+0.5)*H;
-      pts.push({x:px,y:py});
-      ctx.globalAlpha = 0.06 + Math.sin(seed+now*0.0004)*0.05;
-      ctx.fillStyle = '#1E293B';
-      ctx.beginPath(); ctx.arc(px, py, 0.5+Math.sin(seed+now*0.0003)*0.3, 0, 6.2832); ctx.fill();
+    // Cellular organelles and vesicles (organic floating particles)
+    var vesColors = ['#F59E0B','#F97316','#EC4899','#A855F7','#06B6D4','#10B981','#EAB308','#EF4444','#3B82F6'];
+    for (var v = 0; v < 30; v++) {
+      var seed = v * 51.7;
+      var vx = (Math.sin(seed + now*0.00006 + Math.sin(v*0.7))*0.42+0.5)*W;
+      var vy = (Math.cos(seed*1.3 + now*0.00005 + Math.cos(v*0.5))*0.42+0.5)*H;
+      var vr = 4 + Math.sin(seed + now*0.00015)*2;
+      var vc = vesColors[v % vesColors.length];
+      var vg = ctx.createRadialGradient(vx,vy,0, vx,vy,vr*3);
+      vg.addColorStop(0, vc + '25');
+      vg.addColorStop(1, 'transparent');
+      ctx.fillStyle = vg;
+      ctx.beginPath(); ctx.arc(vx,vy,vr*3,0,6.2832); ctx.fill();
+      ctx.globalAlpha = 0.08 + Math.sin(seed*0.5+now*0.0001)*0.04;
+      ctx.fillStyle = vc;
+      ctx.beginPath(); ctx.arc(vx,vy,vr*0.5,0,6.2832); ctx.fill();
+      ctx.globalAlpha = 1;
     }
-    for (var i = 0; i < 80; i++) {
-      for (var j = i+1; j < 80; j++) {
-        var dx = pts[i].x-pts[j].x, dy = pts[i].y-pts[j].y, dist = Math.sqrt(dx*dx+dy*dy);
-        if (dist < 35) {
-          ctx.globalAlpha = (1-dist/35)*0.035;
-          ctx.strokeStyle = '#2563EB'; ctx.lineWidth = 0.5;
-          ctx.beginPath(); ctx.moveTo(pts[i].x,pts[i].y); ctx.lineTo(pts[j].x,pts[j].y); ctx.stroke();
-        }
-      }
-    }
-    ctx.globalAlpha = 1;
 
-    // Cellular bg
-    for (var ci = 0; ci < 6; ci++) {
-      var cx2 = Math.sin(ci*1.7+now*0.00003)*0.3+0.5, cy2 = Math.cos(ci*2.3+now*0.00002)*0.3+0.5;
-      var cg = ctx.createRadialGradient(cx2*W,cy2*H,0, cx2*W,cy2*H, Math.min(W,H)*0.2);
-      cg.addColorStop(0, 'rgba(37,99,235,0.025)'); cg.addColorStop(1, 'transparent');
-      ctx.fillStyle = cg; ctx.beginPath(); ctx.arc(cx2*W,cy2*H,Math.min(W,H)*0.2,0,6.2832); ctx.fill();
+    // Cell cytoplasm blobs (warm, organic)
+    var cellColors = ['rgba(245,158,11,0.03)','rgba(236,72,153,0.025)','rgba(168,85,247,0.02)','rgba(6,182,212,0.025)','rgba(251,146,60,0.03)','rgba(34,197,94,0.02)'];
+    for (var ci = 0; ci < 7; ci++) {
+      var cx2 = Math.sin(ci*1.7+now*0.00004+Math.sin(ci*0.3))*0.35+0.5;
+      var cy2 = Math.cos(ci*2.3+now*0.00003+Math.cos(ci*0.5))*0.35+0.5;
+      var cg = ctx.createRadialGradient(cx2*W,cy2*H,0, cx2*W,cy2*H, Math.min(W,H)*0.25);
+      cg.addColorStop(0, cellColors[ci % cellColors.length]);
+      cg.addColorStop(1, 'transparent');
+      ctx.fillStyle = cg;
+      ctx.beginPath(); ctx.arc(cx2*W,cy2*H,Math.min(W,H)*0.25,0,6.2832); ctx.fill();
     }
 
     // Update DNA rotation
