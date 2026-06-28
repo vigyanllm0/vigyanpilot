@@ -403,6 +403,25 @@ def me():
 def usage():
     """Get usage status for payment/run decisions."""
     result = check_usage(g.user["email"])
+    user_id = g.user.get("user_id")
+    # Add daily usage info
+    try:
+        from ..database import fetch_one
+        today_count = fetch_one(
+            """SELECT COUNT(*) AS cnt FROM pipeline_jobs
+               WHERE user_id = %s
+                 AND created_at >= CURRENT_DATE
+                 AND created_at < CURRENT_DATE + INTERVAL '1 day'
+                 AND status IN ('queued', 'running', 'completed')""",
+            (user_id,)
+        )
+        result["daily_used"] = today_count["cnt"] if today_count else 0
+        result["daily_limit"] = 2
+        result["daily_remaining"] = max(0, 2 - result["daily_used"])
+    except Exception:
+        result["daily_used"] = 0
+        result["daily_limit"] = 2
+        result["daily_remaining"] = 2
     return jsonify(result), 200
 
 

@@ -21,7 +21,7 @@ from urllib.parse import urlparse
 
 from flask import Blueprint, request, jsonify, Response, g
 
-from ..pg_auth import require_auth, require_admin
+from ..pg_auth import require_auth, require_admin, check_usage, consume_token
 from ..database import fetch_one, fetch_all, execute, execute_returning
 from ..crypto_utils import decrypt_data
 from .branding import brand_response, brand_error
@@ -308,8 +308,38 @@ def submit_pipeline():
                         "monthly_quota": monthly_quota,
                     })), 429
         except Exception as e:
-            # Quota table may not exist yet — skip check gracefully
-            logger.debug("VigyanLLM: Quota check skipped (table may not exist): %s", e)
+            logger.debug("VigyanLLM: Monthly quota check skipped: %s", e)
+
+        # Daily quota: 2 free designs per day. Beyond that, consume a token.
+        consumed_daily_token = False
+        try:
+            today_count = fetch_one(
+                """SELECT COUNT(*) AS cnt FROM pipeline_jobs
+                   WHERE user_id = %s
+                     AND created_at >= CURRENT_DATE
+                     AND created_at < CURRENT_DATE + INTERVAL '1 day'
+                     AND status IN ('queued', 'running', 'completed')""",
+                (user_id,)
+            )
+            daily_used = today_count["cnt"] if today_count else 0
+            if daily_used >= 2:
+                if not consume_token(user_id, g.user["email"]):
+                    logger.warning(
+                        "VigyanLLM: Daily quota exceeded for user %s (%d/2) and no tokens",
+                        user_id, daily_used,
+                    )
+                    return jsonify(brand_response({
+                        "error": brand_error(
+                            f"Daily pipeline quota reached ({daily_used}/2). "
+                            "Claim academic access for 10 free designs, or upgrade to a paid plan."
+                        ),
+                        "daily_used": daily_used,
+                        "daily_limit": 2,
+                        "needs_payment": True,
+                    })), 429
+                consumed_daily_token = True
+        except Exception as e:
+            logger.debug("VigyanLLM: Daily quota check skipped: %s", e)
 
     # Create job in database with 22-step defaults
     job = execute_returning(

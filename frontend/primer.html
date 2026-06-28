@@ -547,7 +547,7 @@ footer{padding:32px 0;border-top:1px solid var(--slate-border)}
         <a href="about.html" style="font-family:var(--font-b);font-size:13px;color:#CBD5E1;font-weight:500;letter-spacing:0.02em">About</a>
       </div>
       <div class="nav-right" style="display:flex;align-items:center;gap:16px">
-        <button class="nav-login" onclick="window.location.href='primer.html'" style="border:1.5px solid rgba(255,255,255,0.3);border-radius:4px;padding:8px 20px;font-family:var(--font-b);font-size:13px;font-weight:600;color:#fff;background:transparent;cursor:pointer">Login</button>
+        <button class="nav-login" id="nav-login-btn" onclick="toggleUserMenu()" style="border:1.5px solid rgba(255,255,255,0.3);border-radius:4px;padding:8px 20px;font-family:var(--font-b);font-size:13px;font-weight:600;color:#fff;background:transparent;cursor:pointer">Login</button>
       </div>
     </div>
   </nav>
@@ -2159,6 +2159,13 @@ async function runAutoDesign() {
   seqEl.classList.remove('error');
   errEl.classList.remove('show');
 
+  // Gate: login required to run pipeline
+  if (!auth.token) {
+    state._pendingRun = true;
+    showAuthModal();
+    return;
+  }
+
   const _ae = $('auto-empty'); if (_ae) _ae.style.display = 'none';
   $('auto-results').innerHTML = '';
   resetPipeline();
@@ -3093,6 +3100,7 @@ function updateAuthUI() {
     $('popup-logout')?.addEventListener('click', () => { $('user-menu-overlay').classList.remove('show'); logout(); });
   }
 
+  const loginBtn = $('nav-login-btn');
   if (auth.user) {
     pill.classList.add('show');
     $('user-avatar').textContent = (auth.user.name||auth.user.email||'U')[0].toUpperCase();
@@ -3103,6 +3111,7 @@ function updateAuthUI() {
     if (adminBtn) {
       adminBtn.style.display = (auth.user.role === 'admin') ? '' : 'none';
     }
+    if (loginBtn) loginBtn.style.display = 'none';
     fetchUsageForMenu();
     if (!sessionStorage.getItem('acad_popup_shown')) {
       sessionStorage.setItem('acad_popup_shown', '1');
@@ -3110,6 +3119,7 @@ function updateAuthUI() {
     }
   } else {
     pill.classList.remove('show');
+    if (loginBtn) loginBtn.style.display = '';
     const adminBtn = $('admin-tab-btn');
     if (adminBtn) adminBtn.style.display = 'none';
     if ($('tab-admin')?.style.display !== 'none') switchTab('auto');
@@ -3136,7 +3146,7 @@ function toggleAuthMode() {
   auth.mode = auth.mode === 'login' ? 'register' : 'login';
   const isReg = auth.mode === 'register';
   $('auth-modal-title').textContent = isReg ? 'Create Account' : 'Log in to VigyanLLM';
-  $('auth-modal-sub').textContent = isReg ? 'Register for 2 free validated primer design runs' : 'Sign in to run the 24-step pipeline';
+  $('auth-modal-sub').textContent = isReg ? 'Register for 2 free designs/day. Get 10 extra with academic access.' : 'Sign in to run the 24-step pipeline';
   $('auth-name-group').style.display = isReg ? '' : 'none';
   $('auth-submit-btn').textContent = isReg ? 'Create Account' : 'Log in';
   $('auth-toggle').textContent = isReg ? 'Already have an account? Log in' : "Don't have an account? Register";
@@ -3722,7 +3732,11 @@ async function fetchUsageForMenu() {
     const d = await r.json();
     const total = (d.balance || 0) + (d.subscription_remaining || 0);
     const usageEl = $('popup-user-usage');
-    if (usageEl) usageEl.textContent = `Credits: ${total} available`;
+    if (usageEl) {
+      const daily = `Daily: ${d.daily_used}/${d.daily_limit}`;
+      const credits = total > 0 ? ` | Credits: ${total}` : '';
+      usageEl.textContent = daily + credits;
+    }
   } catch(e) { /* silent */ }
 }
 
