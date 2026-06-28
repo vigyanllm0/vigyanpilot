@@ -272,13 +272,12 @@ nav { position: sticky; top: 0; background: var(--navy); z-index: 1000; height: 
 .timeline-container { max-width: 900px; margin: 0 auto; padding: 0 24px; }
 .timeline { display: flex; justify-content: space-between; position: relative; padding: 60px 0 20px; }
 .timeline::before { content: ''; position: absolute; top: 76px; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--primary), var(--accent), var(--primary)); border-radius: 2px; }
-.timeline-node { position: relative; text-align: center; flex: 1; }
+.timeline-node { position: relative; text-align: center; flex: 1; padding-top: 92px; }
 .timeline-node::before { content: ''; width: 16px; height: 16px; background: var(--primary); border: 3px solid #fff; border-radius: 50%; position: absolute; top: 69px; left: 50%; transform: translateX(-50%); z-index: 2; box-shadow: 0 0 0 2px var(--primary); }
+.tl-content { padding: 16px 20px; background: #fff; border: 1px solid var(--slate-border); border-radius: 10px; }
 .timeline-node .tl-label { font-family: var(--font-h); font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--primary); margin-bottom: 8px; display: block; }
 .timeline-node .tl-title { font-family: var(--font-h); font-size: 16px; font-weight: 700; line-height: 1.3; margin-bottom: 6px; color: var(--text); }
-.timeline-node .tl-desc { font-family: var(--font-b); font-size: 14px; color: #334155; line-height: 1.7; max-width: 220px; margin: 0 auto; }
-.timeline-node:nth-child(even) { padding-top: 80px; }
-.timeline-node:nth-child(even)::before { top: 69px; }
+.timeline-node .tl-desc { font-family: var(--font-b); font-size: 14px; color: #334155; line-height: 1.7; margin: 0; }
 /* SECURITY */
 .security-section { padding: var(--sec-p) 0; }
 .security-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-top: 48px; }
@@ -336,9 +335,8 @@ footer { background: var(--navy); color: #CBD5E1; padding: 80px 0 32px; }
   .timeline { flex-direction: column; gap: 40px; padding: 0; }
   .timeline::before { display: none; }
   .timeline-node { padding-top: 0 !important; text-align: left; display: flex; gap: 12px; align-items: flex-start; }
-  .timeline-node::before { position: static; transform: none; flex-shrink: 0; width: 14px; height: 14px; margin-top: 6px; }
-  .tl-content { flex: 1; min-width: 0; }
-  .timeline-node .tl-desc { max-width: none; margin: 0; }
+  .timeline-node::before { position: static; transform: none; flex-shrink: 0; width: 14px; height: 14px; margin-top: 8px; }
+  .tl-content { flex: 1; min-width: 0; padding: 12px 16px; }
   .footer-grid { grid-template-columns: 1fr 1fr; gap: 40px; }
 }
 @media (max-width: 768px) {
