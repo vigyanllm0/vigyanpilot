@@ -24,7 +24,7 @@ ENSEMBL_BASE  = "https://rest.ensembl.org"
 UNIPROT_BASE  = "https://rest.uniprot.org/uniprotkb"
 
 # Set your NCBI email and API key (required for Entrez)
-Entrez.email   = "vigyanllm@example.com"
+Entrez.email   = "user@example.com"
 NCBI_API_KEY   = os.environ.get("NCBI_API_KEY", "")
 if NCBI_API_KEY:
     Entrez.api_key = NCBI_API_KEY

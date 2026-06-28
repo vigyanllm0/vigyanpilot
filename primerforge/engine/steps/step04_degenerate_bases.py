@@ -156,7 +156,7 @@ def _calculate_max_degeneracy_per_window(
         return 1
 
     max_degeneracy = 1
-    for start in range(max(1, seq_length - window_size + 1)):
+    for start in range(max(0, seq_length - window_size + 1)):
         end = start + window_size
         product = 1
         for dp in degenerate_positions:

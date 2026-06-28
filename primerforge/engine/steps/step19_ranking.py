@@ -91,6 +91,18 @@ def execute(input_data: Dict[str, Any]) -> Dict[str, Any]:
     pairs = [dict(pair) for pair in pairs]
 
     # ── Aggregate penalties for each pair ──────────────────────────────────
+    conserved_targeting_active = input_data.get("conserved_targeting_active", False)
+    msa_status = input_data.get("msa_status", "")
+
+    # Extract conservation percentage from step7 note
+    import re as _re
+    _conserved_note = input_data.get("conserved_targeting_note", "")
+    _conservation_percent = None
+    if _conserved_note:
+        _m = _re.search(r'([\d.]+)%', _conserved_note)
+        if _m:
+            _conservation_percent = float(_m.group(1))
+
     for pair in pairs:
         _normalize_frontend_aliases(pair, target_seq)
         total_penalty = _aggregate_penalties(pair)
@@ -103,6 +115,21 @@ def execute(input_data: Dict[str, Any]) -> Dict[str, Any]:
         pair["penalty_score"] = pair["total_penalty"]
         # Compute score = 100 − penalty, clamped to [0, 100]
         pair["score"] = round(max(0.0, min(100.0, 100.0 - total_penalty)), 2)
+        # Set conserved region flag — only when MSA was successfully completed
+        if conserved_targeting_active is True and msa_status == "complete":
+            pair["conserved_region_pass"] = True
+        elif conserved_targeting_active is False and msa_status == "complete":
+            # MSA completed but no conserved region large enough was found
+            pair["conserved_region_pass"] = False
+        # else: MSA was skipped or failed — leave undefined so frontend shows N/A
+
+        # Store conservation percentage from step7 note
+        if _conservation_percent is not None:
+            pair["conservation_percent"] = _conservation_percent
+        elif pair.get("conserved_region_pass") is True:
+            pair["conservation_percent"] = 100.0
+        elif pair.get("conserved_region_pass") is False:
+            pair["conservation_percent"] = 0.0
 
     # ── Sort by total penalty (ascending — lowest = best) ──────────────────
     pairs.sort(key=lambda p: p["total_penalty"])

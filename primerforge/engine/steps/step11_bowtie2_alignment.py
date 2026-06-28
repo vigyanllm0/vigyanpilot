@@ -30,14 +30,18 @@ MAX_REPORT_ALIGNMENTS = 5  # -k 5
 BATCH_SIZE = 50
 DEFAULT_INDEX_PATH = os.environ.get("BOWTIE2_INDEX_PATH", "/opt/bowtie2_idx/human_genome")
 
-# Pseudogene/non-standard chromosome patterns
+# Pseudogene/non-standard chromosome patterns (excluding mitochondrial)
 PSEUDOGENE_PATTERNS = [
     re.compile(r"chrUn", re.IGNORECASE),
     re.compile(r"_random$", re.IGNORECASE),
     re.compile(r"_alt$", re.IGNORECASE),
     re.compile(r"_fix$", re.IGNORECASE),
     re.compile(r"_hap\d+", re.IGNORECASE),
-    re.compile(r"chrM", re.IGNORECASE),  # Mitochondrial
+]
+
+ORGANELLE_PATTERNS = [
+    re.compile(r"chrM", re.IGNORECASE),
+    re.compile(r"chrMT", re.IGNORECASE),
 ]
 
 PSEUDOGENE_PENALTY = 20.0
@@ -143,12 +147,17 @@ def execute(input_data: Dict[str, Any]) -> Dict[str, Any]:
         pair["forward"]["is_unique_mapper"] = fwd_unique
         pair["reverse"]["is_unique_mapper"] = rev_unique
 
-        # Pseudogene hit detection
+        # Pseudogene and organelle hit detection
         fwd_pseudogene = _has_pseudogene_hit(fwd_result["locations"])
         rev_pseudogene = _has_pseudogene_hit(rev_result["locations"])
+        fwd_organelle = _has_organelle_hit(fwd_result["locations"])
+        rev_organelle = _has_organelle_hit(rev_result["locations"])
         pair["forward"]["pseudogene_hit"] = fwd_pseudogene
         pair["reverse"]["pseudogene_hit"] = rev_pseudogene
         pair["pseudogene_hit"] = fwd_pseudogene or rev_pseudogene
+        pair["forward"]["organelle_hit"] = fwd_organelle
+        pair["reverse"]["organelle_hit"] = rev_organelle
+        pair["organelle_hit"] = fwd_organelle or rev_organelle
 
         # ── Assign penalties ───────────────────────────────────────────────
         if not fwd_unique:
@@ -159,8 +168,10 @@ def execute(input_data: Dict[str, Any]) -> Dict[str, Any]:
             pair["reverse"].setdefault("flags", []).append("multi_mapper")
         if pair["pseudogene_hit"]:
             pair["penalties"]["pseudogene"] = PSEUDOGENE_PENALTY
+        if pair["organelle_hit"]:
+            pair["penalties"]["organelle"] = PSEUDOGENE_PENALTY
 
-        pair["bowtie2_pass"] = fwd_unique and rev_unique and not pair["pseudogene_hit"]
+        pair["bowtie2_pass"] = fwd_unique and rev_unique and not pair["pseudogene_hit"] and not pair["organelle_hit"]
         aligned_pairs.append(pair)
 
     passed = sum(1 for p in aligned_pairs if p.get("bowtie2_pass"))
@@ -207,9 +218,14 @@ def _run_internal_reference_alignment(
 
         fwd_pseudogene = _has_pseudogene_hit(fwd_locations)
         rev_pseudogene = _has_pseudogene_hit(rev_locations)
+        fwd_organelle = _has_organelle_hit(fwd_locations)
+        rev_organelle = _has_organelle_hit(rev_locations)
         pair["forward"]["pseudogene_hit"] = fwd_pseudogene
         pair["reverse"]["pseudogene_hit"] = rev_pseudogene
         pair["pseudogene_hit"] = fwd_pseudogene or rev_pseudogene
+        pair["forward"]["organelle_hit"] = fwd_organelle
+        pair["reverse"]["organelle_hit"] = rev_organelle
+        pair["organelle_hit"] = fwd_organelle or rev_organelle
 
         if not fwd_unique:
             pair["penalties"]["multi_map_fwd"] = 10.0
@@ -392,10 +408,24 @@ def _parse_sam_output(sam_text: str) -> Dict[str, Dict[str, Any]]:
 # ---------------------------------------------------------------------------
 
 def _has_pseudogene_hit(locations: List[Dict[str, Any]]) -> bool:
-    """Check if any alignment location maps to a pseudogene or non-standard contig."""
+    """Check if any alignment location maps to a pseudogene or non-standard contig (not organelle)."""
     for loc in locations:
         chrom = loc.get("chromosome", "")
+        # Check organelle first — skip, these are handled separately
+        for pattern in ORGANELLE_PATTERNS:
+            if pattern.search(chrom):
+                return False
         for pattern in PSEUDOGENE_PATTERNS:
+            if pattern.search(chrom):
+                return True
+    return False
+
+
+def _has_organelle_hit(locations: List[Dict[str, Any]]) -> bool:
+    """Check if any alignment location maps to mitochondrial DNA."""
+    for loc in locations:
+        chrom = loc.get("chromosome", "")
+        for pattern in ORGANELLE_PATTERNS:
             if pattern.search(chrom):
                 return True
     return False

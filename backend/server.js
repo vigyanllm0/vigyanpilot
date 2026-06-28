@@ -56,11 +56,12 @@ app.post('/api/register', async (req, res) => {
         tokenExpiry,
       });
 
-      const activationUrl = `https://mywebsite.com/api/verify?token=${verificationToken}`;
+      const baseUrl = process.env.APP_URL || 'http://localhost:8080';
+      const activationUrl = `${baseUrl}/api/verify?token=${verificationToken}`;
 
       try {
         await brevo.transactionalEmails.sendTransacEmail({
-          sender: { email: 'noreply@mywebsite.com', name: 'VigyanLLM' },
+          sender: { email: process.env.SMTP_FROM_EMAIL || 'noreply@vigyanllm.in', name: 'VigyanLLM' },
           to: [{ email }],
           subject: 'Activate your account',
           htmlContent: `<p>Thank you for registering.</p><p>Click the link below to activate your account:</p><p><a href="${activationUrl}">${activationUrl}</a></p><p>This link expires in 1 hour.</p>`,
@@ -97,7 +98,8 @@ app.get('/api/verify', (req, res) => {
     user.verificationToken = null;
     user.tokenExpiry = null;
 
-    res.redirect('https://mywebsite.com/verified');
+    const baseUrl = process.env.APP_URL || 'http://localhost:8080';
+    res.redirect(`${baseUrl}/verified`);
   } catch (err) {
     console.error('Verify error:', err);
     res.status(500).send('Internal server error');

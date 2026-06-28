@@ -13,7 +13,7 @@ Usage:
   python migrate_sqlite_to_postgres.py
 
 Environment variables needed:
-  DATABASE_URL=postgresql://vigyanpilot_app:PASSWORD@localhost:5432/vigyanpilot_db
+   DATABASE_URL=postgresql://user:password@localhost:5432/dbname
   SQLITE_PATH=/path/to/primerforge.db  (defaults to ../primerforge.db)
 """
 
@@ -28,7 +28,11 @@ import bcrypt
 
 # ── Configuration ─────────────────────────────────────────────────────────
 SQLITE_PATH = os.environ.get("SQLITE_PATH", os.path.join(os.path.dirname(__file__), "../../primerforge.db"))
-DATABASE_URL = os.environ.get("DATABASE_URL", "postgresql://vigyanpilot_app:CHANGE_ME@vigyanpilot_postgres:5432/vigyanpilot_db")
+DATABASE_URL = os.environ.get("DATABASE_URL")
+if not DATABASE_URL:
+    print("ERROR: DATABASE_URL environment variable is required")
+    print("  postgresql://user:password@host:5432/dbname")
+    sys.exit(1)
 
 
 def get_sqlite():

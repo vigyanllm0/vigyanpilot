@@ -19,13 +19,34 @@ import uuid
 from concurrent.futures import ThreadPoolExecutor
 from urllib.parse import urlparse
 
-from flask import Blueprint, request, jsonify, g
+from flask import Blueprint, request, jsonify, Response, g
 
 from ..pg_auth import require_auth, require_admin
 from ..database import fetch_one, fetch_all, execute, execute_returning
+from ..crypto_utils import decrypt_data
 from .branding import brand_response, brand_error
 
 logger = logging.getLogger("primerforge.engine.pipeline_routes")
+
+
+def _decrypt_output(row: dict, key: str = "output_data") -> dict:
+    """Decrypt the output_data field of a pipeline result row in-place."""
+    raw = row.get(key)
+    if isinstance(raw, str):
+        if raw.startswith("gAAAAA"):  # Fernet ciphertext marker
+            decrypted = decrypt_data(raw)
+            if decrypted:
+                try:
+                    row[key] = json.loads(decrypted)
+                    return row
+                except (json.JSONDecodeError, TypeError):
+                    pass
+        # Plain JSON string (legacy / non-encrypted data)
+        try:
+            row[key] = json.loads(raw)
+        except (json.JSONDecodeError, TypeError):
+            pass
+    return row
 
 pipeline_bp = Blueprint("pipeline", __name__)
 
@@ -208,6 +229,7 @@ def submit_pipeline():
     input_params = {
         "sequence": sequence,
         "accession": accession,
+        "sequence_source": data.get("sequence_source", ""),
         "organism": data.get("organism", "human"),
         "targeting_mode": data.get("targeting_mode", "common_exon"),
         "design_mode": data.get("design_mode", "standard"),
@@ -224,6 +246,8 @@ def submit_pipeline():
         "mode": mode,
         "multiplex": data.get("multiplex", False),
         "specificity_check": bool(data.get("specificity_check", True)),
+        "ncbi_api_key": data.get("ncbi_api_key") or None,
+        "ncbi_email": data.get("ncbi_email") or None,
         "product_min": product_min,
         "product_max": product_max,
         "min_tm": min_tm,
@@ -381,6 +405,8 @@ def get_pipeline_result(job_id: str):
            FROM pipeline_results WHERE job_id = %s ORDER BY step_number""",
         (job_id,)
     )
+    for s in steps:
+        _decrypt_output(s)
 
     # Get compliance screening result
     compliance = fetch_one(
@@ -409,6 +435,98 @@ def get_pipeline_result(job_id: str):
         "order_payloads": order_payloads,
         "total_duration_ms": sum(s.get("duration_ms", 0) for s in steps if s.get("duration_ms")),
     })), 200
+
+
+@pipeline_bp.route("/api/pipeline/result/<job_id>/step/<int:step_number>", methods=["GET"])
+@require_auth
+def get_raw_step_output(job_id: str, step_number: int):
+    """Get raw output data for a specific pipeline step."""
+    user_id = g.user.get("user_id")
+    is_admin = g.user.get("role") == "admin"
+
+    if is_admin:
+        job = fetch_one("SELECT id FROM pipeline_jobs WHERE id = %s", (job_id,))
+    else:
+        job = fetch_one(
+            "SELECT id FROM pipeline_jobs WHERE id = %s AND user_id = %s",
+            (job_id, user_id)
+        )
+    if not job:
+        return jsonify({"error": "Job not found"}), 404
+
+    step = fetch_one(
+        """SELECT step_number, step_name, status, output_data, duration_ms
+           FROM pipeline_results WHERE job_id = %s AND step_number = %s""",
+        (job_id, step_number)
+    )
+    if not step:
+        return jsonify({"error": "Step not found"}), 404
+
+    _decrypt_output(step)
+
+    return jsonify({
+        "job_id": job_id,
+        "step_number": step["step_number"],
+        "step_name": step["step_name"],
+        "status": step["status"],
+        "output_data": step["output_data"],
+        "duration_ms": step.get("duration_ms"),
+    }), 200
+
+
+@pipeline_bp.route("/api/pipeline/result/<job_id>/raw", methods=["GET"])
+@require_auth
+def get_raw_pipeline_export(job_id: str):
+    """Export all pipeline step results as raw JSON for user download."""
+    user_id = g.user.get("user_id")
+    is_admin = g.user.get("role") == "admin"
+
+    if is_admin:
+        job = fetch_one("SELECT * FROM pipeline_jobs WHERE id = %s", (job_id,))
+    else:
+        job = fetch_one(
+            "SELECT * FROM pipeline_jobs WHERE id = %s AND user_id = %s",
+            (job_id, user_id)
+        )
+    if not job:
+        return jsonify({"error": "Job not found"}), 404
+
+    steps = fetch_all(
+        """SELECT step_number, step_name, status, output_data, duration_ms, phase, error_msg
+           FROM pipeline_results WHERE job_id = %s ORDER BY step_number""",
+        (job_id,)
+    )
+
+    export = {
+        "job_id": job_id,
+        "status": job.get("status"),
+        "mode": job.get("mode"),
+        "input_params": job.get("input_params"),
+        "created_at": str(job.get("created_at", "")),
+        "completed_at": str(job.get("completed_at", "")),
+        "steps": [],
+    }
+    for s in steps:
+        _decrypt_output(s)
+        export["steps"].append({
+            "step_number": s["step_number"],
+            "step_name": s["step_name"],
+            "status": s["status"],
+            "phase": s.get("phase"),
+            "duration_ms": s.get("duration_ms"),
+            "error_msg": s.get("error_msg"),
+            "output_data": s["output_data"],
+        })
+
+    raw = json.dumps(export, indent=2, default=str)
+    return Response(
+        raw,
+        mimetype="application/json",
+        headers={
+            "Content-Disposition": f"attachment; filename=vigyanpilot_raw_{job_id[:8]}.json",
+            "Content-Type": "application/json",
+        }
+    ), 200
 
 
 @pipeline_bp.route("/api/pipeline/jobs", methods=["GET"])
@@ -492,6 +610,8 @@ def trigger_order_serialization(job_id: str):
            FROM pipeline_results WHERE job_id = %s ORDER BY step_number""",
         (job_id,)
     )
+    for sr in step_results:
+        _decrypt_output(sr)
 
     # Extract sequences for compliance screening and primer pairs for serialization
     sequences_to_screen = []

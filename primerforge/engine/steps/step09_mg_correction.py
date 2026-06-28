@@ -172,7 +172,9 @@ class MgCorrectionStep(PipelineStep):
         """
         Apply the von Ahsen 2001 Mg²+ Tm correction to all candidates.
 
-        Formula: Tm(Mg²+) = Tm(salt) + 7.21·ln([Mg²+_free_in_molar])
+        Formula: Tm(Mg²+) = Tm(salt) + 7.21·ln([Mg²+_free] / [Mg²+_ref])
+        where [Mg²+_ref] = 1.5 mM (standard PCR default).
+        This yields offset ≈ 0°C at default conditions.
 
         Args:
             candidates: List of primer candidate dictionaries.
@@ -182,7 +184,9 @@ class MgCorrectionStep(PipelineStep):
             Updated list of candidates with tm_mg_adjusted and delta_tm_penalty.
         """
         # Pre-compute the correction offset (same for all primers)
-        mg_offset = VON_AHSEN_COEFFICIENT * math.log(free_mg_mm)
+        # Reference Mg²+ = 1.5 mM so offset is 0 at default conditions
+        REF_MG_MM = 1.5
+        mg_offset = VON_AHSEN_COEFFICIENT * math.log(free_mg_mm / REF_MG_MM) if free_mg_mm > 0 else 0.0
 
         for candidate in candidates:
             tm_salt = _candidate_tm(candidate)

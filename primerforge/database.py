@@ -26,10 +26,13 @@ logger = logging.getLogger("primerforge.database")
 # When running inside Docker (via docker-compose), use the service name.
 # When running locally for development, use localhost + exposed port.
 
-DATABASE_URL = os.environ.get(
-    "DATABASE_URL",
-    "postgresql://vigyanpilot_app:CHANGE_ME_TO_A_64_CHAR_RANDOM_STRING@vigyanpilot_postgres:5432/vigyanpilot_db"
-)
+DATABASE_URL = os.environ.get("DATABASE_URL")
+if not DATABASE_URL:
+    raise RuntimeError(
+        "DATABASE_URL environment variable is required. "
+        "Set it to your PostgreSQL connection string, e.g.:\n"
+        "  postgresql://user:password@host:5432/dbname"
+    )
 
 # Parse from URL or use individual vars (fallback)
 DB_CONFIG = {

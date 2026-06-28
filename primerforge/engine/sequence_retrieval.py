@@ -39,6 +39,9 @@ MAX_INPUT_LENGTH = 256
 SUPPORTED_FORMATS = [
     "NCBI accession (NM_, NR_, XM_, XR_, NC_, NG_, NT_, NW_ followed by digits and optional .version)",
     "Ensembl stable ID (ENS + optional species prefix + G/T/E/P + 11 digits)",
+    "DDBJ accession (AB, LC, AP, BA, HT followed by 6 digits)",
+    "ENA/EMBL accession (2 uppercase letters followed by 6+ digits)",
+    "UniProt ID (P/Q/O followed by 5 alphanumeric characters)",
     "Genomic coordinate (chr[1-22|X|Y|M|MT]:[start]-[end])",
     "HGNC gene symbol (1-40 alphanumeric characters and hyphens, e.g., BRCA1, TP53)",
 ]
@@ -129,7 +132,7 @@ def fetch_from_ncbi(accession: str, **kwargs) -> SequenceRecord:
     try:
         from Bio import Entrez, SeqIO
 
-        Entrez.email = os.environ.get("NCBI_EMAIL", "vigyanllm@proton.me")
+        Entrez.email = os.environ.get("NCBI_EMAIL", "user@example.com")
         api_key = os.environ.get("NCBI_API_KEY", "")
         if api_key:
             Entrez.api_key = api_key
@@ -398,7 +401,7 @@ def resolve_gene_symbol(symbol: str, **kwargs) -> SequenceRecord:
     try:
         from Bio import Entrez
 
-        Entrez.email = os.environ.get("NCBI_EMAIL", "vigyanllm@proton.me")
+        Entrez.email = os.environ.get("NCBI_EMAIL", "user@example.com")
         api_key = os.environ.get("NCBI_API_KEY", "")
         if api_key:
             Entrez.api_key = api_key
@@ -502,7 +505,32 @@ def classify_input(query: str) -> InputParseResult:
             source="ensembl",
         )
 
-    # 3. Genomic coordinate
+    # 3. DDBJ accession (AB, LC, AP, BA, HT + 6 digits)
+    if re.match(r"^(AB|LC|AP|BA|HT)\d{6}(\.\d+)?$", query, re.IGNORECASE):
+        return InputParseResult(
+            query=query,
+            input_type="ddbj_accession",
+            source="ddbj",
+        )
+
+    # 4. ENA/EMBL accession (2 uppercase letters + 6+ digits, excluding UniProt)
+    if re.match(r"^[A-Z]{2}\d{6,}(\.\d+)?$", query, re.IGNORECASE) and \
+       not re.match(r"^[PQO][0-9A-Z]{5}$", query):
+        return InputParseResult(
+            query=query,
+            input_type="ena_accession",
+            source="ena",
+        )
+
+    # 5. UniProt accession (P/Q/O + 5 digits)
+    if re.match(r"^[PQO][0-9A-Z]{5}$", query):
+        return InputParseResult(
+            query=query,
+            input_type="uniprot_id",
+            source="uniprot",
+        )
+
+    # 6. Genomic coordinate
     coord_match = _COORDINATE_PATTERN.match(query)
     if coord_match:
         start = int(coord_match.group(2))
@@ -520,7 +548,7 @@ def classify_input(query: str) -> InputParseResult:
             source="ensembl_region",
         )
 
-    # 4. HGNC gene symbol (fallback)
+    # 7. HGNC gene symbol (fallback)
     if _GENE_SYMBOL_PATTERN.match(query):
         return InputParseResult(
             query=query,

@@ -436,6 +436,16 @@ def _resolve_db_path(organism: str) -> str:
         "mouse": "mouse_genome",
         "rat": "rat_genome",
         "zebrafish": "zebrafish_genome",
+        "fly": "drosophila_genome",
+        "worm": "celegans_genome",
+        "yeast": "scerevisiae_genome",
+        "ecoli": "ecoli_genome",
+        "arabidopsis": "athaliana_genome",
+        "pig": "sus_scrofa_genome",
+        "dog": "canis_familiaris_genome",
+        "chicken": "ggallus_genome",
+        "cow": "btaurus_genome",
+        "xenopus": "xtropicalis_genome",
     }
     db_name = organism_map.get(organism.lower(), f"{organism.lower()}_genome")
     return os.path.join(db_base, db_name)

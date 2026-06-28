@@ -42,12 +42,7 @@ if not ADMIN_EMAIL:
     raise RuntimeError("PRIMERFORGE_ADMIN_EMAIL environment variable is required")
 ADMIN_PASSWORD = os.environ.get("PRIMERFORGE_ADMIN_PASSWORD")
 if not ADMIN_PASSWORD:
-    import warnings
-    warnings.warn(
-        "VigyanLLM: ADMIN_PASSWORD environment variable not set. "
-        "Admin authentication will be unavailable until configured.",
-        RuntimeWarning,
-    )
+    raise RuntimeError("PRIMERFORGE_ADMIN_PASSWORD environment variable is required")
 
 # Pricing
 PRICE_PER_DESIGN = 49  # ₹49 per primer design run

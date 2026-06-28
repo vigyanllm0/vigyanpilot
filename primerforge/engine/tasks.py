@@ -1,17 +1,23 @@
 """
 Celery Tasks for VigyanLLM Pipeline Engine
 ============================================
-Async task definitions for 22-step pipeline execution.
+Async task definitions for primer design pipeline execution.
 
 Step registration configuration:
-  Phase A (Sequence Processing): Steps 1-5, express: step 1 only
-  Phase B (Thermodynamic Validation): Steps 6-9, express: steps 6, 7
-  Phase C (Specificity & Variant Filtering): Steps 10-12, express: step 10
-  Phase D (Structural & Multiplex Analysis): Steps 13-18, express: none
-  Phase E (Ranking, Profiling & Export): Steps 19-22, express: steps 19, 22
+  Phase A (Sequence & Consensus): Steps 1-7, express: steps 1, 6
+    Step 1:  Transcript Isoform Filter       (express included)
+    Step 6:  Backend MSA & Conservation      (express included) ★
+  Phase B (Thermodynamic): Steps 8-11, express: steps 8, 9
+  Phase C (Specificity & Inclusivity): Steps 12-16, express: step 12
+    Step 13: Strain Inclusivity              ★
+  Phase D (Structural & Multiplex): Steps 17-22, express: none
+  Phase E (Ranking & Export): Steps 23-24, express: step 22, 24
 
-Hard failure steps: 1, 4, 6
+Hard failure steps: 1, 4, 8 (old 6)
 Soft failure: all others
+
+MSA and strain inclusivity steps can be heavy — queued asynchronously
+by the Celery broker or ThreadPoolExecutor fallback.
 """
 
 import logging
@@ -24,40 +30,39 @@ logger = logging.getLogger("primerforge.engine.tasks")
 @celery_app.task(bind=True, name="primerforge.engine.tasks.run_pipeline")
 def run_pipeline(self, job_id: str):
     """
-    Execute the 22-step primer design pipeline for a given job.
+    Execute the primer design pipeline for a given job.
     Runs all steps sequentially via the PipelineOrchestrator.
-
-    The pipeline mode (full/express) is derived from the job's input_params.
     """
     logger.info(f"Pipeline started for job_id={job_id}")
 
     from .orchestrator import PipelineOrchestrator, PipelineConfig
     from .steps import (
-        step01_isoform_filter,
-        step02_exon_intron_junction,
-        step03_bisulfite_conversion,
-        step04_degenerate_bases,
-        step05_repeat_masking,
-        step06_primer3_design,
-        step07_thermodynamic_refinement,
-        step08_buffer_salt,
-        step09_mg_correction,
-        step10_blast_specificity,
-        step11_bowtie2_alignment,
-        step12_organelle_screening,
-        step13_secondary_structure,
-        step14_amplicon_structure,
-        step15_dbsnp_filter,
-        step16_clinical_hotspots,
-        step17_adapter_tailing,
-        step18_multiplex_scoring,
-        step19_ranking,
-        step20_thermocycling,
-        step21_manufacturing,
-        step22_probe_design,
+        step01_execute,
+        step02_execute,
+        step03_execute,
+        step04_execute,
+        step05_execute,
+        step06_execute,
+        step07_execute,
+        step08_execute,
+        step09_execute,
+        step10_execute,
+        step11_execute,
+        step12_execute,
+        step13_execute,
+        step14_execute,
+        step15_execute,
+        step16_execute,
+        step17_execute,
+        step18_execute,
+        step19_execute,
+        step20_execute,
+        step21_execute,
+        step22_execute,
+        step23_execute,
+        step24_execute,
     )
 
-    # Get job input params from database
     from primerforge.database import fetch_one, execute as db_execute
     job = fetch_one("SELECT input_params FROM pipeline_jobs WHERE id = %s", (job_id,))
     if not job:
@@ -65,176 +70,81 @@ def run_pipeline(self, job_id: str):
         return {"job_id": job_id, "status": "failed", "error": "Job not found"}
 
     input_params = job["input_params"] if isinstance(job["input_params"], dict) else {}
-
-    # Derive pipeline mode from input_params (default: "full")
     pipeline_mode = input_params.get("mode", "full")
     if pipeline_mode not in ("full", "express"):
-        logger.warning(
-            f"VigyanLLM: Invalid pipeline mode '{pipeline_mode}' for job {job_id}, defaulting to 'full'"
-        )
         pipeline_mode = "full"
 
     config = PipelineConfig(mode=pipeline_mode)
-
-    # Build orchestrator with PipelineConfig
     orchestrator = PipelineOrchestrator(config=config)
 
-    # ─── Phase A: Sequence Processing (Steps 1-5) ────────────────────────
-    orchestrator.register_step(
-        1, "Transcript Isoform Filter",
-        step01_isoform_filter.execute,
-        hard_failure=True, phase="A", express_included=True,
-    )
-    orchestrator.register_step(
-        2, "Exon-Intron Junction Mapping",
-        step02_exon_intron_junction.execute,
-        hard_failure=False, phase="A", express_included=False,
-    )
-    orchestrator.register_step(
-        3, "Bisulfite Conversion Simulation",
-        step03_bisulfite_conversion.execute,
-        hard_failure=False, phase="A", express_included=False,
-    )
-    orchestrator.register_step(
-        4, "Degenerate Base Parsing",
-        step04_degenerate_bases.execute,
-        hard_failure=True, phase="A", express_included=False,
-    )
-    orchestrator.register_step(
-        5, "Repeat Masking",
-        step05_repeat_masking.execute,
-        hard_failure=False, phase="A", express_included=False,
-    )
+    # ─── Phase A: Sequence Processing & Consensus (Steps 1-7) ───────────
+    orchestrator.register_step(1, "Transcript Isoform Filter",      step01_execute,      hard_failure=True,  phase="A", express_included=True)
+    orchestrator.register_step(2, "Exon-Intron Junction Mapping",   step02_execute,      hard_failure=False, phase="A", express_included=False)
+    orchestrator.register_step(3, "Bisulfite Conversion Simulation", step03_execute,      hard_failure=False, phase="A", express_included=False)
+    orchestrator.register_step(4, "Degenerate Base Parsing",        step04_execute,      hard_failure=True,  phase="A", express_included=False)
+    orchestrator.register_step(5, "Repeat Masking",                  step05_execute,      hard_failure=False, phase="A", express_included=False)
+    orchestrator.register_step(6, "Backend MSA & Conservation",     step06_execute,      hard_failure=False, phase="A", express_included=True)
+    orchestrator.register_step(7, "Conserved Region Targeting",     step07_execute,      hard_failure=False, phase="A", express_included=False)
 
-    # ─── Phase B: Thermodynamic Validation (Steps 6-9) ───────────────────
-    orchestrator.register_step(
-        6, "Primer3 Parameter Constraints",
-        step06_primer3_design.execute,
-        hard_failure=True, phase="B", express_included=True,
-    )
-    orchestrator.register_step(
-        7, "Nearest-Neighbor Tm (SantaLucia)",
-        step07_thermodynamic_refinement.execute,
-        hard_failure=False, phase="B", express_included=True,
-    )
-    orchestrator.register_step(
-        8, "Dynamic Buffer & Salt Adjustments",
-        step08_buffer_salt.execute,
-        hard_failure=False, phase="B", express_included=False,
-    )
-    orchestrator.register_step(
-        9, "Divalent Cation Mg²+ Scaling",
-        step09_mg_correction.execute,
-        hard_failure=False, phase="B", express_included=False,
-    )
+    # ─── Phase B: Thermodynamic Validation (Steps 8-11) ─────────────────
+    orchestrator.register_step(8,  "Primer3 Parameter Constraints",    step08_execute, hard_failure=True,  phase="B", express_included=True)
+    orchestrator.register_step(9,  "Nearest-Neighbor Tm (SantaLucia)", step09_execute, hard_failure=False, phase="B", express_included=True)
+    orchestrator.register_step(10, "Dynamic Buffer & Salt Adjustments", step10_execute, hard_failure=False, phase="B", express_included=False)
+    orchestrator.register_step(11, "Divalent Cation Mg\u00b2\u207a Scaling", step11_execute, hard_failure=False, phase="B", express_included=False)
 
-    # ─── Phase C: Specificity & Variant Filtering (Steps 10-12) ──────────
-    orchestrator.register_step(
-        10, "Target Specificity (BLAST)",
-        step10_blast_specificity.execute,
-        hard_failure=False, phase="C", express_included=True,
-    )
-    orchestrator.register_step(
-        11, "Structural Alignment (Bowtie2)",
-        step11_bowtie2_alignment.execute,
-        hard_failure=False, phase="C", express_included=False,
-    )
-    orchestrator.register_step(
-        12, "Organelle & Pseudogene Screening",
-        step12_organelle_screening.execute,
-        hard_failure=False, phase="C", express_included=False,
-    )
+    # ─── Phase C: Specificity & Inclusivity (Steps 12-16) ──────────────
+    orchestrator.register_step(12, "Target Specificity (BLAST + Viewer)", step12_execute, hard_failure=False, phase="C", express_included=True)
+    orchestrator.register_step(13, "Strain Inclusivity & Discontinuous",  step13_execute, hard_failure=False, phase="C", express_included=False)
+    orchestrator.register_step(14, "Structural Alignment (Bowtie2)",      step14_execute, hard_failure=False, phase="C", express_included=False)
+    orchestrator.register_step(15, "Organelle & Pseudogene Screening",    step15_execute, hard_failure=False, phase="C", express_included=False)
+    orchestrator.register_step(16, "Primer Secondary Structure (\u0394G)", step16_execute, hard_failure=False, phase="D", express_included=False)
 
-    # ─── Phase D: Structural & Multiplex Analysis (Steps 13-18) ──────────
-    orchestrator.register_step(
-        13, "Primer Secondary Structure (ΔG)",
-        step13_secondary_structure.execute,
-        hard_failure=False, phase="D", express_included=False,
-    )
-    orchestrator.register_step(
-        14, "Amplicon Structural Verification",
-        step14_amplicon_structure.execute,
-        hard_failure=False, phase="D", express_included=False,
-    )
-    orchestrator.register_step(
-        15, "Population Variant Filter (dbSNP)",
-        step15_dbsnp_filter.execute,
-        hard_failure=False, phase="D", express_included=False,
-    )
-    orchestrator.register_step(
-        16, "Clinical Hotspot Filter (ClinVar)",
-        step16_clinical_hotspots.execute,
-        hard_failure=False, phase="D", express_included=False,
-    )
-    orchestrator.register_step(
-        17, "5' Overhang Adapter Tailing",
-        step17_adapter_tailing.execute,
-        hard_failure=False, phase="D", express_included=False,
-    )
-    orchestrator.register_step(
-        18, "Multiplex Cross-Reaction (PrimerPooler)",
-        step18_multiplex_scoring.execute,
-        hard_failure=False, phase="D", express_included=False,
-    )
+    # ─── Phase D: Structural & Multiplex Analysis (Steps 17-22) ────────
+    orchestrator.register_step(17, "Amplicon Structural Verification",  step17_execute, hard_failure=False, phase="D", express_included=False)
+    orchestrator.register_step(18, "Population Variant Filter (dbSNP)", step18_execute, hard_failure=False, phase="D", express_included=False)
+    orchestrator.register_step(19, "Clinical Hotspot Filter (ClinVar)", step19_execute, hard_failure=False, phase="D", express_included=False)
+    orchestrator.register_step(20, "5' Overhang Adapter Tailing",       step20_execute, hard_failure=False, phase="D", express_included=False)
+    orchestrator.register_step(21, "Multiplex Cross-Reaction Scoring",  step21_execute, hard_failure=False, phase="D", express_included=False)
+    orchestrator.register_step(22, "Automated Penalty & Ranking Matrix", step22_execute, hard_failure=False, phase="E", express_included=True)
 
-    # ─── Phase E: Ranking, Profiling & Export (Steps 19-22) ──────────────
-    orchestrator.register_step(
-        19, "Automated Penalty & Ranking Matrix",
-        step19_ranking.execute,
-        hard_failure=False, phase="E", express_included=True,
-    )
-    orchestrator.register_step(
-        20, "Thermocycling Profile Generation",
-        step20_thermocycling.execute,
-        hard_failure=False, phase="E", express_included=False,
-    )
-    orchestrator.register_step(
-        21, "Manufacturing Feasibility Screening",
-        step21_manufacturing.execute,
-        hard_failure=False, phase="E", express_included=False,
-    )
-    orchestrator.register_step(
-        22, "Probe Design (qPCR/TaqMan)",
-        step22_probe_design.execute,
-        hard_failure=False, phase="E", express_included=True,
-    )
+    # ─── Phase E: Profiling & Export (Steps 23-24) ─────────────────────
+    orchestrator.register_step(23, "Thermocycling Profile Generation", step23_execute, hard_failure=False, phase="E", express_included=False)
+    orchestrator.register_step(24, "Probe Design (qPCR/TaqMan)",       step24_execute, hard_failure=False, phase="E", express_included=True)
 
-    # Mark as running
+    total_steps = 24
     db_execute("UPDATE pipeline_jobs SET status = 'running', started_at = NOW() WHERE id = %s", (job_id,))
 
-    # Run the pipeline
     outcomes = orchestrator.run(job_id, input_params)
 
-    # Persist each step result
     import json as json_mod
+    from primerforge.crypto_utils import encrypt_data
     for outcome in outcomes:
         try:
+            plain = json_mod.dumps(outcome.output_data) if outcome.output_data else '{}'
+            encrypted = encrypt_data(plain)
             db_execute(
                 """INSERT INTO pipeline_results (job_id, step_number, step_name, status, output_data, duration_ms, phase)
                    VALUES (%s, %s, %s, %s, %s, %s, %s)""",
                 (job_id, outcome.step_number, outcome.step_name, outcome.status,
-                 json_mod.dumps(outcome.output_data) if outcome.output_data else '{}',
-                 outcome.duration_ms, outcome.phase)
+                 encrypted, outcome.duration_ms, outcome.phase)
             )
         except Exception as e:
             logger.error(f"Failed to save step {outcome.step_number} result: {e}")
 
-    # Determine final status
     hard_failed = any(
         o.status == "failed" and any(s.hard_failure for s in orchestrator.steps if s.step_number == o.step_number)
         for o in outcomes
     )
     final_status = "failed" if hard_failed else "completed"
 
-    # Update job completion
     error_log = None
     if hard_failed:
         errors = [f"Step {o.step_number} ({o.step_name}): {o.error_msg}" for o in outcomes if o.status == "failed"]
         error_log = "; ".join(errors)
 
     db_execute(
-        "UPDATE pipeline_jobs SET status = %s, completed_at = NOW(), current_step = 22, error_log = %s WHERE id = %s",
-        (final_status, error_log, job_id)
+        "UPDATE pipeline_jobs SET status = %s, completed_at = NOW(), current_step = %s, error_log = %s WHERE id = %s",
+        (final_status, total_steps, error_log, job_id)
     )
 
     return {

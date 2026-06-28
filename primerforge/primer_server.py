@@ -586,7 +586,15 @@ def create_app() -> Flask:
     app = Flask(__name__)
 
     # ── Session security ──
-    app.secret_key = os.environ.get("PRIMERFORGE_SECRET", "dev-secret-key")
+    secret_key = os.environ.get("PRIMERFORGE_SECRET")
+    if not secret_key:
+        if app.config.get("TESTING"):
+            secret_key = "test-secret-key"
+        else:
+            import secrets
+            secret_key = secrets.token_hex(32)
+            logger.warning("PRIMERFORGE_SECRET not set — using random ephemeral secret (sessions invalidated on restart)")
+    app.secret_key = secret_key
     app.config.update(
         SESSION_COOKIE_SECURE=True,
         SESSION_COOKIE_HTTPONLY=True,
@@ -997,27 +1005,22 @@ def create_app() -> Flask:
             return err("Optimal Tm must be between minimum and maximum Tm.", "VALIDATION_ERROR", 422)
 
         # ── Auth & Usage Check ────────────────────────────────────────────
-        test_mode = app.config.get("TESTING")
-        if test_mode:
-            user = {"email": "test@example.com", "role": "admin"}
-            usage = {"can_run": True}
-        else:
-            user = get_current_user()
-            if not user:
-                return jsonify({"error": "Authentication required. Please login or register to run the pipeline.",
-                               "code": "AUTH_REQUIRED", "action": "show_auth"}), 401
-            usage = check_usage(user['email'])
-            if not usage['can_run'] and user.get('role') != 'admin':
-                return jsonify({"error": "Usage limit reached. Payment required for additional runs.",
-                               "code": "PAYMENT_REQUIRED", "action": "show_payment",
-                               "usage": usage}), 402
+        user = get_current_user()
+        if not user:
+            return jsonify({"error": "Authentication required. Please login or register to run the pipeline.",
+                           "code": "AUTH_REQUIRED", "action": "show_auth"}), 401
+        usage = check_usage(user['email'])
+        if not usage['can_run'] and user.get('role') != 'admin':
+            return jsonify({"error": "Usage limit reached. Payment required for additional runs.",
+                           "code": "PAYMENT_REQUIRED", "action": "show_payment",
+                           "usage": usage}), 402
 
-            # Consume token BEFORE running pipeline (PostgreSQL mode)
-            if USE_POSTGRES and consume_token:
-                if user.get('role') != 'admin':
-                    if not consume_token(user.get('user_id'), user['email']):
-                        return jsonify({"error": "No tokens remaining. Purchase more to continue.",
-                                       "code": "PAYMENT_REQUIRED", "action": "show_payment"}), 402
+        # Consume token BEFORE running pipeline (PostgreSQL mode)
+        if USE_POSTGRES and consume_token:
+            if user.get('role') != 'admin':
+                if not consume_token(user.get('user_id'), user['email']):
+                    return jsonify({"error": "No tokens remaining. Purchase more to continue.",
+                                   "code": "PAYMENT_REQUIRED", "action": "show_payment"}), 402
 
         cfg = PrimerDesignConfig()
         cfg.min_tm  = min_tm
