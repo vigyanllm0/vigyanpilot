@@ -122,11 +122,15 @@ def run_pipeline(self, job_id: str):
         try:
             plain = json_mod.dumps(outcome.output_data) if outcome.output_data else '{}'
             encrypted = encrypt_data(plain)
+            # encrypted is a plain string — wrap in json.dumps so it's valid
+            # for the PostgreSQL json column (psycopg2 deserializes it back
+            # to a plain string on read, where _decrypt_output detects it by
+            # the "gAAAAA" Fernet prefix)
             db_execute(
                 """INSERT INTO pipeline_results (job_id, step_number, step_name, status, output_data, duration_ms, phase)
                    VALUES (%s, %s, %s, %s, %s, %s, %s)""",
                 (job_id, outcome.step_number, outcome.step_name, outcome.status,
-                 encrypted, outcome.duration_ms, outcome.phase)
+                 json_mod.dumps(encrypted), outcome.duration_ms, outcome.phase)
             )
         except Exception as e:
             logger.error(f"Failed to save step {outcome.step_number} result: {e}")

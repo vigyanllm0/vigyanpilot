@@ -30,11 +30,29 @@ logger = logging.getLogger("primerforge.engine.pipeline_routes")
 
 
 def _decrypt_output(row: dict, key: str = "output_data") -> dict:
-    """Decrypt the output_data field of a pipeline result row in-place."""
+    """Decrypt the output_data field of a pipeline result row in-place.
+
+    Handles:
+      - psycopg2-deserialized plain string (gAAAAAB...)
+      - raw JSON-encoded string from DB ("gAAAAAB...")
+      - legacy unencrypted JSON objects/arrays
+    """
     raw = row.get(key)
     if isinstance(raw, str):
-        if raw.startswith("gAAAAA"):  # Fernet ciphertext marker
-            decrypted = decrypt_data(raw)
+        # Strip JSON string wrapping if present (psycopg2 sometimes returns
+        # raw JSON text instead of deserialized value depending on connection
+        # configuration)
+        stripped = raw
+        if stripped.startswith('"') and stripped.endswith('"'):
+            try:
+                stripped = json.loads(stripped)
+            except (json.JSONDecodeError, TypeError):
+                stripped = raw
+        if not isinstance(stripped, str):
+            row[key] = stripped
+            return row
+        if stripped.startswith("gAAAAA"):  # Fernet ciphertext marker
+            decrypted = decrypt_data(stripped)
             if decrypted:
                 try:
                     row[key] = json.loads(decrypted)
@@ -43,9 +61,11 @@ def _decrypt_output(row: dict, key: str = "output_data") -> dict:
                     pass
         # Plain JSON string (legacy / non-encrypted data)
         try:
-            row[key] = json.loads(raw)
+            row[key] = json.loads(stripped)
         except (json.JSONDecodeError, TypeError):
             pass
+    elif isinstance(raw, (dict, list)):
+        pass  # Already a JSON object — legacy data, nothing to do
     return row
 
 pipeline_bp = Blueprint("pipeline", __name__)
