@@ -451,10 +451,10 @@ footer { background: var(--navy); color: #CBD5E1; padding: 80px 0 32px; }
   function rand(a, b) { return a + Math.random() * (b - a); }
 
   function makeCluster(pal) {
-    var residues = [], n = 12 + Math.floor(Math.random() * 10);
+    var residues = [], n = 8 + Math.floor(Math.random() * 6);
     for (var r = 0; r < n; r++) {
-      var a = Math.random() * 6.2832, d = 4 + Math.random() * 22;
-      residues.push({ ox: Math.cos(a)*d + rand(-5,5), oy: Math.sin(a)*d + rand(-5,5), r: rand(2.5,7), color: r === 0 ? pal.main : pal.acc[r % pal.acc.length] });
+      var a = Math.random() * 6.2832, d = 2 + Math.random() * 10;
+      residues.push({ ox: Math.cos(a)*d + rand(-3,3), oy: Math.sin(a)*d + rand(-3,3), r: rand(1.2,3.0), color: r === 0 ? pal.main : pal.acc[r % pal.acc.length] });
     }
     return residues;
   }
@@ -534,7 +534,7 @@ footer { background: var(--navy); color: #CBD5E1; padding: 80px 0 32px; }
         var aJx = Math.sin(time * jFreq + b * 0.7 + ai * 3.1) * jAmp * aZs;
         var aJy = Math.cos(time * jFreq * 0.9 + b * 1.1 + ai * 2.7) * jAmp * aZs;
         var isP = (b * 3 + ai + 1) % 4 === 0;
-        drawSphere(aax + aJx, aay + aJy, (isP ? 3.0 : 1.8) * aZs, isP ? '#F59E0B' : '#D1D5DB', a * (0.5 + Math.abs(aDepth) * 0.35));
+        drawSphere(aax + aJx, aay + aJy, (isP ? 5.0 : 3.0) * aZs, isP ? '#F59E0B' : '#D1D5DB', a * (0.5 + Math.abs(aDepth) * 0.35));
       }
 
       // --- Backbone atoms strand 2 ---
@@ -549,7 +549,7 @@ footer { background: var(--navy); color: #CBD5E1; padding: 80px 0 32px; }
         var aJx = Math.sin(time * jFreq + b * 0.7 + ai * 3.1 + 50) * jAmp * aZs;
         var aJy = Math.cos(time * jFreq * 0.9 + b * 1.1 + ai * 2.7 + 50) * jAmp * aZs;
         var isP = (b * 3 + ai + 2) % 4 === 0;
-        drawSphere(aax + aJx, aay + aJy, (isP ? 3.0 : 1.8) * aZs, isP ? '#F59E0B' : '#D1D5DB', a * (0.5 + Math.abs(aDepth) * 0.35));
+        drawSphere(aax + aJx, aay + aJy, (isP ? 5.0 : 3.0) * aZs, isP ? '#F59E0B' : '#D1D5DB', a * (0.5 + Math.abs(aDepth) * 0.35));
       }
 
       // --- Base pair atoms (clustered between strands) ---
@@ -560,11 +560,11 @@ footer { background: var(--navy); color: #CBD5E1; padding: 80px 0 32px; }
         var bZs = 0.5 + (bDepth + 1) * 0.25;
         var bRad = rad * (1 - bFrac * 0.55);
         var batX = cx + Math.cos(bAng) * bRad + bx;
-        var batY = y + (bi - 1.5) * 1.0;
+        var batY = y + (bi - 1.5) * 1.2;
         var bJx = Math.sin(time * jFreq * 1.2 + b * 0.7 + bi * 5.1) * jAmp * 0.6 * bZs;
         var bJy = Math.cos(time * jFreq * 1.1 + b * 1.1 + bi * 4.3) * jAmp * 0.6 * bZs;
         var bColor = bi < 2 ? '#1E3A5F' : (bi < 3 ? '#C0392B' : '#2D5A87');
-        drawSphere(batX + bJx, batY + bJy, 1.6 * bZs, bColor, a * (0.45 + Math.abs(bDepth) * 0.3));
+        drawSphere(batX + bJx, batY + bJy, 2.5 * bZs, bColor, a * (0.45 + Math.abs(bDepth) * 0.3));
       }
     }
     ctx.globalAlpha = 1;
@@ -580,7 +580,7 @@ footer { background: var(--navy); color: #CBD5E1; padding: 80px 0 32px; }
 
     var pt = poly.t, y = topY + pt*dna.h, pa = pt*6.2832*4 + dna.rotation, pd = Math.cos(pa), pz = 0.5 + (pd+1)*0.25;
     var grv = dna.grooveOffset || 3.1416;
-    var px1 = dna.cx + Math.cos(pa)*dna.rad, px2 = dna.cx + Math.cos(pa+grv)*dna.rad, pX = (px1+px2)*0.5, pY = y, pR = 22*pz, al = (0.5 + Math.abs(pd)*0.5);
+    var px1 = dna.cx + Math.cos(pa)*dna.rad, px2 = dna.cx + Math.cos(pa+grv)*dna.rad, pX = (px1+px2)*0.5, pY = y, pR = 12*pz, al = (0.5 + Math.abs(pd)*0.5);
 
     var pg = ctx.createRadialGradient(pX,pY,0, pX,pY,pR*3.5);
     pg.addColorStop(0, 'rgba(124,58,237,'+(0.12*al)+')'); pg.addColorStop(1,'transparent');
@@ -596,7 +596,7 @@ footer { background: var(--navy); color: #CBD5E1; padding: 80px 0 32px; }
     var subC = ['#7C3AED','#8B5CF6','#A78BFA','#6D28D9','#C084FC','#9B59B6'];
     for (var su = 0; su < 6; su++) {
       var sa = su*1.0472 + poly.phase + dna.rotation*0.3, sd = pR*0.78;
-      drawSphere(pX+Math.cos(sa)*sd, pY+Math.sin(sa)*sd, (5+Math.sin(sa+Date.now()*0.002)*1.2)*pz, subC[su], 0.85*al);
+      drawSphere(pX+Math.cos(sa)*sd, pY+Math.sin(sa)*sd, (3+Math.sin(sa+Date.now()*0.002)*0.6)*pz, subC[su], 0.85*al);
     }
 
     ctx.globalAlpha = 0.35 * al; ctx.fillStyle = '#2DD4BF';
@@ -605,12 +605,12 @@ footer { background: var(--navy); color: #CBD5E1; padding: 80px 0 32px; }
     for (var ri = 0; ri < poly.rnaLen; ri++) {
       var rt = ri/poly.rnaLen, ba = pa + 0.785 + rt*1.0 + Math.sin(rt*1.5708)*0.3;
       var rX = pX + Math.cos(ba)*(pR*1.3+rt*28), rY = pY - rt*12 - 3*Math.sin(rt*18.85+Date.now()*0.001);
-      var rR = 2.8*(1-rt*0.35)*pz, rAl = (1-rt*0.35)*al;
+      var rR = 1.6*(1-rt*0.35)*pz, rAl = (1-rt*0.35)*al;
       drawSphere(rX, rY, rR, rnaColors[Math.floor(ri*3.7)%4], rAl*0.8);
       if (ri > 0) {
         var pRt = (ri-1)/poly.rnaLen, pBa = pa + 0.785 + pRt*1.0 + Math.sin(pRt*1.5708)*0.3;
         var pX2 = pX + Math.cos(pBa)*(pR*1.3+pRt*28), pY2 = pY - pRt*12 - 3*Math.sin(pRt*18.85+Date.now()*0.001);
-        ctx.globalAlpha = rAl * 0.35; ctx.strokeStyle = '#E84393'; ctx.lineWidth = 2*pz;
+        ctx.globalAlpha = rAl * 0.35; ctx.strokeStyle = '#E84393'; ctx.lineWidth = 1*pz;
         ctx.beginPath(); ctx.moveTo(pX2,pY2); ctx.lineTo(rX,rY); ctx.stroke();
       }
     }
@@ -621,11 +621,11 @@ footer { background: var(--navy); color: #CBD5E1; padding: 80px 0 32px; }
     var m = Math.min(W, H);
     var grv = 2.9; // groove offset (~166°) for major/minor grooves
     dnaStrands = [
-      { cx: W*0.22, cy: H*0.5, rad: m*0.10, h: m*0.65, rotation: 0, speed: 0.0016, bps: 42, grooveOffset: grv, bendAmp: 8, bendFreq: 0.35, jitterAmp: 1.0, jitterFreq: 2.5 },
-      { cx: W*0.44, cy: H*0.48, rad: m*0.09, h: m*0.55, rotation: 0.6, speed: -0.0014, bps: 36, grooveOffset: grv, bendAmp: 7, bendFreq: 0.33, jitterAmp: 0.9, jitterFreq: 2.4 },
-      { cx: W*0.64, cy: H*0.52, rad: m*0.08, h: m*0.45, rotation: 1.2, speed: 0.0013, bps: 30, grooveOffset: 2.85, bendAmp: 6, bendFreq: 0.30, jitterAmp: 0.8, jitterFreq: 2.3 },
-      { cx: W*0.80, cy: H*0.47, rad: m*0.06, h: m*0.35, rotation: 1.8, speed: -0.0012, bps: 24, grooveOffset: 2.85, bendAmp: 5, bendFreq: 0.28, jitterAmp: 0.7, jitterFreq: 2.2, alpha: 0.45 },
-      { cx: W*0.92, cy: H*0.53, rad: m*0.045, h: m*0.25, rotation: 2.4, speed: 0.0010, bps: 18, grooveOffset: 2.8, bendAmp: 4, bendFreq: 0.25, jitterAmp: 0.6, jitterFreq: 2.0, alpha: 0.3 }
+      { cx: W*0.22, cy: H*0.5, rad: m*0.14, h: m*0.70, rotation: 0, speed: 0.0016, bps: 42, grooveOffset: grv, bendAmp: 10, bendFreq: 0.35, jitterAmp: 1.0, jitterFreq: 2.5 },
+      { cx: W*0.43, cy: H*0.48, rad: m*0.12, h: m*0.60, rotation: 0.6, speed: -0.0014, bps: 36, grooveOffset: grv, bendAmp: 9, bendFreq: 0.33, jitterAmp: 0.9, jitterFreq: 2.4 },
+      { cx: W*0.62, cy: H*0.52, rad: m*0.10, h: m*0.50, rotation: 1.2, speed: 0.0013, bps: 30, grooveOffset: 2.85, bendAmp: 8, bendFreq: 0.30, jitterAmp: 0.8, jitterFreq: 2.3 },
+      { cx: W*0.79, cy: H*0.47, rad: m*0.07, h: m*0.38, rotation: 1.8, speed: -0.0012, bps: 24, grooveOffset: 2.85, bendAmp: 6, bendFreq: 0.28, jitterAmp: 0.7, jitterFreq: 2.2, alpha: 0.45 },
+      { cx: W*0.91, cy: H*0.53, rad: m*0.05, h: m*0.28, rotation: 2.4, speed: 0.0010, bps: 18, grooveOffset: 2.8, bendAmp: 4, bendFreq: 0.25, jitterAmp: 0.6, jitterFreq: 2.0, alpha: 0.3 }
     ];
     polymerases = [
       { dnaIdx:0, t:0.2, dir:1, speed:0.0005, rnaLen:0, maxRna:45, phase:0 },
@@ -638,9 +638,9 @@ footer { background: var(--navy); color: #CBD5E1; padding: 80px 0 32px; }
     for (var p = 0; p < 30; p++) {
       var pal = proteinPalettes[p % 10];
       proteins.push({
-        x: rand(20, W-20), y: rand(20, H-20), vx: rand(-0.3,0.3), vy: rand(-0.3,0.3),
-        driftTimer: Math.floor(rand(0,40)), residues: makeCluster(pal),
-        rotation: rand(0,6.2832), rotSpeed: rand(-0.022,0.022), scale: rand(0.45,1.15),
+        x: rand(20, W-20), y: rand(20, H-20), vx: rand(-0.25,0.25), vy: rand(-0.25,0.25),
+        driftTimer: Math.floor(rand(0,60)), residues: makeCluster(pal),
+        rotation: rand(0,6.2832), rotSpeed: rand(-0.015,0.015), scale: rand(0.2,0.4),
         isBinder: p < 8,
         bindState: 'free', bindTimer: 0, bindTarget: null, bindDnaIdx: -1, bindT: 0, bindCooldown: Math.floor(rand(50,200))
       });
