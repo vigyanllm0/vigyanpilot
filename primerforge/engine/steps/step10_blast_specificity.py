@@ -428,8 +428,25 @@ def _check_db_exists(db_path: str) -> bool:
     return False
 
 
+VIRAL_ORGANISMS = frozenset({
+    "hiv-1", "hiv", "hbv", "hcv", "rsv", "adenovirus",
+    "hpv", "hsv-1", "hsv-2", "hsv", "influenza-a", "influenza-b", "influenza",
+    "dengue", "zika", "ebv", "cmv", "sars-cov", "sars-cov-2", "mers-cov",
+    "west-nile", "ebola", "chikungunya", "measles", "rotavirus", "norovirus",
+    "parvovirus-b19", "vzv", "enterovirus", "rhinovirus", "hantavirus",
+    "nipah", "lassa", "yellow-fever", "japanese-encephalitis", "rabies",
+    "htlv", "hhv-6", "hhv-8", "bk-virus", "jc-virus",
+    "parainfluenza", "metapneumovirus", "bocavirus", "torque-teno",
+})
+
+
 def _resolve_db_path(organism: str) -> str:
-    """Resolve BLAST database path based on organism."""
+    """Resolve BLAST database path based on organism.
+
+    All viruses share a single viral_genome BLAST database.
+    If the specific viral DB is not installed, BLAST falls back
+    to internal reference scanning in the caller.
+    """
     db_base = os.environ.get("BLAST_DB_BASE", "/opt/blast_db")
     organism_map = {
         "human": "human_genome",
@@ -446,8 +463,13 @@ def _resolve_db_path(organism: str) -> str:
         "chicken": "ggallus_genome",
         "cow": "btaurus_genome",
         "xenopus": "xtropicalis_genome",
+        "staph": "staphylococcus_aureus_genome",
+        "mtb": "mycobacterium_tuberculosis_genome",
     }
-    db_name = organism_map.get(organism.lower(), f"{organism.lower()}_genome")
+    org_key = organism.lower()
+    if org_key in VIRAL_ORGANISMS:
+        return os.path.join(db_base, "viral_genome")
+    db_name = organism_map.get(org_key, f"{org_key}_genome")
     return os.path.join(db_base, db_name)
 
 

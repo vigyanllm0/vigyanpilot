@@ -622,23 +622,69 @@ footer{padding:32px 0;border-top:1px solid var(--slate-border)}
               <span style="font-size:10px;color:var(--muted);font-weight:400;text-transform:none">for BLAST &amp; strain conservation</span>
             </label>
             <select id="pipeline-organism" class="form-input">
-              <option value="human">Human (<i>Homo sapiens</i>)</option>
-              <option value="mouse">Mouse (<i>Mus musculus</i>)</option>
-              <option value="rat">Rat (<i>Rattus norvegicus</i>)</option>
-              <option value="zebrafish">Zebrafish (<i>Danio rerio</i>)</option>
-              <option value="fly">Fruit fly (<i>Drosophila melanogaster</i>)</option>
-              <option value="worm">Nematode (<i>Caenorhabditis elegans</i>)</option>
-              <option value="yeast">Yeast (<i>Saccharomyces cerevisiae</i>)</option>
-              <option value="ecoli"><i>E. coli</i></option>
-              <option value="arabidopsis">Thale cress (<i>Arabidopsis thaliana</i>)</option>
-              <option value="pig">Pig (<i>Sus scrofa</i>)</option>
-              <option value="dog">Dog (<i>Canis lupus familiaris</i>)</option>
-              <option value="chicken">Chicken (<i>Gallus gallus</i>)</option>
-              <option value="cow">Cow (<i>Bos taurus</i>)</option>
-              <option value="xenopus">Frog (<i>Xenopus tropicalis</i>)</option>
-              <option value="sars-cov-2">SARS-CoV-2</option>
-              <option value="staph"><i>Staphylococcus aureus</i></option>
-              <option value="mtb"><i>Mycobacterium tuberculosis</i></option>
+              <optgroup label="Vertebrates">
+                <option value="human">Human (<i>Homo sapiens</i>)</option>
+                <option value="mouse">Mouse (<i>Mus musculus</i>)</option>
+                <option value="rat">Rat (<i>Rattus norvegicus</i>)</option>
+                <option value="zebrafish">Zebrafish (<i>Danio rerio</i>)</option>
+                <option value="fly">Fruit fly (<i>Drosophila melanogaster</i>)</option>
+                <option value="worm">Nematode (<i>Caenorhabditis elegans</i>)</option>
+                <option value="yeast">Yeast (<i>Saccharomyces cerevisiae</i>)</option>
+                <option value="pig">Pig (<i>Sus scrofa</i>)</option>
+                <option value="dog">Dog (<i>Canis lupus familiaris</i>)</option>
+                <option value="chicken">Chicken (<i>Gallus gallus</i>)</option>
+                <option value="cow">Cow (<i>Bos taurus</i>)</option>
+                <option value="xenopus">Frog (<i>Xenopus tropicalis</i>)</option>
+                <option value="arabidopsis">Thale cress (<i>Arabidopsis thaliana</i>)</option>
+              </optgroup>
+              <optgroup label="Bacteria">
+                <option value="ecoli"><i>Escherichia coli</i></option>
+                <option value="staph"><i>Staphylococcus aureus</i></option>
+                <option value="mtb"><i>Mycobacterium tuberculosis</i></option>
+              </optgroup>
+              <optgroup label="Viruses">
+                <option value="hiv-1">HIV-1 (<i>Human immunodeficiency virus 1</i>)</option>
+                <option value="hbv">HBV (<i>Hepatitis B virus</i>)</option>
+                <option value="hcv">HCV (<i>Hepatitis C virus</i>)</option>
+                <option value="rsv">RSV (<i>Respiratory syncytial virus</i>)</option>
+                <option value="adenovirus">Adenovirus</option>
+                <option value="hpv">HPV (<i>Human papillomavirus</i>)</option>
+                <option value="hsv-1">HSV-1 (<i>Herpes simplex 1</i>)</option>
+                <option value="hsv-2">HSV-2 (<i>Herpes simplex 2</i>)</option>
+                <option value="influenza-a">Influenza A</option>
+                <option value="influenza-b">Influenza B</option>
+                <option value="sars-cov-2">SARS-CoV-2</option>
+                <option value="sars-cov">SARS-CoV</option>
+                <option value="mers-cov">MERS-CoV</option>
+                <option value="dengue">Dengue virus</option>
+                <option value="zika">Zika virus</option>
+                <option value="ebv">EBV (<i>Epstein-Barr virus</i>)</option>
+                <option value="cmv">CMV (<i>Cytomegalovirus</i>)</option>
+                <option value="west-nile">West Nile virus</option>
+                <option value="ebola">Ebola virus</option>
+                <option value="chikungunya">Chikungunya virus</option>
+                <option value="measles">Measles virus</option>
+                <option value="rotavirus">Rotavirus</option>
+                <option value="norovirus">Norovirus</option>
+                <option value="parvovirus-b19">Parvovirus B19</option>
+                <option value="vzv">VZV (<i>Varicella-zoster</i>)</option>
+                <option value="enterovirus">Enterovirus</option>
+                <option value="rhinovirus">Rhinovirus</option>
+                <option value="hantavirus">Hantavirus</option>
+                <option value="nipah">Nipah virus</option>
+                <option value="lassa">Lassa virus</option>
+                <option value="yellow-fever">Yellow fever virus</option>
+                <option value="japanese-encephalitis">Japanese encephalitis virus</option>
+                <option value="rabies">Rabies virus</option>
+                <option value="htlv">HTLV</option>
+                <option value="hhv-6">HHV-6</option>
+                <option value="hhv-8">HHV-8 (<i>Kaposi sarcoma</i>)</option>
+                <option value="bk-virus">BK virus</option>
+                <option value="jc-virus">JC virus</option>
+                <option value="parainfluenza">Parainfluenza virus</option>
+                <option value="metapneumovirus">Metapneumovirus</option>
+                <option value="bocavirus">Bocavirus</option>
+              </optgroup>
             </select>
             <div class="form-hint">Determines the BLAST database and reference genome for conservation scoring.</div>
           </div>
@@ -2346,12 +2392,52 @@ async function fetchSequence(acc){
         const desc = d.description || '';
         const orgMatch = desc.match(/^([A-Z][a-z]+(?: [a-z]+)*)/);
         const detectedOrg = orgMatch ? orgMatch[1].toLowerCase() : '';
-        const knownOrganisms = {homo: 'human', mus: 'mouse', rattus: 'rat', danio: 'zebrafish',
-                                drosophila: 'fly', arabidopsis: 'arabidopsis', 'saccharomyces': 'yeast',
-                                'escherichia': 'ecoli', 'sus': 'pig', 'canis': 'dog',
-                                'gallus': 'chicken', 'bos': 'cow', 'xenopus': 'xenopus',
-                                'caenorhabditis': 'worm', 'staphylococcus': 'staph',
-                                'mycobacterium': 'mtb', 'severe acute': 'sars-cov-2'};
+        const knownOrganisms = {
+          'human immunodeficiency': 'hiv-1',
+          'hepatitis b': 'hbv',
+          'hepatitis c': 'hcv',
+          'respiratory syncytial': 'rsv',
+          'human adenovirus': 'adenovirus',
+          'human papillomavirus': 'hpv',
+          'human herpesvirus 1': 'hsv-1',
+          'human herpesvirus 2': 'hsv-2',
+          'influenza a': 'influenza-a',
+          'influenza b': 'influenza-b',
+          'severe acute respiratory syndrome coronavirus 2': 'sars-cov-2',
+          'severe acute respiratory syndrome': 'sars-cov',
+          'middle east respiratory syndrome': 'mers-cov',
+          'dengue virus': 'dengue',
+          'zika virus': 'zika',
+          'human gammaherpesvirus 4': 'ebv',
+          'human betaherpesvirus': 'cmv',
+          'west nile': 'west-nile',
+          'ebolavirus': 'ebola',
+          'chikungunya': 'chikungunya',
+          'measles': 'measles',
+          'rotavirus': 'rotavirus',
+          'norovirus': 'norovirus',
+          'human alphaherpesvirus 3': 'vzv',
+          'enterovirus': 'enterovirus',
+          'rhinovirus': 'rhinovirus',
+          'orthohantavirus': 'hantavirus',
+          'nipah': 'nipah',
+          'lassa': 'lassa',
+          'yellow fever': 'yellow-fever',
+          'japanese encephalitis': 'japanese-encephalitis',
+          'rabies': 'rabies',
+          'human t-lymphotropic': 'htlv',
+          'human polyomavirus 1': 'bk-virus',
+          'human polyomavirus 2': 'jc-virus',
+          'human parainfluenza': 'parainfluenza',
+          'human metapneumovirus': 'metapneumovirus',
+          'human bocavirus': 'bocavirus',
+          homo: 'human', mus: 'mouse', rattus: 'rat', danio: 'zebrafish',
+          drosophila: 'fly', arabidopsis: 'arabidopsis', 'saccharomyces': 'yeast',
+          'escherichia': 'ecoli', 'sus': 'pig', 'canis': 'dog',
+          gallus: 'chicken', bos: 'cow', xenopus: 'xenopus',
+          caenorhabditis: 'worm', staphylococcus: 'staph',
+          mycobacterium: 'mtb',
+        };
         for (const [prefix, org] of Object.entries(knownOrganisms)) {
           if (detectedOrg.startsWith(prefix)) { $('pipeline-organism').value = org; break; }
         }
