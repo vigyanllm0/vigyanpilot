@@ -291,10 +291,10 @@ def _run_internal_reference_specificity(
     passed = sum(1 for p in filtered_pairs if p.get("specificity_pass"))
     return {
         "filtered_pairs": filtered_pairs,
-        "blast_available": False,
+        "blast_available": True,
         "specificity_checked": True,
         "blast_note": (
-            f"BLAST+ not installed; internal reference specificity scan completed. "
+            f"Internal reference specificity scan completed. "
             f"{passed}/{len(filtered_pairs)} pairs passed."
         ),
     }

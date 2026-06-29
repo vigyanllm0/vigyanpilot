@@ -168,6 +168,26 @@ def init_db():
             WHERE NOT EXISTS (SELECT 1 FROM token_balances tb WHERE tb.user_id = u.id)
         """)
 
+        # Ensure audit_logs table exists
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS audit_logs (
+                id SERIAL PRIMARY KEY,
+                user_id INTEGER,
+                job_id TEXT,
+                accession TEXT,
+                gene_symbol TEXT,
+                action TEXT NOT NULL,
+                source TEXT,
+                ip_address TEXT,
+                user_agent TEXT,
+                details TEXT,
+                created_at TIMESTAMP DEFAULT NOW()
+            )
+        """)
+        cur.execute("CREATE INDEX IF NOT EXISTS idx_audit_logs_created_at ON audit_logs(created_at DESC)")
+        cur.execute("CREATE INDEX IF NOT EXISTS idx_audit_logs_user_id ON audit_logs(user_id)")
+        cur.execute("CREATE INDEX IF NOT EXISTS idx_audit_logs_accession ON audit_logs(accession)")
+
         conn.commit()
         cur.close()
         conn.close()
@@ -179,6 +199,28 @@ def init_db():
 
 
 # ── Helper Functions ──────────────────────────────────────────────────────
+
+def log_audit(action: str, accession: str = "", job_id: str = "", gene_symbol: str = "",
+               source: str = "", details: str = "", user_id: int = None):
+    """Insert a row into audit_logs for tracking searches and pipeline runs."""
+    try:
+        from flask import request as _req
+        ip = _req.remote_addr if _req else ""
+        ua = (_req.headers.get("User-Agent", "") if _req else "")[:512]
+        if user_id is None:
+            try:
+                from flask import g as _g
+                user_id = _g.get("user", {}).get("user_id")
+            except Exception:
+                user_id = None
+        execute("""
+            INSERT INTO audit_logs (user_id, job_id, accession, gene_symbol, action, source, ip_address, user_agent, details)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """, (user_id, job_id or None, accession or None, gene_symbol or None,
+              action, source or None, ip or None, ua or None, details or None))
+    except Exception as e:
+        logger.debug("Audit log skipped: %s", e)
+
 
 def fetch_one(query: str, params: tuple = None) -> dict:
     """Execute query and return single row as dict, or None."""

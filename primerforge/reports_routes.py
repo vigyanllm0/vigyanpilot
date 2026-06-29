@@ -386,9 +386,10 @@ def request_download_token(report_id: int):
 def _resolve_download_user(report_id: int):
     """Resolve (user_id, error_response) for download access.
 
-    Supports two authentication modes:
-    1. Standard auth (Authorization header or pf_token cookie) — existing flow.
+    Supports three authentication modes:
+    1. Standard auth (Authorization header or pf_token cookie).
     2. Short-lived download token (?token= query parameter) — secure share flow.
+    3. JWT auth token (?token= query parameter) — direct download from frontend.
     """
     from .pg_auth import verify_token, get_current_user
 
@@ -400,9 +401,14 @@ def _resolve_download_user(report_id: int):
         user_id = user.get("user_id")
         if not user_id:
             return None, (jsonify({"error": "Authentication required", "code": "AUTH_REQUIRED"}), 401)
-        if not _verify_download_token(token_param, report_id, user_id):
-            return None, (jsonify({"error": "Invalid or expired download token", "code": "BAD_TOKEN"}), 403)
-        return user_id, None
+        # First try as short-lived download token
+        if _verify_download_token(token_param, report_id, user_id):
+            return user_id, None
+        # Fallback: try as JWT auth token (direct download from frontend)
+        jwt_user = verify_token(token_param)
+        if jwt_user and jwt_user.get("user_id") == user_id:
+            return user_id, None
+        return None, (jsonify({"error": "Invalid or expired download token", "code": "BAD_TOKEN"}), 403)
 
     user = get_current_user()
     if not user:

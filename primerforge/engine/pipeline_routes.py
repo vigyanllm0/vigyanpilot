@@ -356,6 +356,17 @@ def submit_pipeline():
 
     job_id = str(job["id"])
 
+    # Audit log: pipeline submission
+    try:
+        from ..database import log_audit
+        log_audit("pipeline_submit", accession=input_params.get("accession",""),
+                  job_id=job_id, gene_symbol=input_params.get("organism",""),
+                  source=input_params.get("sequence_source",""),
+                  details=f"mode={mode}, organism={input_params.get('organism','')}",
+                  user_id=user_id)
+    except Exception:
+        pass
+
     # Enqueue Celery task only when Redis broker is reachable. Local/dev mode
     # often has no Redis, and Celery can otherwise spend seconds retrying.
     # Fallback: ThreadPoolExecutor runs the pipeline in a background thread.

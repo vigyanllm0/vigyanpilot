@@ -466,6 +466,21 @@ def _find_related_by_accession(accession: str, organism: str, email: str) -> Lis
             record = Entrez.read(handle)
             handle.close()
             ids = record.get("IdList", [])
+            if len(ids) >= 3:
+                return ids
+            # Step 2b: Few strains in same organism — search across all species for orthologs
+            cross_query = f"{gene_symbol}[Gene Name] AND srcdb_refseq[Properties] AND biomol mrna[Properties]"
+            handle2 = Entrez.esearch(db="nucleotide", term=cross_query, retmax=MAX_STRAIN_SEQUENCES)
+            record2 = Entrez.read(handle2)
+            handle2.close()
+            cross_ids = record2.get("IdList", [])
+            if len(cross_ids) > len(ids):
+                logger.info(
+                    "Broadened search for '%s': found %d sequences across all species "
+                    "(vs %d in %s alone)",
+                    gene_symbol, len(cross_ids), len(ids), search_organism,
+                )
+                return cross_ids
             if len(ids) >= 1:
                 return ids
 

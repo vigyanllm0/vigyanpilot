@@ -1443,7 +1443,7 @@ footer{padding:32px 0;border-top:1px solid var(--slate-border)}
       </div>
       <div class="form-group">
         <label class="form-label">Institution / University *</label>
-        <input type="text" id="acad-institution" class="form-input" placeholder="e.g. IIT Delhi, AIIMS, University of Pune">
+        <input type="text" id="acad-institution" class="form-input" placeholder="e.g. University of Delhi, AIIMS, University of Pune">
       </div>
       <div class="form-group">
         <label class="form-label">Department</label>
@@ -2279,6 +2279,9 @@ async function runAutoDesign() {
     state.templateLength = clean.length;
     state.lastJobId = jobId;
     state.lastResult = resultData;
+    state.accession = (resultData.input_params?.accession || submitData.accession || '').trim();
+    state.organism = (resultData.input_params?.organism || submitData.organism || '').trim();
+    state.sequenceSource = (resultData.input_params?.sequence_source || submitData.sequence_source || '').trim();
 
     // 6. Render results
     if (finalStatus === 'failed') {
@@ -2532,9 +2535,15 @@ function buildRawDataReportText(){
   lines.push('Research Use Only — independent wet-lab verification required');
   lines.push(`Generated: ${generated}`);
   lines.push(`Job ID: ${state.lastJobId || 'local-run'}`);
+  lines.push(`Accession: ${state.accession || 'N/A'}`);
+  lines.push(`Organism: ${state.organism || 'N/A'}`);
+  lines.push(`Sequence source: ${state.sequenceSource || 'pasted'}`);
   lines.push(`Template length: ${state.templateLength || 0} bp`);
   lines.push(`Pipeline status: ${state.lastResult?.status || 'completed'}`);
   lines.push(`Total pairs: ${state.results.length}`);
+  lines.push('');
+  lines.push('=== FULL TEMPLATE SEQUENCE ===');
+  lines.push((state.templateSeq || 'N/A').replace(/(.{80})/g, '$1\n'));
   lines.push('');
   lines.push('=== PIPELINE STEPS ===');
   if(state.lastResult?.steps?.length){
@@ -2594,6 +2603,9 @@ function buildRunReportText(){
   lines.push('Research Use Only — independent wet-lab verification required');
   lines.push(`Generated: ${generated}`);
   lines.push(`Job ID: ${state.lastJobId || 'local-run'}`);
+  lines.push(`Accession: ${state.accession || 'N/A'}`);
+  lines.push(`Organism: ${state.organism || 'N/A'}`);
+  lines.push(`Sequence source: ${state.sequenceSource || 'pasted'}`);
   lines.push(`Template length: ${state.templateLength || 0} bp`);
   lines.push(`Pipeline status: ${state.lastResult?.status || 'completed'}`);
   lines.push(`Total pairs: ${state.results.length}`);
@@ -3998,13 +4010,10 @@ function renderHistoryModal(reports, total) {
             <div style="font-family:var(--font-b);font-size:18px;font-weight:700;color:${scoreColor}">${esc(score)}</div>
             <div style="font-size:10px;color:var(--muted);margin-bottom:8px">Top pair score</div>
             <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">
-              <a href="${API}/api/reports/${r.id}/download?token=${encodeURIComponent(auth.token)}"
-                 download
-                 onclick="event.preventDefault(); downloadReport(${r.id},'json')"
-                 class="btn-secondary" style="font-size:10px;padding:4px 10px">↓ JSON</a>
-              <a href="#"
-                 onclick="event.preventDefault(); downloadReport(${r.id},'csv')"
-                 class="btn-secondary" style="font-size:10px;padding:4px 10px">↓ CSV</a>
+              <button class="btn-secondary" style="font-size:10px;padding:4px 10px;cursor:pointer"
+                onclick="downloadReport(${r.id},'json')">↓ JSON</button>
+              <button class="btn-secondary" style="font-size:10px;padding:4px 10px;cursor:pointer"
+                onclick="downloadReport(${r.id},'csv')">↓ CSV</button>
               <button class="btn-secondary" style="font-size:10px;padding:4px 10px;color:var(--red);border-color:rgba(220,38,38,.3)"
                 onclick="deleteReport(${r.id})">🗑</button>
             </div>
@@ -4197,6 +4206,7 @@ window.adminBanIp = adminBanIp;
 window.adminBlockUser = adminBlockUser;
 window.adminUnblockUser = adminUnblockUser;
 window.adminUnban = adminUnban;
+window.downloadReport = downloadReport;
 window.deleteReport = deleteReport;
 window.copyReferralLink = copyReferralLink;
         window.toggleUserMenu = toggleUserMenu;

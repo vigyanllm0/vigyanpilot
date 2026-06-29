@@ -1340,8 +1340,21 @@ def create_app() -> Flask:
             logger.error(f"Manual analysis error: {exc}", exc_info=True)
             return err("Analysis failed due to an internal error.", "DESIGN_FAILED", 500)
 
+    def _log_fetch(acc, source, description=""):
+        """Log a sequence fetch to the audit log."""
+        try:
+            from ..database import log_audit
+            import re as _re
+            gene = ""
+            m = _re.search(r"\((\w+)\)", description)
+            if m:
+                gene = m.group(1)
+            log_audit("fetch_sequence", accession=acc, gene_symbol=gene, source=source)
+        except Exception:
+            pass
+
     @app.route("/api/primer/fetch-sequence", methods=["POST"])
-    def fetch_sequence():
+    def fetch_sequence_route():
         if not READY:
             return err("Core not available.", "DESIGN_FAILED", 503)
         data = request.get_json(silent=True) or {}
@@ -1352,6 +1365,7 @@ def create_app() -> Flask:
             if re.match(r"^(NM_|NC_|NG_|NR_|NT_|NW_|XM_|XR_)", accession, re.I):
                 r = fetch_ncbi_nucleotide(accession)
                 usable = _auto_design_usability(r["sequence"])
+                _log_fetch(accession, "ncbi", r.get("description",""))
                 return jsonify({"sequence": r["sequence"], "accession": r["accession"],
                                 "description": r["description"], "length": r["length"],
                                 "source": "ncbi", "features": r.get("features", []),
@@ -1361,6 +1375,7 @@ def create_app() -> Flask:
                 seq_type = "cdna" if accession.upper().startswith("ENST") else "genomic"
                 r = fetch_ensembl_sequence(accession, seq_type=seq_type)
                 usable = _auto_design_usability(r["seq"])
+                _log_fetch(accession, "ensembl", r.get("desc",""))
                 return jsonify({"sequence": r["seq"], "accession": r["id"],
                                 "description": r.get("desc",""), "length": r["length"],
                                 "source": "ensembl", "molecule_type": r.get("molecule", "DNA"),
@@ -1369,11 +1384,13 @@ def create_app() -> Flask:
                 from primerforge.engine.sequence_retrieval import fetch_from_ensembl_region
                 r = fetch_from_ensembl_region(accession)
                 usable = _auto_design_usability(r.sequence)
+                _log_fetch(accession, "ensembl_region", r.description)
                 return jsonify({"sequence": r.sequence, "accession": r.accession,
                                 "description": r.description, "length": r.length,
                                 "source": "ensembl_region", "molecule_type": "DNA",
                                 "metadata": r.metadata, "unit": "bp", **usable}), 200
             elif re.match(r"^EPI_ISL_\d+$", accession, re.I):
+                _log_fetch(accession, "gisaid_rejected")
                 return err(
                     "Restricted viral identifiers are not supported. Use an open NCBI Virus or NCBI Nucleotide accession instead.",
                     "VALIDATION_ERROR",
@@ -1383,6 +1400,7 @@ def create_app() -> Flask:
                 from primerforge.engine.sequence_retrieval import fetch_from_ddbj
                 r = fetch_from_ddbj(accession)
                 usable = _auto_design_usability(r.sequence)
+                _log_fetch(accession, "ddbj", r.description)
                 return jsonify({"sequence": r.sequence, "accession": r.accession,
                                 "description": r.description, "length": r.length,
                                 "source": "ddbj", "molecule_type": "DNA",
@@ -1391,12 +1409,14 @@ def create_app() -> Flask:
                 from primerforge.engine.sequence_retrieval import fetch_from_ena
                 r = fetch_from_ena(accession)
                 usable = _auto_design_usability(r.sequence)
+                _log_fetch(accession, "ena", r.description)
                 return jsonify({"sequence": r.sequence, "accession": r.accession,
                                 "description": r.description, "length": r.length,
                                 "source": "ena", "molecule_type": "DNA",
                                 "metadata": r.metadata, "unit": "bp", **usable}), 200
             elif re.match(r"^[PQO][0-9A-Z]{5}$", accession, re.I):
                 r = fetch_uniprot_sequence(accession)
+                _log_fetch(accession, "uniprot", r.get("protein_name",""))
                 return jsonify({"sequence": r["sequence"], "accession": accession,
                                 "description": r.get("protein_name",""), "length": r["length"],
                                 "source": "uniprot", "molecule_type": "protein",
@@ -1405,12 +1425,15 @@ def create_app() -> Flask:
             else:
                 genes = search_ncbi_gene(accession)
                 if not genes:
+                    _log_fetch(accession, "gene_search_failed")
                     return err(f"Gene '{accession}' not found.", "FETCH_FAILED", 400)
                 mrna = genes[0].get("refseq_mRNA", [])
                 if not mrna:
+                    _log_fetch(accession, "gene_no_mrna")
                     return err(f"No RefSeq mRNA for '{accession}'.", "FETCH_FAILED", 400)
                 r = fetch_ncbi_nucleotide(mrna[0])
                 usable = _auto_design_usability(r["sequence"])
+                _log_fetch(accession, "gene_search", r.get("description",""))
                 return jsonify({"sequence": r["sequence"], "accession": r["accession"],
                                 "description": r["description"], "length": r["length"],
                                 "source": "ncbi", "gene_info": genes[0],
