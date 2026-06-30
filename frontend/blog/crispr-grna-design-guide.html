@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en-IN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CRISPR Guide RNA Design: A Complete Guide for Genome Editing | VigyanLLM</title>
+  <meta name="description" content="Complete guide to CRISPR guide RNA (gRNA) design for Cas9, Cas12a, and base editors. Learn target selection, off-target scoring, on-target efficiency prediction, and gRNA synthesis.">
+  <meta name="keywords" content="CRISPR gRNA design, guide RNA design, Cas9 gRNA, CRISPR Cas9 guide RNA, gRNA design tool, off-target prediction, CRISPR genome editing">
+  <link rel="canonical" href="https://vigyanllm.in/blog/crispr-grna-design-guide">
+  <meta property="og:title" content="CRISPR Guide RNA Design: A Complete Guide for Genome Editing">
+  <meta property="og:description" content="Design gRNAs for Cas9, Cas12a, and base editors. Learn target selection, off-target scoring, and synthesis.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://vigyanllm.in/blog/crispr-grna-design-guide">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+  <style>
+    :root {
+  --navy: #0F172A;
+  --navy-light: #1E293B;
+  --white: #FFFFFF;
+  --slate: #F8FAFC;
+  --slate-border: #E2E8F0;
+  --text: #0F172A;
+  --text2: #475569;
+  --muted: #94A3B8;
+  --primary: #2563EB;
+  --bio: #059669;
+  --amber: #D97706;
+  --accent: #22D3EE;
+  --font-h: 'Plus Jakarta Sans', sans-serif;
+  --font-b: 'Inter', sans-serif;
+  --max-w: 1100px;
+  --sec-p: 100px;
+  --bg: #FFFFFF;
+  --border: #E2E8F0;
+  --surface: #F8FAFC;
+}
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--text); font-family: var(--font-b); line-height: 1.6; }
+    a { text-decoration: none; color: inherit; }
+    nav { position: sticky; top: 0; background: rgba(255,255,255,0.95); backdrop-filter: blur(8px); border-bottom: 1px solid var(--border); z-index: 1000; height: 72px; }
+    .article-body { padding: 40px 0; max-width: 800px; margin: 0 auto; }
+    .article-body h1 { font-family: var(--font-b); font-size: clamp(2rem,4vw,2.8rem); font-weight: 400; line-height: 1.1; margin-bottom: 16px; }
+    .article-body h2 { font-size: 24px; font-weight: 600; color: var(--text); margin: 40px 0 16px; }
+    .article-body h3 { font-size: 18px; font-weight: 600; color: var(--text); margin: 28px 0 12px; }
+    .article-body p { margin-bottom: 16px; color: var(--text2); font-size: 15px; line-height: 1.8; }
+    .article-body ul, .article-body ol { margin-left: 24px; margin-bottom: 16px; color: var(--text2); font-size: 15px; }
+    .article-body li { margin-bottom: 8px; }
+    .article-body strong { color: var(--text); }
+    .article-body a { color: var(--primary); }
+    .article-body table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 14px; }
+    .article-body th { background: var(--surface); color: var(--text); padding: 12px; text-align: left; border: 1px solid var(--border); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; }
+    .article-body td { padding: 12px; border: 1px solid var(--border); color: var(--text2); }
+    .article-body tr:nth-child(even) { background: var(--surface); }
+    .article-body .callout { background: var(--surface); border-left: 4px solid var(--primary); padding: 20px 24px; border-radius: 0 12px 12px 0; margin: 24px 0; }
+    .article-body .callout-title { font-weight: 700; color: var(--primary); margin-bottom: 8px; }
+    .cta-box { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 36px; text-align: center; margin: 40px 0; }
+    .cta-box h3 { font-size: 20px; color: var(--text); margin-bottom: 10px; }
+    .cta-box p { color: var(--text2); margin-bottom: 20px; }
+    .cta-btn { display: inline-block; padding: 14px 32px; background: var(--primary); color: #fff; border-radius: 8px; font-weight: 700; font-size: 14px; }
+    .references { padding: 30px 0; border-top: 1px solid var(--border); margin-top: 40px; }
+    .references h2 { font-size: 20px; color: var(--text); margin-bottom: 16px; font-weight: 600; }
+    .references ol { margin-left: 24px; color: var(--text2); font-size: 14px; }
+    .article-header .article-tag { display: inline-block; background: #fef3e2; color: var(--amber); padding: 4px 14px; border-radius: 12px; font-size: 11px; font-weight: 600; margin-bottom: 16px; }
+    .article-header .article-date { color: var(--muted); font-size: 13px; }
+    .article-header .article-author { color: var(--text2); font-size: 13px; font-weight: 600; }
+    .article-header h1 { font-size: clamp(2rem,4vw,2.8rem); font-weight: 400; line-height: 1.1; margin-bottom: 16px; }
+    .article-header .subtitle { font-size: 16px; color: var(--text2); line-height: 1.6; max-width: 700px; }
+    .article-meta-bar { display: flex; gap: 16px; align-items: center; margin-bottom: 16px; flex-wrap: wrap; }
+  </style>
+  <script type="application/ld+json">
+  { "@context": "https://schema.org", "@type": "Article", "headline": "CRISPR Guide RNA Design: A Complete Guide for Genome Editing", "description": "Design gRNAs for Cas9, Cas12a, and base editors with optimal on-target efficiency and minimal off-target effects.", "datePublished": "2026-06-30", "dateModified": "2026-06-30", "author": { "@type": "Person", "name": "Hemant Sharma", "jobTitle": "Founder, VigyanLLM" }, "publisher": { "@type": "Organization", "name": "VigyanLLM Private Limited" }, "mainEntityOfPage": "https://vigyanllm.in/blog/crispr-grna-design-guide" }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "VigyanLLM", "item": "https://vigyanllm.in/" },
+      { "@type": "ListItem", "position": 2, "name": "Blog", "item": "https://vigyanllm.in/blog/index.html" },
+      { "@type": "ListItem", "position": 3, "name": "CRISPR Guide RNA Design: A Complete Guide for Genome Editing Experiments", "item": "https://vigyanllm.in/blog/crispr-grna-design-guide.html" }
+    ]
+  }
+  </script>
+</head>
+<body>
+    <nav>
+    <div class="nav-inner" style="display:flex;justify-content:space-between;align-items:center;height:100%;max-width:1200px;margin:0 auto;padding:0 24px">
+      <a href="../index.html" class="nav-brand" style="display:flex;align-items:center;gap:10px;color:#fff;font-family:var(--font-h);font-size:20px;font-weight:700;text-decoration:none">
+        <img src="../logo.svg" alt="VigyanLLM Logo" style="width:32px;height:32px;border-radius:4px">
+        <span>VigyanLLM</span>
+      </a>
+      <div class="nav-links" style="display:flex;gap:32px;align-items:center">
+        <a href="../index.html" style="font-family:var(--font-b);font-size:13px;color:#CBD5E1;font-weight:500;letter-spacing:0.02em">Home</a>
+        <a href="../primer.html" style="font-family:var(--font-b);font-size:13px;color:#22D3EE;font-weight:600;letter-spacing:0.02em">VPrime 1.0 ↗</a>
+        <a href="index.html" style="font-family:var(--font-b);font-size:13px;color:#CBD5E1;font-weight:500;letter-spacing:0.02em">Blog</a>
+        <a href="../faq.html" style="font-family:var(--font-b);font-size:13px;color:#CBD5E1;font-weight:500;letter-spacing:0.02em">FAQ</a>
+        <a href="../about.html" style="font-family:var(--font-b);font-size:13px;color:#CBD5E1;font-weight:500;letter-spacing:0.02em">About</a>
+      </div>
+      <div class="nav-right" style="display:flex;align-items:center;gap:16px">
+        <button class="nav-login" onclick="window.location.href='../primer.html'" style="border:1.5px solid rgba(255,255,255,0.3);border-radius:4px;padding:8px 20px;font-family:var(--font-b);font-size:13px;font-weight:600;color:#fff;background:transparent;cursor:pointer">Login</button>
+      </div>
+    </div>
+  </nav>
+  <div style="max-width:var(--max-w);margin:0 auto;padding:0 24px">
+    <header style="padding:50px 0 30px;border-bottom:1px solid var(--border)">
+      <div class="article-meta-bar">
+        <span class="article-tag">Advanced</span>
+        <span class="article-date">Published: June 30, 2026</span>
+        <span class="article-author">By Hemant Sharma, Founder, VigyanLLM</span>
+      </div>
+      <h1>CRISPR Guide RNA Design: A Complete Guide for Genome Editing Experiments</h1>
+      <p class="subtitle">Guide RNA design is the most critical step in any CRISPR experiment. A well-designed gRNA achieves >70% editing efficiency with minimal off-target effects. Here is a systematic guide to gRNA design for Cas9, Cas12a, and base editors.</p>
+    </header>
+    <article class="article-body">
+      <h2>Understanding Guide RNA Structure</h2>
+      <p>A CRISPR guide RNA (gRNA) consists of two essential parts: a <strong>CRISPR RNA (crRNA)</strong> containing the target-specific spacer sequence (17-24 nt), and a <strong>trans-activating crRNA (tracrRNA)</strong> that binds the Cas protein. In synthetic single-guide RNAs (sgRNAs), these are fused into a single molecule.</p>
+      <p>The spacer sequence determines target specificity through Watson-Crick base pairing with the genomic DNA. For Cas9, the target must be adjacent to a <strong>protospacer adjacent motif (PAM)</strong> — NGG for <em>Streptococcus pyogenes</em> Cas9.</p>
+
+      <h2>gRNA Design Rules by CRISPR System</h2>
+      <table>
+        <tr><th>Parameter</th><th>SpCas9</th><th>Cas12a (Cpf1)</th><th>Base Editors</th></tr>
+        <tr><td>Spacer length</td><td>18-22 nt (20 ideal)</td><td>21-24 nt</td><td>20 nt (same as Cas9 nickase)</td></tr>
+        <tr><td>PAM sequence</td><td>NGG (3' of target)</td><td>TTTV (5' of target)</td><td>NGG (nickase variant)</td></tr>
+        <tr><td>PAM availability in human genome</td><td>~1 per 8 bp</td><td>~1 per 28 bp</td><td>~1 per 8 bp</td></tr>
+        <tr><td>GC content (spacer)</td><td>40-70%</td><td>30-60%</td><td>40-70%</td></tr>
+        <tr><td>On-target efficiency prediction</td><td>Azimuth, DeepCRISPR</td><td>DeepCpf1</td><td>BE-Hive</td></tr>
+      </table>
+
+      <h2>gRNA Target Selection Strategy</h2>
+      <p>The first step in gRNA design is identifying all possible PAM-adjacent sequences in your target region. For SpCas9, this means scanning for NGG motifs and extracting the 20 bp upstream sequence as candidate gRNAs. Most genes will have dozens to hundreds of candidate gRNAs. The selection process must balance:</p>
+      <ul>
+        <li><strong>On-target efficiency:</strong> Not all gRNAs cut equally well. Efficiency depends on spacer sequence, chromatin accessibility, and local GC content.</li>
+        <li><strong>Off-target specificity:</strong> Mismatches tolerated by Cas9 can lead to cleavage at unintended sites. The seed region (8-12 bp proximal to PAM) is most sensitive.</li>
+        <li><strong>Functional relevance:</strong> For gene knockout, target early constitutive exons or essential protein domains to ensure loss of function.</li>
+      </ul>
+
+      <h2>On-Target Efficiency Prediction</h2>
+      <p>Several computational models predict gRNA efficiency:</p>
+      <ul>
+        <li><strong>Azimuth (Doench 2016):</strong> The most widely used scoring model, trained on lentiviral tiling screens. Scores are calibrated from 0-100.</li>
+        <li><strong>DeepCRISPR:</strong> A deep learning model that learns sequence features automatically without manual feature engineering.</li>
+        <li><strong>CRISPRScan:</strong> Uses a position-dependent scoring matrix derived from high-throughput screens.</li>
+      </ul>
+      <p>For critical experiments, design 3-5 gRNAs per target and validate each. Even the best prediction models have 70-80% accuracy.</p>
+
+      <h2>Off-Target Prediction Methods</h2>
+      <table>
+        <tr><th>Tool</th><th>Approach</th><th>Use Case</th></tr>
+        <tr><td>CRISPOR</td><td>Bowtie alignment + CFD scoring</td><td>Quick off-target identification</td></tr>
+        <tr><td>Cas-OFFinder</td><td>Bulk alignment with up to 5 mismatches</td><td>Whole-genome off-target search</td></tr>
+        <tr><td>CHOPCHOP</td><td>Integrated design + off-target scoring</td><td>End-to-end gRNA design</td></tr>
+        <tr><td>GUIDE-seq</td><td>Experimental (not computational)</td><td>Validate off-targets post hoc</td></tr>
+      </table>
+
+      <h2>gRNA Synthesis and Delivery</h2>
+      <p>gRNAs can be delivered as:</p>
+      <ul>
+        <li><strong>Chemically synthesized crRNA + tracrRNA:</strong> Highest quality, most flexible, most expensive. ~$30-50 per gRNA.</li>
+        <li><strong>In vitro transcribed sgRNA:</strong> Requires cloning a template and T7 transcription. Lower cost for bulk production.</li>
+        <li><strong>Plasmid-expressed sgRNA:</strong> Cloned into expression vectors (e.g., pX330, lentiCRISPRv2). Best for stable expression in cell lines.</li>
+      </ul>
+
+      <h2>High-Throughput gRNA Library Design</h2>
+      <p>For CRISPR screens, libraries of 10,000-100,000 gRNAs are designed computationally. Key considerations include: uniform representation, minimal off-target effects across all gRNAs, and adequate coverage of the library with 3-6 gRNAs per gene. The GeCKO, Brunello, and Yusa libraries are widely used validated designs.</p>
+
+      <div class="callout">
+        <div class="callout-title">Oligo Design for CRISPR</div>
+        <p>While VigyanLLM Primer is primarily designed for PCR primers, the same 22-step validation pipeline can design and validate oligos for gRNA synthesis templates, including checking for secondary structure, GC content optimization, and specificity against the target genome.</p>
+      </div>
+
+      <div class="cta-box">
+        <h3>Design Oligos for CRISPR Experiments</h3>
+        <p>Validate gRNA synthesis oligos and PCR primers for CRISPR screening.</p>
+        <a href="../primer.html" class="cta-btn">Try VigyanLLM Primer Free →</a>
+      </div>
+    </article>
+    <section class="references">
+      <h2>References</h2>
+      <ol>
+        <li>Doench J.G. et al. (2016). Optimized sgRNA design to maximize activity and minimize off-target effects. <em>Nature Biotechnology</em>, 34(2), 184-191.</li>
+        <li>Hsu P.D. et al. (2013). DNA targeting specificity of RNA-guided Cas9 nucleases. <em>Nature Biotechnology</em>, 31(9), 827-832.</li>
+        <li>Kim H.K. et al. (2018). Deep learning improves prediction of CRISPR-Cpf1 guide RNA activity. <em>Nature Biotechnology</em>, 36(3), 239-241.</li>
+        <li>Concordet J.P. and Haeussler M. (2018). CRISPOR: intuitive guide selection for CRISPR/Cas9 genome editing experiments. <em>Nucleic Acids Research</em>, 46(W1), W242-W245.</li>
+      </ol>
+    </section>
+  </div>
+    <footer style="background:var(--navy);color:#CBD5E1;padding:80px 0 32px">
+    <div style="max-width:1200px;margin:0 auto;padding:0 24px">
+      <div style="display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr;gap:48px;margin-bottom:60px">
+        <div>
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+            <img src="../logo.svg" alt="VigyanLLM Logo" style="width:32px;height:32px;border-radius:4px">
+            <span style="font-family:var(--font-h);font-size:20px;font-weight:700;color:#fff">VigyanLLM</span>
+          </div>
+          <p style="font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:20px;line-height:1.6">Sovereign Healthcare &amp; Life Sciences AI.<br>Built in India. For the world.</p>
+          <a href="mailto:contact@vigyanllm.in" style="font-family:var(--font-b);font-size:13px;color:var(--accent)">contact@vigyanllm.in</a>
+        </div>
+        <div>
+          <h5 style="font-family:var(--font-h);font-size:12px;text-transform:uppercase;letter-spacing:0.1em;color:#fff;margin-bottom:24px;font-weight:700">Platform</h5>
+          <a href="../index.html#problem" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Problem</a>
+          <a href="../index.html#platform" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Platform</a>
+          <a href="../index.html#architecture" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Architecture</a>
+          <a href="../demo.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Demo</a>
+        </div>
+        <div>
+          <h5 style="font-family:var(--font-h);font-size:12px;text-transform:uppercase;letter-spacing:0.1em;color:#fff;margin-bottom:24px;font-weight:700">Resources</h5>
+          <a href="../primer.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">VPrime 1.0</a>
+          <a href="index.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Blog</a>
+          <a href="../faq.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">FAQ</a>
+          <a href="../about.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">About</a>
+        </div>
+        <div>
+          <h5 style="font-family:var(--font-h);font-size:12px;text-transform:uppercase;letter-spacing:0.1em;color:#fff;margin-bottom:24px;font-weight:700">Contact</h5>
+          <a href="mailto:contact@vigyanllm.in" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">contact@vigyanllm.in</a>
+          <a href="../privacy.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Privacy</a>
+          <a href="../terms.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Terms</a>
+          <a href="../refund.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Refund</a>
+        </div>
+      </div>
+      <div style="border-top:1px solid rgba(255,255,255,0.1);padding-top:24px;display:flex;justify-content:space-between;font-family:var(--font-b);font-size:12px;color:#64748B">
+        <span>&copy; <script>document.write(new Date().getFullYear())</script> VigyanLLM Pvt. Ltd. · Sovereign Research AI</span>
+        <span>WWW.VIGYANLLM.IN</span>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

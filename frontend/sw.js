@@ -15,28 +15,34 @@ const PRECACHE_ASSETS = [
   '/manifest.json',
 ];
 
+const CACHE_VERSION = 9;
+
 self.addEventListener('install', e => {
   self.skipWaiting();
   e.waitUntil(
-    caches.open('vigyanllm-boot').then(async cache => {
-      for (const url of PRECACHE_ASSETS) {
-        try {
-          const req = new Request(url, { cache: 'no-store' });
-          const res = await fetch(req);
-          if (res.ok) {
-            await cache.put(req, res);
+    caches.keys().then(keys => Promise.all(keys.map(k => caches.delete(k)))).then(() =>
+      caches.open('vigyanllm-boot-v' + CACHE_VERSION).then(async cache => {
+        for (const url of PRECACHE_ASSETS) {
+          try {
+            const req = new Request(url, { cache: 'no-store' });
+            const res = await fetch(req);
+            if (res.ok) {
+              await cache.put(req, res);
+            }
+          } catch (_) {
+            // skip failed asset — don't break the install
           }
-        } catch (_) {
-          // skip failed asset — don't break the install
         }
-      }
-    })
+      })
+    )
   );
 });
 
 self.addEventListener('activate', e => {
   e.waitUntil(
-    caches.keys().then(keys => Promise.all(keys.map(k => caches.delete(k)))).then(() => self.clients.claim())
+    caches.keys().then(keys => Promise.all(keys.map(k => {
+      if (k !== 'vigyanllm-boot-v' + CACHE_VERSION) return caches.delete(k);
+    }))).then(() => self.clients.claim())
   );
 });
 

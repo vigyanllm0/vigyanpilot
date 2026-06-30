@@ -35,15 +35,18 @@
   --white: #FFFFFF;
   --slate: #F8FAFC;
   --slate-border: #E2E8F0;
-  --text: #0F172A;
-  --text2: #475569;
-  --muted: #94A3B8;
+  --text: #ffffff;
+  --text2: #ffffff;
+  --muted: #ffffff;
   --primary: #2563EB;
   --bio: #059669;
   --amber: #D97706;
   --accent: #22D3EE;
   --font-h: 'Plus Jakarta Sans', sans-serif;
   --font-b: 'Inter', sans-serif;
+  --bg: #FFFFFF;
+  --border: #E2E8F0;
+  --surface: #F8FAFC;
   --max-w: 1100px;
   --sec-p: 100px;
 }
@@ -66,7 +69,7 @@
     .filter-bar a:hover, .filter-bar a.active { background: var(--primary); color: #fff; border-color: var(--primary); }
     
     .blog-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px,1fr)); gap: 24px; padding: 30px 0; }
-    .blog-card { background: #fff; border: 1px solid var(--slate-border); border-radius: 16px; overflow: hidden; transition: transform 0.2s, border-color 0.2s; display: flex; flex-direction: column; }
+    .blog-card { background: transparent; border: 1px solid var(--slate-border); border-radius: 16px; overflow: hidden; transition: transform 0.2s, border-color 0.2s; display: flex; flex-direction: column; }
     .blog-card:hover { transform: translateY(-4px); border-color: var(--primary); }
     .blog-card-header { padding: 24px 24px 12px; display: flex; gap: 10px; align-items: center; }
     .blog-tag { padding: 4px 12px; border-radius: 12px; font-size: 11px; font-weight: 600; }
@@ -118,19 +121,19 @@
 <body>
     <nav>
     <div class="nav-inner" style="display:flex;justify-content:space-between;align-items:center;height:100%;max-width:1200px;margin:0 auto;padding:0 24px">
-      <a href="index.html" class="nav-brand" style="display:flex;align-items:center;gap:10px;color:#fff;font-family:var(--font-h);font-size:20px;font-weight:700;text-decoration:none">
-        <img src="logo.svg" alt="VigyanLLM Logo" style="width:32px;height:32px;border-radius:4px">
+      <a href="../index.html" class="nav-brand" style="display:flex;align-items:center;gap:10px;color:#fff;font-family:var(--font-h);font-size:20px;font-weight:700;text-decoration:none">
+        <img src="../logo.svg" alt="VigyanLLM Logo" style="width:32px;height:32px;border-radius:4px">
         <span>VigyanLLM</span>
       </a>
       <div class="nav-links" style="display:flex;gap:32px;align-items:center">
-        <a href="index.html" style="font-family:var(--font-b);font-size:13px;color:#CBD5E1;font-weight:500;letter-spacing:0.02em">Home</a>
-        <a href="primer.html" style="font-family:var(--font-b);font-size:13px;color:#22D3EE;font-weight:600;letter-spacing:0.02em">VPrime 1.0 ↗</a>
-        <a href="blog/index.html" style="font-family:var(--font-b);font-size:13px;color:#CBD5E1;font-weight:500;letter-spacing:0.02em">Blog</a>
-        <a href="faq.html" style="font-family:var(--font-b);font-size:13px;color:#CBD5E1;font-weight:500;letter-spacing:0.02em">FAQ</a>
-        <a href="about.html" style="font-family:var(--font-b);font-size:13px;color:#CBD5E1;font-weight:500;letter-spacing:0.02em">About</a>
+        <a href="../index.html" style="font-family:var(--font-b);font-size:13px;color:#CBD5E1;font-weight:500;letter-spacing:0.02em">Home</a>
+        <a href="../primer.html" style="font-family:var(--font-b);font-size:13px;color:#22D3EE;font-weight:600;letter-spacing:0.02em">VPrime 1.0 ↗</a>
+        <a href="index.html" style="font-family:var(--font-b);font-size:13px;color:#CBD5E1;font-weight:500;letter-spacing:0.02em">Blog</a>
+        <a href="../faq.html" style="font-family:var(--font-b);font-size:13px;color:#CBD5E1;font-weight:500;letter-spacing:0.02em">FAQ</a>
+        <a href="../about.html" style="font-family:var(--font-b);font-size:13px;color:#CBD5E1;font-weight:500;letter-spacing:0.02em">About</a>
       </div>
       <div class="nav-right" style="display:flex;align-items:center;gap:16px">
-        <button class="nav-login" onclick="window.location.href='primer.html'" style="border:1.5px solid rgba(255,255,255,0.3);border-radius:4px;padding:8px 20px;font-family:var(--font-b);font-size:13px;font-weight:600;color:#fff;background:transparent;cursor:pointer">Login</button>
+        <button class="nav-login" onclick="window.location.href='../primer.html'" style="border:1.5px solid rgba(255,255,255,0.3);border-radius:4px;padding:8px 20px;font-family:var(--font-b);font-size:13px;font-weight:600;color:#fff;background:transparent;cursor:pointer">Login</button>
       </div>
     </div>
   </nav>
@@ -149,10 +152,89 @@
       <a href="#primer">Primer Design</a>
       <a href="#qpcr">qPCR & TaqMan</a>
       <a href="#advanced">Advanced</a>
+      <a href="#ai">AI & ML</a>
       <a href="#india">India Research</a>
     </div>
 
     <div class="blog-grid">
+      <article class="blog-card">
+        <div class="blog-card-header">
+          <span class="blog-tag tag-advanced">Advanced</span>
+          <span class="read-time">June 2026</span>
+        </div>
+        <h3>Long-Range PCR and Nanopore Sequencing: Primer Design for Long-Read Genomics</h3>
+        <p>Design primers for long-range PCR (5-50 kb) and Nanopore/PacBio sequencing. Covers polymerase selection, amplicon fragmentation, barcoding strategies, and optimization for Oxford Nanopore adaptive sampling workflows.</p>
+        <div class="blog-card-footer">
+          <span class="read-time">2,000 words · 10 min read</span>
+          <a href="long-range-pcr-nanopore-sequencing-primer-design.html" class="read-link">Read →</a>
+        </div>
+      </article>
+
+      <article class="blog-card">
+        <div class="blog-card-header">
+          <span class="blog-tag tag-qpcr">Epigenetics</span>
+          <span class="read-time">June 2026</span>
+        </div>
+        <h3>Bisulfite Conversion PCR: Primer Design for DNA Methylation Analysis</h3>
+        <p>Design primers for bisulfite-converted DNA. Covers methylation-specific PCR (MSP), bisulfite sequencing PCR (BSP), and HRM primer strategies for epigenetics research with troubleshooting guide.</p>
+        <div class="blog-card-footer">
+          <span class="read-time">2,200 words · 11 min read</span>
+          <a href="bisulfite-conversion-pcr-primer-design.html" class="read-link">Read →</a>
+        </div>
+      </article>
+
+      <article class="blog-card">
+        <div class="blog-card-header">
+          <span class="blog-tag tag-primer">Single Cell & Genomics</span>
+          <span class="read-time">June 2026</span>
+        </div>
+        <h3>Single-Cell RNA Sequencing and PCR: Primer Design for scRNA-seq Validation</h3>
+        <p>PCR is the workhorse of every scRNA-seq workflow — from cDNA amplification to marker validation. Learn primer design for 10x Genomics, Smart-seq2, and targeted single-cell gene expression analysis.</p>
+        <div class="blog-card-footer">
+          <span class="read-time">1,800 words · 9 min read</span>
+          <a href="single-cell-rna-seq-pcr-primer-design.html" class="read-link">Read →</a>
+        </div>
+      </article>
+
+      <article class="blog-card">
+        <div class="blog-card-header">
+          <span class="blog-tag tag-primer">AI & Primer Design</span>
+          <span class="read-time">June 2026</span>
+        </div>
+        <h3>AI-Powered Primer Design: How Machine Learning Is Revolutionizing PCR</h3>
+        <p>How ML models trained on thousands of validated primer pairs predict amplification success with 85-92% accuracy — far better than rule-based tools. Learn the algorithms, benchmarks, and future of AI-driven assay design.</p>
+        <div class="blog-card-footer">
+          <span class="read-time">2,200 words · 11 min read</span>
+          <a href="ai-primer-design-machine-learning.html" class="read-link">Read →</a>
+        </div>
+      </article>
+
+      <article class="blog-card">
+        <div class="blog-card-header">
+          <span class="blog-tag tag-advanced">Advanced</span>
+          <span class="read-time">June 2026</span>
+        </div>
+        <h3>CRISPR Guide RNA Design: A Complete Guide for Genome Editing</h3>
+        <p>Design gRNAs for Cas9, Cas12a, and base editors. Covers target selection, on-target efficiency prediction (Azimuth, DeepCRISPR), off-target scoring, and synthesis methods for genome editing experiments.</p>
+        <div class="blog-card-footer">
+          <span class="read-time">2,000 words · 10 min read</span>
+          <a href="crispr-grna-design-guide.html" class="read-link">Read →</a>
+        </div>
+      </article>
+
+      <article class="blog-card">
+        <div class="blog-card-header">
+          <span class="blog-tag tag-qpcr">qPCR</span>
+          <span class="read-time">June 2026</span>
+        </div>
+        <h3>Digital PCR vs Real-Time PCR: Technology Comparison and Application Guide</h3>
+        <p>dPCR vs qPCR — compare absolute vs relative quantification, sensitivity, precision, cost, dynamic range, and multiplexing. Includes decision framework for choosing the right technology for your application.</p>
+        <div class="blog-card-footer">
+          <span class="read-time">1,800 words · 9 min read</span>
+          <a href="digital-pcr-vs-qpcr.html" class="read-link">Read →</a>
+        </div>
+      </article>
+
       <article class="blog-card">
         <div class="blog-card-header">
           <span class="blog-tag tag-primer">Primer Design</span>
@@ -175,7 +257,7 @@
         <p>Master the 7 essential parameters: Tm, GC content, amplicon size, hairpin avoidance, dimer prevention, specificity, and repeat masking.</p>
         <div class="blog-card-footer">
           <span class="read-time">2,500 words · 12 min read</span>
-          <a href="pcr-primer-design-rules" class="read-link">Read →</a>
+          <a href="pcr-primer-design-rules.html" class="read-link">Read →</a>
         </div>
       </article>
 
@@ -227,7 +309,7 @@
         <p>Detailed comparison of detection chemistries, costs, multiplexing capability, and when to choose each for your quantitative PCR assay.</p>
         <div class="blog-card-footer">
           <span class="read-time">2,200 words · 11 min read</span>
-          <a href="taqman-vs-sybr-green" class="read-link">Read →</a>
+          <a href="taqman-vs-sybr-green.html" class="read-link">Read →</a>
         </div>
       </article>
 
@@ -266,7 +348,7 @@
         <p>How USD pricing excludes Indian academic labs, and why India-first INR pricing with DPDP compliance matters for institutional adoption.</p>
         <div class="blog-card-footer">
           <span class="read-time">1,800 words · 9 min read</span>
-          <a href="primer-design-india-affordable" class="read-link">Read →</a>
+          <a href="primer-design-india-affordable.html" class="read-link">Read →</a>
         </div>
       </article>
     </div>
@@ -283,7 +365,7 @@
       <div style="display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr;gap:48px;margin-bottom:60px">
         <div>
           <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
-            <img src="logo.svg" alt="VigyanLLM Logo" style="width:32px;height:32px;border-radius:4px">
+            <img src="../logo.svg" alt="VigyanLLM Logo" style="width:32px;height:32px;border-radius:4px">
             <span style="font-family:var(--font-h);font-size:20px;font-weight:700;color:#fff">VigyanLLM</span>
           </div>
           <p style="font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:20px;line-height:1.6">Sovereign Healthcare &amp; Life Sciences AI.<br>Built in India. For the world.</p>
@@ -300,21 +382,21 @@
           <a href="index.html#problem" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Problem</a>
           <a href="index.html#platform" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Platform</a>
           <a href="index.html#architecture" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Architecture</a>
-          <a href="demo.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Demo</a>
+          <a href="../demo.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Demo</a>
         </div>
         <div>
           <h5 style="font-family:var(--font-h);font-size:12px;text-transform:uppercase;letter-spacing:0.1em;color:#fff;margin-bottom:24px;font-weight:700">Resources</h5>
-          <a href="primer.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">VPrime 1.0</a>
-          <a href="blog/index.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Blog</a>
-          <a href="faq.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">FAQ</a>
-          <a href="about.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">About</a>
+          <a href="../primer.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">VPrime 1.0</a>
+          <a href="index.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Blog</a>
+          <a href="../faq.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">FAQ</a>
+          <a href="../about.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">About</a>
         </div>
         <div>
           <h5 style="font-family:var(--font-h);font-size:12px;text-transform:uppercase;letter-spacing:0.1em;color:#fff;margin-bottom:24px;font-weight:700">Contact</h5>
           <a href="mailto:contact@vigyanllm.in" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">contact@vigyanllm.in</a>
-          <a href="privacy.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Privacy</a>
-          <a href="terms.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Terms</a>
-          <a href="refund.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Refund</a>
+          <a href="../privacy.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Privacy</a>
+          <a href="../terms.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Terms</a>
+          <a href="../refund.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Refund</a>
         </div>
       </div>
       <div style="border-top:1px solid rgba(255,255,255,0.1);padding-top:24px;display:flex;justify-content:space-between;font-family:var(--font-b);font-size:12px;color:#64748B">
