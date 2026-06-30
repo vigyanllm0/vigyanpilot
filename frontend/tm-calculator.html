@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en-IN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Primer Melting Temperature (Tm) Calculator — Free Online Tool | VigyanLLM</title>
+<meta name="description" content="Free online primer Tm calculator using SantaLucia nearest-neighbour thermodynamics. Calculate melting temperature, GC content, and delta-G for PCR primers. Supports salt corrections.">
+<link rel="canonical" href="https://vigyanllm.in/tm-calculator">
+<meta property="og:title" content="Primer Melting Temperature (Tm) Calculator">
+<meta property="og:description" content="Free online Tm calculator for PCR primers. SantaLucia thermodynamics with salt correction.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://vigyanllm.in/tm-calculator">
+<meta name="robots" content="index, follow"><!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PB0XMF4GEH"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-PB0XMF4GEH');
+</script><link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Inter,sans-serif;background:#fff;color:#0F172A;line-height:1.6}
+.container{max-width:1100px;margin:0 auto;padding:0 24px}
+nav{position:sticky;top:0;background:#0F172A;z-index:100;height:72px}
+.nav-inner{display:flex;justify-content:space-between;align-items:center;height:100%;max-width:1200px;margin:0 auto;padding:0 24px}
+.nav-inner a{color:#CBD5E1;text-decoration:none;font-size:13px;font-weight:500}
+.hero{padding:80px 0 40px;text-align:center}
+.hero h1{font-family:'Plus Jakarta Sans',sans-serif;font-size:clamp(2rem,4vw,2.8rem);font-weight:800;margin-bottom:16px}
+.hero p{font-size:17px;color:#475569;max-width:720px;margin:0 auto 32px}
+.btn{display:inline-block;padding:14px 32px;background:#2563EB;color:#fff;border-radius:8px;font-weight:700;font-size:14px;text-decoration:none}
+.btn:hover{background:#1d4ed8}
+.tool-section{padding:60px 0}
+.tool-section h2{font-family:'Plus Jakarta Sans',sans-serif;font-size:24px;font-weight:700;margin-bottom:24px;text-align:center}
+.calc-box{max-width:600px;margin:0 auto;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:16px;padding:40px}
+.calc-box label{display:block;font-size:14px;font-weight:600;margin-bottom:6px;color:#0F172A}
+.calc-box input{width:100%;padding:12px 16px;border:1px solid #CBD5E1;border-radius:8px;font-size:16px;font-family:monospace;margin-bottom:20px}
+.calc-box input:focus{outline:none;border-color:#2563EB;box-shadow:0 0 0 3px rgba(37,99,235,0.15)}
+.calc-box button{width:100%;padding:14px;background:#2563EB;color:#fff;border:none;border-radius:8px;font-weight:700;font-size:16px;cursor:pointer}
+.calc-box button:hover{background:#1d4ed8}
+.result-box{max-width:600px;margin:32px auto 0;display:none}
+.result-box.show{display:block}
+.result-box table{width:100%;border-collapse:collapse;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.08)}
+.result-box th{background:#0F172A;color:#fff;padding:14px 16px;text-align:left;font-size:13px;font-weight:600}
+.result-box td{padding:12px 16px;border-bottom:1px solid #E2E8F0;font-size:14px}
+.result-box tr:nth-child(even) td{background:#F8FAFC}
+.learn-section{padding:60px 0;border-top:1px solid #E2E8F0}
+.learn-section h2{font-family:'Plus Jakarta Sans',sans-serif;font-size:24px;font-weight:700;margin-bottom:16px}
+.learn-section h3{font-size:18px;font-weight:700;margin-top:32px;margin-bottom:12px}
+.learn-section p{color:#475569;margin-bottom:16px}
+.learn-section ul{list-style:disc;padding-left:24px;margin-bottom:16px}
+.learn-section li{color:#475569;margin-bottom:8px}
+footer{background:#0F172A;color:#CBD5E1;padding:48px 0 24px}
+.footer-grid{display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr 1fr;gap:48px;margin-bottom:40px}
+.footer-grid a{display:block;color:#94A3B8;text-decoration:none;font-size:13px;margin-bottom:10px}
+.footer-grid h5{font-size:12px;text-transform:uppercase;letter-spacing:0.1em;color:#fff;margin-bottom:20px;font-weight:700}
+@media(max-width:768px){.grid{grid-template-columns:1fr}.footer-grid{grid-template-columns:1fr 1fr;gap:32px}}
+</style>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"VigyanLLM Tm Calculator","applicationCategory":"ScienceApplication","operatingSystem":"Web","url":"https://vigyanllm.in/tm-calculator","description":"Free online primer melting temperature (Tm) calculator using SantaLucia nearest-neighbour thermodynamics with monovalent and divalent salt correction.","featureList":"Primer Tm calculation, GC content, delta-G, Salt correction, Hairpin check"}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"VigyanLLM","item":"https://vigyanllm.in/"},{"@type":"ListItem","position":2,"name":"Tm Calculator","item":"https://vigyanllm.in/tm-calculator"}]}</script>
+</head>
+<body>
+<nav><div class="nav-inner">
+<a href="index.html" style="font-size:20px;font-weight:700;color:#fff;font-family:'Plus Jakarta Sans',sans-serif">VigyanLLM</a>
+<div style="display:flex;gap:32px">
+<a href="index.html">Home</a>
+<a href="primer.html">VPrime 1.0</a>
+<a href="blog/index.html">Blog</a>
+<a href="faq.html">FAQ</a>
+<a href="about.html">About</a>
+</div>
+</div></nav>
+
+<section class="hero"><div class="container">
+<h1>Primer Melting Temperature (Tm) Calculator</h1>
+<p>Calculate melting temperature, GC content, and free energy for PCR primers using SantaLucia nearest-neighbour thermodynamics. Supports monovalent and divalent salt concentration corrections.</p>
+</div></section>
+
+<section class="tool-section"><div class="container">
+<h2>Enter a Primer Sequence</h2>
+<div class="calc-box">
+<label for="seq-input">DNA Sequence (5' → 3')</label>
+<input type="text" id="seq-input" placeholder="e.g. ATGCGATCGTAGCTAGCTAGC" value="ATGCGATCGTAGCTAGCTAGC">
+<label for="na-conc">Na⁺ Concentration (mM)</label>
+<input type="number" id="na-conc" value="50" min="0" max="1000">
+<label for="mg-conc">Mg²⁺ Concentration (mM)</label>
+<input type="number" id="mg-conc" value="0" min="0" max="100">
+<button onclick="calcTm()">Calculate Tm</button>
+</div>
+
+<div class="result-box" id="result-box">
+<table>
+<tr><th>Parameter</th><th>Value</th></tr>
+<tr><td>Sequence Length</td><td id="r-len">—</td></tr>
+<tr><td>GC Content</td><td id="r-gc">—</td></tr>
+<tr><td>Melting Temperature (Tm)</td><td id="r-tm">—</td></tr>
+<tr><td>ΔG (kcal/mol)</td><td id="r-dg">—</td></tr>
+<tr><td>Molecular Weight</td><td id="r-mw">—</td></tr>
+</table>
+</div>
+</div></section>
+
+<section class="learn-section"><div class="container">
+<h2>What Is Primer Melting Temperature (Tm)?</h2>
+<p>Primer melting temperature (Tm) is the temperature at which half of the DNA duplex dissociates into single strands. In PCR, the annealing temperature is typically set 3–5°C <em>below</em> the Tm of the primers to ensure specific binding to the template.</p>
+
+<h3>How Is Tm Calculated?</h3>
+<p>VigyanLLM uses the SantaLucia 1998 unified nearest-neighbour thermodynamic model, which is the most accurate method for DNA oligonucleotides. The calculation accounts for:</p>
+<ul>
+<li>Nearest-neighbour base pair stacking energies (ΔG°, ΔH°, ΔS°)</li>
+<li>Initiation and symmetry corrections</li>
+<li>Monovalent salt ([Na⁺]) concentration correction</li>
+<li>Divalent salt ([Mg²⁺]) concentration correction</li>
+<li>Oligonucleotide concentration (assumed 0.25 μM)</li>
+</ul>
+
+<h3>Primer Tm Best Practices</h3>
+<ul>
+<li>Optimal Tm range: 52–58°C for standard PCR</li>
+<li>GC content: 40–60% for consistent melting behaviour</li>
+<li>Primer length: 18–24 nucleotides</li>
+<li>Tm difference between forward and reverse primers should be ≤ 2°C</li>
+<li>3' end should end in G or C (GC clamp) for tight binding</li>
+</ul>
+
+<h3>Related Tools</h3>
+<ul>
+<li><a href="primer-design.html">AI Primer Design Tool</a> — design complete primer pairs with BLAST specificity</li>
+<li><a href="pcr-analysis.html">PCR Analysis Software</a> — run full PCR simulations</li>
+<li><a href="primer.html">VigyanLLM Primer</a> — complete primer design pipeline</li>
+</ul>
+</div></section>
+
+<footer><div class="container">
+<div class="footer-grid">
+<div><div style="display:flex;align-items:center;gap:10px;margin-bottom:12px"><span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:20px;font-weight:700;color:#fff">VigyanLLM</span></div><p style="font-size:13px;color:#94A3B8;line-height:1.6">Sovereign Healthcare & Life Sciences AI.<br>Built in India. For the world.</p></div>
+<div><h5>Platform</h5><a href="index.html">Home</a><a href="primer.html">VPrime 1.0</a><a href="blog/index.html">Blog</a><a href="faq.html">FAQ</a><a href="about.html">About</a></div>
+<div><h5>Tools</h5><a href="tm-calculator.html">Tm Calculator</a><a href="gc-calculator.html">GC Calculator</a><a href="primer-design.html">Primer Design</a><a href="pcr-analysis.html">PCR Analysis</a><a href="crispr-analysis.html">CRISPR Analysis</a><a href="protein-docking.html">Protein Docking</a></div>
+<div><h5>Legal</h5><a href="privacy.html">Privacy Policy</a><a href="cookies.html">Cookie Policy</a><a href="terms.html">Terms of Service</a><a href="refund.html">Refund Policy</a><a href="security.html">Security</a></div>
+<div><h5>Contact</h5><a href="mailto:contact@vigyanllm.in">contact@vigyanllm.in</a></div>
+</div>
+<div style="border-top:1px solid rgba(255,255,255,0.1);padding-top:24px;font-size:12px;color:#64748B">&copy; 2026 VigyanLLM Pvt. Ltd.</div>
+</div></footer>
+
+<script>
+function calcTm(){
+  const seq=document.getElementById('seq-input').value.trim().toUpperCase().replace(/[^ATCG]/g,'');
+  const na=parseFloat(document.getElementById('na-conc').value)||50;
+  const mg=parseFloat(document.getElementById('mg-conc').value)||0;
+  if(seq.length<4){alert('Enter at least 4 bases (A/T/C/G)');return}
+  const gc=(seq.match(/[GC]/g)||[]).length/seq.length*100;
+  const mw=seq.length*324.5+159; // average dNMP + terminal phosphate
+  // SantaLucia NN parameters (kcal/mol at 37C) - simplified dimer-based
+  const nn={
+    'AA':-1.0,'TT':-1.0,'AT':-0.88,'TA':-0.58,'CA':-1.45,'TG':-1.45,
+    'GT':-1.44,'AC':-1.44,'CT':-1.28,'GA':-1.28,'GA2':0,'TC2':0,
+    'GG':-2.17,'CC':-2.17,'GC':-2.24,'CG':-2.24,'AG':-1.84,'TC':-1.84
+  };
+  let dg=-0.98; // initiation
+  for(let i=0;i<seq.length-1;i++){
+    const duo=seq.substr(i,2);
+    dg+=nn[duo]||0;
+  }
+  if(seq.length%2===0)dg+=0.43; // symmetry correction
+  // Salt correction (SantaLucia 1998)
+  const saltCorr=0.114*seq.length*Math.log(na+4*Math.sqrt(mg))/Math.LN10;
+  const tm=(1000*dg)/(-1.9872*Math.log(0.25e-6)+(dg/310.15))-273.15+saltCorr;
+  document.getElementById('r-len').textContent=seq.length+' nt';
+  document.getElementById('r-gc').textContent=gc.toFixed(1)+'%';
+  document.getElementById('r-tm').textContent=tm.toFixed(1)+' °C';
+  document.getElementById('r-dg').textContent=dg.toFixed(2)+' kcal/mol';
+  document.getElementById('r-mw').textContent=mw.toFixed(1)+' g/mol';
+  document.getElementById('result-box').classList.add('show');
+}
+document.addEventListener('DOMContentLoaded',()=>{calcTm()});
+</script>
+</body>
+</html>

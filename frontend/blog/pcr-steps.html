@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en-IN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PCR Steps: Denaturation, Annealing, Extension Explained | VigyanLLM</title>
+  <meta name="description" content="Learn the three core PCR steps — denaturation, annealing, and extension — with temperature guidelines, timing, chemistry, and troubleshooting tips for each phase of thermal cycling.">
+  <meta name="keywords" content="PCR steps, denaturation annealing extension, PCR thermal cycling, PCR cycling conditions, PCR temperature, PCR protocol">
+  <link rel="canonical" href="https://vigyanllm.in/blog/pcr-steps">
+  <meta property="og:title" content="PCR Steps: Denaturation, Annealing, Extension Explained">
+  <meta property="og:description" content="Learn the three core PCR steps — denaturation, annealing, and extension — with temperature guidelines, timing, chemistry, and troubleshooting tips.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://vigyanllm.in/blog/pcr-steps">
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+  --navy: #0F172A;
+  --navy-light: #1E293B;
+  --white: #FFFFFF;
+  --slate: #F8FAFC;
+  --slate-border: #E2E8F0;
+  --text: #0F172A;
+  --text2: #475569;
+  --muted: #94A3B8;
+  --primary: #2563EB;
+  --bio: #059669;
+  --amber: #D97706;
+  --accent: #22D3EE;
+  --font-h: 'Plus Jakarta Sans', sans-serif;
+  --font-b: 'Inter', sans-serif;
+  --bg: #FFFFFF;
+  --border: #E2E8F0;
+  --surface: #F8FAFC;
+  --max-w: 1100px;
+  --sec-p: 100px;
+}
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--text); font-family: var(--font-b); line-height: 1.6; -webkit-font-smoothing: antialiased; }
+    a { text-decoration: none; color: inherit; transition: color 0.15s ease; }
+    .container { max-width: var(--max-w); margin: 0 auto; padding: 0 24px; }
+    section { padding: var(--sec-p) 0; }
+    nav { position: sticky; top: 0; background: rgba(255,255,255,0.95); backdrop-filter: blur(8px); border-bottom: 1px solid var(--border); z-index: 1000; height: 72px; }
+    @media (max-width: 768px) { .nav-links { display: none; } }
+    
+    .article-body { padding: 40px 0; max-width: 800px; margin: 0 auto; }
+    .article-body h1 { font-family: var(--font-b); font-size: clamp(2rem,4vw,2.8rem); font-weight: 400; line-height: 1.1; margin-bottom: 16px; }
+    .article-body h2 { font-size: 24px; font-weight: 600; color: var(--text); margin: 40px 0 16px; }
+    .article-body h3 { font-size: 18px; font-weight: 600; color: var(--text); margin: 28px 0 12px; }
+    .article-body p { margin-bottom: 16px; color: var(--text2); font-size: 15px; line-height: 1.8; }
+    .article-body ul, .article-body ol { margin-left: 24px; margin-bottom: 16px; color: var(--text2); font-size: 15px; }
+    .article-body li { margin-bottom: 8px; }
+    .article-body strong { color: var(--text); }
+    .article-body a { color: var(--primary); text-decoration: none; }
+    .article-body a:hover { text-decoration: underline; }
+    .article-body table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 14px; }
+    .article-body th { background: var(--surface); color: var(--text); padding: 12px; text-align: left; border: 1px solid var(--border); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; }
+    .article-body td { padding: 12px; border: 1px solid var(--border); color: var(--text2); }
+    .article-body tr:nth-child(even) { background: var(--surface); }
+    .article-body .callout { background: var(--surface); border-left: 4px solid var(--primary); padding: 20px 24px; border-radius: 0 12px 12px 0; margin: 24px 0; }
+    .article-body .callout-title { font-weight: 700; color: var(--primary); margin-bottom: 8px; }
+    .article-body code { background: var(--surface); padding: 2px 6px; border-radius: 4px; font-size: 13px; color: var(--text); border: 1px solid var(--border); }
+    .hero-blog { padding: 60px 0 30px; text-align: center; border-bottom: 1px solid var(--border); }
+    .cta-box { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 36px; text-align: center; margin: 40px 0; }
+    .cta-box h3 { font-size: 20px; color: var(--text); margin-bottom: 10px; }
+    .cta-box p { color: var(--text2); margin-bottom: 20px; }
+    .cta-btn { display: inline-block; padding: 14px 32px; background: var(--primary); color: #fff; text-decoration: none; border-radius: 8px; font-weight: 700; font-size: 14px; transition: background 0.2s; }
+    .cta-btn:hover { background: #0044ff; }
+    .references { padding: 30px 0; border-top: 1px solid var(--border); margin-top: 40px; }
+    .references h2 { font-size: 20px; color: var(--text); margin-bottom: 16px; font-weight: 600; }
+    .references ol { margin-left: 24px; color: var(--text2); font-size: 14px; }
+    
+    .article-header .article-tag { display: inline-block; background: #e8f0ff; color: var(--primary); padding: 4px 14px; border-radius: 12px; font-size: 11px; font-weight: 600; margin-bottom: 16px; }
+    .article-header .article-date { color: var(--muted); font-size: 13px; }
+    .article-header .article-author { color: var(--text2); font-size: 13px; font-weight: 600; }
+    .article-header h1 { font-size: clamp(2rem,4vw,2.8rem); font-weight: 400; line-height: 1.1; margin-bottom: 16px; }
+    .article-header .subtitle { font-size: 16px; color: var(--text2); line-height: 1.6; max-width: 700px; }
+    .article-meta-bar { display: flex; gap: 16px; align-items: center; margin-bottom: 16px; flex-wrap: wrap; }
+    .author-bio { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 28px; margin: 40px 0 24px; display: flex; gap: 20px; align-items: flex-start; }
+    .author-bio-avatar { width: 60px; height: 60px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 24px; flex-shrink: 0; }
+    .author-bio h4 { font-size: 16px; color: var(--text); margin-bottom: 6px; }
+    .author-bio p { font-size: 13px; color: var(--text2); line-height: 1.6; margin-bottom: 0; }
+    .related-articles { padding: 30px 0; border-top: 1px solid var(--border); margin-top: 24px; }
+    .related-articles h2 { font-size: 20px; color: var(--text); margin-bottom: 20px; font-weight: 600; }
+    .related-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; }
+    .related-card { border: 1px solid var(--border); border-radius: 12px; padding: 20px; transition: border-color 0.2s; }
+    .related-card:hover { border-color: var(--primary); }
+    .related-card h3 { font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+    .related-card p { font-size: 12px; color: var(--text2); line-height: 1.6; margin-bottom: 0; }
+    .related-card a { color: var(--primary); font-weight: 600; }
+  </style>
+  
+  <script type="application/ld+json">
+  { "@context": "https://schema.org", "@type": "Article", "headline": "PCR Steps: Denaturation, Annealing, Extension Explained", "description": "Learn the three core PCR steps — denaturation, annealing, and extension — with temperature guidelines, timing, chemistry, and troubleshooting tips for each phase of thermal cycling.", "datePublished": "2026-06-30", "dateModified": "2026-06-30", "author": { "@type": "Person", "name": "VigyanLLM Research Team", "jobTitle": "Research Team, VigyanLLM" }, "publisher": { "@type": "Organization", "name": "VigyanLLM Private Limited" }, "mainEntityOfPage": "https://vigyanllm.in/blog/pcr-steps" }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "VigyanLLM", "item": "https://vigyanllm.in/" },
+      { "@type": "ListItem", "position": 2, "name": "Blog", "item": "https://vigyanllm.in/blog/index.html" },
+      { "@type": "ListItem", "position": 3, "name": "PCR Steps: Denaturation, Annealing, Extension Explained", "item": "https://vigyanllm.in/blog/pcr-steps.html" }
+    ]
+  }
+  </script>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-PB0XMF4GEH"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-PB0XMF4GEH');
+  </script>
+</head>
+<body>
+  <nav>
+    <div class="nav-inner" style="display:flex;justify-content:space-between;align-items:center;height:100%;max-width:1200px;margin:0 auto;padding:0 24px">
+      <a href="../index.html" class="nav-brand" style="display:flex;align-items:center;gap:10px;color:#fff;font-family:var(--font-h);font-size:20px;font-weight:700;text-decoration:none">
+        <img src="../logo.svg" alt="VigyanLLM Logo" style="width:32px;height:32px;border-radius:4px">
+        <span>VigyanLLM</span>
+      </a>
+      <div class="nav-links" style="display:flex;gap:32px;align-items:center">
+        <a href="../index.html" style="font-family:var(--font-b);font-size:13px;color:#CBD5E1;font-weight:500;letter-spacing:0.02em">Home</a>
+        <a href="../primer.html" style="font-family:var(--font-b);font-size:13px;color:#22D3EE;font-weight:600;letter-spacing:0.02em">VPrime 1.0 ↗</a>
+        <a href="./index.html" style="font-family:var(--font-b);font-size:13px;color:#CBD5E1;font-weight:500;letter-spacing:0.02em">Blog</a>
+        <a href="../faq.html" style="font-family:var(--font-b);font-size:13px;color:#CBD5E1;font-weight:500;letter-spacing:0.02em">FAQ</a>
+        <a href="../about.html" style="font-family:var(--font-b);font-size:13px;color:#CBD5E1;font-weight:500;letter-spacing:0.02em">About</a>
+      </div>
+      <div class="nav-right" style="display:flex;align-items:center;gap:16px">
+        <button class="nav-login" onclick="window.location.href='../primer.html'" style="border:1.5px solid rgba(255,255,255,0.3);border-radius:4px;padding:8px 20px;font-family:var(--font-b);font-size:13px;font-weight:600;color:#fff;background:transparent;cursor:pointer">Login</button>
+      </div>
+    </div>
+  </nav>
+
+  <div style="max-width:var(--max-w);margin:0 auto;padding:0 24px">
+    <header style="padding:50px 0 30px;border-bottom:1px solid var(--border)">
+      <div class="article-meta-bar">
+        <span class="article-tag">PCR Basics</span>
+        <span class="article-date">Published: June 30, 2026</span>
+        <span class="article-author">By VigyanLLM Research Team</span>
+      </div>
+      <h1>PCR Steps: Denaturation, Annealing, Extension Explained</h1>
+      <p class="subtitle">Every PCR cycle has three precisely controlled temperature steps. Understanding the chemistry behind each step is the key to designing robust, reproducible PCR assays.</p>
+    </header>
+
+    <article class="article-body">
+      <h2>The PCR Thermal Cycling Process</h2>
+      <p><a href="./what-is-pcr.html">Polymerase chain reaction (PCR)</a> works by cycling a reaction mixture through three key temperature steps: denaturation, annealing, and extension. These three PCR steps are repeated 25–40 times in a thermal cycler to achieve exponential amplification of the target DNA sequence. Each step has a specific temperature and duration optimised for the polymerase, primers, and template used.</p>
+
+      <h2>Overview: The Three PCR Steps</h2>
+      <table>
+        <tr><th>Step</th><th>Temperature</th><th>Duration</th><th>What Happens</th></tr>
+        <tr><td>1. Denaturation</td><td>94–98°C</td><td>15–30 s</td><td>Double-stranded DNA separates into single strands</td></tr>
+        <tr><td>2. Annealing</td><td>50–65°C</td><td>15–60 s</td><td>Primers bind to complementary target sequences</td></tr>
+        <tr><td>3. Extension</td><td>68–72°C</td><td>30 s–2 min</td><td>Polymerase synthesises new DNA strands</td></tr>
+      </table>
+
+      <h2>Step 1: Denaturation (94–98°C)</h2>
+      <p>Denaturation is the first PCR step in every cycle. The reaction is heated to 94–98°C for 15–30 seconds to break the hydrogen bonds between complementary base pairs, separating double-stranded DNA into two single strands. These single strands then serve as templates for primer annealing and polymerase extension.</p>
+      <p><strong>Factors affecting denaturation:</strong></p>
+      <ul>
+        <li><strong>GC content:</strong> High-GC templates (above 65%) require higher denaturation temperatures (98°C) or longer denaturation times</li>
+        <li><strong>Product length:</strong> Long amplicons (>5 kb) benefit from longer initial denaturation (2–5 min)</li>
+        <li><strong>Polymerase type:</strong> Some engineered polymerases (e.g., KAPA HiFi, Q5) tolerate higher denaturation temperatures better than native Taq</li>
+      </ul>
+
+      <div class="callout">
+        <div class="callout-title">Troubleshooting Tip: Incomplete Denaturation</div>
+        <p>If you see smearing or low yield, increase denaturation time or temperature. For GC-rich templates, add 3–5% DMSO or 1 M betaine to help melt secondary structures. VigyanLLM's template analysis tool checks for GC-rich regions that may require protocol adjustments.</p>
+      </div>
+
+      <h2>Step 2: Annealing (50–65°C)</h2>
+      <p>After denaturation, the thermal cycler rapidly cools to the annealing temperature (Ta), typically 50–65°C. At this temperature, the forward and reverse primers bind (anneal) to their complementary sequences on the single-stranded DNA template. The annealing temperature is the most critical parameter for PCR specificity.</p>
+      <p><strong>Setting the annealing temperature:</strong></p>
+      <ul>
+        <li>Calculate primer Tm using the SantaLucia nearest-neighbour model (most accurate) or the Wallace formula (Tm = 2(A+T) + 4(G+C))</li>
+        <li>Set Ta 3–5°C below the lower primer Tm</li>
+        <li>For <a href="./pcr-primer-design-rules.html">primer design rules</a>, keep Tm within 2–5°C between forward and reverse primers</li>
+        <li>Run a temperature gradient (55–65°C in 2°C increments) to empirically optimise Ta</li>
+      </ul>
+      <p>Primer design quality directly impacts annealing success. Poorly designed primers with high self-complementarity or cross-dimer potential will produce non-specific bands or <a href="./primer-dimer-prevention.html">primer dimers</a> even at optimal Ta.</p>
+
+      <h2>Step 3: Extension (68–72°C)</h2>
+      <p>In the extension step, the DNA polymerase binds to the primer-template junction and extends from the 3' hydroxyl group, incorporating dNTPs complementary to the template strand. The optimal extension temperature depends on the polymerase:</p>
+      <table>
+        <tr><th>Polymerase</th><th>Optimal Extension Temp</th><th>Extension Rate</th><th>Fidelity (error rate)</th></tr>
+        <tr><td>Taq</td><td>72°C</td><td>~1,000 bp/min</td><td>~3 × 10<sup>-5</sup></td></tr>
+        <tr><td>Pfu</td><td>72°C</td><td>~500 bp/min</td><td>~1 × 10<sup>-6</sup></td></tr>
+        <tr><td>KAPA HiFi</td><td>72°C</td><td>~1,000 bp/min</td><td>~5 × 10<sup>-7</sup></td></tr>
+        <tr><td>Q5</td><td>72°C</td><td>~1,000 bp/min</td><td>~3 × 10<sup>-6</sup></td></tr>
+        <tr><td>LongAmp</td><td>68°C</td><td>~1,500 bp/min</td><td>~2 × 10<sup>-5</sup></td></tr>
+      </table>
+
+      <h2>Initial Denaturation and Final Extension</h2>
+      <p>Most PCR protocols include two additional steps outside the main cycle:</p>
+      <ul>
+        <li><strong>Initial denaturation (2–5 min at 94–98°C):</strong> Ensures complete denaturation of the template DNA, especially for genomic DNA with secondary structures. Also activates hot-start polymerases.</li>
+        <li><strong>Final extension (2–10 min at 72°C):</strong> Completes all partial extensions and ensures all products are fully double-stranded. Important for cloning and downstream applications.</li>
+      </ul>
+
+      <h2>Common PCR Cycling Issues and Solutions</h2>
+      <table>
+        <tr><th>Issue</th><th>Likely Cause</th><th>Solution</th></tr>
+        <tr><td>No product</td><td>Ta too high; polymerase inactive; template degraded</td><td>Lower Ta 3–5°C; check enzyme expiry; run positive control</td></tr>
+        <tr><td>Multiple bands</td><td>Ta too low; non-specific priming</td><td>Raise Ta; redesign primers; use hot-start polymerase</td></tr>
+        <tr><td>Smear</td><td>Too many cycles; template degradation; excess template</td><td>Reduce cycles to 28–30; reduce template 10-fold</td></tr>
+        <tr><td>Primer dimers</td><td>3' complementarity; Ta too low</td><td>Redesign primers; raise Ta; use VigyanLLM dimer check</td></tr>
+        <tr><td>Weak bands</td><td>Insufficient cycles; suboptimal Mg<sup>2+</sup></td><td>Increase to 35 cycles; titrate Mg<sup>2+</sup> (1.5–3.0 mM)</td></tr>
+      </table>
+
+      <h2>How Cycle Number Affects PCR Outcome</h2>
+      <p>The number of PCR cycles directly determines product yield. In the exponential phase (cycles 1–25), product doubles each cycle. In the plateau phase (after cycle 30–35), reagents become limiting and amplification slows. For most applications, 30–35 cycles are sufficient. Too few cycles produce faint bands, while too many cycles increase non-specific products and primer dimers. For low-abundance targets, nested PCR or increased cycle number (up to 40) may be necessary, but always include control reactions to distinguish true amplification from artifacts.</p>
+
+      <h2>Programming Your Thermal Cycler</h2>
+      <p>A typical PCR protocol looks like this:</p>
+      <p style="text-align:center;padding:16px;background:var(--surface);border-radius:8px;font-family:Courier New,monospace;font-size:14px;color:var(--text);margin:16px 0;white-space:pre-wrap">95°C  3 min     (initial denaturation)
+95°C  20 s      ┐
+58°C  30 s      ├── 35 cycles
+72°C  30 s      ┘
+72°C  5 min     (final extension)
+4°C   hold</p>
+
+      <p>For a complete step-by-step lab protocol including master mix preparation, primer resuspension, and result analysis, see our <a href="./pcr-protocol-beginners.html">PCR protocol for beginners</a>.</p>
+
+      <h2>Ramping Rates and Their Impact</h2>
+      <p>The speed at which a thermal cycler heats and cools between steps — the ramping rate — affects PCR outcome. Faster ramping reduces total run time but can reduce specificity because primers may begin annealing during the cool-down from denaturation before reaching the intended Ta. Slower ramping improves specificity at the cost of longer runs. Most modern thermal cyclers offer adjustable ramping rates (typically 1–5°C/s). For difficult templates or when maximum specificity is required, reducing the ramping rate to 1–2°C/s can improve results. Some protocols incorporate a "slow ramp" step between denaturation and annealing specifically to allow correct primer-template annealing while minimising non-specific binding.</p>
+
+      <div class="cta-box">
+        <h3>Validate Your PCR Protocol Before Going to the Bench</h3>
+        <p>VigyanLLM Primer checks primer Tm, secondary structure, and dimer formation — so you optimise in silico before running reactions.</p>
+        <a href="../primer.html" class="cta-btn">Try VigyanLLM Primer Free →</a>
+      </div>
+    </article>
+
+    <div class="author-bio">
+      <div class="author-bio-avatar">VR</div>
+      <div>
+        <h4>About the Author — VigyanLLM Research Team</h4>
+        <p>The VigyanLLM Research Team combines expertise in molecular biology, bioinformatics, and artificial intelligence to build sovereign biomedical AI tools for researchers worldwide. Our team develops advanced primer design algorithms, PCR validation pipelines, and AI-driven genomics solutions at VigyanLLM.</p>
+      </div>
+    </div>
+
+    <section class="related-articles">
+      <h2>Related Articles</h2>
+      <div class="related-grid">
+        <div class="related-card">
+          <h3><a href="./what-is-pcr.html">What is PCR? A Complete Guide to Polymerase Chain Reaction</a></h3>
+          <p>Understand the fundamentals of PCR, including history, components, and applications.</p>
+        </div>
+        <div class="related-card">
+          <h3><a href="./types-of-pcr.html">Types of PCR: RT-PCR, qPCR, Multiplex, Nested, Digital PCR</a></h3>
+          <p>Explore the major PCR variants and how each changes the amplification strategy.</p>
+        </div>
+        <div class="related-card">
+          <h3><a href="./pcr-protocol-beginners.html">PCR Protocol for Beginners: Step-by-Step Guide</a></h3>
+          <p>A practical bench protocol with detailed instructions for setting up and running your first PCR.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="references">
+      <h2>References</h2>
+      <ol>
+        <li>Mullis K.B. & Faloona F.A. (1987). Specific synthesis of DNA in vitro via a polymerase-catalyzed chain reaction. <em>Methods in Enzymology</em>, 155, 335-350.</li>
+        <li>Roux K.H. (1995). Optimization and troubleshooting in PCR. <em>PCR Methods and Applications</em>, 4(5), S185-S194.</li>
+        <li>Lorenz T.C. (2012). Polymerase chain reaction: basic protocol plus troubleshooting and optimization strategies. <em>Journal of Visualized Experiments</em>, 63, e3998.</li>
+      </ol>
+    </section>
+  </div>
+
+  <footer style="background:var(--navy);color:#CBD5E1;padding:80px 0 32px">
+    <div style="max-width:1200px;margin:0 auto;padding:0 24px">
+      <div style="display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr;gap:48px;margin-bottom:60px">
+        <div>
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+            <img src="../logo.svg" alt="VigyanLLM Logo" style="width:32px;height:32px;border-radius:4px">
+            <span style="font-family:var(--font-h);font-size:20px;font-weight:700;color:#fff">VigyanLLM</span>
+          </div>
+          <p style="font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:20px;line-height:1.6">Sovereign Healthcare &amp; Life Sciences AI.<br>Built in India. For the world.</p>
+          <a href="mailto:contact@vigyanllm.in" style="font-family:var(--font-b);font-size:13px;color:var(--accent);display:block;margin-bottom:6px">contact@vigyanllm.in</a>
+          <div style="display:flex;gap:12px;margin-top:24px">
+            <a href="#" aria-label="Facebook" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:8px;border:1px solid rgba(255,255,255,0.15);color:#94A3B8;text-decoration:none"><svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></a>
+            <a href="#" aria-label="X" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:8px;border:1px solid rgba(255,255,255,0.15);color:#94A3B8;text-decoration:none"><svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:currentColor"><path d="M4 4l6.5 8.5L4 20h2l5.5-7 4.5 7h5l-7-9.5L20 4h-2l-5 6.5L9 4H4zm3 1.5h3l10 13h-3L7 5.5z"/></svg></a>
+            <a href="#" aria-label="YouTube" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:8px;border:1px solid rgba(255,255,255,0.15);color:#94A3B8;text-decoration:none"><svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:currentColor"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6a3 3 0 0 0-2.1 2.1C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1c.5-1.9.5-5.8.5-5.8s0-3.9-.5-5.8zM9.5 15.5V8.5l6.3 3.5-6.3 3.5z"/></svg></a>
+            <a href="#" aria-label="Instagram" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:8px;border:1px solid rgba(255,255,255,0.15);color:#94A3B8;text-decoration:none"><svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:currentColor"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg></a>
+          </div>
+        </div>
+        <div>
+          <h5 style="font-family:var(--font-h);font-size:12px;text-transform:uppercase;letter-spacing:0.1em;color:#fff;margin-bottom:24px;font-weight:700">Platform</h5>
+          <a href="index.html#problem" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Problem</a>
+          <a href="index.html#platform" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Platform</a>
+          <a href="index.html#architecture" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Architecture</a>
+          <a href="../demo.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Demo</a>
+        </div>
+        <div>
+          <h5 style="font-family:var(--font-h);font-size:12px;text-transform:uppercase;letter-spacing:0.1em;color:#fff;margin-bottom:24px;font-weight:700">Resources</h5>
+          <a href="../primer.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">VPrime 1.0</a>
+          <a href="./index.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Blog</a>
+          <a href="../faq.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">FAQ</a>
+          <a href="../about.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">About</a>
+        </div>
+        <div>
+          <h5 style="font-family:var(--font-h);font-size:12px;text-transform:uppercase;letter-spacing:0.1em;color:#fff;margin-bottom:24px;font-weight:700">Contact</h5>
+          <a href="mailto:contact@vigyanllm.in" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">contact@vigyanllm.in</a>
+          <a href="../privacy.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Privacy</a>
+          <a href="../cookies.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Cookies</a>
+          <a href="../terms.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Terms</a>
+          <a href="../refund.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Refund</a>
+          <a href="../security.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Security</a>
+        </div>
+      </div>
+      <div style="border-top:1px solid rgba(255,255,255,0.1);padding-top:24px;display:flex;justify-content:space-between;font-family:var(--font-b);font-size:12px;color:#64748B">
+        <span>&copy; <script>document.write(new Date().getFullYear())</script> VigyanLLM Pvt. Ltd. · Sovereign Research AI</span>
+        <span>WWW.VIGYANLLM.IN</span>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

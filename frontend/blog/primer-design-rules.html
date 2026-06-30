@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en-IN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Primer Design Rules: Guidelines for Optimal PCR Primers | VigyanLLM</title>
+  <meta name="description" content="Essential primer design rules: GC content, melting temperature, length, secondary structure avoidance, and specificity checks for designing optimal PCR primers.">
+  <meta name="keywords" content="primer design rules, PCR primer guidelines, primer Tm, GC content primer, primer length, primer specificity, primer design checklist">
+  <link rel="canonical" href="https://vigyanllm.in/blog/primer-design-rules">
+  <meta property="og:title" content="Primer Design Rules: Guidelines for Optimal PCR Primers">
+  <meta property="og:description" content="Essential primer design rules: GC content, melting temperature, length, secondary structure avoidance, and specificity checks.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://vigyanllm.in/blog/primer-design-rules">
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+  --navy: #0F172A;
+  --navy-light: #1E293B;
+  --white: #FFFFFF;
+  --slate: #F8FAFC;
+  --slate-border: #E2E8F0;
+  --text: #0F172A;
+  --text2: #475569;
+  --muted: #94A3B8;
+  --primary: #2563EB;
+  --bio: #059669;
+  --amber: #D97706;
+  --accent: #22D3EE;
+  --font-h: 'Plus Jakarta Sans', sans-serif;
+  --font-b: 'Inter', sans-serif;
+  --bg: #FFFFFF;
+  --border: #E2E8F0;
+  --surface: #F8FAFC;
+  --max-w: 1100px;
+  --sec-p: 100px;
+}
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--text); font-family: var(--font-b); line-height: 1.6; -webkit-font-smoothing: antialiased; }
+    a { text-decoration: none; color: inherit; transition: color 0.15s ease; }
+    .container { max-width: var(--max-w); margin: 0 auto; padding: 0 24px; }
+    section { padding: var(--sec-p) 0; }
+    nav { position: sticky; top: 0; background: rgba(255,255,255,0.95); backdrop-filter: blur(8px); border-bottom: 1px solid var(--border); z-index: 1000; height: 72px; }
+    @media (max-width: 768px) { .nav-links { display: none; } }
+    
+    .article-body { padding: 40px 0; max-width: 800px; margin: 0 auto; }
+    .article-body h1 { font-family: var(--font-b); font-size: clamp(2rem,4vw,2.8rem); font-weight: 400; line-height: 1.1; margin-bottom: 16px; }
+    .article-body h2 { font-size: 24px; font-weight: 600; color: var(--text); margin: 40px 0 16px; }
+    .article-body h3 { font-size: 18px; font-weight: 600; color: var(--text); margin: 28px 0 12px; }
+    .article-body p { margin-bottom: 16px; color: var(--text2); font-size: 15px; line-height: 1.8; }
+    .article-body ul, .article-body ol { margin-left: 24px; margin-bottom: 16px; color: var(--text2); font-size: 15px; }
+    .article-body li { margin-bottom: 8px; }
+    .article-body strong { color: var(--text); }
+    .article-body a { color: var(--primary); text-decoration: none; }
+    .article-body a:hover { text-decoration: underline; }
+    .article-body table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 14px; }
+    .article-body th { background: var(--surface); color: var(--text); padding: 12px; text-align: left; border: 1px solid var(--border); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; }
+    .article-body td { padding: 12px; border: 1px solid var(--border); color: var(--text2); }
+    .article-body tr:nth-child(even) { background: var(--surface); }
+    .article-body .callout { background: var(--surface); border-left: 4px solid var(--primary); padding: 20px 24px; border-radius: 0 12px 12px 0; margin: 24px 0; }
+    .article-body .callout-title { font-weight: 700; color: var(--primary); margin-bottom: 8px; }
+    .article-body code { background: var(--surface); padding: 2px 6px; border-radius: 4px; font-size: 13px; color: var(--text); border: 1px solid var(--border); }
+    .hero-blog { padding: 60px 0 30px; text-align: center; border-bottom: 1px solid var(--border); }
+    .cta-box { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 36px; text-align: center; margin: 40px 0; }
+    .cta-box h3 { font-size: 20px; color: var(--text); margin-bottom: 10px; }
+    .cta-box p { color: var(--text2); margin-bottom: 20px; }
+    .cta-btn { display: inline-block; padding: 14px 32px; background: var(--primary); color: #fff; text-decoration: none; border-radius: 8px; font-weight: 700; font-size: 14px; transition: background 0.2s; }
+    .cta-btn:hover { background: #0044ff; }
+    .references { padding: 30px 0; border-top: 1px solid var(--border); margin-top: 40px; }
+    .references h2 { font-size: 20px; color: var(--text); margin-bottom: 16px; font-weight: 600; }
+    .references ol { margin-left: 24px; color: var(--text2); font-size: 14px; }
+    
+    .article-header .article-tag { display: inline-block; background: #e8f0ff; color: var(--primary); padding: 4px 14px; border-radius: 12px; font-size: 11px; font-weight: 600; margin-bottom: 16px; }
+    .article-header .article-date { color: var(--muted); font-size: 13px; }
+    .article-header .article-author { color: var(--text2); font-size: 13px; font-weight: 600; }
+    .article-header h1 { font-size: clamp(2rem,4vw,2.8rem); font-weight: 400; line-height: 1.1; margin-bottom: 16px; }
+    .article-header .subtitle { font-size: 16px; color: var(--text2); line-height: 1.6; max-width: 700px; }
+    .article-meta-bar { display: flex; gap: 16px; align-items: center; margin-bottom: 16px; flex-wrap: wrap; }
+    .author-bio { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 28px; margin: 40px 0 24px; display: flex; gap: 20px; align-items: flex-start; }
+    .author-bio-avatar { width: 60px; height: 60px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 24px; flex-shrink: 0; }
+    .author-bio h4 { font-size: 16px; color: var(--text); margin-bottom: 6px; }
+    .author-bio p { font-size: 13px; color: var(--text2); line-height: 1.6; margin-bottom: 0; }
+    .related-articles { padding: 30px 0; border-top: 1px solid var(--border); margin-top: 24px; }
+    .related-articles h2 { font-size: 20px; color: var(--text); margin-bottom: 20px; font-weight: 600; }
+    .related-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; }
+    .related-card { border: 1px solid var(--border); border-radius: 12px; padding: 20px; transition: border-color 0.2s; }
+    .related-card:hover { border-color: var(--primary); }
+    .related-card h3 { font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+    .related-card p { font-size: 12px; color: var(--text2); line-height: 1.6; margin-bottom: 0; }
+    .related-card a { color: var(--primary); font-weight: 600; }
+  </style>
+  
+  <script type="application/ld+json">
+  { "@context": "https://schema.org", "@type": "Article", "headline": "Primer Design Rules: Guidelines for Optimal PCR Primers", "description": "Essential primer design rules: GC content, melting temperature, length, secondary structure avoidance, and specificity checks for designing optimal PCR primers.", "datePublished": "2026-06-30", "dateModified": "2026-06-30", "author": { "@type": "Person", "name": "VigyanLLM Research Team", "jobTitle": "Research Team, VigyanLLM" }, "publisher": { "@type": "Organization", "name": "VigyanLLM Private Limited" }, "mainEntityOfPage": "https://vigyanllm.in/blog/primer-design-rules" }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "VigyanLLM", "item": "https://vigyanllm.in/" },
+      { "@type": "ListItem", "position": 2, "name": "Blog", "item": "https://vigyanllm.in/blog/index.html" },
+      { "@type": "ListItem", "position": 3, "name": "Primer Design Rules: Guidelines for Optimal PCR Primers", "item": "https://vigyanllm.in/blog/primer-design-rules.html" }
+    ]
+  }
+  </script>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-PB0XMF4GEH"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-PB0XMF4GEH');
+  </script>
+</head>
+<body>
+  <nav>
+    <div class="nav-inner" style="display:flex;justify-content:space-between;align-items:center;height:100%;max-width:1200px;margin:0 auto;padding:0 24px">
+      <a href="../index.html" class="nav-brand" style="display:flex;align-items:center;gap:10px;color:#fff;font-family:var(--font-h);font-size:20px;font-weight:700;text-decoration:none">
+        <img src="../logo.svg" alt="VigyanLLM Logo" style="width:32px;height:32px;border-radius:4px">
+        <span>VigyanLLM</span>
+      </a>
+      <div class="nav-links" style="display:flex;gap:32px;align-items:center">
+        <a href="../index.html" style="font-family:var(--font-b);font-size:13px;color:#CBD5E1;font-weight:500;letter-spacing:0.02em">Home</a>
+        <a href="../primer.html" style="font-family:var(--font-b);font-size:13px;color:#22D3EE;font-weight:600;letter-spacing:0.02em">VPrime 1.0 ↗</a>
+        <a href="./index.html" style="font-family:var(--font-b);font-size:13px;color:#CBD5E1;font-weight:500;letter-spacing:0.02em">Blog</a>
+        <a href="../faq.html" style="font-family:var(--font-b);font-size:13px;color:#CBD5E1;font-weight:500;letter-spacing:0.02em">FAQ</a>
+        <a href="../about.html" style="font-family:var(--font-b);font-size:13px;color:#CBD5E1;font-weight:500;letter-spacing:0.02em">About</a>
+      </div>
+      <div class="nav-right" style="display:flex;align-items:center;gap:16px">
+        <button class="nav-login" onclick="window.location.href='../primer.html'" style="border:1.5px solid rgba(255,255,255,0.3);border-radius:4px;padding:8px 20px;font-family:var(--font-b);font-size:13px;font-weight:600;color:#fff;background:transparent;cursor:pointer">Login</button>
+      </div>
+    </div>
+  </nav>
+
+  <div style="max-width:var(--max-w);margin:0 auto;padding:0 24px">
+    <header style="padding:50px 0 30px;border-bottom:1px solid var(--border)">
+      <div class="article-meta-bar">
+        <span class="article-tag">Primer Design</span>
+        <span class="article-date">Published: June 30, 2026</span>
+        <span class="article-author">By VigyanLLM Research Team</span>
+      </div>
+      <h1>Primer Design Rules: Guidelines for Optimal PCR Primers</h1>
+      <p class="subtitle">Great PCR starts with great primers. This comprehensive guide covers every rule and guideline you need to design primers that work reliably — from basic parameters to advanced considerations for challenging templates.</p>
+    </header>
+
+    <article class="article-body">
+      <h2>Why Primer Design Rules Are Essential</h2>
+      <p>A well-designed primer pair is the single most important factor in PCR success. Following established primer design rules dramatically reduces the risk of non-specific amplification, primer dimers, hairpins, and failed reactions. Whether you are amplifying a single gene for cloning or designing a 20-plex panel for pathogen detection, the same fundamental rules apply.</p>
+
+      <h2>Primer Design Checklist</h2>
+      <table>
+        <tr><th>Parameter</th><th>Ideal Range</th><th>Why It Matters</th></tr>
+        <tr><td>Primer length</td><td>18–24 nucleotides</td><td>Short primers lack specificity; long primers have higher Tm and may form secondary structures</td></tr>
+        <tr><td>Melting temperature (Tm)</td><td>52–65°C (within 2–5°C between pair)</td><td>Determines annealing temperature and reaction specificity</td></tr>
+        <tr><td>GC content</td><td>40–60%</td><td>Balances binding strength; extreme GC causes non-specific binding or poor annealing</td></tr>
+        <tr><td>3' terminal base</td><td>G or C (GC clamp)</td><td>G and C form stronger hydrogen bonds, stabilising the 3' end for extension</td></tr>
+        <tr><td>Hairpin delta-G</td><td>> -5.0 kcal/mol</td><td>Stable hairpins reduce effective primer concentration</td></tr>
+        <tr><td>Cross-dimer delta-G</td><td>> -5.0 kcal/mol</td><td>Primer dimers consume reagents and produce artifacts</td></tr>
+        <tr><td>Amplicon length</td><td>70–200 bp (qPCR); 200–1,000 bp (standard)</td><td>Shorter amplicons amplify more efficiently</td></tr>
+        <tr><td>Repeat runs</td><td>< 4 consecutive same nucleotides</td><td>Mononucleotide runs cause polymerase slippage</td></tr>
+      </table>
+
+      <h2>Rule 1: Primer Length — The Goldilocks Zone</h2>
+      <p>Primers should be 18–24 nucleotides long. This length provides sufficient specificity to uniquely bind the target sequence in a complex genome (e.g., human genome with 3.2 billion bp) while remaining short enough for cost-effective synthesis and efficient annealing.</p>
+      <ul>
+        <li><strong>Primers < 15 nt:</strong> Risk non-specific binding across the genome; low Tm makes it hard to find a suitable annealing temperature</li>
+        <li><strong>Primers > 30 nt:</strong> Higher cost; increased risk of internal secondary structures; may require longer annealing times</li>
+      </ul>
+
+      <h2>Rule 2: Melting Temperature Harmonisation</h2>
+      <p>The Tm of forward and reverse primers should be within 2–5°C of each other. If the Tms differ by more than 5°C, the lower-Tm primer will fail to bind at the optimal Ta for the higher-Tm primer, resulting in asymmetric amplification or complete failure.</p>
+      <p>For Tm calculation, use the <strong>SantaLucia nearest-neighbour model</strong>, which accounts for sequence-dependent stacking interactions and salt concentration. The simple Wallace formula (Tm = 2(A+T) + 4(G+C)) is only accurate for primers 15–20 nt long. See our <a href="./tm-calculation-methods.html">Tm calculation methods guide</a> for details.</p>
+
+      <h2>Rule 3: GC Content and GC Clamp</h2>
+      <p>Aim for 40–60% GC content. The 3' end of each primer should contain a G or C residue (called a GC clamp) in the last 5 nucleotides. GC pairs have three hydrogen bonds vs AT's two, so the GC clamp helps ensure proper 3' annealing and extension initiation.</p>
+      <p><strong>Special cases:</strong></p>
+      <ul>
+        <li><strong>AT-rich genomes (Plasmodium, Dictyostelium):</strong> Acceptable to go below 40% GC. Use longer primers (25–30 nt) and lower annealing temperatures</li>
+        <li><strong>GC-rich templates:</strong> Above 65% GC, add DMSO (3–5%) or betaine (1 M) to the PCR reaction to reduce secondary structure</li>
+        <li><strong>Bisulfite-converted DNA:</strong> Expect 20–35% GC; use specific <a href="./gc-content-guidelines.html">GC content guidelines for challenging templates</a></li>
+      </ul>
+
+      <h2>Rule 4: Secondary Structure Avoidance</h2>
+      <p>Primers should not form stable secondary structures:</p>
+      <ul>
+        <li><strong>Hairpins:</strong> The 3' end should not fold back and bind to an internal complementary region. Check delta-G: values below -5.0 kcal/mol indicate problematic hairpins</li>
+        <li><strong>Self-dimers:</strong> A primer should not bind to another copy of itself, especially at the 3' end</li>
+        <li><strong>Cross-dimers:</strong> Forward and reverse primers should not have complementary regions, particularly at the 3' terminal 3–4 bases</li>
+      </ul>
+      <p>For an in-depth discussion of dimer prevention, see our dedicated guide on <a href="./primer-dimer-prevention.html">primer dimer prevention</a>.</p>
+
+      <h2>Rule 5: Specificity — BLAST Before You Order</h2>
+      <p>Always run Primer-BLAST against the target genome (and the host genome for pathogen detection). A specific primer should have:</p>
+      <ul>
+        <li>At least 2 mismatches at the 3' end to the closest off-target sequence</li>
+        <li>No off-target amplicon within 500 bp (qPCR) or 1,000 bp (standard PCR)</li>
+        <li>Unique binding site in the target genome</li>
+      </ul>
+
+      <h2>Rule 6: Avoid Repetitive and Low-Complexity Sequences</h2>
+      <p>Avoid primers with mononucleotide runs (AAAA, TTTT) longer than 4 bases, dinucleotide repeats (ATATATAT), or regions with very low sequence complexity. These sequences cause polymerase slippage and non-specific binding.</p>
+
+      <h2>Primer Degeneracy and Mixed Bases</h2>
+      <p>For some applications — such as amplifying homologous genes across species, targeting variable regions like viral quasispecies, or designing primers for metagenomic studies — degenerate primers containing mixed bases are used. IUPAC codes for mixed bases include R (A/G), Y (C/T), M (A/C), K (G/T), S (G/C), W (A/T), B (C/G/T), D (A/G/T), H (A/C/T), V (A/C/G), and N (any base). Key rules for degenerate primers: keep degeneracy below 128-fold (ideally 32-fold or less) to maintain amplification efficiency; avoid degeneracy at the 3' terminal 4 bases; and increase primer concentration by 2-4 fold relative to non-degenerate primers. Inosine can substitute for any base at ambiguous positions and reduces degeneracy-related melting temperature variation.</p>
+
+      <h2>Advanced Considerations</h2>
+      <h3>Multiplex PCR Primer Design</h3>
+      <p>When designing primers for multiplex assays, additional constraints apply: all primer pairs must have similar Tms, produce amplicons of distinguishable sizes, and show no cross-dimer formation between any primer pair. See <a href="./multiplex-pcr-primer-design.html">multiplex PCR primer design strategies</a>.</p>
+
+      <h3>qPCR Primer Design</h3>
+      <p>For qPCR, primers should produce amplicons of 70–200 bp and ideally span an exon-exon junction to prevent amplification of contaminating genomic DNA. See <a href="./qpcr-primer-probe-design.html">qPCR primer design</a> for detailed guidelines.</p>
+
+      <div class="callout">
+        <div class="callout-title">VigyanLLM Primer — 22-Step Validation</div>
+        <p>VigyanLLM Primer checks every primer design rule automatically — length, Tm, GC content, GC clamp, hairpins, self-dimers, cross-dimers, specificity, repeat runs, and 14 additional quality metrics. Get a comprehensive validation report for every primer pair in under 30 seconds.</p>
+      </div>
+
+      <div class="cta-box">
+        <h3>Design Primers with Automated Rule Checking</h3>
+        <p>Free for researchers and professors. Validate all 22 parameters before ordering your primers.</p>
+        <a href="../primer.html" class="cta-btn">Try VigyanLLM Primer Free →</a>
+      </div>
+    </article>
+
+    <div class="author-bio">
+      <div class="author-bio-avatar">VR</div>
+      <div>
+        <h4>About the Author — VigyanLLM Research Team</h4>
+        <p>The VigyanLLM Research Team combines expertise in molecular biology, bioinformatics, and artificial intelligence to build sovereign biomedical AI tools for researchers worldwide. Our team develops advanced primer design algorithms, PCR validation pipelines, and AI-driven genomics solutions at VigyanLLM.</p>
+      </div>
+    </div>
+
+    <section class="related-articles">
+      <h2>Related Articles</h2>
+      <div class="related-grid">
+        <div class="related-card">
+          <h3><a href="./pcr-primer-design-rules.html">PCR Primer Design Rules: The 7 Parameters Every Researcher Should Know</a></h3>
+          <p>A deep dive into the seven essential primer design parameters with practical ranges and examples.</p>
+        </div>
+        <div class="related-card">
+          <h3><a href="./primer-dimer-prevention.html">What Is Primer Dimer and How Do You Prevent It?</a></h3>
+          <p>Understand dimer formation, thermodynamic thresholds, and five proven prevention strategies.</p>
+        </div>
+        <div class="related-card">
+          <h3><a href="./tm-calculation-methods.html">How to Calculate Primer Melting Temperature: Methods and Accuracy</a></h3>
+          <p>Compare Tm calculation methods from the Wallace formula to the SantaLucia nearest-neighbour model.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="references">
+      <h2>References</h2>
+      <ol>
+        <li>Dieffenbach C.W. et al. (1993). General concepts for PCR primer design. <em>PCR Methods and Applications</em>, 3(5), S30-S37.</li>
+        <li>SantaLucia J. (1998). A unified view of polymer, dumbbell, and oligonucleotide DNA nearest-neighbor thermodynamics. <em>PNAS</em>, 95(4), 1460-1465.</li>
+        <li>Abd-Elsalam K.A. (2003). Bioinformatic tools and guideline for PCR primer design. <em>African Journal of Biotechnology</em>, 2(5), 91-95.</li>
+        <li>Ye J. et al. (2012). Primer-BLAST: a tool to design target-specific primers for polymerase chain reaction. <em>BMC Bioinformatics</em>, 13, 134.</li>
+      </ol>
+    </section>
+  </div>
+
+  <footer style="background:var(--navy);color:#CBD5E1;padding:80px 0 32px">
+    <div style="max-width:1200px;margin:0 auto;padding:0 24px">
+      <div style="display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr;gap:48px;margin-bottom:60px">
+        <div>
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+            <img src="../logo.svg" alt="VigyanLLM Logo" style="width:32px;height:32px;border-radius:4px">
+            <span style="font-family:var(--font-h);font-size:20px;font-weight:700;color:#fff">VigyanLLM</span>
+          </div>
+          <p style="font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:20px;line-height:1.6">Sovereign Healthcare &amp; Life Sciences AI.<br>Built in India. For the world.</p>
+          <a href="mailto:contact@vigyanllm.in" style="font-family:var(--font-b);font-size:13px;color:var(--accent);display:block;margin-bottom:6px">contact@vigyanllm.in</a>
+          <div style="display:flex;gap:12px;margin-top:24px">
+            <a href="#" aria-label="Facebook" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:8px;border:1px solid rgba(255,255,255,0.15);color:#94A3B8;text-decoration:none"><svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></a>
+            <a href="#" aria-label="X" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:8px;border:1px solid rgba(255,255,255,0.15);color:#94A3B8;text-decoration:none"><svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:currentColor"><path d="M4 4l6.5 8.5L4 20h2l5.5-7 4.5 7h5l-7-9.5L20 4h-2l-5 6.5L9 4H4zm3 1.5h3l10 13h-3L7 5.5z"/></svg></a>
+            <a href="#" aria-label="YouTube" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:8px;border:1px solid rgba(255,255,255,0.15);color:#94A3B8;text-decoration:none"><svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:currentColor"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6a3 3 0 0 0-2.1 2.1C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1c.5-1.9.5-5.8.5-5.8s0-3.9-.5-5.8zM9.5 15.5V8.5l6.3 3.5-6.3 3.5z"/></svg></a>
+            <a href="#" aria-label="Instagram" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:8px;border:1px solid rgba(255,255,255,0.15);color:#94A3B8;text-decoration:none"><svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:currentColor"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg></a>
+          </div>
+        </div>
+        <div>
+          <h5 style="font-family:var(--font-h);font-size:12px;text-transform:uppercase;letter-spacing:0.1em;color:#fff;margin-bottom:24px;font-weight:700">Platform</h5>
+          <a href="index.html#problem" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Problem</a>
+          <a href="index.html#platform" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Platform</a>
+          <a href="index.html#architecture" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Architecture</a>
+          <a href="../demo.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Demo</a>
+        </div>
+        <div>
+          <h5 style="font-family:var(--font-h);font-size:12px;text-transform:uppercase;letter-spacing:0.1em;color:#fff;margin-bottom:24px;font-weight:700">Resources</h5>
+          <a href="../primer.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">VPrime 1.0</a>
+          <a href="./index.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Blog</a>
+          <a href="../faq.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">FAQ</a>
+          <a href="../about.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">About</a>
+        </div>
+        <div>
+          <h5 style="font-family:var(--font-h);font-size:12px;text-transform:uppercase;letter-spacing:0.1em;color:#fff;margin-bottom:24px;font-weight:700">Contact</h5>
+          <a href="mailto:contact@vigyanllm.in" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">contact@vigyanllm.in</a>
+          <a href="../privacy.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Privacy</a>
+          <a href="../cookies.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Cookies</a>
+          <a href="../terms.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Terms</a>
+          <a href="../refund.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Refund</a>
+          <a href="../security.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Security</a>
+        </div>
+      </div>
+      <div style="border-top:1px solid rgba(255,255,255,0.1);padding-top:24px;display:flex;justify-content:space-between;font-family:var(--font-b);font-size:12px;color:#64748B">
+        <span>&copy; <script>document.write(new Date().getFullYear())</script> VigyanLLM Pvt. Ltd. · Sovereign Research AI</span>
+        <span>WWW.VIGYANLLM.IN</span>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

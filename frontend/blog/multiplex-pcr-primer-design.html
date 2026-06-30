@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en-IN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Multiplex PCR Primer Design: Strategies and Tips | VigyanLLM</title>
+  <meta name="description" content="Learn multiplex PCR primer design strategies: Tm harmonisation, amplicon size differentiation, cross-dimer avoidance, primer concentration balancing, and validation for multi-target assays.">
+  <meta name="keywords" content="multiplex PCR primer design, multiplex PCR, multi-target PCR, primer design multiplex, PCR multiplexing, Tm harmonisation">
+  <link rel="canonical" href="https://vigyanllm.in/blog/multiplex-pcr-primer-design">
+  <meta property="og:title" content="Multiplex PCR Primer Design: Strategies and Tips">
+  <meta property="og:description" content="Design primers for multiplex PCR assays: Tm harmonisation, amplicon size differentiation, cross-dimer avoidance, and validation.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://vigyanllm.in/blog/multiplex-pcr-primer-design">
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+  --navy: #0F172A;
+  --navy-light: #1E293B;
+  --white: #FFFFFF;
+  --slate: #F8FAFC;
+  --slate-border: #E2E8F0;
+  --text: #0F172A;
+  --text2: #475569;
+  --muted: #94A3B8;
+  --primary: #2563EB;
+  --bio: #059669;
+  --amber: #D97706;
+  --accent: #22D3EE;
+  --font-h: 'Plus Jakarta Sans', sans-serif;
+  --font-b: 'Inter', sans-serif;
+  --bg: #FFFFFF;
+  --border: #E2E8F0;
+  --surface: #F8FAFC;
+  --max-w: 1100px;
+  --sec-p: 100px;
+}
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--text); font-family: var(--font-b); line-height: 1.6; -webkit-font-smoothing: antialiased; }
+    a { text-decoration: none; color: inherit; transition: color 0.15s ease; }
+    .container { max-width: var(--max-w); margin: 0 auto; padding: 0 24px; }
+    section { padding: var(--sec-p) 0; }
+    nav { position: sticky; top: 0; background: rgba(255,255,255,0.95); backdrop-filter: blur(8px); border-bottom: 1px solid var(--border); z-index: 1000; height: 72px; }
+    @media (max-width: 768px) { .nav-links { display: none; } }
+    
+    .article-body { padding: 40px 0; max-width: 800px; margin: 0 auto; }
+    .article-body h1 { font-family: var(--font-b); font-size: clamp(2rem,4vw,2.8rem); font-weight: 400; line-height: 1.1; margin-bottom: 16px; }
+    .article-body h2 { font-size: 24px; font-weight: 600; color: var(--text); margin: 40px 0 16px; }
+    .article-body h3 { font-size: 18px; font-weight: 600; color: var(--text); margin: 28px 0 12px; }
+    .article-body p { margin-bottom: 16px; color: var(--text2); font-size: 15px; line-height: 1.8; }
+    .article-body ul, .article-body ol { margin-left: 24px; margin-bottom: 16px; color: var(--text2); font-size: 15px; }
+    .article-body li { margin-bottom: 8px; }
+    .article-body strong { color: var(--text); }
+    .article-body a { color: var(--primary); text-decoration: none; }
+    .article-body a:hover { text-decoration: underline; }
+    .article-body table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 14px; }
+    .article-body th { background: var(--surface); color: var(--text); padding: 12px; text-align: left; border: 1px solid var(--border); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; }
+    .article-body td { padding: 12px; border: 1px solid var(--border); color: var(--text2); }
+    .article-body tr:nth-child(even) { background: var(--surface); }
+    .article-body .callout { background: var(--surface); border-left: 4px solid var(--primary); padding: 20px 24px; border-radius: 0 12px 12px 0; margin: 24px 0; }
+    .article-body .callout-title { font-weight: 700; color: var(--primary); margin-bottom: 8px; }
+    .article-body code { background: var(--surface); padding: 2px 6px; border-radius: 4px; font-size: 13px; color: var(--text); border: 1px solid var(--border); }
+    .hero-blog { padding: 60px 0 30px; text-align: center; border-bottom: 1px solid var(--border); }
+    .cta-box { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 36px; text-align: center; margin: 40px 0; }
+    .cta-box h3 { font-size: 20px; color: var(--text); margin-bottom: 10px; }
+    .cta-box p { color: var(--text2); margin-bottom: 20px; }
+    .cta-btn { display: inline-block; padding: 14px 32px; background: var(--primary); color: #fff; text-decoration: none; border-radius: 8px; font-weight: 700; font-size: 14px; transition: background 0.2s; }
+    .cta-btn:hover { background: #0044ff; }
+    .references { padding: 30px 0; border-top: 1px solid var(--border); margin-top: 40px; }
+    .references h2 { font-size: 20px; color: var(--text); margin-bottom: 16px; font-weight: 600; }
+    .references ol { margin-left: 24px; color: var(--text2); font-size: 14px; }
+    
+    .article-header .article-tag { display: inline-block; background: var(--surface); color: var(--amber); padding: 4px 14px; border-radius: 12px; font-size: 11px; font-weight: 600; margin-bottom: 16px; }
+    .article-header .article-date { color: var(--muted); font-size: 13px; }
+    .article-header .article-author { color: var(--text2); font-size: 13px; font-weight: 600; }
+    .article-header h1 { font-size: clamp(2rem,4vw,2.8rem); font-weight: 400; line-height: 1.1; margin-bottom: 16px; }
+    .article-header .subtitle { font-size: 16px; color: var(--text2); line-height: 1.6; max-width: 700px; }
+    .article-meta-bar { display: flex; gap: 16px; align-items: center; margin-bottom: 16px; flex-wrap: wrap; }
+    .author-bio { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 28px; margin: 40px 0 24px; display: flex; gap: 20px; align-items: flex-start; }
+    .author-bio-avatar { width: 60px; height: 60px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 24px; flex-shrink: 0; }
+    .author-bio h4 { font-size: 16px; color: var(--text); margin-bottom: 6px; }
+    .author-bio p { font-size: 13px; color: var(--text2); line-height: 1.6; margin-bottom: 0; }
+    .related-articles { padding: 30px 0; border-top: 1px solid var(--border); margin-top: 24px; }
+    .related-articles h2 { font-size: 20px; color: var(--text); margin-bottom: 20px; font-weight: 600; }
+    .related-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; }
+    .related-card { border: 1px solid var(--border); border-radius: 12px; padding: 20px; transition: border-color 0.2s; }
+    .related-card:hover { border-color: var(--primary); }
+    .related-card h3 { font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+    .related-card p { font-size: 12px; color: var(--text2); line-height: 1.6; margin-bottom: 0; }
+    .related-card a { color: var(--primary); font-weight: 600; }
+  </style>
+  
+  <script type="application/ld+json">
+  { "@context": "https://schema.org", "@type": "Article", "headline": "Multiplex PCR Primer Design: Strategies and Tips", "description": "Learn multiplex PCR primer design strategies: Tm harmonisation, amplicon size differentiation, cross-dimer avoidance, primer concentration balancing, and validation for multi-target assays.", "datePublished": "2026-06-30", "dateModified": "2026-06-30", "author": { "@type": "Person", "name": "VigyanLLM Research Team", "jobTitle": "Research Team, VigyanLLM" }, "publisher": { "@type": "Organization", "name": "VigyanLLM Private Limited" }, "mainEntityOfPage": "https://vigyanllm.in/blog/multiplex-pcr-primer-design" }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "VigyanLLM", "item": "https://vigyanllm.in/" },
+      { "@type": "ListItem", "position": 2, "name": "Blog", "item": "https://vigyanllm.in/blog/index.html" },
+      { "@type": "ListItem", "position": 3, "name": "Multiplex PCR Primer Design: Strategies and Tips", "item": "https://vigyanllm.in/blog/multiplex-pcr-primer-design.html" }
+    ]
+  }
+  </script>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-PB0XMF4GEH"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-PB0XMF4GEH');
+  </script>
+</head>
+<body>
+  <nav>
+    <div class="nav-inner" style="display:flex;justify-content:space-between;align-items:center;height:100%;max-width:1200px;margin:0 auto;padding:0 24px">
+      <a href="../index.html" class="nav-brand" style="display:flex;align-items:center;gap:10px;color:#fff;font-family:var(--font-h);font-size:20px;font-weight:700;text-decoration:none">
+        <img src="../logo.svg" alt="VigyanLLM Logo" style="width:32px;height:32px;border-radius:4px">
+        <span>VigyanLLM</span>
+      </a>
+      <div class="nav-links" style="display:flex;gap:32px;align-items:center">
+        <a href="../index.html" style="font-family:var(--font-b);font-size:13px;color:#CBD5E1;font-weight:500;letter-spacing:0.02em">Home</a>
+        <a href="../primer.html" style="font-family:var(--font-b);font-size:13px;color:#22D3EE;font-weight:600;letter-spacing:0.02em">VPrime 1.0 ↗</a>
+        <a href="./index.html" style="font-family:var(--font-b);font-size:13px;color:#CBD5E1;font-weight:500;letter-spacing:0.02em">Blog</a>
+        <a href="../faq.html" style="font-family:var(--font-b);font-size:13px;color:#CBD5E1;font-weight:500;letter-spacing:0.02em">FAQ</a>
+        <a href="../about.html" style="font-family:var(--font-b);font-size:13px;color:#CBD5E1;font-weight:500;letter-spacing:0.02em">About</a>
+      </div>
+      <div class="nav-right" style="display:flex;align-items:center;gap:16px">
+        <button class="nav-login" onclick="window.location.href='../primer.html'" style="border:1.5px solid rgba(255,255,255,0.3);border-radius:4px;padding:8px 20px;font-family:var(--font-b);font-size:13px;font-weight:600;color:#fff;background:transparent;cursor:pointer">Login</button>
+      </div>
+    </div>
+  </nav>
+
+  <div style="max-width:var(--max-w);margin:0 auto;padding:0 24px">
+    <header style="padding:50px 0 30px;border-bottom:1px solid var(--border)">
+      <div class="article-meta-bar">
+        <span class="article-tag">Advanced</span>
+        <span class="article-date">Published: June 30, 2026</span>
+        <span class="article-author">By VigyanLLM Research Team</span>
+      </div>
+      <h1>Multiplex PCR Primer Design: Strategies and Tips</h1>
+      <p class="subtitle">Multiplex PCR amplifies multiple targets simultaneously — but primer design complexity grows exponentially with each additional target. This guide covers strategies for Tm harmonisation, cross-dimer avoidance, optimisation, and validation.</p>
+    </header>
+
+    <article class="article-body">
+      <h2>What Makes Multiplex PCR Primer Design Different?</h2>
+      <p>Multiplex PCR uses multiple primer pairs in a single reaction to amplify two or more target sequences simultaneously. While the core <a href="./pcr-primer-design-rules.html">primer design rules</a> for individual primers still apply, multiplex design introduces additional constraints: all primers in the pool must work together without interfering with each other.</p>
+      <p>The key challenges in multiplex PCR primer design are:</p>
+      <ul>
+        <li><strong>Tm harmonisation:</strong> All primer pairs must have similar melting temperatures so a single annealing temperature works for every target</li>
+        <li><strong>Cross-dimer avoidance:</strong> Every forward primer must be checked against every reverse primer (including those from other pairs) for complementarity</li>
+        <li><strong>Amplicon size differentiation:</strong> Products must be distinguishable by size (gel) or fluorescent channel (capillary electrophoresis)</li>
+        <li><strong>Primer concentration balancing:</strong> Targets may amplify at different efficiencies and require adjusted primer concentrations</li>
+      </ul>
+
+      <h2>Strategy 1: Tm Harmonisation</h2>
+      <p>In multiplex PCR, a single annealing temperature is used for all primer pairs. This requires all primers to have Tms within a narrow range — ideally within 2°C of each other across all primers in the pool.</p>
+      <p><strong>How to achieve Tm harmonisation:</strong></p>
+      <ul>
+        <li>Design primers with lengths of 20–24 nt and GC content of 45–55% to naturally yield similar Tms</li>
+        <li>Use the <a href="./tm-calculation-methods.html">SantaLucia nearest-neighbour model</a> for accurate Tm prediction</li>
+        <li>Avoid AT-rich or GC-rich primers that deviate significantly from the target Tm</li>
+        <li>Consider using modified nucleotides (LNA, PNA) to adjust Tm without changing length</li>
+      </ul>
+
+      <div class="callout">
+        <div class="callout-title">Practical Guideline</div>
+        <p>For a 5-plex reaction, aim for all primer Tms within 58–62°C. Use an annealing temperature of 58°C as the starting point. If primers have a wider Tm range, use touchdown PCR (decreasing Ta by 0.5°C per cycle from 65°C to 55°C) to accommodate all pairs.</p>
+      </div>
+
+      <h2>Strategy 2: Cross-Dimer Analysis</h2>
+      <p>In simplex PCR, you only need to check forward-reverse dimer potential for one pair. In multiplex, the number of cross-checks grows quadratically: for n primer pairs (2n primers), there are (2n)!/(2!(2n-2)!) unique primer-primer interactions to check.</p>
+      <table>
+        <tr><th>Number of Targets</th><th>Total Primers</th><th>Cross-Checks Needed</th></tr>
+        <tr><td>1 (simplex)</td><td>2</td><td>3 (F-R, F-F, R-R)</td></tr>
+        <tr><td>2 (duplex)</td><td>4</td><td>10</td></tr>
+        <tr><td>3 (triplex)</td><td>6</td><td>21</td></tr>
+        <tr><td>4 (quadruplex)</td><td>8</td><td>36</td></tr>
+        <tr><td>5 (pentaplex)</td><td>10</td><td>55</td></tr>
+      </table>
+      <p><strong>Critical rule:</strong> No 3' terminal complementarity between any two primers. Even a 2-base 3' complementarity between a forward primer of target A and reverse primer of target B will produce an artifactual cross-dimer product.</p>
+
+      <h2>Strategy 3: Amplicon Size Differentiation</h2>
+      <p>For gel-based detection, amplicons should differ by at least 50–100 bp to allow clear resolution on agarose gels. For capillary electrophoresis (e.g., fragment analysis), amplicons can be closer in size (20–30 bp difference) but should not overlap.</p>
+      <p><strong>Suggested size ranges for a 4-plex:</strong></p>
+      <ul>
+        <li>Target 1: 100–150 bp</li>
+        <li>Target 2: 200–250 bp</li>
+        <li>Target 3: 300–350 bp</li>
+        <li>Target 4: 400–500 bp</li>
+      </ul>
+
+      <h2>Strategy 4: Primer Concentration Balancing</h2>
+      <p>Not all targets amplify with equal efficiency. Targets with higher GC content or secondary structure may amplify less efficiently and need higher primer concentrations. Start with equal concentrations (0.2 µM each primer) and adjust based on results:</p>
+      <ul>
+        <li><strong>Weak target:</strong> Increase primers to 0.4–0.6 µM</li>
+        <li><strong>Dominant target:</strong> Decrease primers to 0.05–0.1 µM</li>
+        <li><strong>Primer dimers:</strong> Decrease total primer concentration; check cross-dimers</li>
+      </ul>
+
+      <h2>Strategy 5: Use of Multiplex-Compatible Master Mixes</h2>
+      <p>Commercial multiplex PCR master mixes are formulated with specialised polymerases, enhancers, and buffer systems that tolerate higher total primer concentrations and amplify multiple targets more uniformly. Consider using:</p>
+      <ul>
+        <li>Qiagen Multiplex PCR Kit</li>
+        <li>KAPA Multiplex Mix</li>
+        <li>HotStarTaq Multiplex Master Mix</li>
+      </ul>
+
+      <h2>Detection Formats for Multiplex PCR</h2>
+      <p>The method used to detect multiplex PCR products determines many design decisions. For gel-based detection, amplicons must differ in size by at least 50–100 bp and are visualised by agarose or capillary electrophoresis. For capillary electrophoresis with fluorescent labelling, each primer pair uses a different fluorophore (FAM, HEX, ROX, Cy5), enabling detection of amplicons of the same size in different colours — this dramatically increases multiplex capacity up to 10–30 targets. For real-time multiplex qPCR, TaqMan probes with distinct fluorophores are used, with careful attention to spectral overlap compensation. For high-resolution melting (HRM) analysis, amplicons are distinguished by their melting temperature rather than size. The choice of detection format directly impacts primer design parameters including amplicon length constraints, Tm requirements, and the need for labelled primers or probes.</p>
+
+      <h2>Optimisation Workflow for Multiplex PCR</h2>
+      <ol>
+        <li><strong>In silico design:</strong> Design all primer pairs individually using <a href="./primer-design-rules.html">primer design rules</a>, then verify cross-compatibility</li>
+        <li><strong>Simplex testing:</strong> Test each pair individually to confirm amplification of the correct target</li>
+        <li><strong>Pairwise testing:</strong> Test pairs in groups of two to identify cross-interactions</li>
+        <li><strong>Full multiplex testing:</strong> Combine all pairs and run a temperature gradient (55–65°C)</li>
+        <li><strong>Concentration optimisation:</strong> Adjust primer concentrations to balance peak heights</li>
+        <li><strong>Validation:</strong> Confirm specificity by sequencing individual products</li>
+      </ol>
+
+      <div class="callout">
+        <div class="callout-title">VigyanLLM Multiplex Support</div>
+        <p>VigyanLLM Primer supports multiplex PCR design with automated cross-dimer analysis across all primer pairs, Tm harmonisation reports, and amplicon size optimisation. The 22-step validation pipeline flags every cross-interaction for multiplex panels up to 10-plex.</p>
+      </div>
+
+      <div class="cta-box">
+        <h3>Design Multiplex PCR Primers with Cross-Dimer Checking</h3>
+        <p>VigyanLLM Primer automatically checks all primer-primer interactions for your multiplex panel.</p>
+        <a href="../primer.html" class="cta-btn">Try VigyanLLM Primer Free →</a>
+      </div>
+    </article>
+
+    <div class="author-bio">
+      <div class="author-bio-avatar">VR</div>
+      <div>
+        <h4>About the Author — VigyanLLM Research Team</h4>
+        <p>The VigyanLLM Research Team combines expertise in molecular biology, bioinformatics, and artificial intelligence to build sovereign biomedical AI tools for researchers worldwide. Our team develops advanced primer design algorithms, PCR validation pipelines, and AI-driven genomics solutions at VigyanLLM.</p>
+      </div>
+    </div>
+
+    <section class="related-articles">
+      <h2>Related Articles</h2>
+      <div class="related-grid">
+        <div class="related-card">
+          <h3><a href="./types-of-pcr.html">Types of PCR: RT-PCR, qPCR, Multiplex, Nested, Digital PCR</a></h3>
+          <p>Understand where multiplex PCR fits among the major PCR variants and their applications.</p>
+        </div>
+        <div class="related-card">
+          <h3><a href="./primer-dimer-prevention.html">What Is Primer Dimer and How Do You Prevent It?</a></h3>
+          <p>Cross-dimer prevention is critical in multiplex — learn the thermodynamic thresholds and strategies.</p>
+        </div>
+        <div class="related-card">
+          <h3><a href="./multiplex-pcr-design.html">Primer Design for Multiplex PCR — What Changes in a 4-Plex Assay?</a></h3>
+          <p>A practical case study of designing and optimising a 4-plex multiplex PCR assay.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="references">
+      <h2>References</h2>
+      <ol>
+        <li>Elnifro E.M. et al. (2000). Multiplex PCR: optimization and application in diagnostic virology. <em>Clinical Microbiology Reviews</em>, 13(4), 559-570.</li>
+        <li>Markoulatos P. et al. (2002). Multiplex polymerase chain reaction: a practical approach. <em>Journal of Clinical Laboratory Analysis</em>, 16(1), 47-51.</li>
+        <li>Henegariu O. et al. (1997). Multiplex PCR: critical parameters and step-by-step protocol. <em>BioTechniques</em>, 23(3), 504-511.</li>
+      </ol>
+    </section>
+  </div>
+
+  <footer style="background:var(--navy);color:#CBD5E1;padding:80px 0 32px">
+    <div style="max-width:1200px;margin:0 auto;padding:0 24px">
+      <div style="display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr;gap:48px;margin-bottom:60px">
+        <div>
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+            <img src="../logo.svg" alt="VigyanLLM Logo" style="width:32px;height:32px;border-radius:4px">
+            <span style="font-family:var(--font-h);font-size:20px;font-weight:700;color:#fff">VigyanLLM</span>
+          </div>
+          <p style="font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:20px;line-height:1.6">Sovereign Healthcare &amp; Life Sciences AI.<br>Built in India. For the world.</p>
+          <a href="mailto:contact@vigyanllm.in" style="font-family:var(--font-b);font-size:13px;color:var(--accent);display:block;margin-bottom:6px">contact@vigyanllm.in</a>
+          <div style="display:flex;gap:12px;margin-top:24px">
+            <a href="#" aria-label="Facebook" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:8px;border:1px solid rgba(255,255,255,0.15);color:#94A3B8;text-decoration:none"><svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></a>
+            <a href="#" aria-label="X" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:8px;border:1px solid rgba(255,255,255,0.15);color:#94A3B8;text-decoration:none"><svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:currentColor"><path d="M4 4l6.5 8.5L4 20h2l5.5-7 4.5 7h5l-7-9.5L20 4h-2l-5 6.5L9 4H4zm3 1.5h3l10 13h-3L7 5.5z"/></svg></a>
+            <a href="#" aria-label="YouTube" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:8px;border:1px solid rgba(255,255,255,0.15);color:#94A3B8;text-decoration:none"><svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:currentColor"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6a3 3 0 0 0-2.1 2.1C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1c.5-1.9.5-5.8.5-5.8s0-3.9-.5-5.8zM9.5 15.5V8.5l6.3 3.5-6.3 3.5z"/></svg></a>
+            <a href="#" aria-label="Instagram" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:8px;border:1px solid rgba(255,255,255,0.15);color:#94A3B8;text-decoration:none"><svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:currentColor"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg></a>
+          </div>
+        </div>
+        <div>
+          <h5 style="font-family:var(--font-h);font-size:12px;text-transform:uppercase;letter-spacing:0.1em;color:#fff;margin-bottom:24px;font-weight:700">Platform</h5>
+          <a href="index.html#problem" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Problem</a>
+          <a href="index.html#platform" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Platform</a>
+          <a href="index.html#architecture" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Architecture</a>
+          <a href="../demo.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Demo</a>
+        </div>
+        <div>
+          <h5 style="font-family:var(--font-h);font-size:12px;text-transform:uppercase;letter-spacing:0.1em;color:#fff;margin-bottom:24px;font-weight:700">Resources</h5>
+          <a href="../primer.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">VPrime 1.0</a>
+          <a href="./index.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Blog</a>
+          <a href="../faq.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">FAQ</a>
+          <a href="../about.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">About</a>
+        </div>
+        <div>
+          <h5 style="font-family:var(--font-h);font-size:12px;text-transform:uppercase;letter-spacing:0.1em;color:#fff;margin-bottom:24px;font-weight:700">Contact</h5>
+          <a href="mailto:contact@vigyanllm.in" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">contact@vigyanllm.in</a>
+          <a href="../privacy.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Privacy</a>
+          <a href="../cookies.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Cookies</a>
+          <a href="../terms.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Terms</a>
+          <a href="../refund.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Refund</a>
+          <a href="../security.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Security</a>
+        </div>
+      </div>
+      <div style="border-top:1px solid rgba(255,255,255,0.1);padding-top:24px;display:flex;justify-content:space-between;font-family:var(--font-b);font-size:12px;color:#64748B">
+        <span>&copy; <script>document.write(new Date().getFullYear())</script> VigyanLLM Pvt. Ltd. · Sovereign Research AI</span>
+        <span>WWW.VIGYANLLM.IN</span>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
