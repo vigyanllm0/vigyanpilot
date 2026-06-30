@@ -128,16 +128,16 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   <nav>
     <div class="nav-inner" style="display:flex;justify-content:space-between;align-items:center;height:100%;max-width:1200px;margin:0 auto;padding:0 24px">
-      <a href="../index.html" class="nav-brand" style="display:flex;align-items:center;gap:10px;color:#fff;font-family:var(--font-h);font-size:20px;font-weight:700;text-decoration:none">
+      <a href="/" class="nav-brand" style="display:flex;align-items:center;gap:10px;color:#fff;font-family:var(--font-h);font-size:20px;font-weight:700;text-decoration:none">
         <img src="../logo.svg" alt="VigyanLLM Logo" style="width:32px;height:32px;border-radius:4px">
         <span>VigyanLLM</span>
       </a>
       <div class="nav-links" style="display:flex;gap:32px;align-items:center">
-        <a href="../index.html" style="font-family:var(--font-b);font-size:13px;color:#CBD5E1;font-weight:500;letter-spacing:0.02em">Home</a>
-        <a href="../primer.html" style="font-family:var(--font-b);font-size:13px;color:#22D3EE;font-weight:600;letter-spacing:0.02em">VPrime 1.0 ↗</a>
-        <a href="./index.html" style="font-family:var(--font-b);font-size:13px;color:#CBD5E1;font-weight:500;letter-spacing:0.02em">Blog</a>
-        <a href="../faq.html" style="font-family:var(--font-b);font-size:13px;color:#CBD5E1;font-weight:500;letter-spacing:0.02em">FAQ</a>
-        <a href="../about.html" style="font-family:var(--font-b);font-size:13px;color:#CBD5E1;font-weight:500;letter-spacing:0.02em">About</a>
+        <a href="/" style="font-family:var(--font-b);font-size:13px;color:#CBD5E1;font-weight:500;letter-spacing:0.02em">Home</a>
+        <a href="/primer" style="font-family:var(--font-b);font-size:13px;color:#22D3EE;font-weight:600;letter-spacing:0.02em">VPrime 1.0 ↗</a>
+        <a href="/blog" style="font-family:var(--font-b);font-size:13px;color:#CBD5E1;font-weight:500;letter-spacing:0.02em">Blog</a>
+        <a href="/faq" style="font-family:var(--font-b);font-size:13px;color:#CBD5E1;font-weight:500;letter-spacing:0.02em">FAQ</a>
+        <a href="/about" style="font-family:var(--font-b);font-size:13px;color:#CBD5E1;font-weight:500;letter-spacing:0.02em">About</a>
       </div>
       <div class="nav-right" style="display:flex;align-items:center;gap:16px">
         <button class="nav-login" onclick="window.location.href='../primer.html'" style="border:1.5px solid rgba(255,255,255,0.3);border-radius:4px;padding:8px 20px;font-family:var(--font-b);font-size:13px;font-weight:600;color:#fff;background:transparent;cursor:pointer">Login</button>
@@ -167,7 +167,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <h2>Sanger Sequencing Primer Design Principles</h2>
 <p>Sanger sequencing primers must produce a clean, strong signal, not interfere with dye-terminator chemistry, bind uniquely (even a single mismatch can cause mixed reads), and work at the sequencing reaction temperature (55–65°C). Most sequencing primers are 18–24 nt. For plasmid sequencing, universal primers (M13, T7, SP6) are preferred.</p>
       <h2>Primer Length and Tm</h2>
-<ul><li><strong>Length:</strong> 18–24 nt (25–30 nt for GC-rich or complex templates).</li><li><strong>Tm:</strong> 55–65°C (nearest-neighbour algorithm). Annealing temperature for Sanger sequencing is typically 50–60°C.</li><li><strong>GC content:</strong> 45–55%. Low GC (<40%) causes weak signal; high GC (>60%) causes noise.</li><li><strong>Tm matching:</strong> Within 2–3°C of the sequencing chemistry recommendation. Use the <a href="../tm-calculator.html">VigyanLLM Tm calculator</a>.</li></ul>
+<ul><li><strong>Length:</strong> 18–24 nt (25–30 nt for GC-rich or complex templates).</li><li><strong>Tm:</strong> 55–65°C (nearest-neighbour algorithm). Annealing temperature for Sanger sequencing is typically 50–60°C.</li><li><strong>GC content:</strong> 45–55%. Low GC (<40%) causes weak signal; high GC (>60%) causes noise.</li><li><strong>Tm matching:</strong> Within 2–3°C of the sequencing chemistry recommendation. Use the <a href="/tm-calculator">VigyanLLM Tm calculator</a>.</li></ul>
       <h2>Primer Positioning for Optimal Read Quality</h2>
 <ul><li><strong>Distance from ROI:</strong> Position the primer 50–150 bases upstream. The first 20–50 bases often have lower quality.</li><li><strong>Avoid homopolymer runs</strong> of >4 identical bases.</li><li><strong>Avoid GC-rich 5′ ends</strong> that can form secondary structures.</li><li><strong>Bidirectional sequencing:</strong> Place primers 100–150 bp outside the target region with 50–100 bp overlap.</li><li><strong>Primer walking:</strong> Design the second primer 400–500 bp from the first.</li></ul>
       <h2>Dye-Terminator Compatibility</h2>
@@ -175,12 +175,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <h2>Troubleshooting Sanger Sequencing</h2>
 <ul><li><strong>Clean then noisy:</strong> Primer may have secondary structure or template contains repeats. Try a different primer position.</li><li><strong>Mixed peaks:</strong> Primer may bind two sites, or template contains a mixture. Redesign with higher specificity.</li><li><strong>No signal:</strong> Primer may not bind due to mismatch. Verify the primer sequence matches the template exactly.</li><li><strong>Early dye blobs:</strong> Clean the product by ethanol precipitation or use a commercial clean-up kit.</li></ul>
       <h2>Primer Walking for Long Reads</h2>
-<ol><li>Design the first primer at one end of the target.</li><li>Obtain 500–800 high-quality bases.</li><li>Design a second primer within the high-quality region, 100–150 bp from the end.</li><li>Repeat until the entire target is sequenced. Use the <a href="../primer.html">VigyanLLM Primer tool</a> for automated primer-walking design.</li></ol>
+<ol><li>Design the first primer at one end of the target.</li><li>Obtain 500–800 high-quality bases.</li><li>Design a second primer within the high-quality region, 100–150 bp from the end.</li><li>Repeat until the entire target is sequenced. Use the <a href="/primer">VigyanLLM Primer tool</a> for automated primer-walking design.</li></ol>
 
       <div class="cta-box">
         <h3>Design PCR Primers with 22-Step Validation</h3>
         <p>Free for researchers and professors. Validate every parameter before ordering your primers.</p>
-        <a href="../primer.html" class="cta-btn">Try VigyanLLM Primer Free →</a>
+        <a href="/primer" class="cta-btn">Try VigyanLLM Primer Free →</a>
       </div>
     </article>
 
@@ -223,15 +223,15 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <h2>Related Articles</h2>
       <div class="related-grid">
         <div class="related-card">
-          <h3><a href="./primer-design-mrna">Primers for mRNA/cDNA</a></h3>
+          <h3><a href="/blog/primer-design-mrna">Primers for mRNA/cDNA</a></h3>
           <p>Design exon-exon junction and intron-spanning primers for RT-qPCR.</p>
         </div>
         <div class="related-card">
-          <h3><a href="./taqman-probe-troubleshooting">TaqMan Probe Troubleshooting</a></h3>
+          <h3><a href="/blog/taqman-probe-troubleshooting">TaqMan Probe Troubleshooting</a></h3>
           <p>Fix no amplification, high background, and weak signal in probe-based qPCR.</p>
         </div>
         <div class="related-card">
-          <h3><a href="./primer-dimer-fix">Primer Dimer Fix</a></h3>
+          <h3><a href="/blog/primer-dimer-fix">Primer Dimer Fix</a></h3>
           <p>Eliminate primer dimer through design and protocol optimisation.</p>
         </div>
       </div>
@@ -269,23 +269,23 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           <a href="../index.html#problem" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Problem</a>
           <a href="../index.html#platform" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Platform</a>
           <a href="../index.html#architecture" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Architecture</a>
-          <a href="../demo.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Demo</a>
+          <a href="/demo" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Demo</a>
         </div>
         <div>
           <h5 style="font-family:var(--font-h);font-size:12px;text-transform:uppercase;letter-spacing:0.1em;color:#fff;margin-bottom:24px;font-weight:700">Resources</h5>
-          <a href="../primer.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">VPrime 1.0</a>
-          <a href="./index.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Blog</a>
-          <a href="../faq.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">FAQ</a>
-          <a href="../about.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">About</a>
+          <a href="/primer" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">VPrime 1.0</a>
+          <a href="/blog" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Blog</a>
+          <a href="/faq" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">FAQ</a>
+          <a href="/about" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">About</a>
         </div>
         <div>
           <h5 style="font-family:var(--font-h);font-size:12px;text-transform:uppercase;letter-spacing:0.1em;color:#fff;margin-bottom:24px;font-weight:700">Contact</h5>
           <a href="mailto:contact@vigyanllm.in" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">contact@vigyanllm.in</a>
-          <a href="../privacy.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Privacy</a>
-          <a href="../cookies.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Cookies</a>
-          <a href="../terms.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Terms</a>
-          <a href="../refund.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Refund</a>
-          <a href="../security.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Security</a>
+          <a href="/privacy" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Privacy</a>
+          <a href="/cookies" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Cookies</a>
+          <a href="/terms" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Terms</a>
+          <a href="/refund" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Refund</a>
+          <a href="/security" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Security</a>
         </div>
       </div>
       <div style="border-top:1px solid rgba(255,255,255,0.1);padding-top:24px;display:flex;justify-content:space-between;font-family:var(--font-b);font-size:12px;color:#64748B">

@@ -128,16 +128,16 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   <nav>
     <div class="nav-inner" style="display:flex;justify-content:space-between;align-items:center;height:100%;max-width:1200px;margin:0 auto;padding:0 24px">
-      <a href="../index.html" class="nav-brand" style="display:flex;align-items:center;gap:10px;color:#fff;font-family:var(--font-h);font-size:20px;font-weight:700;text-decoration:none">
+      <a href="/" class="nav-brand" style="display:flex;align-items:center;gap:10px;color:#fff;font-family:var(--font-h);font-size:20px;font-weight:700;text-decoration:none">
         <img src="../logo.svg" alt="VigyanLLM Logo" style="width:32px;height:32px;border-radius:4px">
         <span>VigyanLLM</span>
       </a>
       <div class="nav-links" style="display:flex;gap:32px;align-items:center">
-        <a href="../index.html" style="font-family:var(--font-b);font-size:13px;color:#CBD5E1;font-weight:500;letter-spacing:0.02em">Home</a>
-        <a href="../primer.html" style="font-family:var(--font-b);font-size:13px;color:#22D3EE;font-weight:600;letter-spacing:0.02em">VPrime 1.0 ↗</a>
-        <a href="./index.html" style="font-family:var(--font-b);font-size:13px;color:#CBD5E1;font-weight:500;letter-spacing:0.02em">Blog</a>
-        <a href="../faq.html" style="font-family:var(--font-b);font-size:13px;color:#CBD5E1;font-weight:500;letter-spacing:0.02em">FAQ</a>
-        <a href="../about.html" style="font-family:var(--font-b);font-size:13px;color:#CBD5E1;font-weight:500;letter-spacing:0.02em">About</a>
+        <a href="/" style="font-family:var(--font-b);font-size:13px;color:#CBD5E1;font-weight:500;letter-spacing:0.02em">Home</a>
+        <a href="/primer" style="font-family:var(--font-b);font-size:13px;color:#22D3EE;font-weight:600;letter-spacing:0.02em">VPrime 1.0 ↗</a>
+        <a href="/blog" style="font-family:var(--font-b);font-size:13px;color:#CBD5E1;font-weight:500;letter-spacing:0.02em">Blog</a>
+        <a href="/faq" style="font-family:var(--font-b);font-size:13px;color:#CBD5E1;font-weight:500;letter-spacing:0.02em">FAQ</a>
+        <a href="/about" style="font-family:var(--font-b);font-size:13px;color:#CBD5E1;font-weight:500;letter-spacing:0.02em">About</a>
       </div>
       <div class="nav-right" style="display:flex;align-items:center;gap:16px">
         <button class="nav-login" onclick="window.location.href='../primer.html'" style="border:1.5px solid rgba(255,255,255,0.3);border-radius:4px;padding:8px 20px;font-family:var(--font-b);font-size:13px;font-weight:600;color:#fff;background:transparent;cursor:pointer">Login</button>
@@ -167,20 +167,20 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <h2>What Are Degenerate Primers?</h2>
 <p>Degenerate primers are mixtures of similar primers containing one or more positions with multiple different nucleotides. They are designed to amplify a target gene from multiple species, strains, or related gene family members despite sequence variation at the primer binding sites. Degeneracy is expressed as the total number of sequence combinations in the primer pool &#8212; for example, a primer with the sequence 5′-GAYCTNCCRTG-3′ has a degeneracy of 32. Limit total degeneracy to 128–256 combinations for most applications.</p>
       <h2>Designing from Multiple Sequence Alignment</h2>
-<ol><li><strong>Collect sequences:</strong> Download 10–50 sequences from NCBI GenBank covering the desired diversity.</li><li><strong>Align sequences:</strong> Use Clustal Omega, MUSCLE, or MAFFT to identify conserved blocks.</li><li><strong>Identify conserved regions:</strong> Look for 18–24 contiguous nucleotides with 70–100% conservation.</li><li><strong>Design forward primer</strong> near the 5′ end and <strong>reverse primer</strong> near the 3′ end of the target.</li><li><strong>Introduce degeneracy:</strong> Use IUPAC degenerate base codes at positions where nucleotides vary.</li></ol><p>The <a href="../primer.html">VigyanLLM Primer tool</a> can import MSA files and automatically identify conserved regions.</p>
+<ol><li><strong>Collect sequences:</strong> Download 10–50 sequences from NCBI GenBank covering the desired diversity.</li><li><strong>Align sequences:</strong> Use Clustal Omega, MUSCLE, or MAFFT to identify conserved blocks.</li><li><strong>Identify conserved regions:</strong> Look for 18–24 contiguous nucleotides with 70–100% conservation.</li><li><strong>Design forward primer</strong> near the 5′ end and <strong>reverse primer</strong> near the 3′ end of the target.</li><li><strong>Introduce degeneracy:</strong> Use IUPAC degenerate base codes at positions where nucleotides vary.</li></ol><p>The <a href="/primer">VigyanLLM Primer tool</a> can import MSA files and automatically identify conserved regions.</p>
       <h2>IUPAC Codes and Degeneracy Limits</h2>
 <table><tr><th>Code</th><th>Nucleotides</th><th>Complement</th></tr><tr><td>R</td><td>A, G</td><td>Y</td></tr><tr><td>Y</td><td>C, T</td><td>R</td></tr><tr><td>S</td><td>G, C</td><td>S</td></tr><tr><td>W</td><td>A, T</td><td>W</td></tr><tr><td>K</td><td>G, T</td><td>M</td></tr><tr><td>M</td><td>A, C</td><td>K</td></tr><tr><td>B</td><td>C, G, T</td><td>V</td></tr><tr><td>N</td><td>A, C, G, T</td><td>N</td></tr></table><p>Limit total degeneracy to 128–256 combinations. Higher degeneracy increases non-functional primer fraction and may reduce amplification efficiency.</p>
       <h2>Codon Optimisation</h2>
 <p>When designing degenerate primers for cross-species amplification, consider codon usage bias. At each amino acid position, the possible codons determine required degeneracy. Leucine and serine have 6 codons each (high degeneracy), while methionine and tryptophan have only 1 codon each. If possible, place primers in regions enriched for low-degeneracy amino acids. Inosine (I) can pair with A, C, or T and is useful at 3-fold or 4-fold degenerate positions, but reduces Tm by approximately 5°C per substitution.</p>
       <h2>Tm Calculation for Degenerate Primers</h2>
-<p>Nearest-neighbour averaging (calculating Tm for each variant and averaging) is the most accurate method, used by the <a href="../tm-calculator.html">VigyanLLM Tm calculator</a>. Alternatively, use the most AT-rich variant (conservative estimate). Rule of thumb: use an annealing temperature 3–5°C below the lowest Tm in the degenerate pool. If amplification fails, try a <a href="./touchdown-pcr-protocol">touchdown PCR</a> approach.</p>
+<p>Nearest-neighbour averaging (calculating Tm for each variant and averaging) is the most accurate method, used by the <a href="/tm-calculator">VigyanLLM Tm calculator</a>. Alternatively, use the most AT-rich variant (conservative estimate). Rule of thumb: use an annealing temperature 3–5°C below the lowest Tm in the degenerate pool. If amplification fails, try a <a href="/blog/touchdown-pcr-protocol">touchdown PCR</a> approach.</p>
       <h2>Troubleshooting Degenerate PCR</h2>
-<ul><li><strong>No amplification:</strong> Degeneracy may be too high. Increase primer concentration to 1–2 µM each or redesign with lower degeneracy.</li><li><strong>Multiple bands:</strong> Increase annealing temperature or use <a href="./nested-pcr-primer-design">nested PCR</a> with internal degenerate primers.</li><li><strong>Weak or biased amplification:</strong> Some species may amplify better than others. Consider splitting into separate primer pools.</li></ul>
+<ul><li><strong>No amplification:</strong> Degeneracy may be too high. Increase primer concentration to 1–2 µM each or redesign with lower degeneracy.</li><li><strong>Multiple bands:</strong> Increase annealing temperature or use <a href="/blog/nested-pcr-primer-design">nested PCR</a> with internal degenerate primers.</li><li><strong>Weak or biased amplification:</strong> Some species may amplify better than others. Consider splitting into separate primer pools.</li></ul>
 
       <div class="cta-box">
         <h3>Design PCR Primers with 22-Step Validation</h3>
         <p>Free for researchers and professors. Validate every parameter before ordering your primers.</p>
-        <a href="../primer.html" class="cta-btn">Try VigyanLLM Primer Free →</a>
+        <a href="/primer" class="cta-btn">Try VigyanLLM Primer Free →</a>
       </div>
     </article>
 
@@ -223,15 +223,15 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <h2>Related Articles</h2>
       <div class="related-grid">
         <div class="related-card">
-          <h3><a href="./isothermal-amplification-primers">Isothermal Amplification Primers</a></h3>
+          <h3><a href="/blog/isothermal-amplification-primers">Isothermal Amplification Primers</a></h3>
           <p>Design LAMP and RPA primers for isothermal nucleic acid amplification.</p>
         </div>
         <div class="related-card">
-          <h3><a href="./primer-design-mrna">Primers for mRNA/cDNA</a></h3>
+          <h3><a href="/blog/primer-design-mrna">Primers for mRNA/cDNA</a></h3>
           <p>Design exon-exon junction and intron-spanning primers for RT-qPCR.</p>
         </div>
         <div class="related-card">
-          <h3><a href="./sequencing-primer-design">Sanger Sequencing Primer Design</a></h3>
+          <h3><a href="/blog/sequencing-primer-design">Sanger Sequencing Primer Design</a></h3>
           <p>Design primers for long, high-quality Sanger sequencing reads.</p>
         </div>
       </div>
@@ -269,23 +269,23 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           <a href="../index.html#problem" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Problem</a>
           <a href="../index.html#platform" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Platform</a>
           <a href="../index.html#architecture" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Architecture</a>
-          <a href="../demo.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Demo</a>
+          <a href="/demo" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Demo</a>
         </div>
         <div>
           <h5 style="font-family:var(--font-h);font-size:12px;text-transform:uppercase;letter-spacing:0.1em;color:#fff;margin-bottom:24px;font-weight:700">Resources</h5>
-          <a href="../primer.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">VPrime 1.0</a>
-          <a href="./index.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Blog</a>
-          <a href="../faq.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">FAQ</a>
-          <a href="../about.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">About</a>
+          <a href="/primer" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">VPrime 1.0</a>
+          <a href="/blog" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Blog</a>
+          <a href="/faq" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">FAQ</a>
+          <a href="/about" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">About</a>
         </div>
         <div>
           <h5 style="font-family:var(--font-h);font-size:12px;text-transform:uppercase;letter-spacing:0.1em;color:#fff;margin-bottom:24px;font-weight:700">Contact</h5>
           <a href="mailto:contact@vigyanllm.in" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">contact@vigyanllm.in</a>
-          <a href="../privacy.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Privacy</a>
-          <a href="../cookies.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Cookies</a>
-          <a href="../terms.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Terms</a>
-          <a href="../refund.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Refund</a>
-          <a href="../security.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Security</a>
+          <a href="/privacy" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Privacy</a>
+          <a href="/cookies" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Cookies</a>
+          <a href="/terms" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Terms</a>
+          <a href="/refund" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Refund</a>
+          <a href="/security" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Security</a>
         </div>
       </div>
       <div style="border-top:1px solid rgba(255,255,255,0.1);padding-top:24px;display:flex;justify-content:space-between;font-family:var(--font-b);font-size:12px;color:#64748B">
