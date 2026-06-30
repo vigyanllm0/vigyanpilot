@@ -15,7 +15,7 @@ const PRECACHE_ASSETS = [
   '/manifest.json',
 ];
 
-const CACHE_VERSION = 12;
+const CACHE_VERSION = 13;
 
 self.addEventListener('install', e => {
   self.skipWaiting();
