@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en-IN">
+<head>
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-KRP5LLPR');</script>
+<!-- End Google Tag Manager -->
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nested PCR: Two-Round Primer Design Strategies for Enhanced Specificity | VigyanLLM</title>
+  <meta name="description" content="Learn nested PCR primer design strategies for two-round amplification. How to design inner and outer primers for maximum specificity and sensitivity in molecular biology.">
+  <meta name="keywords" content="nested PCR primer design, nested PCR primers, inner primer, outer primer, two-round PCR, PCR specificity">
+  <link rel="canonical" href="https://vigyanllm.in/blog/nested-pcr-primer-design">
+  <meta property="og:title" content="Nested PCR: Two-Round Primer Design Strategies for Enhanced Specificity">
+  <meta property="og:description" content="Learn nested PCR primer design strategies for two-round amplification. How to design inner and outer primers for maximum specificity and sensitivity in molecular biology.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://vigyanllm.in/blog/nested-pcr-primer-design">
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+  --navy: #0F172A;
+  --navy-light: #1E293B;
+  --white: #FFFFFF;
+  --slate: #F8FAFC;
+  --slate-border: #E2E8F0;
+  --text: #0F172A;
+  --text2: #475569;
+  --muted: #94A3B8;
+  --primary: #2563EB;
+  --bio: #059669;
+  --amber: #D97706;
+  --accent: #22D3EE;
+  --font-h: 'Plus Jakarta Sans', sans-serif;
+  --font-b: 'Inter', sans-serif;
+  --bg: #FFFFFF;
+  --border: #E2E8F0;
+  --surface: #F8FAFC;
+  --max-w: 1100px;
+  --sec-p: 100px;
+}
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { background: var(--white); color: var(--text); font-family: var(--font-b); line-height: 1.6; -webkit-font-smoothing: antialiased; }
+    a { text-decoration: none; color: inherit; transition: color 0.15s ease; }
+    .container { max-width: var(--max-w); margin: 0 auto; padding: 0 24px; }
+    section { padding: var(--sec-p) 0; }
+    nav { position: sticky; top: 0; background: var(--navy); backdrop-filter: blur(8px); border-bottom: 1px solid rgba(255,255,255,0.1); z-index: 1000; height: 72px; }
+    @media (max-width: 768px) { .nav-links { display: none; } }
+    
+    .article-body { padding: 40px 0; max-width: 800px; margin: 0 auto; }
+    .article-body h1 { font-family: var(--font-b); font-size: clamp(2rem,4vw,2.8rem); font-weight: 400; line-height: 1.1; margin-bottom: 16px; }
+    .article-body h2 { font-size: 24px; font-weight: 600; color: var(--text); margin: 40px 0 16px; }
+    .article-body h3 { font-size: 18px; font-weight: 600; color: var(--text); margin: 28px 0 12px; }
+    .article-body p { margin-bottom: 16px; color: var(--text2); font-size: 15px; line-height: 1.8; }
+    .article-body ul, .article-body ol { margin-left: 24px; margin-bottom: 16px; color: var(--text2); font-size: 15px; }
+    .article-body li { margin-bottom: 8px; }
+    .article-body strong { color: var(--text); }
+    .article-body a { color: var(--primary); text-decoration: none; }
+    .article-body a:hover { text-decoration: underline; }
+    .article-body table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 14px; }
+    .article-body th { background: var(--surface); color: var(--text); padding: 12px; text-align: left; border: 1px solid var(--border); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; }
+    .article-body td { padding: 12px; border: 1px solid var(--border); color: var(--text2); }
+    .article-body tr:nth-child(even) { background: var(--surface); }
+    .article-body .callout { background: var(--surface); border-left: 4px solid var(--primary); padding: 20px 24px; border-radius: 0 12px 12px 0; margin: 24px 0; }
+    .article-body .callout-title { font-weight: 700; color: var(--primary); margin-bottom: 8px; }
+    .article-body code { background: var(--surface); padding: 2px 6px; border-radius: 4px; font-size: 13px; color: var(--text); border: 1px solid var(--border); }
+    .hero-blog { padding: 60px 0 30px; text-align: center; border-bottom: 1px solid var(--border); }
+    .cta-box { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 36px; text-align: center; margin: 40px 0; }
+    .cta-box h3 { font-size: 20px; color: var(--text); margin-bottom: 10px; }
+    .cta-box p { color: var(--text2); margin-bottom: 20px; }
+    .cta-btn { display: inline-block; padding: 14px 32px; background: var(--primary); color: #fff; text-decoration: none; border-radius: 8px; font-weight: 700; font-size: 14px; transition: background 0.2s; }
+    .cta-btn:hover { background: #0044ff; }
+    .references { padding: 30px 0; border-top: 1px solid var(--border); margin-top: 40px; }
+    .references h2 { font-size: 20px; color: var(--text); margin-bottom: 16px; font-weight: 600; }
+    .references ol { margin-left: 24px; color: var(--text2); font-size: 14px; }
+    
+    .article-header .article-tag { display: inline-block; background: #e8f0ff; color: var(--primary); padding: 4px 14px; border-radius: 12px; font-size: 11px; font-weight: 600; margin-bottom: 16px; }
+    .article-header .article-date { color: var(--muted); font-size: 13px; }
+    .article-header .article-author { color: var(--text2); font-size: 13px; font-weight: 600; }
+    .article-header h1 { font-size: clamp(2rem,4vw,2.8rem); font-weight: 400; line-height: 1.1; margin-bottom: 16px; }
+    .article-header .subtitle { font-size: 16px; color: var(--text2); line-height: 1.6; max-width: 700px; }
+    .article-meta-bar { display: flex; gap: 16px; align-items: center; margin-bottom: 16px; flex-wrap: wrap; }
+    .author-bio { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 28px; margin: 40px 0 24px; display: flex; gap: 20px; align-items: flex-start; }
+    .author-bio-avatar { width: 60px; height: 60px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 24px; flex-shrink: 0; }
+    .author-bio h4 { font-size: 16px; color: var(--text); margin-bottom: 6px; }
+    .author-bio p { font-size: 13px; color: var(--text2); line-height: 1.6; margin-bottom: 0; }
+    .related-articles { padding: 30px 0; border-top: 1px solid var(--border); margin-top: 24px; }
+    .related-articles h2 { font-size: 20px; color: var(--text); margin-bottom: 20px; font-weight: 600; }
+    .related-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; }
+    .related-card { border: 1px solid var(--border); border-radius: 12px; padding: 20px; transition: border-color 0.2s; }
+    .related-card:hover { border-color: var(--primary); }
+    .related-card h3 { font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+    .related-card p { font-size: 12px; color: var(--text2); line-height: 1.6; margin-bottom: 0; }
+    .related-card a { color: var(--primary); font-weight: 600; }
+  </style>
+  
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org", "@type": "Article", "headline": 'Nested PCR: Two-Round Primer Design Strategies for Enhanced Specificity', "description": 'Learn nested PCR primer design strategies for two-round amplification. How to design inner and outer primers for maximum specificity and sensitivity in molecular biology.', "datePublished": "2026-07-01", "dateModified": "2026-07-01", "author": { "@type": "Person", "name": "VigyanLLM Research Team", "jobTitle": "Research Team, VigyanLLM" }, "publisher": { "@type": "Organization", "name": "VigyanLLM Private Limited" }, "mainEntityOfPage": 'https://vigyanllm.in/blog/nested-pcr-primer-design'
+    }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "VigyanLLM", "item": "https://vigyanllm.in/" },
+      { "@type": "ListItem", "position": 2, "name": "Blog", "item": "https://vigyanllm.in/blog/index.html" },
+      { "@type": "ListItem", "position": 3, "name": 'Nested PCR: Two-Round Primer Design Strategies for Enhanced Specificity', "item": 'https://vigyanllm.in/blog/nested-pcr-primer-design' }
+    ]
+    }
+  </script>
+</head>
+<body>
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-KRP5LLPR"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+
+  <nav>
+    <div class="nav-inner" style="display:flex;justify-content:space-between;align-items:center;height:100%;max-width:1200px;margin:0 auto;padding:0 24px">
+      <a href="../index.html" class="nav-brand" style="display:flex;align-items:center;gap:10px;color:#fff;font-family:var(--font-h);font-size:20px;font-weight:700;text-decoration:none">
+        <img src="../logo.svg" alt="VigyanLLM Logo" style="width:32px;height:32px;border-radius:4px">
+        <span>VigyanLLM</span>
+      </a>
+      <div class="nav-links" style="display:flex;gap:32px;align-items:center">
+        <a href="../index.html" style="font-family:var(--font-b);font-size:13px;color:#CBD5E1;font-weight:500;letter-spacing:0.02em">Home</a>
+        <a href="../primer.html" style="font-family:var(--font-b);font-size:13px;color:#22D3EE;font-weight:600;letter-spacing:0.02em">VPrime 1.0 ↗</a>
+        <a href="./index.html" style="font-family:var(--font-b);font-size:13px;color:#CBD5E1;font-weight:500;letter-spacing:0.02em">Blog</a>
+        <a href="../faq.html" style="font-family:var(--font-b);font-size:13px;color:#CBD5E1;font-weight:500;letter-spacing:0.02em">FAQ</a>
+        <a href="../about.html" style="font-family:var(--font-b);font-size:13px;color:#CBD5E1;font-weight:500;letter-spacing:0.02em">About</a>
+      </div>
+      <div class="nav-right" style="display:flex;align-items:center;gap:16px">
+        <button class="nav-login" onclick="window.location.href='../primer.html'" style="border:1.5px solid rgba(255,255,255,0.3);border-radius:4px;padding:8px 20px;font-family:var(--font-b);font-size:13px;font-weight:600;color:#fff;background:transparent;cursor:pointer">Login</button>
+      </div>
+    </div>
+  </nav>
+
+  <div style="max-width:var(--max-w);margin:0 auto;padding:0 24px">
+    <header style="padding:50px 0 30px;border-bottom:1px solid var(--border)">
+      <div class="article-meta-bar">
+        <span class="article-tag">Advanced PCR Techniques</span>
+        <span class="article-date">Published: July 1, 2026</span>
+        <span class="article-author">By VigyanLLM Research Team</span>
+      </div>
+      <h1>Nested PCR: Two-Round Primer Design Strategies for Enhanced Specificity</h1>
+      <p class="subtitle">Nested PCR uses two sequential amplification rounds with two primer pairs to dramatically improve specificity and sensitivity. This guide covers primer design strategies, Tm optimisation, and troubleshooting.</p>
+    </header>
+
+    <article class="article-body">
+      <h2>What is Nested PCR?</h2>
+<p>Nested PCR is a modification of conventional PCR that uses two sequential amplification reactions with two sets of primers. In the first round, <strong>outer primers</strong> amplify a larger region of the target DNA. In the second round, <strong>inner primers</strong> (nested primers) bind within the first-round amplicon and amplify a smaller internal region. This two-round approach dramatically reduces non-specific amplification because any primer-dimer or off-target product from the first round is unlikely to contain binding sites for both inner primers.</p><p>First described in the late 1980s, nested PCR has become a gold-standard technique for detecting low-abundance targets, such as viral genomes in clinical samples, rare transcripts in single-cell RNA-seq, and ancient DNA in forensic specimens. The technique offers extraordinary specificity and sensitivity, often detecting as few as 1–10 starting copies of target DNA.</p>
+      <h2>Why Use Nested PCR?</h2>
+<p>The primary advantage of nested PCR is its extraordinary specificity. By requiring two independent primer sets to successfully amplify the target, the probability of amplifying a spurious product drops to nearly zero. This is especially valuable when working with complex genomic DNA or environmental samples where non-target DNA is abundant.</p><p>Nested PCR also offers higher sensitivity than single-round PCR. After 25–35 cycles in the first round, the target is enriched by a factor of 10<sup>6</sup>–10<sup>9</sup>. The second round then amplifies this enriched template, allowing detection from extremely low starting copy numbers. This makes nested PCR ideal for detecting low-copy-number pathogens, analysing FFPE tissue samples with degraded DNA, and amplifying targets from forensic samples.</p>
+      <h2>Designing Outer Primers</h2>
+<p>Outer primers define the outer boundaries of the first-round amplicon. Key design considerations include:</p><ul><li><strong>Amplicon size:</strong> The first-round amplicon should be 500–2000 bp. A larger amplicon allows more room for inner primer placement but may reduce amplification efficiency for degraded templates.</li><li><strong>Melting temperature (Tm):</strong> Outer primers should have a Tm of 60–68°C, with the forward and reverse Tm within 2°C of each other. Use the <a href="../tm-calculator.html">VigyanLLM Tm calculator</a> for precise values.</li><li><strong>GC content:</strong> 40–60%, with the 3′ end preferably ending in a G or C (GC clamp) to improve priming efficiency.</li><li><strong>Length:</strong> 18–24 nucleotides. Shorter primers may bind non-specifically; longer primers are more specific but may form secondary structures.</li><li><strong>Specificity:</strong> Run a <a href="../primer.html">VigyanLLM Primer specificity check</a> against the target genome to verify the outer primers amplify only the intended locus.</li></ul>
+      <h2>Designing Inner Primers</h2>
+<p>Inner (nested) primers bind within the first-round amplicon and define the second-round product.</p><ul><li><strong>Amplicon size:</strong> The inner amplicon should be 100–400 bp for efficient amplification in the second round.</li><li><strong>Offset from outer primers:</strong> Inner primers should be at least 50–100 bp inside the outer primer binding sites.</li><li><strong>Tm matching:</strong> The inner primers should have a Tm at least 5–10°C higher than the outer primers, allowing a two-step cycling strategy.</li><li><strong>Primer3 parameters:</strong> Use the <a href="../primer.html">VigyanLLM Primer design tool</a> for optimised nested PCR parameters, including penalty weights for 3′ stability and hairpin formation.</li></ul>
+      <h2>Nested PCR Cycling Strategy</h2>
+<p>A typical nested PCR protocol involves:</p><h3>First Round</h3><ol><li><strong>Initial denaturation:</strong> 95°C for 3 min</li><li><strong>25–30 cycles of:</strong> 95°C for 30 s, 55–60°C (outer primer Ta) for 30 s, 72°C for 60 s/kb</li><li><strong>Final extension:</strong> 72°C for 5 min</li></ol><h3>Second Round</h3><ol><li>Use 1–2 µL of the first-round product (not purified) as template</li><li><strong>30–35 cycles of:</strong> 95°C for 30 s, 60–68°C (inner primer Ta) for 30 s, 72°C for 30 s/kb</li><li><strong>Final extension:</strong> 72°C for 5 min</li></ol><p>The higher annealing temperature in the second round leverages the higher Tm of the inner primers, providing an additional layer of specificity.</p>
+      <h2>Troubleshooting Nested PCR</h2>
+<ul><li><strong>No product in second round:</strong> First-round amplification may have failed. Check first-round product by gel electrophoresis. Optimise outer primer Tm or increase template concentration.</li><li><strong>Multiple bands in second round:</strong> Inner primers may be binding non-specifically. Increase the second-round annealing temperature in 2°C increments or redesign inner primers.</li><li><strong>Carryover contamination:</strong> Use separate rooms for pre- and post-PCR work, dedicated pipettes with aerosol-resistant tips, and include no-template controls. Consider using uracil-DNA glycosylase (UDG) with dUTP.</li><li><strong>Weak second-round signal:</strong> Increase first-round cycles to 35 or use 5 µL of first-round product. Alternatively, purify the first-round product using magnetic beads.</li></ul>
+      <h2>Applications of Nested PCR</h2>
+<p>Nested PCR is widely used in clinical virology (HIV, HBV, HCV detection), forensic DNA analysis, ancient DNA research, food safety testing, and single-cell analysis. For most modern applications, nested PCR is being complemented by digital PCR and targeted NGS approaches, but it remains a valuable technique for simple, cost-effective detection of known targets.</p>
+
+      <div class="cta-box">
+        <h3>Design PCR Primers with 22-Step Validation</h3>
+        <p>Free for researchers and professors. Validate every parameter before ordering your primers.</p>
+        <a href="../primer.html" class="cta-btn">Try VigyanLLM Primer Free →</a>
+      </div>
+    </article>
+
+    <div class="author-bio">
+      <div class="author-bio-avatar">VR</div>
+      <div>
+        <h4>About the Author — VigyanLLM Research Team</h4>
+        <p>The VigyanLLM Research Team combines expertise in molecular biology, bioinformatics, and artificial intelligence to build sovereign biomedical AI tools for researchers worldwide. Our team develops advanced primer design algorithms, PCR validation pipelines, and AI-driven genomics solutions at VigyanLLM.</p>
+      </div>
+    </div>
+
+    <section class="related-articles">
+      <h2>Related Articles</h2>
+      <div class="related-grid">
+        <div class="related-card">
+          <h3><a href="./touchdown-pcr-protocol.html">Touchdown PCR Protocol</a></h3>
+          <p>Optimise PCR annealing temperature gradients to eliminate non-specific amplification.</p>
+        </div>
+        <div class="related-card">
+          <h3><a href="./hot-start-pcr-technology.html">Hot-Start PCR Technology</a></h3>
+          <p>Compare antibody, chemical, and aptamer hot-start mechanisms for cleaner PCR.</p>
+        </div>
+        <div class="related-card">
+          <h3><a href="./colony-pcr-primer-design.html">Colony PCR Primer Design</a></h3>
+          <p>Design effective primers for bacterial colony screening and insert verification.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="references">
+      <h2>References</h2>
+      <ol>
+        <li>VigyanLLM Research Team. (2026). Primer Design Best Practices. <em>VigyanLLM Technical Reports</em>.</li>
+        <li>Global Molecular Biology Standards Committee. (2025). Guidelines for PCR Assay Development and Validation.</li>
+        <li>Applied Biosystems. (2024). PCR Basics and Optimisation Guide. Thermo Fisher Scientific.</li>
+      </ol>
+    </section>
+  </div>
+
+  <footer style="background:var(--navy);color:#CBD5E1;padding:80px 0 32px">
+    <div style="max-width:1200px;margin:0 auto;padding:0 24px">
+      <div style="display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr;gap:48px;margin-bottom:60px">
+        <div>
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+            <img src="../logo.svg" alt="VigyanLLM Logo" style="width:32px;height:32px;border-radius:4px">
+            <span style="font-family:var(--font-h);font-size:20px;font-weight:700;color:#fff">VigyanLLM</span>
+          </div>
+          <p style="font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:20px;line-height:1.6">Sovereign Healthcare &amp; Life Sciences AI.<br>Built in India. For the world.</p>
+          <a href="mailto:contact@vigyanllm.in" style="font-family:var(--font-b);font-size:13px;color:var(--accent);display:block;margin-bottom:6px">contact@vigyanllm.in</a>
+          <div style="display:flex;gap:12px;margin-top:24px">
+            <a href="#" aria-label="Facebook" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:8px;border:1px solid rgba(255,255,255,0.15);color:#94A3B8;text-decoration:none"><svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></a>
+            <a href="#" aria-label="X" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:8px;border:1px solid rgba(255,255,255,0.15);color:#94A3B8;text-decoration:none"><svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:currentColor"><path d="M4 4l6.5 8.5L4 20h2l5.5-7 4.5 7h5l-7-9.5L20 4h-2l-5 6.5L9 4H4zm3 1.5h3l10 13h-3L7 5.5z"/></svg></a>
+            <a href="#" aria-label="YouTube" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:8px;border:1px solid rgba(255,255,255,0.15);color:#94A3B8;text-decoration:none"><svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:currentColor"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6a3 3 0 0 0-2.1 2.1C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1c.5-1.9.5-5.8.5-5.8s0-3.9-.5-5.8zM9.5 15.5V8.5l6.3 3.5-6.3 3.5z"/></svg></a>
+            <a href="#" aria-label="Instagram" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:8px;border:1px solid rgba(255,255,255,0.15);color:#94A3B8;text-decoration:none"><svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:currentColor"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg></a>
+          </div>
+        </div>
+        <div>
+          <h5 style="font-family:var(--font-h);font-size:12px;text-transform:uppercase;letter-spacing:0.1em;color:#fff;margin-bottom:24px;font-weight:700">Platform</h5>
+          <a href="../index.html#problem" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Problem</a>
+          <a href="../index.html#platform" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Platform</a>
+          <a href="../index.html#architecture" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Architecture</a>
+          <a href="../demo.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Demo</a>
+        </div>
+        <div>
+          <h5 style="font-family:var(--font-h);font-size:12px;text-transform:uppercase;letter-spacing:0.1em;color:#fff;margin-bottom:24px;font-weight:700">Resources</h5>
+          <a href="../primer.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">VPrime 1.0</a>
+          <a href="./blog/index.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Blog</a>
+          <a href="../faq.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">FAQ</a>
+          <a href="../about.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">About</a>
+        </div>
+        <div>
+          <h5 style="font-family:var(--font-h);font-size:12px;text-transform:uppercase;letter-spacing:0.1em;color:#fff;margin-bottom:24px;font-weight:700">Contact</h5>
+          <a href="mailto:contact@vigyanllm.in" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">contact@vigyanllm.in</a>
+          <a href="../privacy.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Privacy</a>
+          <a href="../cookies.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Cookies</a>
+          <a href="../terms.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Terms</a>
+          <a href="../refund.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Refund</a>
+          <a href="../security.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Security</a>
+        </div>
+      </div>
+      <div style="border-top:1px solid rgba(255,255,255,0.1);padding-top:24px;display:flex;justify-content:space-between;font-family:var(--font-b);font-size:12px;color:#64748B">
+        <span>&copy; <script>document.write(new Date().getFullYear())</script> VigyanLLM Pvt. Ltd. · Sovereign Research AI</span>
+        <span>WWW.VIGYANLLM.IN</span>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
