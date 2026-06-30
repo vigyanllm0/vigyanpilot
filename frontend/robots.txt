@@ -1,18 +1,34 @@
-# robots.txt
-# Generic crawl directives — no internal application paths or deployment
-# structure information is disclosed here.
+# robots.txt — VigyanLLM
+# https://vigyanllm.in/robots.txt
 
 User-agent: *
 Allow: /
+Allow: /blog/
+Allow: /tools/
+Allow: /glossary/
+Allow: /gene-prefers/
+Allow: /hub/
+Allow: /landing-pages/
 Disallow: /api/
+Disallow: /admin/
+Disallow: /login/
+Disallow: /dashboard/
+Disallow: /admin-security.html
+Disallow: /db-redirect.html
+Disallow: /payment-failed.html
+Disallow: /payment-success.html
 
 Crawl-delay: 2
 
 Sitemap: https://vigyanllm.in/sitemap.xml
 
+# Search engines
 User-agent: Googlebot
 Allow: /
 Crawl-delay: 0
+
+User-agent: Googlebot-Image
+Allow: /
 
 User-agent: Bingbot
 Allow: /
@@ -25,6 +41,7 @@ Crawl-delay: 2
 User-agent: DuckDuckBot
 Allow: /
 
+# AI crawlers — allow for LLM/AI visibility (GEO/LLMO strategy)
 User-agent: GPTBot
 Allow: /
 
@@ -37,6 +54,13 @@ Allow: /
 User-agent: PerplexityBot
 Allow: /
 
+User-agent: Meta-ExternalAgent
+Allow: /
+
+User-agent: Amazonbot
+Allow: /
+
+# SEO tools — block (no indexing value)
 User-agent: AhrefsBot
 Disallow: /
 
