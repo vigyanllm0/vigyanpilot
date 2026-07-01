@@ -14,6 +14,7 @@ def page_to_list_item(page: CMSPage) -> PageListItem:
         id=page.id,
         slug=page.slug,
         title=page.title,
+        content_type=page.content_type,
         status=page.status,
         author=AuthorInfo(display_name=page.author.display_name, email=page.author.email),
         published_at=page.published_at,
@@ -33,6 +34,7 @@ def page_to_detail(page: CMSPage, db: Session) -> PageDetail:
         content_html=page.content_html,
         hero_image=page.hero_image,
         status=page.status,
+        content_type=page.content_type,
         author=AuthorInfo(display_name=page.author.display_name, email=page.author.email),
         reviewer=reviewer_info,
         rejection_reason=page.rejection_reason,
@@ -46,6 +48,7 @@ def page_to_detail(page: CMSPage, db: Session) -> PageDetail:
 @router.get("")
 def list_pages(
     status_filter: str = Query(None, alias="status"),
+    content_type: str = Query(None, alias="content_type"),
     sort: str = Query("updated_at"),
     order: str = Query("desc"),
     limit: int = Query(25, ge=1, le=100),
@@ -61,6 +64,8 @@ def list_pages(
         q = q.filter(CMSPage.author_id == author_id)
     if status_filter:
         q = q.filter(CMSPage.status == status_filter)
+    if content_type:
+        q = q.filter(CMSPage.content_type == content_type)
     total = q.count()
     sort_col = getattr(CMSPage, sort, CMSPage.updated_at)
     order_fn = desc if order == "desc" else lambda c: c.asc()
@@ -97,6 +102,7 @@ def create_page(
         content_json=content_json,
         content_html=content_html,
         hero_image=req.hero_image,
+        content_type=req.content_type,
         status=req.status,
         author_id=user.id,
         submitted_at=datetime.now(timezone.utc) if req.status == "pending_review" else None,
@@ -142,6 +148,10 @@ def update_page(
     if user.role == "editor" and page.author_id != user.id:
         raise HTTPException(status_code=403, detail="Access denied")
 
+    if req.content_type:
+        if req.content_type not in ("page", "blog"):
+            raise HTTPException(status_code=400, detail="content_type must be 'page' or 'blog'")
+
     if req.status:
         if req.status not in ("draft", "pending_review"):
             raise HTTPException(status_code=400, detail="Invalid status via update. Use submit endpoint.")
@@ -154,6 +164,8 @@ def update_page(
         page.description = req.description
     if req.hero_image is not None:
         page.hero_image = req.hero_image
+    if req.content_type:
+        page.content_type = req.content_type
 
     old_status = page.status
 

@@ -32,6 +32,7 @@ def get_public_page(slug: str, db: Session = Depends(get_db)):
             "description": page.description,
             "content_html": content_html or "",
             "hero_image": page.hero_image,
+            "content_type": page.content_type,
             "published_at": page.published_at,
             "updated_at": page.updated_at,
         }

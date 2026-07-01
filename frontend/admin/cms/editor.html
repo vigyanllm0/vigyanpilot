@@ -15,7 +15,8 @@
   <nav class="sidebar">
     <div class="sidebar-header">VigyanLLM CMS</div>
     <div class="sidebar-nav">
-      <a href="/admin/cms/dashboard.html"><span>📄</span> <span>Pages</span></a>
+      <a href="/admin/cms/dashboard.html?type=page"><span>📄</span> <span>Pages</span></a>
+      <a href="/admin/cms/dashboard.html?type=blog"><span>📝</span> <span>Blog Posts</span></a>
       <a href="/admin/cms/review-queue.html" id="reviewQueueLink" style="display:none;"><span>⏳</span> <span>Review Queue</span></a>
     </div>
   </nav>
@@ -40,7 +41,13 @@
     <div id="reviewBanner" class="editor-review-banner" style="display:none;margin-top:12px;">This page is under admin review. You can continue editing — changes will be visible to the reviewer.</div>
 
     <div class="editor-fields">
-      <input type="text" class="title-input" id="titleInput" placeholder="Page Title" maxlength="512">
+      <div style="display:flex;gap:12px;align-items:center;">
+        <input type="text" class="title-input" id="titleInput" placeholder="Page Title" maxlength="512" style="flex:1;">
+        <select id="contentTypeSelect" style="width:140px;font-size:13px;">
+          <option value="page">📄 Page</option>
+          <option value="blog">📝 Blog Post</option>
+        </select>
+      </div>
       <div class="slug-row">
         <input type="text" id="slugInput" placeholder="page-slug" maxlength="255">
         <span class="slug-lock" id="slugLock" title="Lock/unlock slug editing">🔒</span>
@@ -334,12 +341,13 @@ async function savePage(showToastMsg = true) {
   const title = document.getElementById('titleInput').value.trim();
   const slug = document.getElementById('slugInput').value.trim();
   const description = document.getElementById('metaInput').value.trim();
+  const content_type = document.getElementById('contentTypeSelect').value;
 
   if (!title) { showToast('Title is required', 'error'); return; }
   if (!slug) { showToast('Slug is required', 'error'); return; }
 
   const content_json = editor.getJSON();
-  const body = { title, slug, description, content_json };
+  const body = { title, slug, description, content_json, content_type };
 
   try {
     let data;
@@ -428,6 +436,7 @@ async function loadPage(slug) {
     document.getElementById('slugInput').value = p.slug;
     document.getElementById('slugPreview').textContent = p.slug;
     document.getElementById('metaInput').value = p.description || '';
+    document.getElementById('contentTypeSelect').value = p.content_type || 'page';
     slugLocked = true;
     document.getElementById('slugLock').textContent = '🔒';
 
@@ -449,6 +458,8 @@ async function loadPage(slug) {
 // Init
 const params = new URLSearchParams(window.location.search);
 const editSlug = params.get('slug');
+const newType = params.get('type') || 'page';
+if (newType === 'blog') document.getElementById('contentTypeSelect').value = 'blog';
 if (editSlug) {
   loadPage(editSlug);
 }

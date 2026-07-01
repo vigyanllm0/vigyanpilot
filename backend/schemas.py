@@ -25,6 +25,7 @@ class PageListItem(BaseModel):
     id: str
     slug: str
     title: str
+    content_type: str = "page"
     status: str
     author: AuthorInfo
     published_at: Optional[datetime] = None
@@ -45,6 +46,7 @@ class PageDetail(BaseModel):
     content_html: Optional[str] = None
     hero_image: Optional[str] = None
     status: str
+    content_type: str = "page"
     author: AuthorInfo
     reviewer: Optional[AuthorInfo] = None
     rejection_reason: Optional[str] = None
@@ -61,6 +63,7 @@ class PageCreate(BaseModel):
     content_json: dict
     hero_image: Optional[str] = None
     status: str = "draft"
+    content_type: str = "page"
     change_note: Optional[str] = None
 
     @field_validator("slug")
@@ -96,6 +99,7 @@ class PageUpdate(BaseModel):
     content_json: Optional[dict] = None
     hero_image: Optional[str] = None
     status: Optional[str] = None
+    content_type: Optional[str] = None
     change_note: Optional[str] = None
 
 class PageCreateResponse(BaseModel):

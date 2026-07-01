@@ -31,6 +31,7 @@ class CMSPage(Base):
     content_json = Column(JSONB, nullable=False)
     content_html = Column(Text)
     hero_image = Column(String(512))
+    content_type = Column(String(20), nullable=False, default="page")
     status = Column(String(20), nullable=False, default="draft")
     author_id = Column(String, ForeignKey("admin_users.id"), nullable=False)
     reviewer_id = Column(String, ForeignKey("admin_users.id"))
