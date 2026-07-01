@@ -8,7 +8,7 @@ async function api(p,m='GET',b=null){const o={method:m,headers:authH(),credentia
 async function doLogin(){
   const r=await fetch(API+'/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'include',body:JSON.stringify({email:$('l-email').value,password:$('l-pass').value})});
   const d=await r.json();
-  if(r.ok&&d.token){$('loginWrap').style.display='none';$('shell').style.display='block';refreshAll()}
+  if(r.ok&&d.token){sessionStorage.setItem('pf_token',d.token);if(d.user)sessionStorage.setItem('pf_user',JSON.stringify(d.user));$('loginWrap').style.display='none';$('shell').style.display='block';refreshAll()}
   else{$('l-err').textContent=d.error||'Failed'}
 }
 async function doLogout(){

@@ -6,11 +6,20 @@
     try { user = JSON.parse(userRaw); } catch(e) {}
   }
 
+  var isLoggedIn = token && !!(user && user.email);
+
   var buttons = document.querySelectorAll('.nav-login');
   for (var i = 0; i < buttons.length; i++) {
     var btn = buttons[i];
-    if (user && user.email) {
+    if (isLoggedIn) {
       btn.textContent = user.email.split('@')[0];
+      btn.style.borderColor = '#22D3EE';
+      btn.style.color = '#22D3EE';
+      btn.onclick = function() {
+        window.location.href = '/primer';
+      };
+    } else if (token) {
+      btn.textContent = 'Account';
       btn.style.borderColor = '#22D3EE';
       btn.style.color = '#22D3EE';
       btn.onclick = function() {
@@ -23,7 +32,7 @@
     }
   }
 
-  if (user && user.email) {
+  if (isLoggedIn || token) {
     var elements = document.querySelectorAll('[data-auth-show]');
     for (var j = 0; j < elements.length; j++) {
       elements[j].style.display = '';

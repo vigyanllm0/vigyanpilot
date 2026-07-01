@@ -18,7 +18,9 @@ p{color:#94A3B8;font-size:14px;}
   const API_BASE = window.location.origin.includes('localhost') ? 'http://localhost:8001' : 'https://api.vigyanllm.in';
   const pfToken = sessionStorage.getItem('pf_token');
   if (!pfToken) {
-    window.location.href = '/primer?showLogin=1&redirect=' + encodeURIComponent('/admin/cms/dashboard.html');
+    var here = '/admin/cms/login.html';
+    if (window.location.search) here += window.location.search;
+    window.location.href = '/primer?showLogin=1&redirect=' + encodeURIComponent(here);
     return;
   }
   try {
