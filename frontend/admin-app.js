@@ -25,6 +25,7 @@ window.showSection = function(name){
   if(name==='users')loadUsers();
   if(name==='errors')loadErrors();
   if(name==='bans')loadBans();
+  if(name==='blog')loadBlogPosts();
 }
 
 // Data loading
@@ -128,6 +129,31 @@ async function runBaseline(){const d=await api('/api/admin/scanner/baseline','PO
 async function unbanIp(ip){await api('/api/admin/threats/unban','POST',{ip});loadBans();refreshAll()}
 async function banIp(){const ip=$('ban-ip-input').value.trim();if(!ip)return;await api('/api/admin/threats/ban','POST',{ip,duration:3600});$('ban-ip-input').value='';loadBans();refreshAll()}
 
+// Blog / CMS
+async function loadBlogPosts(){
+  const el=$('blog-list');if(!el)return;
+  const pfToken=sessionStorage.getItem('pf_token');
+  const CMS_API = window.location.origin.includes('localhost')?'http://localhost:8001':'https://api.vigyanllm.in';
+  try{
+    const r=await fetch(CMS_API+'/api/v1/pages?content_type=blog&limit=50',{headers:pfToken?{'Authorization':'Bearer '+pfToken}:{}});
+    if(!r.ok){el.innerHTML='<div style="color:var(--muted);padding:1rem;text-align:center">Could not load blog posts.</div>';return}
+    const d=await r.json();
+    const pages=d.data?.pages||[];
+    if(!pages.length){el.innerHTML='<div style="color:var(--muted);padding:1rem;text-align:center">No blog posts yet. <a href="/admin/cms/editor.html?type=blog" style="color:var(--primary)">Create one →</a></div>';return}
+    let html='<div class="tbl-wrap"><table><thead><tr><th>Title</th><th>Status</th><th>Date</th><th>Action</th></tr></thead><tbody>';
+    for(const p of pages){
+      const statusClass=p.status==='published'?'pill-green':p.status==='pending_review'?'pill-orange':p.status==='rejected'?'pill-red':'pill-blue';
+      const date=p.published_at||p.created_at||'';
+      const fmtDate=date?new Date(date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'—';
+      html+='<tr><td style="font-weight:500">'+p.title+'</td><td><span class="pill '+statusClass+'">'+p.status+'</span></td><td style="font-size:.7rem;color:var(--muted)">'+fmtDate+'</td><td><a href="/admin/cms/editor.html?slug='+p.slug+'" class="btn btn-sm" style="background:var(--surface2);color:var(--text);text-decoration:none;display:inline-block;border:1px solid var(--border)">Edit</a></td></tr>';
+    }
+    html+='</tbody></table></div>';
+    el.innerHTML=html;
+  }catch(e){
+    el.innerHTML='<div style="color:var(--muted);padding:1rem;text-align:center">Error loading blog posts.</div>';
+  }
+}
+
 // Bind events
 document.addEventListener('DOMContentLoaded', () => {
   $('l-pass')?.addEventListener('keydown', e => { if(e.key === 'Enter') doLogin() });
@@ -141,6 +167,7 @@ document.addEventListener('DOMContentLoaded', () => {
   $('tab-scanner')?.addEventListener('click', () => window.showSection('scanner'));
   $('tab-errors')?.addEventListener('click', () => window.showSection('errors'));
   $('tab-bans')?.addEventListener('click', () => window.showSection('bans'));
+  $('tab-blog')?.addEventListener('click', () => window.showSection('blog'));
   $('btn-refresh')?.addEventListener('click', refreshAll);
   
   // Scanner

@@ -4,18 +4,20 @@ from datetime import datetime
 import re
 
 class LoginRequest(BaseModel):
-    email: str
-    password: str
-
-class LoginResponse(BaseModel):
-    token: str
-    expires_at: str
+    email: Optional[str] = None
+    password: Optional[str] = None
+    token: Optional[str] = None
 
 class UserInfo(BaseModel):
     id: str
     email: str
     display_name: Optional[str] = None
     role: str
+
+class LoginResponse(BaseModel):
+    token: str
+    expires_at: str
+    user: Optional[UserInfo] = None
 
 class AuthorInfo(BaseModel):
     display_name: Optional[str] = None
