@@ -14,12 +14,12 @@ function setToken(token, user) {
 function clearAuth() {
   localStorage.removeItem('vp_cms_token');
   localStorage.removeItem('vp_cms_user');
-  window.location.href = '/admin/cms/login.html';
+  window.location.href = '/admin/cms/login.html?redirect=' + encodeURIComponent(window.location.pathname + window.location.search);
 }
 
 function requireAuth() {
   if (!getToken()) {
-    window.location.href = '/admin/cms/login.html';
+    window.location.href = '/admin/cms/login.html?redirect=' + encodeURIComponent(window.location.pathname + window.location.search);
     return false;
   }
   return true;

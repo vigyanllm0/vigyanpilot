@@ -16,10 +16,12 @@ p{color:#94A3B8;font-size:14px;}
 <script>
 (async function() {
   const API_BASE = window.location.origin.includes('localhost') ? 'http://localhost:8001' : 'https://api.vigyanllm.in';
+  var params = new URLSearchParams(window.location.search);
+  var redirectTarget = params.get('redirect') || '/admin/cms/dashboard.html';
+
   const pfToken = sessionStorage.getItem('pf_token') || localStorage.getItem('pf_token');
   if (!pfToken) {
-    var here = '/admin/cms/login.html';
-    if (window.location.search) here += window.location.search;
+    var here = '/admin/cms/login.html?redirect=' + encodeURIComponent(redirectTarget);
     window.location.href = '/primer?showLogin=1&redirect=' + encodeURIComponent(here);
     return;
   }
@@ -33,7 +35,7 @@ p{color:#94A3B8;font-size:14px;}
     const data = await r.json();
     localStorage.setItem('vp_cms_token', data.token);
     localStorage.setItem('vp_cms_user', JSON.stringify(data.user || {email:'',display_name:'User',role:'editor'}));
-    window.location.href = '/admin/cms/dashboard.html';
+    window.location.href = redirectTarget;
   } catch(e) {
     window.location.href = '/primer?showLogin=1';
   }

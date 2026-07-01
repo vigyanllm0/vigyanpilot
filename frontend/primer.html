@@ -3241,7 +3241,7 @@ async function handleAuthSubmit() {
 
     // Redirect after login if ?redirect= was set
     var _rd = new URLSearchParams(window.location.search).get('redirect');
-    if (_rd) { window.location.href = decodeURIComponent(_rd); return; }
+    if (_rd) { window.location.href = _rd; return; }
   } catch(e) {
     errEl.textContent = 'Network error: ' + e.message;
     errEl.classList.add('show');
@@ -3292,7 +3292,7 @@ async function handleGoogleSignIn() {
           updateAuthUI();
           if (state._pendingRun) { state._pendingRun = false; runAutoDesign(); }
           var _rd2 = new URLSearchParams(window.location.search).get('redirect');
-          if (_rd2) { window.location.href = decodeURIComponent(_rd2); return; }
+          if (_rd2) { window.location.href = _rd2; return; }
         } catch(e) {
           $('auth-error').textContent = 'Network error: ' + e.message;
           $('auth-error').classList.add('show');
