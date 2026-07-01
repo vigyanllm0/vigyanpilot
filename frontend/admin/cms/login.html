@@ -16,7 +16,7 @@ p{color:#94A3B8;font-size:14px;}
 <script>
 (async function() {
   const API_BASE = window.location.origin.includes('localhost') ? 'http://localhost:8001' : 'https://api.vigyanllm.in';
-  const pfToken = sessionStorage.getItem('pf_token');
+  const pfToken = sessionStorage.getItem('pf_token') || localStorage.getItem('pf_token');
   if (!pfToken) {
     var here = '/admin/cms/login.html';
     if (window.location.search) here += window.location.search;

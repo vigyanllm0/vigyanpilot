@@ -1,6 +1,6 @@
 (function() {
-  var token = sessionStorage.getItem('pf_token');
-  var userRaw = sessionStorage.getItem('pf_user');
+  var token = sessionStorage.getItem('pf_token') || localStorage.getItem('pf_token');
+  var userRaw = sessionStorage.getItem('pf_user') || localStorage.getItem('pf_user');
   var user = null;
   if (token && userRaw) {
     try { user = JSON.parse(userRaw); } catch(e) {}

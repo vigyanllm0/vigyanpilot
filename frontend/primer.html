@@ -3061,7 +3061,7 @@ document.addEventListener('DOMContentLoaded',function(){
 // ═══════════════════════════════════════════════════════════════════════════
 // AUTH MODULE
 // ═══════════════════════════════════════════════════════════════════════════
-const auth = { token: sessionStorage.getItem('pf_token')||'', user: null, mode: 'login' };
+const auth = { token: sessionStorage.getItem('pf_token')||localStorage.getItem('pf_token')||'', user: null, mode: 'login' };
 
 // ── Fetch wrapper with auto-refresh ───────────────────────────────────────
 const _origFetch = window.fetch;
@@ -3091,8 +3091,8 @@ window.fetch = function(input, init) {
   });
 };
 function _saveAuth() {
-  try { sessionStorage.setItem('pf_token', auth.token || ''); } catch(e) {}
-  try { if (auth.user) sessionStorage.setItem('pf_user', JSON.stringify(auth.user)); } catch(e) {}
+  try { sessionStorage.setItem('pf_token', auth.token || ''); localStorage.setItem('pf_token', auth.token || ''); } catch(e) {}
+  try { if (auth.user) { sessionStorage.setItem('pf_user', JSON.stringify(auth.user)); localStorage.setItem('pf_user', JSON.stringify(auth.user)); } } catch(e) {}
 }
 
 async function initAuth() {
@@ -3223,8 +3223,8 @@ async function handleAuthSubmit() {
 
     auth.token = d.token;
     auth.user = d.user;
-    sessionStorage.setItem('pf_token', d.token);
-    sessionStorage.setItem('pf_user', JSON.stringify(d.user || {}));
+    sessionStorage.setItem('pf_token', d.token); localStorage.setItem('pf_token', d.token);
+    sessionStorage.setItem('pf_user', JSON.stringify(d.user || {})); localStorage.setItem('pf_user', JSON.stringify(d.user || {}));
     hideAuthModal();
     updateAuthUI();
 
@@ -3286,8 +3286,8 @@ async function handleGoogleSignIn() {
           }
           auth.token = d.token;
           auth.user = d.user;
-          sessionStorage.setItem('pf_token', d.token);
-          sessionStorage.setItem('pf_user', JSON.stringify(d.user || {}));
+          sessionStorage.setItem('pf_token', d.token); localStorage.setItem('pf_token', d.token);
+          sessionStorage.setItem('pf_user', JSON.stringify(d.user || {})); localStorage.setItem('pf_user', JSON.stringify(d.user || {}));
           hideAuthModal();
           updateAuthUI();
           if (state._pendingRun) { state._pendingRun = false; runAutoDesign(); }
@@ -3317,15 +3317,15 @@ async function fetchMe() {
     } else {
       // Token expired
       auth.token = ''; auth.user = null;
-      sessionStorage.removeItem('pf_token');
+      sessionStorage.removeItem('pf_token'); localStorage.removeItem('pf_token');
     }
   } catch(e) { /* silent */ }
 }
 
 function logout() {
   auth.token = ''; auth.user = null;
-  sessionStorage.removeItem('pf_token');
-  sessionStorage.removeItem('pf_user');
+  sessionStorage.removeItem('pf_token'); localStorage.removeItem('pf_token');
+  sessionStorage.removeItem('pf_user'); localStorage.removeItem('pf_user');
   updateAuthUI();
   $('user-menu-overlay')?.classList.remove('show');
   fetch(API+'/api/auth/logout', {method:'POST',headers:{'Content-Type':'application/json'},credentials:'include'}).catch(()=>{});
