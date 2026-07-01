@@ -3,41 +3,72 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Redirecting — VigyanLLM CMS</title>
+<title>CMS Login — VigyanLLM</title>
 <style>
-body{background:#0F172A;color:#fff;font-family:Inter,sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;}
-p{color:#94A3B8;font-size:14px;}
+body{background:#0F172A;color:#fff;font-family:Inter,sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;padding:20px}
+.card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:40px;max-width:460px;width:100%;text-align:center}
+h2{font-size:20px;font-weight:600;margin:0 0 8px}
+p{color:#94A3B8;font-size:14px;line-height:1.6;margin:0 0 20px}
+.btn{display:inline-block;background:#2563EB;color:#fff;border:none;border-radius:8px;padding:12px 24px;font-size:14px;font-weight:600;cursor:pointer;text-decoration:none}
+.btn:hover{background:#1d4ed8}
+.hidden{display:none}
+.spinner{width:20px;height:20px;border:2px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite;margin:20px auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+pre{font-size:11px;color:#64748B;background:rgba(255,255,255,.03);border-radius:6px;padding:12px;text-align:left;overflow-x:auto;margin:16px 0}
 </style>
 </head>
 <body>
-<div style="text-align:center">
-  <p>Redirecting to CMS...</p>
+<div class="card">
+  <div id="status-msg"><div class="spinner"></div><p>Connecting to CMS...</p></div>
+  <div id="error-msg" class="hidden">
+    <h2>Could not connect</h2>
+    <p>The CMS backend is not running or unreachable. Please start the backend server and try again.</p>
+    <pre id="error-detail"></pre>
+    <a href="/primer" class="btn">Back to Home</a>
+  </div>
 </div>
 <script>
 (async function() {
-  const API_BASE = window.location.origin.includes('localhost') ? 'http://localhost:8001' : 'https://api.vigyanllm.in';
+  var statusEl = document.getElementById('status-msg');
+  var errorEl = document.getElementById('error-msg');
+  var errorDetail = document.getElementById('error-detail');
+
   var params = new URLSearchParams(window.location.search);
   var redirectTarget = params.get('redirect') || '/admin/cms/dashboard.html';
 
-  const pfToken = sessionStorage.getItem('pf_token') || localStorage.getItem('pf_token');
+  var pfToken = sessionStorage.getItem('pf_token') || localStorage.getItem('pf_token');
   if (!pfToken) {
     var here = '/admin/cms/login.html?redirect=' + encodeURIComponent(redirectTarget);
     window.location.href = '/primer?showLogin=1&redirect=' + encodeURIComponent(here);
     return;
   }
-  try {
-    const r = await fetch(API_BASE + '/api/v1/cms/auth/login', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({token: pfToken}),
-    });
-    if (!r.ok) throw new Error('Auth failed');
-    const data = await r.json();
-    localStorage.setItem('vp_cms_token', data.token);
-    localStorage.setItem('vp_cms_user', JSON.stringify(data.user || {email:'',display_name:'User',role:'editor'}));
-    window.location.href = redirectTarget;
-  } catch(e) {
-    window.location.href = '/primer?showLogin=1';
+
+  // Try production API first, fall back to EC2 IP direct
+  var hosts = [
+    'https://api.vigyanllm.in',
+    'http://13.207.60.92:8001'
+  ];
+
+  for (var i = 0; i < hosts.length; i++) {
+    try {
+      var r = await fetch(hosts[i] + '/api/v1/cms/auth/login', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({token: pfToken}),
+      });
+      if (!r.ok) throw new Error('Auth failed (status ' + r.status + ')');
+      var data = await r.json();
+      localStorage.setItem('vp_cms_token', data.token);
+      localStorage.setItem('vp_cms_user', JSON.stringify(data.user || {email:'',display_name:'User',role:'editor'}));
+      window.location.href = redirectTarget;
+      return;
+    } catch(e) {
+      if (i === hosts.length - 1) {
+        statusEl.className = 'hidden';
+        errorEl.className = '';
+        errorDetail.textContent = 'Tried:\n' + hosts.join('\n') + '\n\nError: ' + e.message;
+      }
+    }
   }
 })();
 </script>
