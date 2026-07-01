@@ -149,7 +149,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <a href="/academic-partnership" style="font-family:var(--font-b);font-size:13px;color:#CBD5E1;font-weight:500;letter-spacing:0.02em">Academic Partnership</a>
       </div>
       <div class="nav-right" style="display:flex;align-items:center;gap:16px">
-        <button class="nav-login" onclick="window.location.href='../primer.html'" style="border:1.5px solid rgba(255,255,255,0.3);border-radius:4px;padding:8px 20px;font-family:var(--font-b);font-size:13px;font-weight:600;color:#fff;background:transparent;cursor:pointer">Login</button>
+        <button class="nav-login" style="border:1.5px solid rgba(255,255,255,0.3);border-radius:4px;padding:8px 20px;font-family:var(--font-b);font-size:13px;font-weight:600;color:#fff;background:transparent;cursor:pointer">Login</button>
       </div>
     </div>
   </nav>
@@ -162,11 +162,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </div>
   </section>
 
-  <div id="cmsControls" style="text-align:center;padding:12px 24px 0;display:none;">
+  <div id="cmsControls" style="text-align:center;padding:12px 24px 0;display:none;" data-auth-show>
     <a href="/admin/cms/editor.html?type=blog" style="display:inline-flex;align-items:center;gap:6px;padding:8px 20px;background:var(--primary);color:#fff;border-radius:8px;font-size:13px;font-weight:600;text-decoration:none;">+ Write Post</a>
     <a href="/admin/cms/dashboard.html?type=blog" style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;color:var(--primary);font-size:13px;font-weight:500;text-decoration:none;margin-left:8px;">Manage Posts →</a>
   </div>
-  <script>if(sessionStorage.getItem('pf_token'))document.getElementById('cmsControls').style.display='';</script>
 
   <div class="container">
     <div class="filter-bar">
@@ -909,5 +908,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     } catch(e) { console.warn('CMS load skipped:', e.message); }
   })();
   </script>
+<script src="/auth-shared.js"></script>
 </body>
 </html>

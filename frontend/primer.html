@@ -3092,6 +3092,7 @@ window.fetch = function(input, init) {
 };
 function _saveAuth() {
   try { sessionStorage.setItem('pf_token', auth.token || ''); } catch(e) {}
+  try { if (auth.user) sessionStorage.setItem('pf_user', JSON.stringify(auth.user)); } catch(e) {}
 }
 
 async function initAuth() {
@@ -3126,6 +3127,12 @@ async function initAuth() {
     e.preventDefault();
     buyCustomTopup();
   });
+
+  // Auto-show login modal if ?showLogin=1
+  var _sp = new URLSearchParams(window.location.search);
+  if (_sp.get('showLogin') === '1' && !auth.token) {
+    setTimeout(showAuthModal, 600);
+  }
 }
 
 function updateAuthUI() {
@@ -3217,6 +3224,7 @@ async function handleAuthSubmit() {
     auth.token = d.token;
     auth.user = d.user;
     sessionStorage.setItem('pf_token', d.token);
+    sessionStorage.setItem('pf_user', JSON.stringify(d.user || {}));
     hideAuthModal();
     updateAuthUI();
 
@@ -3230,6 +3238,10 @@ async function handleAuthSubmit() {
       state._pendingRun = false;
       runAutoDesign();
     }
+
+    // Redirect after login if ?redirect= was set
+    var _rd = new URLSearchParams(window.location.search).get('redirect');
+    if (_rd) { window.location.href = decodeURIComponent(_rd); return; }
   } catch(e) {
     errEl.textContent = 'Network error: ' + e.message;
     errEl.classList.add('show');
@@ -3275,9 +3287,12 @@ async function handleGoogleSignIn() {
           auth.token = d.token;
           auth.user = d.user;
           sessionStorage.setItem('pf_token', d.token);
+          sessionStorage.setItem('pf_user', JSON.stringify(d.user || {}));
           hideAuthModal();
           updateAuthUI();
           if (state._pendingRun) { state._pendingRun = false; runAutoDesign(); }
+          var _rd2 = new URLSearchParams(window.location.search).get('redirect');
+          if (_rd2) { window.location.href = decodeURIComponent(_rd2); return; }
         } catch(e) {
           $('auth-error').textContent = 'Network error: ' + e.message;
           $('auth-error').classList.add('show');
@@ -3310,6 +3325,7 @@ async function fetchMe() {
 function logout() {
   auth.token = ''; auth.user = null;
   sessionStorage.removeItem('pf_token');
+  sessionStorage.removeItem('pf_user');
   updateAuthUI();
   $('user-menu-overlay')?.classList.remove('show');
   fetch(API+'/api/auth/logout', {method:'POST',headers:{'Content-Type':'application/json'},credentials:'include'}).catch(()=>{});
