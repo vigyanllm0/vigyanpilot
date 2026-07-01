@@ -76,7 +76,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     .filter-bar a:hover, .filter-bar a.active { background: var(--primary); color: #fff; border-color: var(--primary); }
     
     .blog-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px,1fr)); gap: 24px; padding: 30px 0; }
-    .blog-card { background: transparent; border: 1px solid var(--slate-border); border-radius: 16px; overflow: hidden; transition: transform 0.2s, border-color 0.2s; display: flex; flex-direction: column; }
+    .blog-card { background: #fff; border: 1px solid var(--slate-border); border-radius: 16px; overflow: hidden; transition: transform 0.2s, border-color 0.2s; display: flex; flex-direction: column; }
     .blog-card:hover { transform: translateY(-4px); border-color: var(--primary); }
     .blog-card-header { padding: 24px 24px 12px; display: flex; gap: 10px; align-items: center; }
     .blog-tag { padding: 4px 12px; border-radius: 12px; font-size: 11px; font-weight: 600; }
@@ -161,6 +161,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <p>Expert guides on primer design, PCR validation, qPCR, TaqMan probes, molecular docking, and biomedical AI — written by researchers, for researchers.</p>
     </div>
   </section>
+
+  <div style="text-align:center;padding:12px 24px 0;">
+    <a href="/admin/cms/editor.html?type=blog" class="create-post-btn" style="display:inline-flex;align-items:center;gap:6px;padding:8px 20px;background:var(--primary);color:#fff;border-radius:8px;font-size:13px;font-weight:600;text-decoration:none;">+ New Blog Post</a>
+    <a href="/admin/cms/dashboard.html?type=blog" style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;color:var(--primary);font-size:13px;font-weight:500;text-decoration:none;margin-left:8px;">Manage Posts →</a>
+  </div>
 
   <div class="container">
     <div class="filter-bar">
@@ -880,25 +885,27 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   (async function() {
     try {
       const API = window.location.hostname === 'localhost' ? 'http://localhost:8001' : 'https://api.vigyanllm.in';
-      const r = await fetch(API + '/api/v1/cms/pages?content_type=blog&status=published&limit=100');
-      if (!r.ok) return;
-      const { pages } = (await r.json()).data;
+      const r = await fetch(API + '/api/v1/pages?content_type=blog&limit=100');
+      if (!r.ok) { console.warn('CMS API returned', r.status); return; }
+      const body = await r.json();
+      const pages = body && body.data && body.data.pages;
       if (!pages || !pages.length) return;
       const existing = new Set();
-      document.querySelectorAll('.blog-card a.read-link').forEach(a => {
-        const m = a.getAttribute('href').match(/\/blog\/(.+)/);
+      document.querySelectorAll('.blog-card a.read-link').forEach(function(a) {
+        var m = a.getAttribute('href').match(/\/blog\/(.+)/);
         if (m) existing.add(m[1]);
       });
-      const grid = document.querySelector('.blog-grid');
+      var grid = document.querySelector('.blog-grid');
       if (!grid) return;
-      for (const p of pages) {
+      for (var i = 0; i < pages.length; i++) {
+        var p = pages[i];
         if (existing.has(p.slug)) continue;
-        const card = document.createElement('article');
+        var card = document.createElement('article');
         card.className = 'blog-card';
-        card.innerHTML = `<div class="blog-card-header"><span class="blog-tag tag-primer">New</span><span class="read-time">${new Date(p.published_at || p.created_at).toLocaleDateString('en-US',{month:'short',year:'numeric'})}</span></div><h3>${p.title}</h3><p>${p.description || ''}</p><div class="blog-card-footer"><span class="read-time">CMS</span><a href="/p/${p.slug}" class="read-link">Read →</a></div>`;
+        card.innerHTML = '<div class="blog-card-header"><span class="blog-tag tag-primer">New</span><span class="read-time">' + new Date(p.published_at || p.created_at).toLocaleDateString('en-US',{month:'short',year:'numeric'}) + '</span></div><h3>' + p.title + '</h3><p>' + (p.description || '') + '</p><div class="blog-card-footer"><span class="read-time">CMS</span><a href="/blog/' + p.slug + '" class="read-link">Read →</a></div>';
         grid.appendChild(card);
       }
-    } catch(e) { /* silent */ }
+    } catch(e) { console.warn('CMS load skipped:', e.message); }
   })();
   </script>
 </body>

@@ -25,6 +25,7 @@ class PageListItem(BaseModel):
     id: str
     slug: str
     title: str
+    description: Optional[str] = None
     content_type: str = "page"
     status: str
     author: AuthorInfo

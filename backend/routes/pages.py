@@ -14,6 +14,7 @@ def page_to_list_item(page: CMSPage) -> PageListItem:
         id=page.id,
         slug=page.slug,
         title=page.title,
+        description=page.description,
         content_type=page.content_type,
         status=page.status,
         author=AuthorInfo(display_name=page.author.display_name, email=page.author.email),
