@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Review Queue — VigyanLLM CMS</title>
+<link rel="stylesheet" href="/admin/cms/css/admin.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+<script src="/admin/cms/js/admin.js"></script>
+<script>
+const user = getUser();
+if (!user || user.role !== 'admin') { window.location.href = '/admin/cms/dashboard.html'; }
+</script>
+
+<div class="app-layout">
+  <nav class="sidebar">
+    <div class="sidebar-header">VigyanLLM CMS</div>
+    <div class="sidebar-nav">
+      <a href="/admin/cms/dashboard.html"><span>📄</span> <span>Pages</span></a>
+      <a href="/admin/cms/review-queue.html" class="active"><span>⏳</span> <span>Review Queue</span></a>
+    </div>
+  </nav>
+
+  <div class="main-content">
+    <div class="header-bar">
+      <h2>Review Queue <span id="queueTotal" style="font-weight:400;color:var(--text3);font-size:14px;"></span></h2>
+      <div class="header-user">
+        <span class="user-email" id="userEmail"></span>
+        <span class="logout-btn" onclick="clearAuth()">Log Out</span>
+      </div>
+    </div>
+
+    <div class="content-area" id="queueContent"></div>
+  </div>
+</div>
+
+<script>
+document.getElementById('userEmail').textContent = user.email;
+
+async function loadQueue() {
+  const el = document.getElementById('queueContent');
+  try {
+    const data = await api('/api/v1/cms/review-queue?limit=50');
+    if (!data) return;
+    const { queue, total } = data.data;
+    document.getElementById('queueTotal').textContent = `— ${total} pending`;
+
+    if (!queue.length) {
+      el.innerHTML = '<div class="empty-state"><h3>✅ No pages pending review</h3><p>All caught up!</p></div>';
+      return;
+    }
+    el.innerHTML = queue.map(p => {
+      const stale = p.waiting_hours > 48 ? 'stale' : '';
+      return `<div class="queue-card ${stale}">
+        <h4><a href="/admin/cms/review-detail.html?slug=${p.slug}" style="color:var(--text);">${escapeHtml(p.title)}</a></h4>
+        <div class="meta">${escapeHtml(p.author.display_name || p.author.email)} · Submitted ${formatDate(p.submitted_at)} · ${p.waiting_hours}h ago</div>
+        <div class="actions">
+          <button class="btn-success btn-sm" onclick="approvePage('${p.slug}')">Approve & Publish</button>
+          <button class="btn-danger btn-sm" onclick="rejectPage('${p.slug}')">Reject</button>
+          <button class="btn-ghost btn-sm" onclick="window.location.href='/admin/cms/editor.html?slug=${p.slug}'">Open in Editor</button>
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    el.innerHTML = `<div class="empty-state"><p>Error: ${e.message}</p></div>`;
+  }
+}
+
+async function approvePage(slug) {
+  if (!confirm('Publish this page? It will be immediately visible at vigyanllm.in/p/' + slug)) return;
+  try {
+    await api(`/api/v1/cms/pages/${slug}/approve`, { method: 'POST', body: '{}' });
+    showToast('Page approved and published');
+    loadQueue();
+  } catch(e) { showToast(e.message, 'error'); }
+}
+
+async function rejectPage(slug) {
+  const reason = prompt('Rejection reason (required, min 10 chars):');
+  if (!reason || reason.length < 10) { showToast('Reason must be at least 10 characters', 'error'); return; }
+  try {
+    await api(`/api/v1/cms/pages/${slug}/reject`, {
+      method: 'POST',
+      body: JSON.stringify({ reason }),
+    });
+    showToast('Page rejected');
+    loadQueue();
+  } catch(e) { showToast(e.message, 'error'); }
+}
+
+loadQueue();
+</script>
+</body>
+</html>

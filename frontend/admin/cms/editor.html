@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Editor — VigyanLLM CMS</title>
+<link rel="stylesheet" href="/admin/cms/css/admin.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+<script src="/admin/cms/js/admin.js"></script>
+<script>if (!requireAuth()) document.body.innerHTML = '';</script>
+
+<div class="app-layout">
+  <nav class="sidebar">
+    <div class="sidebar-header">VigyanLLM CMS</div>
+    <div class="sidebar-nav">
+      <a href="/admin/cms/dashboard.html"><span>📄</span> <span>Pages</span></a>
+      <a href="/admin/cms/review-queue.html" id="reviewQueueLink" style="display:none;"><span>⏳</span> <span>Review Queue</span></a>
+    </div>
+  </nav>
+
+  <div class="main-content" style="display:flex;flex-direction:column;">
+    <div class="editor-topbar">
+      <div class="editor-topbar-left">
+        <a href="/admin/cms/dashboard.html" style="color:var(--text2);font-size:14px;">← Back to Pages</a>
+        <span style="color:var(--text3);">|</span>
+        <span id="statusLabel">Status: ⚪ Draft</span>
+      </div>
+      <div class="editor-topbar-right">
+        <button class="btn-ghost btn-sm" id="saveBtn">Save Draft</button>
+        <button class="btn-primary btn-sm" id="submitBtn" style="display:none;">Submit for Review</button>
+        <button class="btn-success btn-sm" id="approveBtn" style="display:none;">Approve & Publish</button>
+        <button class="btn-danger btn-sm" id="rejectBtn" style="display:none;">Reject</button>
+        <button class="btn-ghost btn-sm" id="viewBtn" style="display:none;" onclick="viewLive()">View Live</button>
+      </div>
+    </div>
+
+    <div id="rejectionCallout" class="editor-rejection-callout" style="display:none;margin-top:12px;"></div>
+    <div id="reviewBanner" class="editor-review-banner" style="display:none;margin-top:12px;">This page is under admin review. You can continue editing — changes will be visible to the reviewer.</div>
+
+    <div class="editor-fields">
+      <input type="text" class="title-input" id="titleInput" placeholder="Page Title" maxlength="512">
+      <div class="slug-row">
+        <input type="text" id="slugInput" placeholder="page-slug" maxlength="255">
+        <span class="slug-lock" id="slugLock" title="Lock/unlock slug editing">🔒</span>
+        <span style="color:var(--text3);font-size:12px;">vigyanllm.in/p/<span id="slugPreview"></span></span>
+      </div>
+      <div>
+        <input type="text" class="meta-input" id="metaInput" placeholder="Meta description for SEO. Max 160 characters." maxlength="1024">
+        <div class="char-count"><span id="metaChars">0</span>/160</div>
+      </div>
+    </div>
+
+    <div class="editor-toolbar" id="toolbar">
+      <div class="tb-group">
+        <button class="tb-btn" data-cmd="heading" data-level="1" title="Heading 1"><strong>H1</strong><span class="tooltip">Heading 1 (Ctrl+Alt+1)</span></button>
+        <button class="tb-btn" data-cmd="heading" data-level="2" title="Heading 2"><strong>H2</strong><span class="tooltip">Heading 2 (Ctrl+Alt+2)</span></button>
+        <button class="tb-btn" data-cmd="heading" data-level="3" title="Heading 3"><strong>H3</strong><span class="tooltip">Heading 3 (Ctrl+Alt+3)</span></button>
+      </div>
+      <div class="tb-group">
+        <button class="tb-btn" data-cmd="bold" title="Bold"><strong>B</strong><span class="tooltip">Bold (Ctrl+B)</span></button>
+        <button class="tb-btn" data-cmd="italic" title="Italic"><em>I</em><span class="tooltip">Italic (Ctrl+I)</span></button>
+        <button class="tb-btn" data-cmd="underline" title="Underline"><u>U</u><span class="tooltip">Underline (Ctrl+U)</span></button>
+        <button class="tb-btn" data-cmd="strike" title="Strikethrough"><s>S</s><span class="tooltip">Strikethrough</span></button>
+        <button class="tb-btn" data-cmd="code" title="Inline Code">&lt;/&gt;</button>
+      </div>
+      <div class="tb-group">
+        <button class="tb-btn" data-cmd="bulletList" title="Bullet List">•<span class="tooltip">Bullet List</span></button>
+        <button class="tb-btn" data-cmd="orderedList" title="Numbered List">1.<span class="tooltip">Numbered List</span></button>
+        <button class="tb-btn" data-cmd="blockquote" title="Blockquote">"<span class="tooltip">Blockquote</span></button>
+      </div>
+      <div class="tb-group">
+        <button class="tb-btn" data-cmd="codeBlock" title="Code Block">&lt;/&gt;<span class="tooltip">Code Block</span></button>
+        <button class="tb-btn" data-cmd="horizontalRule" title="Horizontal Rule">—<span class="tooltip">Horizontal Rule</span></button>
+        <button class="tb-btn" data-cmd="image" title="Insert Image">🖼<span class="tooltip">Insert Image</span></button>
+        <button class="tb-btn" data-cmd="link" title="Insert Link">🔗<span class="tooltip">Insert Link</span></button>
+      </div>
+      <div class="tb-group">
+        <button class="tb-btn" data-cmd="undo" title="Undo">↩<span class="tooltip">Undo (Ctrl+Z)</span></button>
+        <button class="tb-btn" data-cmd="redo" title="Redo">↪<span class="tooltip">Redo (Ctrl+Y)</span></button>
+      </div>
+    </div>
+
+    <div class="editor-content" id="editorContainer">
+      <div id="editor"></div>
+    </div>
+
+    <div class="editor-statusbar">
+      <span id="wordCount">0 words</span>
+      <span id="readTime">~0 min read</span>
+      <span id="saveIndicator"></span>
+    </div>
+  </div>
+</div>
+
+<!-- Image Upload Modal -->
+<div class="modal-overlay" id="imageModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeImageModal()">&times;</button>
+    <h3>Upload Image</h3>
+    <div class="dropzone" id="dropzone" ondragover="event.preventDefault()" ondrop="handleDrop(event)">
+      <div class="dz-icon">🖼</div>
+      <p>Drag & drop an image here, or click to browse</p>
+      <p style="font-size:12px;margin-top:8px;">JPG, PNG, WebP, GIF, SVG — max 5MB</p>
+    </div>
+    <input type="file" id="fileInput" accept=".jpg,.jpeg,.png,.webp,.gif,.svg" style="display:none">
+    <div id="uploadProgress" style="display:none;margin-top:12px;">
+      <div style="height:4px;background:var(--border);border-radius:2px;overflow:hidden;">
+        <div id="progressBar" style="height:100%;width:0%;background:var(--primary);transition:width 0.3s;"></div>
+      </div>
+      <p style="font-size:13px;color:var(--text2);margin-top:4px;">Uploading...</p>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-ghost" onclick="closeImageModal()">Cancel</button>
+      <button class="btn-primary" id="uploadBtn">Upload</button>
+    </div>
+  </div>
+</div>
+
+<!-- Link Modal -->
+<div class="modal-overlay" id="linkModal">
+  <div class="modal" style="width:400px;">
+    <button class="modal-close" onclick="closeLinkModal()">&times;</button>
+    <h3>Insert Link</h3>
+    <div style="margin-bottom:12px;">
+      <label style="font-size:13px;color:var(--text2);display:block;margin-bottom:4px;">URL</label>
+      <input type="url" id="linkUrl" placeholder="https://..." style="width:100%;">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-ghost" onclick="closeLinkModal()">Cancel</button>
+      <button class="btn-primary" id="linkApplyBtn">Apply</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@tiptap/core@2.9.1/dist/index.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tiptap/starter-kit@2.9.1/dist/index.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tiptap/extension-underline@2.9.1/dist/index.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tiptap/extension-link@2.9.1/dist/index.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tiptap/extension-placeholder@2.9.1/dist/index.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tiptap/extension-image@2.9.1/dist/index.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tiptap/extension-code-block-lowlight@2.9.1/dist/index.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+<script>
+const { Editor } = tiptap;
+const { StarterKit } = tiptapStarterKit;
+const { Underline } = tiptapUnderline;
+const { Link } = tiptapLink;
+const { Placeholder } = tiptapPlaceholder;
+const { Image: TiptapImage } = tiptapImage;
+const { CodeBlockLowlight } = tiptapCodeBlockLowlight;
+
+hljs.registerLanguage('python', window.hljsLanguages?.python || (() => ({ name: 'python' })));
+// Register key languages
+['python','bash','json','yaml','markdown','sql','r','dockerfile'].forEach(lang => {
+  try { if (window.hljsLanguages && window.hljsLanguages[lang]) hljs.registerLanguage(lang, window.hljsLanguages[lang]); } catch(e) {}
+});
+
+const user = getUser();
+let pageId = null;
+let currentSlug = null;
+let slugLocked = false;
+
+const editor = new Editor({
+  element: document.getElementById('editor'),
+  extensions: [
+    StarterKit.configure({
+      heading: { levels: [1,2,3] },
+      codeBlock: false,
+    }),
+    Underline,
+    Link.configure({ openOnClick: false }),
+    Placeholder.configure({ placeholder: 'Start writing...' }),
+    TiptapImage.configure({ inline: false }),
+    CodeBlockLowlight.configure({ lowlight: hljs }),
+  ],
+  editorProps: {
+    attributes: { class: 'ProseMirror' },
+    handleDrop: function(view, event, slice, moved) {
+      if (!moved && event.dataTransfer && event.dataTransfer.files && event.dataTransfer.files[0]) {
+        handleFileUpload(event.dataTransfer.files[0]);
+        return true;
+      }
+      return false;
+    },
+    handlePaste: function(view, event) {
+      if (event.clipboardData && event.clipboardData.files && event.clipboardData.files[0]) {
+        handleFileUpload(event.clipboardData.files[0]);
+        return true;
+      }
+      return false;
+    },
+  },
+  onUpdate: function() {
+    updateStats();
+    scheduleAutoSave();
+  },
+  onSelectionUpdate: function() {
+    updateToolbarState();
+  },
+});
+
+function updateToolbarState() {
+  const active = [
+    'bold','italic','underline','strike','code','bulletList','orderedList','blockquote','codeBlock',
+  ];
+  document.querySelectorAll('.tb-btn[data-cmd]').forEach(btn => {
+    const cmd = btn.dataset.cmd;
+    if (active.includes(cmd)) {
+      btn.classList.toggle('active', editor.isActive(cmd));
+    }
+    if (cmd === 'heading') {
+      btn.classList.toggle('active', editor.isActive('heading', { level: parseInt(btn.dataset.level) }));
+    }
+    if (cmd === 'link') {
+      btn.classList.toggle('active', editor.isActive('link'));
+    }
+  });
+}
+
+function updateStats() {
+  const text = editor.state.doc.textContent;
+  const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+  document.getElementById('wordCount').textContent = `${words} words`;
+  const mins = Math.ceil(words / 200);
+  document.getElementById('readTime').textContent = mins <= 1 ? '<1 min read' : `~${mins} min read`;
+}
+
+// Toolbar handlers
+document.querySelectorAll('.tb-btn[data-cmd]').forEach(btn => {
+  btn.addEventListener('click', function() {
+    const cmd = this.dataset.cmd;
+    const level = this.dataset.level;
+    if (cmd === 'heading') {
+      editor.chain().focus().toggleHeading({ level: parseInt(level) }).run();
+    } else if (cmd === 'link') {
+      openLinkModal();
+    } else if (cmd === 'image') {
+      openImageModal();
+    } else if (cmd === 'undo') {
+      editor.chain().focus().undo().run();
+    } else if (cmd === 'redo') {
+      editor.chain().focus().redo().run();
+    } else if (cmd === 'horizontalRule') {
+      editor.chain().focus().setHorizontalRule().run();
+    } else {
+      editor.chain().focus()[`toggle${cmd.charAt(0).toUpperCase()}${cmd.slice(1)}`]().run();
+    }
+  });
+});
+
+// Image Modal
+document.getElementById('dropzone').addEventListener('click', () => document.getElementById('fileInput').click());
+document.getElementById('fileInput').addEventListener('change', function() {
+  if (this.files[0]) handleFileUpload(this.files[0]);
+});
+
+function handleDrop(e) {
+  e.preventDefault();
+  if (e.dataTransfer.files[0]) handleFileUpload(e.dataTransfer.files[0]);
+}
+
+async function handleFileUpload(file) {
+  if (!file.type.startsWith('image/')) { showToast('Only image files are accepted', 'error'); return; }
+  if (file.size > 5 * 1024 * 1024) { showToast('File exceeds 5MB limit', 'error'); return; }
+  
+  document.getElementById('uploadProgress').style.display = '';
+  document.getElementById('progressBar').style.width = '30%';
+
+  try {
+    const fd = new FormData();
+    fd.append('file', file);
+    const data = await api('/api/v1/cms/upload', { method: 'POST', body: fd });
+    if (data?.data?.url) {
+      editor.chain().focus().setImage({ src: data.data.url, alt: data.data.filename }).run();
+      showToast('Image uploaded');
+      closeImageModal();
+    }
+  } catch(e) {
+    showToast(e.message || 'Upload failed', 'error');
+  }
+  document.getElementById('uploadProgress').style.display = '';
+}
+
+function openImageModal() { document.getElementById('imageModal').classList.add('open'); }
+function closeImageModal() { document.getElementById('imageModal').classList.remove('open'); }
+document.getElementById('uploadBtn').addEventListener('click', () => document.getElementById('fileInput').click());
+
+// Link Modal
+function openLinkModal() {
+  const prev = editor.getAttributes('link').href;
+  document.getElementById('linkUrl').value = prev || '';
+  document.getElementById('linkModal').classList.add('open');
+}
+function closeLinkModal() { document.getElementById('linkModal').classList.remove('open'); }
+document.getElementById('linkApplyBtn').addEventListener('click', function() {
+  const url = document.getElementById('linkUrl').value.trim();
+  if (!url) { editor.chain().focus().unsetLink().run(); }
+  else { editor.chain().focus().setLink({ href: url }).run(); }
+  closeLinkModal();
+});
+
+// Slug management
+document.getElementById('slugInput').addEventListener('input', function() {
+  if (!slugLocked) {
+    this.value = this.value.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/--+/g, '-').replace(/^-|-$/g, '');
+  }
+  document.getElementById('slugPreview').textContent = this.value;
+});
+
+document.getElementById('slugLock').addEventListener('click', function() {
+  slugLocked = !slugLocked;
+  this.textContent = slugLocked ? '🔒' : '🔓';
+});
+
+// Auto-generate slug from title
+document.getElementById('titleInput').addEventListener('input', function() {
+  if (!slugLocked && !pageId) {
+    const slug = this.value.toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/--+/g, '-').replace(/^-|-$/g, '').substring(0, 60);
+    document.getElementById('slugInput').value = slug;
+    document.getElementById('slugPreview').textContent = slug;
+  }
+});
+
+// Save logic
+let autoSaveTimer = null;
+function scheduleAutoSave() {
+  if (autoSaveTimer) clearTimeout(autoSaveTimer);
+  autoSaveTimer = setTimeout(() => savePage(false), 5000);
+}
+
+async function savePage(showToastMsg = true) {
+  const title = document.getElementById('titleInput').value.trim();
+  const slug = document.getElementById('slugInput').value.trim();
+  const description = document.getElementById('metaInput').value.trim();
+
+  if (!title) { showToast('Title is required', 'error'); return; }
+  if (!slug) { showToast('Slug is required', 'error'); return; }
+
+  const content_json = editor.getJSON();
+  const body = { title, slug, description, content_json };
+
+  try {
+    let data;
+    if (pageId) {
+      data = await api(`/api/v1/cms/pages/${currentSlug}`, { method: 'PUT', body: JSON.stringify(body) });
+    } else {
+      data = await api('/api/v1/cms/pages', { method: 'POST', body: JSON.stringify(body) });
+    }
+    if (data) {
+      if (!pageId) {
+        pageId = data.data.id;
+        slugLocked = true;
+        document.getElementById('slugLock').textContent = '🔒';
+      }
+      if (data.data.slug !== currentSlug) {
+        currentSlug = data.data.slug;
+        window.history.replaceState({}, '', `/admin/cms/editor.html?slug=${currentSlug}`);
+      }
+      updateUIForStatus(data.data.status);
+      if (showToastMsg) {
+        document.getElementById('saveIndicator').textContent = 'Saved ✓';
+        setTimeout(() => { document.getElementById('saveIndicator').textContent = ''; }, 2000);
+      }
+    }
+  } catch(e) {
+    showToast(e.message || 'Save failed', 'error');
+  }
+}
+
+document.getElementById('saveBtn').addEventListener('click', () => savePage(true));
+
+async function submitForReview() {
+  if (!confirm('Submit this page for admin review? You can still make edits while waiting.')) return;
+  try {
+    const data = await api(`/api/v1/cms/pages/${currentSlug}/submit`, { method: 'POST', body: '{}' });
+    if (data) {
+      updateUIForStatus('pending_review');
+      showToast('Submitted for review');
+    }
+  } catch(e) { showToast(e.message, 'error'); }
+}
+
+async function approvePage() {
+  if (!confirm('Publish this page now? It will be publicly visible.')) return;
+  try {
+    const data = await api(`/api/v1/cms/pages/${currentSlug}/approve`, { method: 'POST', body: '{}' });
+    if (data) {
+      updateUIForStatus('published');
+      showToast('Page published');
+    }
+  } catch(e) { showToast(e.message, 'error'); }
+}
+
+function viewLive() {
+  window.open(`https://vigyanllm.in/p/${currentSlug}`, '_blank');
+}
+
+function updateUIForStatus(status) {
+  const labels = { draft: '⚪ Draft', pending_review: '🟡 Pending Review', published: '🟢 Published', rejected: '🔴 Rejected', archived: '⚪ Archived' };
+  document.getElementById('statusLabel').textContent = 'Status: ' + (labels[status] || status);
+  document.getElementById('saveBtn').textContent = status === 'published' ? 'Save as Draft' : 'Save Draft';
+  document.getElementById('submitBtn').style.display = (status === 'draft' || status === 'rejected') ? '' : 'none';
+  document.getElementById('approveBtn').style.display = (status === 'pending_review' && user?.role === 'admin') ? '' : 'none';
+  document.getElementById('rejectBtn').style.display = (status === 'pending_review' && user?.role === 'admin') ? '' : 'none';
+  document.getElementById('viewBtn').style.display = status === 'published' ? '' : 'none';
+  document.getElementById('reviewBanner').style.display = status === 'pending_review' ? '' : 'none';
+  if (status === 'rejected') {
+    // Show rejection reason
+  } else {
+    document.getElementById('rejectionCallout').style.display = 'none';
+  }
+}
+
+document.getElementById('submitBtn').addEventListener('click', submitForReview);
+document.getElementById('approveBtn').addEventListener('click', approvePage);
+
+// Load existing page
+async function loadPage(slug) {
+  try {
+    const data = await api(`/api/v1/cms/pages/${slug}`);
+    if (!data) return;
+    const p = data.data;
+    pageId = p.id;
+    currentSlug = p.slug;
+    document.getElementById('titleInput').value = p.title;
+    document.getElementById('slugInput').value = p.slug;
+    document.getElementById('slugPreview').textContent = p.slug;
+    document.getElementById('metaInput').value = p.description || '';
+    slugLocked = true;
+    document.getElementById('slugLock').textContent = '🔒';
+
+    if (p.rejection_reason) {
+      document.getElementById('rejectionCallout').textContent = 'Rejection Reason: ' + p.rejection_reason;
+      document.getElementById('rejectionCallout').style.display = '';
+    }
+
+    if (p.content_json && p.content_json.type === 'doc') {
+      editor.commands.setContent(p.content_json);
+    }
+    updateUIForStatus(p.status);
+    updateStats();
+  } catch(e) {
+    showToast('Failed to load page: ' + e.message, 'error');
+  }
+}
+
+// Init
+const params = new URLSearchParams(window.location.search);
+const editSlug = params.get('slug');
+if (editSlug) {
+  loadPage(editSlug);
+}
+
+updateStats();
+</script>
+</body>
+</html>

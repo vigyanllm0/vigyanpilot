@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Review Detail — VigyanLLM CMS</title>
+<link rel="stylesheet" href="/admin/cms/css/admin.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+<script src="/admin/cms/js/admin.js"></script>
+<script>
+const user = getUser();
+if (!user || user.role !== 'admin') { window.location.href = '/admin/cms/dashboard.html'; }
+</script>
+
+<div class="app-layout">
+  <nav class="sidebar">
+    <div class="sidebar-header">VigyanLLM CMS</div>
+    <div class="sidebar-nav">
+      <a href="/admin/cms/dashboard.html"><span>📄</span> <span>Pages</span></a>
+      <a href="/admin/cms/review-queue.html"><span>⏳</span> <span>Review Queue</span></a>
+    </div>
+  </nav>
+
+  <div class="main-content" style="display:flex;flex-direction:column;">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 24px;background:var(--bg-card);border-bottom:1px solid var(--border);">
+      <div>
+        <a href="/admin/cms/review-queue.html" style="color:var(--text2);font-size:14px;">← Back to Queue</a>
+        <h3 id="pageTitle" style="margin-top:8px;font-size:20px;"></h3>
+        <p id="pageMeta" style="color:var(--text3);font-size:13px;margin-top:4px;"></p>
+      </div>
+    </div>
+
+    <div style="border-bottom:1px solid var(--border);padding:0 24px;">
+      <div class="review-tabs">
+        <button class="active" data-tab="content">Content</button>
+        <button data-tab="notes">Review Notes</button>
+        <button data-tab="revisions">Revisions</button>
+      </div>
+    </div>
+
+    <div class="content-area" style="flex:1;">
+      <div class="review-tab-content active" id="tabContent">
+        <div id="contentPreview" style="max-width:800px;margin:0 auto;"></div>
+      </div>
+      <div class="review-tab-content" id="tabNotes">
+        <div id="notesList"></div>
+        <div style="margin-top:16px;display:flex;gap:8px;">
+          <textarea id="noteInput" placeholder="Add a note..." style="flex:1;min-height:60px;"></textarea>
+          <button class="btn-primary btn-sm" onclick="addNote()" style="height:fit-content;">Add Note</button>
+        </div>
+      </div>
+      <div class="review-tab-content" id="tabRevisions">
+        <div id="revisionsList"></div>
+      </div>
+    </div>
+
+    <div class="review-actions">
+      <button class="btn-ghost" id="openEditorBtn" onclick="openInEditor()">Open in Editor</button>
+      <button class="btn-danger" id="rejectBtn" onclick="rejectPage()">Reject</button>
+      <button class="btn-success" id="approveBtn" onclick="approvePage()">Approve & Publish</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const params = new URLSearchParams(window.location.search);
+const slug = params.get('slug');
+let pageData = null;
+
+async function loadDetail() {
+  if (!slug) { window.location.href = '/admin/cms/review-queue.html'; return; }
+  try {
+    const data = await api(`/api/v1/cms/pages/${slug}`);
+    if (!data) return;
+    pageData = data.data;
+    document.getElementById('pageTitle').textContent = pageData.title;
+    const author = pageData.author.display_name || pageData.author.email;
+    document.getElementById('pageMeta').textContent = `By ${author} · Submitted ${formatDate(pageData.submitted_at)}`;
+    document.getElementById('contentPreview').innerHTML = pageData.content_html || '<p style="color:var(--text3);">No content</p>';
+    loadNotes();
+    loadRevisions();
+  } catch(e) {
+    document.getElementById('pageTitle').textContent = 'Error loading page';
+    showToast(e.message, 'error');
+  }
+}
+
+async function loadNotes() {
+  try {
+    const data = await api(`/api/v1/cms/pages/${slug}/review-notes`);
+    if (!data) return;
+    const notes = data.data.notes;
+    document.getElementById('notesList').innerHTML = notes.map(n => {
+      const roleColor = n.author.role === 'admin' ? 'var(--danger)' : 'var(--warning)';
+      return `<div class="review-note">
+        <div class="note-avatar" style="background:${roleColor}22;color:${roleColor};">${(n.author.display_name || '?')[0]}</div>
+        <div class="note-body">
+          <div class="note-header"><strong>${escapeHtml(n.author.display_name || n.author.email)}</strong><span>${formatDate(n.created_at)}</span></div>
+          <div class="note-text">${escapeHtml(n.note)}</div>
+        </div>
+      </div>`;
+    }).join('');
+    if (!notes.length) document.getElementById('notesList').innerHTML = '<p style="color:var(--text3);padding:12px;">No review notes yet.</p>';
+  } catch(e) {}
+}
+
+async function addNote() {
+  const note = document.getElementById('noteInput').value.trim();
+  if (!note) { showToast('Note cannot be empty', 'error'); return; }
+  try {
+    await api(`/api/v1/cms/pages/${slug}/review-notes`, {
+      method: 'POST',
+      body: JSON.stringify({ note }),
+    });
+    document.getElementById('noteInput').value = '';
+    showToast('Note added');
+    loadNotes();
+  } catch(e) { showToast(e.message, 'error'); }
+}
+
+async function loadRevisions() {
+  try {
+    const data = await api(`/api/v1/cms/pages/${slug}/revisions`);
+    if (!data) return;
+    const revisions = data.data.revisions;
+    document.getElementById('revisionsList').innerHTML = revisions.map(r => {
+      return `<div class="revision-item">
+        <div class="revision-dot"></div>
+        <div class="rev-body">
+          <div class="rev-header">
+            <strong>${formatDate(r.created_at)}</strong>
+            <span style="color:var(--text3);font-size:12px;">${r.status_at_save} · ${escapeHtml(r.changed_by.display_name || '')}</span>
+          </div>
+          <div class="rev-note">${r.change_note ? escapeHtml(r.change_note) : '<em style="color:var(--text3);">No change note</em>'}</div>
+        </div>
+      </div>`;
+    }).join('');
+    if (!revisions.length) document.getElementById('revisionsList').innerHTML = '<p style="color:var(--text3);padding:12px;">No revisions yet.</p>';
+  } catch(e) {}
+}
+
+function openInEditor() { window.location.href = `/admin/cms/editor.html?slug=${slug}`; }
+
+async function approvePage() {
+  if (!confirm('Publish this page? It will be live at vigyanllm.in/p/' + slug)) return;
+  try {
+    await api(`/api/v1/cms/pages/${slug}/approve`, { method: 'POST', body: '{}' });
+    showToast('Page approved and published');
+    loadDetail();
+  } catch(e) { showToast(e.message, 'error'); }
+}
+
+async function rejectPage() {
+  const reason = prompt('Rejection reason (required, min 10 chars):');
+  if (!reason || reason.length < 10) { showToast('Reason must be at least 10 characters', 'error'); return; }
+  try {
+    await api(`/api/v1/cms/pages/${slug}/reject`, {
+      method: 'POST',
+      body: JSON.stringify({ reason }),
+    });
+    showToast('Page rejected');
+    loadDetail();
+  } catch(e) { showToast(e.message, 'error'); }
+}
+
+// Tabs
+document.querySelectorAll('.review-tabs button').forEach(btn => {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.review-tabs button').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.review-tab-content').forEach(t => t.classList.remove('active'));
+    this.classList.add('active');
+    document.getElementById('tab' + this.dataset.tab.charAt(0).toUpperCase() + this.dataset.tab.slice(1)).classList.add('active');
+  });
+});
+
+loadDetail();
+</script>
+</body>
+</html>

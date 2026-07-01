@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Loading... — VigyanLLM</title>
+<meta name="description" content="VigyanLLM — Sovereign Biomedical AI Platform">
+<link rel="stylesheet" href="/content-styles.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: #0B0F1A;
+    color: #F1F5F9;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+  .site-header {
+    padding: 20px 24px;
+    background: #111827;
+    border-bottom: 1px solid #2D3548;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .site-header a { color: #94A3B8; text-decoration: none; font-size: 14px; font-weight: 500; }
+  .site-header a:hover { color: #F1F5F9; }
+  .site-header .logo { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 20px; font-weight: 800; color: #22D3EE; letter-spacing: -0.01em; }
+  .page-container { max-width: 800px; margin: 0 auto; padding: 40px 24px 80px; }
+  .page-hero { margin-bottom: 40px; }
+  .page-hero h1 { font-family: 'Plus Jakarta Sans', sans-serif; font-size: clamp(2rem, 4vw, 2.8rem); font-weight: 800; line-height: 1.15; margin-bottom: 16px; color: #F9FAFB; letter-spacing: -0.01em; }
+  .page-hero .meta { color: #64748B; font-size: 14px; }
+  .page-hero .hero-img { width: 100%; border-radius: 12px; margin-top: 24px; }
+  .skeleton { background: linear-gradient(90deg, #1A1F2E 25%, #1F2937 50%, #1A1F2E 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 8px; }
+  .skeleton-h1 { height: 32px; width: 70%; margin-bottom: 16px; }
+  .skeleton-text { height: 16px; width: 100%; margin-bottom: 12px; }
+  .skeleton-text.short { width: 45%; }
+  @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+  .site-footer { text-align: center; padding: 32px 24px; border-top: 1px solid #2D3548; color: #64748B; font-size: 13px; }
+  .error-page { text-align: center; padding: 80px 24px; }
+  .error-page h2 { font-size: 28px; margin-bottom: 12px; }
+  .error-page p { color: #94A3B8; margin-bottom: 24px; }
+  .error-page a { color: #3B82F6; text-decoration: underline; }
+</style>
+</head>
+<body>
+<header class="site-header">
+  <a href="/" class="logo">VigyanLLM</a>
+  <nav><a href="/">Home</a></nav>
+</header>
+
+<div class="page-container" id="pageContent">
+  <div class="skeleton skeleton-h1"></div>
+  <div class="skeleton skeleton-text"></div>
+  <div class="skeleton skeleton-text"></div>
+  <div class="skeleton skeleton-text short"></div>
+  <div style="height:24px;"></div>
+  <div class="skeleton skeleton-text"></div>
+  <div class="skeleton skeleton-text"></div>
+  <div class="skeleton skeleton-text"></div>
+</div>
+
+<footer class="site-footer">
+  &copy; 2026 VigyanLLM Pvt. Ltd. · Sovereign Research AI
+</footer>
+
+<script>
+(async function() {
+  const slug = window.location.pathname.replace(/^\/p\//, '').replace(/\/$/, '');
+  const container = document.getElementById('pageContent');
+  const API_BASE = 'http://localhost:8001';
+
+  try {
+    const res = await fetch(`${API_BASE}/api/v1/pages/${slug}`);
+    if (!res.ok) throw new Error('Not found');
+    const data = await res.json();
+    const page = data.data;
+
+    document.title = page.title + ' — VigyanLLM';
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc && page.description) metaDesc.setAttribute('content', page.description);
+
+    let heroHtml = '';
+    if (page.hero_image) {
+      heroHtml = `<img src="${page.hero_image}" alt="" class="hero-img" loading="lazy">`;
+    }
+
+    container.innerHTML = `
+      <div class="page-hero">
+        <h1>${page.title}</h1>
+        ${page.description ? `<p style="color:#94A3B8;font-size:16px;line-height:1.6;">${page.description}</p>` : ''}
+        <div class="meta">Published ${new Date(page.published_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</div>
+        ${heroHtml}
+      </div>
+      <div class="content-body">${page.content_html || ''}</div>
+    `;
+
+    // OG meta tags
+    let og = document.querySelector('meta[property="og:title"]');
+    if (!og) { og = document.createElement('meta'); og.setAttribute('property', 'og:title'); document.head.appendChild(og); }
+    og.setAttribute('content', page.title + ' — VigyanLLM');
+
+    let ogDesc = document.querySelector('meta[property="og:description"]');
+    if (!ogDesc) { ogDesc = document.createElement('meta'); ogDesc.setAttribute('property', 'og:description'); document.head.appendChild(ogDesc); }
+    ogDesc.setAttribute('content', page.description || '');
+
+    let ogUrl = document.querySelector('meta[property="og:url"]');
+    if (!ogUrl) { ogUrl = document.createElement('meta'); ogUrl.setAttribute('property', 'og:url'); document.head.appendChild(ogUrl); }
+    ogUrl.setAttribute('content', 'https://vigyanllm.in/p/' + slug);
+
+    let ogType = document.querySelector('meta[property="og:type"]');
+    if (!ogType) { ogType = document.createElement('meta'); ogType.setAttribute('property', 'og:type'); document.head.appendChild(ogType); }
+    ogType.setAttribute('content', 'article');
+
+    let twCard = document.querySelector('meta[name="twitter:card"]');
+    if (!twCard) { twCard = document.createElement('meta'); twCard.setAttribute('name', 'twitter:card'); document.head.appendChild(twCard); }
+    twCard.setAttribute('content', 'summary_large_image');
+
+  } catch(e) {
+    container.innerHTML = `
+      <div class="error-page">
+        <h2>Page Not Found</h2>
+        <p>The page you're looking for doesn't exist or hasn't been published yet.</p>
+        <a href="/">Return to Home</a>
+      </div>
+    `;
+    document.title = 'Page Not Found — VigyanLLM';
+  }
+
+  // DOMPurify-style sanitization for content body
+  const contentBody = container.querySelector('.content-body');
+  if (contentBody) {
+    contentBody.querySelectorAll('script, iframe, object, embed').forEach(el => el.remove());
+    contentBody.querySelectorAll('*[onclick], *[onload], *[onerror], *[onmouseover]').forEach(el => {
+      ['onclick','onload','onerror','onmouseover','onmouseout','onchange','onsubmit'].forEach(attr => el.removeAttribute(attr));
+    });
+  }
+})();
+</script>
+</body>
+</html>

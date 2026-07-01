@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — VigyanLLM CMS</title>
+<link rel="stylesheet" href="/admin/cms/css/admin.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+<script src="/admin/cms/js/admin.js"></script>
+<script>if (!requireAuth()) document.body.innerHTML = '';</script>
+
+<div class="app-layout">
+  <nav class="sidebar" id="sidebar">
+    <div class="sidebar-header">VigyanLLM CMS</div>
+    <div class="sidebar-nav">
+      <a href="/admin/cms/dashboard.html" class="active"><span>📄</span> <span>Pages</span></a>
+      <a href="/admin/cms/review-queue.html" id="reviewQueueLink" style="display:none;">
+        <span>⏳</span> <span>Review Queue</span>
+        <span class="badge" id="queueBadge" style="display:none;">0</span>
+      </a>
+    </div>
+    <div class="sidebar-footer">
+      <a href="/admin/cms/new" id="newPageBtn" style="display:block;text-align:center;padding:10px;background:var(--primary);color:#fff;border-radius:6px;font-size:14px;font-weight:600;">+ New Page</a>
+    </div>
+  </nav>
+
+  <div class="main-content">
+    <div class="header-bar">
+      <h2>Pages</h2>
+      <div class="header-user">
+        <span class="user-email" id="userEmail"></span>
+        <div class="notif-container">
+          <span class="notif-bell" id="notifBell">🔔<span class="notif-count" id="notifCount" style="display:none;">0</span></span>
+          <div class="notif-dropdown" id="notifDropdown">
+            <div class="notif-dropdown-header">Notifications</div>
+            <div id="notifList"></div>
+          </div>
+        </div>
+        <span class="logout-btn" onclick="clearAuth()">Log Out</span>
+      </div>
+    </div>
+
+    <div class="content-area">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <div style="display:flex;gap:8px;">
+          <select id="statusFilter" onchange="loadPages()">
+            <option value="">All Status</option>
+            <option value="draft">Draft</option>
+            <option value="pending_review">Pending Review</option>
+            <option value="published">Published</option>
+            <option value="rejected">Rejected</option>
+            <option value="archived">Archived</option>
+          </select>
+        </div>
+        <span id="pageCount" style="color:var(--text3);font-size:13px;"></span>
+      </div>
+
+      <div id="pageList"></div>
+      <div id="pagination" style="display:flex;justify-content:center;gap:8px;margin-top:16px;"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const user = getUser();
+if (user) {
+  document.getElementById('userEmail').textContent = user.email;
+  if (user.role === 'admin') {
+    document.getElementById('reviewQueueLink').style.display = '';
+    fetchQueueCount();
+  }
+  document.getElementById('newPageBtn').addEventListener('click', function(e) {
+    e.preventDefault();
+    window.location.href = '/admin/cms/editor.html';
+  });
+}
+
+let currentPage = 0;
+const LIMIT = 25;
+
+async function loadPages() {
+  const status = document.getElementById('statusFilter').value;
+  const params = new URLSearchParams({ limit: LIMIT, offset: currentPage });
+  if (status) params.set('status', status);
+  try {
+    const data = await api('/api/v1/cms/pages?' + params.toString());
+    if (!data) return;
+    const { pages, total } = data.data;
+    renderPages(pages);
+    document.getElementById('pageCount').textContent = `${total} page${total !== 1 ? 's' : ''}`;
+    renderPagination(total);
+  } catch(e) {
+    document.getElementById('pageList').innerHTML = `<div class="empty-state"><p>Error loading pages: ${e.message}</p></div>`;
+  }
+}
+
+function renderPages(pages) {
+  const el = document.getElementById('pageList');
+  if (!pages.length) {
+    el.innerHTML = `<div class="empty-state"><h3>No pages yet</h3><p>Create your first page to get started.</p><button class="btn-primary" onclick="window.location.href='/admin/cms/editor.html'">+ New Page</button></div>`;
+    return;
+  }
+  let html = `<table class="data-table"><thead><tr><th>Title</th><th>Author</th><th>Status</th><th>Updated</th><th>Actions</th></tr></thead><tbody>`;
+  for (const p of pages) {
+    const canSubmit = user && p.author.email === user.email && (p.status === 'draft' || p.status === 'rejected');
+    const canView = p.status === 'published';
+    html += `<tr>
+      <td style="font-weight:500;">${escapeHtml(p.title)}</td>
+      <td style="color:var(--text2);font-size:13px;">${escapeHtml(p.author.display_name || p.author.email)}</td>
+      <td>${statusBadge(p.status)}</td>
+      <td style="color:var(--text2);font-size:13px;">${formatDate(p.updated_at)}</td>
+      <td class="actions">
+        <button class="btn-ghost btn-sm" onclick="window.location.href='/admin/cms/editor.html?slug=${p.slug}'">Edit</button>
+        ${canView ? `<button class="btn-ghost btn-sm" onclick="window.open('https://vigyanllm.in/p/${p.slug}','_blank')">View</button>` : ''}
+        ${p.status === 'pending_review' && user && p.author.email === user.email ? '<span style="color:var(--warning);font-size:12px;padding:4px 8px;">Under Review</span>' : ''}
+        ${p.status === 'pending_review' && user && user.role === 'admin' ? `<button class="btn-success btn-sm" onclick="approvePage('${p.slug}')">Approve</button><button class="btn-danger btn-sm" onclick="rejectPage('${p.slug}')">Reject</button>` : ''}
+      </td>
+    </tr>`;
+  }
+  html += '</tbody></table>';
+  el.innerHTML = html;
+}
+
+function renderPagination(total) {
+  const el = document.getElementById('pagination');
+  const totalPages = Math.ceil(total / LIMIT);
+  if (totalPages <= 1) { el.innerHTML = ''; return; }
+  let html = '';
+  if (currentPage > 0) html += `<button class="btn-ghost btn-sm" onclick="currentPage=${currentPage-1};loadPages()">← Prev</button>`;
+  html += `<span style="color:var(--text3);font-size:13px;padding:6px;">Page ${currentPage+1} of ${totalPages}</span>`;
+  if (currentPage < totalPages - 1) html += `<button class="btn-ghost btn-sm" onclick="currentPage=${currentPage+1};loadPages()">Next →</button>`;
+  el.innerHTML = html;
+}
+
+async function approvePage(slug) {
+  if (!confirm('Approve & publish this page? It will be publicly visible.')) return;
+  try {
+    await api(`/api/v1/cms/pages/${slug}/approve`, { method: 'POST', body: '{}' });
+    showToast('Page approved and published');
+    loadPages();
+  } catch(e) { showToast(e.message, 'error'); }
+}
+
+async function rejectPage(slug) {
+  const reason = prompt('Rejection reason (required, min 10 chars):');
+  if (!reason || reason.length < 10) { showToast('Reason must be at least 10 characters', 'error'); return; }
+  try {
+    await api(`/api/v1/cms/pages/${slug}/reject`, {
+      method: 'POST',
+      body: JSON.stringify({ reason }),
+    });
+    showToast('Page rejected');
+    loadPages();
+  } catch(e) { showToast(e.message, 'error'); }
+}
+
+async function fetchQueueCount() {
+  try {
+    const data = await api('/api/v1/cms/review-queue?limit=0');
+    if (data && data.data && data.data.total > 0) {
+      document.getElementById('queueBadge').textContent = data.data.total;
+      document.getElementById('queueBadge').style.display = '';
+    }
+  } catch(e) {}
+}
+
+loadPages();
+
+// Notification polling
+setInterval(async () => {
+  try {
+    const data = await api('/api/v1/cms/notifications?unread=true&limit=5');
+    if (!data) return;
+    const notifs = data.data.notifications || [];
+    const count = data.data.total || 0;
+    const countEl = document.getElementById('notifCount');
+    if (count > 0) {
+      countEl.textContent = count;
+      countEl.style.display = '';
+    } else {
+      countEl.style.display = 'none';
+    }
+    const listEl = document.getElementById('notifList');
+    listEl.innerHTML = notifs.map(n => {
+      const dot = n.type === 'approved' ? '🟢' : n.type === 'rejected' ? '🔴' : '🟡';
+      return `<div class="notif-item" onclick="markNotifRead('${n.id}','${n.page_slug || ''}')">
+        <span class="notif-dot">${dot}</span>
+        <span class="notif-text">${escapeHtml(n.message)}</span>
+        <span class="notif-time">${timeAgo(n.created_at)}</span>
+      </div>`;
+    }).join('');
+    if (!notifs.length) listEl.innerHTML = '<div style="padding:16px;text-align:center;color:var(--text3);font-size:13px;">No notifications</div>';
+  } catch(e) {}
+}, 30000);
+
+document.getElementById('notifBell').addEventListener('click', function(e) {
+  e.stopPropagation();
+  document.getElementById('notifDropdown').classList.toggle('open');
+});
+document.addEventListener('click', function() {
+  document.getElementById('notifDropdown').classList.remove('open');
+});
+
+async function markNotifRead(id, slug) {
+  try { await api(`/api/v1/cms/notifications/${id}/read`, { method: 'POST' }); } catch(e) {}
+  if (slug) window.location.href = `/admin/cms/editor.html?slug=${slug}`;
+}
+</script>
+</body>
+</html>
