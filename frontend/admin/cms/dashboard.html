@@ -23,7 +23,7 @@
       </a>
     </div>
     <div class="sidebar-footer">
-      <a href="/admin/cms/new" id="newPageBtn" style="display:block;text-align:center;padding:10px;background:var(--primary);color:#fff;border-radius:6px;font-size:14px;font-weight:600;">+ New Page</a>
+      <a href="/admin/cms/editor.html?type=page" id="newPageBtn" style="display:block;text-align:center;padding:10px;background:var(--primary);color:#fff;border-radius:6px;font-size:14px;font-weight:600;">+ New Page</a>
     </div>
   </nav>
 
@@ -74,18 +74,21 @@ document.title = activeType === 'blog' ? 'Blog Posts — VigyanLLM CMS' : 'Dashb
 document.getElementById('navPages').classList.toggle('active', activeType !== 'blog');
 document.getElementById('navBlog').classList.toggle('active', activeType === 'blog');
 
-if (user) {
-  document.getElementById('userEmail').textContent = user.email;
-  if (user.role === 'admin') {
-    document.getElementById('reviewQueueLink').style.display = '';
-    fetchQueueCount();
+  if (user) {
+    document.getElementById('userEmail').textContent = user.email;
+    if (user.role === 'admin') {
+      document.getElementById('reviewQueueLink').style.display = '';
+      fetchQueueCount();
+    }
+    updateNewBtn();
   }
-  document.getElementById('newPageBtn').addEventListener('click', function(e) {
-    e.preventDefault();
-    const typeParam = activeType === 'blog' ? '?type=blog' : '';
-    window.location.href = '/admin/cms/editor.html' + typeParam;
-  });
-}
+
+  function updateNewBtn() {
+    const btn = document.getElementById('newPageBtn');
+    const label = activeType === 'blog' ? 'Blog Post' : 'Page';
+    btn.innerHTML = `+ New ${label}`;
+    btn.href = `/admin/cms/editor.html?type=${activeType}`;
+  }
 
 let currentPage = 0;
 const LIMIT = 25;
@@ -109,7 +112,9 @@ async function loadPages() {
 function renderPages(pages) {
   const el = document.getElementById('pageList');
   if (!pages.length) {
-    el.innerHTML = `<div class="empty-state"><h3>No pages yet</h3><p>Create your first page to get started.</p><button class="btn-primary" onclick="window.location.href='/admin/cms/editor.html'">+ New Page</button></div>`;
+    const label = activeType === 'blog' ? 'blog post' : 'page';
+    const Label = activeType === 'blog' ? 'Blog Post' : 'Page';
+    el.innerHTML = `<div class="empty-state"><h3>No ${label}s yet</h3><p>Create your first ${label} to get started.</p><button class="btn-primary" onclick="window.location.href='/admin/cms/editor.html?type=${activeType}'">+ New ${Label}</button></div>`;
     return;
   }
   let html = `<table class="data-table"><thead><tr><th>Title</th><th>Author</th><th>Status</th><th>Updated</th><th>Actions</th></tr></thead><tbody>`;

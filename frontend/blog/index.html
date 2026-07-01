@@ -496,6 +496,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           <span class="read-time">831 words · 5 min read</span>
           <a href="/blog/automated-wet-lab-workflows" class="read-link">Read →</a>
         </div>
+      </article>
       <article class="blog-card">
         <div class="blog-card-header">
           <span class="blog-tag tag-advanced">Advanced PCR</span>
@@ -875,5 +876,30 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       </div>
     </div>
   </footer>
+  <script>
+  (async function() {
+    try {
+      const API = window.location.hostname === 'localhost' ? 'http://localhost:8001' : 'https://api.vigyanllm.in';
+      const r = await fetch(API + '/api/v1/cms/pages?content_type=blog&status=published&limit=100');
+      if (!r.ok) return;
+      const { pages } = (await r.json()).data;
+      if (!pages || !pages.length) return;
+      const existing = new Set();
+      document.querySelectorAll('.blog-card a.read-link').forEach(a => {
+        const m = a.getAttribute('href').match(/\/blog\/(.+)/);
+        if (m) existing.add(m[1]);
+      });
+      const grid = document.querySelector('.blog-grid');
+      if (!grid) return;
+      for (const p of pages) {
+        if (existing.has(p.slug)) continue;
+        const card = document.createElement('article');
+        card.className = 'blog-card';
+        card.innerHTML = `<div class="blog-card-header"><span class="blog-tag tag-primer">New</span><span class="read-time">${new Date(p.published_at || p.created_at).toLocaleDateString('en-US',{month:'short',year:'numeric'})}</span></div><h3>${p.title}</h3><p>${p.description || ''}</p><div class="blog-card-footer"><span class="read-time">CMS</span><a href="/p/${p.slug}" class="read-link">Read →</a></div>`;
+        grid.appendChild(card);
+      }
+    } catch(e) { /* silent */ }
+  })();
+  </script>
 </body>
 </html>
