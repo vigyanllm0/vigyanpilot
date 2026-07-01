@@ -5,53 +5,115 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Loading... — VigyanLLM</title>
 <meta name="description" content="VigyanLLM — Sovereign Biomedical AI Platform">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/content-styles.css">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body {
-    font-family: 'Inter', -apple-system, sans-serif;
-    background: #0B0F1A;
-    color: #F1F5F9;
-    line-height: 1.6;
-    min-height: 100vh;
-  }
-  .site-header {
-    padding: 20px 24px;
-    background: #111827;
-    border-bottom: 1px solid #2D3548;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  .site-header a { color: #94A3B8; text-decoration: none; font-size: 14px; font-weight: 500; }
-  .site-header a:hover { color: #F1F5F9; }
-  .site-header .logo { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 20px; font-weight: 800; color: #22D3EE; letter-spacing: -0.01em; }
-  .page-container { max-width: 800px; margin: 0 auto; padding: 40px 24px 80px; }
-  .page-hero { margin-bottom: 40px; }
-  .page-hero h1 { font-family: 'Plus Jakarta Sans', sans-serif; font-size: clamp(2rem, 4vw, 2.8rem); font-weight: 800; line-height: 1.15; margin-bottom: 16px; color: #F9FAFB; letter-spacing: -0.01em; }
-  .page-hero .meta { color: #64748B; font-size: 14px; }
-  .page-hero .hero-img { width: 100%; border-radius: 12px; margin-top: 24px; }
-  .skeleton { background: linear-gradient(90deg, #1A1F2E 25%, #1F2937 50%, #1A1F2E 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 8px; }
-  .skeleton-h1 { height: 32px; width: 70%; margin-bottom: 16px; }
-  .skeleton-text { height: 16px; width: 100%; margin-bottom: 12px; }
-  .skeleton-text.short { width: 45%; }
-  @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
-  .site-footer { text-align: center; padding: 32px 24px; border-top: 1px solid #2D3548; color: #64748B; font-size: 13px; }
-  .error-page { text-align: center; padding: 80px 24px; }
-  .error-page h2 { font-size: 28px; margin-bottom: 12px; }
-  .error-page p { color: #94A3B8; margin-bottom: 24px; }
-  .error-page a { color: #3B82F6; text-decoration: underline; }
+:root {
+  --navy: #0F172A;
+  --navy-light: #1E293B;
+  --white: #FFFFFF;
+  --slate: #F8FAFC;
+  --slate-border: #E2E8F0;
+  --text: #0F172A;
+  --text2: #475569;
+  --muted: #94A3B8;
+  --primary: #2563EB;
+  --bio: #059669;
+  --amber: #D97706;
+  --accent: #22D3EE;
+  --font-h: 'Plus Jakarta Sans', sans-serif;
+  --font-b: 'Inter', sans-serif;
+  --max-w: 1100px;
+  --sec-p: 100px;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { background: var(--white); color: var(--text); font-family: var(--font-b); line-height: 1.6; -webkit-font-smoothing: antialiased; }
+a { text-decoration: none; color: inherit; transition: color 0.15s ease; }
+.container { max-width: var(--max-w); margin: 0 auto; padding: 0 24px; }
+nav { position: sticky; top: 0; background: var(--navy); z-index: 1000; height: 72px; }
+.nav-inner { display: flex; justify-content: space-between; align-items: center; height: 100%; max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+.nav-brand { display: flex; align-items: center; gap: 10px; color: #fff; font-family: var(--font-h); font-size: 20px; font-weight: 700; text-decoration: none; }
+.nav-brand img { width: 32px; height: 32px; border-radius: 4px; }
+.nav-links { display: flex; gap: 32px; align-items: center; }
+.nav-links a { font-family: var(--font-b); font-size: 13px; color: #CBD5E1; font-weight: 500; letter-spacing: 0.02em; }
+.nav-links a:hover { color: #fff; }
+.nav-right { display: flex; align-items: center; gap: 16px; }
+.nav-login { border: 1.5px solid rgba(255,255,255,0.3); border-radius: 4px; padding: 8px 20px; font-family: var(--font-b); font-size: 13px; font-weight: 600; color: #fff; background: transparent; cursor: pointer; }
+.nav-login:hover { background: rgba(255,255,255,0.1); }
+@media (max-width: 768px) { .nav-links { display: none; } }
+.hero { padding: 60px 0 30px; text-align: center; }
+.hero h1 { font-family: var(--font-h); font-size: clamp(2rem,4vw,2.8rem); font-weight: 700; color: var(--text); margin-bottom: 12px; }
+.hero p { font-size: 16px; color: var(--text2); max-width: 650px; margin: 0 auto; line-height: 1.8; }
+.badge { display: inline-block; background: var(--slate); color: var(--primary); padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: 500; border: 1px solid var(--slate-border); margin-bottom: 24px; }
+.content-narrow { max-width: 800px; margin: 0 auto; padding: 30px 24px 60px; }
+.content-body h1 { font-family: var(--font-b); font-size: clamp(2rem,4vw,2.8rem); font-weight: 400; line-height: 1.1; margin-bottom: 16px; }
+.content-body .meta { color: var(--muted); font-size: 14px; margin-bottom: 24px; }
+.content-body .hero-img { width: 100%; border-radius: 12px; margin: 24px 0; }
+.content-body h2 { font-family: var(--font-h); font-size: 24px; font-weight: 700; color: var(--text); margin: 48px 0 16px; }
+.content-body h3 { font-family: var(--font-h); font-size: 19px; font-weight: 600; color: var(--text); margin: 32px 0 12px; }
+.content-body p { margin-bottom: 16px; color: var(--text2); font-size: 15px; line-height: 1.8; }
+.content-body ul, .content-body ol { margin-left: 24px; margin-bottom: 16px; color: var(--text2); font-size: 15px; }
+.content-body li { margin-bottom: 8px; }
+.content-body strong { color: var(--text); }
+.content-body a { color: var(--primary); text-decoration: underline; }
+.content-body table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 14px; }
+.content-body th { background: var(--slate); color: var(--text); padding: 12px; text-align: left; border: 1px solid var(--slate-border); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; }
+.content-body td { padding: 12px; border: 1px solid var(--slate-border); color: var(--text2); }
+.content-body blockquote { border-left: 4px solid var(--primary); padding: 16px 20px; margin: 24px 0; background: var(--slate); border-radius: 0 8px 8px 0; color: var(--text2); font-style: italic; }
+.content-body code { background: var(--slate); padding: 2px 6px; border-radius: 4px; font-size: 14px; color: var(--text); }
+.content-body pre { background: #1E293B; color: #E2E8F0; padding: 20px; border-radius: 8px; overflow-x: auto; margin: 24px 0; }
+.content-body pre code { background: none; padding: 0; color: inherit; }
+.content-body img { max-width: 100%; border-radius: 8px; margin: 24px 0; }
+.skeleton { background: linear-gradient(90deg,var(--slate) 25%,var(--slate-border) 50%,var(--slate) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 8px; }
+.skeleton-h1 { height: 32px; width: 70%; margin-bottom: 16px; }
+.skeleton-text { height: 16px; width: 100%; margin-bottom: 12px; }
+.skeleton-text.short { width: 45%; }
+@keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+.error-page { text-align: center; padding: 80px 24px; }
+.error-page h2 { font-family: var(--font-h); font-size: 28px; margin-bottom: 12px; }
+.error-page p { color: var(--text2); margin-bottom: 24px; }
+.error-page a { color: var(--primary); text-decoration: underline; }
 </style>
 </head>
 <body>
-<header class="site-header">
-  <a href="/" class="logo">VigyanLLM</a>
-  <nav><a href="/">Home</a></nav>
-</header>
 
-<div class="page-container" id="pageContent">
-  <div class="skeleton skeleton-h1"></div>
+<nav>
+  <div class="nav-inner">
+    <a href="/" class="nav-brand">
+      <img src="/logo.svg" alt="VigyanLLM Logo">
+      <span>VigyanLLM</span>
+    </a>
+    <div class="nav-links">
+      <a href="/">Home</a>
+      <a href="/primer" style="color:#22D3EE;font-weight:600">VPrime 1.0 ↗</a>
+      <a href="/blog">Blog</a>
+      <a href="/primer-design">Primer Design</a>
+      <a href="/pcr-analysis">PCR</a>
+      <a href="/crispr-analysis">CRISPR</a>
+      <a href="/faq">FAQ</a>
+      <a href="/about">About</a>
+      <a href="/academic-partnership">Academic Partnership</a>
+    </div>
+    <div class="nav-right">
+      <button class="nav-login" onclick="window.location.href='/primer'">Login</button>
+    </div>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="container">
+    <div class="badge" id="pageBadge">VigyanLLM</div>
+    <div id="heroContent">
+      <div class="skeleton skeleton-h1" style="margin:0 auto;"></div>
+      <div class="skeleton skeleton-text short" style="margin:16px auto 0;"></div>
+    </div>
+  </div>
+</section>
+
+<div class="content-narrow" id="mainContent">
   <div class="skeleton skeleton-text"></div>
   <div class="skeleton skeleton-text"></div>
   <div class="skeleton skeleton-text short"></div>
@@ -61,79 +123,96 @@
   <div class="skeleton skeleton-text"></div>
 </div>
 
-<footer class="site-footer">
-  &copy; 2026 VigyanLLM Pvt. Ltd. · Sovereign Research AI
+<footer style="background:var(--navy);color:#CBD5E1;padding:80px 0 32px;margin-top:60px;">
+  <div style="max-width:1200px;margin:0 auto;padding:0 24px;">
+    <div style="display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr;gap:48px;margin-bottom:60px;">
+      <div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;">
+          <img src="/logo.svg" alt="VigyanLLM" style="width:48px;height:48px;border-radius:6px;">
+          <span style="font-family:var(--font-h);font-size:20px;font-weight:700;color:#fff;">VigyanLLM</span>
+        </div>
+        <p style="font-family:var(--font-b);font-size:13px;color:#94A3B8;line-height:1.7;margin-bottom:20px;">Sovereign Biomedical AI for India's Research Labs — validated primer design, molecular docking, CRISPR analysis, and clinical reasoning.</p>
+      </div>
+      <div>
+        <h5 style="font-family:var(--font-h);font-size:12px;text-transform:uppercase;letter-spacing:0.1em;color:#fff;margin-bottom:24px;font-weight:700;">Platform</h5>
+        <a href="/" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px;">Home</a>
+        <a href="/primer" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px;">VPrime 1.0</a>
+        <a href="/demo" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px;">Demo</a>
+        <a href="/academic-partnership" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px;">Academic Partnership</a>
+      </div>
+      <div>
+        <h5 style="font-family:var(--font-h);font-size:12px;text-transform:uppercase;letter-spacing:0.1em;color:#fff;margin-bottom:24px;font-weight:700;">Tools</h5>
+        <a href="/tm-calculator" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px;">Tm Calculator</a>
+        <a href="/gc-calculator" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px;">GC Calculator</a>
+        <a href="/primer-design" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px;">Primer Design</a>
+        <a href="/pcr-analysis" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px;">PCR Analysis</a>
+        <a href="/crispr-analysis" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px;">CRISPR</a>
+        <a href="/protein-docking" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px;">Protein Docking</a>
+      </div>
+      <div>
+        <h5 style="font-family:var(--font-h);font-size:12px;text-transform:uppercase;letter-spacing:0.1em;color:#fff;margin-bottom:24px;font-weight:700;">Contact</h5>
+        <a href="mailto:contact@vigyanllm.in" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px;">contact@vigyanllm.in</a>
+        <a href="/privacy" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px;">Privacy</a>
+        <a href="/cookies" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px;">Cookies</a>
+        <a href="/terms" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px;">Terms</a>
+        <a href="/refund" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px;">Refund</a>
+        <a href="/security" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px;">Security</a>
+      </div>
+    </div>
+    <div style="border-top:1px solid rgba(255,255,255,0.1);padding-top:24px;display:flex;justify-content:space-between;font-family:var(--font-b);font-size:12px;color:#64748B;">
+      <span>&copy; 2026 VigyanLLM Pvt. Ltd. · Sovereign Research AI</span>
+      <span>WWW.VIGYANLLM.IN</span>
+    </div>
+  </div>
 </footer>
 
 <script>
 (async function() {
   const slug = window.location.pathname.replace(/^\/p\//, '').replace(/\/$/, '');
-  const container = document.getElementById('pageContent');
-  const API_BASE = 'http://localhost:8001';
+  if (!slug) { document.getElementById('mainContent').innerHTML = '<div class="error-page"><h2>Page Not Found</h2><p>No page specified.</p><a href="/">Back to Home</a></div>'; return; }
+  const heroContent = document.getElementById('heroContent');
+  const mainContent = document.getElementById('mainContent');
+  const badge = document.getElementById('pageBadge');
+  const API_BASE = window.location.hostname === 'localhost' ? 'http://localhost:8001' : 'https://api.vigyanllm.in';
 
   try {
-    const res = await fetch(`${API_BASE}/api/v1/pages/${slug}`);
+    const res = await fetch(API_BASE + '/api/v1/pages/' + slug);
     if (!res.ok) throw new Error('Not found');
     const data = await res.json();
     const page = data.data;
 
     document.title = page.title + ' — VigyanLLM';
-    const metaDesc = document.querySelector('meta[name="description"]');
+    let metaDesc = document.querySelector('meta[name="description"]');
     if (metaDesc && page.description) metaDesc.setAttribute('content', page.description);
 
-    let heroHtml = '';
-    if (page.hero_image) {
-      heroHtml = `<img src="${page.hero_image}" alt="" class="hero-img" loading="lazy">`;
-    }
+    heroContent.innerHTML = '<h1>' + page.title + '</h1>' + (page.description ? '<p>' + page.description + '</p>' : '');
+    badge.textContent = page.published_at ? new Date(page.published_at).toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'}) : 'Page';
 
-    container.innerHTML = `
-      <div class="page-hero">
-        <h1>${page.title}</h1>
-        ${page.description ? `<p style="color:#94A3B8;font-size:16px;line-height:1.6;">${page.description}</p>` : ''}
-        <div class="meta">Published ${new Date(page.published_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</div>
-        ${heroHtml}
-      </div>
-      <div class="content-body">${page.content_html || ''}</div>
-    `;
+    let imgHtml = '';
+    if (page.hero_image) imgHtml = '<img src="' + page.hero_image + '" alt="" class="hero-img" loading="lazy">';
+    mainContent.innerHTML = '<div class="content-body">' + imgHtml + (page.content_html || '<p>No content</p>') + '</div>';
 
-    // OG meta tags
-    let og = document.querySelector('meta[property="og:title"]');
-    if (!og) { og = document.createElement('meta'); og.setAttribute('property', 'og:title'); document.head.appendChild(og); }
-    og.setAttribute('content', page.title + ' — VigyanLLM');
-
-    let ogDesc = document.querySelector('meta[property="og:description"]');
-    if (!ogDesc) { ogDesc = document.createElement('meta'); ogDesc.setAttribute('property', 'og:description'); document.head.appendChild(ogDesc); }
-    ogDesc.setAttribute('content', page.description || '');
-
-    let ogUrl = document.querySelector('meta[property="og:url"]');
-    if (!ogUrl) { ogUrl = document.createElement('meta'); ogUrl.setAttribute('property', 'og:url'); document.head.appendChild(ogUrl); }
-    ogUrl.setAttribute('content', 'https://vigyanllm.in/p/' + slug);
-
-    let ogType = document.querySelector('meta[property="og:type"]');
-    if (!ogType) { ogType = document.createElement('meta'); ogType.setAttribute('property', 'og:type'); document.head.appendChild(ogType); }
-    ogType.setAttribute('content', 'article');
-
-    let twCard = document.querySelector('meta[name="twitter:card"]');
-    if (!twCard) { twCard = document.createElement('meta'); twCard.setAttribute('name', 'twitter:card'); document.head.appendChild(twCard); }
-    twCard.setAttribute('content', 'summary_large_image');
-
+    ['og:title','og:description','og:url','og:type','twitter:card'].forEach(function(p) {
+      let el = document.querySelector('meta[property="'+p+'"]');
+      if (!el) { el = document.createElement('meta'); el.setAttribute('property',p); document.head.appendChild(el); }
+      if (p === 'og:title') el.setAttribute('content', page.title + ' — VigyanLLM');
+      else if (p === 'og:description') el.setAttribute('content', page.description || '');
+      else if (p === 'og:url') el.setAttribute('content', 'https://vigyanllm.in/p/' + slug);
+      else if (p === 'og:type') el.setAttribute('content', 'article');
+      else if (p === 'twitter:card') el.setAttribute('content', 'summary_large_image');
+    });
   } catch(e) {
-    container.innerHTML = `
-      <div class="error-page">
-        <h2>Page Not Found</h2>
-        <p>The page you're looking for doesn't exist or hasn't been published yet.</p>
-        <a href="/">Return to Home</a>
-      </div>
-    `;
+    heroContent.innerHTML = '';
+    badge.textContent = 'VigyanLLM';
+    mainContent.innerHTML = '<div class="error-page"><h2>Page Not Found</h2><p>This page doesn\'t exist or hasn\'t been published yet.</p><a href="/">Back to Home</a></div>';
     document.title = 'Page Not Found — VigyanLLM';
   }
 
-  // DOMPurify-style sanitization for content body
-  const contentBody = container.querySelector('.content-body');
-  if (contentBody) {
-    contentBody.querySelectorAll('script, iframe, object, embed').forEach(el => el.remove());
-    contentBody.querySelectorAll('*[onclick], *[onload], *[onerror], *[onmouseover]').forEach(el => {
-      ['onclick','onload','onerror','onmouseover','onmouseout','onchange','onsubmit'].forEach(attr => el.removeAttribute(attr));
+  const body = mainContent.querySelector('.content-body');
+  if (body) {
+    body.querySelectorAll('script,iframe,object,embed').forEach(function(el) { el.remove(); });
+    body.querySelectorAll('*[onclick],[onload],[onerror],[onmouseover]').forEach(function(el) {
+      ['onclick','onload','onerror','onmouseover','onmouseout','onchange','onsubmit'].forEach(function(a) { el.removeAttribute(a); });
     });
   }
 })();
