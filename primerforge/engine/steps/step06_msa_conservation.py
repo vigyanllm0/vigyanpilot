@@ -33,6 +33,46 @@ MSA_TIMEOUT_S = 120
 CONSERVATION_THRESHOLD = 0.95
 MIN_STRAIN_SEQUENCES = 3
 MAX_STRAIN_SEQUENCES = 50
+
+# Check for required tools and config on import
+_MAFFT_AVAILABLE: bool = False
+_MUSCLE_AVAILABLE: bool = False
+
+try:
+    result = subprocess.run(["mafft", "--version"], capture_output=True, text=True, timeout=10)
+    _MAFFT_AVAILABLE = result.returncode == 0
+except (FileNotFoundError, subprocess.TimeoutExpired, Exception):
+    pass
+
+if not _MAFFT_AVAILABLE:
+    try:
+        result = subprocess.run(["muscle", "-version"], capture_output=True, text=True, timeout=10)
+        _MUSCLE_AVAILABLE = result.returncode == 0
+    except (FileNotFoundError, subprocess.TimeoutExpired, Exception):
+        pass
+
+if not _MAFFT_AVAILABLE and not _MUSCLE_AVAILABLE:
+    logger.warning(
+        "Neither MAFFT nor MUSCLE are installed. "
+        "MSA will fall back to Biopython pairwise alignment (approximation). "
+        "Install MAFFT (brew install mafft) for proper multiple sequence alignment."
+    )
+elif _MAFFT_AVAILABLE:
+    logger.info("MAFFT detected — will use for multiple sequence alignment")
+
+_NCBI_EMAIL_CONFIGURED: bool = bool(os.environ.get("NCBI_EMAIL"))
+if not _NCBI_EMAIL_CONFIGURED:
+    logger.warning(
+        "NCBI_EMAIL environment variable not set. NCBI Entrez queries may be rate-limited. "
+        "Set NCBI_EMAIL=your.email@example.com in .env for reliable MSA strain fetching."
+    )
+
+_NCBI_API_KEY_CONFIGURED: bool = bool(os.environ.get("NCBI_API_KEY"))
+if not _NCBI_API_KEY_CONFIGURED:
+    logger.info(
+        "NCBI_API_KEY not configured. NCBI queries limited to 3/second without API key. "
+        "Set NCBI_API_KEY=your_key in .env for higher rate limits."
+    )
 TARGET_ORGANISM_NCBI_MAP = {
     # ── Model organisms / vertebrates ──
     "human": "Homo sapiens",
@@ -137,28 +177,102 @@ def execute(input_data: Dict[str, Any]) -> Dict[str, Any]:
     # Identify >95% conserved regions
     conserved = _find_conserved_regions(scores, CONSERVATION_THRESHOLD, min_length=20)
 
+    # strain_count = number of NON-reference sequences (actual strains)
+    # aligned[0] is the reference, aligned[1:] are the strains
+    strain_count = max(0, len(aligned) - 1)
+
     return {
         "msa_alignment": aligned,
         "conservation_scores": scores,
         "conserved_regions": conserved,
         "msa_note": (
-            f"MSA complete: {len(aligned)} sequences aligned, "
+            f"MSA complete: {strain_count} strain(s) + 1 reference = {len(aligned)} sequences aligned, "
             f"{len(conserved)} conserved region(s) >95% found."
         ),
-        "strain_count": len(aligned),
+        "strain_count": strain_count,
+        "total_aligned": len(aligned),
         "msa_status": "complete",
     }
 
 
 def _run_msa(reference: str, strain_seqs: List[str]) -> Dict[str, Any]:
-    try:
-        return _run_muscle_msa(reference, strain_seqs)
-    except Exception as e:
-        logger.warning(f"MUSCLE MSA failed: {e}")
+    """Run MSA using best available aligner: MAFFT > MUSCLE > Biopython."""
+    global _MAFFT_AVAILABLE, _MUSCLE_AVAILABLE
+
+    # Try MAFFT first (best quality)
+    if _MAFFT_AVAILABLE:
         try:
-            return _run_biopython_msa(reference, strain_seqs)
-        except Exception as e2:
-            return {"error": f"MSA failed: {e2}"}
+            return _run_mafft_msa(reference, strain_seqs)
+        except Exception as e:
+            logger.warning(f"MAFFT MSA failed: {e}")
+
+    # Try MUSCLE second
+    if _MUSCLE_AVAILABLE:
+        try:
+            return _run_muscle_msa(reference, strain_seqs)
+        except Exception as e:
+            logger.warning(f"MUSCLE MSA failed: {e}")
+
+    # Biopython pairwise fallback
+    logger.warning(
+        "No multiple sequence aligner available — using Biopython pairwise alignment. "
+        "This is an approximation; install MAFFT (brew install mafft) for proper MSA. "
+        "Biopython aligns each strain independently to the reference, not a true MSA."
+    )
+    try:
+        return _run_biopython_msa(reference, strain_seqs)
+    except Exception as e2:
+        return {"error": f"All MSA methods failed. Last error: {e2}"}
+
+
+def _run_mafft_msa(reference: str, strain_seqs: List[str]) -> Dict[str, Any]:
+    """Run MSA using MAFFT FFT-NS-2 progressive method."""
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".fa", delete=False) as f:
+        f.write(f">reference\n{reference}\n")
+        for i, seq in enumerate(strain_seqs):
+            clean = re.sub(r"[^ACGT]", "N", seq.upper())
+            f.write(f">strain_{i+1}\n{clean}\n")
+        fasta_path = f.name
+
+    output_path = fasta_path + ".afa"
+    try:
+        cmd = ["mafft", "--auto", "--anysymbol", fasta_path]
+        with open(output_path, "w") as out_f:
+            subprocess.run(cmd, capture_output=False, stdout=out_f,
+                         text=True, timeout=MSA_TIMEOUT_S, check=True)
+    except subprocess.TimeoutExpired:
+        raise RuntimeError("MAFFT execution timed out")
+    except subprocess.CalledProcessError as e:
+        raise RuntimeError(f"MAFFT execution failed (exit {e.returncode}): {e.stderr}")
+    except FileNotFoundError:
+        raise RuntimeError("MAFFT not found on PATH")
+
+    aligned = []
+    current_id = None
+    current_seq = []
+    try:
+        with open(output_path) as f:
+            for line in f:
+                line = line.strip()
+                if line.startswith(">"):
+                    if current_id and current_seq:
+                        aligned.append("".join(current_seq))
+                    current_id = line[1:]
+                    current_seq = []
+                else:
+                    current_seq.append(line.replace(" ", ""))
+            if current_id and current_seq:
+                aligned.append("".join(current_seq))
+    finally:
+        for path in [fasta_path, output_path]:
+            try:
+                os.unlink(path)
+            except OSError:
+                pass
+
+    if not aligned:
+        raise RuntimeError("MAFFT produced no output.")
+    return {"aligned": aligned, "reference": aligned[0] if aligned else reference}
 
 
 def _run_muscle_msa(reference: str, strain_seqs: List[str]) -> Dict[str, Any]:
@@ -623,14 +737,16 @@ def _fallback(
 ) -> Dict[str, Any]:
     sequence = input_data.get("consensus_sequence") or input_data.get("target_sequence") or input_data.get("sequence", "")
     logger.info(f"MSA fallback: {reason}")
+    strain_count = len(strain_seqs) if strain_seqs else 0
 
     result = {
         "msa_alignment": [],
         "conservation_scores": [0.0] * len(sequence) if sequence else [],
         "conserved_regions": [],
         "msa_note": reason,
-        "strain_count": len(strain_seqs) if strain_seqs else 0,
-        "msa_status": "fallback_no_strains" if not strain_seqs else "fallback_error",
+        "strain_count": strain_count,
+        "total_aligned": 0,
+        "msa_status": "fallback_no_strains" if strain_count < MIN_STRAIN_SEQUENCES else "fallback_error",
     }
 
     if sequence:

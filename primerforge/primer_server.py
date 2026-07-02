@@ -739,31 +739,34 @@ def create_app() -> Flask:
         def _dev_register_pipeline_steps(orchestrator):
             from primerforge.engine.steps import STEP_REGISTRY
 
+            # 24-step numbering matching tasks.py exactly
             step_meta = {
                 1: ("Transcript Isoform Filter", True, "A"),
                 2: ("Exon-Intron Junction Mapping", False, "A"),
                 3: ("Bisulfite Conversion Simulation", False, "A"),
                 4: ("Degenerate Base Parsing", True, "A"),
                 5: ("Repeat Masking", False, "A"),
-                6: ("Primer3 Parameter Constraints", True, "B"),
-                7: ("Nearest-Neighbor Tm (SantaLucia)", False, "B"),
-                8: ("Dynamic Buffer & Salt Adjustments", False, "B"),
-                9: ("Divalent Cation Mg Scaling", False, "B"),
-                10: ("Target Specificity (BLAST)", False, "C"),
-                11: ("Structural Alignment (Bowtie2)", False, "C"),
-                12: ("Organelle & Pseudogene Screening", False, "C"),
-                13: ("Primer Secondary Structure", False, "D"),
-                14: ("Amplicon Structural Verification", False, "D"),
-                15: ("Population Variant Filter (dbSNP)", False, "D"),
-                16: ("Somatic Mutation Hotspot", False, "D"),
-                17: ("5' Overhang Adapter Tailing", False, "D"),
-                18: ("Multiplex Cross-Reaction", False, "D"),
-                19: ("Automated Penalty & Ranking Matrix", False, "E"),
-                20: ("Thermocycling Profile Generation", False, "E"),
-                21: ("Manufacturing Feasibility Screening", False, "E"),
-                22: ("Probe Design", False, "E"),
+                6: ("Backend MSA & Conservation", False, "A"),
+                7: ("Conserved Region Targeting", False, "A"),
+                8: ("Primer3 Parameter Constraints", True, "B"),
+                9: ("Nearest-Neighbor Tm (SantaLucia)", False, "B"),
+                10: ("Dynamic Buffer & Salt Adjustments", False, "B"),
+                11: ("Divalent Cation Mg Scaling", False, "B"),
+                12: ("Target Specificity (BLAST)", False, "C"),
+                13: ("Strain Inclusivity & Discontinuous", False, "C"),
+                14: ("Structural Alignment (Bowtie2)", False, "C"),
+                15: ("Organelle & Pseudogene Screening", False, "C"),
+                16: ("Primer Secondary Structure (dG)", False, "D"),
+                17: ("Amplicon Structural Verification", False, "D"),
+                18: ("Population Variant Filter (dbSNP)", False, "D"),
+                19: ("Clinical Hotspot Filter (ClinVar)", False, "D"),
+                20: ("5' Overhang Adapter Tailing", False, "D"),
+                21: ("Multiplex Cross-Reaction Scoring", False, "D"),
+                22: ("Automated Penalty & Ranking Matrix", False, "E"),
+                23: ("Thermocycling Profile Generation", False, "E"),
+                24: ("Probe Design (qPCR/TaqMan)", False, "E"),
             }
-            express_steps = {1, 6, 7, 10, 19, 22}
+            express_steps = {1, 6, 7, 8, 9, 12, 22, 24}
             for number, (name, hard_failure, phase) in step_meta.items():
                 orchestrator.register_step(
                     number,
@@ -1484,6 +1487,22 @@ def create_app() -> Flask:
         except Exception as exc:
             logger.error(f"Thermodynamics error: {exc}", exc_info=True)
             return err("Analysis failed due to an internal error.", "DESIGN_FAILED", 500)
+
+    # Pipeline health validation on startup
+    try:
+        from core.pipeline_validator import validate_pipeline_health
+        health = validate_pipeline_health()
+        if health["status"] == "error":
+            for e in health["errors"]:
+                logger.error(f"PIPELINE VALIDATION ERROR: {e}")
+        if health["warnings"]:
+            for w in health["warnings"]:
+                logger.warning(f"PIPELINE VALIDATION: {w}")
+        logger.info(f"Pipeline health: {health['status']} ({health['summary']})")
+    except ImportError as e:
+        logger.warning(f"Pipeline validator not available: {e}")
+    except Exception as e:
+        logger.warning(f"Pipeline validation failed: {e}")
 
     # WSGI middleware to strip Server header (runs after gunicorn adds it)
     class _ServerHeaderMiddleware:
