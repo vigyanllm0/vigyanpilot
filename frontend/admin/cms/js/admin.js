@@ -1,6 +1,6 @@
 /* VigyanLLM CMS Admin — Common JS */
 const API_BASE = window.location.origin.includes('localhost')
-  ? 'http://localhost:8001'
+  ? window.location.origin.includes('8001') ? '' : 'http://localhost:8001'
   : '';
 
 function getToken() { return localStorage.getItem('vp_cms_token'); }

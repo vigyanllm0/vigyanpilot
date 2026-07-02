@@ -133,7 +133,7 @@ async function banIp(){const ip=$('ban-ip-input').value.trim();if(!ip)return;awa
 async function loadBlogPosts(){
   const el=$('blog-list');if(!el)return;
   const pfToken=sessionStorage.getItem('pf_token')||localStorage.getItem('pf_token');
-  const CMS_API = window.location.origin.includes('localhost')?'http://localhost:8001':'https://api.vigyanllm.in';
+  const CMS_API = window.location.origin.includes('localhost')?'http://localhost:8001':'';
   try{
     const r=await fetch(CMS_API+'/api/v1/pages?content_type=blog&limit=50',{headers:pfToken?{'Authorization':'Bearer '+pfToken}:{}});
     if(!r.ok){el.innerHTML='<div style="color:var(--muted);padding:1rem;text-align:center">Could not load blog posts.</div>';return}

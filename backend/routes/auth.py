@@ -9,7 +9,7 @@ import urllib.request, json
 
 router = APIRouter(prefix="/api/v1/cms/auth", tags=["auth"])
 
-MAIN_API = "http://13.207.60.92:5000/api"
+from config import MAIN_API_URL as MAIN_API
 
 @router.post("/login")
 def login(req: LoginRequest, db: Session = Depends(get_db)):

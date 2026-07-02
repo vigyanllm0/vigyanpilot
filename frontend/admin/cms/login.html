@@ -43,11 +43,13 @@ pre{font-size:11px;color:#64748B;background:rgba(255,255,255,.03);border-radius:
     return;
   }
 
-  // Try production API first, fall back to EC2 IP direct
-  var hosts = [
-    'https://api.vigyanllm.in',
-    'http://13.207.60.92:8001'
-  ];
+  // Try hosts in order: same-origin (Vercel proxy), localhost (dev), production, EC2 direct
+  var isLocalhost = window.location.origin.indexOf('localhost') !== -1 || window.location.origin.indexOf('127.0.0.1') !== -1;
+  var hosts = isLocalhost
+    ? ['http://localhost:8001', window.location.origin]
+    : [window.location.origin, 'https://api.vigyanllm.in', 'http://13.207.60.92:8001'];
+  // Deduplicate
+  hosts = hosts.filter(function(v, i, a) { return a.indexOf(v) === i; });
 
   for (var i = 0; i < hosts.length; i++) {
     try {

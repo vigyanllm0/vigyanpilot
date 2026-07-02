@@ -1,10 +1,36 @@
-from sqlalchemy import create_engine, Column, String, Text, Boolean, DateTime, ForeignKey, UUID, Integer, CheckConstraint
-from sqlalchemy.dialects.postgresql import UUID as PG_UUID, JSONB
+from sqlalchemy import create_engine, Column, String, Text, Boolean, DateTime, ForeignKey, TypeDecorator
 from sqlalchemy.orm import declarative_base, relationship
 from sqlalchemy.sql import func
+import json
 import uuid
 
 Base = declarative_base()
+
+class JSONType(TypeDecorator):
+    """Cross-database JSON type (works with both PostgreSQL JSONB and SQLite)."""
+    impl = Text
+    cache_ok = True
+
+    def load_dialect_impl(self, dialect):
+        if dialect.name == "postgresql":
+            from sqlalchemy.dialects.postgresql import JSONB
+            return dialect.type_descriptor(JSONB())
+        return dialect.type_descriptor(Text())
+
+    def process_bind_param(self, value, dialect):
+        if dialect.name == "postgresql":
+            return value
+        return json.dumps(value) if value is not None else None
+
+    def process_result_value(self, value, dialect):
+        if dialect.name == "postgresql":
+            return value
+        if value is not None:
+            try:
+                return json.loads(value)
+            except (json.JSONDecodeError, TypeError):
+                return {}
+        return {}
 
 def gen_uuid():
     return str(uuid.uuid4())
@@ -28,7 +54,7 @@ class CMSPage(Base):
     slug = Column(String(255), unique=True, nullable=False)
     title = Column(String(512), nullable=False)
     description = Column(String(1024))
-    content_json = Column(JSONB, nullable=False)
+    content_json = Column(JSONType, nullable=False)
     content_html = Column(Text)
     hero_image = Column(String(512))
     content_type = Column(String(20), nullable=False, default="page")
@@ -52,7 +78,7 @@ class CMSPageRevision(Base):
     __tablename__ = "cms_page_revisions"
     id = Column(String, primary_key=True, default=gen_uuid)
     page_id = Column(String, ForeignKey("cms_pages.id", ondelete="CASCADE"), nullable=False)
-    content_json = Column(JSONB, nullable=False)
+    content_json = Column(JSONType, nullable=False)
     content_html = Column(Text)
     changed_by = Column(String, ForeignKey("admin_users.id"), nullable=False)
     change_note = Column(String(255))

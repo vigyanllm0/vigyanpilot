@@ -8,7 +8,7 @@ import urllib.request, json
 
 security = HTTPBearer()
 
-MAIN_API = "http://13.207.60.92:5000/api"
+from config import MAIN_API_URL as MAIN_API
 
 def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(security),
