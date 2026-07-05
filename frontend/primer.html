@@ -484,6 +484,17 @@ footer{padding:32px 0;border-top:1px solid var(--slate-border)}
 <script>if('serviceWorker'in navigator)navigator.serviceWorker.register('/sw.js')</script>
 <style>
 #ai-widget{position:fixed;bottom:24px;right:24px;z-index:9999;font-family:var(--font-b,'Inter',sans-serif)}#ai-widget-toggle{width:56px;height:56px;border-radius:50%;background:var(--navy,#0F172A);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;box-shadow:0 4px 20px rgba(15,23,42,.3);transition:transform .2s,box-shadow .2s}#ai-widget-toggle:hover{transform:scale(1.05);box-shadow:0 6px 28px rgba(15,23,42,.4)}#ai-widget-toggle svg{width:24px;height:24px}#ai-widget-panel{position:absolute;bottom:72px;right:0;width:320px;background:transparent;border-radius:12px;box-shadow:0 10px 40px rgba(0,0,0,.15);border:1px solid var(--slate-border,#E2E8F0);overflow:hidden;opacity:0;transform:translateY(10px);pointer-events:none;transition:opacity .2s,transform .2s}#ai-widget-panel[hidden]{display:none}#ai-widget-panel.visible{opacity:1;transform:translateY(0);pointer-events:auto}.ai-widget-header{display:flex;justify-content:space-between;align-items:center;padding:16px;border-bottom:1px solid var(--slate-border,#E2E8F0);background:var(--slate,#F8FAFC)}.ai-widget-header span{font-weight:600;font-size:15px;color:var(--text,#0F172A)}.ai-widget-close{background:none;border:none;font-size:20px;cursor:pointer;color:var(--text2,#475569);line-height:1;padding:4px}.ai-widget-close:hover{color:var(--text,#0F172A)}.ai-widget-body{padding:16px}.ai-widget-body p{margin:0 0 12px;font-size:13px;color:var(--text2,#475569);font-weight:500}.ai-widget-options{display:flex;flex-direction:column;gap:8px}.ai-widget-btn{width:100%;text-align:left;padding:12px 14px;border:1px solid var(--slate-border,#E2E8F0);border-radius:8px;background:transparent;font-family:var(--font-b,'Inter',sans-serif);font-size:13px;font-weight:500;color:var(--text,#0F172A);cursor:pointer;transition:background .15s,border-color .15s,transform .1s}.ai-widget-btn:hover{background:var(--primary-soft,#eff6ff);border-color:var(--primary,#2563EB)}.ai-widget-btn:active{transform:scale(.98)}@media(max-width:480px){#ai-widget{bottom:16px;right:16px}#ai-widget-panel{width:calc(100vw - 48px);max-width:320px}}
+/* ── Results Table ── */
+.results-table{width:100%;border-collapse:collapse;font-size:11px;font-family:var(--font-b),monospace}.results-table th{text-align:left;padding:8px 6px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--text2);border-bottom:2px solid var(--slate-border);white-space:nowrap}.results-table td{padding:6px;border-bottom:1px solid var(--slate-border);vertical-align:top}.results-table tr:hover{background:var(--primary-soft,#eff6ff)}.results-table .source-link{font-size:10px;color:var(--primary);text-decoration:none}.results-table .source-link:hover{text-decoration:underline}.results-table input[type=checkbox]{cursor:pointer}
+/* ── MSA Viewer ── */
+.msa-viewer{font-family:'Courier New',monospace;font-size:11px;line-height:1.5;white-space:nowrap}.msa-row{display:flex;align-items:center;margin-bottom:1px}.msa-label{display:inline-block;width:160px;overflow:hidden;text-overflow:ellipsis;font-size:10px;color:var(--text2);flex-shrink:0;padding-right:8px;text-align:right}.msa-seq{font-size:11px;letter-spacing:.5px}.msa-char{display:inline;padding:0 1px}.msa-match{background:#4CAF50;color:#fff;border-radius:2px}.msa-mismatch{background:#F44336;color:#fff;border-radius:2px}.msa-gap{background:#FFEB3B;color:#333;border-radius:2px}.msa-ambiguous{background:#9E9E9E;color:#fff;border-radius:2px}.msa-conservation{display:flex;align-items:center;margin-top:8px;padding-top:8px;border-top:1px solid var(--slate-border)}.msa-conservation-bar{height:12px;border-radius:6px;margin-right:4px;min-width:2px}.msa-legend{display:flex;gap:12px;margin-top:8px;font-size:10px;flex-wrap:wrap}.msa-legend-item{display:flex;align-items:center;gap:4px}.msa-legend-swatch{width:12px;height:12px;border-radius:2px;display:inline-block}
+/* ── Panel footer with action buttons ── */
+.panel-footer{display:flex;gap:8px;align-items:center;padding:12px 16px;border-top:1px solid var(--slate-border);background:var(--slate);flex-wrap:wrap}.panel-footer label{font-size:12px;display:flex;align-items:center;gap:4px;cursor:pointer}
+.btn-sm{padding:6px 12px;font-size:11px;border-radius:6px}.btn-primary.btn-sm{background:var(--primary);color:#fff;border:none;cursor:pointer}.btn-secondary.btn-sm{background:transparent;border:1px solid var(--slate-border);color:var(--text2);cursor:pointer}.btn-secondary.btn-sm:hover{background:var(--slate)}
+/* ── Search result items ── */
+.search-result-item{padding:10px 12px;margin-bottom:6px;border:1px solid var(--slate-border);border-radius:8px;font-size:12px;transition:border-color .15s}.search-result-item:hover{border-color:var(--primary)}.search-result-header{display:flex;align-items:center;justify-content:space-between;gap:8px}.search-result-name{font-weight:600;color:var(--text)}.search-result-org{font-size:10px;color:var(--muted)}.search-result-desc{font-size:11px;color:var(--text2);margin-top:4px}.search-result-meta{display:flex;gap:12px;margin-top:6px;font-size:10px;color:var(--muted)}.search-result-actions{margin-top:6px;display:flex;gap:4px}
+/* ── Blast results ── */
+.blast-hit{display:flex;align-items:center;padding:8px;margin-bottom:4px;background:var(--slate);border-radius:6px;font-size:11px}.blast-hit-info{flex:1}.blast-hit-id{font-weight:600;color:var(--text)}.blast-hit-score{font-size:10px;color:var(--muted)}.blast-hit-pct{font-weight:700;font-size:13px;color:var(--bio);margin-right:12px}
 </style>
 <script type="application/ld+json">
 {
@@ -551,28 +562,103 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
 
 <!-- NAV -->
-      <nav>
-    <div class="nav-inner" style="display:flex;justify-content:space-between;align-items:center;height:100%;max-width:1200px;margin:0 auto;padding:0 24px">
-      <a href="index.html" class="nav-brand" style="display:flex;align-items:center;gap:10px;color:#fff;font-family:var(--font-h);font-size:20px;font-weight:700;text-decoration:none">
-        <img src="logo.svg" alt="VigyanLLM Logo" style="width:32px;height:32px;border-radius:4px">
-        <span>VigyanLLM</span>
-      </a>
-      <div class="nav-links" style="display:flex;gap:32px;align-items:center">
-        <a href="index.html" style="font-family:var(--font-b);font-size:13px;color:#CBD5E1;font-weight:500;letter-spacing:0.02em">Home</a>
-        <a href="primer.html" style="font-family:var(--font-b);font-size:13px;color:#22D3EE;font-weight:600;letter-spacing:0.02em">VPrime 1.0 ↗</a>
-        <a href="blog/index.html" style="font-family:var(--font-b);font-size:13px;color:#CBD5E1;font-weight:500;letter-spacing:0.02em">Blog</a>
-        <a href="primer-design.html" style="font-family:var(--font-b);font-size:13px;color:#CBD5E1;font-weight:500;letter-spacing:0.02em">Primer Design</a>
-        <a href="pcr-analysis.html" style="font-family:var(--font-b);font-size:13px;color:#CBD5E1;font-weight:500;letter-spacing:0.02em">PCR</a>
-        <a href="crispr-analysis.html" style="font-family:var(--font-b);font-size:13px;color:#CBD5E1;font-weight:500;letter-spacing:0.02em">CRISPR</a>
-        <a href="faq.html" style="font-family:var(--font-b);font-size:13px;color:#CBD5E1;font-weight:500;letter-spacing:0.02em">FAQ</a>
-        <a href="about.html" style="font-family:var(--font-b);font-size:13px;color:#CBD5E1;font-weight:500;letter-spacing:0.02em">About</a>
-        <a href="academic-partnership.html" style="font-family:var(--font-b);font-size:13px;color:#CBD5E1;font-weight:500;letter-spacing:0.02em">Academic Partnership</a>
-      </div>
-      <div class="nav-right" style="display:flex;align-items:center;gap:16px">
-        <button class="nav-login" id="nav-login-btn" onclick="toggleUserMenu()" style="border:1.5px solid rgba(255,255,255,0.3);border-radius:4px;padding:8px 20px;font-family:var(--font-b);font-size:13px;font-weight:600;color:#fff;background:transparent;cursor:pointer">Login</button>
+<nav>
+<div class="nav-inner" style="display:flex;justify-content:space-between;align-items:center;height:100%;max-width:1200px;margin:0 auto;padding:0 24px">
+  <a href="index.html" class="nav-brand" style="display:flex;align-items:center;gap:10px;color:#fff;font-family:var(--font-h);font-size:20px;font-weight:700;text-decoration:none">
+    <img src="logo.svg" alt="VigyanLLM Logo" style="width:32px;height:32px;border-radius:4px">
+    <span>VigyanLLM</span>
+  </a>
+  <div class="nav-links" style="display:flex;gap:24px;align-items:center">
+    <a href="index.html" style="font-family:var(--font-b);font-size:13px;color:#CBD5E1;font-weight:500">Home</a>
+    <div class="drop-wrap" style="position:relative;display:inline-block">
+      <span class="drop-trigger" style="font-family:var(--font-b);font-size:13px;color:#CBD5E1;font-weight:500;cursor:pointer">Platform Architecture ▾</span>
+      <div class="drop-menu" style="display:none;position:absolute;top:100%;left:0;background:#fff;border:1px solid #E2E5EA;border-radius:12px;min-width:200px;padding:8px;z-index:1001;box-shadow:0 12px 40px rgba(0,0,0,.08);opacity:0;transform:translateY(4px);transition:opacity .2s,transform .2s">
+        <a href="platform.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">Platform</a>
+        <a href="architecture.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">Architecture</a>
+        <a href="problem.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">Problem</a>
+        <a href="solution.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">Solution</a>
+        <a href="compare.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">Compare</a>
+        <a href="roadmap.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">Roadmap</a>
       </div>
     </div>
-  </nav>
+    <div class="drop-wrap" style="position:relative;display:inline-block">
+      <span class="drop-trigger" style="font-family:var(--font-b);font-size:13px;color:#22D3EE;font-weight:600;cursor:pointer">Products &amp; Services ▾</span>
+      <div class="drop-menu" style="display:none;position:absolute;top:100%;left:0;background:#fff;border:1px solid #E2E5EA;border-radius:12px;min-width:220px;padding:8px;z-index:1001;box-shadow:0 12px 40px rgba(0,0,0,.08);opacity:0;transform:translateY(4px);transition:opacity .2s,transform .2s">
+        <a href="primer.html" style="display:block;padding:10px 16px;font-size:13px;color:#22D3EE;border-radius:8px;font-weight:600">VPrime 2.0 ↗</a>
+        <a href="search.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">Sequence Search</a>
+        <a href="blast.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">BLAST</a>
+        <a href="msa.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">MSA</a>
+        <a href="pcr-analysis.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">PCR Analysis <span style="background:#FEF3C7;color:#92400E;font-size:9px;font-weight:700;padding:2px 8px;border-radius:20px;margin-left:6px;text-transform:uppercase">Soon</span></a>
+        <a href="crispr-analysis.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">CRISPR Analysis <span style="background:#FEF3C7;color:#92400E;font-size:9px;font-weight:700;padding:2px 8px;border-radius:20px;margin-left:6px;text-transform:uppercase">Soon</span></a>
+        <a href="tm-calculator.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">Tm Calculator</a>
+        <a href="gc-calculator.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">GC Calculator</a>
+        <a href="protein-docking.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">Protein Docking <span style="background:#FEF3C7;color:#92400E;font-size:9px;font-weight:700;padding:2px 8px;border-radius:20px;margin-left:6px;text-transform:uppercase">Soon</span></a>
+      </div>
+    </div>
+    <div class="drop-wrap" style="position:relative;display:inline-block">
+      <span class="drop-trigger" style="font-family:var(--font-b);font-size:13px;color:#CBD5E1;font-weight:500;cursor:pointer">Collab &amp; Partnership ▾</span>
+      <div class="drop-menu" style="display:none;position:absolute;top:100%;left:0;background:#fff;border:1px solid #E2E5EA;border-radius:12px;min-width:200px;padding:8px;z-index:1001;box-shadow:0 12px 40px rgba(0,0,0,.08);opacity:0;transform:translateY(4px);transition:opacity .2s,transform .2s">
+        <a href="academic-partnership.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">Academic Partnership</a>
+        <a href="mailto:contact@vigyanllm.in" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">Enterprise Inquiry</a>
+      </div>
+    </div>
+  </div>
+  <button class="hamburger" id="hamburger" aria-label="Menu" style="display:none;flex-direction:column;gap:5px;cursor:pointer;background:none;border:none;padding:4px;margin-left:8px">
+    <span style="width:24px;height:2px;background:rgba(255,255,255,.6);border-radius:2px;display:block"></span>
+    <span style="width:24px;height:2px;background:rgba(255,255,255,.6);border-radius:2px;display:block"></span>
+    <span style="width:24px;height:2px;background:rgba(255,255,255,.6);border-radius:2px;display:block"></span>
+  </button>
+  <div class="nav-right" style="display:flex;align-items:center;gap:16px">
+    <button class="nav-login" id="nav-login-btn" onclick="toggleUserMenu()" style="border:1.5px solid rgba(255,255,255,0.3);border-radius:4px;padding:8px 20px;font-family:var(--font-b);font-size:13px;font-weight:600;color:#fff;background:transparent;cursor:pointer">Login</button>
+  </div>
+</div>
+</nav>
+<style>
+.drop-wrap:hover .drop-menu{display:block !important;opacity:1 !important;transform:translateY(0) !important}
+.drop-menu a:hover{background:#E0F2F1 !important;color:#009688 !important;padding-left:20px !important}
+.hamburger{display:none !important;flex-direction:column;gap:5px;cursor:pointer;background:none;border:none;padding:4px;margin-left:8px}
+.hamburger span{width:24px;height:2px;background:rgba(255,255,255,.6);border-radius:2px;transition:all .3s}
+.hamburger.active span:nth-child(1){transform:rotate(45deg) translate(5px,5px)}
+.hamburger.active span:nth-child(2){opacity:0}
+.hamburger.active span:nth-child(3){transform:rotate(-45deg) translate(5px,-5px)}
+.mobile-menu{display:none;position:fixed;top:72px;left:0;right:0;background:var(--navy);padding:16px 24px;z-index:999;border-top:1px solid rgba(255,255,255,.1);max-height:calc(100vh - 72px);overflow-y:auto}
+.mobile-menu.open{display:block}
+.mobile-menu .mm-group{margin-bottom:12px}
+.mobile-menu .mm-hdr{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700;padding:8px 0 4px}
+.mobile-menu a{display:block;color:#CBD5E1;font-family:var(--font-b);font-size:14px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+.mobile-menu .mm-login{display:block;font-family:var(--font-b);font-size:14px;padding:10px 0;font-weight:600;color:var(--accent)}
+@media(max-width:768px){.nav-links{display:none}.hamburger{display:flex !important}}
+</style>
+
+<div class="mobile-menu" id="mobile-menu">
+  <div class="mm-group"><div class="mm-hdr">Home</div>
+    <a href="index.html">Home</a>
+  </div>
+  <div class="mm-group"><div class="mm-hdr">Platform Architecture</div>
+    <a href="platform.html">Platform</a>
+    <a href="architecture.html">Architecture</a>
+    <a href="problem.html">Problem</a>
+    <a href="solution.html">Solution</a>
+    <a href="compare.html">Compare</a>
+    <a href="roadmap.html">Roadmap</a>
+  </div>
+  <div class="mm-group"><div class="mm-hdr">Products &amp; Services</div>
+    <a href="primer.html">VPrime 2.0 ↗</a>
+    <a href="search.html">Sequence Search</a>
+    <a href="blast.html">BLAST</a>
+    <a href="msa.html">MSA</a>
+    <a href="pcr-analysis.html">PCR Analysis</a>
+    <a href="crispr-analysis.html">CRISPR Analysis</a>
+    <a href="tm-calculator.html">Tm Calculator</a>
+    <a href="gc-calculator.html">GC Calculator</a>
+    <a href="protein-docking.html">Protein Docking</a>
+  </div>
+  <div class="mm-group"><div class="mm-hdr">Collab &amp; Partnership</div>
+    <a href="academic-partnership.html">Academic Partnership</a>
+    <a href="mailto:contact@vigyanllm.in">Enterprise Inquiry</a>
+  </div>
+  <div class="mm-group"><a href="login.html" class="mm-login">Log in</a></div>
+</div>
 
 <!-- DASHBOARD WRAPPER -->
 <div class="dashboard-wrap">
@@ -590,7 +676,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="ph-title-block">
         <div class="ph-eyebrow">
           Genomic Tool · SantaLucia 1998 NN Thermodynamics
-          <span class="pipeline-badge">22-STEP PIPELINE</span>
+          <span class="pipeline-badge">24-STEP PIPELINE</span>
         </div>
         <h1 class="ph-title">Validated Primer and Probe Design in 22 Checks</h1>
 <div itemscope itemtype="https://schema.org/Question" style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:12px;padding:24px;margin:24px 0">
@@ -620,7 +706,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <div class="tab-bar">
   <div class="tab-bar-inner">
     <button class="tab-btn active" data-tab="auto">Auto Design</button>
-    <button class="tab-btn" data-tab="manual">Manual Analysis</button>
+    <button class="tab-btn" data-tab="manual">Oligo Analyser</button>
     <button class="tab-btn" data-tab="fetch">Fetch Sequence</button>
     <button class="tab-btn" data-tab="admin" id="admin-tab-btn" style="display:none;color:var(--primary);margin-left:auto;">🛡️ Admin Panel</button>
   </div>
@@ -713,7 +799,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 <option value="metapneumovirus">Metapneumovirus</option>
                 <option value="bocavirus">Bocavirus</option>
               </optgroup>
+              <option value="other">Other (type below)</option>
             </select>
+            <div style="margin-top:8px"><input type="text" id="custom-organism" class="form-input" placeholder="Or type custom organism name e.g. Plasmodium falciparum"></div>
             <div class="form-hint">Determines the BLAST database and reference genome for conservation scoring.</div>
           </div>
         </div>
@@ -895,6 +983,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
 <!-- ══ MANUAL ANALYSIS TAB ══════════════════════════════════════════════════ -->
 <div id="tab-manual" class="tab-panel" style="display:none">
+  <div style="margin-bottom:20px;padding:16px 20px;background:var(--slate);border-radius:10px;border:1px solid var(--slate-border)">
+    <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;color:var(--text);margin-bottom:4px">Oligo Analyser — Thermodynamic Analysis</h3>
+    <p style="font-size:13px;color:var(--text2)">Analyse primer &amp; probe sequences for melting temperature, GC content, hairpins, self-dimers, and cross-dimers using SantaLucia nearest-neighbour thermodynamics. Enter forward and reverse primer sequences to generate a comprehensive pass/fail validation report.</p>
+  </div>
   <div class="manual-wrap">
     <div class="two-col">
       <div>
@@ -1090,6 +1182,218 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </div>
   </div>
 </section>
+
+<!-- ══ SEARCH SEQUENCES TAB ═══════════════════════════════════════════════════ -->
+<div id="tab-search" class="tab-panel" style="display:none">
+  <div class="fetch-wrap">
+    <div class="two-col">
+      <div>
+        <div class="panel-card">
+          <div class="panel-head"><h3>Search Sequences</h3></div>
+          <div class="panel-body">
+            <div class="form-group">
+              <label class="form-label">Search Gene, Accession, or Sequence</label>
+              <input type="text" id="search-query" class="form-input" style="font-family:var(--font-b);font-size:12px" placeholder="BRCA1, TP53, NM_007294, or paste sequence…">
+              <div class="form-hint">Enter a gene symbol, accession number, or paste a DNA sequence (auto-detected)</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Database</label>
+              <select id="search-db" class="form-input">
+                <option value="auto">Auto-detect</option>
+                <option value="ncbi_nucleotide">NCBI Nucleotide</option>
+                <option value="ncbi_gene">NCBI Gene</option>
+                <option value="ensembl">Ensembl</option>
+                <option value="uniprot">UniProt</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Organism</label>
+              <select id="search-organism" class="form-input">
+                <optgroup label="Vertebrates">
+                  <option value="human">Human</option>
+                  <option value="mouse">Mouse</option>
+                  <option value="rat">Rat</option>
+                  <option value="zebrafish">Zebrafish</option>
+                  <option value="pig">Pig</option>
+                  <option value="dog">Dog</option>
+                  <option value="cow">Cow</option>
+                  <option value="chicken">Chicken</option>
+                  <option value="rabbit">Rabbit</option>
+                  <option value="sheep">Sheep</option>
+                  <option value="goat">Goat</option>
+                  <option value="horse">Horse</option>
+                  <option value="cat">Cat</option>
+                  <option value="monkey">Monkey (Rhesus)</option>
+                  <option value="xenopus">Frog (Xenopus)</option>
+                  <option value="arabidopsis">Thale cress</option>
+                </optgroup>
+                <optgroup label="Bacteria">
+                  <option value="ecoli">E. coli</option>
+                  <option value="staph">S. aureus</option>
+                  <option value="mtb">M. tuberculosis</option>
+                  <option value="salmonella">Salmonella</option>
+                  <option value="pseudomonas">P. aeruginosa</option>
+                  <option value="bacillus">B. subtilis</option>
+                  <option value="clostridium">C. difficile</option>
+                  <option value="neisseria">N. gonorrhoeae</option>
+                </optgroup>
+                <optgroup label="Viruses">
+                  <option value="sars-cov-2">SARS-CoV-2</option>
+                  <option value="hiv-1">HIV-1</option>
+                  <option value="hbv">Hepatitis B</option>
+                  <option value="hcv">Hepatitis C</option>
+                  <option value="influenza-a">Influenza A</option>
+                  <option value="influenza-b">Influenza B</option>
+                  <option value="rsv">RSV</option>
+                  <option value="hpv">HPV</option>
+                  <option value="hsv-1">HSV-1</option>
+                  <option value="hsv-2">HSV-2</option>
+                  <option value="adenovirus">Adenovirus</option>
+                  <option value="zikv">Zika</option>
+                  <option value="ebov">Ebola</option>
+                  <option value="denv">Dengue</option>
+                </optgroup>
+              </select>
+              <div style="margin-top:6px">
+                <input type="text" id="search-organism-custom" class="form-input" style="font-size:11px" placeholder="Or type custom organism name…">
+              </div>
+            </div>
+            <button class="btn-primary" id="btn-search-seq">
+              <span class="spinner" id="search-spinner"></span>
+              <span id="btn-search-text">Search</span>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="panel-card">
+          <div class="panel-head">
+            <h3>Results</h3>
+            <span id="search-results-count" style="font-size:12px;color:var(--muted)">0 found</span>
+          </div>
+          <div class="panel-body" id="search-results-area">
+            <div style="padding:40px 20px;text-align:center;color:var(--muted);font-size:13px">Enter a search query and click Search</div>
+          </div>
+          <div class="panel-footer" id="search-actions" style="display:none">
+            <label><input type="checkbox" id="search-select-all"> Select All</label>
+            <button class="btn-primary btn-sm" id="btn-send-to-design">Send to Auto Design</button>
+            <button class="btn-secondary btn-sm" id="btn-send-to-blast">Send to BLAST</button>
+            <button class="btn-secondary btn-sm" id="btn-send-to-msa">Send to MSA</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ BLAST TAB ═══════════════════════════════════════════════════════════════ -->
+<div id="tab-blast" class="tab-panel" style="display:none">
+  <div class="fetch-wrap">
+    <div class="two-col">
+      <div>
+        <div class="panel-card">
+          <div class="panel-head"><h3>BLAST Search</h3></div>
+          <div class="panel-body">
+            <div class="form-group">
+              <label class="form-label">Query Sequence <span style="font-size:10px;color:var(--muted);font-weight:400">DNA or protein</span></label>
+              <textarea id="blast-query-seq" class="form-textarea" placeholder="Paste sequence to BLAST&#10;&#10;ATGCGATCGATCGATCGATCGA…" rows="6"></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Fasta Upload</label>
+              <input type="file" id="blast-fasta-input" accept=".fa,.fasta,.txt" class="form-input" style="padding:6px;font-size:11px">
+              <div style="font-size:10px;color:var(--muted);margin-top:4px">Upload multi-FASTA to BLAST all entries</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Search Mode</label>
+              <select id="blast-mode" class="form-input">
+                <option value="auto">Auto (remote BLAST)</option>
+                <option value="local">Local exact match</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Database</label>
+              <select id="blast-db" class="form-input">
+                <option value="nt">NCBI nt (nucleotide)</option>
+                <option value="refseq_rna">NCBI RefSeq RNA</option>
+                <option value="nr">NCBI nr (protein)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Organism filter (optional)</label>
+              <input type="text" id="blast-organism" class="form-input" placeholder="Homo sapiens, Mus musculus…">
+            </div>
+            <button class="btn-primary" id="btn-blast">
+              <span class="spinner" id="blast-spinner"></span>
+              <span id="btn-blast-text">Run BLAST</span>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="panel-card">
+          <div class="panel-head">
+            <h3>BLAST Results</h3>
+            <span id="blast-results-count" style="font-size:12px;color:var(--muted)">0 hits</span>
+          </div>
+          <div class="panel-body" id="blast-results-area" style="overflow-x:auto">
+            <div style="padding:40px 20px;text-align:center;color:var(--muted);font-size:13px">Run a BLAST search to see results</div>
+          </div>
+          <div class="panel-footer" id="blast-actions" style="display:none">
+            <label><input type="checkbox" id="blast-select-all"> Select All</label>
+            <button class="btn-secondary btn-sm" id="btn-blast-view-msa">View MSA</button>
+            <button class="btn-secondary btn-sm" id="btn-blast-download-fasta">Download FASTA</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MSA TAB ═════════════════════════════════════════════════════════════════ -->
+<div id="tab-msa" class="tab-panel" style="display:none">
+  <div class="fetch-wrap">
+    <div class="two-col">
+      <div>
+        <div class="panel-card">
+          <div class="panel-head"><h3>MSA Input</h3></div>
+          <div class="panel-body">
+            <div class="form-group">
+              <label class="form-label">Sequences (FASTA format)</label>
+              <textarea id="msa-sequences" class="form-textarea" placeholder="&gt;seq1&#10;ATGCGATCGATCGATCGA&#10;&gt;seq2&#10;ATGCGATCGATCGATCGG&#10;&gt;seq3&#10;ATGCGATCGATCGATCCA" rows="8"></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">FASTA Upload</label>
+              <input type="file" id="msa-fasta-input" accept=".fa,.fasta,.txt" class="form-input" style="padding:6px;font-size:11px">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Reference sequence ID (optional)</label>
+              <input type="text" id="msa-reference" class="form-input" placeholder="Leave blank to use first sequence">
+            </div>
+            <button class="btn-primary" id="btn-msa">
+              <span class="spinner" id="msa-spinner"></span>
+              <span id="btn-msa-text">Align</span>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="panel-card">
+          <div class="panel-head">
+            <h3>Alignment</h3>
+            <span id="msa-stats" style="font-size:12px;color:var(--muted)"></span>
+          </div>
+          <div class="panel-body" id="msa-results-area" style="overflow-x:auto;max-height:600px;overflow-y:auto">
+            <div style="padding:40px 20px;text-align:center;color:var(--muted);font-size:13px">Align sequences to see results</div>
+          </div>
+          <div class="panel-footer" id="msa-actions" style="display:none">
+            <button class="btn-secondary btn-sm" id="btn-msa-download-fasta">Download FASTA</button>
+            <button class="btn-secondary btn-sm" id="btn-msa-download-clustal">Download Clustal</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- ══ ADMIN PANEL (hidden unless admin is logged in) ═══════════════════════ -->
 <div id="tab-admin" class="tab-panel" style="display:none">
@@ -1395,7 +1699,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         </div>
         <div>
           <h5 style="font-family:var(--font-h);font-size:12px;text-transform:uppercase;letter-spacing:0.1em;color:#fff;margin-bottom:24px;font-weight:700">Resources</h5>
-          <a href="primer.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">VPrime 1.0</a>
+          <a href="primer.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">VPrime 2.0</a>
           <a href="blog/index.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Blog</a>
           <a href="faq.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">FAQ</a>
           <a href="about.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">About</a>
@@ -1601,10 +1905,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <script>
 (function VigyanLLM(){
 'use strict';
-const API = window.VIGYAN_BACKEND_URL || '';
+var API = window.VIGYAN_BACKEND_URL || '';
 const HEALTH_MS=10000;
 let PF_CONFIG=null;
-const state={online:false,results:[],slowTimer:null,hTimer:null,pipelineTimers:[],templateSeq:'',templateLength:0,lastJobId:'',lastResult:null};
+const state={online:false,results:[],slowTimer:null,hTimer:null,pipelineTimers:[],templateSeq:'',templateLength:0,lastJobId:'',lastResult:null,searchResults:[],blastResults:[],msaData:null,additionalSequences:[]};
 
 const PIPELINE_DEFS=[
   {id:'step1',  label:'1. Transcript Isoform Filter',       tool:'Ensembl/GENCODE',         phase:'A'},
@@ -2491,6 +2795,295 @@ async function fetchSequence(acc){
   }catch(e){
     $('fetch-results').innerHTML=`<div class="error-card">❌ ${esc(e.message)}<br><span style="font-size:11px;margin-top:6px;display:block">Try <a href="https://www.ncbi.nlm.nih.gov/nuccore/" target="_blank" style="color:var(--primary)">NCBI Nucleotide</a> directly and paste the sequence.</span></div>`;
   }finally{setLoading('fetch-spinner','btn-fetch-text','btn-fetch',false,'Fetch Sequence');}
+}
+
+// ── Search Sequences ─────────────────────────────────────────────────────────
+async function doSearch(){
+  const query=$('search-query').value.trim();
+  if(!query){ alert('Enter a search query.'); return; }
+  setLoading('search-spinner','btn-search-text','btn-search-seq',true,'Searching…');
+  const db=$('search-db').value;
+  const org=$('search-organism-custom').value.trim() || $('search-organism').value;
+  try{
+    const d=await apiPost('/api/primer/search-sequences',{query,database:db,organism:org});
+    renderSearchResults(d);
+  }catch(e){
+    $('search-results-area').innerHTML=`<div class="error-card">❌ ${esc(e.message)}</div>`;
+  }finally{setLoading('search-spinner','btn-search-text','btn-search-seq',false,'Search');}
+}
+function renderSearchResults(data){
+  const area=$('search-results-area');
+  const count=$('search-results-count');
+  const actions=$('search-actions');
+  const results=data.results||[];
+  count.textContent=results.length+' found';
+  if(!results.length){
+    area.innerHTML='<div style="padding:40px 20px;text-align:center;color:var(--muted);font-size:13px">No results found. Try a different query or database.</div>';
+    actions.style.display='none';
+    return;
+  }
+  state.searchResults=results;
+  actions.style.display='flex';
+  let html='<div>';
+  results.forEach((r,i)=>{
+    const name=r.name||r.accession||r.id||'Unknown';
+    const org=r.organism||'';
+    const desc=r.description||'';
+    const len=r.length||'';
+    const source=r.source||'';
+    const url=r.source_url||'';
+    const gc=r.gc_content||'';
+    html+=`<div class="search-result-item">
+      <div class="search-result-header">
+        <label><input type="checkbox" class="search-cb" data-idx="${i}" checked> <span class="search-result-name">${esc(name)}</span></label>
+        <span class="search-result-org">${esc(org)}</span>
+      </div>
+      <div class="search-result-desc">${esc(desc)}</div>
+      <div class="search-result-meta">
+        <span>${len} bp</span>
+        ${gc?`<span>GC ${gc}%</span>`:''}
+        <span>${esc(source)}</span>
+        ${url?`<a href="${esc(url)}" target="_blank" rel="noopener" class="source-link">🔗 View source</a>`:''}
+      </div>
+    </div>`;
+  });
+  html+='</div>';
+  area.innerHTML=html;
+  $('search-select-all').onclick=function(){document.querySelectorAll('.search-cb').forEach(c=>c.checked=this.checked);};
+}
+function _on(id,evt,fn) { var el=$(id); if(el) el.addEventListener(evt,fn); }
+_on('btn-search-seq','click',doSearch);
+_on('search-query','keydown',function(e){if(e.key==='Enter')doSearch();});
+_on('btn-send-to-design','click',function(){
+  const selected=getSelectedSearchResults();
+  if(!selected.length){alert('Select at least one sequence.');return;}
+  const primary=selected[0];
+  const template=primary.sequence||'';
+  if(template.length<100){alert('Primary sequence too short for auto-design (≥100 bp).');return;}
+  $('template-seq').value=template;
+  $('seq-len').textContent=template.length;
+  state.additionalSequences=selected.slice(1);
+  switchTab('auto');
+});
+_on('btn-send-to-blast','click',function(){
+  const selected=getSelectedSearchResults();
+  if(!selected.length){alert('Select at least one sequence.');return;}
+  const seq=selected.map(s=>`>${s.name||s.accession||'seq'}\n${s.sequence||''}`).join('\n');
+  $('blast-query-seq').value=seq;
+  switchTab('blast');
+});
+_on('btn-send-to-msa','click',function(){
+  const selected=getSelectedSearchResults();
+  if(selected.length<2){alert('Select at least 2 sequences for MSA.');return;}
+  const fasta=selected.map(s=>`>${s.name||s.accession||'seq'}\n${s.sequence||''}`).join('\n');
+  $('msa-sequences').value=fasta;
+  switchTab('msa');
+});
+function getSelectedSearchResults(){
+  const cbs=document.querySelectorAll('.search-cb:checked');
+  return Array.from(cbs).map(cb=>state.searchResults[parseInt(cb.dataset.idx)]);
+}
+
+// ── BLAST ────────────────────────────────────────────────────────────────────
+async function doBlast(){
+  const seq=$('blast-query-seq').value.trim();
+  if(!seq){ alert('Enter a query sequence.'); return; }
+  setLoading('blast-spinner','btn-blast-text','btn-blast',true,'BLASTing…');
+  const mode=$('blast-mode').value;
+  const db=$('blast-db').value;
+  const org=$('blast-organism').value.trim();
+  const files=$('blast-fasta-input').files;
+  let body={sequence:seq,mode,db,organism:org};
+  if(files.length){
+    try{
+      const fastaText=await files[0].text();
+      const parsed=parseFasta(fastaText);
+      if(parsed.length>1){
+        // Multi-FASTA: run BLAST on first, store rest as subjects
+        body.sequence=parsed[0].sequence;
+        body.subject_sequences=parsed.slice(1);
+      }
+    }catch(e){}
+  }
+  try{
+    const d=await apiPost('/api/primer/blast',body);
+    renderBlastResults(d);
+  }catch(e){
+    $('blast-results-area').innerHTML=`<div class="error-card">❌ ${esc(e.message)}</div>`;
+  }finally{setLoading('blast-spinner','btn-blast-text','btn-blast',false,'Run BLAST');}
+}
+function renderBlastResults(data){
+  const area=$('blast-results-area');
+  const count=$('blast-results-count');
+  const actions=$('blast-actions');
+  const results=data.results||[];
+  count.textContent=results.length+' hits';
+  if(!results.length){
+    area.innerHTML='<div style="padding:40px 20px;text-align:center;color:var(--muted);font-size:13px">No BLAST hits found.</div>';
+    actions.style.display='none';
+    return;
+  }
+  state.blastResults=results;
+  actions.style.display='flex';
+  let html='<table class="results-table"><thead><tr><th><input type="checkbox" id="blast-select-all-inner" checked></th><th>Subject</th><th>Species</th><th>Identity%</th><th>E-value</th><th>Bit Score</th><th>Cover</th><th>Source</th></tr></thead><tbody>';
+  results.forEach((r,i)=>{
+    html+=`<tr>
+      <td><input type="checkbox" class="blast-cb" data-idx="${i}" checked></td>
+      <td><span class="search-result-name">${esc(r.subject_id||'')}</span><br><span style="font-size:10px;color:var(--muted)">${esc((r.subject_description||'').slice(0,60))}</span></td>
+      <td>${esc(r.subject_species||'')}</td>
+      <td style="font-weight:700;color:var(--bio)">${r.identity_pct||0}%</td>
+      <td style="font-size:10px">${esc(r.e_value||'')}</td>
+      <td>${r.bit_score||0}</td>
+      <td>${r.query_cover||0}%</td>
+      <td>${r.source_url?`<a href="${esc(r.source_url)}" target="_blank" class="source-link">🔗</a>`:esc(r.source||'')}</td>
+    </tr>`;
+  });
+  html+='</tbody></table>';
+  area.innerHTML=html;
+  $('blast-select-all-inner').onclick=function(){document.querySelectorAll('.blast-cb').forEach(c=>c.checked=this.checked);};
+}
+_on('btn-blast','click',doBlast);
+_on('blast-fasta-input','change',async function(){
+  const files=this.files;
+  if(!files.length)return;
+  try{
+    const text=await files[0].text();
+    const parsed=parseFasta(text);
+    if(parsed.length){
+      $('blast-query-seq').value=parsed.map(p=>`>${p.name}\n${p.sequence}`).join('\n');
+    }
+  }catch(e){}
+});
+_on('btn-blast-view-msa','click',function(){
+  const selected=getSelectedBlastResults();
+  if(selected.length<2){alert('Select at least 2 hits for MSA.');return;}
+  const fasta=selected.map(r=>`>${r.subject_id||'hit'}\n${r.subject_sequence||r.subject_id}`).join('\n');
+  const query=$('blast-query-seq').value.trim();
+  const seqOnly=query.split('\n').filter(l=>!l.startsWith('>')).join('');
+  $('msa-sequences').value=`>query\n${seqOnly}\n${fasta}`;
+  switchTab('msa');
+  setTimeout(()=>doMsa(),500);
+});
+_on('btn-blast-download-fasta','click',function(){
+  const selected=getSelectedBlastResults();
+  if(!selected.length){alert('No results selected.');return;}
+  const fasta=selected.map(r=>`>${r.subject_id||'hit'} ${r.subject_species||''}\n${r.subject_sequence||r.subject_id}`).join('\n');
+  blobDl(fasta,'text/plain','blast_results.fa');
+});
+function getSelectedBlastResults(){
+  const cbs=document.querySelectorAll('.blast-cb:checked');
+  return Array.from(cbs).map(cb=>state.blastResults[parseInt(cb.dataset.idx)]);
+}
+
+// ── MSA ──────────────────────────────────────────────────────────────────────
+async function doMsa(){
+  const text=$('msa-sequences').value.trim();
+  if(!text){alert('Enter sequences in FASTA format.');return;}
+  setLoading('msa-spinner','btn-msa-text','btn-msa',true,'Aligning…');
+  const ref=$('msa-reference').value.trim()||undefined;
+  const parsed=parseFasta(text);
+  if(parsed.length<2){alert('Need at least 2 sequences.');setLoading('msa-spinner','btn-msa-text','btn-msa',false,'Align');return;}
+  try{
+    const d=await apiPost('/api/primer/msa',{sequences:parsed,reference_id:ref});
+    renderMsaResults(d);
+  }catch(e){
+    $('msa-results-area').innerHTML=`<div class="error-card">❌ ${esc(e.message)}</div>`;
+  }finally{setLoading('msa-spinner','btn-msa-text','btn-msa',false,'Align');}
+}
+function renderMsaResults(data){
+  const area=$('msa-results-area');
+  const stats=$('msa-stats');
+  const actions=$('msa-actions');
+  const alignment=data.alignment||[];
+  const conservation=data.conservation||[];
+  state.msaData=data;
+  if(!alignment.length){
+    area.innerHTML='<div style="padding:40px 20px;text-align:center;color:var(--muted);font-size:13px">Alignment failed or no data.</div>';
+    actions.style.display='none';
+    return;
+  }
+  const s=data.stats||{};
+  stats.textContent=`${s.n_sequences||0} seqs, ${s.alignment_length||0} cols, ${s.conserved_pct||0}% conserved`;
+  actions.style.display='flex';
+  let html='<div class="msa-viewer">';
+  // Legend
+  html+='<div class="msa-legend"><span class="msa-legend-item"><span class="msa-legend-swatch" style="background:#4CAF50"></span> Match</span><span class="msa-legend-item"><span class="msa-legend-swatch" style="background:#F44336"></span> Mismatch</span><span class="msa-legend-item"><span class="msa-legend-swatch" style="background:#FFEB3B"></span> Gap</span><span class="msa-legend-item"><span class="msa-legend-swatch" style="background:#9E9E9E"></span> Ambiguous</span></div>';
+  // Conservation bar
+  if(conservation.length){
+    html+='<div class="msa-conservation" style="margin-bottom:8px">';
+    conservation.forEach(c=>{
+      const h=c.pct||0;
+      const color=h>=90?'#4CAF50':h>=70?'#8BC34A':h>=50?'#FFC107':'#F44336';
+      html+=`<div class="msa-conservation-bar" style="width:${Math.max(2,100/conservation.length)}px;background:${color}" title="${h}% conserved"></div>`;
+    });
+    html+='</div>';
+  }
+  // Alignment rows
+  alignment.forEach(row=>{
+    const name=esc(row.name||'');
+    const shortName=name.length>20?name.slice(0,20)+'…':name;
+    html+=`<div class="msa-row"><span class="msa-label" title="${name}">${shortName}</span><span class="msa-seq">`;
+    (row.positions||[]).forEach(p=>{
+      const ch=esc(p.char||'');
+      const cls=p.css_class||'msa-char';
+      // Determine match/mismatch relative to reference
+      let extraCls='';
+      if(cls==='msa-char'||cls==='msa-char msa-match'||cls==='msa-char msa-mismatch'){
+        // Compare to conservation consensus
+        const col=p.col;
+        if(conservation[col]){
+          const consensus=conservation[col].char;
+          if(ch===consensus) extraCls=' msa-match';
+          else if(ch==='-') extraCls=' msa-gap';
+          else extraCls=' msa-mismatch';
+        }
+      }else if(cls==='msa-gap') extraCls=' msa-gap';
+      else if(cls==='msa-ambiguous') extraCls=' msa-ambiguous';
+      html+=`<span class="msa-char${extraCls}">${ch||' '}</span>`;
+    });
+    html+='</span></div>';
+  });
+  // Stats summary
+  if(s.n_sequences){
+    html+=`<div style="margin-top:12px;padding:8px;background:var(--slate);border-radius:6px;font-size:10px;color:var(--text2)">
+      <strong>Stats:</strong> ${s.n_sequences} sequences · ${s.alignment_length} columns · ${s.conserved_columns} conserved (${s.conserved_pct}%) · ${s.identities}% identity · ${s.gap_only_columns} gap-only columns · Mean ${s.mean_gaps_per_seq} gaps/seq
+    </div>`;
+  }
+  html+='</div>';
+  area.innerHTML=html;
+}
+_on('btn-msa','click',doMsa);
+_on('msa-fasta-input','change',async function(){
+  const files=this.files;
+  if(!files.length)return;
+  try{
+    const text=await files[0].text();
+    $('msa-sequences').value=text;
+  }catch(e){}
+});
+_on('btn-msa-download-fasta','click',function(){
+  if(state.msaData&&state.msaData.fasta) blobDl(state.msaData.fasta,'text/plain','alignment.fa');
+});
+_on('btn-msa-download-clustal','click',function(){
+  if(state.msaData&&state.msaData.clustal) blobDl(state.msaData.clustal,'text/plain','alignment.clustal');
+});
+
+// ── FASTA parser ─────────────────────────────────────────────────────────────
+function parseFasta(text){
+  const lines=text.split('\n');
+  const seqs=[];
+  let current=null;
+  for(const line of lines){
+    const trimmed=line.trim();
+    if(trimmed.startsWith('>')){
+      if(current&&current.sequence) seqs.push(current);
+      current={name:trimmed.slice(1).split(/\s/)[0],description:trimmed.slice(1),sequence:''};
+    }else if(current){
+      current.sequence+=trimmed.toUpperCase();
+    }
+  }
+  if(current&&current.sequence) seqs.push(current);
+  return seqs;
 }
 
 // ── Downloads ─────────────────────────────────────────────────────────────
@@ -4306,6 +4899,15 @@ window.copyReferralLink = copyReferralLink;
   document.addEventListener('keydown', function(e){
     if(e.key==='Escape' && panel.classList.contains('visible')) closePanel();
   });
+})();
+</script>
+
+<script>
+(function(){
+  var h=document.getElementById('hamburger'),m=document.getElementById('mobile-menu');
+  if(!h||!m)return;
+  h.addEventListener('click',function(){h.classList.toggle('active');m.classList.toggle('open')});
+  document.addEventListener('click',function(e){if(!h.contains(e.target)&&!m.contains(e.target)){h.classList.remove('active');m.classList.remove('open')}});
 })();
 </script>
 

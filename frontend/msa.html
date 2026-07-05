@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en-IN">
+<head>
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-KRP5LLPR');</script>
+<!-- End Google Tag Manager -->
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Multiple Sequence Alignment — MSA Viewer & Tool | VigyanLLM</title>
+<meta name="description" content="Free online Multiple Sequence Alignment (MSA) viewer. Align DNA and protein sequences with color-coded display, conservation tracking, gap analysis, and FASTA/Clustal export.">
+<link rel="canonical" href="https://vigyanllm.in/msa">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://vigyanllm.in/msa">
+<meta property="og:title" content="Multiple Sequence Alignment — MSA Viewer & Tool | VigyanLLM">
+<meta property="og:description" content="Free online MSA viewer for DNA and protein sequences. Color-coded alignment, conservation tracking, and FASTA/Clustal export for molecular biology research.">
+<meta name="robots" content="index, follow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+:root{--navy:#0F172A;--navy-light:#1E293B;--white:#FFFFFF;--slate:#F8FAFC;--slate-border:#E2E8F0;--text:#0F172A;--text2:#475569;--muted:#94A3B8;--primary:#2563EB;--bio:#059669;--amber:#D97706;--accent:#22D3EE;--font-h:'Plus Jakarta Sans',sans-serif;--font-b:'Inter',sans-serif;--max-w:1100px;--red:#ef4444;--red-soft:#fef2f2;--amber-soft:#fffbeb;--bio-soft:#f0fdf4;--primary-soft:#eff6ff}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--slate);color:var(--text);font-family:var(--font-b);line-height:1.6;-webkit-font-smoothing:antialiased}
+a{text-decoration:none;color:inherit}
+.dashboard-wrap{background:transparent;max-width:var(--max-w);margin:0 auto;border-radius:0 0 12px 12px;box-shadow:0 1px 3px rgba(0,0,0,0.04)}
+nav{position:sticky;top:0;background:var(--navy);z-index:100;height:72px}
+.nav-inner{display:flex;justify-content:space-between;align-items:center;height:100%;max-width:1200px;margin:0 auto;padding:0 24px}
+.logo{font-family:var(--font-h);font-size:20px;color:#fff;display:inline-flex;align-items:center;gap:9px;text-decoration:none;font-weight:700}
+.logo-img{width:36px;height:36px;border-radius:6px;background:#0d1117;padding:3px;object-fit:contain;flex-shrink:0}
+.logo-text{font-family:var(--font-h);font-size:20px;color:#fff;line-height:1;font-weight:700}
+.nav-links{display:flex;gap:32px;align-items:center}
+.nav-links a{font-size:13px;color:#CBD5E1;transition:color .15s;font-weight:500;letter-spacing:0.02em}
+.nav-links a:hover{color:#fff}
+.nav-right{display:flex;align-items:center;gap:12px}
+.btn-nav{border:1.5px solid rgba(255,255,255,0.3);border-radius:4px;padding:7px 18px;font-size:12px;font-weight:600;background:transparent;cursor:pointer;transition:all .2s;color:#fff}
+.btn-nav:hover{border-color:#fff;background:rgba(255,255,255,0.1)}
+.disclaimer{background:#fffbeb;border-bottom:1px solid #fde68a;padding:10px 24px;text-align:center;font-size:13px;color:#92400e;font-weight:500;display:flex;align-items:center;justify-content:center;gap:8px}
+.disclaimer strong{font-weight:700}
+.page-header{padding:32px 0 24px;border-bottom:1px solid var(--slate-border);background:transparent}
+.page-header .container{max-width:var(--max-w);margin:0 auto;padding:0 24px;display:flex;align-items:flex-start;justify-content:space-between;gap:20px;flex-wrap:wrap}
+.ph-title{font-family:var(--font-h);font-size:clamp(1.1rem,2.5vw,1.6rem);font-weight:800;line-height:1.25}
+.ph-eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:6px;font-weight:600}
+.btn-primary{padding:12px 24px;background:var(--primary);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:opacity .15s}
+.btn-primary:hover{opacity:.9}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed}
+.btn-secondary{padding:8px 16px;background:transparent;border:1px solid var(--slate-border);border-radius:6px;font-size:12px;color:var(--text2);cursor:pointer;transition:background .15s;font-family:var(--font-b)}
+.btn-secondary:hover{background:var(--slate)}
+.btn-sm{padding:6px 12px;font-size:11px;border-radius:6px}
+.btn-primary.btn-sm{background:var(--primary);color:#fff;border:none;cursor:pointer}
+.btn-secondary.btn-sm{background:transparent;border:1px solid var(--slate-border);color:var(--text2);cursor:pointer;font-size:11px;padding:6px 12px;border-radius:6px}
+.btn-secondary.btn-sm:hover{background:var(--slate)}
+.spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;display:none}
+.spinner.active{display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+.panel-card{background:var(--white);border:1px solid var(--slate-border);border-radius:12px;overflow:hidden;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.panel-head{padding:16px 20px;border-bottom:1px solid var(--slate-border);background:var(--slate);display:flex;align-items:center;justify-content:space-between}
+.panel-head h3{font-family:var(--font-h);font-size:15px;font-weight:700}
+.panel-body{padding:20px}
+.form-group{margin-bottom:14px}
+.form-label{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text2);margin-bottom:6px}
+.form-textarea{width:100%;padding:10px 12px;border:1px solid var(--slate-border);border-radius:8px;font-family:var(--font-b);background:var(--white);color:var(--text);transition:border-color .15s;resize:vertical;min-height:120px;font-family:'Courier New',monospace;font-size:12px}
+.form-textarea:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+.form-hint{font-size:11px;color:var(--muted);margin-top:4px}
+.form-input{width:100%;padding:10px 12px;border:1px solid var(--slate-border);border-radius:8px;font-family:var(--font-b);background:var(--white);color:var(--text);transition:border-color .15s}
+.form-input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+.tool-wrap{display:grid;grid-template-columns:380px 1fr;gap:24px;padding:24px;max-width:var(--max-w);margin:0 auto}
+@media(max-width:900px){.tool-wrap{grid-template-columns:1fr}}
+.char-count{font-size:11px;color:var(--muted);margin-top:4px;text-align:right}
+.msa-wrap{overflow-x:auto;font-family:'Courier New',monospace;font-size:12px;line-height:1.4}
+.msa-align{display:flex;flex-direction:column;gap:0}
+.msa-row{display:flex;align-items:center;white-space:nowrap}
+.msa-label{display:inline-block;width:140px;overflow:hidden;text-overflow:ellipsis;font-size:11px;color:var(--text2);padding-right:12px;text-align:right;flex-shrink:0}
+.msa-seq{display:flex;gap:0}
+.msa-char{display:inline-flex;width:16px;height:20px;align-items:center;justify-content:center;font-weight:500;font-size:12px;border-radius:2px;margin:0}
+.msa-char.match{background:#4CAF50;color:#fff}
+.msa-char.mismatch{background:#F44336;color:#fff}
+.msa-char.gap{background:#FFEB3B;color:#333}
+.msa-char.ambiguous{background:#9E9E9E;color:#fff}
+.msa-char.consensus{background:#2196F3;color:#fff}
+.conservation-bar{margin-top:8px;display:flex;gap:0;height:10px;border-radius:4px;overflow:hidden;width:100%;max-width:100%}
+.conservation-seg{height:100%;transition:width .2s}
+.conservation-label{font-size:9px;color:var(--muted);margin-top:4px;display:flex;gap:8px;flex-wrap:wrap}
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.stat-item{background:var(--slate);padding:12px;border-radius:8px;text-align:center}
+.stat-val{font-size:20px;font-weight:700;color:var(--primary)}
+.stat-lbl{font-size:10px;color:var(--muted);margin-top:2px}
+.dl-bar{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.loading-bar{height:4px;background:var(--slate-border);border-radius:2px;overflow:hidden;margin:12px 0;display:none}
+.loading-bar.active{display:block}
+.loading-bar-inner{height:100%;width:0;background:var(--primary);animation:loadBar 1.2s ease-in-out infinite;border-radius:2px}
+@keyframes loadBar{0%{width:0%}50%{width:70%}100%{width:100%}}
+footer{background:var(--navy);color:#CBD5E1;padding:80px 0 32px}
+.footer-grid{display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr;gap:48px;margin-bottom:60px;max-width:1200px;margin:0 auto 60px;padding:0 24px}
+.footer-bottom{max-width:1200px;margin:0 auto;padding:24px 24px 0;border-top:1px solid rgba(255,255,255,0.1);display:flex;justify-content:space-between;font-size:12px;color:#64748B}
+.hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;background:none;border:none;padding:4px;margin-left:8px}
+.hamburger span{width:24px;height:2px;background:rgba(255,255,255,.6);border-radius:2px;transition:all .3s}
+.hamburger.active span:nth-child(1){transform:rotate(45deg) translate(5px,5px)}
+.hamburger.active span:nth-child(2){opacity:0}
+.hamburger.active span:nth-child(3){transform:rotate(-45deg) translate(5px,-5px)}
+.mobile-menu{display:none;position:fixed;top:72px;left:0;right:0;background:var(--navy);padding:16px 24px;z-index:999;border-top:1px solid rgba(255,255,255,.1);max-height:calc(100vh - 72px);overflow-y:auto}
+.mobile-menu.open{display:block}
+.mobile-menu .mm-group{margin-bottom:12px}
+.mobile-menu .mm-hdr{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700;padding:8px 0 4px}
+.mobile-menu a{display:block;color:#CBD5E1;font-family:var(--font-b);font-size:14px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+.mobile-menu .mm-login{display:block;font-family:var(--font-b);font-size:14px;padding:10px 0;font-weight:600;color:var(--accent)}
+@media(max-width:768px){.tool-wrap{grid-template-columns:1fr}.footer-grid{grid-template-columns:1fr 1fr;gap:32px}.nav-links{display:none}.hamburger{display:flex}}
+</style>
+</head>
+<body>
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-KRP5LLPR"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+
+<nav>
+<div class="nav-inner">
+  <a href="index.html" class="logo">
+    <img src="logo.svg" alt="VigyanLLM Logo" class="logo-img">
+    <span class="logo-text">VigyanLLM</span>
+  </a>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <div class="drop-wrap" style="position:relative;display:inline-block">
+      <span class="drop-trigger" style="font-family:var(--font-b);font-size:13px;color:#CBD5E1;font-weight:500;cursor:pointer">Platform Architecture ▾</span>
+      <div class="drop-menu" style="display:none;position:absolute;top:100%;left:0;background:#fff;border:1px solid #E2E5EA;border-radius:12px;min-width:200px;padding:8px;z-index:1001;box-shadow:0 12px 40px rgba(0,0,0,.08);opacity:0;transform:translateY(4px);transition:opacity .2s,transform .2s">
+        <a href="platform.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">Platform</a>
+        <a href="architecture.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">Architecture</a>
+        <a href="problem.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">Problem</a>
+        <a href="solution.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">Solution</a>
+        <a href="compare.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">Compare</a>
+        <a href="roadmap.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">Roadmap</a>
+      </div>
+    </div>
+    <div class="drop-wrap" style="position:relative;display:inline-block">
+      <span class="drop-trigger" style="font-family:var(--font-b);font-size:13px;color:#22D3EE;font-weight:600;cursor:pointer">Products &amp; Services ▾</span>
+      <div class="drop-menu" style="display:none;position:absolute;top:100%;left:0;background:#fff;border:1px solid #E2E5EA;border-radius:12px;min-width:220px;padding:8px;z-index:1001;box-shadow:0 12px 40px rgba(0,0,0,.08);opacity:0;transform:translateY(4px);transition:opacity .2s,transform .2s">
+        <a href="primer.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">VPrime 2.0</a>
+        <a href="search.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">Sequence Search</a>
+        <a href="blast.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">BLAST</a>
+        <a href="msa.html" style="display:block;padding:10px 16px;font-size:13px;color:#22D3EE;border-radius:8px;font-weight:600">MSA</a>
+        <a href="pcr-analysis.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">PCR Analysis</a>
+        <a href="crispr-analysis.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">CRISPR</a>
+        <a href="tm-calculator.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">Tm Calc</a>
+        <a href="gc-calculator.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">GC Calc</a>
+        <a href="protein-docking.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">Docking</a>
+      </div>
+    </div>
+    <div class="drop-wrap" style="position:relative;display:inline-block">
+      <span class="drop-trigger" style="font-family:var(--font-b);font-size:13px;color:#CBD5E1;font-weight:500;cursor:pointer">Collab &amp; Partnership ▾</span>
+      <div class="drop-menu" style="display:none;position:absolute;top:100%;left:0;background:#fff;border:1px solid #E2E5EA;border-radius:12px;min-width:200px;padding:8px;z-index:1001;box-shadow:0 12px 40px rgba(0,0,0,.08);opacity:0;transform:translateY(4px);transition:opacity .2s,transform .2s">
+        <a href="academic-partnership.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">Academic Partnership</a>
+        <a href="mailto:contact@vigyanllm.in" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">Enterprise Inquiry</a>
+      </div>
+    </div>
+  </div>
+  <style>.drop-wrap:hover .drop-menu{display:block !important;opacity:1 !important;transform:translateY(0) !important}.drop-menu a:hover{background:#E0F2F1 !important;color:#009688 !important;padding-left:20px !important}</style>
+  <button class="hamburger" id="hamburger" aria-label="Menu" style="flex-direction:column;gap:5px;cursor:pointer;background:none;border:none;padding:4px;margin-left:8px">
+    <span style="width:24px;height:2px;background:rgba(255,255,255,.6);border-radius:2px;display:block"></span>
+    <span style="width:24px;height:2px;background:rgba(255,255,255,.6);border-radius:2px;display:block"></span>
+    <span style="width:24px;height:2px;background:rgba(255,255,255,.6);border-radius:2px;display:block"></span>
+  </button>
+  <div class="nav-right">
+    <button class="btn-nav" id="nav-login-btn" onclick="toggleUserMenu()">Login</button>
+  </div>
+</div>
+</nav>
+<div class="mobile-menu" id="mobile-menu">
+  <div class="mm-group"><div class="mm-hdr">Home</div>
+    <a href="index.html">Home</a>
+  </div>
+  <div class="mm-group"><div class="mm-hdr">Platform Architecture</div>
+    <a href="platform.html">Platform</a>
+    <a href="architecture.html">Architecture</a>
+    <a href="problem.html">Problem</a>
+    <a href="solution.html">Solution</a>
+    <a href="compare.html">Compare</a>
+    <a href="roadmap.html">Roadmap</a>
+  </div>
+  <div class="mm-group"><div class="mm-hdr">Products &amp; Services</div>
+    <a href="primer.html">VPrime 2.0</a>
+    <a href="search.html">Sequence Search</a>
+    <a href="blast.html">BLAST</a>
+    <a href="msa.html">MSA</a>
+    <a href="pcr-analysis.html">PCR Analysis</a>
+    <a href="crispr-analysis.html">CRISPR Analysis</a>
+    <a href="tm-calculator.html">Tm Calculator</a>
+    <a href="gc-calculator.html">GC Calculator</a>
+    <a href="protein-docking.html">Protein Docking</a>
+  </div>
+  <div class="mm-group"><div class="mm-hdr">Collab &amp; Partnership</div>
+    <a href="academic-partnership.html">Academic Partnership</a>
+    <a href="mailto:contact@vigyanllm.in">Enterprise Inquiry</a>
+  </div>
+  <div class="mm-group"><a href="login.html" class="mm-login">Log in</a></div>
+</div>
+
+<div class="dashboard-wrap">
+
+<div class="disclaimer">
+  <span style="font-size:16px">⚠️</span>
+  <strong>Research Use Only.</strong> Not validated for clinical diagnostic use.
+</div>
+
+<div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:12px 24px;background:var(--slate);border-bottom:1px solid var(--slate-border);font-family:var(--font-b);font-size:13px">
+  <span style="font-weight:700;color:var(--text);margin-right:16px">VigyanLLM</span>
+  <a href="primer.html" style="color:var(--primary);text-decoration:none;font-weight:500">Primer Design</a>
+  <a href="search.html" style="color:var(--primary);text-decoration:none;font-weight:500">Sequence Search</a>
+  <a href="blast.html" style="color:var(--primary);text-decoration:none;font-weight:500">BLAST</a>
+  <a href="msa.html" style="color:var(--primary);text-decoration:none;font-weight:500">MSA</a>
+  <span style="margin-left:auto;font-size:11px;color:var(--muted)">Also available as separate tools →</span>
+</div>
+
+<div class="page-header">
+  <div class="container">
+    <div>
+      <div class="ph-eyebrow">Genomic Tool · Conservation Analysis</div>
+      <h1 class="ph-title">Multiple Sequence Alignment</h1>
+    </div>
+  </div>
+</div>
+
+<div class="tool-wrap">
+
+<div>
+<div class="panel-card">
+  <div class="panel-head"><h3>Sequences</h3></div>
+  <div class="panel-body">
+    <div class="form-group">
+      <label class="form-label">FASTA Sequences</label>
+      <textarea id="msa-input" class="form-textarea" placeholder="&gt;seq1&#10;ATCGATCGATCG&#10;&gt;seq2&#10;ATCGATCGATCG&#10;&gt;seq3&#10;ATCGATCGATAG" rows="8"></textarea>
+      <div class="char-count"><span id="msa-seq-count">0</span> sequences</div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">FASTA Upload</label>
+      <input type="file" id="msa-upload" accept=".fa,.fasta,.txt,.fna,.aln" class="form-input" style="padding:6px;font-size:12px">
+      <div class="form-hint">Upload a FASTA file with 2+ sequences</div>
+    </div>
+    <button class="btn-primary" id="btn-msa" style="width:100%;justify-content:center">
+      <span class="spinner" id="msa-sp"></span>
+      <span id="msa-txt">Run Alignment</span>
+    </button>
+  </div>
+</div>
+
+<div class="panel-card">
+  <div class="panel-head"><h3>Downloads</h3></div>
+  <div class="panel-body">
+    <button class="btn-secondary btn-sm" id="btn-dl-fa" style="width:100%;margin-bottom:6px">Download FASTA</button>
+    <button class="btn-secondary btn-sm" id="btn-dl-cl" style="width:100%">Download Clustal</button>
+  </div>
+</div>
+</div>
+
+<div>
+<div class="panel-card">
+  <div class="panel-head"><h3>Alignment</h3></div>
+  <div class="panel-body" id="msa-body">
+    <div class="loading-bar" id="msa-loading"><div class="loading-bar-inner"></div></div>
+    <div id="msa-results" style="padding:60px 20px;text-align:center;color:var(--muted);font-size:13px">
+      <div style="font-size:40px;margin-bottom:12px">🧬</div>
+      Paste sequences in FASTA format and click <strong>Run Alignment</strong>
+    </div>
+  </div>
+</div>
+</div>
+
+</div>
+</div>
+
+<footer>
+<div class="footer-grid">
+  <div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+      <img src="logo.svg" alt="VigyanLLM Logo" style="width:48px;height:48px;border-radius:6px">
+      <span style="font-family:var(--font-h);font-size:20px;font-weight:700;color:#fff">VigyanLLM</span>
+    </div>
+    <p style="font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:20px;line-height:1.6">Sovereign Healthcare &amp; Life Sciences AI.<br>Built in India. For the world.</p>
+    <a href="mailto:contact@vigyanllm.in" style="font-family:var(--font-b);font-size:13px;color:var(--accent);display:block;margin-bottom:6px">contact@vigyanllm.in</a>
+  </div>
+  <div>
+    <h5 style="font-family:var(--font-h);font-size:12px;text-transform:uppercase;letter-spacing:0.1em;color:#fff;margin-bottom:24px;font-weight:700">Platform</h5>
+    <a href="primer.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">VPrime 2.0</a>
+    <a href="search.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Sequence Search</a>
+    <a href="blast.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">BLAST</a>
+    <a href="msa.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">MSA</a>
+  </div>
+  <div>
+    <h5 style="font-family:var(--font-h);font-size:12px;text-transform:uppercase;letter-spacing:0.1em;color:#fff;margin-bottom:24px;font-weight:700">Resources</h5>
+    <a href="blog/index.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Blog</a>
+    <a href="faq.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">FAQ</a>
+    <a href="about.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">About</a>
+    <a href="academic-partnership.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Academic Partnership</a>
+  </div>
+  <div>
+    <h5 style="font-family:var(--font-h);font-size:12px;text-transform:uppercase;letter-spacing:0.1em;color:#fff;margin-bottom:24px;font-weight:700">Contact</h5>
+    <a href="mailto:contact@vigyanllm.in" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">contact@vigyanllm.in</a>
+    <a href="privacy.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Privacy</a>
+    <a href="cookies.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Cookies</a>
+    <a href="terms.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Terms</a>
+    <a href="refund.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Refund</a>
+    <a href="security.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Security</a>
+  </div>
+</div>
+<div class="footer-bottom">
+  <span>&copy; <script>document.write(new Date().getFullYear())</script> VigyanLLM Pvt. Ltd. · Sovereign Research AI</span>
+  <span>WWW.VIGYANLLM.IN</span>
+</div>
+</footer>
+
+<script src="/auth-shared.js"></script>
+<script>
+var API = window.VIGYAN_BACKEND_URL || '';
+var msaData = null;
+
+function $(id){return document.getElementById(id)}
+function esc(s){return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function _on(id,ev,fn){var e=$(id);if(e)e.addEventListener(ev,fn)}
+function loading(on){
+  $('msa-sp').classList.toggle('active',on);
+  $('btn-msa').disabled=on;
+  $('msa-txt').textContent=on?'Aligning…':'Run Alignment';
+  $('msa-loading').classList.toggle('active',on);
+}
+function blobDl(c,m,f){var b=new Blob([c],{type:m});var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=f;a.click();URL.revokeObjectURL(a.href)}
+function parseFasta(t){
+  var lines=t.split('\n'),seqs=[],cur=null;
+  lines.forEach(function(l){var s=l.trim();if(s.startsWith('>')){if(cur&&cur.sequence)seqs.push(cur);cur={id:cur?cur.id+1:1,name:s.slice(1).split(/\s/)[0],sequence:''}}else if(cur)cur.sequence+=s.toUpperCase()});
+  if(cur&&cur.sequence)seqs.push(cur);return seqs;
+}
+function updateSeqCount(){
+  var t=$('msa-input').value.trim(),seqs=parseFasta(t);
+  $('msa-seq-count').textContent=seqs.length;
+}
+
+(function(){
+  var v=localStorage.getItem('vp_msa_seq');
+  if(v){$('msa-input').value=v;updateSeqCount();localStorage.removeItem('vp_msa_seq')}
+})();
+
+_on('msa-input','input',updateSeqCount);
+_on('msa-upload','change',async function(){
+  if(!this.files.length)return;
+  try{var t=await this.files[0].text();$('msa-input').value=t;updateSeqCount()}catch(e){}
+});
+
+async function doMsa(){
+  var t=$('msa-input').value.trim();
+  if(!t){alert('Enter sequences in FASTA format.');return}
+  var seqs=parseFasta(t);
+  if(seqs.length<2){alert('At least 2 sequences are required.');return}
+  loading(true);
+  $('msa-results').innerHTML='';
+  try{
+    var r=await fetch(API+'/api/primer/msa',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sequences:seqs})});
+    if(!r.ok){var e=await r.text();throw new Error(e||'MSA failed')}
+    var d=await r.json();
+    msaData=d;
+    renderMsa(d);
+  }catch(e){$('msa-results').innerHTML='<div class="error-card" style="padding:16px;background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;color:#DC2626;font-size:13px">'+esc(e.message)+'</div>'}
+  finally{loading(false)}
+}
+
+function renderMsa(data){
+  var area=$('msa-results'),align=data.alignment||[],cons=data.conservation||[],stats=data.stats||{};
+  if(!align.length||!align[0]){area.innerHTML='<div style="padding:40px;text-align:center;color:var(--muted)">No alignment data.</div>';return}
+  var alen=stats.alignment_length||align[0].length||0;
+  var html='';
+  html+='<div class="stats-grid">';
+  html+='<div class="stat-item"><div class="stat-val">'+stats.n_sequences+'</div><div class="stat-lbl">Sequences</div></div>';
+  html+='<div class="stat-item"><div class="stat-val">'+alen+'</div><div class="stat-lbl">Alignment Length</div></div>';
+  html+='<div class="stat-item"><div class="stat-val">'+stats.conserved_columns+'</div><div class="stat-lbl">Conserved Columns</div></div>';
+  html+='<div class="stat-item"><div class="stat-val">'+stats.conserved_pct+'%</div><div class="stat-lbl">Conservation</div></div>';
+  html+='<div class="stat-item"><div class="stat-val">'+stats.identities+'%</div><div class="stat-lbl">Identity</div></div>';
+  html+='<div class="stat-item"><div class="stat-val">'+stats.mean_gaps_per_seq+'</div><div class="stat-lbl">Avg Gaps/Seq</div></div>';
+  html+='</div>';
+  var consensusChars=[];
+  if(cons.length)cons.forEach(function(c){consensusChars.push(c.char)});
+  else if(alen){for(var i=0;i<alen;i++)consensusChars.push('-')}
+  html+='<div class="msa-wrap" style="margin-top:16px"><div class="msa-align">';
+  align.forEach(function(row){
+    var name=row.name||'seq_'+(row.index||0);
+    html+='<div class="msa-row"><span class="msa-label" title="'+esc(name)+'">'+esc(name.slice(0,20))+'</span><div class="msa-seq">';
+    (row.positions||[]).forEach(function(pos,i){
+      var cls='msa-char';
+      if(pos.css_class==='msa-gap')cls+=' gap';
+      else if(pos.css_class==='msa-ambiguous')cls+=' ambiguous';
+      else{
+        var consChar=consensusChars[i]||'';
+        cls+=(pos.char.toUpperCase()===consChar.toUpperCase()&&consChar!=='-')?' match':' mismatch';
+      }
+      html+='<span class="'+cls+'" title="'+esc(name)+' col '+(i+1)+': '+esc(pos.char)+'">'+esc(pos.char)+'</span>';
+    });
+    html+='</div></div>';
+  });
+  html+='<div class="msa-row" style="margin-top:6px"><span class="msa-label" style="color:var(--primary);font-weight:600">Consensus</span><div class="msa-seq">';
+  if(cons.length)cons.forEach(function(c,i){
+    html+='<span class="msa-char" style="background:#2196F3;color:#fff" title="'+c.pct+'% conserved: '+c.char+' ('+c.count+'/'+c.total+')">'+esc(c.char)+'</span>';
+  });
+  html+='</div></div></div></div>';
+  html+='<div style="margin-top:8px"><div style="font-size:10px;color:var(--muted);margin-bottom:4px">Conservation</div><div class="conservation-bar">';
+  if(cons.length)cons.forEach(function(c){
+    var pct=Math.max(2,c.pct);
+    html+='<div class="conservation-seg" style="width:'+pct/cons.length+'%;background:'+greenRed(c.pct/100)+'"></div>';
+  });
+  html+='</div><div class="conservation-label"><span>0%</span><span>100%</span></div></div>';
+  area.innerHTML=html;
+}
+
+function greenRed(t){
+  var r=Math.round(255*(1-t)),g=Math.round(255*t);
+  return 'rgb('+r+','+g+',0)';
+}
+
+_on('btn-msa','click',doMsa);
+_on('btn-dl-fa','click',function(){
+  if(!msaData||!msaData.fasta){alert('Run alignment first.');return}
+  blobDl(msaData.fasta,'text/plain','alignment.fa');
+});
+_on('btn-dl-cl','click',function(){
+  if(!msaData||!msaData.clustal){alert('Run alignment first.');return}
+  blobDl(msaData.clustal,'text/plain','alignment.aln');
+});
+</script>
+<script>
+(function(){
+  var h=document.getElementById('hamburger'),m=document.getElementById('mobile-menu');
+  if(!h||!m)return;
+  h.addEventListener('click',function(){h.classList.toggle('active');m.classList.toggle('open')});
+  document.addEventListener('click',function(e){if(!h.contains(e.target)&&!m.contains(e.target)){h.classList.remove('active');m.classList.remove('open')}});
+})();
+</script>
+</body>
+</html>

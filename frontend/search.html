@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en-IN">
+<head>
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-KRP5LLPR');</script>
+<!-- End Google Tag Manager -->
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sequence Search — Cross-Database Biological Sequence Lookup | VigyanLLM</title>
+<meta name="description" content="Search biological sequences across NCBI, Ensembl, UniProt, DDBJ, and ENA. Find nucleotide and protein sequences by name, accession ID, or gene symbol. Free multi-database sequence search tool.">
+<link rel="canonical" href="https://vigyanllm.in/search">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://vigyanllm.in/search">
+<meta property="og:title" content="Sequence Search — Multi-Database Biological Lookup | VigyanLLM">
+<meta property="og:description" content="Cross-database biological sequence search across NCBI, Ensembl, UniProt, DDBJ, and ENA. Real-time source links, FASTA export, and primer design integration.">
+<meta name="robots" content="index, follow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+:root{--navy:#0F172A;--navy-light:#1E293B;--white:#FFFFFF;--slate:#F8FAFC;--slate-border:#E2E8F0;--text:#0F172A;--text2:#475569;--muted:#94A3B8;--primary:#2563EB;--bio:#059669;--amber:#D97706;--accent:#22D3EE;--font-h:'Plus Jakarta Sans',sans-serif;--font-b:'Inter',sans-serif;--max-w:1100px;--sec-p:100px;--sidebar-l:280px;--sidebar-r:260px;--red:#ef4444;--red-soft:#fef2f2;--amber-soft:#fffbeb;--bio-soft:#f0fdf4;--primary-soft:#eff6ff}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--slate);color:var(--text);font-family:var(--font-b);line-height:1.6;-webkit-font-smoothing:antialiased}
+a{text-decoration:none;color:inherit}
+.dashboard-wrap{background:transparent;max-width:var(--max-w);margin:0 auto;border-radius:0 0 12px 12px;box-shadow:0 1px 3px rgba(0,0,0,0.04)}
+nav{position:sticky;top:0;background:var(--navy);z-index:100;height:72px}
+.nav-inner{display:flex;justify-content:space-between;align-items:center;height:100%;max-width:1200px;margin:0 auto;padding:0 24px}
+.logo{font-family:var(--font-h);font-size:20px;color:#fff;display:inline-flex;align-items:center;gap:9px;text-decoration:none;font-weight:700}
+.logo-img{width:36px;height:36px;border-radius:6px;background:#0d1117;padding:3px;object-fit:contain;flex-shrink:0}
+.logo-text{font-family:var(--font-h);font-size:20px;color:#fff;line-height:1;font-weight:700}
+.nav-links{display:flex;gap:32px;align-items:center}
+.nav-links a{font-size:13px;color:#CBD5E1;transition:color .15s;font-weight:500;letter-spacing:0.02em}
+.nav-links a:hover{color:#fff}
+.nav-right{display:flex;align-items:center;gap:12px}
+.status-pill{display:inline-flex;align-items:center;gap:6px;border:1px solid rgba(255,255,255,0.2);border-radius:99px;padding:5px 14px;font-family:var(--font-b);font-size:11px;background:rgba(255,255,255,0.08);white-space:nowrap;transition:all .3s}
+.status-pill.online{border-color:rgba(5,150,105,.4);color:var(--bio)}
+.status-pill.offline{border-color:rgba(217,119,6,.4);color:var(--amber)}
+.s-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.s-dot.green{background:var(--bio)}
+.s-dot.amber{background:var(--amber);animation:pulse 2s infinite}
+.s-dot.grey{background:var(--muted)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.btn-nav{border:1.5px solid rgba(255,255,255,0.3);border-radius:4px;padding:7px 18px;font-size:12px;font-weight:600;background:transparent;cursor:pointer;transition:all .2s;color:#fff}
+.btn-nav:hover{border-color:#fff;background:rgba(255,255,255,0.1)}
+.disclaimer{background:#fffbeb;border-bottom:1px solid #fde68a;padding:10px 24px;text-align:center;font-size:13px;color:#92400e;font-weight:500;display:flex;align-items:center;justify-content:center;gap:8px}
+.disclaimer strong{font-weight:700}
+.page-header{padding:32px 0 24px;border-bottom:1px solid var(--slate-border);background:transparent}
+.page-header .container{max-width:var(--max-w);margin:0 auto;padding:0 24px;display:flex;align-items:flex-start;justify-content:space-between;gap:20px;flex-wrap:wrap}
+.ph-title{font-family:var(--font-h);font-size:clamp(1.1rem,2.5vw,1.6rem);font-weight:800;line-height:1.25}
+.ph-eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:6px;font-weight:600}
+.ph-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.pipeline-badge{display:inline-block;background:var(--primary-soft);color:var(--primary);font-size:9px;font-weight:700;padding:2px 8px;border-radius:4px;letter-spacing:.05em;margin-left:8px}
+.btn-primary{padding:12px 24px;background:var(--primary);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:opacity .15s}
+.btn-primary:hover{opacity:.9}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed}
+.btn-secondary{padding:8px 16px;background:transparent;border:1px solid var(--slate-border);border-radius:6px;font-size:12px;color:var(--text2);cursor:pointer;transition:background .15s;font-family:var(--font-b)}
+.btn-secondary:hover{background:var(--slate)}
+.btn-sm{padding:6px 12px;font-size:11px;border-radius:6px}
+.btn-primary.btn-sm{background:var(--primary);color:#fff;border:none;cursor:pointer}
+.btn-secondary.btn-sm{background:transparent;border:1px solid var(--slate-border);color:var(--text2);cursor:pointer;font-size:11px;padding:6px 12px;border-radius:6px}
+.btn-secondary.btn-sm:hover{background:var(--slate)}
+.spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;display:none}
+.spinner.active{display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+.panel-card{background:var(--white);border:1px solid var(--slate-border);border-radius:12px;overflow:hidden;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.panel-head{padding:16px 20px;border-bottom:1px solid var(--slate-border);background:var(--slate);display:flex;align-items:center;justify-content:space-between}
+.panel-head h3{font-family:var(--font-h);font-size:15px;font-weight:700}
+.panel-body{padding:20px}
+.panel-footer{display:flex;gap:8px;padding:12px 16px;border-top:1px solid var(--slate-border);background:var(--slate);flex-wrap:wrap;align-items:center}
+.form-group{margin-bottom:14px}
+.form-label{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text2);margin-bottom:6px}
+.form-input,.form-textarea{width:100%;padding:10px 12px;border:1px solid var(--slate-border);border-radius:8px;font-family:var(--font-b);background:var(--white);color:var(--text);transition:border-color .15s}
+.form-textarea{resize:vertical;min-height:100px;font-family:'Courier New',monospace;font-size:12px}
+.form-input:focus,.form-textarea:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+.form-hint{font-size:11px;color:var(--muted);margin-top:4px}
+.form-select{width:100%;padding:10px 12px;border:1px solid var(--slate-border);border-radius:8px;background:var(--white);font-family:var(--font-b);font-size:13px;color:var(--text);appearance:auto}
+.tool-wrap{display:grid;grid-template-columns:380px 1fr;gap:24px;padding:24px;max-width:var(--max-w);margin:0 auto}
+@media(max-width:900px){.tool-wrap{grid-template-columns:1fr}}
+.results-table{width:100%;border-collapse:collapse;font-size:12px}
+.results-table th{text-align:left;padding:8px 6px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text2);border-bottom:2px solid var(--slate-border);white-space:nowrap;background:var(--slate);position:sticky;top:0}
+.results-table td{padding:7px 6px;border-bottom:1px solid var(--slate-border);vertical-align:middle}
+.results-table tr:hover td{background:var(--primary-soft)}
+.results-table .hit-id{font-weight:600;font-size:12px;color:var(--text)}
+.results-table .hit-desc{font-size:10px;color:var(--muted);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.results-table .hit-species{font-size:11px;color:var(--text2)}
+.source-link{color:var(--primary);font-size:11px;text-decoration:none}
+.source-link:hover{text-decoration:underline}
+.results-count{font-size:13px;color:var(--muted);font-weight:400}
+.scroll-wrap{overflow-x:auto;max-height:650px;overflow-y:auto}
+.db-badge{display:inline-block;padding:1px 6px;border-radius:3px;font-size:9px;font-weight:700;letter-spacing:.02em;text-transform:uppercase}
+.db-badge.ncbi{background:#DBEAFE;color:#1D4ED8}
+.db-badge.ensembl{background:#E0E7FF;color:#4338CA}
+.db-badge.uniprot{background:#FCE7F3;color:#BE185D}
+.db-badge.ddbj{background:#D1FAE5;color:#047857}
+.db-badge.ena{background:#FEF3C7;color:#B45309}
+.char-count{font-size:11px;color:var(--muted);margin-top:4px;text-align:right}
+footer{background:var(--navy);color:#CBD5E1;padding:80px 0 32px}
+.footer-grid{display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr;gap:48px;margin-bottom:60px;max-width:1200px;margin:0 auto 60px;padding:0 24px}
+.footer-bottom{max-width:1200px;margin:0 auto;padding:24px 24px 0;border-top:1px solid rgba(255,255,255,0.1);display:flex;justify-content:space-between;font-size:12px;color:#64748B}
+.hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;background:none;border:none;padding:4px;margin-left:8px}
+.hamburger span{width:24px;height:2px;background:rgba(255,255,255,.6);border-radius:2px;transition:all .3s}
+.hamburger.active span:nth-child(1){transform:rotate(45deg) translate(5px,5px)}
+.hamburger.active span:nth-child(2){opacity:0}
+.hamburger.active span:nth-child(3){transform:rotate(-45deg) translate(5px,-5px)}
+.mobile-menu{display:none;position:fixed;top:72px;left:0;right:0;background:var(--navy);padding:16px 24px;z-index:999;border-top:1px solid rgba(255,255,255,.1);max-height:calc(100vh - 72px);overflow-y:auto}
+.mobile-menu.open{display:block}
+.mobile-menu .mm-group{margin-bottom:12px}
+.mobile-menu .mm-hdr{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700;padding:8px 0 4px}
+.mobile-menu a{display:block;color:#CBD5E1;font-family:var(--font-b);font-size:14px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+.mobile-menu .mm-login{display:block;font-family:var(--font-b);font-size:14px;padding:10px 0;font-weight:600;color:var(--accent)}
+@media(max-width:768px){.footer-grid{grid-template-columns:1fr 1fr;gap:32px}.nav-links{display:none}.hamburger{display:flex}}
+</style>
+</head>
+<body>
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-KRP5LLPR"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+
+<nav>
+<div class="nav-inner">
+  <a href="index.html" class="logo">
+    <img src="logo.svg" alt="VigyanLLM Logo" class="logo-img">
+    <span class="logo-text">VigyanLLM</span>
+  </a>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <div class="drop-wrap" style="position:relative;display:inline-block">
+      <span class="drop-trigger" style="font-family:var(--font-b);font-size:13px;color:#CBD5E1;font-weight:500;cursor:pointer">Platform Architecture ▾</span>
+      <div class="drop-menu" style="display:none;position:absolute;top:100%;left:0;background:#fff;border:1px solid #E2E5EA;border-radius:12px;min-width:200px;padding:8px;z-index:1001;box-shadow:0 12px 40px rgba(0,0,0,.08);opacity:0;transform:translateY(4px);transition:opacity .2s,transform .2s">
+        <a href="platform.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">Platform</a>
+        <a href="architecture.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">Architecture</a>
+        <a href="problem.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">Problem</a>
+        <a href="solution.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">Solution</a>
+        <a href="compare.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">Compare</a>
+        <a href="roadmap.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">Roadmap</a>
+      </div>
+    </div>
+    <div class="drop-wrap" style="position:relative;display:inline-block">
+      <span class="drop-trigger" style="font-family:var(--font-b);font-size:13px;color:#22D3EE;font-weight:600;cursor:pointer">Products &amp; Services ▾</span>
+      <div class="drop-menu" style="display:none;position:absolute;top:100%;left:0;background:#fff;border:1px solid #E2E5EA;border-radius:12px;min-width:220px;padding:8px;z-index:1001;box-shadow:0 12px 40px rgba(0,0,0,.08);opacity:0;transform:translateY(4px);transition:opacity .2s,transform .2s">
+        <a href="primer.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">VPrime 2.0</a>
+        <a href="search.html" style="display:block;padding:10px 16px;font-size:13px;color:#22D3EE;border-radius:8px;font-weight:600">Sequence Search</a>
+        <a href="blast.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">BLAST</a>
+        <a href="msa.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">MSA</a>
+        <a href="pcr-analysis.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">PCR Analysis</a>
+        <a href="crispr-analysis.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">CRISPR</a>
+        <a href="tm-calculator.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">Tm Calc</a>
+        <a href="gc-calculator.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">GC Calc</a>
+        <a href="protein-docking.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">Docking</a>
+      </div>
+    </div>
+    <div class="drop-wrap" style="position:relative;display:inline-block">
+      <span class="drop-trigger" style="font-family:var(--font-b);font-size:13px;color:#CBD5E1;font-weight:500;cursor:pointer">Collab &amp; Partnership ▾</span>
+      <div class="drop-menu" style="display:none;position:absolute;top:100%;left:0;background:#fff;border:1px solid #E2E5EA;border-radius:12px;min-width:200px;padding:8px;z-index:1001;box-shadow:0 12px 40px rgba(0,0,0,.08);opacity:0;transform:translateY(4px);transition:opacity .2s,transform .2s">
+        <a href="academic-partnership.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">Academic Partnership</a>
+        <a href="mailto:contact@vigyanllm.in" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">Enterprise Inquiry</a>
+      </div>
+    </div>
+  </div>
+  <style>.drop-wrap:hover .drop-menu{display:block !important;opacity:1 !important;transform:translateY(0) !important}.drop-menu a:hover{background:#E0F2F1 !important;color:#009688 !important;padding-left:20px !important}</style>
+  <button class="hamburger" id="hamburger" aria-label="Menu" style="flex-direction:column;gap:5px;cursor:pointer;background:none;border:none;padding:4px;margin-left:8px">
+    <span style="width:24px;height:2px;background:rgba(255,255,255,.6);border-radius:2px;display:block"></span>
+    <span style="width:24px;height:2px;background:rgba(255,255,255,.6);border-radius:2px;display:block"></span>
+    <span style="width:24px;height:2px;background:rgba(255,255,255,.6);border-radius:2px;display:block"></span>
+  </button>
+  <div class="nav-right">
+    <button class="btn-nav" id="nav-login-btn" onclick="toggleUserMenu()">Login</button>
+  </div>
+</div>
+</nav>
+<div class="mobile-menu" id="mobile-menu">
+  <div class="mm-group"><div class="mm-hdr">Home</div>
+    <a href="index.html">Home</a>
+  </div>
+  <div class="mm-group"><div class="mm-hdr">Platform Architecture</div>
+    <a href="platform.html">Platform</a>
+    <a href="architecture.html">Architecture</a>
+    <a href="problem.html">Problem</a>
+    <a href="solution.html">Solution</a>
+    <a href="compare.html">Compare</a>
+    <a href="roadmap.html">Roadmap</a>
+  </div>
+  <div class="mm-group"><div class="mm-hdr">Products &amp; Services</div>
+    <a href="primer.html">VPrime 2.0</a>
+    <a href="search.html">Sequence Search</a>
+    <a href="blast.html">BLAST</a>
+    <a href="msa.html">MSA</a>
+    <a href="pcr-analysis.html">PCR Analysis</a>
+    <a href="crispr-analysis.html">CRISPR Analysis</a>
+    <a href="tm-calculator.html">Tm Calculator</a>
+    <a href="gc-calculator.html">GC Calculator</a>
+    <a href="protein-docking.html">Protein Docking</a>
+  </div>
+  <div class="mm-group"><div class="mm-hdr">Collab &amp; Partnership</div>
+    <a href="academic-partnership.html">Academic Partnership</a>
+    <a href="mailto:contact@vigyanllm.in">Enterprise Inquiry</a>
+  </div>
+  <div class="mm-group"><a href="login.html" class="mm-login">Log in</a></div>
+</div>
+
+<div class="dashboard-wrap">
+
+<div class="disclaimer">
+  <span style="font-size:16px">⚠️</span>
+  <strong>Research Use Only.</strong> Not validated for clinical diagnostic use.
+</div>
+
+<div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:12px 24px;background:var(--slate);border-bottom:1px solid var(--slate-border);font-family:var(--font-b);font-size:13px">
+  <span style="font-weight:700;color:var(--text);margin-right:16px">VigyanLLM</span>
+  <a href="primer.html" style="color:var(--primary);text-decoration:none;font-weight:500">Primer Design</a>
+  <a href="search.html" style="color:var(--primary);text-decoration:none;font-weight:500">Sequence Search</a>
+  <a href="blast.html" style="color:var(--primary);text-decoration:none;font-weight:500">BLAST</a>
+  <a href="msa.html" style="color:var(--primary);text-decoration:none;font-weight:500">MSA</a>
+  <span style="margin-left:auto;font-size:11px;color:var(--muted)">Also available as separate tools →</span>
+</div>
+
+<div class="page-header">
+  <div class="container">
+    <div>
+      <div class="ph-eyebrow">Genomic Tool · Multi-Database</div>
+      <h1 class="ph-title">Cross-Database Sequence Search</h1>
+    </div>
+  </div>
+</div>
+
+<div class="tool-wrap">
+
+<div>
+<div class="panel-card">
+  <div class="panel-head"><h3>Search</h3></div>
+  <div class="panel-body">
+    <div class="form-group">
+      <label class="form-label">Input Type</label>
+      <select id="input-type" class="form-select">
+        <option value="name">Gene / Transcript Name</option>
+        <option value="accession">Accession ID</option>
+        <option value="sequence">Sequence (BLAST-like)</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Query</label>
+      <textarea id="search-query" class="form-textarea" placeholder="e.g. BRCA1, TP53, ACTB&#10;or: NM_007294, ENST00000357654&#10;or: paste DNA sequence" rows="3"></textarea>
+      <div class="char-count"><span id="sq-len">0</span> chars</div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Database</label>
+      <select id="search-db" class="form-select">
+        <option value="ncbi">NCBI Nucleotide</option>
+        <option value="ensembl">Ensembl</option>
+        <option value="uniprot">UniProt</option>
+        <option value="ddbj">DDBJ</option>
+        <option value="ena">ENA</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Organism (optional)</label>
+      <select id="org-select" class="form-select">
+        <option value="">All organisms</option>
+        <option value="Homo sapiens">Homo sapiens</option>
+        <option value="Mus musculus">Mus musculus</option>
+        <option value="Rattus norvegicus">Rattus norvegicus</option>
+        <option value="Danio rerio">Danio rerio</option>
+        <option value="Drosophila melanogaster">Drosophila melanogaster</option>
+        <option value="Caenorhabditis elegans">Caenorhabditis elegans</option>
+        <option value="Saccharomyces cerevisiae">Saccharomyces cerevisiae</option>
+        <option value="Escherichia coli">Escherichia coli</option>
+        <option value="Arabidopsis thaliana">Arabidopsis thaliana</option>
+        <option value="SARS-CoV-2">SARS-CoV-2</option>
+        <option value="custom">Custom…</option>
+      </select>
+    </div>
+    <div class="form-group" id="custom-org-group" style="display:none">
+      <input type="text" id="custom-org" class="form-input" placeholder="Enter organism name…">
+    </div>
+    <button class="btn-primary" id="btn-search" style="width:100%;justify-content:center">
+      <span class="spinner" id="search-sp"></span>
+      <span id="search-txt">Search</span>
+    </button>
+  </div>
+</div>
+
+<div class="panel-card">
+  <div class="panel-head"><h3>Actions</h3></div>
+  <div class="panel-body" style="display:flex;flex-direction:column;gap:8px">
+    <button class="btn-primary btn-sm" id="btn-send-design" style="justify-content:center" disabled>Send to Auto Design</button>
+    <button class="btn-primary btn-sm" id="btn-send-blast" style="justify-content:center" disabled>Send to BLAST</button>
+    <button class="btn-primary btn-sm" id="btn-send-msa" style="justify-content:center" disabled>Send to MSA</button>
+  </div>
+</div>
+</div>
+
+<div>
+<div class="panel-card">
+  <div class="panel-head">
+    <h3>Results <span id="result-count" class="results-count"></span></h3>
+  </div>
+  <div class="panel-body scroll-wrap" id="results-area">
+    <div style="padding:60px 20px;text-align:center;color:var(--muted);font-size:13px">
+      <div style="font-size:40px;margin-bottom:12px">🧬</div>
+      Enter a gene name, accession, or sequence and click <strong>Search</strong>
+    </div>
+  </div>
+</div>
+</div>
+
+</div>
+</div>
+
+<footer>
+<div class="footer-grid">
+  <div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+      <img src="logo.svg" alt="VigyanLLM Logo" style="width:48px;height:48px;border-radius:6px">
+      <span style="font-family:var(--font-h);font-size:20px;font-weight:700;color:#fff">VigyanLLM</span>
+    </div>
+    <p style="font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:20px;line-height:1.6">Sovereign Healthcare &amp; Life Sciences AI.<br>Built in India. For the world.</p>
+    <a href="mailto:contact@vigyanllm.in" style="font-family:var(--font-b);font-size:13px;color:var(--accent);display:block;margin-bottom:6px">contact@vigyanllm.in</a>
+  </div>
+  <div>
+    <h5 style="font-family:var(--font-h);font-size:12px;text-transform:uppercase;letter-spacing:0.1em;color:#fff;margin-bottom:24px;font-weight:700">Platform</h5>
+    <a href="primer.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">VPrime 2.0</a>
+    <a href="search.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Sequence Search</a>
+    <a href="blast.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">BLAST</a>
+    <a href="msa.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">MSA</a>
+  </div>
+  <div>
+    <h5 style="font-family:var(--font-h);font-size:12px;text-transform:uppercase;letter-spacing:0.1em;color:#fff;margin-bottom:24px;font-weight:700">Resources</h5>
+    <a href="blog/index.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Blog</a>
+    <a href="faq.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">FAQ</a>
+    <a href="about.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">About</a>
+    <a href="academic-partnership.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Academic Partnership</a>
+  </div>
+  <div>
+    <h5 style="font-family:var(--font-h);font-size:12px;text-transform:uppercase;letter-spacing:0.1em;color:#fff;margin-bottom:24px;font-weight:700">Contact</h5>
+    <a href="mailto:contact@vigyanllm.in" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">contact@vigyanllm.in</a>
+    <a href="privacy.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Privacy</a>
+    <a href="cookies.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Cookies</a>
+    <a href="terms.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Terms</a>
+    <a href="refund.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Refund</a>
+    <a href="security.html" style="display:block;font-family:var(--font-b);font-size:13px;color:#94A3B8;margin-bottom:14px">Security</a>
+  </div>
+</div>
+<div class="footer-bottom">
+  <span>&copy; <script>document.write(new Date().getFullYear())</script> VigyanLLM Pvt. Ltd. · Sovereign Research AI</span>
+  <span>WWW.VIGYANLLM.IN</span>
+</div>
+</footer>
+
+<script src="/auth-shared.js"></script>
+<script>
+var API = window.VIGYAN_BACKEND_URL || '';
+var searchData = [];
+
+function $(id){return document.getElementById(id)}
+function esc(s){return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function _on(id,ev,fn){var e=$(id);if(e)e.addEventListener(ev,fn)}
+function loading(on){
+  $('search-sp').classList.toggle('active',on);
+  $('btn-search').disabled=on;
+  $('search-txt').textContent=on?'Searching…':'Search';
+}
+
+_on('input-type','change',function(){
+  var v=this.value;
+  $('search-query').placeholder=v==='name'?'e.g. BRCA1, TP53, ACTB':v==='accession'?'e.g. NM_007294, ENST00000357654':'Paste DNA sequence…';
+});
+
+_on('search-query','input',function(){var t=this.value;var c=v==='sequence'?t.replace(/[^ACGTNacgtn]/g,'').length:t.length;$('sq-len').textContent=c});
+_on('org-select','change',function(){$('custom-org-group').style.display=this.value==='custom'?'block':'none'});
+
+async function doSearch(){
+  var q=$('search-query').value.trim();
+  if(!q){alert('Enter a search query.');return}
+  loading(true);
+  var org=$('org-select').value;
+  if(org==='custom')org=$('custom-org').value.trim();
+  try{
+    var r=await fetch(API+'/api/primer/search-sequences',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+      query:q,input_type:$('input-type').value,database:$('search-db').value,organism:org
+    })});
+    if(!r.ok){var e=await r.text();throw new Error(e||'Search failed')}
+    var d=await r.json();
+    renderResults(d);
+  }catch(e){$('results-area').innerHTML='<div class="error-card" style="padding:16px;background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;color:#DC2626;font-size:13px">'+esc(e.message)+'</div>';$('result-count').textContent=''}
+  finally{loading(false)}
+}
+
+function renderResults(data){
+  var area=$('results-area'),count=$('result-count');
+  var results=data.results||[];
+  searchData=results;
+  count.textContent='('+results.length+' found)';
+  if(!results.length){area.innerHTML='<div style="padding:40px;text-align:center;color:var(--muted);font-size:13px">No results found.</div>';return}
+  var html='<table class="results-table"><thead><tr>'
+    +'<th style="width:30px"><input type="checkbox" id="selall" checked></th>'
+    +'<th>ID</th><th>Description</th><th>Species</th><th>Length</th><th>DB</th><th>Source</th>'
+    +'</tr></thead><tbody>';
+  results.forEach(function(r,i){
+    var db=r.source_database||'';
+    var dbCls=db.toLowerCase().includes('ncbi')?'ncbi':db.toLowerCase().includes('ensembl')?'ensembl':db.toLowerCase().includes('uniprot')?'uniprot':db.toLowerCase().includes('ddbj')?'ddbj':'ena';
+    html+='<tr>'
+      +'<td><input type="checkbox" class="scb" data-idx="'+i+'" checked></td>'
+      +'<td><div class="hit-id">'+esc(r.accession||r.id||'')+'</div></td>'
+      +'<td><div class="hit-desc">'+esc((r.description||'').slice(0,80))+'</div></td>'
+      +'<td class="hit-species">'+esc(r.species||'')+'</td>'
+      +'<td>'+(r.sequence_length||r.length||'')+'</td>'
+      +'<td><span class="db-badge '+dbCls+'">'+esc(db)+'</span></td>'
+      +'<td>'+(r.source_url?'<a href="'+esc(r.source_url)+'" target="_blank" rel="noopener" class="source-link">Open ↗</a>':'')+'</td></tr>';
+  });
+  html+='</tbody></table>';
+  area.innerHTML=html;
+  _on('selall','change',function(){document.querySelectorAll('.scb').forEach(function(c){c.checked=this.checked})}.bind($('selall')));
+  $('btn-send-design').disabled=false;
+  $('btn-send-blast').disabled=false;
+  $('btn-send-msa').disabled=false;
+}
+
+function getSelected(){
+  var cbs=document.querySelectorAll('.scb:checked');
+  return Array.from(cbs).map(function(cb){return searchData[parseInt(cb.dataset.idx)]});
+}
+
+_on('btn-search','click',doSearch);
+_on('btn-send-design','click',function(){
+  var s=getSelected();
+  if(!s.length){alert('Select at least one sequence.');return}
+  var seq=s.map(function(r){return'>'+(r.accession||r.id||'seq')+'\n'+(r.sequence||'')}).join('\n');
+  localStorage.setItem('vp_design_seq',seq);
+  window.location.href='primer.html';
+});
+_on('btn-send-blast','click',function(){
+  var s=getSelected();
+  if(!s.length){alert('Select at least one sequence.');return}
+  var seq=s.map(function(r){return'>'+(r.accession||r.id||'seq')+'\n'+(r.sequence||'')}).join('\n');
+  localStorage.setItem('vp_blast_seq',seq);
+  window.location.href='blast.html';
+});
+_on('btn-send-msa','click',function(){
+  var s=getSelected();
+  if(s.length<2){alert('Select at least 2 sequences for MSA.');return}
+  var seq=s.map(function(r){return'>'+(r.accession||r.id||'seq')+'\n'+(r.sequence||'')}).join('\n');
+  localStorage.setItem('vp_msa_seq',seq);
+  window.location.href='msa.html';
+});
+</script>
+<script>
+(function(){
+  var h=document.getElementById('hamburger'),m=document.getElementById('mobile-menu');
+  if(!h||!m)return;
+  h.addEventListener('click',function(){h.classList.toggle('active');m.classList.toggle('open')});
+  document.addEventListener('click',function(e){if(!h.contains(e.target)&&!m.contains(e.target)){h.classList.remove('active');m.classList.remove('open')}});
+})();
+</script>
+</body>
+</html>
