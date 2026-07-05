@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>VigyanLLM vs Primer3, SnapGene, Benchling — Comparison | VigyanLLM</title>
+<meta name="description" content="Compare VigyanLLM with Primer3, SnapGene, Benchling, IDT, and NCBI Primer-BLAST. See why sovereign on-premises AI wins for Indian research labs.">
+<link rel="canonical" href="https://vigyanllm.in/compare">
+<meta property="og:title" content="VigyanLLM vs Primer3, SnapGene, Benchling">
+<meta property="og:description" content="Head-to-head comparison of VigyanLLM with Primer3, SnapGene, Benchling, IDT, and NCBI Primer-BLAST for Indian research labs.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://vigyanllm.in/compare">
+<meta name="robots" content="index, follow">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+:root{--navy:#0F172A;--white:#FFFFFF;--slate:#F8FAFC;--text:#0F172A;--text2:#475569;--muted:#94A3B8;--primary:#2563EB;--accent:#22D3EE;--font-h:'Plus Jakarta Sans',sans-serif;--font-b:'Inter',sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--white);color:var(--text);font-family:var(--font-b);line-height:1.6}
+a{text-decoration:none;color:inherit}
+nav{position:sticky;top:0;background:var(--navy);z-index:100;height:72px;border-bottom:1px solid rgba(255,255,255,.06)}
+.nav-inner{display:flex;justify-content:space-between;align-items:center;height:100%;max-width:1200px;margin:0 auto;padding:0 24px}
+.nav-brand{display:flex;align-items:center;gap:10px;color:#fff;font-family:var(--font-h);font-size:20px;font-weight:700}
+.nav-brand img{width:36px;height:36px;border-radius:6px}
+.nav-links{display:flex;gap:24px;align-items:center}
+.nav-links>a,.drop-trigger{font-size:13px;color:#CBD5E1;font-weight:500;cursor:pointer}
+.drop-wrap{position:relative;display:inline-block}
+.drop-menu{display:none;position:absolute;top:100%;left:0;background:#fff;border:1px solid #E2E5EA;border-radius:12px;min-width:240px;padding:8px;z-index:1001;box-shadow:0 12px 40px rgba(0,0,0,.08);opacity:0;transform:translateY(4px);transition:opacity .2s,transform .2s}
+.drop-wrap:hover .drop-menu{display:block;opacity:1;transform:translateY(0)}
+.drop-menu a{display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px;font-weight:500;transition:all .12s}
+.drop-menu a:hover{background:#EFF6FF;color:var(--primary);padding-left:20px}
+.nav-right{display:flex;align-items:center;gap:16px}
+.nav-login{border:1.5px solid rgba(255,255,255,.3);border-radius:4px;padding:8px 20px;font-size:13px;font-weight:600;color:#fff;background:transparent;cursor:pointer}
+.nav-login:hover{border-color:#fff;background:rgba(255,255,255,.1)}
+.hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;background:none;border:none;padding:4px}
+.hamburger span{width:24px;height:2px;background:rgba(255,255,255,.6);border-radius:2px}
+.mobile-menu{display:none;position:fixed;top:72px;left:0;right:0;background:var(--navy);padding:16px 24px;z-index:999;border-top:1px solid rgba(255,255,255,.1)}
+.mobile-menu.open{display:block}
+.mobile-menu a{display:block;color:#CBD5E1;font-size:14px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+.mobile-menu .mm-group{margin-bottom:12px}
+.mobile-menu .mm-hdr{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700;padding:8px 0 4px}
+.page{padding:60px 24px;max-width:900px;margin:0 auto}
+.page h1{font-family:var(--font-h);font-size:2rem;font-weight:800;margin-bottom:12px}
+.page p{color:var(--text2);font-size:14px;line-height:1.7;margin-bottom:16px}
+.page .tag{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.12em;color:var(--primary);border:1px solid rgba(37,99,235,.3);padding:4px 12px;border-radius:99px;margin-bottom:20px;text-transform:uppercase}
+footer{background:var(--navy);padding:40px 24px;border-top:1px solid rgba(255,255,255,.06);text-align:center;font-size:11px;color:#64748B}
+@media(max-width:768px){.nav-links{display:none}.hamburger{display:flex}}
+.page .lead{font-size:16px;line-height:1.8;color:var(--text2);max-width:800px}
+.table-wrap{overflow-x:auto;margin:40px 0 16px}
+.cmp-table{width:100%;border-collapse:collapse;font-size:13px}
+.cmp-table th,.cmp-table td{padding:12px 16px;text-align:left;border:1px solid #E2E8F0}
+.cmp-table th{background:#F8FAFC;font-weight:700;color:var(--text);font-size:11px;text-transform:uppercase;letter-spacing:.05em}
+.cmp-table td{color:var(--text2)}
+.cmp-table .highlight-col{background:#EFF6FF;color:var(--primary);font-weight:700}
+.cmp-table tbody tr:hover{background:#FAFBFC}
+.comp-cards{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:32px 0}
+.comp-card{border:1px solid #E2E8F0;border-radius:12px;padding:20px;background:#F8FAFC}
+.comp-card h3{font-size:14px;font-weight:700;color:var(--text);margin-bottom:8px}
+.comp-card p{font-size:13px;color:var(--text2);line-height:1.7;margin:0}
+.callout-box{background:#EFF6FF;border-left:4px solid var(--primary);border-radius:0 12px 12px 0;padding:20px 24px;margin:32px 0;font-size:14px;color:var(--text2);line-height:1.7}
+.callout-box strong{color:var(--text)}
+.cta-section{text-align:center;padding:20px 0 0}
+.cta-btn{display:inline-block;padding:14px 36px;background:var(--primary);color:#fff;border-radius:8px;font-size:14px;font-weight:700;transition:opacity .15s}
+.cta-btn:hover{opacity:.9}
+@media(max-width:640px){.comp-cards{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<nav><div class="nav-inner">
+  <a href="index.html" class="nav-brand"><img src="logo.svg" alt="Logo"><span>VigyanLLM</span></a>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <div class="drop-wrap"><span class="drop-trigger">Platform Architecture ▾</span>
+      <div class="drop-menu">
+        <a href="platform.html">Platform</a><a href="architecture.html">Architecture</a>
+        <a href="problem.html">Problem</a><a href="solution.html">Solution</a>
+        <a href="compare.html">Compare</a><a href="roadmap.html">Roadmap</a>
+      </div>
+    </div>
+    <div class="drop-wrap"><span class="drop-trigger">Products &amp; Services ▾</span>
+      <div class="drop-menu">
+        <a href="primer.html">VPrime 2.0</a><a href="search.html">Search</a>
+        <a href="blast.html">BLAST</a><a href="msa.html">MSA</a>
+        <a href="pcr-analysis.html">PCR</a><a href="crispr-analysis.html">CRISPR</a>
+        <a href="tm-calculator.html">Tm Calc</a><a href="gc-calculator.html">GC Calc</a>
+        <a href="protein-docking.html">Docking</a>
+      </div>
+    </div>
+    <div class="drop-wrap"><span class="drop-trigger">Collab &amp; Partnership ▾</span>
+      <div class="drop-menu">
+    <a href="Learning-vigyanllm.html">Learning</a>
+    <a href="academic-partnership.html">Academic Partnership</a>
+        <a href="mailto:contact@vigyanllm.in">Enterprise Inquiry</a>
+      </div>
+    </div>
+  </div>
+  <div class="nav-right">
+    <button class="nav-login" onclick="window.location.href='login.html'">Login</button>
+  </div>
+  <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
+</div>
+<div class="mobile-menu" id="mobile-menu">
+  <div class="mm-group"><div class="mm-hdr">Home</div>
+    <a href="index.html">Home</a>
+  </div>
+  <div class="mm-group"><div class="mm-hdr">Platform Architecture</div>
+    <a href="platform.html">Platform</a>
+    <a href="architecture.html">Architecture</a>
+    <a href="problem.html">Problem</a>
+    <a href="solution.html">Solution</a>
+    <a href="compare.html">Compare</a>
+    <a href="roadmap.html">Roadmap</a>
+  </div>
+  <div class="mm-group"><div class="mm-hdr">Products &amp; Services</div>
+    <a href="primer.html">VPrime 2.0</a>
+    <a href="search.html">Sequence Search</a>
+    <a href="blast.html">BLAST</a>
+    <a href="msa.html">MSA</a>
+    <a href="pcr-analysis.html">PCR Analysis</a>
+    <a href="crispr-analysis.html">CRISPR Analysis</a>
+    <a href="tm-calculator.html">Tm Calculator</a>
+    <a href="gc-calculator.html">GC Calculator</a>
+    <a href="protein-docking.html">Protein Docking</a>
+  </div>
+  <div class="mm-group"><div class="mm-hdr">Collab &amp; Partnership</div>
+    <a href="Learning-vigyanllm.html">Learning</a>
+    <a href="academic-partnership.html">Academic Partnership</a>
+    <a href="mailto:contact@vigyanllm.in">Enterprise Inquiry</a>
+  </div>
+  <div class="mm-group"><a href="login.html" style="color:var(--accent);font-weight:600;font-size:14px;padding:10px 0;display:block;font-family:var(--font-b)">Log in</a></div>
+</div>
+</nav>
+<div class="page">
+
+  <div class="tag">COMPARE</div>
+  <h1>Sovereignty Is the Core Differentiator</h1>
+  <p class="lead">VigyanLLM is the only biomedical AI platform that combines full-pipeline automation, on-premise deployment, and multi-agent verification in a single system. Here is how we compare to the rest of the industry.</p>
+
+  <div class="table-wrap">
+    <table class="cmp-table">
+      <thead>
+        <tr>
+          <th>Capability</th>
+          <th>AlphaFold</th>
+          <th>Schrödinger</th>
+          <th>Benchling</th>
+          <th>Recursion</th>
+          <th class="highlight-col">VigyanLLM</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>No External API Required</td><td>✗</td><td>✗</td><td>✗</td><td>✗</td><td class="highlight-col">✓</td></tr>
+        <tr><td>Full Pipeline (Single System)</td><td>✗</td><td>✗</td><td>✗</td><td>✗</td><td class="highlight-col">✓</td></tr>
+        <tr><td>Primer & PCR Automation</td><td>✗</td><td>✗</td><td>◐</td><td>✗</td><td class="highlight-col">✓</td></tr>
+        <tr><td>Clinical Reasoning</td><td>✗</td><td>✗</td><td>✗</td><td>✗</td><td class="highlight-col">✓</td></tr>
+        <tr><td>Multi-Agent Orchestration</td><td>✗</td><td>✗</td><td>✗</td><td>◐</td><td class="highlight-col">✓</td></tr>
+        <tr><td>On-Premise Deployment</td><td>✗</td><td>◐</td><td>✗</td><td>✗</td><td class="highlight-col">✓</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p style="color:var(--muted);font-size:11px;margin-top:8px">✓ Fully supported · ◐ Partial support · ✗ Not supported</p>
+
+  <div style="border-top:1px solid #E2E8F0;margin:48px 0"></div>
+
+  <h2 style="font-family:var(--font-h);font-size:22px;font-weight:800;color:var(--text);margin-bottom:16px">Built for the Full Research Spectrum</h2>
+  <p class="lead">AlphaFold serves protein research. Schrödinger serves drug discovery. Recursion serves pharmaceutical pipelines. VigyanLLM is built for every molecular biology researcher — academic labs, biotech startups, clinical institutions, and agricultural biotech — making advanced computational biology accessible without enterprise pricing or cloud dependency.</p>
+
+  <div class="comp-cards">
+    <div class="comp-card">
+      <h3>🔬 Academic Labs</h3>
+      <p>Free tier for PhD researchers. No budget barriers to state-of-the-art computational biology tools.</p>
+    </div>
+    <div class="comp-card">
+      <h3>🏥 Clinical Institutions</h3>
+      <p>HIPAA and DPDP compliant. On-premise deployment ensures patient data never leaves your network.</p>
+    </div>
+    <div class="comp-card">
+      <h3>💊 Biotech & Pharma</h3>
+      <p>Full pipeline from target discovery to validated assay design — all under one sovereign platform.</p>
+    </div>
+    <div class="comp-card">
+      <h3>🌾 Agricultural Biotech</h3>
+      <p>Primer design, CRISPR analysis, and genotyping for crop research and GMO testing workflows.</p>
+    </div>
+  </div>
+
+  <div class="callout-box">
+    <strong>Not a Wrapper.</strong> VigyanLLM is a purpose-built, domain-trained, multi-agent system with a proprietary inference engine. We do not wrap OpenAI, Anthropic, or Google APIs. Every inference runs on our VigyanInferenceEngine — your data stays sovereign.
+  </div>
+
+  <div class="cta-section">
+    <a href="platform.html" class="cta-btn">Explore Platform →</a>
+  </div>
+
+</div>
+<footer>&copy; 2026 VigyanLLM Pvt. Ltd. · Sovereign Research AI</footer>
+<script>
+document.addEventListener('DOMContentLoaded',function(){
+  var h=document.getElementById('hamburger'),m=document.getElementById('mobile-menu');
+  if(h&&m){h.addEventListener('click',function(){m.classList.toggle('open')});m.querySelectorAll('a').forEach(function(l){l.addEventListener('click',function(){m.classList.remove('open')})})}
+});
+</script>
+</body>
+</html>
