@@ -984,6 +984,7 @@ def create_app() -> Flask:
 
         data = request.get_json(silent=True) or {}
         sequence = data.get("sequence", "")
+        test_mode = data.get("test_mode", False)
         ok, msg = _validate_sequence(sequence, min_len=100)
         if not ok:
             return err(msg, "VALIDATION_ERROR", 422)
@@ -1487,6 +1488,81 @@ def create_app() -> Flask:
         except Exception as exc:
             logger.error(f"Thermodynamics error: {exc}", exc_info=True)
             return err("Analysis failed due to an internal error.", "DESIGN_FAILED", 500)
+
+    # ════════════════════════════════════════════════════════════════════
+    # NEW: Sequence Search, BLAST, MSA Endpoints
+    # ════════════════════════════════════════════════════════════════════
+
+    @app.route("/api/primer/search-sequences", methods=["POST"])
+    def search_sequences_route():
+        if not READY:
+            return err("Core not available.", "DESIGN_FAILED", 503)
+        data = request.get_json(silent=True) or {}
+        query = (data.get("query") or "").strip()
+        database = (data.get("database") or "auto").strip()
+        organism = (data.get("organism") or "human").strip()
+        if not query:
+            return err("Query is required.", "VALIDATION_ERROR", 400)
+        try:
+            from primerforge.core.sequence_fetcher import search_databases
+            result = search_databases(query, database=database, organism=organism)
+            return jsonify(result), 200
+        except Exception as exc:
+            logger.error(f"Search error: {exc}", exc_info=True)
+            return err(f"Search failed: {str(exc)[:200]}", "SEARCH_FAILED", 500)
+
+    @app.route("/api/primer/blast", methods=["POST"])
+    def blast_route():
+        if not READY:
+            return err("Core not available.", "DESIGN_FAILED", 503)
+        data = request.get_json(silent=True) or {}
+        query_sequence = (data.get("sequence") or "").strip()
+        mode = (data.get("mode") or "auto").strip()
+        database = (data.get("database") or "nt").strip()
+        organism = (data.get("organism") or "").strip()
+        subject_sequences = data.get("subject_sequences", [])
+
+        if not query_sequence:
+            return err("Query sequence is required.", "VALIDATION_ERROR", 400)
+        # Auto-detect: if subject_sequences provided, use local mode
+        import re
+        clean = query_sequence.upper().replace(" ", "").replace("\n", "")
+        if not re.match(r"^[ACGTNRYSWKMBDHV]+$", clean):
+            return err("Invalid sequence. Only DNA/RNA letters allowed.", "VALIDATION_ERROR", 400)
+
+        try:
+            if subject_sequences or mode == "local":
+                from primerforge.engine.blast_viewer import run_local_blast
+                result = run_local_blast(query_sequence, subject_sequences)
+            else:
+                from primerforge.engine.blast_viewer import run_remote_blast
+                result = run_remote_blast(query_sequence, database=database, organism=organism)
+            return jsonify(result), 200
+        except Exception as exc:
+            logger.error(f"BLAST error: {exc}", exc_info=True)
+            return err(f"BLAST failed: {str(exc)[:200]}", "BLAST_FAILED", 500)
+
+    @app.route("/api/primer/msa", methods=["POST"])
+    def msa_route():
+        if not READY:
+            return err("Core not available.", "DESIGN_FAILED", 503)
+        data = request.get_json(silent=True) or {}
+        sequences = data.get("sequences", [])
+        reference_id = data.get("reference_id")
+
+        if not sequences or len(sequences) < 2:
+            return err("At least 2 sequences are required for MSA.", "VALIDATION_ERROR", 400)
+
+        try:
+            from primerforge.engine.msa_viewer import build_msa_view, format_fasta, format_clustal, get_msa_summary
+            viewer = build_msa_view(sequences, reference_id=reference_id)
+            viewer["fasta"] = format_fasta(sequences)
+            viewer["clustal"] = format_clustal(viewer.get("alignment", []))
+            viewer["summary"] = get_msa_summary(viewer)
+            return jsonify(viewer), 200
+        except Exception as exc:
+            logger.error(f"MSA error: {exc}", exc_info=True)
+            return err(f"MSA failed: {str(exc)[:200]}", "MSA_FAILED", 500)
 
     # Pipeline health validation on startup
     try:
