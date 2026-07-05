@@ -10,8 +10,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <!-- End Google Tag Manager -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>VigyanLLM Platform — Sovereign Biomedical AI for Molecular Biology | VigyanLLM</title>
-<meta name="description" content="VigyanLLM is a sovereign, on-premises biomedical AI platform for primer design, CRISPR analysis, molecular docking, BLAST, MSA, and sequence search. Built for Indian research institutions.">
+<title>VPrime 1.0 Features: Autonomous CRISPR &amp; Docking AI | VigyanLLM</title>
+<meta name="description" content="Explore VPrime 1.0: GPU-accelerated molecular docking, autonomous primer design, and CRISPR guide RNA analysis. 100% local deployment, no cloud dependencies.">
 <link rel="canonical" href="https://vigyanllm.in/platform">
 <meta property="og:title" content="VigyanLLM Platform — Sovereign Biomedical AI">
 <meta property="og:description" content="On-premises biomedical AI platform for primer design, CRISPR analysis, and molecular docking with data sovereignty for Indian research institutions.">
@@ -161,27 +161,75 @@ footer{background:var(--navy);padding:40px 24px;border-top:1px solid rgba(255,25
     <div class="stat-item"><div class="stat-num">100%</div><div class="stat-label">On-Premise</div></div>
   </div>
 
+  <h2 style="font-family:var(--font-h);font-size:22px;font-weight:800;color:var(--text);margin:48px 0 20px">Autonomous Primer Design Engine</h2>
+
+  <p class="lead"><strong>Autonomous primer design</strong> is a computational method that uses biophysical validation algorithms to automatically generate oligonucleotide primers for PCR, qPCR, and NGS assays without manual intervention. VigyanLLM's engine combines Primer3 thermodynamic optimization with SantaLucia 1998 nearest-neighbour parameters, BLAST specificity screening, dbSNP variant filtering, repeat masking, and multiplex cross-dimer validation in a single 24-step pipeline.</p>
+
+  <h3 style="font-family:var(--font-h);font-size:18px;font-weight:800;color:var(--text);margin:32px 0 16px">How VigyanLLM Processes Primer Design</h3>
+  <ol style="padding-left:20px;margin-bottom:32px;color:var(--text2);font-size:14px;line-height:2">
+    <li><strong>Input:</strong> User provides a target DNA sequence in FASTA format with organism and amplicon range parameters.</li>
+    <li><strong>Primer3 Design:</strong> The engine runs Primer3 with SantaLucia 1998 nearest-neighbour thermodynamics to generate candidate primer pairs.</li>
+    <li><strong>BLAST Specificity:</strong> Each candidate is screened against NCBI nucleotide databases to ensure target-specific binding with E-value thresholds.</li>
+    <li><strong>Secondary Structure:</strong> Hairpin, self-dimer, and cross-dimer free energies are calculated using thermodynamic delta-G predictions.</li>
+    <li><strong>SNP &amp; Repeat Filtering:</strong> dbSNP variants and repeat elements (LINE, SINE, Alu) within primer binding regions are flagged.</li>
+    <li><strong>Multiplex Validation:</strong> Cross-primer interactions are scored across all pairs in multiplex panels.</li>
+    <li><strong>Output:</strong> Ranked primer pairs with pass/fail matrix, Tm, GC%, delta-G, and audit-ready PDF report.</li>
+  </ol>
+
+  <h2 style="font-family:var(--font-h);font-size:22px;font-weight:800;color:var(--text);margin:48px 0 20px">CRISPR Guide RNA (gRNA) Analysis</h2>
+
+  <p class="lead"><strong>CRISPR guide RNA (gRNA) analysis</strong> is the computational process of identifying optimal single-guide RNA sequences that direct Cas nucleases to specific genomic loci for targeted genome editing. VigyanLLM scans input DNA sequences for PAM motifs (NGG for SpCas9, TTTV for Cas12a), ranks guides by on-target efficiency using Azimuth and DeepCRISPR scoring models, and predicts genome-wide off-target binding using CFD (Cutting Frequency Determination) algorithms.</p>
+
+  <h3 style="font-family:var(--font-h);font-size:18px;font-weight:800;color:var(--text);margin:32px 0 16px">How VigyanLLM Processes CRISPR Guide RNA</h3>
+  <ol style="padding-left:20px;margin-bottom:32px;color:var(--text2);font-size:14px;line-height:2">
+    <li><strong>Input:</strong> User uploads a target DNA sequence in FASTA format with Cas variant selection.</li>
+    <li><strong>PAM Scanning:</strong> The local AI model scans for protospacer-adjacent motif sequences (e.g., NGG for SpCas9, TTTV for Cas12a).</li>
+    <li><strong>On-Target Scoring:</strong> Azimuth 2.0 and DeepCRISPR algorithms calculate on-target cleavage efficiency.</li>
+    <li><strong>Off-Target Analysis:</strong> CFD scoring across genome-wide mismatch tolerance identifies top off-target sites.</li>
+    <li><strong>Output:</strong> Ranked list of optimal guide RNAs with specificity scores, exported as CSV for synthesis orders.</li>
+  </ol>
+
+  <h2 style="font-family:var(--font-h);font-size:22px;font-weight:800;color:var(--text);margin:48px 0 20px">GPU-Accelerated Molecular Docking</h2>
+
+  <p class="lead"><strong>GPU-accelerated molecular docking</strong> is a computational method that uses Graphics Processing Units to simulate the binding of small molecules (ligands) to target protein receptors, significantly reducing computational time compared to CPU-based methods while maintaining binding affinity prediction accuracy.</p>
+
+  <div style="border:1px solid #E2E8F0;border-radius:12px;padding:24px;margin:32px 0;background:#F8FAFC">
+    <h3 style="font-family:var(--font-h);font-size:15px;font-weight:700;color:var(--text);margin-bottom:12px">Cloud vs. On-Premises Bioinformatics</h3>
+    <table style="width:100%;border-collapse:collapse;font-size:13px">
+      <tr style="border-bottom:2px solid #E2E8F0">
+        <th style="text-align:left;padding:10px 12px;font-weight:700;color:var(--text)">Feature</th>
+        <th style="text-align:left;padding:10px 12px;font-weight:700;color:var(--muted)">Cloud-Based Bioinformatics</th>
+        <th style="text-align:left;padding:10px 12px;font-weight:700;color:var(--primary)">VigyanLLM (On-Premises)</th>
+      </tr>
+      <tr style="border-bottom:1px solid #E2E8F0"><td style="padding:10px 12px;font-weight:600">Data Location</td><td style="padding:10px 12px;color:var(--text2)">Third-party servers (US/EU)</td><td style="padding:10px 12px;color:var(--text2)">Your local lab servers</td></tr>
+      <tr style="border-bottom:1px solid #E2E8F0"><td style="padding:10px 12px;font-weight:600">Data Sovereignty</td><td style="padding:10px 12px;color:var(--text2)">No — subject to foreign laws</td><td style="padding:10px 12px;color:var(--text2)">Yes — 100% Indian data sovereignty</td></tr>
+      <tr style="border-bottom:1px solid #E2E8F0"><td style="padding:10px 12px;font-weight:600">Internet Required</td><td style="padding:10px 12px;color:var(--text2)">Yes — always-on connection</td><td style="padding:10px 12px;color:var(--text2)">No — air-gapped capable</td></tr>
+      <tr style="border-bottom:1px solid #E2E8F0"><td style="padding:10px 12px;font-weight:600">Compute Hardware</td><td style="padding:10px 12px;color:var(--text2)">Shared cloud GPUs (multi-tenant)</td><td style="padding:10px 12px;color:var(--text2)">Your own dedicated GPUs</td></tr>
+      <tr><td style="padding:10px 12px;font-weight:600">Per-Query Cost</td><td style="padding:10px 12px;color:var(--text2)">Pay-per-run or subscription</td><td style="padding:10px 12px;color:var(--text2)">Zero — unlimited runs after deployment</td></tr>
+    </table>
+  </div>
+
   <h2 style="font-family:var(--font-h);font-size:22px;font-weight:800;color:var(--text);margin:48px 0 20px">Platform Core</h2>
 
   <div class="platform-cards">
     <div class="platform-card">
       <h3>🧬 Primer Design Pipeline</h3>
-      <p>22-step validated primer and probe design with thermodynamic profiling, BLAST specificity checking, SNP screening, repeat masking, and multiplex scoring — producing lab-ready results in under 30 seconds.</p>
+      <p><strong>Autonomous primer design</strong> is a computational method that uses biophysical validation algorithms to automatically generate oligonucleotide primers for PCR, qPCR, and NGS assays. VigyanLLM's 24-step pipeline combines Primer3 thermodynamic optimization with SantaLucia 1998 nearest-neighbour parameters, BLAST specificity screening, dbSNP variant filtering, repeat masking, and multiplex cross-dimer validation.</p>
       <div class="tag-sm">Primer3 · SantaLucia 1998 · BLAST · IDT/Twist Export</div>
     </div>
     <div class="platform-card">
       <h3>🤖 Domain-Specific LLM</h3>
-      <p>320,000+ purpose-built biomedical records across 46 specialized training batches. Proprietary VigyanInferenceEngine with zero external API dependency — every inference processed locally or on dedicated GPU.</p>
+      <p><strong>Domain-specific large language models</strong> are neural networks trained exclusively on biomedical literature and genomic data rather than general web text. VigyanLLM's VigyanInferenceEngine uses 320,000+ purpose-built biomedical records across 46 specialized training batches with zero external API dependency — every inference is processed locally on your dedicated GPU.</p>
       <div class="tag-sm">VigyanInferenceEngine · GGUF · 85% Confidence</div>
     </div>
     <div class="platform-card">
-      <h3>🔬 Protein Structure & Docking</h3>
-      <p>Predict accurate 3D protein conformations and run GPU-accelerated molecular docking with realistic binding energy calculations. Supports AlphaFold, RosettaFold, ESMFold, and Vina-GPU.</p>
+      <h3>🔬 Protein Structure &amp; Docking</h3>
+      <p><strong>GPU-accelerated molecular docking</strong> uses Graphics Processing Units to simulate the binding of small molecules to target protein receptors. VigyanLLM supports AlphaFold, RosettaFold, and ESMFold for structure prediction, and Vina-GPU for docking with binding free energy calculations typically reaching -8.5 kcal/mol for high-affinity interactions.</p>
       <div class="tag-sm">AlphaFold · RosettaFold · Vina-GPU · −8.5 kcal/mol</div>
     </div>
     <div class="platform-card">
-      <h3>✂️ CRISPR & Genome Editing</h3>
-      <p>sgRNA-DNA heteroduplex instability analysis, PAM variation mapping, and off-target scoring for precise genome editing with comprehensive validation reports.</p>
+      <h3>✂️ CRISPR &amp; Genome Editing</h3>
+      <p><strong>CRISPR guide RNA analysis</strong> identifies optimal single-guide RNA sequences that direct Cas nucleases to specific genomic loci. VigyanLLM performs sgRNA-DNA heteroduplex instability analysis, PAM variation mapping (NGG for SpCas9, TTTV for Cas12a), and off-target CFD scoring for precise genome editing with comprehensive validation reports.</p>
       <div class="tag-sm">HNH Domain · sgRNA Instability · PAM Mapping</div>
     </div>
   </div>
