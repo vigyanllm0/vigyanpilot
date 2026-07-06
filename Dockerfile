@@ -4,16 +4,22 @@ WORKDIR /app
 
 # Install open-source native pipeline tools and healthcheck utilities.
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    autodock-vina \
     bowtie2 \
     build-essential \
     ca-certificates \
     curl \
     ncbi-blast+ \
+    openbabel \
     primer3 \
     samtools \
     tabix \
     vienna-rna \
     && rm -rf /var/lib/apt/lists/*
+
+# Download GNINA binary (CNN docking scorer) — pre-built Linux binary from GitHub
+RUN curl -fsSL https://github.com/gnina/gnina/releases/latest/download/gnina -o /usr/local/bin/gnina \
+    && chmod +x /usr/local/bin/gnina
 
 # Create non-root user
 RUN groupadd -r vigyan && useradd -r -g vigyan -d /app -s /sbin/nologin vigyan

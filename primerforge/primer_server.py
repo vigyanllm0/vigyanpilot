@@ -1710,7 +1710,11 @@ def create_app() -> Flask:
         data = request.get_json(silent=True) or {}
         sequence = (data.get("sequence") or "").strip()
         ligand_smiles_list = data.get("ligand_smiles_list") or data.get("smiles_list") or []
-        top_n = int(data.get("top_n", 50))
+
+        try:
+            top_n = int(data.get("top_n", 50))
+        except (ValueError, TypeError):
+            return err("'top_n' must be an integer.", "VALIDATION_ERROR", 400)
 
         if not sequence:
             return err("Protein amino acid 'sequence' is required.", "VALIDATION_ERROR", 400)
@@ -1722,16 +1726,6 @@ def create_app() -> Flask:
         except ImportError as exc:
             logger.error("Consensus pipeline import failed: %s", exc)
             return err("Consensus pipeline not available. Install torch, transformers, rdkit, vina.", "PIPELINE_UNAVAILABLE", 503)
-
-        async def _run_and_capture():
-            import asyncio
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-            try:
-                result = await run_consensus_pipeline(sequence, ligand_smiles_list, top_n=top_n)
-                return result
-            finally:
-                loop.close()
 
         import threading
         job_result = {}
@@ -1745,11 +1739,15 @@ def create_app() -> Flask:
                     run_consensus_pipeline(sequence, ligand_smiles_list, top_n=top_n)
                 )
             except Exception as e:
+                logger.exception("Background pipeline thread failed")
                 job_result["error"] = str(e)
 
         thread = threading.Thread(target=_background_runner, daemon=True)
         thread.start()
         thread.join(timeout=300)
+
+        if thread.is_alive():
+            return err("Pipeline timed out after 300s.", "PIPELINE_TIMEOUT", 504)
 
         if "error" in job_result:
             return err(f"Pipeline failed: {job_result['error']}", "PIPELINE_FAILED", 500)
@@ -1757,6 +1755,18 @@ def create_app() -> Flask:
         result = job_result.get("result", {})
         if result.get("status") == "error":
             return err(result.get("message", "Pipeline returned an error"), "PIPELINE_FAILED", 500)
+
+        # Strip large structural data from response to keep JSON manageable
+        for key in ("stage1", "stage2", "stage3"):
+            stage = result.get(key)
+            if isinstance(stage, dict):
+                stage.pop("pdb_string", None)
+                stage.pop("structure", None)
+        for r in result.get("ranked_results", []):
+            if isinstance(r, dict):
+                r.pop("structure", None)
+                r.pop("receptor", None)
+                r.pop("ligand", None)
 
         return jsonify(result), 200
 
