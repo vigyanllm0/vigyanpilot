@@ -533,7 +533,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
 <script src="/auth-shared.js"></script>
 <script>
-var API = window.VIGYAN_BACKEND_URL || '';
 var blastData = [];
 
 function $(id){return document.getElementById(id)}
@@ -558,20 +557,76 @@ function parseFasta(t){
 
 _on('bseq','input',function(){var t=this.value.replace(/^>.*\n/,'').replace(/[^ACGTNacgtn]/g,'');$('bseq-len').textContent=t.length});
 
+// ── NCBI BLAST API ── proxied through Vercel Edge Function
+async function ncbiPut(seq, db, org) {
+  var r = await fetch('/api/ncbi-blast', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({sequence: seq, database: db || 'nt', organism: org || ''})
+  });
+  if (!r.ok) { var e = await r.json(); throw new Error(e.error || 'Failed to submit BLAST job') }
+  var d = await r.json();
+  if (!d.rid) throw new Error('NCBI did not return a request ID. Try again later.');
+  return d;
+}
+
+async function ncbiPoll(rid) {
+  for (var i = 0; i < 60; i++) {
+    var r = await fetch('/api/ncbi-blast?rid=' + rid);
+    if (!r.ok) { var e = await r.json(); throw new Error(e.error || 'Failed to check BLAST status') }
+    var d = await r.json();
+    if (d.status === 'READY') return d.hits || [];
+    await new Promise(r => setTimeout(r, 2000));
+  }
+  throw new Error('BLAST timed out. Try a shorter sequence.');
+}
+
+function parseNcbiHits(hits, querySeq) {
+  var out = [];
+  var qlen = querySeq.length;
+  hits.forEach(function(hit) {
+    var title = hit.def || hit.id || '';
+    var species = (title.match(/\[([A-Z][a-z]+\s+[a-z]+)\]/) || [])[1] || '';
+    (hit.hsps || []).forEach(function(hsp) {
+      var idn = hsp.align_len ? +(hsp.identity / hsp.align_len * 100).toFixed(2) : 0;
+      var cov = qlen && hsp.align_len ? +(hsp.align_len / qlen * 100).toFixed(2) : 0;
+      var e = hsp.evalue;
+      var evalue = e === 0 || e === '0' ? '0.0' : parseFloat(e) < 0.0001 ? parseFloat(e).toExponential(2) : parseFloat(e).toFixed(4);
+      out.push({
+        subject_id: hit.id || '',
+        subject_description: title,
+        subject_species: species,
+        identity_pct: idn,
+        alignment_length: hsp.align_len || 0,
+        mismatches: (hsp.align_len || 0) - (hsp.identity || 0) - (hsp.gaps || 0),
+        gap_opens: hsp.gaps || 0,
+        e_value: evalue,
+        bit_score: +(hsp.bit_score || 0).toFixed(1),
+        query_cover: cov,
+        source: 'NCBI BLAST',
+        source_url: 'https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Get&RID=',
+        subject_sequence: hsp.hit_seq || ''
+      });
+    });
+  });
+  return out;
+}
+
 async function doBlast(){
-  var seq=$('bseq').value.trim();
+  var seq=$('bseq').value.trim().replace(/[^ACGTNacgtn]/g,'').toUpperCase();
   if(!seq){alert('Enter a query sequence.');return}
   loading(true);
-  $('bparams').textContent='';
-  var body={sequence:seq,mode:$('bmode').value,db:$('bdb').value,organism:$('borg').value.trim()};
-  var files=$('bfasta').files;
-  if(files.length){try{var ft=await files[0].text();var p=parseFasta(ft);if(p.length>1){body.sequence=p[0].seq;body.subject_sequences=p.slice(1)}}catch(e){}}
-  try{
-    var r=await fetch(API+'/api/primer/blast',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-    if(!r.ok){var e=await r.text();throw new Error(e||'Request failed')}
-    var d=await r.json();
-    renderBlast(d,body.mode,body.db);
-  }catch(e){$('bresults').innerHTML='<div class="error-card" style="padding:16px;background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;color:#DC2626;font-size:13px">'+esc(e.message)+'</div>';$('bcount').textContent=''}
+  $('bparams').textContent='Submitting BLAST job to NCBI…';
+  try {
+    var d = await ncbiPut(seq, $('bdb').value, $('borg').value.trim());
+    $('bparams').textContent='BLAST job submitted (RID: ' + d.rid + '). Waiting for results…';
+    var hits = await ncbiPoll(d.rid);
+    var results = parseNcbiHits(hits, seq);
+    renderBlast({results: results, total: results.length, params:{mode:'ncbi',database:$('bdb').value}});
+  } catch(e) {
+    $('bresults').innerHTML='<div class="error-card" style="padding:16px;background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;color:#DC2626;font-size:13px">'+esc(e.message||'BLAST request failed. Check your internet connection or try again later.')+'</div>';
+    $('bcount').textContent='';
+  }
   finally{loading(false)}
 }
 
@@ -582,7 +637,7 @@ function renderBlast(data,mode,db){
   var params=data.params||{};
   count.textContent='('+results.length+' hits)';
   $('bparams').textContent='Mode: '+esc(mode||params.mode||'')+' · DB: '+esc(db||params.database||'');
-  if(!results.length){area.innerHTML='<div style="padding:40px;text-align:center;color:var(--muted);font-size:13px">No BLAST hits found.</div>';return}
+  if(!results.length){area.innerHTML='<div style="padding:40px;text-align:center;color:var(--muted);font-size:13px">No BLAST hits found. Try a longer sequence or a different database.</div>';return}
   var html='<table class="results-table"><thead><tr>'
     +'<th style="width:30px"><input type="checkbox" id="bselall" checked></th>'
     +'<th>Subject</th><th>Species</th><th>Identity</th><th>Align Len</th><th>Mismatch</th><th>Gaps</th>'
@@ -592,7 +647,6 @@ function renderBlast(data,mode,db){
     var idPct=r.identity_pct||0;
     var idBadge=idPct>=90?'id-high':idPct>=70?'id-mid':'id-low';
     var eVal=r.e_value||'';
-    var eCls=eVal==='0.0'||(typeof eVal==='string'&&eVal.includes('e-'))?'score-high':eVal<0.001?'score-high':eVal<1?'score-mid':'score-low';
     html+='<tr>'
       +'<td><input type="checkbox" class="bcb" data-idx="'+i+'" checked></td>'
       +'<td><div class="hit-id">'+esc(r.subject_id||'')+'</div><div class="hit-desc">'+esc((r.subject_description||'').slice(0,80))+'</div></td>'
@@ -601,7 +655,7 @@ function renderBlast(data,mode,db){
       +'<td>'+(r.alignment_length||0)+'</td>'
       +'<td>'+(r.mismatches||0)+'</td>'
       +'<td>'+(r.gap_opens||0)+'</td>'
-      +'<td style="font-weight:'+(eVal==='0.0'||(typeof eVal==='number'&&eVal<1e-50)?700:400)+';color:'+(eVal==='0.0'?'var(--bio)':eVal<1?'var(--amber)':'var(--muted)')+'">'+esc(String(eVal))+'</td>'
+      +'<td style="font-weight:'+(eVal==='0.0'||(typeof eVal==='string'&&eVal.includes('e-'))?700:400)+';color:'+(eVal==='0.0'?'var(--bio)':eVal<1?'var(--amber)':'var(--muted)')+'">'+esc(String(eVal))+'</td>'
       +'<td>'+(r.bit_score||0)+'</td>'
       +'<td>'+(r.query_cover||0)+'%</td>'
       +'<td>'+(r.source_url?'<a href="'+esc(r.source_url)+'" target="_blank" rel="noopener" class="source-link">Open ↗</a>':'')+'</td></tr>';
