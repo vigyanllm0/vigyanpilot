@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en-IN">
+<head>
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-KRP5LLPR');</script>
+<!-- End Google Tag Manager -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VigyanLLM — Login</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+:root{--navy:#0F172A;--white:#FFFFFF;--slate:#F8FAFC;--slate-border:#E2E8F0;--text:#0F172A;--text2:#475569;--muted:#94A3B8;--primary:#2563EB;--bio:#059669;--font-h:'Plus Jakarta Sans',sans-serif;--font-b:'Inter',sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--navy);color:#fff;font-family:var(--font-b);min-height:100vh;display:flex;flex-direction:column}
+a{text-decoration:none;color:inherit}
+nav{position:sticky;top:0;background:var(--navy);z-index:100;height:72px;border-bottom:1px solid rgba(255,255,255,.06)}
+.nav-inner{display:flex;justify-content:space-between;align-items:center;height:100%;max-width:1200px;margin:0 auto;padding:0 24px}
+.nav-brand{display:flex;align-items:center;gap:10px;color:#fff;font-family:var(--font-h);font-size:20px;font-weight:700}
+.nav-brand img{width:36px;height:36px;border-radius:6px}
+.nav-links{display:flex;gap:32px;align-items:center;margin-left:40px}
+.nav-links>a,.drop-trigger{font-size:13px;color:#CBD5E1;font-weight:500;cursor:pointer}
+.nav-links>a:hover,.drop-trigger:hover{color:#fff}
+.drop-wrap{position:relative;display:inline-block}
+.drop-menu{display:none;position:absolute;top:100%;left:0;background:#fff;border:1px solid #E2E5EA;border-radius:12px;min-width:240px;padding:8px;z-index:1001;box-shadow:0 12px 40px rgba(0,0,0,.08);opacity:0;transform:translateY(4px);transition:opacity .2s,transform .2s}
+.drop-wrap:hover .drop-menu{display:block;opacity:1;transform:translateY(0)}
+.drop-menu a{display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px;font-weight:500;transition:all .12s}
+.drop-menu a:hover{background:#E0F2F1;color:#009688;padding-left:20px}
+.nav-right{display:flex;align-items:center;gap:16px}
+.nav-login{border:1.5px solid rgba(255,255,255,.3);border-radius:4px;padding:8px 20px;font-size:13px;font-weight:600;color:#fff;background:transparent;cursor:pointer}
+.nav-login:hover{border-color:#fff;background:rgba(255,255,255,.1)}
+.nav-btns{display:flex;flex-direction:column;gap:6px}
+.nav-cta{padding:6px 20px;background:#fff;color:#0F172A;border:none;border-radius:6px;font-family:'Plus Jakarta Sans',sans-serif;font-size:10px;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:.06em;transition:all .2s;line-height:1.3}
+.nav-cta:hover{background:#2563EB;color:#fff;box-shadow:0 4px 16px rgba(37,99,235,.3)}
+.hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;background:none;border:none;padding:4px}
+.hamburger span{width:24px;height:2px;background:rgba(255,255,255,.6);border-radius:2px}
+.mobile-menu{display:none;position:fixed;top:72px;left:0;right:0;background:var(--navy);padding:16px 24px;z-index:999;border-top:1px solid rgba(255,255,255,.1)}
+.mobile-menu.open{display:block}
+.mobile-menu a{display:block;color:#CBD5E1;font-size:14px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+.mobile-menu .mm-group{margin-bottom:12px}
+.mobile-menu .mm-hdr{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700;padding:8px 0 4px}
+.login-wrap{flex:1;display:flex;align-items:center;justify-content:center;padding:40px 24px}
+.login-card{background:var(--white);border-radius:16px;padding:40px;width:100%;max-width:400px;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.login-card h1{font-family:var(--font-h);font-size:22px;font-weight:800;color:var(--text);margin-bottom:4px;text-align:center}
+.login-card p{font-size:13px;color:var(--muted);text-align:center;margin-bottom:24px}
+.form-group{margin-bottom:16px}
+.form-label{display:block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text2);margin-bottom:6px}
+.form-input{width:100%;padding:12px 14px;border:1px solid var(--slate-border);border-radius:8px;font-family:var(--font-b);font-size:14px;color:var(--text);transition:border-color .15s}
+.form-input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+.btn-primary{width:100%;padding:14px;background:var(--primary);color:#fff;border:none;border-radius:8px;font-family:var(--font-b);font-size:14px;font-weight:700;cursor:pointer;transition:opacity .15s}
+.btn-primary:hover{opacity:.9}
+.btn-google{width:100%;padding:12px;background:var(--white);color:var(--text);border:1px solid var(--slate-border);border-radius:8px;font-family:var(--font-b);font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:background .15s}
+.btn-google:hover{background:var(--slate)}
+.divider{display:flex;align-items:center;gap:12px;margin:16px 0;font-size:11px;color:var(--muted)}
+.divider hr{flex:1;border:none;border-top:1px solid var(--slate-border)}
+.auth-toggle{text-align:center;font-size:12px;color:var(--muted);margin-top:16px}
+.auth-toggle a{color:var(--primary);font-weight:600;cursor:pointer}
+.auth-toggle a:hover{text-decoration:underline}
+.auth-error{color:#DC2626;font-size:12px;text-align:center;margin-top:8px;display:none}
+@media(max-width:768px){.nav-links{display:none}.hamburger{display:flex}}
+</style>
+</head>
+<body>
+<nav>
+<div class="nav-inner">
+  <a href="index.html" class="nav-brand">
+    <img src="logo.svg" alt="VigyanLLM Logo">
+    <span>VigyanLLM</span>
+  </a>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <div class="drop-wrap">
+      <span class="drop-trigger">Platform Architecture ▾</span>
+      <div class="drop-menu">
+        <a href="platform.html">Platform</a>
+        <a href="architecture.html">Architecture</a>
+        <a href="problem.html">Problem</a>
+        <a href="solution.html">Solution</a>
+        <a href="compare.html">Compare</a>
+        <a href="roadmap.html">Roadmap</a>
+      </div>
+    </div>
+    <div class="drop-wrap">
+      <span class="drop-trigger">Products &amp; Services ▾</span>
+      <div class="drop-menu">
+        <a href="primer.html">VPrime 2.0</a>
+        <a href="search.html">Sequence Search</a>
+        <a href="blast.html">BLAST</a>
+        <a href="msa.html">MSA</a>
+        <a href="pcr-analysis.html">PCR Analysis</a>
+        <a href="crispr-analysis.html">CRISPR</a>
+        <a href="tm-calculator.html">Tm Calculator</a>
+        <a href="gc-calculator.html">GC Calculator</a>
+        <a href="protein-docking.html">Docking</a>
+      </div>
+    </div>
+    <div class="drop-wrap">
+      <span class="drop-trigger">Collab &amp; Partnership ▾</span>
+      <div class="drop-menu">
+        <a href="academic-partnership.html">Academic Partnership</a>
+        <a href="mailto:contact@vigyanllm.in">Enterprise Inquiry</a>
+      </div>
+    </div>
+  </div>
+  <div class="nav-right">
+    <div class="nav-btns">
+      <button class="nav-login" style="border-color:#22D3EE;color:#22D3EE" onclick="window.location.href='login.html'">Sign in</button>
+      <button class="nav-cta" onclick="window.location.href='login.html'">Get started</button>
+    </div>
+  </div>
+  <button class="hamburger" id="hamburger" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</div>
+<div class="mobile-menu" id="mobile-menu">
+  <div class="mm-group"><div class="mm-hdr">Home</div>
+    <a href="index.html">Home</a>
+  </div>
+  <div class="mm-group"><div class="mm-hdr">Platform Architecture</div>
+    <a href="platform.html">Platform</a>
+    <a href="architecture.html">Architecture</a>
+    <a href="problem.html">Problem</a>
+    <a href="solution.html">Solution</a>
+    <a href="compare.html">Compare</a>
+    <a href="roadmap.html">Roadmap</a>
+  </div>
+  <div class="mm-group"><div class="mm-hdr">Products &amp; Services</div>
+    <a href="primer.html">VPrime 2.0</a>
+    <a href="search.html">Sequence Search</a>
+    <a href="blast.html">BLAST</a>
+    <a href="msa.html">MSA</a>
+    <a href="pcr-analysis.html">PCR Analysis</a>
+    <a href="crispr-analysis.html">CRISPR Analysis</a>
+    <a href="tm-calculator.html">Tm Calculator</a>
+    <a href="gc-calculator.html">GC Calculator</a>
+    <a href="protein-docking.html">Protein Docking</a>
+  </div>
+  <div class="mm-group"><div class="mm-hdr">Collab &amp; Partnership</div>
+    <a href="academic-partnership.html">Academic Partnership</a>
+    <a href="mailto:contact@vigyanllm.in">Enterprise Inquiry</a>
+  </div>
+  <div class="mm-group"><a href="login.html" style="color:var(--accent);font-weight:600;font-size:14px;padding:10px 0;display:block;font-family:var(--font-b)">Log in</a></div>
+</div>
+</nav>
+
+<div class="login-wrap">
+  <div class="login-card">
+    <h1>Welcome to VigyanLLM</h1>
+    <p>Sign in to access all tools and features</p>
+    <div id="auth-form-area">
+      <div class="form-group" id="name-group" style="display:none">
+        <label class="form-label">Full Name</label>
+        <input type="text" id="reg-name" class="form-input" placeholder="Dr. Anjali Sharma">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input type="email" id="auth-email" class="form-input" placeholder="researcher@lab.edu">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input type="password" id="auth-password" class="form-input" placeholder="Min 6 characters">
+      </div>
+      <button class="btn-primary" id="auth-submit-btn">Log in</button>
+      <div class="auth-error" id="auth-error"></div>
+      <div class="divider"><hr><span>or</span><hr></div>
+      <button class="btn-google" onclick="handleGoogleSignIn()">
+        <svg viewBox="0 0 24 24" style="width:18px;height:18px"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+        Sign in with Google
+      </button>
+      <div class="auth-toggle" id="auth-toggle">Don't have an account? <a id="auth-toggle-link">Register</a></div>
+    </div>
+  </div>
+</div>
+
+<script src="/auth-shared.js"></script>
+<script>
+var API = window.VIGYAN_BACKEND_URL || '';
+function $(id){return document.getElementById(id)}
+var isRegister=false;
+$('auth-toggle-link').addEventListener('click',function(){
+  isRegister=!isRegister;
+  $('name-group').style.display=isRegister?'block':'none';
+  $('auth-submit-btn').textContent=isRegister?'Register':'Log in';
+  $('auth-toggle-link').textContent=isRegister?'Log in':'Register';
+  $('auth-toggle').innerHTML=isRegister?'Already have an account? <a id="auth-toggle-link">Log in</a>':"Don't have an account? <a id='auth-toggle-link'>Register</a>";
+  $('auth-toggle-link').addEventListener('click',arguments.callee);
+});
+$('auth-submit-btn').addEventListener('click',async function(){
+  var email=$('auth-email').value.trim(),pass=$('auth-password').value.trim();
+  if(!email||!pass){$('auth-error').style.display='block';$('auth-error').textContent='Please fill all fields.';return}
+  $('auth-error').style.display='none';
+  try{
+    var r=await fetch(API+'/api/auth/'+(isRegister?'register':'login'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+      email:email,password:pass,name:isRegister?$('reg-name').value.trim():undefined
+    })});
+    if(r.ok){window.location.href='primer.html'}else{
+      var e=await r.text();$('auth-error').style.display='block';$('auth-error').textContent=e||'Authentication failed';
+    }
+  }catch(e){$('auth-error').style.display='block';$('auth-error').textContent='Server unavailable. Please try again.';}
+});
+function handleGoogleSignIn(){
+  if(typeof google !== 'undefined' && google.accounts && google.accounts.id){
+    google.accounts.id.prompt();
+  } else {alert('Google Sign-In is loading. Please try again.');}
+}
+// Mobile menu
+document.addEventListener('DOMContentLoaded',function(){
+  var h=$('hamburger'),m=$('mobile-menu');
+  if(h&&m){h.addEventListener('click',function(){m.classList.toggle('open')});m.querySelectorAll('a').forEach(function(l){l.addEventListener('click',function(){m.classList.remove('open')})})}
+});
+</script>
+</body>
+</html>
