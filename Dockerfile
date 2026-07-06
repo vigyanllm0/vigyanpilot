@@ -24,8 +24,9 @@ RUN curl -fsSL https://github.com/gnina/gnina/releases/latest/download/gnina -o 
 # Create non-root user
 RUN groupadd -r vigyan && useradd -r -g vigyan -d /app -s /sbin/nologin vigyan
 
-COPY requirements.txt .
+COPY requirements.txt requirements-docking.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
+# RUN pip install --no-cache-dir -r requirements-docking.txt  # uncomment for GPU workers
 
 COPY primerforge/ ./primerforge/
 COPY secure_frontend.py .

@@ -18,15 +18,7 @@ setuptools==78.1.1
 # pysam==0.23.3 removed — installed via wheel or apt in CI/CD deploy workflow
 
 # ── Consensus Pipeline (ESMFold → Vina → GNINA) ─────────────────────────
-# ESMFold — Protein structure prediction (MIT license)
-# torch>=2.2.0 — installed separately via CPU index to avoid CUDA download on t3.micro
-transformers>=4.40.0
-tokenizers>=0.15.0
-fair-esm>=2.0.0
-einops>=0.6.0
-accelerate>=0.26.0
-
-# Cheminformatics & Docking
+# Heavy ML deps (torch, transformers, fair-esm, etc.) are in requirements-docking.txt
+# installed ONLY on the Azure worker. Main server only needs rdkit + meeko for Vina prep.
 rdkit>=2024.3.1
 meeko>=0.7.1
-# vina>=1.2.5 — CLI binary installed via apt (autodock-vina); Python bindings only needed for Colab
