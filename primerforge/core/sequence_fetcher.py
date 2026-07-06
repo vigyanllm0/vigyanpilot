@@ -24,7 +24,7 @@ ENSEMBL_BASE  = "https://rest.ensembl.org"
 UNIPROT_BASE  = "https://rest.uniprot.org/uniprotkb"
 
 # Set your NCBI email and API key (required for Entrez)
-Entrez.email   = "user@example.com"
+Entrez.email   = os.environ.get("NCBI_EMAIL", "user@example.com")
 NCBI_API_KEY   = os.environ.get("NCBI_API_KEY", "")
 if NCBI_API_KEY:
     Entrez.api_key = NCBI_API_KEY
@@ -33,6 +33,60 @@ else:
     logger.info("No NCBI API key — rate limit: 3 req/sec")
 
 HEADERS = {"User-Agent": "VigyanLLM-PrimerMSA/1.0 (https://vigyanllm.in; contact@vigyanllm.in)"}
+
+# Uniform result schema for all fetchers
+SOURCE_URLS = {
+    "ncbi": "https://www.ncbi.nlm.nih.gov/nuccore/{id}",
+    "ncbi_gene": "https://www.ncbi.nlm.nih.gov/gene/{id}",
+    "ensembl": "https://{host}.ensembl.org/id/{id}",
+    "uniprot": "https://www.uniprot.org/uniprotkb/{id}",
+    "ddbj": "https://www.ddbj.nig.ac.jp/{id}",
+    "ena": "https://www.ebi.ac.uk/ena/browser/view/{id}",
+}
+
+UNIFORM_SCHEMA = {
+    "id": "",
+    "accession": "",
+    "name": "",
+    "description": "",
+    "organism": "",
+    "sequence": "",
+    "length": 0,
+    "gc_content": 0.0,
+    "source": "",
+    "source_url": "",
+    "molecule_type": "DNA",
+    "features": [],
+}
+
+
+def _make_result(data: dict, source: str, source_id: str = None) -> dict:
+    """Wrap a fetcher result into the uniform schema with source URL."""
+    result = dict(UNIFORM_SCHEMA)
+    result["id"] = data.get("accession") or data.get("id") or source_id or ""
+    result["accession"] = data.get("accession") or result["id"]
+    result["name"] = data.get("name") or data.get("entry_name") or ""
+    result["description"] = data.get("description") or data.get("desc") or data.get("protein_name") or ""
+    result["organism"] = data.get("organism") or data.get("species") or ""
+    result["sequence"] = data.get("sequence") or data.get("seq") or ""
+    result["length"] = data.get("length") or len(result["sequence"])
+    if result["sequence"]:
+        s = result["sequence"].upper()
+        result["gc_content"] = round((s.count("G") + s.count("C")) / len(s) * 100, 2) if len(s) > 0 else 0.0
+    result["source"] = source
+    result["molecule_type"] = data.get("molecule_type") or data.get("molecule") or "DNA"
+    result["features"] = data.get("features", [])
+
+    # Generate source URL
+    url_template = SOURCE_URLS.get(source, "")
+    if url_template:
+        identifier = source_id or result["id"]
+        if source == "ensembl":
+            species = (data.get("species") or "homo_sapiens").lower().replace(" ", "_")
+            result["source_url"] = url_template.format(host=species, id=identifier)
+        else:
+            result["source_url"] = url_template.format(id=identifier)
+    return result
 
 
 def _rate_limit_ncbi():
@@ -336,4 +390,207 @@ def fetch_uniprot_sequence(uniprot_id: str) -> Dict:
                              for c in meta.get("comments", [])
                              if c.get("commentType") == "FUNCTION"), ""),
         "source":      "UniProt",
+    }
+
+
+# ════════════════════════════════════════════════════════════════
+# Multi-Search Dispatcher
+# ════════════════════════════════════════════════════════════════
+
+DATABASE_REGISTRY = {
+    "ncbi_nucleotide": {
+        "label": "NCBI Nucleotide",
+        "accepts": ["accession", "name"],
+        "search": lambda q, org="": _search_ncbi_nucleotide_by_name(q, org),
+        "fetch": lambda acc: fetch_ncbi_nucleotide(acc),
+    },
+    "ncbi_gene": {
+        "label": "NCBI Gene",
+        "accepts": ["name"],
+        "search": lambda q, org="": search_ncbi_gene(q, org or "human"),
+        "fetch": None,
+    },
+    "ensembl": {
+        "label": "Ensembl",
+        "accepts": ["accession", "name"],
+        "search": lambda q, org="": _search_ensembl_by_name(q, org),
+        "fetch": lambda acc: fetch_ensembl_sequence(acc),
+    },
+    "uniprot": {
+        "label": "UniProt",
+        "accepts": ["accession", "name"],
+        "search": lambda q, org="": _search_uniprot_by_name(q),
+        "fetch": lambda acc: fetch_uniprot_sequence(acc),
+    },
+    "ddbj": {
+        "label": "DDBJ",
+        "accepts": ["accession"],
+        "search": None,
+        "fetch": None,
+    },
+    "ena": {
+        "label": "ENA",
+        "accepts": ["accession"],
+        "search": None,
+        "fetch": None,
+    },
+}
+
+
+def _search_ncbi_nucleotide_by_name(query: str, organism: str = "") -> List[Dict]:
+    """Search NCBI Nucleotide database by gene name/description."""
+    _rate_limit_ncbi()
+    org_part = f" AND {organism}[Organism]" if organism else ""
+    search_query = f"({query}[Title] OR {query}[Gene Name]){org_part} AND srcdb_refseq[Properties] AND biomol mrna[Properties]"
+    params = {"db": "nucleotide", "term": search_query, "retmax": 20, "retmode": "json"}
+    if NCBI_API_KEY:
+        params["api_key"] = NCBI_API_KEY
+    try:
+        r = requests.get(f"{NCBI_BASE}esearch.fcgi", params=params, headers=HEADERS, timeout=20)
+        r.raise_for_status()
+        ids = r.json().get("esearchresult", {}).get("idlist", [])
+    except Exception as e:
+        logger.debug(f"NCBI nucleotide search failed: {e}")
+        return []
+
+    if not ids:
+        return []
+
+    # Fetch summaries for each hit
+    results = []
+    for gid in ids[:20]:
+        try:
+            data = fetch_ncbi_nucleotide(gid)
+            results.append(_make_result(data, "ncbi", gid))
+        except Exception as e:
+            logger.debug(f"Failed to fetch {gid}: {e}")
+            continue
+    return results
+
+
+def _search_ensembl_by_name(query: str, organism: str = "human") -> List[Dict]:
+    """Search Ensembl by gene symbol."""
+    species_map = {"human": "homo_sapiens", "mouse": "mus_musculus",
+                   "rat": "rattus_norvegicus", "zebrafish": "danio_rerio",
+                   "fly": "drosophila_melanogaster", "worm": "caenorhabditis_elegans"}
+    ens_species = species_map.get(organism.lower(), organism.lower().replace(" ", "_"))
+    try:
+        info = fetch_ensembl_gene_info(query, species=ens_species)
+        results = []
+        # Gene-level result
+        results.append(_make_result({
+            "id": info["gene_id"],
+            "accession": info["gene_id"],
+            "name": info["symbol"],
+            "description": info["description"],
+            "species": info["species"],
+            "sequence": "",
+            "length": info["end"] - info["start"],
+            "molecule": "DNA",
+        }, "ensembl", info["gene_id"]))
+
+        # Transcript-level results
+        for t in info.get("transcripts", [])[:5]:
+            try:
+                seq_data = fetch_ensembl_sequence(t["id"], seq_type="cdna")
+                results.append(_make_result({
+                    "id": t["id"],
+                    "accession": t["id"],
+                    "name": t["name"],
+                    "description": f"{info['symbol']} transcript {t['name']}",
+                    "species": info["species"],
+                    "sequence": seq_data["seq"],
+                    "length": t["length"],
+                    "molecule": "DNA",
+                }, "ensembl", t["id"]))
+            except Exception:
+                continue
+        return results
+    except Exception as e:
+        logger.debug(f"Ensembl search failed: {e}")
+        return []
+
+
+def _search_uniprot_by_name(query: str) -> List[Dict]:
+    """Search UniProt by gene/protein name."""
+    url = f"{UNIPROT_BASE}/search"
+    params = {"query": query, "format": "json", "size": 20}
+    try:
+        r = requests.get(url, params=params, headers=HEADERS, timeout=20)
+        r.raise_for_status()
+        data = r.json()
+        results = []
+        for entry in data.get("results", [])[:20]:
+            accession = entry.get("primaryAccession", "")
+            gene_names = [gn.get("geneName", {}).get("value", "")
+                          for gn in entry.get("genes", []) if gn.get("geneName")]
+            results.append(_make_result({
+                "id": accession,
+                "accession": accession,
+                "name": gene_names[0] if gene_names else accession,
+                "description": entry.get("proteinDescription", {}).get(
+                    "recommendedName", {}).get("fullName", {}).get("value", ""),
+                "organism": entry.get("organism", {}).get("scientificName", ""),
+                "sequence": "",
+                "length": entry.get("sequence", {}).get("length", 0),
+                "molecule": "protein",
+            }, "uniprot", accession))
+        return results
+    except Exception as e:
+        logger.debug(f"UniProt search failed: {e}")
+        return []
+
+
+def detect_input_type(text: str) -> str:
+    """
+    Detect whether input is a sequence, accession, or name.
+    Returns: 'sequence' | 'accession' | 'name'
+    """
+    clean = text.strip().upper().replace(" ", "").replace("\n", "").replace("\r", "")
+    if re.match(r"^[ACGTNRYSWKMBDHVacgtnryswkmbdhv\s]+$", text.strip()):
+        if len(clean) >= 20:
+            return "sequence"
+    if re.match(r"^(NM_|XM_|NR_|XR_|NG_|NC_|NT_|NW_|ENS[GTPE][0-9A-Z]{10}|[A-Z]{1,2}\d{5,}|[OPQ][0-9A-Z]{5}|EPI_ISL_\d+|[A-Z]{2}\d{6})", text.strip(), re.I):
+        return "accession"
+    return "name"
+
+
+def search_databases(query: str, database: str = "auto", organism: str = "human") -> Dict:
+    """
+    Search one or all databases for the given query.
+    query: gene name, accession, or sequence text
+    database: specific DB name or "auto" to detect
+    organism: organism name for NCBI filtering
+    Returns: {results: [...], total: N, source: str, query_type: str}
+    """
+    query_type = detect_input_type(query)
+    all_results = []
+
+    if database == "auto" or database == "_all":
+        databases = list(DATABASE_REGISTRY.keys())
+    else:
+        databases = [database]
+
+    for db_name in databases:
+        db_info = DATABASE_REGISTRY.get(db_name)
+        if not db_info or query_type not in db_info.get("accepts", []):
+            continue
+        try:
+            if db_info["search"]:
+                results = db_info["search"](query, organism)
+                for r in results:
+                    r["database"] = db_name
+                    r["database_label"] = db_info["label"]
+                all_results.extend(results)
+        except Exception as e:
+            logger.debug(f"Search {db_name} failed: {e}")
+            continue
+
+    return {
+        "results": all_results[:50],
+        "total": len(all_results),
+        "query": query,
+        "query_type": query_type,
+        "database": database,
+        "databases_searched": databases,
     }

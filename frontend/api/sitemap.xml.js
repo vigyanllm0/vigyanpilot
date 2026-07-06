@@ -1,159 +1,74 @@
 // Vercel Edge Function: Dynamic Sitemap Generator
-// File: api/sitemap.xml.js
-// Place in /api/ directory of your VigyanLLM Vercel project
-
-export const config = {
-  runtime: "edge",
-};
+// Auto-generated — 2026-07-06
+export const config = { runtime: "edge" };
 
 const BASE_URL = "https://vigyanllm.in";
 
-// Core pages with priorities and frequencies
-const CORE_PAGES = [
-  { url: "/", priority: "1.0", changefreq: "weekly" },
-  { url: "/index.html", priority: "1.0", changefreq: "weekly" },
-  { url: "/primer.html", priority: "0.95", changefreq: "monthly" },
-  { url: "/demo.html", priority: "0.85", changefreq: "weekly" },
-  { url: "/about.html", priority: "0.70", changefreq: "monthly" },
-  { url: "/changelog.html", priority: "0.70", changefreq: "weekly" },
-  { url: "/sitemap.html", priority: "0.65", changefreq: "monthly" },
-  { url: "/security.html", priority: "0.65", changefreq: "yearly" },
-  { url: "/terms.html", priority: "0.60", changefreq: "yearly" },
-  { url: "/privacy.html", priority: "0.60", changefreq: "yearly" },
-  { url: "/refund.html", priority: "0.60", changefreq: "yearly" },
-  { url: "/404.html", priority: "0.30", changefreq: "yearly" },
+const CORE = [
+  "/","/primer","/blast","/msa","/search","/primer-design","/primer-design-pipeline",
+  "/pcr-analysis","/crispr-analysis","/protein-docking","/tm-calculator","/gc-calculator",
+  "/dna-to-rna","/tools/dna-to-rna",
+  "/platform","/solution","/architecture","/problem","/compare","/roadmap",
+  "/validated-primer-design","/security","/privacy","/terms","/faq","/about","/contact","/cite",
+  "/academic-partnership","/Learning-vigyanllm","/demo","/sitemap","/cookies","/refund","/changelog",
+  "/primer-design-india","/primer-3-alternative","/primer3-alternative","/primer-blast-alternative",
+  "/primer-blast-specificity","/primer-design-best-practices","/primer-design-thermodynamics",
+  "/biomedical-ai-platform","/ai-crispr-analysis","/hipaa-compliant-genomics",
+  "/molecular-docking-guide","/multiplex-primer-design","/qpcr-primer-design",
+  "/validated-primer-design-report","/dna-3d",
+  "/docs/getting-started","/docs/pipeline-config",
 ];
 
-// SEO landing pages
-const LANDING_PAGES = [
-  { url: "/primer-3-alternative.html", priority: "0.90", changefreq: "monthly" },
-  { url: "/primer-blast-alternative.html", priority: "0.90", changefreq: "monthly" },
-  { url: "/validated-primer-design.html", priority: "0.85", changefreq: "monthly" },
-  { url: "/primer-design-india.html", priority: "0.88", changefreq: "monthly" },
-  { url: "/biomedical-ai-platform.html", priority: "0.85", changefreq: "monthly" },
-  { url: "/qpcr-primer-design.html", priority: "0.80", changefreq: "monthly" },
-  { url: "/primer-design-best-practices.html", priority: "0.80", changefreq: "monthly" },
+const BLOG = ["ai-in-molecular-biology", "ai-primer-design-machine-learning", "automated-wet-lab-workflows", "biotech-ai-future-2026", "bisulfite-conversion-pcr-primer-design", "cfdna-liquid-biopsy-pcr", "colony-pcr-primer-design", "covid-19-rt-pcr-primers", "crispr-grna-design-guide", "degenerate-primer-design", "digital-pcr-vs-qpcr", "gc-content-guidelines", "hepatitis-b-virus-pcr", "hiv-viral-load-pcr", "hot-start-pcr-technology", "hpv-genotyping-pcr", "isothermal-amplification-primers", "listeria-detection-pcr", "llm-for-genomics", "long-range-pcr-nanopore-sequencing-primer-design", "multiplex-pcr-design", "multiplex-pcr-primer-design", "ncbi-primer-blast-guide", "nested-pcr-primer-design", "pcr-multiplex-optimization", "pcr-pipette-technique", "pcr-primer-design-rules", "pcr-protocol-beginners", "pcr-steps", "pcr-troubleshooting-guide", "primer-design-complete-guide", "primer-design-india-affordable", "primer-design-mrna", "primer-design-rules", "primer-dimer-fix", "primer-dimer-prevention", "primer3-vs-vigyanllm", "qpcr-primer-probe-design", "real-time-pcr-data-analysis", "rt-pcr-vs-qpcr", "sequencing-primer-design", "single-cell-rna-seq-pcr-primer-design", "snapgene-vs-vigyanllm", "taqman-probe-troubleshooting", "taqman-vs-sybr-green", "tm-calculation-methods", "touchdown-pcr-protocol", "types-of-pcr", "vprime-internal-validation", "what-is-pcr"];
+const GLOSSARY = ["adme", "allele", "alphafold", "alternative-splicing", "amino-acid", "amplicon", "amplicon-size", "annealing-temperature", "antibiotic-resistance", "antibody", "apoptosis", "atp", "bacteriophage", "bam", "base-editing", "base-pair", "binding-affinity", "bioavailability", "bioinformatics", "biomarker", "bisulfite-pcr", "blast", "blast-specificity", "bowtie2-alignment", "cas12", "cas13", "cas9", "cdna-library", "cell", "cell-differentiation", "cell-membrane", "chromosome", "citric-acid-cycle", "clinical-diagnostics", "clinvar", "codon", "confocal-microscopy", "crispr", "crispr-screen", "cytokinesis", "cytoskeleton", "dbsnp", "deep-learning", "degenerate-primer", "delta-g", "diagnostic-sensitivity", "diagnostic-specificity", "digital-pcr", "dna", "dna-helix", "dna-polymerase", "dna-repair", "dominant", "dose-response-curve", "drug-discovery", "elisa", "endocytosis", "endoplasmic-reticulum", "enhancer", "ensembl", "enzyme", "epigenetics", "esmfold", "evolution", "exocytosis", "exon", "facs", "fastq", "flow-cytometry", "forward-primer", "gc-clamp", "gc-content", "gel-electrophoresis", "gel-extraction", "gene", "gene-expression", "gene-therapy", "genetic-linkage", "genetic-variant", "genome", "genome-assembly", "genome-editing", "genomics", "genotype", "glycolysis", "gnina", "golgi-apparatus", "gwas", "hairpin", "haplotype", "homologous-recombination", "hot-start-pcr", "ic50", "illumina", "insulin", "interleukin", "intron", "iupac-codes", "karyotype", "lead-compound", "liquid-biopsy", "lysosome", "machine-learning", "manufacturing-qc", "mass-spectrometry", "mass-spectrometry-proteomics", "meiosis", "melting-temperature", "mendelian-inheritance", "metagenomics", "mg2-correction", "microarray", "mirna", "mitochondria", "mitosis", "molecular-biology", "molecular-docking", "mrna", "multiplex-pcr", "mutation", "ncbi", "nearest-neighbor-model", "nested-pcr", "next-generation-sequencing", "northern-blot", "nucleotide", "nucleus", "oncoprotein", "operon", "oxford-nanopore", "oxidative-phosphorylation", "pathogenic-variant", "pcr", "penalty-matrix", "peptide", "phage-display", "pharmacodynamics", "pharmacogenomics", "pharmacokinetics", "phenotype", "phylogeny", "plasmid", "plasmid-purification", "polyadenylation", "polymorphism", "prime-editing", "primer", "primer-design", "primer-dimer", "primer-pooler", "primer-specificity", "primer3", "probe-design", "promoter", "proteasome", "protein", "protein-domain", "protein-structure-prediction", "proteome", "qpcr", "real-time-pcr", "recessive", "repeat-masking", "retrotransposon", "reverse-primer", "ribosome", "rmsd", "rna", "rna-interference", "rna-polymerase", "rna-seq", "rna-splicing", "rt-pcr", "rychlik-formula", "salt-correction", "santalucia-1998", "secondary-structure", "signal-transduction", "single-cell-rna-seq", "smina", "snp", "snp-filtering", "southern-blot", "synthetic-biology", "t-cell", "taq-polymerase", "taqman-probe", "taxonomy", "thermal-cycler", "thermocycling-profile", "touchdown-pcr", "transcription", "transcriptome", "translation", "transposon", "triplet-code", "trna", "tumor-suppressor", "ubiquitin", "vaccine", "variant-calling", "vcf", "vina", "virtual-screening", "western-blot"];
+const GENE = ["akt1-primer-design", "aldh2-primer-design", "alk-primer-design", "apc-primer-design", "apoe-primer-design", "ar-primer-design", "arid1a-primer-design", "atm-primer-design", "bcl2-primer-design", "bcr-primer-design", "braf-primer-design", "brca1-primer-design", "brca2-primer-design", "calr-primer-design", "card11-primer-design", "ccnd1-primer-design", "cdh1-primer-design", "cdk4-primer-design", "cdkn2a-primer-design", "cebpa-primer-design", "chek2-primer-design", "csf1r-primer-design", "ctnnb1-primer-design", "cyp2c19-primer-design", "cyp2d6-primer-design", "ddr2-primer-design", "dnmt3a-primer-design", "egfr-primer-design", "ercc1-primer-design", "esr1-primer-design", "ezh2-primer-design", "fbxw7-primer-design", "fgfr1-primer-design", "fgfr2-primer-design", "fgfr3-primer-design", "flt3-primer-design", "foxl2-primer-design", "gata2-primer-design", "gna11-primer-design", "gnaq-primer-design", "gnas-primer-design", "her2-erbb2-primer-design", "hnf1a-primer-design", "hras-primer-design", "idh1-primer-design", "idh2-primer-design", "jak2-primer-design", "jak3-primer-design", "kdr-primer-design", "kit-primer-design", "kras-primer-design", "tp53-primer-design"];
+const LANDING = ["allele-specific-pcr", "bioinformatics-research-platform", "bisulfite-pcr-design", "clinical-genomics-platform", "cloning-primer-design", "crispr-guide-design-tool", "dna-sequencing-analysis", "drug-discovery-ai-platform", "gc-content-analyzer", "gene-expression-analysis-tool", "genomic-dna-primer-design", "genomics-research-tool", "melting-temperature-calculator", "molecular-docking-software", "multiplex-pcr-design", "ngs-panel-design-tool", "pcr-optimization-tool", "primer-design-software-india", "primer-dimer-checker", "protein-structure-prediction-tool", "real-time-pcr-analysis", "rna-seq-analysis-tool", "rt-pcr-primer-design", "sanger-sequencing-primer-design", "snp-genotyping-tool", "taqman-probe-design-tool", "whole-genome-sequencing-analysis"];
+
+const HUB = [
+  "/hub/primer-design","/hub/molecular-docking","/hub/pcr-amplification",
+  "/hub/genomics-research","/hub/crispr-genome-editing","/hub/bioinformatics-tools",
+  "/hub/protein-structure","/hub/drug-discovery","/hub/gene-expression",
+  "/hub/sequencing-technologies","/hub/cancer-biology","/hub/cell-biology",
 ];
 
-// Additional SEO landing pages (newly generated)
-const SEO_LANDING_PAGES = [
-  { url: "/molecular-docking-software.html", priority: "0.85", changefreq: "monthly" },
-  { url: "/crispr-guide-design-tool.html", priority: "0.85", changefreq: "monthly" },
-  { url: "/pcr-optimization-tool.html", priority: "0.80", changefreq: "monthly" },
-  { url: "/gene-expression-analysis-tool.html", priority: "0.80", changefreq: "monthly" },
-  { url: "/protein-structure-prediction-tool.html", priority: "0.80", changefreq: "monthly" },
-  { url: "/ngs-panel-design-tool.html", priority: "0.80", changefreq: "monthly" },
-  { url: "/primer-dimer-checker.html", priority: "0.78", changefreq: "monthly" },
-  { url: "/snp-genotyping-tool.html", priority: "0.78", changefreq: "monthly" },
-  { url: "/multiplex-pcr-design.html", priority: "0.78", changefreq: "monthly" },
-  { url: "/dna-sequencing-analysis.html", priority: "0.78", changefreq: "monthly" },
-  { url: "/bioinformatics-research-platform.html", priority: "0.75", changefreq: "monthly" },
-  { url: "/clinical-genomics-platform.html", priority: "0.75", changefreq: "monthly" },
-  { url: "/drug-discovery-ai-platform.html", priority: "0.75", changefreq: "monthly" },
-  { url: "/genomics-research-tool.html", priority: "0.75", changefreq: "monthly" },
-  { url: "/sanger-sequencing-primer-design.html", priority: "0.72", changefreq: "monthly" },
-  { url: "/real-time-pcr-analysis.html", priority: "0.72", changefreq: "monthly" },
-  { url: "/primer-design-software-india.html", priority: "0.72", changefreq: "monthly" },
-  { url: "/bisulfite-pcr-design.html", priority: "0.72", changefreq: "monthly" },
-  { url: "/taqman-probe-design-tool.html", priority: "0.72", changefreq: "monthly" },
-  { url: "/rt-pcr-primer-design.html", priority: "0.72", changefreq: "monthly" },
-  { url: "/whole-genome-sequencing-analysis.html", priority: "0.70", changefreq: "monthly" },
-  { url: "/rna-seq-analysis-tool.html", priority: "0.70", changefreq: "monthly" },
-  { url: "/allele-specific-pcr.html", priority: "0.70", changefreq: "monthly" },
-  { url: "/cloning-primer-design.html", priority: "0.70", changefreq: "monthly" },
-  { url: "/genomic-dna-primer-design.html", priority: "0.70", changefreq: "monthly" },
-  { url: "/covid-pcr-primer-design.html", priority: "0.70", changefreq: "monthly" },
-  { url: "/pathogen-detection-pcr.html", priority: "0.68", changefreq: "monthly" },
-  { url: "/agricultural-genomics-tool.html", priority: "0.68", changefreq: "monthly" },
-  { url: "/forensic-dna-analysis-tool.html", priority: "0.68", changefreq: "monthly" },
-  { url: "/melting-temperature-calculator.html", priority: "0.68", changefreq: "monthly" },
-  { url: "/gc-content-analyzer.html", priority: "0.65", changefreq: "monthly" },
-];
-
-// Glossary term pages (140 terms)
-const GLOSSARY_TERMS = [
-  "primer","forward-primer","reverse-primer","primer-design","primer-specificity",
-  "primer-dimer","degenerate-primer","probe-design","iupac-codes","penalty-matrix",
-  "manufacturing-qc","melting-temperature","annealing-temperature","delta-g",
-  "nearest-neighbor-model","santalucia-1998","salt-correction","mg2-correction","rychlik-formula",
-  "gc-content","gc-clamp","secondary-structure","hairpin",
-  "amplicon","amplicon-size","pcr","rt-pcr","qpcr","multiplex-pcr","bisulfite-pcr",
-  "touchdown-pcr","hot-start-pcr","digital-pcr","taq-polymerase","thermocycling-profile",
-  "blast","blast-specificity","bowtie2-alignment",
-  "snp","snp-filtering","dbsnp","clinvar","genetic-variant","pathogenic-variant",
-  "dna","rna","nucleotide","base-pair",
-  "gene","genome","genomics","chromosome","allele","genotype","phenotype","mutation",
-  "genetic-variant","dominant","recessive","mendelian-inheritance","gwas","metagenomics",
-  "exon","intron","transcription","translation","gene-expression","trna","mrna","mirna",
-  "promoter","enhancer","epigenetics","codon","synthetic-biology",
-  "crispr","cas9","crispr-screen","genome-editing","gene-therapy",
-  "protein","amino-acid","enzyme","oncoprotein","tumor-suppressor","proteome",
-  "alphafold","esmfold","protein-structure-prediction",
-  "molecular-docking","vina","smina","gnina","binding-affinity","rmsd","virtual-screening",
-  "drug-discovery","ic50",
-  "cell","mitochondria","ribosome","apoptosis","atp",
-  "next-generation-sequencing","rna-seq","single-cell-rna-seq","illumina","oxford-nanopore",
-  "fastq","bam","vcf","genome-assembly","variant-calling","transcriptome",
-  "biomarker","liquid-biopsy","pharmacogenomics","pharmacokinetics","pharmacodynamics",
-  "diagnostic-sensitivity","diagnostic-specificity","clinical-diagnostics",
-  "bioinformatics","ncbi","ensembl","primer3",
-  "machine-learning","deep-learning",
-  "gel-electrophoresis","western-blot","elisa","mass-spectrometry","flow-cytometry",
-  "facs","confocal-microscopy","primer-pooler",
-  "dna-repair"
-];
-
-// Hub pages for biology sub-disciplines
-const HUB_PAGES = [
-  { url: "/hub/primer-design.html", priority: "0.88", changefreq: "weekly" },
-  { url: "/hub/molecular-docking.html", priority: "0.85", changefreq: "weekly" },
-  { url: "/hub/pcr-amplification.html", priority: "0.85", changefreq: "weekly" },
-  { url: "/hub/genomics-research.html", priority: "0.82", changefreq: "weekly" },
-  { url: "/hub/crispr-genome-editing.html", priority: "0.82", changefreq: "weekly" },
-  { url: "/hub/bioinformatics-tools.html", priority: "0.80", changefreq: "weekly" },
-  { url: "/hub/protein-structure.html", priority: "0.80", changefreq: "weekly" },
-  { url: "/hub/drug-discovery.html", priority: "0.80", changefreq: "weekly" },
-  { url: "/hub/gene-expression.html", priority: "0.78", changefreq: "weekly" },
-  { url: "/hub/sequencing-technologies.html", priority: "0.78", changefreq: "weekly" },
-  { url: "/hub/cancer-biology.html", priority: "0.75", changefreq: "weekly" },
-  { url: "/hub/cell-biology.html", priority: "0.75", changefreq: "weekly" },
-];
+function prio(u) {
+  if (u === "/" || u === "/primer") return "1.0";
+  if (u.startsWith("/hub")) return "0.80";
+  if (u.startsWith("/blog")) return "0.75";
+  if (u.startsWith("/glossary")) return "0.65";
+  if (u.startsWith("/gene-prefers")) return "0.70";
+  if (u.startsWith("/landing-pages")) return "0.75";
+  return "0.80";
+}
+function freq(u) {
+  if (u === "/" || u === "/primer") return "weekly";
+  if (u.startsWith("/hub")) return "weekly";
+  return "monthly";
+}
 
 function generateSitemap() {
   const today = new Date().toISOString().split("T")[0];
-  const pages = [
-    ...CORE_PAGES,
-    ...LANDING_PAGES,
-    ...SEO_LANDING_PAGES,
-    ...GLOSSARY_TERMS.map(slug => ({
-      url: `/glossary/${slug}.html`,
-      priority: "0.65",
-      changefreq: "monthly",
-    })),
-    ...HUB_PAGES,
+  const all = [
+    ...CORE.map(u => ({ url: u, priority: prio(u), changefreq: freq(u) })),
+    ...BLOG.map(s => ({ url: "/blog/" + s, priority: "0.75", changefreq: "monthly" })),
+    ...GLOSSARY.map(s => ({ url: "/glossary/" + s, priority: "0.65", changefreq: "monthly" })),
+    ...GENE.map(s => ({ url: "/gene-prefers/" + s, priority: "0.70", changefreq: "monthly" })),
+    ...LANDING.map(s => ({ url: "/landing-pages/" + s, priority: "0.75", changefreq: "monthly" })),
+    ...HUB.map(u => ({ url: u, priority: "0.80", changefreq: "weekly" })),
   ];
 
-  const urls = pages.map(p => `  <url>
-    <loc>${BASE_URL}${p.url}</loc>
-    <lastmod>${today}</lastmod>
-    <changefreq>${p.changefreq}</changefreq>
-    <priority>${p.priority}</priority>
-  </url>`).join("\n");
+  const urls = all.map(p =>
+    `  <url>\n    <loc>${BASE_URL}${p.url}</loc>\n    <lastmod>${today}</lastmod>\n    <changefreq>${p.changefreq}</changefreq>\n    <priority>${p.priority}</priority>\n  </url>`
+  ).join("\n");
 
   return `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
-        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
-        xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${urls}
 </urlset>`;
 }
 
 export default function handler(request) {
-  const sitemap = generateSitemap();
-  return new Response(sitemap, {
-    headers: {
-      "Content-Type": "application/xml",
-      "Cache-Control": "public, max-age=3600, s-maxage=3600",
-    },
+  return new Response(generateSitemap(), {
+    headers: { "Content-Type": "application/xml", "Cache-Control": "public, max-age=3600, s-maxage=3600" },
   });
 }

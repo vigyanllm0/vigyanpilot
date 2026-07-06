@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from database import engine
 from models import Base
-from routes import auth, pages, review, upload, public, notifications
+from routes import auth, pages, review, upload, public, notifications, stats
 
 app = FastAPI(title="VigyanLLM CMS API", version="1.0.0")
 
@@ -62,3 +62,4 @@ app.include_router(review.router)
 app.include_router(upload.router)
 app.include_router(public.router)
 app.include_router(notifications.router)
+app.include_router(stats.router)
