@@ -7,7 +7,7 @@ const BASE_URL = "https://vigyanllm.in";
 const CORE = [
   "/","/primer","/blast","/msa","/search","/primer-design","/primer-design-pipeline",
   "/pcr-analysis","/crispr-analysis","/protein-docking","/tm-calculator","/gc-calculator",
-  "/dna-to-rna","/tools/dna-to-rna",
+  "/dna-to-rna",
   "/platform","/solution","/architecture","/problem","/compare","/roadmap",
   "/validated-primer-design","/security","/privacy","/terms","/faq","/about","/contact","/cite",
   "/academic-partnership","/Learning-vigyanllm","/demo","/sitemap","/cookies","/refund","/changelog",
