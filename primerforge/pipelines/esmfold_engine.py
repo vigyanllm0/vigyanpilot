@@ -53,7 +53,7 @@ def _load_model(report=None):
         _esmfold_tokenizer = AutoTokenizer.from_pretrained(model_path)
         _esmfold_model = EsmForProteinFolding.from_pretrained(
             model_path,
-            torch_dtype=torch.float16,
+            torch_dtype=torch.float32,
             low_cpu_mem_usage=True
         )
 
