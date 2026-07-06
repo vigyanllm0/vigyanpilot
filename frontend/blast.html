@@ -146,26 +146,74 @@ footer{background:var(--navy);color:#CBD5E1;padding:80px 0 32px}
   "mainEntity": [
     {
       "@type": "Question",
-      "name": "Is VigyanLLM data secure?",
+      "name": "What is BLAST?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Yes. VigyanLLM runs on secure AWS infrastructure with optional on-premises deployment. Zero external API calls ensure genomic and clinical data never leaves the institution."
+        "text": "BLAST (Basic Local Alignment Search Tool) is a bioinformatics algorithm that finds regions of similarity between biological sequences. It compares a query sequence against a database of known sequences to identify the most similar matches. It is one of the most widely used tools in molecular biology and genomics."
       }
     },
     {
       "@type": "Question",
-      "name": "Does VigyanLLM use external APIs?",
+      "name": "Why is BLAST used in molecular biology?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "No. VigyanLLM uses the proprietary VigyanInferenceEngine — a native GGUF inference engine with zero external API dependency. No OpenAI, Anthropic, or Google APIs."
+        "text": "BLAST is used to identify unknown sequences, find homologous genes across species, check primer specificity, annotate genomes, discover conserved domains, and detect evolutionary relationships between sequences."
       }
     },
     {
       "@type": "Question",
-      "name": "Is VigyanLLM built in India?",
+      "name": "How does the BLAST algorithm work?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Yes. VigyanLLM is an Indian sovereign AI platform engineered in India for global biomedical research."
+        "text": "BLAST works by breaking the query into short overlapping words, finding exact matches in the database, extending those matches to build longer alignments, and computing statistical significance using E-values and bit scores."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What do E-value and bit score mean in BLAST?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "The E-value indicates how many matches would be expected by random chance. Lower E-values mean more significant matches. Bit score is a normalized score independent of database size. Higher bit scores indicate better alignments."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How is BLAST used in primer design?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "BLAST is critical for primer specificity checking. Researchers BLAST primer sequences against genomes to ensure primers amplify only the intended target. VigyanLLM integrates BLAST directly into its primer design workflow for automated specificity validation."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What databases does BLAST search against?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Common BLAST databases include NCBI nt (non-redundant nucleotide), RefSeq RNA (curated RNA sequences), and NCBI nr (non-redundant protein). VigyanLLM supports all three with organism-specific filtering."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What is the difference between BLASTn and BLASTp?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "BLASTn compares nucleotide queries against a nucleotide database. BLASTp compares protein queries against a protein database. Protein comparisons can detect more distant evolutionary relationships because the genetic code is degenerate."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How do I interpret BLAST results?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Look for high identity percentage, long alignment length, low E-value (close to 0.0), and high query coverage. Check the subject description and species to confirm the match is biologically meaningful. Good hits typically have over 90% identity and coverage over 80%."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Is BLAST free to use?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. BLAST is freely available through NCBI and through VigyanLLM. VigyanLLM provides free BLAST searches with no login required, integrated with primer design, MSA, and other bioinformatics tools."
       }
     }
   ]
@@ -380,6 +428,58 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
 
 
+
+<div class="seo-content" style="max-width:var(--max-w);margin:0 auto;padding:48px 24px 24px">
+
+<h2 style="font-family:var(--font-h);font-size:22px;font-weight:800;margin-bottom:8px">Frequently Asked Questions About BLAST</h2>
+<p style="color:var(--muted);font-size:14px;margin-bottom:32px">Everything you need to know about BLAST sequence alignment</p>
+
+<div class="faq-item" style="margin-bottom:24px">
+  <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">What is BLAST?</h3>
+  <p style="font-size:14px;color:var(--text2);line-height:1.7">BLAST (Basic Local Alignment Search Tool) is a bioinformatics algorithm that finds regions of similarity between biological sequences — DNA, RNA, or protein. It compares a query sequence against a database of known sequences and identifies the most similar matches. BLAST is one of the most widely used tools in molecular biology, genomics, and computational biology.</p>
+</div>
+
+<div class="faq-item" style="margin-bottom:24px">
+  <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">Why is BLAST used?</h3>
+  <p style="font-size:14px;color:var(--text2);line-height:1.7">BLAST is used to identify unknown sequences, find homologous genes across species, check primer specificity, annotate genomes, discover conserved domains, and detect evolutionary relationships. It helps researchers determine what a newly sequenced DNA fragment might be by finding its closest known relatives in public databases.</p>
+</div>
+
+<div class="faq-item" style="margin-bottom:24px">
+  <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">How does the BLAST algorithm work?</h3>
+  <p style="font-size:14px;color:var(--text2);line-height:1.7">BLAST works by breaking the query sequence into short overlapping "words" (typically 3 residues for protein, 11 bases for DNA). It first finds exact matches to these words in the database (seeding), then extends those matches in both directions to build longer alignments. Finally it computes statistical significance using E-values and bit scores to rank the results.</p>
+</div>
+
+<div class="faq-item" style="margin-bottom:24px">
+  <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">What do E-value and bit score mean?</h3>
+  <p style="font-size:14px;color:var(--text2);line-height:1.7">The <strong>E-value (Expect value)</strong> indicates the number of alignments with a similar score that would be expected to occur by random chance in the database. Lower E-values indicate more significant matches. An E-value of 0.0 means the match is highly significant. The <strong>bit score</strong> is a normalized score that is independent of database size, making it useful for comparing results across different searches. Higher bit scores indicate better alignments.</p>
+</div>
+
+<div class="faq-item" style="margin-bottom:24px">
+  <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">How is BLAST used in primer design?</h3>
+  <p style="font-size:14px;color:var(--text2);line-height:1.7">BLAST is critical for primer specificity checking. Before ordering primers, researchers BLAST the primer sequences against the target genome and closely related genomes to ensure the primers will amplify only the intended target region. High identity to off-target regions indicates potential non-specific amplification. VigyanLLM integrates BLAST directly into its primer design workflow for automated specificity validation.</p>
+</div>
+
+<div class="faq-item" style="margin-bottom:24px">
+  <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">What databases does BLAST search?</h3>
+  <p style="font-size:14px;color:var(--text2);line-height:1.7">Common BLAST databases include <strong>NCBI nt</strong> (non-redundant nucleotide database covering GenBank, EMBL, DDBJ), <strong>RefSeq RNA</strong> (curated RNA sequences), and <strong>NCBI nr</strong> (non-redundant protein database). VigyanLLM supports all three and allows organism-specific filtering to narrow results to relevant species.</p>
+</div>
+
+<div class="faq-item" style="margin-bottom:24px">
+  <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">What is the difference between BLASTn and BLASTp?</h3>
+  <p style="font-size:14px;color:var(--text2);line-height:1.7"><strong>BLASTn</strong> compares a nucleotide query against a nucleotide database (DNA vs DNA). <strong>BLASTp</strong> compares a protein query against a protein database (amino acid vs amino acid). Protein comparisons can detect more distant evolutionary relationships because the genetic code is degenerate — the same protein can be encoded by many different DNA sequences. VigyanLLM supports both nucleotide and protein BLAST searches.</p>
+</div>
+
+<div class="faq-item" style="margin-bottom:24px">
+  <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">How do I interpret BLAST results?</h3>
+  <p style="font-size:14px;color:var(--text2);line-height:1.7">BLAST results show several key metrics: <strong>Identity %</strong> tells you how similar the query and subject sequences are. <strong>Alignment length</strong> shows how much of the sequence matched. <strong>E-value</strong> indicates statistical significance. A good BLAST hit typically has high identity (>90%), high query coverage (>80%), and a very low E-value (close to 0.0). Always check the subject description and species to confirm the match is biologically meaningful.</p>
+</div>
+
+<div class="faq-item" style="margin-bottom:24px">
+  <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">Is BLAST free to use?</h3>
+  <p style="font-size:14px;color:var(--text2);line-height:1.7">Yes. BLAST is freely available through NCBI and through VigyanLLM. VigyanLLM provides free BLAST searches with no login required, integrated directly with primer design, MSA, and other bioinformatics tools on the platform.</p>
+</div>
+
+</div>
 
 </main>
 <footer>
