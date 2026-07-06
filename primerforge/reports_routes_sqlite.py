@@ -69,20 +69,14 @@ def _generate_referral_code(user_email: str) -> str:
 
 @reports_bp.route("/api/stats/public", methods=["GET"])
 def public_stats():
-    try:
-        db = get_db()
-        total_users = db.execute("SELECT COUNT(*) as c FROM users").fetchone()["c"]
-        total_runs = db.execute("SELECT SUM(run_count) as c FROM users").fetchone()["c"] or 0
-        active_today = db.execute(
-            "SELECT COUNT(*) as c FROM users WHERE last_login > ?",
-            (time.time() - 86400,)
-        ).fetchone()["c"]
-        total_reports = db.execute("SELECT COUNT(*) as c FROM user_reports").fetchone()["c"]
-    except Exception:
-        total_users = 1250
-        total_runs = 2847
-        total_reports = 14230
-        active_today = 0
+    db = get_db()
+    total_users = db.execute("SELECT COUNT(*) as c FROM users").fetchone()["c"]
+    total_runs = db.execute("SELECT SUM(run_count) as c FROM users").fetchone()["c"] or 0
+    active_today = db.execute(
+        "SELECT COUNT(*) as c FROM users WHERE last_login > ?",
+        (time.time() - 86400,)
+    ).fetchone()["c"]
+    total_reports = db.execute("SELECT COUNT(*) as c FROM user_reports").fetchone()["c"]
     return jsonify({
         "researchers": total_users,
         "designs_runs": total_runs,

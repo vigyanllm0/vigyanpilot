@@ -173,22 +173,16 @@ def check_ip_allowed(user_id: int, current_ip: str, role: str = "user") -> dict:
 @reports_bp.route("/api/stats/public", methods=["GET"])
 def public_stats():
     """Public platform stats for the homepage counter."""
-    try:
-        row1 = fetch_one("SELECT COUNT(*) as c FROM users")
-        row2 = fetch_one("SELECT COALESCE(SUM(balance), 0) as c FROM token_balances")
-        row3 = fetch_one("SELECT COUNT(*) as c FROM user_reports")
-        total_users = row1["c"] if row1 else 0
-        total_designs = row2["c"] if row2 else 0
-        total_reports = row3["c"] if row3 else 0
-        row4 = fetch_one(
-            "SELECT COUNT(*) as c FROM users WHERE last_active_at > NOW() - INTERVAL '1 day'"
-        )
-        active_today = row4["c"] if row4 else 0
-    except Exception:
-        total_users = 1250
-        total_designs = 2847
-        total_reports = 14230
-        active_today = 0
+    row1 = fetch_one("SELECT COUNT(*) as c FROM users")
+    row2 = fetch_one("SELECT COALESCE(SUM(balance), 0) as c FROM token_balances")
+    row3 = fetch_one("SELECT COUNT(*) as c FROM user_reports")
+    total_users = row1["c"] if row1 else 0
+    total_designs = row2["c"] if row2 else 0
+    total_reports = row3["c"] if row3 else 0
+    row4 = fetch_one(
+        "SELECT COUNT(*) as c FROM users WHERE last_active_at > NOW() - INTERVAL '1 day'"
+    )
+    active_today = row4["c"] if row4 else 0
     return jsonify({
         "researchers": total_users,
         "designs_runs": total_designs,
