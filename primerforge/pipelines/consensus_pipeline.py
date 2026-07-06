@@ -122,7 +122,8 @@ async def run_consensus_pipeline(
                     "vina_score": docking_result.get("binding_affinity"),
                     "gnina_score": None,
                     "consensus_rank": None,
-                    "status": "screened"
+                    "status": "screened",
+                    "structure": docking_result.get("structure"),
                 }
             except Exception as e:
                 logger.debug(f"Vina failed for ligand #{idx}: {e}")

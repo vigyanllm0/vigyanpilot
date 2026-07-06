@@ -38,6 +38,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<script src="https://3Dmol.org/build/3Dmol-min.js"></script>
 <style>
 :root {
   --navy: #0F172A;
@@ -282,6 +283,15 @@ footer{padding:32px 0;border-top:1px solid var(--slate-border)}
 
 /* 3D viewer placeholder */
 .struct-viewer{border:1px solid var(--slate-border);border-radius:8px;padding:20px;background:var(--slate);text-align:center;min-height:120px;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--muted)}
+.mol-viewer-wrap{border:1px solid var(--slate-border);border-radius:12px;overflow:hidden;margin-bottom:20px}
+.mol-viewer-wrap .mv-head{background:var(--slate);padding:10px 16px;border-bottom:1px solid var(--slate-border);display:flex;align-items:center;justify-content:space-between;font-size:12px;font-weight:600}
+.mv-head .mv-info{font-size:10px;color:var(--muted);font-weight:400}
+#mol-3d-viewer{width:100%;height:380px;background:#fff;position:relative}
+.mol-viewer-wrap .mv-foot{background:var(--slate);padding:8px 16px;border-top:1px solid var(--slate-border);font-size:10px;color:var(--muted);display:flex;gap:12px;align-items:center}
+.mv-foot .mol-selector{flex:1;display:flex;gap:6px;flex-wrap:wrap}
+.mv-foot .mol-btn{font-size:9px;padding:3px 8px;border:1px solid var(--slate-border);border-radius:4px;background:transparent;cursor:pointer;color:var(--text2);transition:all .15s}
+.mv-foot .mol-btn:hover{border-color:var(--primary);color:var(--primary)}
+.mv-foot .mol-btn.active{background:var(--primary);color:#fff;border-color:var(--primary)}
 
 .cta-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
 .btn-hero{border:none;border-radius:8px;padding:11px 18px;font-size:13px;font-weight:800;cursor:pointer;background:var(--primary);color:#fff}
@@ -562,6 +572,19 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="results-header">
         <div class="results-title">Consensus Docking Results</div>
         <div class="elapsed-chip" id="elapsed-chip"></div>
+      </div>
+      <div id="mol-viewer-container" class="mol-viewer-wrap" style="display:none">
+        <div class="mv-head">
+          <span>3D Structure Viewer</span>
+          <span class="mv-info" id="mol-viewer-info">Protein backbone (cartoon)</span>
+        </div>
+        <div id="mol-3d-viewer"></div>
+        <div class="mv-foot">
+          <div class="mol-selector" id="mol-selector">
+            <button class="mol-btn active" data-view="protein" onclick="showViewerMol('protein')">Protein</button>
+          </div>
+          <span id="mv-download-links"></span>
+        </div>
       </div>
       <div id="results-body"></div>
     </div>
@@ -1057,6 +1080,9 @@ function displayResults(result) {
   $('results-wrap').style.display = 'block';
   $('empty-state').style.display = 'none';
 
+  // Store result globally for viewer
+  window._lastDockingResult = result;
+
   var html = '';
 
   // Stage 1: ESMFold
@@ -1070,6 +1096,7 @@ function displayResults(result) {
       '<div class="stage-detail"><div class="stage-metric"><span class="label">Mean pLDDT</span><span class="value">' + (s1.plddt_score || 'N/A') + '%</span></div></div>' +
       '<div class="stage-detail"><div class="stage-metric"><span class="label">Structure</span><span class="value" style="font-size:10px;color:var(--muted)">' + (s1.pdb_string ? (s1.pdb_string.length + ' atoms in PDB') : 'N/A') + '</span></div></div>' +
       (s1.message ? '<div class="info-card" style="margin-top:10px;font-size:11px">' + esc(s1.message) + '</div>' : '') +
+      '<div style="margin-top:8px"><button class="btn-secondary btn-sm" onclick="downloadPDB()">Download Protein PDB</button></div>' +
       '</div></div>';
   } else {
     setStage(1, 'fail', 'Stage skipped/failed');
@@ -1111,7 +1138,7 @@ function displayResults(result) {
   var ranked = result.ranked_results || [];
   if (ranked.length > 0) {
     html += '<div class="result-card">' +
-      '<div class="rc-head"><div class="rc-head-left"><div style="font-weight:700;font-size:13px">Ranked Molecules</div></div><div style="font-size:10px;color:var(--muted)">' + ranked.length + ' molecules</div></div>' +
+      '<div class="rc-head"><div class="rc-head-left"><div style="font-weight:700;font-size:13px">Ranked Molecules</div></div><div style="font-size:10px;color:var(--muted)">' + ranked.length + ' molecules — click a row to view in 3D</div></div>' +
       '<div class="rc-body"><div class="dock-table-wrap"><table class="dock-table">' +
       '<thead><tr><th>Rank</th><th>SMILES</th><th>Vina Score</th>' + (hasGnina ? '<th>GNINA Score</th>' : '') + '<th>Consensus</th></tr></thead><tbody>';
 
@@ -1122,7 +1149,8 @@ function displayResults(result) {
       var cs = mol.consensus_score || '—';
       var vClass = vina < -7 ? 'score-good' : (vina < -5 ? 'score-ok' : 'score-bad');
       var gClass = gnina !== null && gnina !== undefined ? (gnina < -7 ? 'score-good' : (gnina < -5 ? 'score-ok' : 'score-bad')) : '';
-      html += '<tr>' +
+      var hasStruct = mol.structure && mol.structure.ligand;
+      html += '<tr style="cursor:' + (hasStruct ? 'pointer' : 'default') + '" onclick="' + (hasStruct ? 'viewMol3D(' + i + ')' : '') + '" title="' + (hasStruct ? 'Click to view docked pose in 3D' : 'No 3D structure available') + '">' +
         '<td><span class="rank-num">#' + (i + 1) + '</span></td>' +
         '<td style="font-size:10px;max-width:200px;word-break:break-all">' + esc(mol.smiles || '') + '</td>' +
         '<td><span class="' + vClass + '">' + (vina !== null && vina !== undefined ? vina.toFixed(2) : '—') + '</span></td>' +
@@ -1135,18 +1163,19 @@ function displayResults(result) {
     // Best molecule highlight
     var best = result.best_molecule;
     if (best) {
-      html += '<div class="success-card">' +
-        '<strong>Best Molecule (Rank #1):</strong> ' + esc(best.smiles || '') + '<br>' +
+      html += '<div class="success-card" style="cursor:pointer" onclick="viewMol3D(0)" title="Click to view docked pose">' +
+        '<strong>Best Molecule (Rank #1) <span style="font-size:10px;color:var(--text2)">— click to view in 3D</span>:</strong> ' + esc(best.smiles || '') + '<br>' +
         'Vina: ' + (best.vina_score !== null && best.vina_score !== undefined ? best.vina_score.toFixed(2) : '—') + ' kcal/mol' +
         (best.gnina_score !== null && best.gnina_score !== undefined ? ' | GNINA: ' + best.gnina_score.toFixed(2) + ' kcal/mol' : '') +
         ' | Consensus: ' + (best.consensus_score ? best.consensus_score.toFixed(3) : '—') +
         '</div>';
     }
 
-    // Download button
-    html += '<div class="dl-row" style="margin-top:16px;display:flex;gap:8px">' +
+    // Download buttons
+    html += '<div class="dl-row" style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap">' +
       '<button class="btn-secondary btn-sm" onclick="downloadResults(\'json\')">Download JSON</button>' +
       '<button class="btn-secondary btn-sm" onclick="downloadResults(\'csv\')">Download CSV</button>' +
+      '<button class="btn-secondary btn-sm" onclick="downloadPDB()">Download Protein PDB</button>' +
       '</div>';
   }
 
@@ -1156,15 +1185,191 @@ function displayResults(result) {
   }
 
   $('results-body').innerHTML = html;
-  $('results-wrap').scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-  // Store results for download
-  window._lastDockingResult = result;
+  // Initialize 3D viewer with protein
+  if (result.stage1 && result.stage1.pdb_string) {
+    initViewer(result.stage1.pdb_string);
+  }
+
+  $('results-wrap').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 function showError(msg) {
   $('results-wrap').style.display = 'block';
   $('results-body').innerHTML = '<div class="error-card">' + esc(msg) + '<br><button class="btn-secondary btn-sm" style="margin-top:8px" onclick="$(\'results-wrap\').style.display=\'none\';$(\'empty-state\').style.display=\'block\'">Dismiss</button></div>';
+}
+
+// ── 3D Molecular Viewer ──────────────────────────────────────────────────
+var _viewer = null;
+var _proteinPdb = '';
+
+function initViewer(pdbStr) {
+  _proteinPdb = pdbStr;
+  var container = $('mol-viewer-container');
+  container.style.display = 'block';
+  var el = $('mol-3d-viewer');
+  el.innerHTML = '';
+  _viewer = $3Dmol.createViewer(el, {backgroundColor: '#ffffff'});
+  _viewer.addModel(pdbStr, 'pdb');
+  _viewer.setStyle({}, {cartoon: {color: 'spectrum'}});
+  _viewer.zoomTo();
+  _viewer.render();
+  $('mol-viewer-info').textContent = 'Protein backbone (cartoon, spectrum-colored)';
+  // Add ligand selector for each ranked molecule with structure
+  updateMolSelector(-1);
+}
+
+function updateMolSelector(activeIdx) {
+  var result = window._lastDockingResult;
+  if (!result) return;
+  var ranked = result.ranked_results || [];
+  var sel = $('mol-selector');
+  sel.innerHTML = '<button class="mol-btn' + (activeIdx === -1 ? ' active' : '') + '" data-view="protein" onclick="showViewerMol(-1)">Protein</button>';
+  for (var i = 0; i < ranked.length; i++) {
+    var m = ranked[i];
+    if (!m.structure || !m.structure.ligand) continue;
+    sel.innerHTML += '<button class="mol-btn' + (activeIdx === i ? ' active' : '') + '" onclick="showViewerMol(' + i + ')">#' + (i + 1) + '</button>';
+  }
+  // Update download links
+  var dl = $('mv-download-links');
+  if (activeIdx >= 0 && ranked[activeIdx] && ranked[activeIdx].structure) {
+    dl.innerHTML = '<button class="btn-secondary btn-sm" onclick="downloadLigandSDF(' + activeIdx + ')">Download Ligand SDF</button>' +
+      '<button class="btn-secondary btn-sm" onclick="downloadComplexPDB(' + activeIdx + ')">Download Complex PDB</button>';
+  } else {
+    dl.innerHTML = '<button class="btn-secondary btn-sm" onclick="downloadPDB()">Download Protein PDB</button>';
+  }
+}
+
+function showViewerMol(idx) {
+  if (!_viewer) return;
+  var result = window._lastDockingResult;
+  if (!result) return;
+  var ranked = result.ranked_results || [];
+  _viewer.removeAllModels();
+  // Always add protein
+  if (_proteinPdb) {
+    _viewer.addModel(_proteinPdb, 'pdb');
+    _viewer.setStyle({}, {cartoon: {color: 'spectrum'}});
+  }
+  // Add docked ligand if index is valid
+  if (idx >= 0 && ranked[idx] && ranked[idx].structure && ranked[idx].structure.ligand) {
+    var ligStr = ranked[idx].structure.ligand;
+    try {
+      _viewer.addModel(ligStr, 'sdf');
+      _viewer.setStyle({}, {stick: {radius: 0.3, colorscheme: {prop: 'elem', map: {C: 'gray', N: 'blue', O: 'red', S: 'yellow', P: 'orange', F: 'green', Cl: 'green', Br: 'brown', I: 'purple'}}}});
+    } catch(e) {
+      // If SDF fails, try as mol2 or pdb
+      console.warn('SDF parse error, trying mol2:', e);
+    }
+    $('mol-viewer-info').textContent = 'Rank #' + (idx + 1) + ' — SMILES: ' + esc(ranked[idx].smiles || '').substring(0, 50) +
+      ' | Vina: ' + (ranked[idx].vina_score !== null && ranked[idx].vina_score !== undefined ? ranked[idx].vina_score.toFixed(2) : '—') + ' kcal/mol' +
+      (ranked[idx].gnina_score !== null && ranked[idx].gnina_score !== undefined ? ' | GNINA: ' + ranked[idx].gnina_score.toFixed(2) : '');
+  } else {
+    $('mol-viewer-info').textContent = 'Protein backbone (cartoon, spectrum-colored)';
+  }
+  _viewer.zoomTo();
+  _viewer.render();
+  updateMolSelector(idx);
+}
+
+function viewMol3D(idx) {
+  showViewerMol(idx);
+  $('mol-viewer-container').scrollIntoView({behavior: 'smooth', block: 'start'});
+}
+
+// ── Structure Downloads ──────────────────────────────────────────────────
+
+function downloadPDB() {
+  if (!_proteinPdb) return;
+  downloadFile(_proteinPdb, 'protein.pdb', 'chemical/x-pdb');
+}
+
+function downloadLigandSDF(idx) {
+  var result = window._lastDockingResult;
+  if (!result || !result.ranked_results || !result.ranked_results[idx]) return;
+  var mol = result.ranked_results[idx];
+  if (!mol.structure || !mol.structure.ligand) return;
+  downloadFile(mol.structure.ligand, 'ligand_rank' + (idx + 1) + '.sdf', 'chemical/x-mdl-sdfile');
+}
+
+function downloadComplexPDB(idx) {
+  var result = window._lastDockingResult;
+  if (!result || !result.ranked_results || !result.ranked_results[idx]) return;
+  var mol = result.ranked_results[idx];
+  if (!_proteinPdb) return;
+  var ligStr = mol.structure && mol.structure.ligand ? mol.structure.ligand : '';
+  // Build a multi-model PDB: MODEL 1 = protein, MODEL 2 = ligand (converted from SDF)
+  var complexPdb = 'REMARK   1 Docked complex generated by VigyanLLM Consensus Docking Pipeline\n';
+  complexPdb += 'REMARK   1 Protein structure: ESMFold (pLDDT ' + (result.stage1 && result.stage1.plddt_score ? result.stage1.plddt_score : '?') + '%)\n';
+  complexPdb += 'REMARK   1 Ligand SMILES: ' + (mol.smiles || '') + '\n';
+  complexPdb += 'REMARK   1 Vina score: ' + (mol.vina_score !== null && mol.vina_score !== undefined ? mol.vina_score.toFixed(2) : '—') + ' kcal/mol\n';
+  if (mol.gnina_score !== null && mol.gnina_score !== undefined) {
+    complexPdb += 'REMARK   1 GNINA score: ' + mol.gnina_score.toFixed(2) + ' kcal/mol\n';
+  }
+  complexPdb += 'REMARK   1 Consensus score: ' + (mol.consensus_score ? mol.consensus_score.toFixed(3) : '—') + '\n';
+  complexPdb += 'MODEL        1\n';
+  complexPdb += _proteinPdb;
+  complexPdb += '\nENDMDL\n';
+  if (ligStr) {
+    // Convert SDF to PDB-like ATOM records for the complex
+    var ligPdb = sdfToPdb(ligStr);
+    complexPdb += 'MODEL        2\n';
+    complexPdb += ligPdb;
+    complexPdb += '\nENDMDL\n';
+  }
+  downloadFile(complexPdb, 'complex_rank' + (idx + 1) + '.pdb', 'chemical/x-pdb');
+}
+
+// ── Utility Functions ────────────────────────────────────────────────────
+
+function downloadFile(content, filename, mimeType) {
+  var blob = new Blob([content], {type: mimeType || 'application/octet-stream'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function sdfToPdb(sdfStr) {
+  // Minimal SDF-to-PDB converter: extract atom coordinates from SDF
+  var lines = sdfStr.split('\n');
+  var pdbLines = [];
+  var atomIdx = 1;
+  var inCountsLine = false;
+  var expectedAtoms = 0;
+  for (var i = 0; i < lines.length; i++) {
+    var line = lines[i];
+    if (i === 3) {
+      // Counts line: atoms count is first 3 chars
+      expectedAtoms = parseInt(line.substring(0, 3).trim()) || 0;
+      continue;
+    }
+    if (i >= 4 && i < 4 + expectedAtoms) {
+      // Atom block: x, y, z, element
+      var x = line.substring(0, 10).trim();
+      var y = line.substring(10, 20).trim();
+      var z = line.substring(20, 30).trim();
+      var elem = line.substring(31, 34).trim() || 'C';
+      var atomName = ' ' + elem + (atomIdx < 10 ? ' ' + atomIdx : atomIdx < 100 ? atomIdx : atomIdx);
+      pdbLines.push(formatAtomLine(atomIdx, atomName, elem, x, y, z));
+      atomIdx++;
+    }
+    if (line === '$$$$') break;
+  }
+  return pdbLines.join('\n');
+}
+
+function formatAtomLine(serial, name, elem, x, y, z) {
+  var serStr = serial < 10000 ? '    ' + serial : '' + serial;
+  serStr = serStr.slice(-5);
+  var nameStr = (name + '    ').slice(0, 4);
+  var elemStr = (elem + '  ').slice(0, 2).toUpperCase();
+  var xStr = ('          ' + x).slice(-8);
+  var yStr = ('          ' + y).slice(-8);
+  var zStr = ('          ' + z).slice(-8);
+  return 'ATOM  ' + serStr + ' ' + nameStr + ' LIG A   1    ' + xStr + yStr + zStr + '  1.00  0.00           ' + elemStr;
 }
 
 function downloadResults(fmt) {
