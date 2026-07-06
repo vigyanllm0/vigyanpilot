@@ -45,6 +45,9 @@ def _load_model(report=None):
             resume_download=True
         )
         
+        # Disable torch.load mmap — model is ~7.9GB and doesn't fit in 8GB RAM as mmap
+        os.environ["TORCH_LOAD_MMAP"] = "0"
+        
         _log(f"📡 ESMFold: Weights located. Loading into memory...")
         
         _esmfold_tokenizer = AutoTokenizer.from_pretrained(model_path)
