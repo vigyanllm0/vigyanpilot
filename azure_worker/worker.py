@@ -512,7 +512,7 @@ def _run_daemon():
                 error = None
                 if result:
                     if result.get("status") == "error":
-                        error = result.get("message", "Pipeline failed")
+                        error = result.get("error") or result.get("message", "Pipeline failed")
                     elif result.get("status") == "failed":
                         error = result.get("error", "Pipeline failed")
             except Exception as e:
