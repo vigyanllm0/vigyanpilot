@@ -1705,6 +1705,12 @@ def create_app() -> Flask:
     # ════════════════════════════════════════════════════════════════════
     # Consensus Pipeline — Molecular Docking (ESMFold → Vina → GNINA)
     # ════════════════════════════════════════════════════════════════════
+    # Docking jobs are dispatched to the Azure worker via a file-based job
+    # queue. The main server returns 202 Accepted immediately; the Azure
+    # worker picks up pending jobs, runs the full pipeline (ESMFold, Vina,
+    # GNINA), and POSTs results back. Frontend polls /status/<job_id>.
+
+    from primerforge.docking_queue import create_job, get_job, list_pending_jobs
 
     @app.route("/api/primer/docking/consensus", methods=["POST"])
     def docking_consensus():
@@ -1725,54 +1731,43 @@ def create_app() -> Flask:
         if not ligand_smiles_list or not isinstance(ligand_smiles_list, list):
             return err("'ligand_smiles_list' must be a non-empty list of SMILES strings.", "VALIDATION_ERROR", 400)
 
-        try:
-            from primerforge.pipelines.consensus_pipeline import run_consensus_pipeline
-        except ImportError as exc:
-            logger.error("Consensus pipeline import failed: %s", exc)
-            return err("Consensus pipeline not available. Install torch, transformers, rdkit, vina.", "PIPELINE_UNAVAILABLE", 503)
+        job_id = create_job(sequence, ligand_smiles_list, top_n)
+        return jsonify({"job_id": job_id, "status": "queued"}), 202
 
-        import threading
-        job_result = {}
+    @app.route("/api/primer/docking/status/<job_id>", methods=["GET"])
+    def docking_status(job_id):
+        job = get_job(job_id)
+        if not job:
+            return err("Job not found.", "NOT_FOUND", 404)
+        resp = {
+            "job_id": job["job_id"],
+            "status": job["status"],
+            "created_at": job["created_at"],
+        }
+        if job["status"] == "completed" and job["result"]:
+            resp["result"] = job["result"]
+        if job["error"]:
+            resp["error"] = job["error"]
+        return jsonify(resp), 200
 
-        def _background_runner():
-            import asyncio
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-            try:
-                job_result["result"] = loop.run_until_complete(
-                    run_consensus_pipeline(sequence, ligand_smiles_list, top_n=top_n)
-                )
-            except Exception as e:
-                logger.exception("Background pipeline thread failed")
-                job_result["error"] = str(e)
+    @app.route("/api/primer/docking/pending", methods=["GET"])
+    def docking_pending():
+        jobs = list_pending_jobs()
+        return jsonify({"pending": len(jobs), "jobs": jobs}), 200
 
-        thread = threading.Thread(target=_background_runner, daemon=True)
-        thread.start()
-        thread.join(timeout=300)
+    @app.route("/api/primer/docking/claim/<job_id>", methods=["POST"])
+    def docking_claim(job_id):
+        from primerforge.docking_queue import claim_job
+        if claim_job(job_id):
+            return jsonify({"status": "claimed"}), 200
+        return err("Job not found or already claimed.", "CONFLICT", 409)
 
-        if thread.is_alive():
-            return err("Pipeline timed out after 300s.", "PIPELINE_TIMEOUT", 504)
-
-        if "error" in job_result:
-            return err(f"Pipeline failed: {job_result['error']}", "PIPELINE_FAILED", 500)
-
-        result = job_result.get("result", {})
-        if result.get("status") == "error":
-            return err(result.get("message", "Pipeline returned an error"), "PIPELINE_FAILED", 500)
-
-        # Strip large structural data from response to keep JSON manageable
-        for key in ("stage1", "stage2", "stage3"):
-            stage = result.get(key)
-            if isinstance(stage, dict):
-                stage.pop("pdb_string", None)
-                stage.pop("structure", None)
-        for r in result.get("ranked_results", []):
-            if isinstance(r, dict):
-                r.pop("structure", None)
-                r.pop("receptor", None)
-                r.pop("ligand", None)
-
-        return jsonify(result), 200
+    @app.route("/api/primer/docking/complete/<job_id>", methods=["POST"])
+    def docking_complete(job_id):
+        from primerforge.docking_queue import complete_job
+        data = request.get_json(silent=True) or {}
+        complete_job(job_id, data.get("result"), data.get("error"))
+        return jsonify({"status": "acknowledged"}), 200
 
     # ════════════════════════════════════════════════════════════════════
     # Azure Worker Callback Endpoint

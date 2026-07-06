@@ -448,20 +448,105 @@ def _run_simulated_pipeline(config: Dict, job_type: str,
     return result
 
 
+# ── Daemon Mode — Poll Main Server for Pending Jobs ──────────────────────
+
+def _run_daemon():
+    """Poll the main server for pending docking jobs, process them, and complete."""
+    import time as _time
+    api_base = os.environ.get("API_BASE_URL", "https://www.vigyanllm.in")
+    poll_interval = int(os.environ.get("POLL_INTERVAL", "15"))
+    logger.info("Daemon mode: polling %s every %ds for pending docking jobs", api_base, poll_interval)
+
+    while True:
+        try:
+            import urllib.request
+            resp = urllib.request.urlopen(f"{api_base}/api/primer/docking/pending", timeout=10)
+            data = json.loads(resp.read())
+            jobs = data.get("jobs", [])
+        except Exception as e:
+            logger.warning("Failed to poll for jobs: %s", e)
+            _time.sleep(poll_interval)
+            continue
+
+        if not jobs:
+            _time.sleep(poll_interval)
+            continue
+
+        for job in jobs:
+            job_id = job.get("job_id")
+            if not job_id:
+                continue
+
+            logger.info("Claiming job %s", job_id)
+            try:
+                req = urllib.request.Request(
+                    f"{api_base}/api/primer/docking/claim/{job_id}",
+                    method="POST",
+                    data=b"{}",
+                    headers={"Content-Type": "application/json"},
+                )
+                claim_resp = urllib.request.urlopen(req, timeout=10)
+                if claim_resp.status != 200:
+                    logger.warning("Failed to claim job %s", job_id)
+                    continue
+            except Exception as e:
+                logger.warning("Failed to claim job %s: %s", job_id, e)
+                continue
+
+            logger.info("Processing job %s (type=%s)", job_id, job.get("type"))
+            try:
+                config = {
+                    "job_id": job_id,
+                    "sequence": job.get("sequence", ""),
+                    "ligand_smiles_list": job.get("ligand_smiles_list", []),
+                    "top_n": job.get("top_n", 50),
+                    "type": job.get("type", "docking"),
+                }
+                result = run_docking_job(config, callback_url=None)
+                error = None
+                if result.get("status") == "error":
+                    error = result.get("message", "Pipeline failed")
+            except Exception as e:
+                result = None
+                error = str(e)
+                logger.exception("Job %s failed", job_id)
+
+            # Post result back to complete endpoint
+            try:
+                payload = json.dumps({"result": result, "error": error}).encode()
+                req = urllib.request.Request(
+                    f"{api_base}/api/primer/docking/complete/{job_id}",
+                    method="POST",
+                    data=payload,
+                    headers={"Content-Type": "application/json"},
+                )
+                urllib.request.urlopen(req, timeout=10)
+                logger.info("Job %s completed (error=%s)", job_id, error)
+            except Exception as e:
+                logger.error("Failed to post result for %s: %s", job_id, e)
+
+        _time.sleep(poll_interval)
+
+
 # ── Main Entrypoint ───────────────────────────────────────────────────────
 
 def main():
     logger.info("VigyanLLM Azure Worker v%s starting", WORKER_VERSION)
-    
+
+    # If --daemon flag is set, run in polling mode instead of one-shot
+    if "--daemon" in sys.argv:
+        _run_daemon()
+        return
+
     config = _load_job_config()
     callback_url = _get_callback_url()
     callback_token = _get_callback_token()
-    
+
     job_type = config.get("type", config.get("job_type", "primer_design"))
-    
+
     logger.info("Dispatching job type=%s callback_url=%s",
                 job_type, callback_url or "(none)")
-    
+
     dispatchers = {
         "primer_design": run_primer_design_job,
         "msa": run_msa_job,
@@ -470,12 +555,11 @@ def main():
         "consensus_docking": run_docking_job,
         "simulated": _run_simulated_pipeline,
     }
-    
+
     handler = dispatchers.get(job_type)
     if not handler:
         logger.error("Unknown job type: %s (supported: %s)",
                      job_type, list(dispatchers.keys()))
-        # Still try callback with error
         error_result = {
             "job_id": config.get("job_id", "unknown"),
             "job_type": job_type,
@@ -485,7 +569,7 @@ def main():
         if callback_url:
             _post_callback(callback_url, callback_token, error_result)
         sys.exit(1)
-    
+
     try:
         result = handler(config, callback_url, callback_token)
         print(json.dumps(result, default=str))
@@ -500,7 +584,6 @@ def main():
         }
         if callback_url:
             _post_callback(callback_url, callback_token, error_result)
-        # Still print the error result so ACI logs capture it
         print(json.dumps(error_result, default=str))
         sys.exit(1)
 

@@ -967,7 +967,7 @@ async function runDocking() {
   $('run-btn-text').textContent = 'Running...';
 
   // Mark stage 1 running
-  setStage(1, 'running', 'Predicting structure...');
+  setStage(1, 'running', 'Submitting docking job...');
 
   try {
     var r = await fetch(API + '/primer/docking/consensus', {
@@ -975,28 +975,48 @@ async function runDocking() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ sequence: validAA, ligand_smiles_list: smilesList, top_n: topN })
     });
-    var result = await r.json();
+    var submitResult = await r.json();
 
     if (!r.ok) {
-      setStage(1, 'fail', result.error || 'Request failed');
-      showError(result.error || 'Server returned status ' + r.status);
-      return;
-    }
-    if (result.status === 'error') {
-      setStage(1, 'fail', result.message || 'Pipeline error');
-      showError(result.message || 'Pipeline returned an error');
+      setStage(1, 'fail', submitResult.error || 'Request failed');
+      showError(submitResult.error || 'Server returned status ' + r.status);
       return;
     }
 
-    displayResults(result);
+    var jobId = submitResult.job_id;
+    setStage(1, 'running', 'Job ' + jobId + ' queued — awaiting Azure worker...');
+    setStage(2, 'stub', 'Waiting for stage 1');
+    setStage(3, 'stub', 'Waiting for stage 2');
+
+    // Poll for results
+    var pollInterval = setInterval(async function() {
+      try {
+        var pr = await fetch(API + '/primer/docking/status/' + jobId);
+        var statusResult = await pr.json();
+
+        if (statusResult.status === 'completed') {
+          clearInterval(pollInterval);
+          displayResults(statusResult.result);
+          $('run-btn').disabled = false;
+          $('run-spinner').classList.remove('show');
+          $('run-btn-text').textContent = 'Run Consensus Docking';
+          $('slow-warn').style.display = 'none';
+        } else if (statusResult.status === 'failed') {
+          clearInterval(pollInterval);
+          setStage(1, 'fail', statusResult.error || 'Pipeline failed');
+          showError(statusResult.error || 'Pipeline failed');
+          $('run-btn').disabled = false;
+          $('run-spinner').classList.remove('show');
+          $('run-btn-text').textContent = 'Run Consensus Docking';
+          $('slow-warn').style.display = 'none';
+        }
+      } catch(e) {
+        // Poll error — retry
+      }
+    }, 3000);
   } catch(e) {
     setStage(1, 'fail', 'Network error');
     showError('Network error: ' + e.message);
-  } finally {
-    $('run-btn').disabled = false;
-    $('run-spinner').classList.remove('show');
-    $('run-btn-text').textContent = 'Run Consensus Docking';
-    $('slow-warn').style.display = 'none';
   }
 }
 
