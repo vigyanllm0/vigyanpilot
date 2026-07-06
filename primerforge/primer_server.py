@@ -603,8 +603,12 @@ def create_app() -> Flask:
     
     @app.errorhandler(Exception)
     def handle_global_error(e):
-        logger.error(f"Unhandled Exception: {e}", exc_info=True)
-        return jsonify({"error": "Internal server error", "code": "500"}), 500
+        logger.error(f"Unhandled Exception: {type(e).__name__}: {e}", exc_info=True)
+        return jsonify({
+            "error": "Internal server error",
+            "code": "500",
+            "detail": f"{type(e).__name__}: {e}"
+        }), 500
 
     # ── Security Hardening ────────────────────────────────────────────────
     from primerforge.security import init_security, get_production_origins
