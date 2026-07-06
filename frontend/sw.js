@@ -15,7 +15,7 @@ const PRECACHE_ASSETS = [
   '/manifest.json',
 ];
 
-const CACHE_VERSION = 18;
+const CACHE_VERSION = 19;
 
 self.addEventListener('install', e => {
   self.skipWaiting();
@@ -62,6 +62,8 @@ self.addEventListener('fetch', e => {
   }
 
   e.respondWith(
-    fetch(e.request).catch(() => caches.match(e.request))
+    fetch(e.request).catch(() =>
+      caches.match(e.request).then(cached => cached || caches.match(OFFLINE_URL))
+    )
   );
 });
