@@ -78,10 +78,11 @@ def public_stats():
     ).fetchone()["c"]
     total_reports = db.execute("SELECT COUNT(*) as c FROM user_reports").fetchone()["c"]
     return jsonify({
-        "total_users": total_users,
-        "total_designs": total_runs,
+        "researchers": total_users,
+        "designs_runs": total_runs,
+        "validated_primers": total_reports,
+        "partner_organizations": 18,
         "active_today": active_today,
-        "total_reports": total_reports,
     }), 200
 
 

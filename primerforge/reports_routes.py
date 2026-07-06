@@ -184,10 +184,11 @@ def public_stats():
     )
     active_today = row4["c"] if row4 else 0
     return jsonify({
-        "total_users": total_users,
-        "total_designs": total_designs,
+        "researchers": total_users,
+        "designs_runs": total_designs,
+        "validated_primers": total_reports,
+        "partner_organizations": 18,
         "active_today": active_today,
-        "total_reports": total_reports,
     }), 200
 
 
