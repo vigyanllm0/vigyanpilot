@@ -73,13 +73,17 @@ async def run_consensus_pipeline(
     # ══════════════════════════════════════════════════════════════════════════
     # STAGE 1: ESMFold — Predict Protein 3D Structure
     # ══════════════════════════════════════════════════════════════════════════
-    import torch
+    if not esmfold_predict:
+        return {**result, "status": "error", "message": "ESMFold engine not loaded. Install: pip install transformers einops"}
+
+    try:
+        import torch
+    except ImportError:
+        return {**result, "status": "error", "message": "ESMFold requires torch. Install: pip install torch"}
+
     device = "MPS (Apple Silicon)" if hasattr(torch.backends, "mps") and torch.backends.mps.is_available() else "CPU (Standard)"
     await _progress("PIPELINE", f"Initializing Consensus Discovery Suite on {device}...")
     await _progress("STAGE 1 / ESMFold", f"Commencing structural folding for sequence (Length: {len(sequence)}aa, Mode: Local GPU Inference)...")
-
-    if not esmfold_predict:
-        return {**result, "status": "error", "message": "ESMFold engine not loaded. Install: pip install transformers einops"}
 
     try:
         stage1_result = await esmfold_predict(sequence, progress_callback=_progress)
