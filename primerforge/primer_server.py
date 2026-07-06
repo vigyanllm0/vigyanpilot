@@ -42,7 +42,7 @@ if _env_path.exists():
     load_dotenv(_env_path)
     logger.info("Loaded environment from %s", _env_path)
 
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, Response
 from flask_cors import CORS
 
 # ── No .env file loading — all config via environment variables only ──
@@ -955,7 +955,7 @@ def create_app() -> Flask:
 
     # ── Serve Frontend HTML Files ─────────────────────────────────────────
     from flask import send_from_directory
-    STATIC_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)))
+    STATIC_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "frontend")
 
     @app.route("/")
     def serve_index():
@@ -964,6 +964,14 @@ def create_app() -> Flask:
     @app.route("/primer")
     def serve_primer():
         return send_from_directory(STATIC_DIR, "primer.html")
+
+    @app.route("/docking")
+    def serve_docking():
+        return send_from_directory(STATIC_DIR, "docking.html")
+
+    @app.route("/protein-docking")
+    def serve_protein_docking_redirect():
+        return send_from_directory(STATIC_DIR, "protein-docking.html")
 
     @app.route("/admin")
     def serve_admin():
@@ -1554,7 +1562,23 @@ def create_app() -> Flask:
             return err("At least 2 sequences are required for MSA.", "VALIDATION_ERROR", 400)
 
         try:
-            from primerforge.engine.msa_viewer import build_msa_view, format_fasta, format_clustal, get_msa_summary
+            from primerforge.engine.msa_viewer import build_msa_view, format_fasta, format_clustal, get_msa_summary, create_job, process_job
+            n = len(sequences)
+            if n > 500:
+                job_id = create_job(sequences, reference_id)
+                process_job(job_id)
+                job = get_job(job_id)
+                if job["status"] == "DONE":
+                    return jsonify({
+                        "job_id": job_id,
+                        "total_sequences": n,
+                        "stats": job["stats"],
+                        "alignment_length": job["stats"].get("alignment_length", 0),
+                        "summary": get_msa_summary({"stats": job["stats"]}),
+                        "fasta": format_fasta_from_job(job_id),
+                        "clustal": format_clustal_from_job(job_id),
+                    }), 200
+                return err(job.get("error", "MSA processing failed"), "MSA_FAILED", 500)
             viewer = build_msa_view(sequences, reference_id=reference_id)
             viewer["fasta"] = format_fasta(sequences)
             viewer["clustal"] = format_clustal(viewer.get("alignment", []))
@@ -1563,6 +1587,299 @@ def create_app() -> Flask:
         except Exception as exc:
             logger.error(f"MSA error: {exc}", exc_info=True)
             return err(f"MSA failed: {str(exc)[:200]}", "MSA_FAILED", 500)
+
+    @app.route("/api/primer/msa/submit", methods=["POST"])
+    def msa_submit_route():
+        if not READY:
+            return err("Core not available.", "DESIGN_FAILED", 503)
+        data = request.get_json(silent=True) or {}
+        sequences = data.get("sequences", [])
+        reference_id = data.get("reference_id")
+        if not sequences or len(sequences) < 2:
+            return err("At least 2 sequences required.", "VALIDATION_ERROR", 400)
+        from primerforge.engine.msa_viewer import create_job
+        job_id = create_job(sequences, reference_id)
+        import threading
+        threading.Thread(target=process_job, args=(job_id,), daemon=True).start()
+        n = len(sequences)
+        return jsonify({
+            "job_id": job_id,
+            "total_sequences": n,
+            "status": "QUEUED",
+        }), 202
+
+    @app.route("/api/primer/msa/status/<job_id>", methods=["GET"])
+    def msa_status_route(job_id):
+        from primerforge.engine.msa_viewer import get_job
+        job = get_job(job_id)
+        if not job:
+            return err("Job not found.", "NOT_FOUND", 404)
+        resp = {
+            "job_id": job_id,
+            "status": job["status"],
+            "progress": job.get("progress", 0),
+            "total_sequences": job.get("total", 0),
+            "stats": job.get("stats"),
+            "error": job.get("error"),
+        }
+        return jsonify(resp), 200
+
+    @app.route("/api/primer/msa/view/<job_id>", methods=["GET"])
+    def msa_view_route(job_id):
+        from primerforge.engine.msa_viewer import get_paginated_alignment
+        offset = request.args.get("offset", 0, type=int)
+        limit = min(request.args.get("limit", 50, type=int), 200)
+        col_start = request.args.get("col_start", 0, type=int)
+        col_end = request.args.get("col_end", 0, type=int)
+        result = get_paginated_alignment(job_id, offset, limit, col_start, col_end)
+        if "error" in result:
+            return err(result["error"], "JOB_NOT_READY", 400)
+        return jsonify(result), 200
+
+    @app.route("/api/primer/msa/download/<job_id>", methods=["GET"])
+    def msa_download_route(job_id):
+        from primerforge.engine.msa_viewer import format_fasta_from_job, format_clustal_from_job
+        fmt = request.args.get("format", "fasta")
+        if fmt == "clustal":
+            content = format_clustal_from_job(job_id)
+            mime = "text/plain"
+            fn = f"alignment_{job_id}.aln"
+        else:
+            content = format_fasta_from_job(job_id)
+            mime = "text/plain"
+            fn = f"alignment_{job_id}.fa"
+        if not content:
+            return err("Job not ready or empty.", "NOT_FOUND", 404)
+        return Response(content, mimetype=mime, headers={"Content-Disposition": f'attachment; filename="{fn}"'})
+
+    @app.route("/api/primer/msa/upload", methods=["POST"])
+    def msa_upload_route():
+        if not READY:
+            return err("Core not available.", "DESIGN_FAILED", 503)
+        if "file" not in request.files:
+            return err("No file provided. Send as multipart/form-data with field 'file'.", "VALIDATION_ERROR", 400)
+        f = request.files["file"]
+        if f.filename == "":
+            return err("Empty filename.", "VALIDATION_ERROR", 400)
+        try:
+            raw = f.read()
+            text = raw.decode("utf-8", errors="replace")
+        except Exception as e:
+            return err(f"Failed to read file: {e}", "VALIDATION_ERROR", 400)
+        import re as _re
+        seqs = []
+        cur_name = ""
+        cur_seq_chunks = []
+        for line in text.splitlines():
+            s = line.strip()
+            if not s:
+                continue
+            if s.startswith(">"):
+                if cur_name and cur_seq_chunks:
+                    seqs.append({"name": cur_name, "sequence": "".join(cur_seq_chunks).upper()})
+                cur_name = s[1:].split()[0] if len(s) > 1 else f"seq_{len(seqs)}"
+                cur_seq_chunks = []
+            else:
+                clean = _re.sub(r"\s", "", s)
+                if clean:
+                    cur_seq_chunks.append(clean)
+        if cur_name and cur_seq_chunks:
+            seqs.append({"name": cur_name, "sequence": "".join(cur_seq_chunks).upper()})
+        if len(seqs) < 2:
+            return err("FASTA file must contain at least 2 sequences.", "VALIDATION_ERROR", 400)
+        reference_id = request.form.get("reference_id") or None
+        from primerforge.engine.msa_viewer import create_job
+        job_id = create_job(seqs, reference_id)
+        import threading
+        threading.Thread(target=process_job, args=(job_id,), daemon=True).start()
+        return jsonify({
+            "job_id": job_id,
+            "total_sequences": len(seqs),
+            "status": "QUEUED",
+        }), 202
+
+    # ════════════════════════════════════════════════════════════════════
+    # Consensus Pipeline — Molecular Docking (ESMFold → Vina → GNINA)
+    # ════════════════════════════════════════════════════════════════════
+
+    @app.route("/api/primer/docking/consensus", methods=["POST"])
+    def docking_consensus():
+        if not READY:
+            return err("Core not available.", "DESIGN_FAILED", 503)
+
+        data = request.get_json(silent=True) or {}
+        sequence = (data.get("sequence") or "").strip()
+        ligand_smiles_list = data.get("ligand_smiles_list") or data.get("smiles_list") or []
+        top_n = int(data.get("top_n", 50))
+
+        if not sequence:
+            return err("Protein amino acid 'sequence' is required.", "VALIDATION_ERROR", 400)
+        if not ligand_smiles_list or not isinstance(ligand_smiles_list, list):
+            return err("'ligand_smiles_list' must be a non-empty list of SMILES strings.", "VALIDATION_ERROR", 400)
+
+        try:
+            from primerforge.pipelines.consensus_pipeline import run_consensus_pipeline
+        except ImportError as exc:
+            logger.error("Consensus pipeline import failed: %s", exc)
+            return err("Consensus pipeline not available. Install torch, transformers, rdkit, vina.", "PIPELINE_UNAVAILABLE", 503)
+
+        async def _run_and_capture():
+            import asyncio
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            try:
+                result = await run_consensus_pipeline(sequence, ligand_smiles_list, top_n=top_n)
+                return result
+            finally:
+                loop.close()
+
+        import threading
+        job_result = {}
+
+        def _background_runner():
+            import asyncio
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            try:
+                job_result["result"] = loop.run_until_complete(
+                    run_consensus_pipeline(sequence, ligand_smiles_list, top_n=top_n)
+                )
+            except Exception as e:
+                job_result["error"] = str(e)
+
+        thread = threading.Thread(target=_background_runner, daemon=True)
+        thread.start()
+        thread.join(timeout=300)
+
+        if "error" in job_result:
+            return err(f"Pipeline failed: {job_result['error']}", "PIPELINE_FAILED", 500)
+
+        result = job_result.get("result", {})
+        if result.get("status") == "error":
+            return err(result.get("message", "Pipeline returned an error"), "PIPELINE_FAILED", 500)
+
+        return jsonify(result), 200
+
+    # ════════════════════════════════════════════════════════════════════
+    # Azure Worker Callback Endpoint
+    # ════════════════════════════════════════════════════════════════════
+
+    CALLBACK_SECRET_TOKEN = os.environ.get("CALLBACK_SECRET_TOKEN", "")
+    if not CALLBACK_SECRET_TOKEN:
+        logger.warning(
+            "CALLBACK_SECRET_TOKEN not set — callback endpoint will reject all requests"
+        )
+
+    @app.route("/api/v1/jobs/callback", methods=["POST"])
+    def jobs_callback():
+        """
+        Secure endpoint for Azure workers to POST results back.
+
+        Authentication: X-Callback-Token header must match CALLBACK_SECRET_TOKEN.
+        Payload: JSON object with job_id, status, job_type, step outcomes.
+
+        Updates the pipeline_jobs table and records step results in
+        pipeline_results (if PostgreSQL mode).
+        """
+        # ── Auth ──────────────────────────────────────────────────────
+        token = request.headers.get("X-Callback-Token", "")
+        if not CALLBACK_SECRET_TOKEN or token != CALLBACK_SECRET_TOKEN:
+            logger.warning("Callback rejected: invalid token (got len=%d)", len(token))
+            return jsonify({"error": "Unauthorized", "code": "AUTH_FAILED"}), 401
+
+        data = request.get_json(silent=True) or {}
+        job_id = data.get("job_id", "")
+        job_type = data.get("job_type", "unknown")
+        status = data.get("status", "failed")
+        outcomes = data.get("outcomes") or data.get("chunk_results") or []
+        error = data.get("error")
+        stats = data.get("stats") or {}
+        elapsed_s = data.get("elapsed_s", 0)
+
+        if not job_id:
+            return jsonify({"error": "job_id is required", "code": "VALIDATION_ERROR"}), 400
+
+        logger.info(
+            "Callback received: job_id=%s type=%s status=%s elapsed=%.1fs",
+            job_id, job_type, status, elapsed_s,
+        )
+
+        # ── Update PostgreSQL (production) ────────────────────────────
+        if USE_POSTGRES:
+            try:
+                from primerforge.database import execute as db_execute
+                import json as _json
+
+                # Update or insert into pipeline_jobs
+                db_execute("""
+                    INSERT INTO pipeline_jobs (id, status, job_type, error_log,
+                                               started_at, completed_at, mode)
+                    VALUES (%s, %s, %s, %s, NOW(), NOW(), %s)
+                    ON CONFLICT (id) DO UPDATE SET
+                        status = EXCLUDED.status,
+                        error_log = EXCLUDED.error_log,
+                        completed_at = NOW()
+                """, (job_id, status, job_type, error or None,
+                      data.get("mode", "express")))
+
+                # Record individual outcomes in pipeline_results
+                if outcomes:
+                    for outcome in outcomes:
+                        if isinstance(outcome, dict):
+                            step_num = outcome.get("step_number") or outcome.get("chunk_id")
+                            step_name = outcome.get("step_name", f"step_{step_num}")
+                            out_status = outcome.get("status", "unknown")
+                            duration = outcome.get("duration_ms", 0)
+                            err_msg = outcome.get("error_msg")
+                            try:
+                                db_execute("""
+                                    INSERT INTO pipeline_results
+                                        (job_id, step_number, step_name, status,
+                                         output_data, duration_ms, phase)
+                                    VALUES (%s, %s, %s, %s, %s, %s, %s)
+                                """, (
+                                    job_id, step_num, step_name, out_status,
+                                    _json.dumps(outcome), duration,
+                                    outcome.get("phase", "X"),
+                                ))
+                            except Exception as e:
+                                logger.warning("Failed to record outcome step %s: %s",
+                                               step_num, e)
+
+                logger.info("Pipeline job %s updated to status=%s", job_id, status)
+            except Exception as e:
+                logger.error("Failed to update pipeline_jobs for %s: %s", job_id, e)
+                return jsonify({
+                    "received": True,
+                    "warning": f"Results accepted but DB update failed: {str(e)[:200]}",
+                }), 200
+
+        # ── Update in-memory (dev mode) ───────────────────────────────
+        else:
+            try:
+                _dev_jobs = locals().get("DEV_PIPELINE_JOBS", {})
+                _dev_jobs[job_id] = {
+                    "job_id": job_id,
+                    "status": status,
+                    "job_type": job_type,
+                    "steps": [
+                        o for o in (outcomes or [])
+                        if isinstance(o, dict)
+                    ],
+                    "error": error,
+                    "stats": stats,
+                    "elapsed_s": elapsed_s,
+                    "completed_at": time.time(),
+                }
+                logger.info("Dev pipeline job %s updated (in-memory)", job_id)
+            except Exception as e:
+                logger.warning("Failed to update dev job %s: %s", job_id, e)
+
+        return jsonify({
+            "received": True,
+            "job_id": job_id,
+            "status": status,
+        }), 200
 
     # Pipeline health validation on startup
     try:

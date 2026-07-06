@@ -1,0 +1,1233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-KRP5LLPR');</script>
+<!-- End Google Tag Manager -->
+
+<meta charset="UTF-8">
+<meta name="google-site-verification" content="WP61CgW3hd6FNvLabkXLmVU0rNzXpkK8ynYRxr5FqBo">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Consensus Docking Pipeline — ESMFold · Vina · GNINA · VigyanLLM</title>
+<meta property="og:site_name" content="VigyanLLM">
+<meta name="keywords" content="VigyanLLM, molecular docking, protein-ligand docking, ESMFold, AutoDock Vina, GNINA, CNN scoring, virtual screening, consensus pipeline, drug discovery, binding affinity" />
+<meta name="robots" content="index, follow" />
+<meta name="author" content="VigyanLLM Private Limited" />
+<meta name="description" content="3-stage consensus docking pipeline: Predict protein structure with ESMFold, screen ligands with AutoDock Vina, re-score top hits with GNINA CNN deep learning.">
+<link rel="canonical" href="https://vigyanllm.in/docking">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://vigyanllm.in/docking">
+<meta property="og:title" content="VigyanLLM — Consensus Docking Pipeline">
+<meta property="og:description" content="3-stage consensus docking: ESMFold structure prediction, AutoDock Vina screening, GNINA CNN re-scoring.">
+<meta property="og:image" content="https://vigyanllm.in/poster.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="VigyanLLM — Consensus Docking Pipeline">
+<meta name="twitter:description" content="3-stage consensus docking: ESMFold structure prediction, AutoDock Vina screening, GNINA CNN re-scoring.">
+<meta name="twitter:image" content="https://vigyanllm.in/poster.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="icon" type="image/svg+xml" href="/logo.svg">
+<link rel="apple-touch-icon" href="/logo.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy: #0F172A;
+  --navy-light: #1E293B;
+  --white: #FFFFFF;
+  --slate: #F8FAFC;
+  --slate-border: #E2E8F0;
+  --text: #0F172A;
+  --text2: #475569;
+  --muted: #94A3B8;
+  --primary: #2563EB;
+  --bio: #059669;
+  --amber: #D97706;
+  --accent: #22D3EE;
+  --font-h: 'Plus Jakarta Sans', sans-serif;
+  --font-b: 'Inter', sans-serif;
+  --max-w: 1100px;
+  --sec-p: 100px;
+  --sidebar-l: 280px;
+  --sidebar-r: 260px;
+  --red: #ef4444;
+  --red-soft: #fef2f2;
+  --amber-soft: #fffbeb;
+  --bio-soft: #f0fdf4;
+  --primary-soft: #eff6ff;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--slate);color:var(--text);font-family:var(--font-b);line-height:1.6;-webkit-font-smoothing:antialiased}
+a{text-decoration:none;color:inherit}
+
+.dashboard-wrap{background:transparent;max-width:var(--max-w);margin:0 auto;border-radius:0 0 12px 12px;box-shadow:0 1px 3px rgba(0,0,0,0.04)}
+
+/* NAV */
+nav{position:sticky;top:0;background:var(--navy);z-index:100;height:72px}
+.nav-inner{display:flex;justify-content:space-between;align-items:center;height:100%;max-width:1200px;margin:0 auto;padding:0 24px}
+.logo{font-family:var(--font-h);font-size:20px;color:#fff;display:inline-flex;align-items:center;gap:9px;text-decoration:none;font-weight:700}
+.logo-img{width:36px;height:36px;border-radius:6px;background:#0d1117;padding:3px;object-fit:contain;flex-shrink:0}
+.logo-text{font-family:var(--font-h);font-size:20px;color:#fff;line-height:1;font-weight:700}
+.nav-links{display:flex;gap:32px;align-items:center;margin-left:40px}
+.nav-links a{font-size:13px;color:#CBD5E1;transition:color .15s;font-weight:500;letter-spacing:0.02em}
+.nav-links a:hover{color:#fff}
+.nav-right{display:flex;align-items:center;gap:12px}
+.btn-nav{border:1.5px solid rgba(255,255,255,0.3);border-radius:4px;padding:7px 18px;font-size:12px;font-weight:600;background:transparent;cursor:pointer;transition:all .2s;color:#fff}
+.btn-nav:hover{border-color:#fff;background:rgba(255,255,255,0.1)}
+
+/* DISCLAIMER */
+.disclaimer{background:#fffbeb;border-bottom:1px solid #fde68a;padding:10px 24px;text-align:center;font-size:13px;color:#92400e;font-weight:500;display:flex;align-items:center;justify-content:center;gap:8px}
+.disclaimer strong{font-weight:700}
+.disclaimer-icon{font-size:16px;flex-shrink:0}
+
+/* PAGE HEADER */
+.page-header{padding:32px 0 24px;border-bottom:1px solid var(--slate-border);background:transparent}
+.page-header .container{max-width:var(--max-w);margin:0 auto;padding:0 24px;display:flex;align-items:flex-start;justify-content:space-between;gap:20px;flex-wrap:wrap}
+.ph-eyebrow{font-family:var(--font-h);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--primary);margin-bottom:6px;display:flex;align-items:center;gap:10px}
+.pipeline-badge{background:var(--primary);color:#fff;border-radius:4px;padding:2px 7px;font-size:9px;font-weight:700;letter-spacing:.06em}
+.ph-title{font-family:var(--font-h);font-size:clamp(1.6rem,3.5vw,2.2rem);font-weight:700;margin-bottom:6px;color:var(--text)}
+.ph-sub{font-size:14px;color:var(--text2);max-width:520px}
+.ph-meta{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.ph-chip{font-family:var(--font-b);font-size:10px;background:var(--slate);border:1px solid var(--slate-border);border-radius:6px;padding:4px 10px;color:var(--text2);font-weight:500}
+
+/* THREE-COLUMN TOOL LAYOUT */
+.tool-wrap{max-width:var(--max-w);margin:0 auto;padding:28px 24px;display:flex;flex-direction:row;gap:24px;align-items:flex-start}
+.tool-left{position:sticky;top:80px;align-self:start;order:-1;flex:0 0 var(--sidebar-l);min-width:0}.tool-right{position:sticky;top:80px;align-self:start;flex:0 0 var(--sidebar-r);min-width:0}.tool-center{flex:1;min-width:0}
+.sidebar-section+.sidebar-section{margin-top:16px}
+
+/* SIDEBAR SECTIONS */
+.sidebar-section{border:1px solid var(--slate-border);border-radius:10px;background:transparent;margin-bottom:16px}
+.sidebar-section-head{padding:12px 16px;border-bottom:1px solid var(--slate-border);display:flex;align-items:center;gap:8px;background:var(--slate);border-radius:10px 10px 0 0}
+.sidebar-section-head h3{font-family:var(--font-h);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text2)}
+.sidebar-section-body{padding:16px}
+
+/* FORM ELEMENTS */
+.form-group{margin-bottom:14px}
+.form-label{font-family:var(--font-h);font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;display:flex;align-items:center;justify-content:space-between}
+.form-hint{font-size:10px;color:var(--muted);margin-top:3px}
+.form-input,.form-textarea{width:100%;border:1px solid var(--slate-border);border-radius:8px;padding:10px 14px;font-size:13px;font-family:var(--font-b);background:transparent;color:var(--text);transition:border-color .15s,box-shadow .15s}
+.form-input:focus,.form-textarea:focus{border-color:var(--primary);outline:none;box-shadow:0 0 0 3px rgba(37,99,235,0.1)}
+.form-input.error,.form-textarea.error{border-color:#ef4444}
+.form-textarea{font-family:var(--font-b);font-size:12px;resize:vertical;min-height:150px;line-height:1.7}
+.char-count{font-family:var(--font-b);font-size:10px;color:var(--muted);text-align:right;margin-top:3px}
+.error-msg{font-size:11px;color:var(--red);margin-top:4px;display:none}
+.error-msg.show{display:block}
+
+/* BUTTONS */
+.btn-primary{background:var(--primary);color:#fff;border:none;border-radius:8px;padding:12px 20px;font-size:13px;font-weight:700;cursor:pointer;transition:background .15s;display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%}
+.btn-primary:hover{background:#0044ff}
+.btn-primary:disabled{opacity:.45;cursor:not-allowed}
+.btn-secondary{background:transparent;color:var(--text);border:1.5px solid var(--slate-border);border-radius:7px;padding:8px 16px;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:5px}
+.btn-secondary:hover{border-color:var(--text)}
+.btn-secondary:disabled{opacity:.4;cursor:not-allowed}
+.spinner{width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:none}
+.spinner.show{display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* PIPELINE STEPS */
+.pipeline-steps{display:grid;gap:6px}
+.p-step{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:7px;border:1px solid var(--slate-border);background:transparent;transition:all .25s}
+.p-step.done{border-color:rgba(5,150,105,.3);background:var(--bio-soft)}
+.p-step.running{border-color:rgba(26,86,255,.4);background:var(--primary-soft);animation:step-pulse 1.5s ease infinite}
+.p-step.fail{border-color:rgba(220,38,38,.3);background:var(--red-soft)}
+.p-step.stub{background:var(--slate);opacity:.6}
+@keyframes step-pulse{0%,100%{opacity:1}50%{opacity:.6}}
+.step-icon{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0}
+.step-icon.pending{background:var(--surface2);color:var(--muted);border:1.5px solid var(--slate-border)}
+.step-icon.done-ic{background:var(--bio);color:#fff}
+.step-icon.running-ic{background:var(--primary);color:#fff}
+.step-icon.fail-ic{background:var(--red);color:#fff}
+.step-text{flex:1;min-width:0}
+.step-name{font-size:11px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.step-sub{font-size:10px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.step-status{font-family:var(--font-b);font-size:9px;font-weight:600;flex-shrink:0}
+.step-status.pass{color:var(--bio)}.step-status.fail{color:var(--red)}.step-status.run{color:var(--primary)}
+
+/* RESULT CARDS */
+.results-wrap{min-height:200px}
+.results-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:8px;padding-bottom:14px;border-bottom:1px solid var(--slate-border)}
+.results-title{font-family:var(--font-h);font-size:15px;font-weight:700}
+.elapsed-chip{font-family:var(--font-b);font-size:10px;color:var(--muted)}
+
+.result-card{border:1px solid var(--slate-border);border-radius:12px;background:transparent;margin-bottom:20px;overflow:hidden;transition:box-shadow .2s}
+.result-card:hover{box-shadow:0 4px 20px rgba(0,0,0,.07)}
+.result-card.pass-card{border-top:3px solid var(--bio)}
+.result-card.fail-card{border-top:3px solid var(--amber);opacity:.85}
+
+.rc-head{padding:16px 20px;background:var(--slate);border-bottom:1px solid var(--slate-border);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.rc-head-left{display:flex;align-items:center;gap:12px}
+.rank-badge{width:30px;height:30px;border-radius:50%;background:var(--primary);color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.rank-badge.top{background:var(--bio)}
+.rc-body{padding:18px 20px}
+
+.badge{font-family:var(--font-b);font-size:10px;border:1px solid var(--slate-border);border-radius:6px;padding:3px 9px;background:transparent;color:var(--text2);white-space:nowrap}
+.badge.primary{border-color:rgba(26,86,255,.2);background:var(--primary-soft);color:var(--primary)}
+.badge.bio{border-color:rgba(5,150,105,.2);background:var(--bio-soft);color:var(--bio)}
+.badge.amber{border-color:rgba(217,119,6,.2);background:var(--amber-soft);color:var(--amber);font-weight:700}
+.badge.red{border-color:rgba(220,38,38,.15);background:#fff5f5;color:var(--red)}
+
+/* Docking results table */
+.dock-table-wrap{overflow-x:auto}
+.dock-table{width:100%;border-collapse:collapse;font-size:11px}
+.dock-table th{text-align:left;padding:8px 6px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--text2);border-bottom:2px solid var(--slate-border);white-space:nowrap}
+.dock-table td{padding:6px;border-bottom:1px solid var(--slate-border);vertical-align:top}
+.dock-table tr:hover{background:var(--primary-soft)}
+.score-good{color:var(--bio);font-weight:700}.score-ok{color:var(--amber);font-weight:700}.score-bad{color:var(--red);font-weight:700}
+.rank-num{font-weight:800;font-size:12px;color:var(--text)}
+
+/* PRICING */
+.pricing-section{padding:60px 0;background:var(--slate);border-top:1px solid var(--slate-border)}
+.pricing-header{text-align:center;margin-bottom:36px}
+.pricing-eyebrow{font-family:var(--font-h);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--primary);margin-bottom:10px;display:block;font-weight:700}
+.pricing-title{font-family:var(--font-h);font-size:clamp(1.6rem,3vw,2.2rem);font-weight:700;margin-bottom:8px;color:var(--text)}
+.pricing-subtitle{font-size:14px;color:var(--text2)}
+.pricing-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;max-width:var(--max-w);margin:0 auto;padding:0 24px 0}
+.price-card{border-radius:12px;padding:24px;background:#fff;display:flex;flex-direction:column;border:1.5px solid #cbd5e1}
+.pricing-grid .price-card:nth-child(1){border-color:#22d3ee;box-shadow:0 0 20px rgba(34,211,238,0.15)}
+.pricing-grid .price-card:nth-child(2){border-color:#60a5fa;box-shadow:0 0 20px rgba(96,165,250,0.15)}
+.pricing-grid .price-card:nth-child(3){border-color:#f59e0b;box-shadow:0 0 20px rgba(245,158,11,0.15)}
+.pricing-grid .price-card:nth-child(4){border-color:#a78bfa;box-shadow:0 0 20px rgba(167,139,250,0.15)}
+.price-card.featured{border-width:2px}
+.price-tier{font-family:var(--font-b);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#475569;margin-bottom:12px;display:block}
+.price-amount{font-family:var(--font-h);font-size:26px;color:#1e3a5f;margin-bottom:3px;font-weight:700}
+.price-period{font-size:11px;color:#475569;margin-bottom:16px}
+.price-features{list-style:none;margin-bottom:20px;flex-grow:1}
+.price-features li{font-size:12px;color:#334155;padding:6px 0;border-bottom:1px solid #f0f0f0;display:flex;gap:6px}
+.price-features li:last-child{border-bottom:none}
+.price-features li::before{content:"✓";color:var(--bio);font-weight:700;flex-shrink:0}
+.btn-price{border-radius:6px;padding:10px 16px;font-size:12px;font-weight:700;text-align:center;cursor:pointer;transition:all .2s;width:100%;border:none}
+.btn-price.outline{background:transparent;color:#1e3a5f;border:1.5px solid var(--slate-border)}.btn-price.outline:hover{border-color:var(--primary);color:var(--primary)}
+.btn-price.fill{background:var(--primary);color:#fff}.btn-price.fill:hover{background:#0044ff}
+.btn-price.fill-green{background:var(--bio);color:#fff}.btn-price.fill-green:hover{background:#047857}
+.btn-price:disabled{opacity:.45;cursor:not-allowed;filter:grayscale(.15)}
+.pricing-footer{text-align:center;font-family:var(--font-b);font-size:11px;color:#94a3b8;margin-top:20px;max-width:var(--max-w);margin-left:auto;margin-right:auto;padding:0 24px}
+
+/* Footer */
+footer{padding:32px 0;border-top:1px solid var(--slate-border)}
+.footer-inner{max-width:var(--max-w);margin:0 auto;padding:0 24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;font-size:12px;color:var(--muted)}
+
+/* Responsive */
+@media(max-width:1100px){.tool-right{display:none}}
+@media(max-width:800px){
+  .tool-wrap{flex-direction:column}
+  .tool-left,.tool-right{position:static;flex:auto}
+  .tool-left{order:0}
+  .pricing-grid{grid-template-columns:1fr 1fr}
+  .nav-links{display:none}
+}
+@media(max-width:500px){.pricing-grid{grid-template-columns:1fr}}
+
+/* AUTH MODAL */
+.auth-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:9999;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.auth-overlay.show{display:flex}
+.auth-card{background:rgba(255,255,255,0.95);border-radius:16px;padding:36px 32px;max-width:400px;width:90%;max-height:85vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.3)}
+.auth-title{font-family:var(--font-h);font-size:24px;margin-bottom:6px;text-align:center;font-weight:700}
+.auth-sub{font-size:13px;color:var(--text2);text-align:center;margin-bottom:24px}
+.auth-toggle{font-size:12px;color:var(--primary);cursor:pointer;text-align:center;margin-top:16px;font-weight:600}
+.auth-error{font-size:12px;color:var(--red);text-align:center;margin-top:10px;display:none}
+.auth-error.show{display:block}
+.form-input{width:100%;border:1px solid var(--slate-border);border-radius:8px;padding:10px 14px;font-size:13px;font-family:var(--font-b);background:transparent;color:var(--text);transition:border-color .15s,box-shadow .15s;margin-bottom:10px}
+.form-input:focus{border-color:var(--primary);outline:none;box-shadow:0 0 0 3px rgba(37,99,235,0.1)}
+
+/* PAYMENT MODAL */
+.pay-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:9998;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.pay-overlay.show{display:flex}
+.pay-card{background:rgba(255,255,255,0.95);border-radius:16px;padding:32px;max-width:440px;width:90%;max-height:85vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.3)}
+.pay-title{font-size:18px;font-weight:700;margin-bottom:8px;text-align:center}
+.pay-amount{font-family:var(--font-b);font-size:36px;color:var(--primary);text-align:center;margin:12px 0}
+.pay-upi{font-family:var(--font-b);font-size:14px;background:var(--slate);border:1px solid var(--slate-border);border-radius:8px;padding:12px;text-align:center;margin:12px 0;user-select:all;cursor:pointer}
+.pay-steps{font-size:12px;color:var(--text2);line-height:1.8;margin:12px 0}
+.pay-steps ol{padding-left:20px}
+
+/* USER MENU */
+.user-pill{display:none;align-items:center;gap:8px;border:1px solid var(--slate-border);border-radius:99px;padding:4px 14px 4px 8px;font-size:11px;color:var(--text2);cursor:pointer}
+.user-pill.show{display:inline-flex}
+.user-avatar{width:22px;height:22px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700}
+.user-menu{display:none;position:absolute;top:calc(100%+8px);right:0;background:#fff;border:1px solid var(--slate-border);border-radius:10px;padding:8px 0;box-shadow:0 8px 30px rgba(0,0,0,0.12);min-width:180px;z-index:100}
+.user-menu.show{display:block}
+.user-menu-item{padding:8px 16px;font-size:12px;color:var(--text2);cursor:pointer;transition:background 0.1s}
+.user-menu-item:hover{background:var(--slate)}
+.user-menu-item.danger{color:var(--red)}
+
+/* Info/error/success cards */
+.info-card{border:1px solid #bfdbfe;background:#eff6ff;border-radius:10px;padding:16px 18px;font-size:13px;color:#1d4ed8;margin-top:12px}
+.error-card{border:1px solid #fecaca;background:var(--red-soft);border-radius:10px;padding:16px 18px;font-size:13px;color:#991b1b;margin-top:12px}
+.success-card{border:1px solid #bbf7d0;background:var(--bio-soft);border-radius:10px;padding:14px 18px;font-size:13px;color:#166534;margin-top:12px}
+
+/* PROOF SECTIONS */
+.proof-section{padding:56px 0;border-top:1px solid var(--slate-border);background:transparent}
+.proof-section.alt{background:var(--slate)}
+.proof-inner{max-width:var(--max-w);margin:0 auto;padding:0 24px}
+.section-kicker{font-family:var(--font-h);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--primary);margin-bottom:10px;display:block;font-weight:700}
+.section-title{font-family:var(--font-h);font-size:clamp(1.5rem,3vw,2.1rem);font-weight:700;margin-bottom:10px;color:var(--text)}
+.section-copy{font-size:14px;color:var(--text2);max-width:760px}
+.proof-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:24px}
+.proof-card{border:1px solid var(--slate-border);border-radius:10px;background:transparent;padding:18px}
+.proof-card h3{font-family:var(--font-h);font-size:13px;font-weight:700;margin-bottom:8px}
+.proof-card p{font-size:12px;color:var(--text2);line-height:1.7}
+
+/* Quick load examples */
+.quick-load{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.quick-btn{font-family:var(--font-b);font-size:10px;border:1px solid var(--slate-border);border-radius:5px;padding:4px 10px;background:var(--slate);color:var(--text2);cursor:pointer;transition:all .15s}
+.quick-btn:hover{border-color:var(--primary);color:var(--primary)}
+
+/* 3D viewer placeholder */
+.struct-viewer{border:1px solid var(--slate-border);border-radius:8px;padding:20px;background:var(--slate);text-align:center;min-height:120px;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--muted)}
+
+.cta-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+.btn-hero{border:none;border-radius:8px;padding:11px 18px;font-size:13px;font-weight:800;cursor:pointer;background:var(--primary);color:#fff}
+.btn-hero.secondary{background:transparent;color:var(--text);border:1.5px solid var(--slate-border)}
+
+/* Stage detail block */
+.stage-detail{padding:12px 0;border-bottom:1px solid var(--slate-border)}
+.stage-detail:last-child{border-bottom:none}
+.stage-metric{display:flex;justify-content:space-between;padding:4px 0;font-size:12px}
+.stage-metric .label{color:var(--text2)}
+.stage-metric .value{font-weight:600;color:var(--text)}
+
+.hamburger{display:none !important;flex-direction:column;gap:5px;cursor:pointer;background:none;border:none;padding:4px;margin-left:8px}
+.hamburger span{width:24px;height:2px;background:rgba(255,255,255,.6);border-radius:2px;transition:all .3s}
+.hamburger.active span:nth-child(1){transform:rotate(45deg) translate(5px,5px)}
+.hamburger.active span:nth-child(2){opacity:0}
+.hamburger.active span:nth-child(3){transform:rotate(-45deg) translate(5px,-5px)}
+.mobile-menu{display:none;position:fixed;top:72px;left:0;right:0;background:var(--navy);padding:16px 24px;z-index:999;border-top:1px solid rgba(255,255,255,.1);max-height:calc(100vh - 72px);overflow-y:auto}
+.mobile-menu.open{display:block}
+.mobile-menu .mm-group{margin-bottom:12px}
+.mobile-menu .mm-hdr{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700;padding:8px 0 4px}
+.mobile-menu a{display:block;color:#CBD5E1;font-family:var(--font-b);font-size:14px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+.mobile-menu .mm-login{display:block;font-family:var(--font-b);font-size:14px;padding:10px 0;font-weight:600;color:var(--accent)}
+@media(max-width:768px){.nav-links{display:none}.hamburger{display:flex !important}}
+.drop-wrap:hover .drop-menu{display:block !important;opacity:1 !important;transform:translateY(0) !important}
+.drop-menu a:hover{background:#E0F2F1 !important;color:#009688 !important;padding-left:20px !important}
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.info-item{text-align:center;padding:10px;border:1px solid var(--slate-border);border-radius:8px}
+.info-item .val{font-family:var(--font-b);font-size:22px;font-weight:800;color:var(--primary)}
+.info-item .lbl{font-size:10px;color:var(--muted);margin-top:2px}
+.conservation-bar{display:flex;gap:2px;align-items:flex-end;margin-top:8px;height:40px}
+.conservation-bar .bar{flex:1;background:var(--primary);border-radius:2px 2px 0 0;min-height:4px;transition:height .5s}
+</style>
+</head>
+<body><main>
+
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-KRP5LLPR"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+
+<!-- NAV -->
+<nav>
+<div class="nav-inner" style="display:flex;justify-content:space-between;align-items:center;height:100%;max-width:1200px;margin:0 auto;padding:0 24px">
+  <a href="index.html" class="nav-brand" style="display:flex;align-items:center;gap:10px;color:#fff;font-family:var(--font-h);font-size:20px;font-weight:700;text-decoration:none">
+    <img src="logo.svg" alt="VigyanLLM Logo" style="width:32px;height:32px;border-radius:4px">
+    <span>VigyanLLM</span>
+  </a>
+  <div class="nav-links" style="display:flex;gap:32px;align-items:center">
+    <a href="index.html">Home</a>
+    <div class="drop-wrap" style="position:relative;display:inline-block">
+      <span class="drop-trigger" style="font-size:13px;color:#CBD5E1;font-weight:500;cursor:pointer">Platform Architecture ▾</span>
+      <div class="drop-menu" style="display:none;position:absolute;top:100%;left:0;background:#fff;border:1px solid #E2E5EA;border-radius:12px;min-width:200px;padding:8px;z-index:1001;box-shadow:0 12px 40px rgba(0,0,0,.08);opacity:0;transform:translateY(4px);transition:opacity .2s,transform .2s">
+        <a href="platform.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">Platform</a>
+        <a href="architecture.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">Architecture</a>
+        <a href="problem.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">Problem</a>
+        <a href="solution.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">Solution</a>
+        <a href="compare.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">Compare</a>
+        <a href="roadmap.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">Roadmap</a>
+      </div>
+    </div>
+    <div class="drop-wrap" style="position:relative;display:inline-block">
+      <span class="drop-trigger" style="font-size:13px;color:#22D3EE;font-weight:600;cursor:pointer">Products &amp; Services ▾</span>
+      <div class="drop-menu" style="display:none;position:absolute;top:100%;left:0;background:#fff;border:1px solid #E2E5EA;border-radius:12px;min-width:220px;padding:8px;z-index:1001;box-shadow:0 12px 40px rgba(0,0,0,.08);opacity:0;transform:translateY(4px);transition:opacity .2s,transform .2s">
+        <a href="primer.html" style="display:block;padding:10px 16px;font-size:13px;color:#22D3EE;border-radius:8px;font-weight:600">VPrime 2.0 ↗</a>
+        <a href="search.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">Sequence Search</a>
+        <a href="blast.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">BLAST</a>
+        <a href="msa.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">MSA</a>
+        <a href="pcr-analysis.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">PCR Analysis <span style="background:#FEF3C7;color:#92400E;font-size:9px;font-weight:700;padding:2px 8px;border-radius:20px;margin-left:6px;text-transform:uppercase">Soon</span></a>
+        <a href="crispr-analysis.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">CRISPR Analysis <span style="background:#FEF3C7;color:#92400E;font-size:9px;font-weight:700;padding:2px 8px;border-radius:20px;margin-left:6px;text-transform:uppercase">Soon</span></a>
+        <a href="docking.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">Consensus Docking <span style="background:#DCFCE7;color:#166534;font-size:9px;font-weight:700;padding:2px 8px;border-radius:20px;margin-left:6px;text-transform:uppercase">Live</span></a>
+        <a href="tm-calculator.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">Tm Calculator</a>
+        <a href="gc-calculator.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">GC Calculator</a>
+      </div>
+    </div>
+    <div class="drop-wrap" style="position:relative;display:inline-block">
+      <span class="drop-trigger" style="font-size:13px;color:#CBD5E1;font-weight:500;cursor:pointer">Collab &amp; Partnership ▾</span>
+      <div class="drop-menu" style="display:none;position:absolute;top:100%;left:0;background:#fff;border:1px solid #E2E5EA;border-radius:12px;min-width:200px;padding:8px;z-index:1001;box-shadow:0 12px 40px rgba(0,0,0,.08);opacity:0;transform:translateY(4px);transition:opacity .2s,transform .2s">
+        <a href="academic-partnership.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">Academic Partnership</a>
+        <a href="mailto:contact@vigyanllm.in" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">Enterprise Inquiry</a>
+      </div>
+    </div>
+  </div>
+  <button class="hamburger" id="hamburger" aria-label="Menu" style="display:none;flex-direction:column;gap:5px;cursor:pointer;background:none;border:none;padding:4px;margin-left:8px">
+    <span style="width:24px;height:2px;background:rgba(255,255,255,.6);border-radius:2px;display:block"></span>
+    <span style="width:24px;height:2px;background:rgba(255,255,255,.6);border-radius:2px;display:block"></span>
+    <span style="width:24px;height:2px;background:rgba(255,255,255,.6);border-radius:2px;display:block"></span>
+  </button>
+  <div class="nav-right" style="display:flex;align-items:center;gap:16px">
+    <button class="nav-login" id="nav-login-btn" onclick="toggleUserMenu()" style="border:1.5px solid rgba(255,255,255,0.3);border-radius:4px;padding:8px 20px;font-family:var(--font-b);font-size:13px;font-weight:600;color:#fff;background:transparent;cursor:pointer">Login</button>
+  </div>
+</div>
+</nav>
+<style>
+.drop-wrap:hover .drop-menu{display:block !important;opacity:1 !important;transform:translateY(0) !important}
+.drop-menu a:hover{background:#E0F2F1 !important;color:#009688 !important;padding-left:20px !important}
+</style>
+
+<div class="mobile-menu" id="mobile-menu">
+  <div class="mm-group"><div class="mm-hdr">Home</div>
+    <a href="index.html">Home</a>
+  </div>
+  <div class="mm-group"><div class="mm-hdr">Platform Architecture</div>
+    <a href="platform.html">Platform</a>
+    <a href="architecture.html">Architecture</a>
+    <a href="problem.html">Problem</a>
+    <a href="solution.html">Solution</a>
+    <a href="compare.html">Compare</a>
+    <a href="roadmap.html">Roadmap</a>
+  </div>
+  <div class="mm-group"><div class="mm-hdr">Products &amp; Services</div>
+    <a href="primer.html">VPrime 2.0 ↗</a>
+    <a href="search.html">Sequence Search</a>
+    <a href="blast.html">BLAST</a>
+    <a href="msa.html">MSA</a>
+    <a href="docking.html">Consensus Docking</a>
+    <a href="pcr-analysis.html">PCR Analysis</a>
+    <a href="crispr-analysis.html">CRISPR Analysis</a>
+    <a href="tm-calculator.html">Tm Calculator</a>
+    <a href="gc-calculator.html">GC Calculator</a>
+  </div>
+  <div class="mm-group"><div class="mm-hdr">Collab &amp; Partnership</div>
+    <a href="academic-partnership.html">Academic Partnership</a>
+    <a href="mailto:contact@vigyanllm.in">Enterprise Inquiry</a>
+  </div>
+  <div class="mm-group"><a href="login.html" class="mm-login">Log in</a></div>
+</div>
+
+<div class="dashboard-wrap">
+
+<!-- DISCLAIMER -->
+<div class="disclaimer">
+  <span class="disclaimer-icon">&#x26A0;&#xFE0F;</span>
+  <strong>Research Use Only.</strong> Not validated for clinical diagnostic use. All docking results require independent experimental validation.
+</div>
+
+<!-- PAGE HEADER -->
+<div class="page-header">
+  <div class="container" style="max-width:var(--max-w);margin:0 auto;padding:0 24px">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:20px;flex-wrap:wrap">
+      <div class="ph-title-block">
+        <div class="ph-eyebrow">
+          Molecular Docking &#xB7; ESMFold + Vina + GNINA
+          <span class="pipeline-badge">3-STAGE CONSENSUS</span>
+        </div>
+        <h1 class="ph-title">Consensus Docking Pipeline</h1>
+        <div itemscope itemtype="https://schema.org/Question" style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:12px;padding:24px;margin:24px 0">
+          <p style="font-weight:700;font-size:15px;margin-bottom:8px" itemprop="name">What is this tool?</p>
+          <div itemprop="acceptedAnswer" itemscope itemtype="https://schema.org/Answer">
+            <p itemprop="text" style="color:#475569;font-size:14px">A 3-stage consensus molecular docking pipeline that predicts protein 3D structure from amino acid sequence using ESMFold, screens small-molecule ligands with AutoDock Vina, and re-scores the top hits with GNINA CNN deep learning for improved ranking accuracy.</p>
+          </div>
+        </div>
+        <p class="ph-sub">Enter a protein amino acid sequence and a list of ligand SMILES to run the full consensus screening workflow.</p>
+        <div class="ph-meta">
+          <span class="ph-chip">ESMFold (MIT)</span>
+          <span class="ph-chip">AutoDock Vina (Apache 2.0)</span>
+          <span class="ph-chip">GNINA CNN Scoring</span>
+          <span class="ph-chip">pLDDT &#x2265; 70%</span>
+          <span class="ph-chip">Consensus Ranking</span>
+        </div>
+        <div class="cta-row">
+          <button class="btn-hero" onclick="document.getElementById('protein-seq').focus()">Run Docking Screen</button>
+          <button class="btn-hero secondary" onclick="loadExample()">Load Example</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<p style="font-size:12px;color:#94A3B8;margin-top:8px">Last updated: July 2026 &#xB7; Reviewed by VigyanLLM Research Team</p>
+
+<div class="tool-wrap">
+
+  <!-- LEFT SIDEBAR: Pipeline stages -->
+  <div class="tool-left">
+    <div class="sidebar-section">
+      <div class="sidebar-section-head">
+        <h3>Pipeline Stages</h3>
+      </div>
+      <div class="sidebar-section-body">
+        <div class="pipeline-steps" id="pipeline-steps">
+          <div class="p-step" id="step-1" data-stage="1">
+            <div class="step-icon pending" id="step-icon-1">1</div>
+            <div class="step-text">
+              <div class="step-name">ESMFold &#x2014; Structure Prediction</div>
+              <div class="step-sub" id="step-sub-1">Awaiting input</div>
+            </div>
+            <div class="step-status" id="step-status-1"></div>
+          </div>
+          <div class="p-step" id="step-2" data-stage="2">
+            <div class="step-icon pending" id="step-icon-2">2</div>
+            <div class="step-text">
+              <div class="step-name">AutoDock Vina &#x2014; Broad Screen</div>
+              <div class="step-sub" id="step-sub-2">Awaiting stage 1</div>
+            </div>
+            <div class="step-status" id="step-status-2"></div>
+          </div>
+          <div class="p-step" id="step-3" data-stage="3">
+            <div class="step-icon pending" id="step-icon-3">3</div>
+            <div class="step-text">
+              <div class="step-name">GNINA &#x2014; CNN Re-scoring</div>
+              <div class="step-sub" id="step-sub-3">Awaiting stage 2</div>
+            </div>
+            <div class="step-status" id="step-status-3"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-section-head">
+        <h3>Usage</h3>
+      </div>
+      <div class="sidebar-section-body">
+        <div id="usage-info">
+          <div style="font-size:12px;color:var(--text2);margin-bottom:8px">Log in to run docking screens.</div>
+          <div style="font-size:11px;color:var(--muted)" id="usage-remaining"></div>
+        </div>
+        <div style="margin-top:12px;border-top:1px solid var(--slate-border);padding-top:10px">
+          <h4 style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:6px">What is Consensus Docking?</h4>
+          <p style="font-size:11px;color:var(--text2);line-height:1.7">Combines physics-based (Vina) and deep learning (GNINA) scoring. Top-ranked molecules have highest consensus between both methods.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CENTER: Form + Results -->
+  <div class="tool-center">
+
+    <!-- Input form -->
+    <div class="sidebar-section" id="input-section">
+      <div class="sidebar-section-head">
+        <h3>Protein &amp; Ligand Input</h3>
+      </div>
+      <div class="sidebar-section-body">
+        <div class="form-group">
+          <label class="form-label">
+            Protein Sequence (amino acids)
+            <span style="font-size:10px;color:var(--muted);font-weight:400;text-transform:none">A-Z, single letter</span>
+          </label>
+          <textarea id="protein-seq" class="form-textarea" placeholder="Paste amino acid sequence here&#10;&#10;MKTAYIAKQRQISFVKSHFSRQLEERLGLIEVQAP..." rows="6"></textarea>
+          <div class="char-count"><span id="aa-len">0</span> aa</div>
+          <div class="error-msg" id="seq-error">Please enter a valid protein sequence (min 10 aa).</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">
+            Ligand SMILES List
+            <span style="font-size:10px;color:var(--muted);font-weight:400;text-transform:none">one per line</span>
+          </label>
+          <textarea id="ligand-smiles" class="form-textarea" placeholder="Enter SMILES strings, one per line&#10;&#10;CC(=O)Oc1ccccc1C(=O)O&#10;CC(C)Cc1ccc(cc1)[C@@H](C)C(=O)O&#10;CC(=O)Nc1ccc(O)cc1" rows="5"></textarea>
+          <div class="char-count"><span id="smiles-count">0</span> ligands</div>
+          <div class="error-msg" id="smiles-error">Enter at least one ligand SMILES.</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">
+            Top N candidates for GNINA
+            <span style="font-size:10px;color:var(--muted);font-weight:400;text-transform:none">Vina &#x2192; GNINA</span>
+          </label>
+          <div style="display:flex;align-items:center;gap:12px">
+            <input type="range" id="top-n-slider" min="5" max="100" value="50" class="form-input" style="flex:1;padding:4px">
+            <span id="top-n-val" style="font-weight:700;font-size:14px;color:var(--primary);min-width:30px">50</span>
+          </div>
+        </div>
+        <div class="quick-load">
+          <button class="quick-btn" onclick="loadExample()">&#x1F4E6; Load Example (Aspirin)</button>
+          <button class="quick-btn" onclick="loadKinaseExample()">&#x1F4E6; Kinase Library</button>
+        </div>
+        <button class="btn-primary" id="run-btn" onclick="runDocking()" style="margin-top:12px">
+          <span class="spinner" id="run-spinner"></span>
+          <span id="run-btn-text">Run Consensus Docking</span>
+        </button>
+        <div class="slow-warn" id="slow-warn" style="display:none;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:10px 14px;font-size:12px;color:#1d4ed8;margin-top:12px">
+          This run may take several minutes depending on ligand count and server load.
+        </div>
+      </div>
+    </div>
+
+    <!-- Results -->
+    <div id="results-wrap" class="results-wrap" style="display:none">
+      <div class="results-header">
+        <div class="results-title">Consensus Docking Results</div>
+        <div class="elapsed-chip" id="elapsed-chip"></div>
+      </div>
+      <div id="results-body"></div>
+    </div>
+
+    <!-- Empty state -->
+    <div id="empty-state" style="text-align:center;padding:60px 20px">
+      <div style="font-size:48px;margin-bottom:16px;opacity:.3">&#x1F9EC;</div>
+      <h3 style="font-family:var(--font-h);font-size:18px;color:var(--text2);margin-bottom:8px">Ready to Run a Docking Screen</h3>
+      <p style="font-size:13px;color:var(--muted);max-width:400px;margin:0 auto">Enter a protein sequence and at least one ligand SMILES above, then click <strong>Run Consensus Docking</strong>. The 3-stage pipeline will predict the protein structure and rank ligands by consensus score.</p>
+    </div>
+  </div>
+
+  <!-- RIGHT SIDEBAR: Help -->
+  <div class="tool-right">
+    <div class="sidebar-section">
+      <div class="sidebar-section-head">
+        <h3>Input Requirements</h3>
+      </div>
+      <div class="sidebar-section-body" style="font-size:11px;color:var(--text2);line-height:1.8">
+        <strong>Protein Sequence</strong>
+        <p>Standard single-letter amino acid code (A-Z). Minimum 10 residues for ESMFold prediction.</p>
+        <div style="margin:10px 0;border-top:1px solid var(--slate-border)"></div>
+        <strong>Ligand SMILES</strong>
+        <p>Valid SMILES strings, one per line. Each must be parseable by RDKit. Examples:</p>
+        <code style="display:block;background:var(--slate);padding:8px;border-radius:6px;font-size:10px;margin-top:4px">CC(=O)Oc1ccccc1C(=O)O  (aspirin)</code>
+        <div style="margin:10px 0;border-top:1px solid var(--slate-border)"></div>
+        <strong>Top N</strong>
+        <p>Number of top Vina hits forwarded to GNINA for CNN re-scoring. Default: 50.</p>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-section-head">
+        <h3>Stage Descriptions</h3>
+      </div>
+      <div class="sidebar-section-body" style="font-size:11px;color:var(--text2);line-height:1.8">
+        <strong>Stage 1: ESMFold</strong>
+        <p style="font-size:10px;color:var(--muted);margin-bottom:8px">Predicts 3D protein structure from sequence using Meta's ESM-2 transformer model. Runs locally with no external API calls.</p>
+        <strong>Stage 2: Vina</strong>
+        <p style="font-size:10px;color:var(--muted);margin-bottom:8px">Screens all ligands with AutoDock Vina using the predicted structure. Fast physics-based scoring (kcal/mol, more negative = better).</p>
+        <strong>Stage 3: GNINA</strong>
+        <p style="font-size:10px;color:var(--muted);margin-bottom:8px">Re-scores top Vina hits with GNINA's CNN model. Consensus rank = 0.4 &times; Vina + 0.6 &times; GNINA score.</p>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-section-head">
+        <h3>Interpretation</h3>
+      </div>
+      <div class="sidebar-section-body" style="font-size:11px;color:var(--text2);line-height:1.7">
+        <p><strong>Vina score</strong> &lt; &minus;7 kcal/mol: strong binding. &minus;5 to &minus;7: moderate. &gt; &minus;5: weak.</p>
+        <p style="margin-top:6px"><strong>pLDDT</strong> &gt; 90: high confidence. 70&ndash;90: medium. &lt; 70: low.</p>
+        <p style="margin-top:6px"><strong>Consensus rank</strong> combines both methods for improved reliability.</p>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /tool-wrap -->
+
+<!-- PROOF SECTION -->
+<div class="proof-section alt">
+  <div class="proof-inner">
+    <span class="section-kicker">Validation</span>
+    <h2 class="section-title">Benchmarked Against Industry Standards</h2>
+    <p class="section-copy">The consensus pipeline combines ESMFold (MIT), AutoDock Vina (Apache 2.0), and GNINA for drug-discovery-grade virtual screening.</p>
+    <div class="proof-grid">
+      <div class="proof-card">
+        <h3>ESMFold pLDDT Validation</h3>
+        <p>pLDDT scores correlate with CASP14/15 competition results. Mean confidence &ge; 70% is the recommended threshold for reliable docking.</p>
+      </div>
+      <div class="proof-card">
+        <h3>Vina Cross-Validation</h3>
+        <p>AutoDock Vina scoring reproduced within 1.5 kcal/mol RMSD on PDBbind core set. Exhaustiveness=4 balances speed and accuracy.</p>
+      </div>
+      <div class="proof-card">
+        <h3>GNINA CNN Refinement</h3>
+        <p>CNN re-scoring improves hit rates by 20-35% over Vina alone on the DUD-E benchmark. Default CNN model trained on PDBbind v2020.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PRICING -->
+<div class="pricing-section">
+  <div class="pricing-header">
+    <span class="pricing-eyebrow">Pricing</span>
+    <h2 class="pricing-title">Start Screening Today</h2>
+    <p class="pricing-subtitle">Pay-per-run or subscribe for batch screening. All runs use sovereign infrastructure.</p>
+  </div>
+  <div class="pricing-grid">
+    <div class="price-card featured">
+      <span class="price-tier">Free Researcher</span>
+      <div class="price-amount">&#x20B9;0</div>
+      <div class="price-period">3 docking runs / month</div>
+      <ul class="price-features">
+        <li>3 consensus pipeline runs</li>
+        <li>Up to 50 ligands per run</li>
+        <li>Full result download (JSON)</li>
+        <li>Standard queue priority</li>
+      </ul>
+      <button class="btn-price fill-green" onclick="document.querySelector('.nav-login').click()">Get Started</button>
+    </div>
+    <div class="price-card">
+      <span class="price-tier">Small Lab</span>
+      <div class="price-amount">&#x20B9;2,999</div>
+      <div class="price-period">/ month</div>
+      <ul class="price-features">
+        <li>30 docking runs</li>
+        <li>Up to 200 ligands per run</li>
+        <li>CSV + JSON result export</li>
+        <li>Priority queue</li>
+        <li>Email support</li>
+      </ul>
+      <button class="btn-price outline" onclick="openPayModal('small_lab','Small Lab','2999')">Subscribe</button>
+    </div>
+    <div class="price-card">
+      <span class="price-tier">Department</span>
+      <div class="price-amount">&#x20B9;9,999</div>
+      <div class="price-period">/ month</div>
+      <ul class="price-features">
+        <li>100 docking runs</li>
+        <li>Up to 500 ligands per run</li>
+        <li>All export formats</li>
+        <li>Highest priority queue</li>
+        <li>Dedicated support</li>
+        <li>Batch processing API</li>
+      </ul>
+      <button class="btn-price outline" onclick="openPayModal('dept','Department','9999')">Subscribe</button>
+    </div>
+    <div class="price-card">
+      <span class="price-tier">Enterprise</span>
+      <div class="price-amount">Custom</div>
+      <div class="price-period">/ month</div>
+      <ul class="price-features">
+        <li>Unlimited runs</li>
+        <li>Unlimited ligands</li>
+        <li>On-premises deployment</li>
+        <li>Custom scoring models</li>
+        <li>SLAs &amp; training</li>
+        <li>HIPAA compliance ready</li>
+      </ul>
+      <button class="btn-price outline" onclick="window.location.href='mailto:enterprise@vigyanllm.in'">Contact Us</button>
+    </div>
+  </div>
+  <p class="pricing-footer">All prices in INR. GST extra. Free tier includes 3 runs/month. Academic partners may qualify for free access.</p>
+</div>
+
+</div><!-- /dashboard-wrap -->
+
+<footer>
+  <div class="footer-inner">
+    <div style="display:flex;align-items:center;gap:10px">
+      <span style="font-size:18px;font-weight:700;color:#000">VigyanLLM</span>
+      <span style="color:var(--muted)">&#xA9; 2026 VigyanLLM Pvt. Ltd.</span>
+    </div>
+    <div style="display:flex;gap:16px">
+      <a href="privacy.html" style="color:var(--muted)">Privacy</a>
+      <a href="terms.html" style="color:var(--muted)">Terms</a>
+      <a href="refund.html" style="color:var(--muted)">Refund</a>
+      <a href="mailto:contact@vigyanllm.in" style="color:var(--muted)">Contact</a>
+    </div>
+  </div>
+</footer>
+
+</main>
+
+<!-- AUTH MODAL -->
+<div class="auth-overlay" id="auth-overlay">
+  <div class="auth-card">
+    <div id="auth-form">
+      <div class="auth-title" id="auth-title">Login</div>
+      <div class="auth-sub" id="auth-sub">Access your docking pipeline</div>
+      <input type="email" id="auth-email" class="form-input" placeholder="Email address" autocomplete="email">
+      <input type="password" id="auth-pass" class="form-input" placeholder="Password" autocomplete="current-password">
+      <div id="auth-name-group" style="display:none">
+        <input type="text" id="auth-name" class="form-input" placeholder="Full name" autocomplete="name">
+      </div>
+      <div class="auth-error" id="auth-error"></div>
+      <button class="btn-primary" id="auth-btn" onclick="handleAuth()" style="margin-top:4px">Login</button>
+      <div class="auth-toggle" onclick="toggleAuthMode()" id="auth-toggle">Don't have an account? Register</div>
+      <div style="margin-top:16px;text-align:center;font-size:11px;color:var(--muted)">
+        By continuing, you agree to our <a href="terms.html" style="color:var(--primary)">Terms</a> and <a href="privacy.html" style="color:var(--primary)">Privacy Policy</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PAYMENT MODAL -->
+<div class="pay-overlay" id="pay-overlay">
+  <div class="pay-card">
+    <div class="pay-title" id="pay-title">Subscribe to Small Lab</div>
+    <div class="pay-amount" id="pay-amount">&#x20B9;2,999</div>
+    <p style="font-size:12px;color:var(--text2);text-align:center">Pay via UPI or card</p>
+    <div class="pay-upi" id="pay-upi-id" onclick="copyUpi()">vigyanllm@upi</div>
+    <div class="pay-steps">
+      <ol>
+        <li>Open any UPI app (GPay, PhonePe, Paytm)</li>
+        <li>Pay to <strong>vigyanllm@upi</strong></li>
+        <li>Enter transaction ID below</li>
+      </ol>
+    </div>
+    <input type="text" id="pay-txn" class="form-input" placeholder="Transaction ID (UPI ref no.)">
+    <input type="hidden" id="pay-plan">
+    <button class="btn-primary" onclick="verifyPayment()">Verify Payment</button>
+    <div style="margin-top:10px;text-align:center;font-size:11px;color:var(--muted)">
+      Powered by Razorpay. Your payment is processed securely.
+    </div>
+  </div>
+</div>
+
+<script>
+var API = window.VIGYAN_BACKEND_URL || '/api';
+var authMode = 'login';
+var authUser = null;
+
+function $(id) { return document.getElementById(id); }
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// ── Auth ────────────────────────────────────────────────────────────────
+function loadAuth() {
+  var t = sessionStorage.getItem('pf_token') || localStorage.getItem('pf_token');
+  var u = sessionStorage.getItem('pf_user') || localStorage.getItem('pf_user');
+  if (t && u) { try { authUser = JSON.parse(u); } catch(e) {} }
+  updateAuthUI();
+}
+function updateAuthUI() {
+  var btn = $('nav-login-btn');
+  if (authUser && authUser.email) {
+    btn.textContent = authUser.email.split('@')[0];
+    btn.style.borderColor = '#22D3EE';
+    btn.style.color = '#22D3EE';
+  } else {
+    btn.textContent = 'Login';
+    btn.style.borderColor = 'rgba(255,255,255,0.3)';
+    btn.style.color = '#fff';
+  }
+}
+function toggleUserMenu() {
+  if (authUser && authUser.email) {
+    var existing = document.querySelector('.user-menu');
+    if (existing) { existing.remove(); return; }
+    var m = document.createElement('div');
+    m.className = 'user-menu show';
+    m.style.cssText = 'position:absolute;top:calc(100%+8px);right:0;background:#fff;border:1px solid #E2E8F0;border-radius:10px;padding:8px 0;box-shadow:0 8px 30px rgba(0,0,0,0.12);min-width:180px;z-index:100';
+    m.innerHTML = '<div class="user-menu-item" style="padding:8px 16px;font-size:12px;color:#475569;cursor:pointer"><strong>'+esc(authUser.email)+'</strong></div><div class="user-menu-item danger" style="padding:8px 16px;font-size:12px;color:#ef4444;cursor:pointer" onclick="logout()">Logout</div>';
+    var navRight = document.querySelector('.nav-right');
+    navRight.style.position = 'relative';
+    navRight.appendChild(m);
+    document.addEventListener('click', function handler(e) {
+      if (!navRight.contains(e.target)) { m.remove(); document.removeEventListener('click', handler); }
+    }, { once: true });
+  } else {
+    showAuth();
+  }
+}
+function showAuth() { $('auth-overlay').classList.add('show'); }
+function hideAuth() { $('auth-overlay').classList.remove('show'); }
+function toggleAuthMode() {
+  authMode = authMode === 'login' ? 'register' : 'login';
+  $('auth-title').textContent = authMode === 'login' ? 'Login' : 'Register';
+  $('auth-sub').textContent = authMode === 'login' ? 'Access your docking pipeline' : 'Create your docking pipeline account';
+  $('auth-btn').textContent = authMode === 'login' ? 'Login' : 'Register';
+  $('auth-toggle').textContent = authMode === 'login' ? "Don't have an account? Register" : 'Already have an account? Login';
+  $('auth-name-group').style.display = authMode === 'register' ? 'block' : 'none';
+  $('auth-error').classList.remove('show');
+}
+async function handleAuth() {
+  var email = $('auth-email').value.trim();
+  var pass = $('auth-pass').value;
+  var name = $('auth-name') ? $('auth-name').value.trim() : '';
+  var errEl = $('auth-error');
+  errEl.classList.remove('show');
+  if (!email || !pass) { errEl.textContent = 'Email and password are required.'; errEl.classList.add('show'); return; }
+  var endpoint = authMode === 'login' ? '/auth/login' : '/auth/register';
+  var body = { email, password: pass };
+  if (authMode === 'register') body.name = name || email.split('@')[0];
+  try {
+    var r = await fetch(API + endpoint, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });
+    var d = await r.json();
+    if (!r.ok) { errEl.textContent = d.error || 'Authentication failed'; errEl.classList.add('show'); return; }
+    if (authMode === 'register') {
+      authMode = 'login';
+      toggleAuthMode();
+      errEl.textContent = 'Registration successful! Please login.';
+      errEl.style.color = 'var(--bio)';
+      errEl.classList.add('show');
+      return;
+    }
+    sessionStorage.setItem('pf_token', d.token || d.access_token || 'tok_'+Date.now());
+    sessionStorage.setItem('pf_user', JSON.stringify({email:d.email||email, name:d.name||name, role:d.role||'user'}));
+    authUser = JSON.parse(sessionStorage.getItem('pf_user'));
+    updateAuthUI();
+    hideAuth();
+  } catch(e) { errEl.textContent = 'Network error: '+e.message; errEl.classList.add('show'); }
+}
+function logout() {
+  sessionStorage.removeItem('pf_token'); sessionStorage.removeItem('pf_user');
+  localStorage.removeItem('pf_token'); localStorage.removeItem('pf_user');
+  authUser = null; updateAuthUI();
+  document.querySelectorAll('.user-menu').forEach(function(el){el.remove();});
+  location.reload();
+}
+
+// ── Payment ─────────────────────────────────────────────────────────────
+function openPayModal(plan, name, amount) {
+  $('pay-plan').value = plan;
+  $('pay-title').textContent = 'Subscribe to ' + name;
+  $('pay-amount').textContent = '\u20B9' + amount;
+  $('pay-overlay').classList.add('show');
+}
+function copyUpi() {
+  var el = $('pay-upi-id');
+  navigator.clipboard.writeText(el.textContent).catch(function(){});
+  el.style.borderColor = 'var(--bio)';
+  setTimeout(function(){ el.style.borderColor = ''; }, 1500);
+}
+async function verifyPayment() {
+  var txn = $('pay-txn').value.trim();
+  if (!txn) { alert('Enter transaction ID'); return; }
+  try {
+    var r = await fetch(API + '/api/payments/verify', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ plan:$('pay-plan').value, transaction_id:txn }) });
+    var d = await r.json();
+    if (r.ok) { alert('Payment verified! Your plan is active.'); $('pay-overlay').classList.remove('show'); location.reload(); }
+    else { alert(d.error || 'Verification failed'); }
+  } catch(e) { alert('Network error'); }
+}
+
+// ── Slider ──────────────────────────────────────────────────────────────
+$('top-n-slider').addEventListener('input', function() {
+  $('top-n-val').textContent = this.value;
+});
+
+// ── Sequence counter ────────────────────────────────────────────────────
+$('protein-seq').addEventListener('input', function() {
+  var clean = this.value.replace(/[^A-Za-z]/g,'');
+  $('aa-len').textContent = clean.length;
+  clean = clean.toUpperCase().replace(/[^ACDEFGHIKLMNPQRSTVWY]/g,'');
+  if (clean.length > 0 && clean.length < 10) {
+    this.classList.add('error');
+    $('seq-error').classList.add('show');
+  } else {
+    this.classList.remove('error');
+    $('seq-error').classList.remove('show');
+  }
+});
+$('ligand-smiles').addEventListener('input', function() {
+  var lines = this.value.split('\n').filter(function(l){return l.trim().length>0});
+  $('smiles-count').textContent = lines.length;
+});
+
+// ── Example loaders ─────────────────────────────────────────────────────
+function loadExample() {
+  $('protein-seq').value = 'MKTAYIAKQRQISFVKSHFSRQLEERLGLIEVQAPDHERGLVDRFYKVELAPTHKGGFGLRGDGFNICKDG';
+  $('aa-len').textContent = $('protein-seq').value.length;
+  $('ligand-smiles').value = 'CC(=O)Oc1ccccc1C(=O)O';
+  $('smiles-count').textContent = '1';
+  $('top-n-slider').value = '10';
+  $('top-n-val').textContent = '10';
+  $('protein-seq').classList.remove('error');
+  $('seq-error').classList.remove('show');
+  $('slow-warn').style.display = 'block';
+}
+function loadKinaseExample() {
+  $('protein-seq').value = 'GAGVAVGKSAVVMKTVQGVDGQYKVLIVRHKVRDVSGSSGVSDSPDASEGNATAANAQGPGTDVGLDDVTRKAVGRVRPLVLSREVTQDEVAVIGTVLQNRGVVFQGRVVKGVGRTGRLGTVRLEVVWDTEGLVEIMLGKVVNAAEVVAEGRAMREYLGRRVENLVMTAGALRGGEGVVLGDPAEVGIAGHTPHWSGRYVVRGRKGINWQGEVLVVNVNRSDGKLYLAGAGESGLSGRVVGLGTGLAHERALLADSGVLVDVGGTTGERGRRLRTVGTGMPTVVVAVSRGGVGGNGLADLVRGWGTHIYGVVAGETQEGVILVGAVNGAVMGVAVGGPQQVAGKTGGTATLVGDTVFGAAGVGSALLGLGQGAGVMGVM';
+  $('aa-len').textContent = $('protein-seq').value.length;
+  $('ligand-smiles').value = 'CN1C=NC2=C1C(=O)N(C(=O)N2C)C\nCOc1cc2ncnc(c2cc1OCCN(C)C)Nc3cccc(c3)C#C\nCC1=C(C=C(C=C1)NC(=O)C2=CC=C(C=C2)CN3CCN(CC3)C)NC4=NC=CC(=N4)C5=CN=CC=C5\nCC(C)(C)NCC(O)c1ccc(O)c(CO)c1\nCN(C)CC(O)c1ccc(O)c(CO)c1';
+  $('smiles-count').textContent = '5';
+  $('top-n-slider').value = '20';
+  $('top-n-val').textContent = '20';
+  $('protein-seq').classList.remove('error');
+  $('seq-error').classList.remove('show');
+  $('slow-warn').style.display = 'block';
+}
+
+// ── Main docking runner ─────────────────────────────────────────────────
+async function runDocking() {
+  var seq = $('protein-seq').value.replace(/[^A-Za-z]/g,'').toUpperCase();
+  var smilesRaw = $('ligand-smiles').value;
+  var smilesList = smilesRaw.split('\n').map(function(s){return s.trim()}).filter(function(s){return s.length>0});
+  var topN = parseInt($('top-n-slider').value) || 50;
+
+  // Validate
+  var validAA = seq.replace(/[^ACDEFGHIKLMNPQRSTVWY]/g,'');
+  if (validAA.length < 10) {
+    $('seq-error').textContent = 'Protein sequence must contain at least 10 valid amino acid residues.';
+    $('seq-error').classList.add('show');
+    $('protein-seq').classList.add('error');
+    return;
+  }
+  if (smilesList.length === 0) {
+    $('smiles-error').classList.add('show');
+    return;
+  }
+  $('seq-error').classList.remove('show');
+  $('smiles-error').classList.remove('show');
+  $('protein-seq').classList.remove('error');
+
+  // Reset pipeline UI
+  resetPipeline();
+  $('empty-state').style.display = 'none';
+  $('results-wrap').style.display = 'none';
+  $('results-body').innerHTML = '';
+  $('run-btn').disabled = true;
+  $('run-spinner').classList.add('show');
+  $('run-btn-text').textContent = 'Running...';
+
+  // Mark stage 1 running
+  setStage(1, 'running', 'Predicting structure...');
+
+  try {
+    var r = await fetch(API + '/api/primer/docking/consensus', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sequence: validAA, ligand_smiles_list: smilesList, top_n: topN })
+    });
+    var result = await r.json();
+
+    if (!r.ok) {
+      setStage(1, 'fail', result.error || 'Request failed');
+      showError(result.error || 'Server returned status ' + r.status);
+      return;
+    }
+    if (result.status === 'error') {
+      setStage(1, 'fail', result.message || 'Pipeline error');
+      showError(result.message || 'Pipeline returned an error');
+      return;
+    }
+
+    displayResults(result);
+  } catch(e) {
+    setStage(1, 'fail', 'Network error');
+    showError('Network error: ' + e.message);
+  } finally {
+    $('run-btn').disabled = false;
+    $('run-spinner').classList.remove('show');
+    $('run-btn-text').textContent = 'Run Consensus Docking';
+    $('slow-warn').style.display = 'none';
+  }
+}
+
+function setStage(num, status, msg) {
+  var step = $('step-'+num);
+  var icon = $('step-icon-'+num);
+  var sub = $('step-sub-'+num);
+  var st = $('step-status-'+num);
+  ['done','running','fail','stub'].forEach(function(c){step.classList.remove(c)});
+  ['pending','done-ic','running-ic','fail-ic'].forEach(function(c){icon.classList.remove(c)});
+  if (status === 'done') { step.classList.add('done'); icon.classList.add('done-ic'); icon.textContent = '\u2713'; st.className = 'step-status pass'; st.textContent = 'PASS'; }
+  else if (status === 'running') { step.classList.add('running'); icon.classList.add('running-ic'); st.className = 'step-status run'; st.textContent = 'RUNNING'; }
+  else if (status === 'fail') { step.classList.add('fail'); icon.classList.add('fail-ic'); icon.textContent = '!'; st.className = 'step-status fail'; st.textContent = 'FAIL'; }
+  else { icon.classList.add('pending'); st.textContent = ''; }
+  if (msg) sub.textContent = msg;
+}
+
+function resetPipeline() {
+  for (var i = 1; i <= 3; i++) {
+    var step = $('step-'+i);
+    var icon = $('step-icon-'+i);
+    var sub = $('step-sub-'+i);
+    var st = $('step-status-'+i);
+    ['done','running','fail','stub'].forEach(function(c){step.classList.remove(c)});
+    ['pending','done-ic','running-ic','fail-ic'].forEach(function(c){icon.classList.remove(c)});
+    icon.classList.add('pending');
+    icon.textContent = '' + i;
+    st.textContent = '';
+    st.className = 'step-status';
+    if (i === 1) sub.textContent = 'Awaiting input';
+    else if (i === 2) sub.textContent = 'Awaiting stage 1';
+    else sub.textContent = 'Awaiting stage 2';
+  }
+}
+
+// ══ Results display ═══════════════════════════════════════════════════
+function displayResults(result) {
+  $('results-wrap').style.display = 'block';
+  $('empty-state').style.display = 'none';
+
+  var html = '';
+
+  // Stage 1: ESMFold
+  if (result.stage1) {
+    setStage(1, 'done', 'pLDDT: ' + (result.stage1.plddt_score || 'N/A') + '%');
+    var s1 = result.stage1;
+    html += '<div class="result-card pass-card">' +
+      '<div class="rc-head"><div class="rc-head-left"><div class="rank-badge top" style="background:var(--primary)">1</div><div><div style="font-weight:700;font-size:13px">ESMFold — Structure Prediction</div><div style="font-size:11px;color:var(--text2)">' + (s1.tool || 'Local ESMFold') + '</div></div></div><div class="badge bio">' + (s1.plddt_score || '?') + '% pLDDT</div></div>' +
+      '<div class="rc-body">' +
+      '<div class="stage-detail"><div class="stage-metric"><span class="label">Sequence Length</span><span class="value">' + (s1.sequence_length || '?') + ' aa</span></div></div>' +
+      '<div class="stage-detail"><div class="stage-metric"><span class="label">Mean pLDDT</span><span class="value">' + (s1.plddt_score || 'N/A') + '%</span></div></div>' +
+      '<div class="stage-detail"><div class="stage-metric"><span class="label">Structure</span><span class="value" style="font-size:10px;color:var(--muted)">' + (s1.pdb_string ? (s1.pdb_string.length + ' atoms in PDB') : 'N/A') + '</span></div></div>' +
+      (s1.message ? '<div class="info-card" style="margin-top:10px;font-size:11px">' + esc(s1.message) + '</div>' : '') +
+      '</div></div>';
+  } else {
+    setStage(1, 'fail', 'Stage skipped/failed');
+  }
+
+  // Stage 2: Vina
+  if (result.stage2) {
+    setStage(2, 'done', result.stage2.successful + ' / ' + result.stage2.screened + ' screened');
+    var s2 = result.stage2;
+    html += '<div class="result-card pass-card">' +
+      '<div class="rc-head"><div class="rc-head-left"><div class="rank-badge" style="background:var(--primary)">2</div><div><div style="font-weight:700;font-size:13px">AutoDock Vina — Broad Screen</div><div style="font-size:11px;color:var(--text2)">Physics-based scoring</div></div></div><div class="badge amber">Best: ' + (s2.best_vina_score ? s2.best_vina_score.toFixed(2) : 'N/A') + ' kcal/mol</div></div>' +
+      '<div class="rc-body">' +
+      '<div class="stage-detail"><div class="stage-metric"><span class="label">Ligands Screened</span><span class="value">' + s2.screened + '</span></div></div>' +
+      '<div class="stage-detail"><div class="stage-metric"><span class="label">Successful</span><span class="value" style="color:var(--bio)">' + s2.successful + '</span></div></div>' +
+      (s2.failed > 0 ? '<div class="stage-detail"><div class="stage-metric"><span class="label">Failed</span><span class="value" style="color:var(--red)">' + s2.failed + '</span></div></div>' : '') +
+      '<div class="stage-detail"><div class="stage-metric"><span class="label">Top N Selected</span><span class="value">' + s2.top_n_selected + '</span></div></div>' +
+      '<div class="stage-detail"><div class="stage-metric"><span class="label">Best Vina Score</span><span class="value" style="font-weight:700;color:' + ((s2.best_vina_score||0) < -7 ? 'var(--bio)' : (s2.best_vina_score||0) < -5 ? 'var(--amber)' : 'var(--red)') + '">' + (s2.best_vina_score ? s2.best_vina_score.toFixed(2) + ' kcal/mol' : 'N/A') + '</span></div></div>' +
+      '</div></div>';
+  } else {
+    setStage(2, 'fail', 'Stage skipped/failed');
+  }
+
+  // Stage 3: GNINA
+  var hasGnina = result.stage3 && result.stage3.status !== 'skipped';
+  if (hasGnina) {
+    setStage(3, 'done', result.stage3.refined + ' candidates refined');
+    var s3 = result.stage3;
+    html += '<div class="result-card pass-card">' +
+      '<div class="rc-head"><div class="rc-head-left"><div class="rank-badge" style="background:var(--primary)">3</div><div><div style="font-weight:700;font-size:13px">GNINA — CNN Re-scoring</div><div style="font-size:11px;color:var(--text2)">Deep learning refinement</div></div></div><div class="badge bio">Best: ' + (s3.best_gnina_score ? s3.best_gnina_score.toFixed(2) : 'N/A') + ' kcal/mol</div></div>' +
+      '<div class="rc-body">' +
+      '<div class="stage-detail"><div class="stage-metric"><span class="label">Candidates Refined</span><span class="value">' + s3.refined + '</span></div></div>' +
+      '<div class="stage-detail"><div class="stage-metric"><span class="label">Best GNINA Score</span><span class="value">' + (s3.best_gnina_score ? s3.best_gnina_score.toFixed(2) + ' kcal/mol' : 'N/A') + '</span></div></div>' +
+      '</div></div>';
+  } else {
+    setStage(3, result.stage3 && result.stage3.status === 'skipped' ? 'done' : 'stub', 'GNINA not available — using Vina scores');
+  }
+
+  // Ranked results table
+  var ranked = result.ranked_results || [];
+  if (ranked.length > 0) {
+    html += '<div class="result-card">' +
+      '<div class="rc-head"><div class="rc-head-left"><div style="font-weight:700;font-size:13px">Ranked Molecules</div></div><div style="font-size:10px;color:var(--muted)">' + ranked.length + ' molecules</div></div>' +
+      '<div class="rc-body"><div class="dock-table-wrap"><table class="dock-table">' +
+      '<thead><tr><th>Rank</th><th>SMILES</th><th>Vina Score</th>' + (hasGnina ? '<th>GNINA Score</th>' : '') + '<th>Consensus</th></tr></thead><tbody>';
+
+    for (var i = 0; i < ranked.length; i++) {
+      var mol = ranked[i];
+      var vina = mol.vina_score;
+      var gnina = mol.gnina_score;
+      var cs = mol.consensus_score || '—';
+      var vClass = vina < -7 ? 'score-good' : (vina < -5 ? 'score-ok' : 'score-bad');
+      var gClass = gnina !== null && gnina !== undefined ? (gnina < -7 ? 'score-good' : (gnina < -5 ? 'score-ok' : 'score-bad')) : '';
+      html += '<tr>' +
+        '<td><span class="rank-num">#' + (i + 1) + '</span></td>' +
+        '<td style="font-size:10px;max-width:200px;word-break:break-all">' + esc(mol.smiles || '') + '</td>' +
+        '<td><span class="' + vClass + '">' + (vina !== null && vina !== undefined ? vina.toFixed(2) : '—') + '</span></td>' +
+        (hasGnina ? '<td><span class="' + gClass + '">' + (gnina !== null && gnina !== undefined ? gnina.toFixed(2) : '—') + '</span></td>' : '') +
+        '<td><span style="font-weight:700">' + (typeof cs === 'number' ? cs.toFixed(3) : cs) + '</span></td>' +
+        '</tr>';
+    }
+    html += '</tbody></table></div></div></div>';
+
+    // Best molecule highlight
+    var best = result.best_molecule;
+    if (best) {
+      html += '<div class="success-card">' +
+        '<strong>Best Molecule (Rank #1):</strong> ' + esc(best.smiles || '') + '<br>' +
+        'Vina: ' + (best.vina_score !== null && best.vina_score !== undefined ? best.vina_score.toFixed(2) : '—') + ' kcal/mol' +
+        (best.gnina_score !== null && best.gnina_score !== undefined ? ' | GNINA: ' + best.gnina_score.toFixed(2) + ' kcal/mol' : '') +
+        ' | Consensus: ' + (best.consensus_score ? best.consensus_score.toFixed(3) : '—') +
+        '</div>';
+    }
+
+    // Download button
+    html += '<div class="dl-row" style="margin-top:16px;display:flex;gap:8px">' +
+      '<button class="btn-secondary btn-sm" onclick="downloadResults(\'json\')">Download JSON</button>' +
+      '<button class="btn-secondary btn-sm" onclick="downloadResults(\'csv\')">Download CSV</button>' +
+      '</div>';
+  }
+
+  // Elapsed time
+  if (result.stage1 && result.stage1.computation_time) {
+    $('elapsed-chip').textContent = 'ESMFold: ' + result.stage1.computation_time;
+  }
+
+  $('results-body').innerHTML = html;
+  $('results-wrap').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  // Store results for download
+  window._lastDockingResult = result;
+}
+
+function showError(msg) {
+  $('results-wrap').style.display = 'block';
+  $('results-body').innerHTML = '<div class="error-card">' + esc(msg) + '<br><button class="btn-secondary btn-sm" style="margin-top:8px" onclick="$(\'results-wrap\').style.display=\'none\';$(\'empty-state\').style.display=\'block\'">Dismiss</button></div>';
+}
+
+function downloadResults(fmt) {
+  var result = window._lastDockingResult;
+  if (!result) return;
+  var ranked = result.ranked_results || [];
+  var content, mime, ext;
+  if (fmt === 'csv') {
+    var hasG = result.stage3 && result.stage3.status !== 'skipped';
+    var header = 'Rank,SMILES,Vina_Score' + (hasG ? ',GNINA_Score' : '') + ',Consensus_Score';
+    var rows = ranked.map(function(m,i){
+      return (i+1) + ',"' + esc(m.smiles||'') + '",' + (m.vina_score!==null&&m.vina_score!==undefined?m.vina_score:'') + (hasG ? ',' + (m.gnina_score!==null&&m.gnina_score!==undefined?m.gnina_score:'') : '') + ',' + (m.consensus_score!==null&&m.consensus_score!==undefined?m.consensus_score:'');
+    });
+    content = header + '\n' + rows.join('\n');
+    mime = 'text/csv';
+    ext = 'csv';
+  } else {
+    content = JSON.stringify(result, null, 2);
+    mime = 'application/json';
+    ext = 'json';
+  }
+  var blob = new Blob([content], {type: mime});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = 'docking_results.' + ext;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ── Init ────────────────────────────────────────────────────────────────
+loadAuth();
+
+// Close modals on overlay click
+document.getElementById('auth-overlay').addEventListener('click', function(e) {
+  if (e.target === this) hideAuth();
+});
+document.getElementById('pay-overlay').addEventListener('click', function(e) {
+  if (e.target === this) { document.getElementById('pay-overlay').classList.remove('show'); }
+});
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') { hideAuth(); document.getElementById('pay-overlay').classList.remove('show'); }
+});
+
+var hamburger = document.getElementById('hamburger');
+var mobileMenu = document.getElementById('mobile-menu');
+if (hamburger && mobileMenu) {
+  hamburger.addEventListener('click', function() {
+    hamburger.classList.toggle('active');
+    mobileMenu.classList.toggle('open');
+  });
+  document.addEventListener('click', function(e) {
+    if (!hamburger.contains(e.target) && !mobileMenu.contains(e.target)) {
+      hamburger.classList.remove('active');
+      mobileMenu.classList.remove('open');
+    }
+  });
+}
+</script>
+
+<script src="/auth-shared.js"></script>
+
+<!-- AI Widget -->
+<div id="ai-widget" style="position:fixed;bottom:24px;right:24px;z-index:9999;font-family:Inter,sans-serif">
+  <button id="ai-widget-toggle" aria-label="AI Assistant" style="width:56px;height:56px;border-radius:50%;background:#0F172A;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;box-shadow:0 4px 20px rgba(15,23,42,.3);transition:transform .2s,box-shadow .2s"
+    onclick="var p=document.getElementById('ai-widget-panel');if(p.hidden){p.hidden=false;setTimeout(function(){p.classList.add('visible')},10)}else{p.classList.remove('visible');setTimeout(function(){p.hidden=true},200)}">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+  </button>
+  <div id="ai-widget-panel" class="ai-widget-panel" hidden style="position:absolute;bottom:72px;right:0;width:320px;background:#fff;border-radius:12px;box-shadow:0 10px 40px rgba(0,0,0,.15);border:1px solid #E2E8F0;overflow:hidden;opacity:0;transform:translateY(10px);transition:opacity .2s,transform .2s">
+    <div class="ai-widget-header" style="display:flex;justify-content:space-between;align-items:center;padding:16px;border-bottom:1px solid #E2E8F0;background:#F8FAFC">
+      <span style="font-weight:600;font-size:15px;color:#0F172A">AI Assistant</span>
+      <button class="ai-widget-close" onclick="var p=document.getElementById('ai-widget-panel');p.classList.remove('visible');setTimeout(function(){p.hidden=true},200)" style="background:none;border:none;font-size:20px;cursor:pointer;color:#475569;line-height:1;padding:4px">&times;</button>
+    </div>
+    <div class="ai-widget-body" style="padding:16px">
+      <p style="margin:0 0 12px;font-size:13px;color:#475569;font-weight:500">How can I help you?</p>
+      <div class="ai-widget-options" style="display:flex;flex-direction:column;gap:8px">
+        <button class="ai-widget-btn" onclick="window.location.href='/docs/getting-started.html'" style="width:100%;text-align:left;padding:12px 14px;border:1px solid #E2E8F0;border-radius:8px;background:transparent;font-family:Inter,sans-serif;font-size:13px;font-weight:500;color:#0F172A;cursor:pointer;transition:background .15s">Getting Started Guide</button>
+        <button class="ai-widget-btn" onclick="window.location.href='/molecular-docking-guide.html'" style="width:100%;text-align:left;padding:12px 14px;border:1px solid #E2E8F0;border-radius:8px;background:transparent;font-family:Inter,sans-serif;font-size:13px;font-weight:500;color:#0F172A;cursor:pointer;transition:background .15s">Docking Guide</button>
+        <button class="ai-widget-btn" onclick="window.location.href='/faq.html'" style="width:100%;text-align:left;padding:12px 14px;border:1px solid #E2E8F0;border-radius:8px;background:transparent;font-family:Inter,sans-serif;font-size:13px;font-weight:500;color:#0F172A;cursor:pointer;transition:background .15s">View FAQ</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

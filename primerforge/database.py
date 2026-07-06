@@ -2,8 +2,8 @@
 """
 VigyanLLM PostgreSQL Database Layer
 ======================================
-Replaces the SQLite connection with PostgreSQL (psycopg2).
-Connects to the containerized PostgreSQL via Docker private network.
+Manages PostgreSQL connections through a psycopg2 ThreadedConnectionPool
+to prevent exhausting max_connections during traffic spikes.
 
 Usage in app:
     from primerforge.database import get_db, close_db, init_db
@@ -15,16 +15,16 @@ import os
 import time
 import logging
 from contextlib import contextmanager
+from urllib.parse import urlparse
 
 import psycopg2
+import psycopg2.pool
 import psycopg2.extras
 from flask import g
 
 logger = logging.getLogger("primerforge.database")
 
-# ── Connection Configuration ──────────────────────────────────────────────
-# When running inside Docker (via docker-compose), use the service name.
-# When running locally for development, use localhost + exposed port.
+# ── Connection Pool Configuration ─────────────────────────────────────────
 
 DATABASE_URL = os.environ.get("DATABASE_URL")
 if not DATABASE_URL:
@@ -34,48 +34,84 @@ if not DATABASE_URL:
         "  postgresql://user:password@host:5432/dbname"
     )
 
-# Parse from URL or use individual vars (fallback)
-DB_CONFIG = {
-    "host": os.environ.get("PGHOST", "vigyanpilot_postgres"),
-    "port": int(os.environ.get("PGPORT", "5432")),
-    "dbname": os.environ.get("PGDATABASE", "vigyanpilot_db"),
-    "user": os.environ.get("PGUSER", "vigyanpilot_app"),
-    "password": os.environ.get("PGPASSWORD", ""),
-    "connect_timeout": 5,
-    "keepalives": 1,
-    "keepalives_idle": 30,
-    "keepalives_interval": 10,
-    "keepalives_count": 5,
-    "options": "-c statement_timeout=30000 -c idle_in_transaction_session_timeout=30000",
-}
+POOL_MIN = int(os.environ.get("DB_POOL_MIN", "2"))
+POOL_MAX = int(os.environ.get("DB_POOL_MAX", "10"))
+POOL_TIMEOUT = int(os.environ.get("DB_POOL_TIMEOUT", "5"))
+
+_pool = None
+
+
+def _get_pool():
+    """Lazy-init and return the global connection pool."""
+    global _pool
+    if _pool is None:
+        try:
+            _pool = psycopg2.pool.ThreadedConnectionPool(
+                POOL_MIN, POOL_MAX,
+                dsn=DATABASE_URL,
+                cursor_factory=psycopg2.extras.RealDictCursor,
+                connect_timeout=POOL_TIMEOUT,
+                keepalives=1,
+                keepalives_idle=30,
+                keepalives_interval=10,
+                keepalives_count=5,
+            )
+            logger.info(
+                "PostgreSQL pool created (min=%d, max=%d, timeout=%ds)",
+                POOL_MIN, POOL_MAX, POOL_TIMEOUT,
+            )
+        except psycopg2.OperationalError as e:
+            logger.error(f"PostgreSQL pool creation failed: {e}")
+            raise
+    return _pool
 
 
 def _get_connection():
-    """Create a new PostgreSQL connection with proper settings."""
+    """Get a connection from the pool. Retries once on failure."""
+    pool = _get_pool()
     try:
-        # Try DATABASE_URL first (standard format)
-        if DATABASE_URL and "://" in DATABASE_URL:
-            conn = psycopg2.connect(DATABASE_URL,
-                cursor_factory=psycopg2.extras.RealDictCursor,
-                keepalives=1, keepalives_idle=30,
-                keepalives_interval=10, keepalives_count=5,
-                connect_timeout=5)
-        else:
-            conn = psycopg2.connect(**DB_CONFIG, cursor_factory=psycopg2.extras.RealDictCursor)
-
+        conn = pool.getconn()
+        conn.autocommit = False
+        # Reset session state for the borrowed connection
+        try:
+            with conn.cursor() as cur:
+                cur.execute("SET statement_timeout = '30s'")
+                cur.execute("SET idle_in_transaction_session_timeout = '30s'")
+        except Exception:
+            pass
+        return conn
+    except psycopg2.pool.PoolError as e:
+        logger.warning(f"Pool exhausted (max={POOL_MAX}), retrying once: {e}")
+        time.sleep(0.5)
+        conn = pool.getconn()
         conn.autocommit = False
         return conn
-    except psycopg2.OperationalError as e:
-        logger.error(f"PostgreSQL connection failed: {e}")
-        raise
+
+
+def _put_connection(conn):
+    """Return a connection to the pool safely."""
+    if conn is None:
+        return
+    pool = _get_pool()
+    try:
+        if conn.closed == 0:
+            try:
+                conn.rollback()
+            except Exception:
+                pass
+            pool.putconn(conn)
+        else:
+            pool.putconn(conn, key=None)
+    except Exception as e:
+        logger.warning(f"Error returning connection to pool: {e}")
 
 
 def get_db():
-    """Get request-scoped database connection (stored in Flask's g).
+    """Get a request-scoped connection from the pool (stored in Flask's g).
 
-    Falls back to a standalone connection when no Flask request context is
-    available (e.g., background threads running the pipeline). Callers in
-    background contexts are responsible for closing the connection.
+    When no Flask request context is available (e.g. background threads),
+    falls back to a standalone pool connection. Callers in background
+    contexts must close the connection via close_db() or a context manager.
     """
     try:
         if "db" not in g:
@@ -86,23 +122,23 @@ def get_db():
 
 
 def close_db(e=None):
-    """Close database connection at end of request."""
-    db = g.pop("db", None)
-    if db is not None:
-        try:
-            if db.closed == 0:
-                db.close()
-        except Exception as e:
-            logger.warning("Error closing DB connection: %s", e)
+    """Return the request-scoped connection to the pool at end of request."""
+    conn = g.pop("db", None)
+    _put_connection(conn)
 
 
 def get_db_standalone():
     """
-    Get a standalone connection (not request-scoped).
+    Get a standalone pool connection (not request-scoped).
     Used by webhooks and background tasks that don't have Flask request context.
-    Caller is responsible for closing.
+    Caller MUST return the connection via put_db_standalone().
     """
     return _get_connection()
+
+
+def put_db_standalone(conn):
+    """Return a connection obtained via get_db_standalone() back to the pool."""
+    _put_connection(conn)
 
 
 @contextmanager
@@ -113,7 +149,8 @@ def db_transaction():
         with db_transaction() as (conn, cur):
             cur.execute("INSERT INTO ...")
             cur.execute("UPDATE ...")
-        # Auto-commits on success, rolls back on exception
+        # Auto-commits on success, rolls back on exception.
+        # Connection is returned to pool on exit.
     """
     conn = get_db()
     cur = conn.cursor()
@@ -125,6 +162,13 @@ def db_transaction():
         raise
     finally:
         cur.close()
+        # If no Flask request context, return conn to pool manually
+        try:
+            from flask import g as _g
+            if "db" not in _g:
+                _put_connection(conn)
+        except (RuntimeError, ImportError):
+            _put_connection(conn)
 
 
 def set_rls_context(user_id: int):
@@ -151,7 +195,9 @@ def init_db():
     Verify PostgreSQL connection on startup.
     Schema is handled by initdb SQL files in Docker, not by the app.
     This just ensures connectivity and creates token_balances for existing users.
+    Manages its own connection from the pool.
     """
+    conn = None
     try:
         conn = _get_connection()
         cur = conn.cursor()
@@ -190,12 +236,14 @@ def init_db():
 
         conn.commit()
         cur.close()
-        conn.close()
         logger.info("Database initialization check complete.")
     except Exception as e:
         logger.error(f"Database init check failed: {e}")
         # Don't crash the app — it might be starting before Postgres is ready
         # Docker healthcheck + depends_on handles ordering
+    finally:
+        if conn is not None:
+            _put_connection(conn)
 
 
 # ── Helper Functions ──────────────────────────────────────────────────────
@@ -222,9 +270,36 @@ def log_audit(action: str, accession: str = "", job_id: str = "", gene_symbol: s
         logger.debug("Audit log skipped: %s", e)
 
 
+def _in_request_context():
+    """Return True if we're inside a Flask request context."""
+    try:
+        from flask import g as _g
+        return True
+    except (RuntimeError, ImportError):
+        return False
+
+
+def _get_conn_for_query():
+    """
+    Get a connection appropriate for a one-shot query helper.
+    Inside a request context, use get_db() (teardown returns to pool).
+    Outside, use get_db_standalone() (caller must return via _put_conn_for_query).
+    Returns (conn, standalone).
+    """
+    if _in_request_context():
+        return get_db(), False
+    return get_db_standalone(), True
+
+
+def _put_conn_for_query(conn, standalone: bool):
+    """Return a connection obtained via _get_conn_for_query if standalone."""
+    if standalone and conn is not None:
+        put_db_standalone(conn)
+
+
 def fetch_one(query: str, params: tuple = None) -> dict:
     """Execute query and return single row as dict, or None."""
-    db = get_db()
+    db, standalone = _get_conn_for_query()
     cur = db.cursor()
     try:
         cur.execute(query, params or ())
@@ -234,12 +309,13 @@ def fetch_one(query: str, params: tuple = None) -> dict:
         raise
     finally:
         cur.close()
+        _put_conn_for_query(db, standalone)
     return dict(row) if row else None
 
 
 def fetch_all(query: str, params: tuple = None) -> list:
     """Execute query and return all rows as list of dicts."""
-    db = get_db()
+    db, standalone = _get_conn_for_query()
     cur = db.cursor()
     try:
         cur.execute(query, params or ())
@@ -249,12 +325,13 @@ def fetch_all(query: str, params: tuple = None) -> list:
         raise
     finally:
         cur.close()
+        _put_conn_for_query(db, standalone)
     return [dict(r) for r in rows]
 
 
 def execute(query: str, params: tuple = None, commit: bool = True) -> int:
     """Execute a write query. Returns rowcount. Auto-commits by default."""
-    db = get_db()
+    db, standalone = _get_conn_for_query()
     cur = db.cursor()
     try:
         cur.execute(query, params or ())
@@ -266,12 +343,13 @@ def execute(query: str, params: tuple = None, commit: bool = True) -> int:
         raise
     finally:
         cur.close()
+        _put_conn_for_query(db, standalone)
     return rowcount
 
 
 def execute_returning(query: str, params: tuple = None, commit: bool = True) -> dict:
     """Execute INSERT ... RETURNING and return the inserted row."""
-    db = get_db()
+    db, standalone = _get_conn_for_query()
     cur = db.cursor()
     try:
         cur.execute(query, params or ())
@@ -283,4 +361,5 @@ def execute_returning(query: str, params: tuple = None, commit: bool = True) -> 
         raise
     finally:
         cur.close()
+        _put_conn_for_query(db, standalone)
     return dict(row) if row else None

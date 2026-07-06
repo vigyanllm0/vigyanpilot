@@ -342,26 +342,47 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
 <div>
 <div class="panel-card">
-  <div class="panel-head"><h3>Sequences</h3></div>
+  <div class="panel-head">
+    <h3>Sequences</h3>
+    <div style="display:flex;gap:8px;align-items:center">
+      <span class="tab-link" data-tab="paste" style="font-size:11px;cursor:pointer;padding:4px 10px;border-radius:4px;background:var(--primary);color:#fff;font-weight:600">Paste</span>
+      <span class="tab-link" data-tab="upload" style="font-size:11px;cursor:pointer;padding:4px 10px;border-radius:4px;background:var(--slate);color:var(--text2);font-weight:500">Upload</span>
+    </div>
+  </div>
   <div class="panel-body">
-    <div class="form-group">
-      <label class="form-label">FASTA Sequences</label>
-      <textarea id="msa-input" class="form-textarea" placeholder="&gt;seq1&#10;ATCGATCGATCG&#10;&gt;seq2&#10;ATCGATCGATCG&#10;&gt;seq3&#10;ATCGATCGATAG" rows="8"></textarea>
-      <div class="char-count"><span id="msa-seq-count">0</span> sequences</div>
+    <div class="tab-pane" id="tab-paste">
+      <div class="form-group">
+        <label class="form-label">FASTA Sequences</label>
+        <textarea id="msa-input" class="form-textarea" placeholder="&gt;seq1&#10;ATCGATCGATCG&#10;&gt;seq2&#10;ATCGATCGATCG&#10;&gt;seq3&#10;ATCGATCGATAG" rows="8"></textarea>
+      </div>
     </div>
-    <div class="form-group">
-      <label class="form-label">FASTA Upload</label>
-      <input type="file" id="msa-upload" accept=".fa,.fasta,.txt,.fna,.aln" class="form-input" style="padding:6px;font-size:12px">
-      <div class="form-hint">Upload a FASTA file with 2+ sequences</div>
+    <div class="tab-pane" id="tab-upload" style="display:none">
+      <div class="form-group">
+        <label class="form-label">FASTA File</label>
+        <div id="drop-zone" style="border:2px dashed var(--slate-border);border-radius:8px;padding:32px;text-align:center;cursor:pointer;transition:border-color .15s;background:var(--slate)">
+          <div style="font-size:32px;margin-bottom:8px">📁</div>
+          <div style="font-size:13px;color:var(--text2)">Drop a FASTA file here or click to browse</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px">Supports .fa, .fasta, .fna, .txt (up to 500MB)</div>
+          <input type="file" id="msa-upload" accept=".fa,.fasta,.txt,.fna,.aln,.faa" style="display:none">
+        </div>
+        <div id="file-info" style="display:none;padding:8px 12px;background:var(--bio-soft);border-radius:6px;margin-top:8px;font-size:12px;color:var(--bio)"></div>
+      </div>
     </div>
+    <div class="char-count" style="padding:0 0 12px"><span id="msa-seq-count">0</span> sequences · <span id="msa-total-bp">0</span> total bp</div>
     <button class="btn-primary" id="btn-msa" style="width:100%;justify-content:center">
       <span class="spinner" id="msa-sp"></span>
       <span id="msa-txt">Run Alignment</span>
     </button>
+    <div id="msa-progress" style="display:none;margin-top:8px">
+      <div style="height:4px;background:var(--slate-border);border-radius:2px;overflow:hidden">
+        <div id="msa-progress-bar" style="height:100%;width:0%;background:var(--primary);border-radius:2px;transition:width .3s"></div>
+      </div>
+      <div id="msa-progress-text" style="font-size:11px;color:var(--muted);margin-top:4px;text-align:center">Processing…</div>
+    </div>
   </div>
 </div>
 
-<div class="panel-card">
+<div class="panel-card" id="msa-downloads" style="display:none">
   <div class="panel-head"><h3>Downloads</h3></div>
   <div class="panel-body">
     <button class="btn-secondary btn-sm" id="btn-dl-fa" style="width:100%;margin-bottom:6px">Download FASTA</button>
@@ -371,13 +392,34 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 </div>
 
 <div>
+<div class="panel-card" id="msa-stats-card" style="display:none">
+  <div class="panel-head"><h3>Alignment Stats</h3></div>
+  <div class="panel-body">
+    <div class="stats-grid" id="msa-stats"></div>
+  </div>
+</div>
+
 <div class="panel-card">
-  <div class="panel-head"><h3>Alignment</h3></div>
+  <div class="panel-head">
+    <h3>Alignment</h3>
+    <div style="display:flex;gap:6px;align-items:center">
+      <span id="msa-page-info" style="font-size:11px;color:var(--muted)"></span>
+      <button class="btn-secondary btn-sm" id="btn-prev" style="padding:3px 8px;font-size:10px">◀</button>
+      <button class="btn-secondary btn-sm" id="btn-next" style="padding:3px 8px;font-size:10px">▶</button>
+    </div>
+  </div>
   <div class="panel-body" id="msa-body">
     <div class="loading-bar" id="msa-loading"><div class="loading-bar-inner"></div></div>
-    <div id="msa-results" style="padding:60px 20px;text-align:center;color:var(--muted);font-size:13px">
-      <div style="font-size:40px;margin-bottom:12px">🧬</div>
-      Paste sequences in FASTA format and click <strong>Run Alignment</strong>
+    <div id="msa-results" style="padding:40px 20px;text-align:center;color:var(--muted);font-size:13px">
+      <div style="font-size:36px;margin-bottom:10px">🧬</div>
+      Start by pasting sequences or uploading a FASTA file (up to 100,000 sequences)
+    </div>
+    <div id="msa-viewer" style="display:none;overflow-x:auto">
+      <div class="msa-wrap"><div class="msa-align" id="msa-align-rows"></div></div>
+      <div style="margin-top:8px"><div style="font-size:10px;color:var(--muted);margin-bottom:4px">Conservation</div>
+        <div class="conservation-bar" id="msa-cons-bar"></div>
+        <div class="conservation-label" style="display:flex;justify-content:space-between;font-size:9px;color:var(--muted)"><span>0%</span><span>100%</span></div>
+      </div>
     </div>
   </div>
 </div>
@@ -473,117 +515,546 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
 <script src="/auth-shared.js"></script>
 <script>
+(function(){
 var API = window.VIGYAN_BACKEND_URL || '';
-var msaData = null;
+var msaJobId = null, msaData = null, msaPage = 0, msaTotalSeqs = 0, msaStats = null;
+var msaPerPage = 50, msaColStart = 0, msaColEnd = 120, msaAlignLen = 0;
+var msaUploadedSeqs = null, msaFileForUpload = null, msaStatus = 'idle';
 
-function $(id){return document.getElementById(id)}
-function esc(s){return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
-function _on(id,ev,fn){var e=$(id);if(e)e.addEventListener(ev,fn)}
-function loading(on){
-  $('msa-sp').classList.toggle('active',on);
-  $('btn-msa').disabled=on;
-  $('msa-txt').textContent=on?'Aligning…':'Run Alignment';
-  $('msa-loading').classList.toggle('active',on);
+var $ = function(id){return document.getElementById(id)};
+var esc = function(s){return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')};
+var _on = function(id,ev,fn){var e=$(id);if(e)e.addEventListener(ev,fn)};
+
+// ── Streaming FASTA parser (chunked) ──
+var FastaParser = {
+  _buf: '', _name: '', _chunks: [], _seqs: [], _count: 0,
+  reset: function(){ this._buf=''; this._name=''; this._chunks=[]; this._seqs=[]; this._count=0 },
+  push: function(text){
+    this._buf += text;
+    var idx = 0, lines = this._buf.split('\n');
+    for(var i=0; i<lines.length-1; i++){
+      var s = lines[i].trim();
+      if(!s) continue;
+      if(s[0]==='>'){
+        if(this._name && this._chunks.length){
+          this._seqs.push({name:this._name,sequence:this._chunks.join('').toUpperCase()});
+          this._count++;
+        }
+        this._name = s.slice(1).split(/\s/)[0] || 'seq_'+this._count;
+        this._chunks = [];
+      } else {
+        this._chunks.push(s.toUpperCase());
+      }
+    }
+    this._buf = lines[lines.length-1];
+    var ret = this._seqs.slice();
+    this._seqs = [];
+    return ret;
+  },
+  flush: function(){
+    if(this._buf.trim()){
+      var s = this._buf.trim();
+      if(s[0]==='>'){
+        if(this._name && this._chunks.length) this._seqs.push({name:this._name,sequence:this._chunks.join('').toUpperCase()});
+        this._name = s.slice(1).split(/\s/)[0] || 'seq_'+this._count;
+        this._chunks = [];
+      } else {
+        this._chunks.push(s.toUpperCase());
+      }
+    }
+    if(this._name && this._chunks.length){
+      this._seqs.push({name:this._name,sequence:this._chunks.join('').toUpperCase()});
+      this._count++;
+    }
+    var ret = this._seqs.slice();
+    this._seqs = [];
+    this._buf = ''; this._name = ''; this._chunks = [];
+    return ret;
+  }
+};
+
+// ── Tab switching ──
+var tabLinks = document.querySelectorAll('.tab-link');
+for(var ti=0; ti<tabLinks.length; ti++){
+  (function(el){
+    el.addEventListener('click', function(){
+      var tab = this.dataset.tab;
+      for(var j=0; j<tabLinks.length; j++){
+        tabLinks[j].style.background='var(--slate)'; tabLinks[j].style.color='var(--text2)'; tabLinks[j].style.fontWeight='500';
+      }
+      this.style.background='var(--primary)'; this.style.color='#fff'; this.style.fontWeight='600';
+      $('tab-paste').style.display = tab === 'paste' ? 'block' : 'none';
+      $('tab-upload').style.display = tab === 'upload' ? 'block' : 'none';
+      msaUploadedSeqs = null;
+      msaFileForUpload = null;
+      updateSeqCount();
+    });
+  })(tabLinks[ti]);
 }
-function blobDl(c,m,f){var b=new Blob([c],{type:m});var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=f;a.click();URL.revokeObjectURL(a.href)}
-function parseFasta(t){
-  var lines=t.split('\n'),seqs=[],cur=null;
-  lines.forEach(function(l){var s=l.trim();if(s.startsWith('>')){if(cur&&cur.sequence)seqs.push(cur);cur={id:cur?cur.id+1:1,name:s.slice(1).split(/\s/)[0],sequence:''}}else if(cur)cur.sequence+=s.toUpperCase()});
-  if(cur&&cur.sequence)seqs.push(cur);return seqs;
+
+// ── File upload / drag-drop with streaming ──
+var dropZone = $('drop-zone'), fileInput = $('msa-upload');
+dropZone.addEventListener('click', function(){fileInput.click()});
+dropZone.addEventListener('dragover', function(e){e.preventDefault();this.style.borderColor='var(--primary)';this.style.background='var(--primary-soft)'});
+dropZone.addEventListener('dragleave', function(){this.style.borderColor='var(--slate-border)';this.style.background='var(--slate)'});
+dropZone.addEventListener('drop', function(e){e.preventDefault();this.style.borderColor='var(--slate-border)';this.style.background='var(--slate)';if(e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0])});
+fileInput.addEventListener('change', function(){if(this.files.length) handleFile(this.files[0])});
+
+var parseAbort = false;
+
+function handleFile(file){
+  if(parseAbort) return;
+  if(file.size > 500*1024*1024){ alert('File exceeds 500MB limit.'); return }
+  msaFileForUpload = file;
+  msaUploadedSeqs = null;
+  var info = $('file-info');
+  info.style.display = 'block';
+  info.innerHTML = '📄 ' + esc(file.name) + ' (' + file.size.toLocaleString() + ' bytes) — <span id="parse-status">parsing…</span>';
+
+  // Stream-parse in chunks off the main thread via requestIdleCallback
+  FastaParser.reset();
+  var CHUNK = 1024 * 512; // 512KB chunks
+  var offset = 0, totalParsed = 0, totalBp = 0;
+  var reader = new FileReader();
+
+  function readChunk(){
+    if(parseAbort || offset >= file.size){
+      finishParse();
+      return;
+    }
+    var blob = file.slice(offset, Math.min(offset + CHUNK, file.size));
+    reader.onload = function(e){
+      var seqs = FastaParser.push(e.target.result);
+      for(var si=0; si<seqs.length; si++){
+        totalParsed++;
+        totalBp += seqs[si].sequence.length;
+      }
+      if(totalParsed % 500 === 0){
+        $('parse-status').textContent = 'parsed ' + totalParsed.toLocaleString() + ' seqs…';
+      }
+      offset += CHUNK;
+      requestIdleCallback(readChunk, {timeout:1000});
+    };
+    reader.onerror = function(){ $('parse-status').textContent = 'read error' };
+    reader.readAsText(blob);
+  }
+
+  function finishParse(){
+    var remaining = FastaParser.flush();
+    for(var si=0; si<remaining.length; si++){
+      totalParsed++; totalBp += remaining[si].sequence.length;
+    }
+    if(totalParsed < 2){
+      $('parse-status').textContent = 'need ≥2 sequences (found '+totalParsed+')';
+      msaFileForUpload = null;
+      return;
+    }
+    msaUploadedSeqs = null; // don't store in memory
+    $('parse-status').textContent = totalParsed.toLocaleString() + ' seqs, ' + formatBp(totalBp);
+    updateSeqCount();
+  }
+
+  readChunk();
 }
+
+function formatBp(n){
+  if(n > 1e9) return (n/1e9).toFixed(1)+' Gbp';
+  if(n > 1e6) return (n/1e6).toFixed(1)+' Mbp';
+  if(n > 1e3) return (n/1e3).toFixed(1)+' Kbp';
+  return n+' bp';
+}
+
+// ── Async stats (lazy, chunked) ──
+var seqCache = null, seqCacheDirty = false;
+
+function getSeqs(){
+  if($('tab-paste').style.display !== 'none'){
+    var t = $('msa-input').value.trim();
+    if(!t) return null;
+    // Use cached if text unchanged
+    if(seqCache && seqCache._text === t) return seqCache._seqs;
+    var seqs = parseFastaSync(t);
+    seqCache = {_text: t, _seqs: seqs};
+    return seqs;
+  }
+  return null;
+}
+
+function parseFastaSync(t){
+  var lines = t.split('\n'), seqs = [], cur = null;
+  for(var i=0; i<lines.length; i++){
+    var s = lines[i].trim();
+    if(!s) continue;
+    if(s[0]==='>'){
+      if(cur && cur.seq) seqs.push(cur);
+      cur = {name:s.slice(1).split(/\s/)[0], seq:''};
+    } else if(cur){
+      cur.seq += s.toUpperCase();
+    }
+  }
+  if(cur && cur.seq) seqs.push(cur);
+  // Convert to expected format
+  var out = [];
+  for(var i=0; i<seqs.length; i++) out.push({name:seqs[i].name, sequence:seqs[i].seq});
+  return out;
+}
+
+var statsTimer = null;
+var statsSeqCount = 0, statsTotalBp = 0;
+
 function updateSeqCount(){
-  var t=$('msa-input').value.trim(),seqs=parseFasta(t);
-  $('msa-seq-count').textContent=seqs.length;
+  if(statsTimer){ clearTimeout(statsTimer); statsTimer = null; }
+  statsTimer = setTimeout(function(){
+    statsTimer = null;
+    if(msaFileForUpload){
+      $('msa-seq-count').textContent = 'file ready';
+      $('msa-total-bp').textContent = '';
+      $('btn-msa').disabled = false;
+      $('msa-txt').textContent = 'Submit File for Alignment';
+      return;
+    }
+    var seqs = getSeqs();
+    if(!seqs){ $('msa-seq-count').textContent='0'; $('msa-total-bp').textContent='0'; return }
+    $('msa-seq-count').textContent = seqs.length;
+    $('msa-total-bp').textContent = seqs.length > 500 ? '…' : seqs.reduce(function(s,x){return s + x.sequence.length}, 0).toLocaleString();
+  }, 200);
 }
 
 (function(){
-  var v=localStorage.getItem('vp_msa_seq');
-  if(v){$('msa-input').value=v;updateSeqCount();localStorage.removeItem('vp_msa_seq')}
+  var v = localStorage.getItem('vp_msa_seq');
+  if(v){ $('msa-input').value = v; updateSeqCount(); localStorage.removeItem('vp_msa_seq') }
 })();
 
-_on('msa-input','input',updateSeqCount);
-_on('msa-upload','change',async function(){
-  if(!this.files.length)return;
-  try{var t=await this.files[0].text();$('msa-input').value=t;updateSeqCount()}catch(e){}
+_on('msa-input','input', function(){
+  msaUploadedSeqs = null;
+  msaFileForUpload = null;
+  seqCacheDirty = true;
+  updateSeqCount();
 });
 
+// ── Progress / loading ──
+function setProgress(pct, text){
+  $('msa-progress').style.display = 'block';
+  $('msa-progress-bar').style.width = Math.min(pct,100)+'%';
+  $('msa-progress-text').textContent = text || 'Processing…';
+}
+function hideProgress(){ $('msa-progress').style.display = 'none' }
+function loading(on){
+  $('msa-sp').classList.toggle('active',on);
+  $('btn-msa').disabled = on;
+  $('msa-txt').textContent = on ? (msaStatus==='submitting'?'Uploading…':'Aligning…') : (msaFileForUpload?'Submit File for Alignment':'Run Alignment');
+  $('msa-loading').classList.toggle('active',on);
+}
+
+// ── Main alignment ──
 async function doMsa(){
-  var t=$('msa-input').value.trim();
-  if(!t){alert('Enter sequences in FASTA format.');return}
-  var seqs=parseFasta(t);
-  if(seqs.length<2){alert('At least 2 sequences are required.');return}
+  msaStatus = 'submitting';
   loading(true);
-  $('msa-results').innerHTML='';
-  try{
-    var r=await fetch(API+'/api/primer/msa',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sequences:seqs})});
-    if(!r.ok){var e=await r.text();throw new Error(e||'MSA failed')}
-    var d=await r.json();
-    msaData=d;
-    renderMsa(d);
-  }catch(e){$('msa-results').innerHTML='<div class="error-card" style="padding:16px;background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;color:#DC2626;font-size:13px">'+esc(e.message)+'</div>'}
-  finally{loading(false)}
-}
+  $('msa-viewer').style.display = 'none';
+  $('msa-results').style.display = 'block';
+  hideProgress();
 
-function renderMsa(data){
-  var area=$('msa-results'),align=data.alignment||[],cons=data.conservation||[],stats=data.stats||{};
-  if(!align.length||!align[0]){area.innerHTML='<div style="padding:40px;text-align:center;color:var(--muted)">No alignment data.</div>';return}
-  var alen=stats.alignment_length||align[0].length||0;
-  var html='';
-  html+='<div class="stats-grid">';
-  html+='<div class="stat-item"><div class="stat-val">'+stats.n_sequences+'</div><div class="stat-lbl">Sequences</div></div>';
-  html+='<div class="stat-item"><div class="stat-val">'+alen+'</div><div class="stat-lbl">Alignment Length</div></div>';
-  html+='<div class="stat-item"><div class="stat-val">'+stats.conserved_columns+'</div><div class="stat-lbl">Conserved Columns</div></div>';
-  html+='<div class="stat-item"><div class="stat-val">'+stats.conserved_pct+'%</div><div class="stat-lbl">Conservation</div></div>';
-  html+='<div class="stat-item"><div class="stat-val">'+stats.identities+'%</div><div class="stat-lbl">Identity</div></div>';
-  html+='<div class="stat-item"><div class="stat-val">'+stats.mean_gaps_per_seq+'</div><div class="stat-lbl">Avg Gaps/Seq</div></div>';
-  html+='</div>';
-  var consensusChars=[];
-  if(cons.length)cons.forEach(function(c){consensusChars.push(c.char)});
-  else if(alen){for(var i=0;i<alen;i++)consensusChars.push('-')}
-  html+='<div class="msa-wrap" style="margin-top:16px"><div class="msa-align">';
-  align.forEach(function(row){
-    var name=row.name||'seq_'+(row.index||0);
-    html+='<div class="msa-row"><span class="msa-label" title="'+esc(name)+'">'+esc(name.slice(0,20))+'</span><div class="msa-seq">';
-    (row.positions||[]).forEach(function(pos,i){
-      var cls='msa-char';
-      if(pos.css_class==='msa-gap')cls+=' gap';
-      else if(pos.css_class==='msa-ambiguous')cls+=' ambiguous';
-      else{
-        var consChar=consensusChars[i]||'';
-        cls+=(pos.char.toUpperCase()===consChar.toUpperCase()&&consChar!=='-')?' match':' mismatch';
-      }
-      html+='<span class="'+cls+'" title="'+esc(name)+' col '+(i+1)+': '+esc(pos.char)+'">'+esc(pos.char)+'</span>';
+  try {
+    if(msaFileForUpload){
+      // ── Direct file upload (large sets) ──
+      var fd = new FormData();
+      fd.append('file', msaFileForUpload);
+      setProgress(5, 'Uploading ' + msaFileForUpload.name + '…');
+      var r = await fetch(API + '/api/primer/msa/upload', {method:'POST', body:fd});
+      if(!r.ok) throw new Error((await r.json()).error || 'Upload failed');
+      var d = await r.json();
+      msaJobId = d.job_id;
+      msaTotalSeqs = d.total_sequences;
+      msaStatus = 'polling';
+      await pollJob();
+      return;
+    }
+
+    var seqs = getSeqs();
+    if(!seqs || seqs.length < 2){ alert('At least 2 sequences required.'); loading(false); msaStatus='idle'; return }
+    var n = seqs.length;
+    var estimatedBp = seqs.reduce(function(s,x){return s + x.sequence.length}, 0);
+
+    if(n > 500 || estimatedBp > 5000000){
+      // ── Async submit (JSON large set) ──
+      setProgress(5, 'Submitting ' + n + ' sequences…');
+      var r = await fetch(API + '/api/primer/msa/submit', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({sequences: seqs})
+      });
+      if(!r.ok) throw new Error((await r.json()).error || 'Submit failed');
+      var d = await r.json();
+      msaJobId = d.job_id;
+      msaTotalSeqs = d.total_sequences;
+      msaUploadedSeqs = null;
+      msaStatus = 'polling';
+      seqs = null;
+      await pollJob();
+      return;
+    }
+
+    // ── Small set: direct ──
+    setProgress(10, 'Aligning ' + n + ' sequences…');
+    var r = await fetch(API + '/api/primer/msa', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({sequences: seqs})
     });
-    html+='</div></div>';
-  });
-  html+='<div class="msa-row" style="margin-top:6px"><span class="msa-label" style="color:var(--primary);font-weight:600">Consensus</span><div class="msa-seq">';
-  if(cons.length)cons.forEach(function(c,i){
-    html+='<span class="msa-char" style="background:#2196F3;color:#fff" title="'+c.pct+'% conserved: '+c.char+' ('+c.count+'/'+c.total+')">'+esc(c.char)+'</span>';
-  });
-  html+='</div></div></div></div>';
-  html+='<div style="margin-top:8px"><div style="font-size:10px;color:var(--muted);margin-bottom:4px">Conservation</div><div class="conservation-bar">';
-  if(cons.length)cons.forEach(function(c){
-    var pct=Math.max(2,c.pct);
-    html+='<div class="conservation-seg" style="width:'+pct/cons.length+'%;background:'+greenRed(c.pct/100)+'"></div>';
-  });
-  html+='</div><div class="conservation-label"><span>0%</span><span>100%</span></div></div>';
-  area.innerHTML=html;
+    if(!r.ok) throw new Error((await r.json()).error || 'MSA failed');
+    var d = await r.json();
+    msaData = d;
+    msaTotalSeqs = n;
+    msaJobId = null;
+    msaStats = d.stats;
+    msaAlignLen = d.alignment_length || (d.alignment && d.alignment.length ? d.alignment[0].length : 0);
+    msaColEnd = Math.min(msaColEnd, msaAlignLen || msaColEnd);
+    renderDirect(d);
+  } catch(e){
+    $('msa-results').innerHTML = '<div class="error-card" style="padding:16px;background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;color:#DC2626;font-size:13px">'+esc(e.message)+'</div>';
+  }
+  finally { msaStatus='idle'; loading(false); hideProgress() }
 }
 
-function greenRed(t){
-  var r=Math.round(255*(1-t)),g=Math.round(255*t);
-  return 'rgb('+r+','+g+',0)';
+async function pollJob(){
+  for(var i=0; i<180; i++){
+    await new Promise(function(r){setTimeout(r, msaTotalSeqs > 10000 ? 3000 : 1500)});
+    var sr = await fetch(API+'/api/primer/msa/status/'+msaJobId);
+    if(!sr.ok) throw new Error('Status check failed');
+    var st = await sr.json();
+    setProgress(st.progress||0, 'Aligning '+msaTotalSeqs+' seqs… ('+st.progress+'%)');
+    if(st.status==='DONE'){
+      msaStats = st.stats;
+      msaAlignLen = (st.stats && st.stats.alignment_length) || 0;
+      msaColEnd = Math.min(msaColEnd, msaAlignLen || msaColEnd);
+      $('msa-downloads').style.display = 'block';
+      loadPage(0);
+      return;
+    }
+    if(st.status==='ERROR') throw new Error(st.error||'MSA failed');
+  }
+  throw new Error('Alignment timed out after 5 minutes');
 }
 
+// ── Column range controls ──
+function updateColRange(){
+  var start = parseInt($('col-start').value) || 0;
+  var end = parseInt($('col-end').value) || Math.min(msaColEnd, msaAlignLen);
+  end = Math.min(end, msaAlignLen || end);
+  if(start >= end){ start = Math.max(0, end - 120); if(start<0){start=0;end=Math.min(120,msaAlignLen)} }
+  msaColStart = start;
+  msaColEnd = end;
+  if(msaJobId) loadPage(msaPage);
+}
+
+// ── Paginated load ──
+async function loadPage(page){
+  msaPage = page;
+  loading(true);
+  $('msa-viewer').style.display = 'none';
+  $('msa-results').innerHTML = '<div style="padding:40px;text-align:center;color:var(--muted);font-size:13px">Loading page…</div>';
+  try {
+    if(msaJobId){
+      var offset = page * msaPerPage;
+      var url = API+'/api/primer/msa/view/'+msaJobId+'?offset='+offset+'&limit='+msaPerPage+'&col_start='+msaColStart+'&col_end='+msaColEnd;
+      var r = await fetch(url);
+      if(!r.ok) throw new Error('View load failed');
+      var d = await r.json();
+      msaData = d;
+      renderPaginated(d);
+    } else if(msaData){
+      renderDirect(msaData);
+    }
+  } catch(e){
+    $('msa-results').innerHTML = '<div style="padding:40px;text-align:center;color:var(--red);font-size:13px">'+esc(e.message)+'</div>';
+  }
+  finally { loading(false) }
+}
+
+// ── Render: paginated ──
+function renderPaginated(data){
+  renderStats(data.stats || msaStats || {});
+  renderAlignmentView(data.alignment||[], data.conservation||[], data.stats||{});
+  var total = data.total_sequences || msaTotalSeqs || 0;
+  var nPages = Math.ceil(total / msaPerPage);
+  $('msa-page-info').textContent = 'Page '+(msaPage+1)+'/'+nPages+' ('+total.toLocaleString()+' seqs)';
+  $('btn-prev').disabled = msaPage <= 0;
+  $('btn-next').disabled = msaPage >= nPages - 1;
+}
+
+function renderDirect(data){
+  renderStats(data.stats||{});
+  renderAlignmentView(data.alignment||[], data.conservation||[], data.stats||{});
+  $('msa-page-info').textContent = data.alignment ? data.alignment.length+' sequences' : '';
+}
+
+// ── Stats ──
+function renderStats(stats){
+  if(!stats || !stats.n_sequences){ $('msa-stats-card').style.display='none'; return }
+  $('msa-stats-card').style.display='block';
+  $('msa-stats').innerHTML =
+    '<div class="stat-item"><div class="stat-val">'+stats.n_sequences+'</div><div class="stat-lbl">Sequences</div></div>'+
+    '<div class="stat-item"><div class="stat-val">'+(stats.alignment_length||0)+'</div><div class="stat-lbl">Alignment Length</div></div>'+
+    '<div class="stat-item"><div class="stat-val">'+(stats.conserved_columns||0)+'</div><div class="stat-lbl">Conserved Columns</div></div>'+
+    '<div class="stat-item"><div class="stat-val">'+(stats.conserved_pct||0)+'%</div><div class="stat-lbl">Conservation</div></div>'+
+    '<div class="stat-item"><div class="stat-val">'+(stats.identities||0)+'%</div><div class="stat-lbl">Identity</div></div>'+
+    '<div class="stat-item"><div class="stat-val">'+(stats.mean_gaps_per_seq||0)+'</div><div class="stat-lbl">Avg Gaps/Seq</div></div>';
+}
+
+// ── Virtual alignment viewer ──
+var renderPending = false;
+function renderAlignmentView(align, cons, stats){
+  $('msa-viewer').style.display = 'block';
+  $('msa-results').innerHTML = '';
+  if(renderPending) return;
+  renderPending = true;
+  requestAnimationFrame(function(){
+    renderPending = false;
+    _renderAlign(align, cons, stats);
+  });
+}
+
+function _renderAlign(align, cons, stats){
+  var rowsEl = $('msa-align-rows'), consBarEl = $('msa-cons-bar');
+  if(!align.length){ rowsEl.innerHTML='<div style="padding:20px;color:var(--muted)">No alignment data.</div>'; return }
+
+  var nCols = align[0].length || 0;
+  var consensusChars = [];
+  if(cons && cons.length){
+    for(var ci=0; ci<cons.length; ci++) consensusChars.push(cons[ci].char);
+  } else {
+    for(var ci=0; ci<nCols; ci++) consensusChars.push('-');
+  }
+
+  // Build rows using DocumentFragment for batch DOM insert
+  var frag = document.createDocumentFragment();
+
+  for(var ri=0; ri<align.length; ri++){
+    var row = align[ri];
+    var name = row.name || 'seq_'+(row.index||0);
+    var rowDiv = document.createElement('div');
+    rowDiv.className = 'msa-row';
+
+    var label = document.createElement('span');
+    label.className = 'msa-label';
+    label.textContent = name.slice(0,20);
+    label.title = name;
+    rowDiv.appendChild(label);
+
+    var seqDiv = document.createElement('div');
+    seqDiv.className = 'msa-seq';
+
+    var positions = row.positions || [];
+    for(var pi=0; pi<positions.length; pi++){
+      var pos = positions[pi];
+      var ch = document.createElement('span');
+      ch.className = 'msa-char';
+      if(pos.css_class === 'msa-gap') ch.className += ' gap';
+      else if(pos.css_class === 'msa-ambiguous') ch.className += ' ambiguous';
+      else {
+        var cc = (pi < consensusChars.length) ? consensusChars[pi] : '';
+        ch.className += (pos.char.toUpperCase() === cc.toUpperCase() && cc !== '-') ? ' match' : ' mismatch';
+      }
+      ch.textContent = pos.char;
+      seqDiv.appendChild(ch);
+    }
+    rowDiv.appendChild(seqDiv);
+    frag.appendChild(rowDiv);
+  }
+
+  // Consensus row
+  var consRow = document.createElement('div');
+  consRow.className = 'msa-row';
+  consRow.style.marginTop = '6px';
+  var consLabel = document.createElement('span');
+  consLabel.className = 'msa-label';
+  consLabel.style.color = 'var(--primary)';
+  consLabel.style.fontWeight = '600';
+  consLabel.textContent = 'Consensus';
+  consRow.appendChild(consLabel);
+  var consSeq = document.createElement('div');
+  consSeq.className = 'msa-seq';
+  if(cons && cons.length){
+    for(var ci=0; ci<cons.length; ci++){
+      var c = cons[ci];
+      var ch = document.createElement('span');
+      ch.className = 'msa-char consensus';
+      ch.style.background = '#2196F3';
+      ch.style.color = '#fff';
+      ch.title = c.pct+'% conserved';
+      ch.textContent = c.char;
+      consSeq.appendChild(ch);
+    }
+  }
+  consRow.appendChild(consSeq);
+  frag.appendChild(consRow);
+
+  rowsEl.innerHTML = '';
+  rowsEl.appendChild(frag);
+
+  // Conservation bar
+  var consFrag = document.createDocumentFragment();
+  if(cons && cons.length){
+    var totalCons = cons.length;
+    for(var ci=0; ci<totalCons; ci++){
+      var c = cons[ci];
+      var w = Math.max(2, c.pct);
+      var r = Math.round(255*(1-c.pct/100));
+      var g = Math.round(255*c.pct/100);
+      var seg = document.createElement('div');
+      seg.className = 'conservation-seg';
+      seg.style.width = (w/totalCons*100)+'%';
+      seg.style.background = 'rgb('+r+','+g+',0)';
+      consFrag.appendChild(seg);
+    }
+  }
+  consBarEl.innerHTML = '';
+  consBarEl.appendChild(consFrag);
+
+  // Column range info
+  var colInfo = $('msa-col-info');
+  if(colInfo){
+    colInfo.textContent = 'Columns: '+(msaColStart+1)+'–'+msaColEnd+' of '+(msaAlignLen||nCols);
+  }
+}
+
+// ── Navigation ──
+_on('btn-prev','click',function(){ if(msaPage>0 && msaJobId) loadPage(msaPage-1) });
+_on('btn-next','click',function(){ if(msaJobId) loadPage(msaPage+1) });
+
+// ── Run / Download ──
 _on('btn-msa','click',doMsa);
 _on('btn-dl-fa','click',function(){
-  if(!msaData||!msaData.fasta){alert('Run alignment first.');return}
-  blobDl(msaData.fasta,'text/plain','alignment.fa');
+  if(msaJobId){ window.open(API+'/api/primer/msa/download/'+msaJobId+'?format=fasta','_blank') }
+  else if(msaData && msaData.fasta){ var b=new Blob([msaData.fasta],{type:'text/plain'}); var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='alignment.fa';a.click();URL.revokeObjectURL(a.href) }
+  else { alert('Run alignment first.') }
 });
 _on('btn-dl-cl','click',function(){
-  if(!msaData||!msaData.clustal){alert('Run alignment first.');return}
-  blobDl(msaData.clustal,'text/plain','alignment.aln');
+  if(msaJobId){ window.open(API+'/api/primer/msa/download/'+msaJobId+'?format=clustal','_blank') }
+  else if(msaData && msaData.clustal){ var b=new Blob([msaData.clustal],{type:'text/plain'}); var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='alignment.aln';a.click();URL.revokeObjectURL(a.href) }
+  else { alert('Run alignment first.') }
 });
+
+// ── Expose column range controls ──
+// Add column range UI to alignment panel head
+var alignHead = document.querySelector('#msa-body').previousElementSibling;
+if(alignHead){
+  var colUi = document.createElement('div');
+  colUi.style.cssText = 'display:flex;gap:4px;align-items:center;font-size:10px';
+  colUi.innerHTML =
+    '<label style="color:var(--muted)">Col:</label>'+
+    '<input id="col-start" type="number" min="0" value="0" style="width:50px;padding:2px 4px;border:1px solid var(--slate-border);border-radius:3px;font-size:10px">'+
+    '<span style="color:var(--muted)">–</span>'+
+    '<input id="col-end" type="number" min="1" value="120" style="width:55px;padding:2px 4px;border:1px solid var(--slate-border);border-radius:3px;font-size:10px">'+
+    '<button id="btn-col-apply" class="btn-secondary btn-sm" style="padding:2px 6px;font-size:9px">Apply</button>'+
+    '<span id="msa-col-info" style="color:var(--muted);margin-left:4px"></span>';
+  alignHead.appendChild(colUi);
+
+  _on('btn-col-apply','click',updateColRange);
+  // Enter key on inputs
+  _on('col-start','keydown',function(e){if(e.key==='Enter')updateColRange()});
+  _on('col-end','keydown',function(e){if(e.key==='Enter')updateColRange()});
+}
+
+})();
 </script>
 <script>
 (function(){

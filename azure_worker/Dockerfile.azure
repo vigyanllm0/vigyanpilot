@@ -1,0 +1,73 @@
+# ────────────────────────────────────────────────────────────────────────────
+# VigyanLLM Azure Worker Container
+# ==================================
+# Designed to run on Azure Container Instances (ACI) for heavy computational
+# workloads that would OOM the main EC2 t3.micro instance.
+#
+# Build:
+#   docker build -t vigyanllm-azure-worker -f azure_worker/Dockerfile.azure .
+#
+# Push to Azure Container Registry:
+#   az acr login --name vigyanllm
+#   docker tag vigyanllm-azure-worker vigyanllm.azurecr.io/worker:latest
+#   docker push vigyanllm.azurecr.io/worker:latest
+#
+# Run on ACI:
+#   az container create \
+#     --resource-group vigyan-pipeline \
+#     --name pipeline-worker-1 \
+#     --image vigyanllm.azurecr.io/worker:latest \
+#     --environment-variables \
+#       CALLBACK_URL=https://api.vigyanllm.in/api/v1/jobs/callback \
+#       CALLBACK_TOKEN=sec-... \
+#     --command-line "python /app/azure_worker/worker.py"
+#
+# ────────────────────────────────────────────────────────────────────────────
+
+FROM python:3.11-slim AS base
+
+# Prevent Python from writing .pyc files and buffering stdout
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    DEBIAN_FRONTEND=noninteractive
+
+# Enable non-free repository for vienna-rna
+RUN sed -i 's/Components: main/Components: main contrib non-free/g' /etc/apt/sources.list.d/debian.sources || sed -i 's/main/main contrib non-free/g' /etc/apt/sources.list
+
+# Install system dependencies for bioinformatics tools + molecular docking
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    autodock-vina \
+    bowtie2 \
+    build-essential \
+    ca-certificates \
+    curl \
+    mafft \
+    ncbi-blast+ \
+    openbabel \
+    primer3 \
+    samtools \
+    tabix \
+    vienna-rna \
+    && rm -rf /var/lib/apt/lists/*
+
+# Download GNINA binary (CNN docking scorer) — pre-built Linux binary from GitHub
+RUN curl -fsSL https://github.com/gnina/gnina/releases/latest/download/gnina -o /usr/local/bin/gnina \
+    && chmod +x /usr/local/bin/gnina
+
+WORKDIR /app
+
+# Copy and install Python dependencies first (for Docker layer caching)
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy the entire project (needed for primerforge module imports)
+COPY primerforge/ ./primerforge/
+COPY azure_worker/ ./azure_worker/
+COPY config/ ./config/
+COPY wsgi.py .
+
+# ── Entrypoint ─────────────────────────────────────────────────────────────
+
+# Default: print help. Users override via ACI command-line.
+ENTRYPOINT ["python", "/app/azure_worker/worker.py"]
+CMD ["--help"]
