@@ -38,14 +38,12 @@ async function pollBlast(rid) {
   const url = NCBI_URL + "?CMD=Get&FORMAT_TYPE=XML&RID=" + encodeURIComponent(rid);
   const resp = await fetch(url, { headers: { "User-Agent": USER_AGENT } });
   const text = await resp.text();
-
   if (text.startsWith("<!DOCTYPE") || text.startsWith("<html") || text.startsWith("<!")) {
-    if (text.includes("There are no more hits") || text.includes("No hits found")) {
+    if (text.includes("No hits found") || text.includes("There are no more hits")) {
       return { status: "READY", hits: [] };
     }
     return { status: "WAITING" };
   }
-
   const hits = [];
   const hitRegex = /<Hit>([\s\S]*?)<\/Hit>/g;
   let m;
@@ -55,75 +53,46 @@ async function pollBlast(rid) {
     const def = extractTag(h, "Hit_def");
     const accession = extractTag(h, "Hit_accession");
     const hitLen = parseInt(extractTag(h, "Hit_len") || "0");
-
     const hsps = [];
     const hspRegex = /<Hsp>([\s\S]*?)<\/Hsp>/g;
     let hm;
     while ((hm = hspRegex.exec(h)) !== null) {
       const s = hm[1];
       hsps.push({
-        hsp_num: parseInt(extractTag(s, "Hsp_num") || "1"),
         identity: parseInt(extractTag(s, "Hsp_identity") || "0"),
-        positive: parseInt(extractTag(s, "Hsp_positive") || "0"),
         gaps: parseInt(extractTag(s, "Hsp_gaps") || "0"),
         align_len: parseInt(extractTag(s, "Hsp_align-len") || "0"),
         bit_score: parseFloat(extractTag(s, "Hsp_bit-score") || "0"),
-        score: parseFloat(extractTag(s, "Hsp_score") || "0"),
         evalue: extractTag(s, "Hsp_evalue") || "",
-        query_from: parseInt(extractTag(s, "Hsp_query-from") || "0"),
-        query_to: parseInt(extractTag(s, "Hsp_query-to") || "0"),
-        hit_from: parseInt(extractTag(s, "Hsp_hit-from") || "0"),
-        hit_to: parseInt(extractTag(s, "Hsp_hit-to") || "0"),
-        query_seq: extractTag(s, "Hsp_query-seq") || "",
         hit_seq: extractTag(s, "Hsp_hit-seq") || "",
         midline: extractTag(s, "Hsp_midline") || "",
       });
     }
-
     hits.push({ id, def, accession, len: hitLen, hsps });
   }
-
   return { status: "READY", hits };
 }
 
 export default async function handler(request) {
   const url = new URL(request.url);
-
   if (request.method === "POST") {
     try {
       const body = await request.json();
       const { sequence, database, organism } = body;
-      if (!sequence) {
-        return new Response(JSON.stringify({ error: "Missing sequence" }), {
-          status: 400, headers: { "Content-Type": "application/json" },
-        });
-      }
+      if (!sequence) return new Response(JSON.stringify({ error: "Missing sequence" }), { status: 400, headers: { "Content-Type": "application/json" } });
       const result = await submitBlast(sequence, database, organism);
-      return new Response(JSON.stringify({ rid: result.rid, rtoe: result.rtoe }), {
-        headers: { "Content-Type": "application/json" },
-      });
+      return new Response(JSON.stringify({ rid: result.rid, rtoe: result.rtoe }), { headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" } });
     } catch (e) {
-      return new Response(JSON.stringify({ error: e.message }), {
-        status: 502, headers: { "Content-Type": "application/json" },
-      });
+      return new Response(JSON.stringify({ error: e.message }), { status: 502, headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" } });
     }
   }
-
   if (request.method === "GET" && url.searchParams.has("rid")) {
     try {
-      const rid = url.searchParams.get("rid");
-      const result = await pollBlast(rid);
-      return new Response(JSON.stringify(result), {
-        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
-      });
+      const result = await pollBlast(url.searchParams.get("rid"));
+      return new Response(JSON.stringify(result), { headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" } });
     } catch (e) {
-      return new Response(JSON.stringify({ error: e.message }), {
-        status: 502, headers: { "Content-Type": "application/json" },
-      });
+      return new Response(JSON.stringify({ error: e.message }), { status: 502, headers: { "Content-Type": "application/json" } });
     }
   }
-
-  return new Response(JSON.stringify({ error: "Method not allowed. Use POST to submit or GET?rid= to poll." }), {
-    status: 405, headers: { "Content-Type": "application/json" },
-  });
+  return new Response(JSON.stringify({ error: "Method not allowed" }), { status: 405, headers: { "Content-Type": "application/json" } });
 }

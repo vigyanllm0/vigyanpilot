@@ -559,7 +559,7 @@ _on('bseq','input',function(){var t=this.value.replace(/^>.*\n/,'').replace(/[^A
 
 // ── NCBI BLAST API ── proxied through Vercel Edge Function
 async function ncbiPut(seq, db, org) {
-    var r = await fetch('/blast-api', {
+    var r = await fetch('/api/ncbi-blast', {
     method: 'POST',
     headers: {'Content-Type':'application/json'},
     body: JSON.stringify({sequence: seq, database: db || 'nt', organism: org || ''})
@@ -572,7 +572,7 @@ async function ncbiPut(seq, db, org) {
 
 async function ncbiPoll(rid) {
   for (var i = 0; i < 60; i++) {
-    var r = await fetch('/blast-api?rid=' + rid);
+    var r = await fetch('/api/ncbi-blast?rid=' + rid);
     if (!r.ok) { var e = await r.json(); throw new Error(e.error || 'Failed to check BLAST status') }
     var d = await r.json();
     if (d.status === 'READY') return d.hits || [];
