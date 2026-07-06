@@ -880,7 +880,7 @@ async function verifyPayment() {
   var txn = $('pay-txn').value.trim();
   if (!txn) { alert('Enter transaction ID'); return; }
   try {
-    var r = await fetch(API + '/api/payments/verify', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ plan:$('pay-plan').value, transaction_id:txn }) });
+    var r = await fetch(API + '/payments/verify', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ plan:$('pay-plan').value, transaction_id:txn }) });
     var d = await r.json();
     if (r.ok) { alert('Payment verified! Your plan is active.'); $('pay-overlay').classList.remove('show'); location.reload(); }
     else { alert(d.error || 'Verification failed'); }
@@ -970,7 +970,7 @@ async function runDocking() {
   setStage(1, 'running', 'Predicting structure...');
 
   try {
-    var r = await fetch(API + '/api/primer/docking/consensus', {
+    var r = await fetch(API + '/primer/docking/consensus', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ sequence: validAA, ligand_smiles_list: smilesList, top_n: topN })
