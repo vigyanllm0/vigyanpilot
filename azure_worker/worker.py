@@ -20,6 +20,11 @@ Usage (injected via ACI environment variables or CLI args):
 
 import os
 import sys
+# Ensure /app is on sys.path (worker.py lives in /app/azure_worker/)
+_app_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if _app_root not in sys.path:
+    sys.path.insert(0, _app_root)
+
 import json
 import time
 import uuid
@@ -399,6 +404,7 @@ def run_docking_job(config: Dict, callback_url: Optional[str] = None,
         "best_molecule": pipeline_result.get("best_molecule"),
         "total_ligands": len(ligand_smiles_list),
         "top_n": top_n,
+        "error": pipeline_result.get("message") or pipeline_result.get("error"),
     }
 
     if callback_url:
@@ -504,8 +510,11 @@ def _run_daemon():
                 }
                 result = run_docking_job(config, callback_url=None)
                 error = None
-                if result.get("status") == "error":
-                    error = result.get("message", "Pipeline failed")
+                if result:
+                    if result.get("status") == "error":
+                        error = result.get("message", "Pipeline failed")
+                    elif result.get("status") == "failed":
+                        error = result.get("error", "Pipeline failed")
             except Exception as e:
                 result = None
                 error = str(e)
@@ -533,8 +542,8 @@ def _run_daemon():
 def main():
     logger.info("VigyanLLM Azure Worker v%s starting", WORKER_VERSION)
 
-    # If --daemon flag is set, run in polling mode instead of one-shot
-    if "--daemon" in sys.argv:
+    # If --daemon flag or WORKER_MODE=daemon is set, run in polling mode
+    if "--daemon" in sys.argv or os.environ.get("WORKER_MODE") == "daemon":
         _run_daemon()
         return
 
