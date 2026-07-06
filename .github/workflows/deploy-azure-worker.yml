@@ -1,0 +1,27 @@
+name: Deploy Azure Worker
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "azure_worker/**"
+      - ".github/workflows/deploy-azure-worker.yml"
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Log into Azure Container Registry
+        uses: azure/docker-login@v1
+        with:
+          login-server: vigyanregistry01.azurecr.io
+          username: ${{ secrets.AZURE_REGISTRY_USERNAME }}
+          password: ${{ secrets.AZURE_REGISTRY_PASSWORD }}
+
+      - name: Build and push worker image
+        run: |
+          docker build -t vigyanregistry01.azurecr.io/vigyan-worker:latest -f azure_worker/Dockerfile.azure .
+          docker push vigyanregistry01.azurecr.io/vigyan-worker:latest
