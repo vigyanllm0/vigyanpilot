@@ -30,62 +30,57 @@ async function submitBlast(seq, db, org) {
 }
 
 function extractTag(xml, tag) {
-  const m = xml.match(new RegExp(`<${tag}>([^<]*)<\\/${tag}>`));
+  const m = xml.match(new RegExp("<" + tag + ">([^<]*)<\\/" + tag + ">"));
   return m ? m[1].replace(/&amp;/g,"&").replace(/&lt;/g,"<").replace(/&gt;/g,">").replace(/&quot;/g,'"').replace(/&#39;/g,"'") : "";
 }
 
 async function pollBlast(rid) {
-  const url = `${NCBI_URL}?CMD=Get&FORMAT_TYPE=XML&RID=${encodeURIComponent(rid)}`;
+  const url = NCBI_URL + "?CMD=Get&FORMAT_TYPE=XML&RID=" + encodeURIComponent(rid);
   const resp = await fetch(url, { headers: { "User-Agent": USER_AGENT } });
   const text = await resp.text();
 
-  // If still waiting, NCBI returns HTML (starts with <!DOCTYPE or <html>)
   if (text.startsWith("<!DOCTYPE") || text.startsWith("<html") || text.startsWith("<!")) {
-    // Check for HTML status messages
     if (text.includes("There are no more hits") || text.includes("No hits found")) {
       return { status: "READY", hits: [] };
     }
     return { status: "WAITING" };
   }
 
-  // XML response - parse hits
   const hits = [];
   const hitRegex = /<Hit>([\s\S]*?)<\/Hit>/g;
   let m;
   while ((m = hitRegex.exec(text)) !== null) {
     const h = m[1];
-    hitId: {
-      const id = extractTag(h, "Hit_id");
-      const def = extractTag(h, "Hit_def");
-      const accession = extractTag(h, "Hit_accession");
-      const len = parseInt(extractTag(h, "Hit_len") || "0");
+    const id = extractTag(h, "Hit_id");
+    const def = extractTag(h, "Hit_def");
+    const accession = extractTag(h, "Hit_accession");
+    const hitLen = parseInt(extractTag(h, "Hit_len") || "0");
 
-      const hsps = [];
-      const hspRegex = /<Hsp>([\s\S]*?)<\/Hsp>/g;
-      let hm;
-      while ((hm = hspRegex.exec(h)) !== null) {
-        const s = hm[1];
-        hsps.push({
-          hsp_num: parseInt(extractTag(s, "Hsp_num") || "1"),
-          identity: parseInt(extractTag(s, "Hsp_identity") || "0"),
-          positive: parseInt(extractTag(s, "Hsp_positive") || "0"),
-          gaps: parseInt(extractTag(s, "Hsp_gaps") || "0"),
-          align_len: parseInt(extractTag(s, "Hsp_align-len") || "0"),
-          bit_score: parseFloat(extractTag(s, "Hsp_bit-score") || "0"),
-          score: parseFloat(extractTag(s, "Hsp_score") || "0"),
-          evalue: extractTag(s, "Hsp_evalue") || "",
-          query_from: parseInt(extractTag(s, "Hsp_query-from") || "0"),
-          query_to: parseInt(extractTag(s, "Hsp_query-to") || "0"),
-          hit_from: parseInt(extractTag(s, "Hsp_hit-from") || "0"),
-          hit_to: parseInt(extractTag(s, "Hsp_hit-to") || "0"),
-          query_seq: extractTag(s, "Hsp_query-seq") || "",
-          hit_seq: extractTag(s, "Hsp_hit-seq") || "",
-          midline: extractTag(s, "Hsp_midline") || "",
-        });
-      }
-
-      hits.push({ id, def, accession, len, hsps });
+    const hsps = [];
+    const hspRegex = /<Hsp>([\s\S]*?)<\/Hsp>/g;
+    let hm;
+    while ((hm = hspRegex.exec(h)) !== null) {
+      const s = hm[1];
+      hsps.push({
+        hsp_num: parseInt(extractTag(s, "Hsp_num") || "1"),
+        identity: parseInt(extractTag(s, "Hsp_identity") || "0"),
+        positive: parseInt(extractTag(s, "Hsp_positive") || "0"),
+        gaps: parseInt(extractTag(s, "Hsp_gaps") || "0"),
+        align_len: parseInt(extractTag(s, "Hsp_align-len") || "0"),
+        bit_score: parseFloat(extractTag(s, "Hsp_bit-score") || "0"),
+        score: parseFloat(extractTag(s, "Hsp_score") || "0"),
+        evalue: extractTag(s, "Hsp_evalue") || "",
+        query_from: parseInt(extractTag(s, "Hsp_query-from") || "0"),
+        query_to: parseInt(extractTag(s, "Hsp_query-to") || "0"),
+        hit_from: parseInt(extractTag(s, "Hsp_hit-from") || "0"),
+        hit_to: parseInt(extractTag(s, "Hsp_hit-to") || "0"),
+        query_seq: extractTag(s, "Hsp_query-seq") || "",
+        hit_seq: extractTag(s, "Hsp_hit-seq") || "",
+        midline: extractTag(s, "Hsp_midline") || "",
+      });
     }
+
+    hits.push({ id, def, accession, len: hitLen, hsps });
   }
 
   return { status: "READY", hits };
@@ -119,7 +114,7 @@ export default async function handler(request) {
       const rid = url.searchParams.get("rid");
       const result = await pollBlast(rid);
       return new Response(JSON.stringify(result), {
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
       });
     } catch (e) {
       return new Response(JSON.stringify({ error: e.message }), {
