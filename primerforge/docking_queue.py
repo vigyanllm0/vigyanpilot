@@ -94,3 +94,24 @@ def list_pending_jobs() -> list[dict]:
             with open(os.path.join(PENDING_DIR, fname)) as f:
                 jobs.append(json.load(f))
     return jobs
+
+def cleanup_old_jobs(max_age_hours: float = 1.0):
+    """Remove completed/failed jobs older than max_age_hours to prevent disk bloat."""
+    _ensure_dirs()
+    now = time.time()
+    cutoff = now - max_age_hours * 3600
+    removed = 0
+    for directory in (COMPLETE_DIR, FAILED_DIR):
+        for fname in os.listdir(directory):
+            if not fname.endswith(".json"):
+                continue
+            path = os.path.join(directory, fname)
+            try:
+                mtime = os.path.getmtime(path)
+                if mtime < cutoff:
+                    os.remove(path)
+                    removed += 1
+            except (OSError, FileNotFoundError):
+                pass
+    if removed:
+        logger.info("Cleaned up %d old docking job(s) (>%sh old)", removed, max_age_hours)

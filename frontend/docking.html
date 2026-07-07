@@ -1094,7 +1094,7 @@ function displayResults(result) {
       '<div class="rc-body">' +
       '<div class="stage-detail"><div class="stage-metric"><span class="label">Sequence Length</span><span class="value">' + (s1.sequence_length || '?') + ' aa</span></div></div>' +
       '<div class="stage-detail"><div class="stage-metric"><span class="label">Mean pLDDT</span><span class="value">' + (s1.plddt_score || 'N/A') + '%</span></div></div>' +
-      '<div class="stage-detail"><div class="stage-metric"><span class="label">Structure</span><span class="value" style="font-size:10px;color:var(--muted)">' + (s1.pdb_string ? (s1.pdb_string.length + ' atoms in PDB') : 'N/A') + '</span></div></div>' +
+      '<div class="stage-detail"><div class="stage-metric"><span class="label">Structure</span><span class="value" style="font-size:10px;color:var(--muted)">' + (s1.sequence_length ? s1.sequence_length + ' aa — view in 3D below' : 'Predicted') + '</span></div></div>' +
       (s1.message ? '<div class="info-card" style="margin-top:10px;font-size:11px">' + esc(s1.message) + '</div>' : '') +
       '<div style="margin-top:8px"><button class="btn-secondary btn-sm" onclick="downloadPDB()">Download Protein PDB</button></div>' +
       '</div></div>';
@@ -1149,7 +1149,7 @@ function displayResults(result) {
       var cs = mol.consensus_score || '—';
       var vClass = vina < -7 ? 'score-good' : (vina < -5 ? 'score-ok' : 'score-bad');
       var gClass = gnina !== null && gnina !== undefined ? (gnina < -7 ? 'score-good' : (gnina < -5 ? 'score-ok' : 'score-bad')) : '';
-      var hasStruct = mol.structure && mol.structure.ligand;
+      var hasStruct = mol._has_structure;
       html += '<tr style="cursor:' + (hasStruct ? 'pointer' : 'default') + '" onclick="' + (hasStruct ? 'viewMol3D(' + i + ')' : '') + '" title="' + (hasStruct ? 'Click to view docked pose in 3D' : 'No 3D structure available') + '">' +
         '<td><span class="rank-num">#' + (i + 1) + '</span></td>' +
         '<td style="font-size:10px;max-width:200px;word-break:break-all">' + esc(mol.smiles || '') + '</td>' +
@@ -1186,9 +1186,10 @@ function displayResults(result) {
 
   $('results-body').innerHTML = html;
 
-  // Initialize 3D viewer with protein
-  if (result.stage1 && result.stage1.pdb_string) {
-    initViewer(result.stage1.pdb_string);
+  // Initialize 3D viewer (fetches structure data from API lazily)
+  _jobId = result.job_id || '';
+  if (result.stage1 && result.stage1.plddt_score) {
+    initViewer();
   }
 
   $('results-wrap').scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -1202,21 +1203,61 @@ function showError(msg) {
 // ── 3D Molecular Viewer ──────────────────────────────────────────────────
 var _viewer = null;
 var _proteinPdb = '';
+var _jobId = '';
+var _structureCache = {};
 
-function initViewer(pdbStr) {
-  _proteinPdb = pdbStr;
+function initViewer() {
   var container = $('mol-viewer-container');
   container.style.display = 'block';
   var el = $('mol-3d-viewer');
-  el.innerHTML = '';
-  _viewer = $3Dmol.createViewer(el, {backgroundColor: '#ffffff'});
-  _viewer.addModel(pdbStr, 'pdb');
-  _viewer.setStyle({}, {cartoon: {color: 'spectrum'}});
-  _viewer.zoomTo();
-  _viewer.render();
-  $('mol-viewer-info').textContent = 'Protein backbone (cartoon, spectrum-colored)';
-  // Add ligand selector for each ranked molecule with structure
-  updateMolSelector(-1);
+  el.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--muted);font-size:13px">Loading structure data...</div>';
+  // Fetch protein structure from API
+  var ji = _jobId || (window._lastDockingResult && window._lastDockingResult.job_id);
+  if (!ji) return;
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', '/api/primer/docking/structure/' + ji + '/1', true);
+  xhr.onload = function() {
+    if (xhr.status === 200) {
+      var data = JSON.parse(xhr.responseText);
+      _proteinPdb = data.receptor_pdb || '';
+      _structureCache['1'] = data;
+      el.innerHTML = '';
+      _viewer = $3Dmol.createViewer(el, {backgroundColor: '#ffffff'});
+      if (_proteinPdb) {
+        _viewer.addModel(_proteinPdb, 'pdb');
+        _viewer.setStyle({}, {cartoon: {color: 'spectrum'}});
+        _viewer.zoomTo();
+        _viewer.render();
+      }
+      $('mol-viewer-info').textContent = 'Protein backbone (cartoon, spectrum-colored)';
+      updateMolSelector(-1);
+    }
+  };
+  xhr.onerror = function() {
+    el.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--red);font-size:13px">Failed to load structure.</div>';
+  };
+  xhr.send();
+}
+
+function fetchMolStructure(idx, callback) {
+  var key = '' + (idx + 1);
+  if (_structureCache[key] && _structureCache[key].ligand_sdf) {
+    callback(_structureCache[key]);
+    return;
+  }
+  var ji = _jobId || (window._lastDockingResult && window._lastDockingResult.job_id);
+  if (!ji) return;
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', '/api/primer/docking/structure/' + ji + '/' + (idx + 1), true);
+  xhr.onload = function() {
+    if (xhr.status === 200) {
+      var data = JSON.parse(xhr.responseText);
+      _structureCache[key] = data;
+      if (!_proteinPdb && data.receptor_pdb) _proteinPdb = data.receptor_pdb;
+      callback(data);
+    }
+  };
+  xhr.send();
 }
 
 function updateMolSelector(activeIdx) {
@@ -1224,15 +1265,14 @@ function updateMolSelector(activeIdx) {
   if (!result) return;
   var ranked = result.ranked_results || [];
   var sel = $('mol-selector');
-  sel.innerHTML = '<button class="mol-btn' + (activeIdx === -1 ? ' active' : '') + '" data-view="protein" onclick="showViewerMol(-1)">Protein</button>';
+  sel.innerHTML = '<button class="mol-btn' + (activeIdx === -1 ? ' active' : '') + '" onclick="showViewerMol(-1)">Protein</button>';
   for (var i = 0; i < ranked.length; i++) {
     var m = ranked[i];
-    if (!m.structure || !m.structure.ligand) continue;
+    if (!m._has_structure) continue;
     sel.innerHTML += '<button class="mol-btn' + (activeIdx === i ? ' active' : '') + '" onclick="showViewerMol(' + i + ')">#' + (i + 1) + '</button>';
   }
-  // Update download links
   var dl = $('mv-download-links');
-  if (activeIdx >= 0 && ranked[activeIdx] && ranked[activeIdx].structure) {
+  if (activeIdx >= 0 && ranked[activeIdx] && ranked[activeIdx]._has_structure) {
     dl.innerHTML = '<button class="btn-secondary btn-sm" onclick="downloadLigandSDF(' + activeIdx + ')">Download Ligand SDF</button>' +
       '<button class="btn-secondary btn-sm" onclick="downloadComplexPDB(' + activeIdx + ')">Download Complex PDB</button>';
   } else {
@@ -1246,30 +1286,36 @@ function showViewerMol(idx) {
   if (!result) return;
   var ranked = result.ranked_results || [];
   _viewer.removeAllModels();
-  // Always add protein
   if (_proteinPdb) {
     _viewer.addModel(_proteinPdb, 'pdb');
     _viewer.setStyle({}, {cartoon: {color: 'spectrum'}});
   }
-  // Add docked ligand if index is valid
-  if (idx >= 0 && ranked[idx] && ranked[idx].structure && ranked[idx].structure.ligand) {
-    var ligStr = ranked[idx].structure.ligand;
-    try {
-      _viewer.addModel(ligStr, 'sdf');
-      _viewer.setStyle({}, {stick: {radius: 0.3, colorscheme: {prop: 'elem', map: {C: 'gray', N: 'blue', O: 'red', S: 'yellow', P: 'orange', F: 'green', Cl: 'green', Br: 'brown', I: 'purple'}}}});
-    } catch(e) {
-      // If SDF fails, try as mol2 or pdb
-      console.warn('SDF parse error, trying mol2:', e);
-    }
-    $('mol-viewer-info').textContent = 'Rank #' + (idx + 1) + ' — SMILES: ' + esc(ranked[idx].smiles || '').substring(0, 50) +
-      ' | Vina: ' + (ranked[idx].vina_score !== null && ranked[idx].vina_score !== undefined ? ranked[idx].vina_score.toFixed(2) : '—') + ' kcal/mol' +
-      (ranked[idx].gnina_score !== null && ranked[idx].gnina_score !== undefined ? ' | GNINA: ' + ranked[idx].gnina_score.toFixed(2) : '');
+  if (idx >= 0 && ranked[idx] && ranked[idx]._has_structure) {
+    $('mol-viewer-info').textContent = 'Loading docked pose for Rank #' + (idx + 1) + '...';
+    _viewer.render();
+    fetchMolStructure(idx, function(data) {
+      var ligStr = data.ligand_sdf || '';
+      if (ligStr) {
+        try {
+          _viewer.addModel(ligStr, 'sdf');
+          _viewer.setStyle({}, {stick: {radius: 0.3, colorscheme: {prop: 'elem', map: {C: 'gray', N: 'blue', O: 'red', S: 'yellow', P: 'orange', F: 'green', Cl: 'green', Br: 'brown', I: 'purple'}}}});
+        } catch(e) {
+          console.warn('SDF parse error:', e);
+        }
+      }
+      $('mol-viewer-info').textContent = 'Rank #' + (idx + 1) + ' — SMILES: ' + esc(ranked[idx].smiles || '').substring(0, 50) +
+        ' | Vina: ' + (ranked[idx].vina_score !== null && ranked[idx].vina_score !== undefined ? ranked[idx].vina_score.toFixed(2) : '—') + ' kcal/mol' +
+        (ranked[idx].gnina_score !== null && ranked[idx].gnina_score !== undefined ? ' | GNINA: ' + ranked[idx].gnina_score.toFixed(2) : '');
+      _viewer.zoomTo();
+      _viewer.render();
+      updateMolSelector(idx);
+    });
   } else {
     $('mol-viewer-info').textContent = 'Protein backbone (cartoon, spectrum-colored)';
+    _viewer.zoomTo();
+    _viewer.render();
+    updateMolSelector(idx);
   }
-  _viewer.zoomTo();
-  _viewer.render();
-  updateMolSelector(idx);
 }
 
 function viewMol3D(idx) {
@@ -1280,44 +1326,40 @@ function viewMol3D(idx) {
 // ── Structure Downloads ──────────────────────────────────────────────────
 
 function downloadPDB() {
-  if (!_proteinPdb) return;
-  downloadFile(_proteinPdb, 'protein.pdb', 'chemical/x-pdb');
+  if (_proteinPdb) { downloadFile(_proteinPdb, 'protein.pdb', 'chemical/x-pdb'); return; }
+  fetchMolStructure(0, function(data) {
+    if (data.receptor_pdb) downloadFile(data.receptor_pdb, 'protein.pdb', 'chemical/x-pdb');
+  });
 }
 
 function downloadLigandSDF(idx) {
-  var result = window._lastDockingResult;
-  if (!result || !result.ranked_results || !result.ranked_results[idx]) return;
-  var mol = result.ranked_results[idx];
-  if (!mol.structure || !mol.structure.ligand) return;
-  downloadFile(mol.structure.ligand, 'ligand_rank' + (idx + 1) + '.sdf', 'chemical/x-mdl-sdfile');
+  fetchMolStructure(idx, function(data) {
+    if (data.ligand_sdf) downloadFile(data.ligand_sdf, 'ligand_rank' + (idx + 1) + '.sdf', 'chemical/x-mdl-sdfile');
+  });
 }
 
 function downloadComplexPDB(idx) {
   var result = window._lastDockingResult;
   if (!result || !result.ranked_results || !result.ranked_results[idx]) return;
   var mol = result.ranked_results[idx];
-  if (!_proteinPdb) return;
-  var ligStr = mol.structure && mol.structure.ligand ? mol.structure.ligand : '';
-  // Build a multi-model PDB: MODEL 1 = protein, MODEL 2 = ligand (converted from SDF)
-  var complexPdb = 'REMARK   1 Docked complex generated by VigyanLLM Consensus Docking Pipeline\n';
-  complexPdb += 'REMARK   1 Protein structure: ESMFold (pLDDT ' + (result.stage1 && result.stage1.plddt_score ? result.stage1.plddt_score : '?') + '%)\n';
-  complexPdb += 'REMARK   1 Ligand SMILES: ' + (mol.smiles || '') + '\n';
-  complexPdb += 'REMARK   1 Vina score: ' + (mol.vina_score !== null && mol.vina_score !== undefined ? mol.vina_score.toFixed(2) : '—') + ' kcal/mol\n';
-  if (mol.gnina_score !== null && mol.gnina_score !== undefined) {
-    complexPdb += 'REMARK   1 GNINA score: ' + mol.gnina_score.toFixed(2) + ' kcal/mol\n';
-  }
-  complexPdb += 'REMARK   1 Consensus score: ' + (mol.consensus_score ? mol.consensus_score.toFixed(3) : '—') + '\n';
-  complexPdb += 'MODEL        1\n';
-  complexPdb += _proteinPdb;
-  complexPdb += '\nENDMDL\n';
-  if (ligStr) {
-    // Convert SDF to PDB-like ATOM records for the complex
-    var ligPdb = sdfToPdb(ligStr);
-    complexPdb += 'MODEL        2\n';
-    complexPdb += ligPdb;
-    complexPdb += '\nENDMDL\n';
-  }
-  downloadFile(complexPdb, 'complex_rank' + (idx + 1) + '.pdb', 'chemical/x-pdb');
+  fetchMolStructure(idx, function(data) {
+    var ligStr = data.ligand_sdf || '';
+    var protPdb = data.receptor_pdb || _proteinPdb;
+    if (!protPdb) return;
+    var complexPdb = 'REMARK   1 Docked complex generated by VigyanLLM Consensus Docking Pipeline\n';
+    complexPdb += 'REMARK   1 Protein: ESMFold (pLDDT ' + (result.stage1 && result.stage1.plddt_score ? result.stage1.plddt_score : '?') + '%)\n';
+    complexPdb += 'REMARK   1 Ligand SMILES: ' + (mol.smiles || '') + '\n';
+    complexPdb += 'REMARK   1 Vina: ' + (mol.vina_score !== null && mol.vina_score !== undefined ? mol.vina_score.toFixed(2) : '—') + ' kcal/mol\n';
+    if (mol.gnina_score !== null && mol.gnina_score !== undefined) {
+      complexPdb += 'REMARK   1 GNINA: ' + mol.gnina_score.toFixed(2) + ' kcal/mol\n';
+    }
+    complexPdb += 'REMARK   1 Consensus: ' + (mol.consensus_score ? mol.consensus_score.toFixed(3) : '—') + '\n';
+    complexPdb += 'MODEL        1\n' + protPdb + '\nENDMDL\n';
+    if (ligStr) {
+      complexPdb += 'MODEL        2\n' + sdfToPdb(ligStr) + '\nENDMDL\n';
+    }
+    downloadFile(complexPdb, 'complex_rank' + (idx + 1) + '.pdb', 'chemical/x-pdb');
+  });
 }
 
 // ── Utility Functions ────────────────────────────────────────────────────
@@ -1333,43 +1375,34 @@ function downloadFile(content, filename, mimeType) {
 }
 
 function sdfToPdb(sdfStr) {
-  // Minimal SDF-to-PDB converter: extract atom coordinates from SDF
   var lines = sdfStr.split('\n');
   var pdbLines = [];
   var atomIdx = 1;
-  var inCountsLine = false;
   var expectedAtoms = 0;
   for (var i = 0; i < lines.length; i++) {
-    var line = lines[i];
-    if (i === 3) {
-      // Counts line: atoms count is first 3 chars
-      expectedAtoms = parseInt(line.substring(0, 3).trim()) || 0;
-      continue;
-    }
+    if (i === 3) { expectedAtoms = parseInt(lines[i].substring(0, 3).trim()) || 0; continue; }
     if (i >= 4 && i < 4 + expectedAtoms) {
-      // Atom block: x, y, z, element
-      var x = line.substring(0, 10).trim();
-      var y = line.substring(10, 20).trim();
-      var z = line.substring(20, 30).trim();
-      var elem = line.substring(31, 34).trim() || 'C';
-      var atomName = ' ' + elem + (atomIdx < 10 ? ' ' + atomIdx : atomIdx < 100 ? atomIdx : atomIdx);
-      pdbLines.push(formatAtomLine(atomIdx, atomName, elem, x, y, z));
+      var x = lines[i].substring(0, 10).trim();
+      var y = lines[i].substring(10, 20).trim();
+      var z = lines[i].substring(20, 30).trim();
+      var elem = lines[i].substring(31, 34).trim() || 'C';
+      var an = ' ' + elem + (atomIdx < 10 ? ' ' + atomIdx : atomIdx < 100 ? atomIdx : atomIdx);
+      pdbLines.push(formatAtomLine(atomIdx, an, elem, x, y, z));
       atomIdx++;
     }
-    if (line === '$$$$') break;
+    if (lines[i] === '$$$$') break;
   }
   return pdbLines.join('\n');
 }
 
 function formatAtomLine(serial, name, elem, x, y, z) {
-  var serStr = serial < 10000 ? '    ' + serial : '' + serial;
-  serStr = serStr.slice(-5);
-  var nameStr = (name + '    ').slice(0, 4);
-  var elemStr = (elem + '  ').slice(0, 2).toUpperCase();
-  var xStr = ('          ' + x).slice(-8);
-  var yStr = ('          ' + y).slice(-8);
-  var zStr = ('          ' + z).slice(-8);
-  return 'ATOM  ' + serStr + ' ' + nameStr + ' LIG A   1    ' + xStr + yStr + zStr + '  1.00  0.00           ' + elemStr;
+  var s = ('    ' + serial).slice(-5);
+  var n = (name + '    ').slice(0, 4);
+  var e = (elem + '  ').slice(0, 2).toUpperCase();
+  var xs = ('          ' + x).slice(-8);
+  var ys = ('          ' + y).slice(-8);
+  var zs = ('          ' + z).slice(-8);
+  return 'ATOM  ' + s + ' ' + n + ' LIG A   1    ' + xs + ys + zs + '  1.00  0.00           ' + e;
 }
 
 function downloadResults(fmt) {
@@ -1379,9 +1412,9 @@ function downloadResults(fmt) {
   var content, mime, ext;
   if (fmt === 'csv') {
     var hasG = result.stage3 && result.stage3.status !== 'skipped';
-    var header = 'Rank,SMILES,Vina_Score' + (hasG ? ',GNINA_Score' : '') + ',Consensus_Score';
+    var header = 'Rank,SMILES,Vina_Score' + (hasG ? ',GNINA_Score' : '') + ',Consensus_Score,Has_3D_Structure';
     var rows = ranked.map(function(m,i){
-      return (i+1) + ',"' + esc(m.smiles||'') + '",' + (m.vina_score!==null&&m.vina_score!==undefined?m.vina_score:'') + (hasG ? ',' + (m.gnina_score!==null&&m.gnina_score!==undefined?m.gnina_score:'') : '') + ',' + (m.consensus_score!==null&&m.consensus_score!==undefined?m.consensus_score:'');
+      return (i+1) + ',"' + esc(m.smiles||'') + '",' + (m.vina_score!==null&&m.vina_score!==undefined?m.vina_score:'') + (hasG ? ',' + (m.gnina_score!==null&&m.gnina_score!==undefined?m.gnina_score:'') : '') + ',' + (m.consensus_score!==null&&m.consensus_score!==undefined?m.consensus_score:'') + ',' + (m._has_structure ? 'Yes' : 'No');
     });
     content = header + '\n' + rows.join('\n');
     mime = 'text/csv';

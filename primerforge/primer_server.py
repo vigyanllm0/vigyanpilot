@@ -1739,16 +1739,55 @@ def create_app() -> Flask:
         job = get_job(job_id)
         if not job:
             return err("Job not found.", "NOT_FOUND", 404)
+        from primerforge.docking_queue import cleanup_old_jobs
+        cleanup_old_jobs(4.0)
         resp = {
             "job_id": job["job_id"],
             "status": job["status"],
             "created_at": job["created_at"],
         }
         if job["status"] == "completed" and job["result"]:
-            resp["result"] = job["result"]
+            result = job["result"]
+            if isinstance(result, dict):
+                result = dict(result)
+                if "stage1" in result and isinstance(result["stage1"], dict):
+                    s1 = dict(result["stage1"])
+                    s1.pop("pdb_string", None)
+                    result["stage1"] = s1
+                ranked = result.get("ranked_results", [])
+                if ranked:
+                    stripped = []
+                    for mol in ranked:
+                        m = dict(mol)
+                        if "structure" in m:
+                            m["_has_structure"] = bool((m.get("structure") or {}).get("ligand"))
+                            m.pop("structure", None)
+                        stripped.append(m)
+                    result["ranked_results"] = stripped
+            resp["result"] = result
         if job["error"]:
             resp["error"] = job["error"]
         return jsonify(resp), 200
+
+    @app.route("/api/primer/docking/structure/<job_id>/<int:rank>", methods=["GET"])
+    def docking_structure(job_id, rank):
+        job = get_job(job_id)
+        if not job:
+            return err("Job not found.", "NOT_FOUND", 404)
+        result = job.get("result") or {}
+        ranked = result.get("ranked_results") or []
+        if rank < 1 or rank > len(ranked):
+            return err("Invalid rank.", "NOT_FOUND", 404)
+        mol = ranked[rank - 1]
+        structure = mol.get("structure") or {}
+        receptor = (result.get("stage1") or {}).get("pdb_string", "")
+        return jsonify({
+            "receptor_pdb": receptor,
+            "ligand_sdf": structure.get("ligand", ""),
+            "smiles": mol.get("smiles", ""),
+            "vina_score": mol.get("vina_score"),
+            "gnina_score": mol.get("gnina_score"),
+        }), 200
 
     @app.route("/api/primer/docking/pending", methods=["GET"])
     def docking_pending():

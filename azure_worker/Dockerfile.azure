@@ -66,6 +66,14 @@ RUN pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cpu 
     pip install --no-cache-dir transformers>=4.40.0 tokenizers>=0.15.0 fair-esm>=2.0.0 \
                           einops>=0.6.0 accelerate>=0.26.0
 
+# Pre-download ESMFold model weights (~8GB) into image to avoid cold-start download on ACI
+RUN python -c "\
+from huggingface_hub import snapshot_download; \
+print('Pre-downloading ESMFold model v1...'); \
+snapshot_download('facebook/esmfold_v1', resume_download=True); \
+print('ESMFold model cached in image.'); \
+" 2>&1
+
 # Copy the entire project (needed for primerforge module imports)
 COPY primerforge/ ./primerforge/
 COPY azure_worker/ ./azure_worker/
