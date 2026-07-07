@@ -38,6 +38,7 @@ from typing import Dict, Optional, Any
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+    stream=sys.stdout,
 )
 logger = logging.getLogger("azure_worker")
 

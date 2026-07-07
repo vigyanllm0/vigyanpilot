@@ -95,6 +95,49 @@ def list_pending_jobs() -> list[dict]:
                 jobs.append(json.load(f))
     return jobs
 
+def list_running_jobs() -> list[dict]:
+    _ensure_dirs()
+    jobs = []
+    for fname in os.listdir(RUNNING_DIR):
+        if fname.endswith(".json"):
+            with open(os.path.join(RUNNING_DIR, fname)) as f:
+                jobs.append(json.load(f))
+    return jobs
+
+def release_stale_jobs(max_age_minutes: float = 10.0):
+    """Move running jobs older than max_age_minutes back to pending.
+    
+    This handles the case where a worker crashes mid-job, leaving the
+    job stuck in 'running' state forever. The next polling cycle will
+    pick it up again.
+    """
+    _ensure_dirs()
+    now = time.time()
+    cutoff = now - max_age_minutes * 60
+    released = 0
+    for fname in os.listdir(RUNNING_DIR):
+        if not fname.endswith(".json"):
+            continue
+        path = os.path.join(RUNNING_DIR, fname)
+        try:
+            mtime = os.path.getmtime(path)
+            if mtime < cutoff:
+                with open(path) as f:
+                    job = json.load(f)
+                job["status"] = "pending"
+                job["updated_at"] = now
+                dst = os.path.join(PENDING_DIR, fname)
+                with open(dst, "w") as f:
+                    json.dump(job, f)
+                os.remove(path)
+                released += 1
+                logger.info("Released stale job %s back to pending", job.get("job_id"))
+        except (OSError, json.JSONDecodeError):
+            pass
+    if released:
+        logger.info("Released %d stale running job(s) back to pending", released)
+    return released
+
 def cleanup_old_jobs(max_age_hours: float = 1.0):
     """Remove completed/failed jobs older than max_age_hours to prevent disk bloat."""
     _ensure_dirs()

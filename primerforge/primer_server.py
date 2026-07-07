@@ -1791,8 +1791,22 @@ def create_app() -> Flask:
 
     @app.route("/api/primer/docking/pending", methods=["GET"])
     def docking_pending():
+        from primerforge.docking_queue import release_stale_jobs
+        release_stale_jobs(max_age_minutes=10.0)
         jobs = list_pending_jobs()
         return jsonify({"pending": len(jobs), "jobs": jobs}), 200
+
+    @app.route("/api/primer/docking/running", methods=["GET"])
+    def docking_running():
+        from primerforge.docking_queue import list_running_jobs
+        jobs = list_running_jobs()
+        return jsonify({"running": len(jobs), "jobs": jobs}), 200
+
+    @app.route("/api/primer/docking/reset/<job_id>", methods=["POST"])
+    def docking_reset(job_id):
+        from primerforge.docking_queue import release_stale_jobs
+        n = release_stale_jobs(max_age_minutes=0)
+        return jsonify({"status": "ok", "released": n}), 200
 
     @app.route("/api/primer/docking/claim/<job_id>", methods=["POST"])
     def docking_claim(job_id):
