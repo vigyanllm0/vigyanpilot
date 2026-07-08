@@ -340,6 +340,42 @@ def run_stress_test_job(config: Dict, callback_url: Optional[str] = None,
     return summary
 
 
+def _strip_structures(result: Dict) -> Dict:
+    """Remove bulky PDB/SDF structure strings from the result before POSTing."""
+    if not result:
+        return result
+    ranked = result.get("ranked_results")
+    if ranked:
+        for mol in ranked:
+            mol.pop("structure", None)
+    stage1 = result.get("stage1")
+    if stage1:
+        stage1.pop("pdb_string", None)
+    return result
+
+
+def _upload_structures(api_base: str, job_id: str, result: Dict):
+    """Upload individual docked structures to the server for the 3D viewer."""
+    import urllib.request
+    import urllib.error
+    ranked = result.get("ranked_results") or []
+    for i, mol in enumerate(ranked):
+        struct = mol.get("structure")
+        if not struct:
+            continue
+        try:
+            payload = json.dumps(struct).encode()
+            req = urllib.request.Request(
+                f"{api_base}/api/primer/docking/structure/upload/{job_id}/{i + 1}",
+                method="POST",
+                data=payload,
+                headers={"Content-Type": "application/json"},
+            )
+            urllib.request.urlopen(req, timeout=30)
+        except Exception as e:
+            logger.warning("Failed to upload structure rank %d for %s: %s", i + 1, job_id, e)
+
+
 def run_docking_job(config: Dict, callback_url: Optional[str] = None,
                      callback_token: Optional[str] = None) -> Dict:
     """Run the consensus docking pipeline on Azure.
@@ -530,17 +566,24 @@ def _run_daemon():
 
             # Post result back to complete endpoint
             try:
-                payload = json.dumps({"result": result, "error": error}).encode()
+                # Strip bulky structure data from payload to avoid timeout;
+                # structures are uploaded separately below.
+                stripped = _strip_structures(result) if result else result
+                payload = json.dumps({"result": stripped, "error": error}).encode()
                 req = urllib.request.Request(
                     f"{api_base}/api/primer/docking/complete/{job_id}",
                     method="POST",
                     data=payload,
                     headers={"Content-Type": "application/json"},
                 )
-                urllib.request.urlopen(req, timeout=10)
+                urllib.request.urlopen(req, timeout=30)
                 logger.info("Job %s completed (error=%s)", job_id, error)
             except Exception as e:
                 logger.error("Failed to post result for %s: %s", job_id, e)
+
+            # Upload individual structures so 3D viewer can load them
+            if result and not error:
+                _upload_structures(api_base, job_id, result)
 
         _time.sleep(poll_interval)
 

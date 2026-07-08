@@ -2899,10 +2899,12 @@ function handleCheckDrop(e){
   e.preventDefault();
   const f=e.dataTransfer.files[0];
   if(f){
-    const dt=new DataTransfer();
-    dt.items.add(f);
-    $('check-file-input').files=dt.files;
-    handleCheckFile($('check-file-input'));
+    const r=new FileReader();
+    r.onload=function(ev){
+      _checkPrimerData=ev.target.result;
+      $('check-primers-text').value=_checkPrimerData;
+    };
+    r.readAsText(f);
   }
 }
 
@@ -2911,7 +2913,7 @@ async function runCheckPrimers(){
   if(!tmpl){$('check-template').classList.add('error');return;}
   $('check-template').classList.remove('error');
   const primerText=$('check-primers-text').value.trim();
-  if(!primerText){return;}
+  if(!primerText){$('check-primers-text').classList.add('error');return;}
   setLoading('check-spinner','btn-check-text','btn-check-primers',true,'Checking…');
   $('check-results').innerHTML='';
   try{

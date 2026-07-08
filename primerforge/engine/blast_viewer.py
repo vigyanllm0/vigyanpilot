@@ -6,7 +6,7 @@ Structures BLAST results into a uniform table format.
 No local BLAST binary needed — uses NCBI API or exact matching.
 """
 
-import re, logging
+import os, re, logging
 from typing import Dict, List, Optional
 
 logger = logging.getLogger(__name__)
@@ -57,9 +57,11 @@ def run_remote_blast(
     db = database if not is_protein else "nr"
 
     results = []
+    error_detail = None
     try:
         # Step 1: Submit BLAST job
         submit_url = "https://blast.ncbi.nlm.nih.gov/Blast.cgi"
+        ncbi_api_key = os.environ.get("NCBI_API_KEY", "")
         params = {
             "CMD": "Put",
             "PROGRAM": program,
@@ -68,6 +70,8 @@ def run_remote_blast(
             "FORMAT_TYPE": "JSON2",
             "HITLIST_SIZE": str(max_hits),
         }
+        if ncbi_api_key:
+            params["API_KEY"] = ncbi_api_key
         if organism:
             params["EQ_QUERY"] = f"{organism}[ORGN]"
 
@@ -83,7 +87,8 @@ def run_remote_blast(
                 break
 
         if not rid:
-            return {"results": [], "total": 0, "params": {"program": program, "database": db, "error": "Could not get RID"}}
+            error_detail = "Could not get RID from NCBI"
+            return {"results": [], "total": 0, "params": {"program": program, "database": db, "error": error_detail}}
 
         # Step 2: Poll for results
         import time
@@ -99,11 +104,14 @@ def run_remote_blast(
 
         status_url = "https://blast.ncbi.nlm.nih.gov/Blast.cgi"
         for attempt in range(30):
-            status_resp = requests.get(status_url, params={
+            poll_params = {
                 "CMD": "Get",
                 "FORMAT_TYPE": "JSON2",
                 "RID": rid,
-            }, timeout=30)
+            }
+            if ncbi_api_key:
+                poll_params["API_KEY"] = ncbi_api_key
+            status_resp = requests.get(status_url, params=poll_params, timeout=30)
             status_resp.raise_for_status()
             data = status_resp.json()
 
@@ -114,7 +122,8 @@ def run_remote_blast(
                 break
             time.sleep(5)
         else:
-            return {"results": [], "total": 0, "params": {"program": program, "database": db, "error": "BLAST polling timed out"}}
+            error_detail = "BLAST polling timed out"
+            return {"results": [], "total": 0, "params": {"program": program, "database": db, "error": error_detail}}
 
         # Step 3: Parse JSON results
         report = data.get("BlastOutput2", {}).get("report", {})
@@ -150,13 +159,13 @@ def run_remote_blast(
                 results.append(result)
 
     except Exception as e:
-        logger.warning(f"Remote BLAST failed, falling back to exact matching: {e}")
-        results = _fallback_exact_match(query_sequence, organism)
+        error_detail = str(e)[:200]
+        logger.warning(f"Remote BLAST failed: {error_detail}")
 
     return {
         "results": results,
         "total": len(results),
-        "params": {"program": program, "database": db, "organism": organism},
+        "params": {"program": program, "database": db, "organism": organism, "error": error_detail},
     }
 
 

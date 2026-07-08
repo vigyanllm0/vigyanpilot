@@ -1972,6 +1972,30 @@ def create_app() -> Flask:
             "gnina_score": mol.get("gnina_score"),
         }), 200
 
+    @app.route("/api/primer/docking/structure/upload/<job_id>/<int:rank>", methods=["POST"])
+    def docking_structure_upload(job_id, rank):
+        from primerforge.docking_queue import _ensure_dirs, COMPLETE_DIR, FAILED_DIR, RUNNING_DIR
+        import os, json as jmod
+        data = request.get_json(silent=True) or {}
+        # Find the job file in complete or failed dir
+        for d in (COMPLETE_DIR, FAILED_DIR, RUNNING_DIR):
+            path = os.path.join(d, f"{job_id}.json")
+            if os.path.exists(path):
+                with open(path) as f:
+                    job = jmod.load(f)
+                result = job.get("result") or {}
+                ranked = result.get("ranked_results") or []
+                if 1 <= rank <= len(ranked):
+                    if ranked[rank - 1].get("structure"):
+                        return jsonify({"status": "already_exists"}), 200
+                    ranked[rank - 1]["structure"] = data
+                    job["result"] = result
+                    with open(path, "w") as f:
+                        jmod.dump(job, f)
+                    return jsonify({"status": "stored"}), 200
+                return err("Invalid rank.", "NOT_FOUND", 404)
+        return err("Job not found.", "NOT_FOUND", 404)
+
     @app.route("/api/primer/docking/pending", methods=["GET"])
     def docking_pending():
         from primerforge.docking_queue import release_stale_jobs

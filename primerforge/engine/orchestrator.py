@@ -13,9 +13,8 @@ Supports:
 """
 
 import time
-import uuid
 import logging
-import threading
+import concurrent.futures
 from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple
 
@@ -30,7 +29,7 @@ class PipelineConfig:
     """Configuration for a pipeline execution run."""
 
     mode: str = "full"  # "full" | "express"
-    step_timeout_seconds: int = 120
+    step_timeout_seconds: int = 300
     total_steps: int = 22
     soft_failure_penalty: float = 10.0
 
@@ -236,19 +235,18 @@ class PipelineOrchestrator:
                 exception_container.append(exc)
 
         start_ns = time.perf_counter_ns()
-        thread = threading.Thread(target=_run_step, daemon=True)
-        thread.start()
-        thread.join(timeout=self._config.step_timeout_seconds)
-
-        duration_ms = (time.perf_counter_ns() - start_ns) // 1_000_000
-
-        # Check if thread is still running (timeout occurred)
-        if thread.is_alive():
+        executor = concurrent.futures.ThreadPoolExecutor(max_workers=1)
+        future = executor.submit(_run_step)
+        try:
+            future.result(timeout=self._config.step_timeout_seconds)
+        except concurrent.futures.TimeoutError:
+            duration_ms = (time.perf_counter_ns() - start_ns) // 1_000_000
             error_msg = (
                 f"Step {registration.step_number} ({registration.step_name}) "
                 f"exceeded {self._config.step_timeout_seconds}s timeout"
             )
             logger.warning("VigyanLLM: %s", error_msg)
+            executor.shutdown(wait=False)
             return StepOutcome(
                 step_number=registration.step_number,
                 step_name=registration.step_name,
@@ -258,15 +256,20 @@ class PipelineOrchestrator:
                 error_msg=error_msg,
                 penalty=self._config.soft_failure_penalty,
             )
+        finally:
+            executor.shutdown(wait=False)
+
+        duration_ms = (time.perf_counter_ns() - start_ns) // 1_000_000
 
         # Check if step raised an exception
         if exception_container:
             exc = exception_container[0]
             error_msg = f"{type(exc).__name__}: {exc}"
-            logger.exception(
-                "VigyanLLM: Step %d (%s) raised an exception",
+            logger.error(
+                "VigyanLLM: Step %d (%s) raised an exception: %s",
                 registration.step_number,
                 registration.step_name,
+                error_msg,
             )
             return StepOutcome(
                 step_number=registration.step_number,

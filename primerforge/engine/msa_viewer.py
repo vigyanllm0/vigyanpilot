@@ -186,10 +186,11 @@ def process_job(job_id: str):
 # ── Alignment strategies ───────────────────────────────────────
 
 def _align_mafft(sequences: List[str], auto: bool = True, fast: bool = False) -> Optional[List[str]]:
+    """Align with MAFFT binary; fall back to pure-Python progressive alignment."""
     try:
         subprocess.run(["mafft", "--version"], capture_output=True, timeout=10)
     except (FileNotFoundError, subprocess.TimeoutExpired):
-        return None
+        return _align_python(sequences)
     try:
         with tempfile.NamedTemporaryFile(mode="w", suffix=".fa", delete=False) as f:
             for i, seq in enumerate(sequences):
@@ -207,7 +208,7 @@ def _align_mafft(sequences: List[str], auto: bool = True, fast: bool = False) ->
         result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
         os.unlink(tpath)
         if result.returncode != 0:
-            return None
+            return _align_python(sequences)
 
         aligned, cur = [], ""
         for line in result.stdout.splitlines():
@@ -220,10 +221,94 @@ def _align_mafft(sequences: List[str], auto: bool = True, fast: bool = False) ->
                 cur += s
         if cur:
             aligned.append(cur.upper())
-        return aligned if len(aligned) == len(sequences) else None
+        if len(aligned) == len(sequences):
+            return aligned
+        return _align_python(sequences)
     except Exception as e:
         logger.debug(f"MAFFT alignment failed: {e}")
-        return None
+        return _align_python(sequences)
+
+
+def _align_python(sequences: List[str]) -> Optional[List[str]]:
+    """Reference-based pairwise progressive alignment (pure Python).
+    
+    Picks the longest sequence as reference and aligns all others
+    to it via Needleman-Wunsch (or Biopython PairwiseAligner if available).
+    Falls back to fast-padding for sets >100 sequences.
+    """
+    n = len(sequences)
+    if n == 0:
+        return []
+    if n == 1:
+        return [sequences[0]]
+    if n > 100:
+        return _align_fast_padding(sequences)
+
+    try:
+        from Bio import Align
+        _use_bio = True
+    except ImportError:
+        _use_bio = False
+
+    # Pick reference = longest sequence
+    ref_idx = max(range(n), key=lambda i: len(sequences[i]))
+    ref_seq = sequences[ref_idx]
+
+    # Align every sequence (including the reference) to the reference
+    aligned = [None] * n
+    for i in range(n):
+        if i == ref_idx:
+            aligned[i] = ref_seq
+        else:
+            ali = _pairwise_gaps(sequences[i], ref_seq, _use_bio)
+            aligned[i] = ali
+
+    # All sequences now have gaps inserted -> pad to same length
+    max_len = max(len(s) for s in aligned)
+    return [s.ljust(max_len, "-") for s in aligned]
+
+
+def _pairwise_gaps(query: str, target: str, use_bio: bool) -> str:
+    """Align query to target and insert gaps into query where target has insertions."""
+    if use_bio:
+        from Bio import Align
+        aligner = Align.PairwiseAligner()
+        aligner.mode = "global"
+        aligner.match_score = 2
+        aligner.mismatch_score = -1
+        aligner.gap_score = -2
+        aligner.extend_gap_score = -0.5
+        ali = aligner.align(query, target)
+        idx = ali[0].indices[0]
+        return "".join(query[i] if i >= 0 else "-" for i in idx)
+
+    m, n = len(query), len(target)
+    dp = [[0] * (n + 1) for _ in range(m + 1)]
+    for i in range(m + 1):
+        dp[i][0] = -2 * i
+    for j in range(n + 1):
+        dp[0][j] = -2 * j
+    for i in range(1, m + 1):
+        for j in range(1, n + 1):
+            match = dp[i - 1][j - 1] + (2 if query[i - 1] == target[j - 1] else -1)
+            delete = dp[i - 1][j] - 2
+            insert = dp[i][j - 1] - 2
+            dp[i][j] = max(match, delete, insert)
+
+    i, j = m, n
+    res = []
+    while i > 0 or j > 0:
+        if i > 0 and j > 0 and dp[i][j] == dp[i - 1][j - 1] + (2 if query[i - 1] == target[j - 1] else -1):
+            res.append(query[i - 1])
+            i -= 1
+            j -= 1
+        elif i > 0 and dp[i][j] == dp[i - 1][j] - 2:
+            res.append(query[i - 1])
+            i -= 1
+        else:
+            res.append("-")
+            j -= 1
+    return "".join(reversed(res))
 
 def _align_kmer_profile(sequences: List[str]) -> List[str]:
     """K-mer based profile alignment for medium-large sets."""
