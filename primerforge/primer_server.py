@@ -796,63 +796,63 @@ def create_app() -> Flask:
             import uuid as _uuid
             from primerforge.engine.orchestrator import PipelineConfig, PipelineOrchestrator
 
-            user, auth_error = _dev_user_or_error()
-            if auth_error:
-                return auth_error
-
-            usage = check_usage(user["email"])
-            if not usage["can_run"] and user.get("role") != "admin":
-                return jsonify({
-                    "error": "Usage limit reached. Payment required for additional runs.",
-                    "code": "PAYMENT_REQUIRED",
-                    "action": "show_payment",
-                    "usage": usage,
-                }), 402
-
-            data = request.get_json(silent=True) or {}
-            sequence = data.get("sequence", "")
-            accession = data.get("accession", "")
-            if not sequence and not accession:
-                return jsonify({"error": "Either 'sequence' or 'accession' is required."}), 400
-
-            mode = data.get("mode", "full")
-            if mode not in ("full", "express"):
-                return jsonify({"error": "'mode' must be 'full' or 'express'."}), 400
-
-            product_min = data.get("product_min", 80)
-            product_max = data.get("product_max", 500)
-            min_tm = float(data.get("min_tm", 58.0))
-            max_tm = float(data.get("max_tm", 65.0))
-            buffer_conditions = data.get("buffer_conditions") or {
-                "monovalent_mm": 50.0,
-                "divalent_mm": 1.5,
-                "dntp_mm": 0.2,
-                "oligo_conc_nm": 250.0,
-            }
-            input_params = dict(data)
-            input_params.update({
-                "mode": mode,
-                "organism": data.get("organism", "human"),
-                "targeting_mode": data.get("targeting_mode", "common_exon"),
-                "design_mode": data.get("design_mode", "standard"),
-                "polymerase_type": data.get("polymerase_type", "taq"),
-                "template_ng": data.get("template_ng", 100),
-                "multiplex": data.get("multiplex", False),
-                "product_min": product_min,
-                "product_max": product_max,
-                "min_tm": min_tm,
-                "max_tm": max_tm,
-                "buffer_conditions": buffer_conditions,
-                "buffer": buffer_conditions,
-                "design_params": {
-                    "tm_min": min_tm,
-                    "tm_max": max_tm,
-                    "product_size_min": product_min,
-                    "product_size_max": product_max,
-                },
-            })
-
             try:
+                user, auth_error = _dev_user_or_error()
+                if auth_error:
+                    return auth_error
+
+                usage = check_usage(user["email"])
+                if not usage["can_run"] and user.get("role") != "admin":
+                    return jsonify({
+                        "error": "Usage limit reached. Payment required for additional runs.",
+                        "code": "PAYMENT_REQUIRED",
+                        "action": "show_payment",
+                        "usage": usage,
+                    }), 402
+
+                data = request.get_json(silent=True) or {}
+                sequence = data.get("sequence", "")
+                accession = data.get("accession", "")
+                if not sequence and not accession:
+                    return jsonify({"error": "Either 'sequence' or 'accession' is required."}), 400
+
+                mode = data.get("mode", "full")
+                if mode not in ("full", "express"):
+                    return jsonify({"error": "'mode' must be 'full' or 'express'."}), 400
+
+                product_min = data.get("product_min", 80)
+                product_max = data.get("product_max", 500)
+                min_tm = float(data.get("min_tm", 58.0))
+                max_tm = float(data.get("max_tm", 65.0))
+                buffer_conditions = data.get("buffer_conditions") or {
+                    "monovalent_mm": 50.0,
+                    "divalent_mm": 1.5,
+                    "dntp_mm": 0.2,
+                    "oligo_conc_nm": 250.0,
+                }
+                input_params = dict(data)
+                input_params.update({
+                    "mode": mode,
+                    "organism": data.get("organism", "human"),
+                    "targeting_mode": data.get("targeting_mode", "common_exon"),
+                    "design_mode": data.get("design_mode", "standard"),
+                    "polymerase_type": data.get("polymerase_type", "taq"),
+                    "template_ng": data.get("template_ng", 100),
+                    "multiplex": data.get("multiplex", False),
+                    "product_min": product_min,
+                    "product_max": product_max,
+                    "min_tm": min_tm,
+                    "max_tm": max_tm,
+                    "buffer_conditions": buffer_conditions,
+                    "buffer": buffer_conditions,
+                    "design_params": {
+                        "tm_min": min_tm,
+                        "tm_max": max_tm,
+                        "product_size_min": product_min,
+                        "product_size_max": product_max,
+                    },
+                })
+
                 job_id = str(_uuid.uuid4())
                 config = PipelineConfig(mode=mode, step_timeout_seconds=300)
                 orchestrator = PipelineOrchestrator(config=config)
@@ -907,63 +907,77 @@ def create_app() -> Flask:
 
         @app.route("/api/pipeline/status/<job_id>", methods=["GET"])
         def dev_pipeline_status(job_id):
-            user, auth_error = _dev_user_or_error()
-            if auth_error:
-                return auth_error
+            try:
+                user, auth_error = _dev_user_or_error()
+                if auth_error:
+                    return auth_error
 
-            job = DEV_PIPELINE_JOBS.get(job_id)
-            if not job or job["user_email"] != user["email"]:
-                return jsonify({"error": "Job not found."}), 404
+                job = DEV_PIPELINE_JOBS.get(job_id)
+                if not job or job["user_email"] != user["email"]:
+                    return jsonify({"error": "Job not found."}), 404
 
-            return jsonify({
-                "job_id": job_id,
-                "status": job["status"],
-                "mode": job["mode"],
-                "current_step": 22,
-                "total_steps": 22,
-                "error": job["error"],
-                "steps": [
-                    {
-                        "step_number": o.step_number,
-                        "step_name": o.step_name,
-                        "status": o.status,
-                        "duration_ms": o.duration_ms,
-                        "phase": o.phase,
-                    }
-                    for o in job["steps"]
-                ],
-            }), 200
+                return jsonify({
+                    "job_id": job_id,
+                    "status": job["status"],
+                    "mode": job["mode"],
+                    "current_step": 22,
+                    "total_steps": 22,
+                    "error": job["error"],
+                    "steps": [
+                        {
+                            "step_number": o.step_number,
+                            "step_name": o.step_name,
+                            "status": o.status,
+                            "duration_ms": o.duration_ms,
+                            "phase": o.phase,
+                        }
+                        for o in job["steps"]
+                    ],
+                }), 200
+            except Exception as exc:
+                logger.error("Pipeline status failed: %s", exc, exc_info=True)
+                return jsonify({
+                    "error": f"Status check failed: {str(exc)[:200]}",
+                    "code": "STATUS_ERROR",
+                }), 500
 
         @app.route("/api/pipeline/result/<job_id>", methods=["GET"])
         def dev_pipeline_result(job_id):
-            user, auth_error = _dev_user_or_error()
-            if auth_error:
-                return auth_error
+            try:
+                user, auth_error = _dev_user_or_error()
+                if auth_error:
+                    return auth_error
 
-            job = DEV_PIPELINE_JOBS.get(job_id)
-            if not job or job["user_email"] != user["email"]:
-                return jsonify({"error": "Job not found."}), 404
+                job = DEV_PIPELINE_JOBS.get(job_id)
+                if not job or job["user_email"] != user["email"]:
+                    return jsonify({"error": "Job not found."}), 404
 
-            return jsonify({
-                "job_id": job_id,
-                "status": job["status"],
-                "mode": job["mode"],
-                "error": job["error"],
-                "total_duration_ms": job["total_duration_ms"],
-                "steps": [
-                    {
-                        "step_number": o.step_number,
-                        "step_name": o.step_name,
-                        "status": o.status,
-                        "duration_ms": o.duration_ms,
-                        "phase": o.phase,
-                        "error_msg": o.error_msg,
-                        "output_data": o.output_data,
-                    }
-                    for o in job["steps"]
-                ],
-                "compliance_status": "biosecurity_cleared" if job["status"] == "completed" else None,
-            }), 200
+                return jsonify({
+                    "job_id": job_id,
+                    "status": job["status"],
+                    "mode": job["mode"],
+                    "error": job["error"],
+                    "total_duration_ms": job["total_duration_ms"],
+                    "steps": [
+                        {
+                            "step_number": o.step_number,
+                            "step_name": o.step_name,
+                            "status": o.status,
+                            "duration_ms": o.duration_ms,
+                            "phase": o.phase,
+                            "error_msg": o.error_msg,
+                            "output_data": o.output_data,
+                        }
+                        for o in job["steps"]
+                    ],
+                    "compliance_status": "biosecurity_cleared" if job["status"] == "completed" else None,
+                }), 200
+            except Exception as exc:
+                logger.error("Pipeline result failed: %s", exc, exc_info=True)
+                return jsonify({
+                    "error": f"Result fetch failed: {str(exc)[:200]}",
+                    "code": "RESULT_ERROR",
+                }), 500
 
     # ── Serve Frontend HTML Files ─────────────────────────────────────────
     from flask import send_from_directory

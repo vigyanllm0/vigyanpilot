@@ -2662,6 +2662,10 @@ async function runAutoDesign() {
       const statusResp = await fetch(API + '/api/pipeline/status/' + jobId, {headers, signal: AbortSignal.timeout(10000)});
       const statusData = await statusResp.json();
 
+      if (!statusResp.ok) {
+        const errMsg = statusData.error || ('Status request failed (' + statusResp.status + ')');
+        throw new Error(errMsg);
+      }
       if (statusResp.status === 401) { showAuthModal(); throw new Error('__AUTH__'); }
 
       // Update pipeline steps in real-time
@@ -2698,6 +2702,10 @@ async function runAutoDesign() {
     if (auth.token) headers2['Authorization'] = 'Bearer ' + auth.token;
     const resultResp = await fetch(API + '/api/pipeline/result/' + jobId, {headers: headers2, signal: AbortSignal.timeout(15000)});
     const resultData = await resultResp.json();
+    if (!resultResp.ok) {
+      const errMsg = resultData.error || ('Result request failed (' + resultResp.status + ')');
+      throw new Error(errMsg);
+    }
 
     // 4. Apply final pipeline status
     if (resultData.steps) {
