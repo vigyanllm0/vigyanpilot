@@ -23,7 +23,7 @@ import logging
 import razorpay
 from flask import Blueprint, request, jsonify, g
 
-from .database import get_db, get_db_standalone, fetch_one, fetch_all, execute, execute_returning, db_transaction
+from .database import get_db, get_db_standalone, put_db_standalone, fetch_one, fetch_all, execute, execute_returning, db_transaction
 from .pg_auth import get_current_user, require_auth, require_admin, log_action, check_usage
 from .price_registry import PRICE_REGISTRY, TOPUP_PRICE_INR, FREE_TRIAL_RUNS, get_amount_paise, validate_order_request, get_designs_for_product
 from .security import validate_quantity
@@ -366,7 +366,7 @@ def razorpay_webhook():
         if validation_status == "untrusted":
             logger.warning(f"Webhook signature failed for event: {event_type}")
             cur.close()
-            conn.close()
+            put_db_standalone(conn)
             return jsonify({"status": "signature_invalid"}), 200
 
         # Process payment.captured
@@ -497,10 +497,15 @@ def razorpay_webhook():
                 logger.info(f"Webhook: {event_type} — subscription {sub_id} deactivated")
 
         cur.close()
-        conn.close()
+        put_db_standalone(conn)
 
     except Exception as e:
         logger.error(f"Webhook processing error: {e}")
+        if "conn" in locals() and conn is not None:
+            try:
+                put_db_standalone(conn)
+            except Exception:
+                pass
 
     return jsonify({"status": "ok"}), 200
 

@@ -66,8 +66,21 @@ def _get_pool():
     return _pool
 
 
+def _reset_pool():
+    """Close and rebuild the pool (recovers from exhaustion caused by leaked connections)."""
+    global _pool
+    old_pool = _pool
+    _pool = None
+    if old_pool is not None:
+        try:
+            old_pool.close()
+        except Exception:
+            pass
+    logger.warning("PostgreSQL pool reset (connections may have been leaked)")
+
+
 def _get_connection():
-    """Get a connection from the pool. Retries once on failure."""
+    """Get a connection from the pool. Retries once on failure, then resets pool."""
     pool = _get_pool()
     try:
         conn = pool.getconn()
@@ -81,11 +94,19 @@ def _get_connection():
             pass
         return conn
     except psycopg2.pool.PoolError as e:
-        logger.warning(f"Pool exhausted (max={POOL_MAX}), retrying once: {e}")
+        logger.warning(f"Pool exhausted (max={POOL_MAX}), retrying: {e}")
         time.sleep(0.5)
-        conn = pool.getconn()
-        conn.autocommit = False
-        return conn
+        try:
+            conn = pool.getconn()
+            conn.autocommit = False
+            return conn
+        except psycopg2.pool.PoolError:
+            logger.error("Pool still exhausted after retry — resetting pool")
+            _reset_pool()
+            pool = _get_pool()
+            conn = pool.getconn()
+            conn.autocommit = False
+            return conn
 
 
 def _put_connection(conn):
