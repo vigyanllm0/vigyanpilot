@@ -65,6 +65,7 @@ def execute(input_data: Dict[str, Any]) -> Dict[str, Any]:
 
         # ── Extract amplicon sequence ──────────────────────────────────────
         amplicon_seq = _extract_amplicon(pair, target_seq)
+        pair["amplicon_sequence"] = amplicon_seq
 
         if not amplicon_seq or len(amplicon_seq) < MIN_AMPLICON_LENGTH:
             # Skip — amplicon too short for meaningful structure prediction

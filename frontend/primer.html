@@ -217,6 +217,8 @@ nav{position:sticky;top:0;background:var(--navy);z-index:100;height:72px}
 .primer-block.fwd{border-left:3px solid var(--bio)}
 .primer-block.rev{border-left:3px solid var(--amber)}
 .primer-block-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.probe-block{border:1px solid #e0e7ff;border-radius:8px;padding:14px;border-left:3px solid #8b5cf6;margin-top:10px}
+.probe-block-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
 .primer-dir{font-family:var(--font-b);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em}
 .primer-dir.fwd{color:var(--bio)}.primer-dir.rev{color:var(--amber)}
 .gc-clamp-ok{font-size:10px;color:var(--bio)}.gc-clamp-fail{font-size:10px;color:var(--red)}
@@ -2267,6 +2269,37 @@ function primerBlock(p,dir){
   </div>`;
 }
 
+function probeBlock(probes,fTm,rTm){
+  if(!probes||!probes.length)return '';
+  const pb=probes[0];
+  const seq=pb.sequence||'';
+  const tm=asNum(pb.tm);
+  const gc=asNum(pb.gc_percent);
+  const hdg=asNum(pb.hairpin_dg);
+  const len=asNum(pb.length)||seq.length;
+  const meanPrimerTm=fTm!==null&&rTm!==null?((fTm+rTm)/2):null;
+  const targetLow=meanPrimerTm!==null?meanPrimerTm+8:null;
+  const targetHigh=meanPrimerTm!==null?meanPrimerTm+10:null;
+  const tmOk=tm!==null&&targetLow!==null&&targetHigh!==null?tm>=targetLow&&tm<=targetHigh:null;
+  const extra=probes.length>1?`<span style="font-size:10px;color:#6b7280">+${probes.length-1} more</span>`:'';
+  return `<div class="probe-block">
+    <div class="probe-block-head">
+      <span style="font-family:var(--font-b);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#8b5cf6">TaqMan Probe</span>
+      ${extra}
+    </div>
+    <div class="primer-seq" title="Click to select">${esc(seq)}</div>
+    <div class="metrics-row">
+      ${mc('Probe Tm',fmtNum(tm,1,'°C'),tmOk===true?'ok':(tmOk===false?'bad':''))}
+      ${mc('Target Tm range',targetLow!==null&&targetHigh!==null?`${targetLow.toFixed(0)}–${targetHigh.toFixed(0)}°C`:'N/A','')}
+      ${mc('GC',fmtNum(gc,1,'%'),gc===null?'':(gc>=30&&gc<=80?'ok':'bad'))}
+      ${mc('Length',len+'nt','')}
+      ${mc('Hairpin dG',fmtNum(hdg,2),hdg===null?'':(hdg>-2?'ok':'bad'))}
+      ${mc('Score',fmtNum(asNum(pb.score),2),'')}
+    </div>
+    <div style="font-size:10px;margin-top:6px;color:#6b7280">Reporter: ${esc(pb.reporter_5prime||'FAM')} / Quencher: ${esc(pb.quencher_3prime||'BHQ-1')} &mdash; HPLC purification recommended</div>
+  </div>`;
+}
+
 // ── Render pass/fail matrix ───────────────────────────────────────────────
 function pfMatrix(pipeline,cardId){
   if(!pipeline)return '';
@@ -2458,6 +2491,7 @@ function renderPairs(pairs,elapsedMs){
           ${primerBlock(fwd,'fwd')}
           ${primerBlock(rev,'rev')}
         </div>
+        ${p.probes&&p.probes.length?probeBlock(p.probes,fTm,rTm):''}
         <div class="pair-meta-row">
           ${mc('ΔTm', dtm === null ? 'N/A' : (dtm < 0.01 ? '<0.01°C' : dtm.toFixed(2)+'°C'), dtm === null?'':(dtm<=1.5?'ok':'bad'))}
           ${mc('Cross-dimer dG',fmtNum(xdg,2),xdg === null?'':(xdg>-5?'ok':'bad'))}
@@ -2725,6 +2759,20 @@ async function runAutoDesign() {
         const output = typeof rankingStep.output_data === 'string' 
           ? JSON.parse(rankingStep.output_data) : rankingStep.output_data;
         pairs = output.ranked_pairs || output.top_pairs || [];
+      }
+
+      // 5b. Merge probe results from step 24 into each pair
+      const probeStep = resultData.steps.find(s => s.step_number === 24);
+      if (probeStep && probeStep.output_data) {
+        const pout = typeof probeStep.output_data === 'string'
+          ? JSON.parse(probeStep.output_data) : probeStep.output_data;
+        (pout.probe_results || []).forEach(pr => {
+          if (pr.pair_index < pairs.length) {
+            pairs[pr.pair_index].probes = pr.probes || [];
+            pairs[pr.pair_index].probe_status = pr.status;
+            pairs[pr.pair_index].probe_reason = pr.reason;
+          }
+        });
       }
     }
 
