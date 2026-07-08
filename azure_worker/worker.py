@@ -464,6 +464,13 @@ def _run_daemon():
     poll_interval = int(os.environ.get("POLL_INTERVAL", "15"))
     logger.info("Daemon mode: polling %s every %ds for pending docking jobs", api_base, poll_interval)
 
+    # Pre-warm all heavy modules to prevent cold-start delays
+    try:
+        from primerforge.pipelines.warmup import warmup_all
+        warmup_all()
+    except Exception as e:
+        logger.warning("Warm-up failed (non-fatal): %s", e)
+
     while True:
         try:
             import urllib.request

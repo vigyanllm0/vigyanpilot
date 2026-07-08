@@ -70,6 +70,26 @@ async def run_consensus_pipeline(
         "best_molecule": None,
     }
 
+    # Shared temp dir for receptor PDBQT (reused across all Vina/GNINA calls)
+    import shutil
+    _receptor_pdbqt_dir = tempfile.mkdtemp(prefix="receptor_pdbqt_")
+    try:
+        return await _run_pipeline_inner(sequence, ligand_smiles_list, top_n, _receptor_pdbqt_dir, _progress, result)
+    finally:
+        shutil.rmtree(_receptor_pdbqt_dir, ignore_errors=True)
+
+
+async def _run_pipeline_inner(
+    sequence: str,
+    ligand_smiles_list: List[str],
+    top_n: int,
+    _receptor_pdbqt_dir: str,
+    _progress,
+    result: dict,
+) -> Dict[str, Any]:
+
+    _receptor_pdbqt_path = os.path.join(_receptor_pdbqt_dir, "receptor.pdbqt")
+
     # ══════════════════════════════════════════════════════════════════════════
     # STAGE 1: ESMFold — Predict Protein 3D Structure
     # ══════════════════════════════════════════════════════════════════════════
@@ -102,12 +122,17 @@ async def run_consensus_pipeline(
     if not run_vina_docking:
         return {**result, "status": "error", "message": "AutoDock Vina engine not loaded."}
 
+    # Pre-convert receptor PDB→PDBQT ONCE for all ligands
+    from .docking_engine import pdb_to_pdbqt
+    if not pdb_to_pdbqt(receptor_pdb, _receptor_pdbqt_path):
+        return {**result, "status": "error", "message": "Failed to convert receptor PDB to PDBQT."}
+
     vina_results = []
     failed = 0
     total_ligands = len(ligand_smiles_list)
 
-    # Run Vina for all ligands — batch with concurrency limit (4 parallel max)
-    semaphore = asyncio.Semaphore(4)
+    # Run Vina for all ligands — batch with concurrency limit (2 parallel max to save memory)
+    semaphore = asyncio.Semaphore(2)
 
     async def screen_ligand(smiles: str, idx: int):
         nonlocal failed
@@ -116,7 +141,7 @@ async def run_consensus_pipeline(
                 if idx % 5 == 0 or idx == total_ligands - 1:
                     await _progress("STAGE 2 / Vina", f"Screening ligand {idx+1}/{total_ligands}...", {"current": idx+1, "total": total_ligands})
 
-                docking_result = await run_vina_docking(receptor_pdb, smiles, exhaustiveness=4)
+                docking_result = await run_vina_docking(receptor_pdb, smiles, exhaustiveness=4, receptor_pdbqt_path=_receptor_pdbqt_path)
                 return {
                     "smiles": smiles,
                     "vina_score": docking_result.get("binding_affinity"),
@@ -166,7 +191,7 @@ async def run_consensus_pipeline(
         result["status"] = "success"
         return result
 
-    gnina_semaphore = asyncio.Semaphore(2)  # GNINA is heavier — fewer parallel
+    gnina_semaphore = asyncio.Semaphore(1)  # GNINA is heavier — 1 at a time
 
     async def refine_candidate(candidate: dict, idx: int):
         async with gnina_semaphore:
@@ -174,7 +199,7 @@ async def run_consensus_pipeline(
                 if idx % 2 == 0 or idx == total_refined - 1:
                     await _progress("STAGE 3 / GNINA", f"Refining candidate {idx+1}/{total_refined}...", {"current": idx+1, "total": total_refined})
 
-                gnina_result = await run_gnina_docking(receptor_pdb, candidate["smiles"], exhaustiveness=8)
+                gnina_result = await run_gnina_docking(receptor_pdb, candidate["smiles"], exhaustiveness=4, receptor_pdbqt_path=_receptor_pdbqt_path)
                 candidate["gnina_score"] = gnina_result.get("binding_affinity")
                 candidate["cnn_affinity"] = gnina_result.get("cnn_affinity")
                 candidate["structure"] = gnina_result.get("structure")

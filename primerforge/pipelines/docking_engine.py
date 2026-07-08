@@ -41,13 +41,55 @@ def _compute_box_center(pdb_path: str, default_size: float = 25.0) -> Tuple[floa
     return cx, cy, cz, sx, sy, sz
 
 
-async def run_vina_docking(receptor_pdb: str, ligand_smiles: str, exhaustiveness: int = 8) -> Dict[str, Any]:
+def pdb_to_pdbqt(receptor_pdb: str, output_path: str) -> bool:
+    """Convert receptor PDB to PDBQT format (once, cached for reuse)."""
+    # Write PDB to temp file first, then convert with obabel
+    _tmp_pdb = output_path.replace(".pdbqt", ".pdb")
+    with open(_tmp_pdb, "w") as f:
+        f.write(receptor_pdb)
+    if shutil.which("obabel"):
+        try:
+            subprocess.run(["obabel", _tmp_pdb, "-O", output_path, "-xr"],
+                           check=True, capture_output=True, timeout=60)
+            return True
+        except Exception:
+            pass
+    from rdkit import Chem
+    from meeko import MoleculePreparation
+    mol = Chem.MolFromPDBBlock(receptor_pdb, removeHs=False)
+    if mol:
+        frags = Chem.GetMolFrags(mol, asMols=True)
+        if frags:
+            mol = max(frags, key=lambda m: m.GetNumAtoms())
+        mol = Chem.AddHs(mol, addCoords=True)
+        prep = MoleculePreparation()
+        prep.prepare(mol)
+        prep.write_pdbqt_file(output_path)
+        allowed_tags = ("ATOM", "HETATM")
+        with open(output_path, "r") as f:
+            lines = f.readlines()
+        with open(output_path, "w", newline="\n") as f:
+            for line in lines:
+                clean = line.strip()
+                if clean and clean.startswith(allowed_tags):
+                    f.write(clean + "\n")
+        return True
+    logger.error("Failed to convert receptor PDB to PDBQT")
+    return False
+
+
+async def run_vina_docking(receptor_pdb: str, ligand_smiles: str, exhaustiveness: int = 8, receptor_pdbqt_path: str = None) -> Dict[str, Any]:
     """
     Runs AutoDock Vina physics engine locally.
+    
+    If receptor_pdbqt_path is provided, skips receptor PDB→PDBQT conversion.
     """
     with tempfile.TemporaryDirectory() as temp_dir:
         receptor_pdb_path = os.path.join(temp_dir, "receptor.pdb")
-        receptor_pdbqt_path = os.path.join(temp_dir, "receptor.pdbqt")
+        if receptor_pdbqt_path:
+            local_receptor_pdbqt = receptor_pdbqt_path
+        else:
+            local_receptor_pdbqt = os.path.join(temp_dir, "receptor.pdbqt")
         ligand_smi_path = os.path.join(temp_dir, "ligand.smi")
         ligand_pdbqt_path = os.path.join(temp_dir, "ligand.pdbqt")
         out_pdbqt_path = os.path.join(temp_dir, "out.pdbqt")
@@ -55,58 +97,8 @@ async def run_vina_docking(receptor_pdb: str, ligand_smiles: str, exhaustiveness
         with open(receptor_pdb_path, "w") as f: f.write(receptor_pdb)
         with open(ligand_smi_path, "w") as f: f.write(ligand_smiles)
             
-        # 2. Convert Receptor PDB to PDBQT
-        if shutil.which("obabel"):
-            try:
-                subprocess.run(["obabel", receptor_pdb_path, "-O", receptor_pdbqt_path, "-xr"], check=True, capture_output=True)
-            except:
-                from meeko import MoleculePreparation
-                from rdkit import Chem
-                mol = Chem.MolFromPDBFile(receptor_pdb_path, removeHs=False)
-                if mol:
-                    # Strip waters and ions: Pick largest fragment
-                    frags = Chem.GetMolFrags(mol, asMols=True)
-                    if frags:
-                        mol = max(frags, key=lambda m: m.GetNumAtoms())
-                    mol = Chem.AddHs(mol, addCoords=True)
-                    prep = MoleculePreparation(); prep.prepare(mol); prep.write_pdbqt_file(receptor_pdbqt_path)
-                    
-                    # Clean PDBQT for RIGID RECEPTOR (Maximum Vina 1.1.2 compatibility)
-                    # For a receptor, we ONLY want ATOM and HETATM lines. No REMARKs, no ROOT, no metadata.
-                    allowed_tags = ("ATOM", "HETATM")
-                    with open(receptor_pdbqt_path, "r") as f: lines = f.readlines()
-                    with open(receptor_pdbqt_path, "w", newline="\n") as f:
-                        for i, line in enumerate(lines):
-                            clean_line = line.strip()
-                            if not clean_line: continue
-                            if clean_line.startswith(allowed_tags):
-                                f.write(clean_line + "\n")
-                else:
-                    logger.error("RDKit failed to load receptor PDB. Falling back to raw PDB (likely to fail Vina).")
-                    with open(receptor_pdbqt_path, "w") as f: f.write(receptor_pdb)
-        else:
-            from meeko import MoleculePreparation
-            from rdkit import Chem
-            mol = Chem.MolFromPDBFile(receptor_pdb_path, removeHs=False)
-            if mol:
-                frags = Chem.GetMolFrags(mol, asMols=True)
-                if frags:
-                    mol = max(frags, key=lambda m: m.GetNumAtoms())
-                mol = Chem.AddHs(mol, addCoords=True)
-                prep = MoleculePreparation(); prep.prepare(mol); prep.write_pdbqt_file(receptor_pdbqt_path)
-                
-                # Clean PDBQT for RIGID RECEPTOR
-                allowed_tags = ("ATOM", "HETATM")
-                with open(receptor_pdbqt_path, "r") as f: lines = f.readlines()
-                with open(receptor_pdbqt_path, "w", newline="\n") as f:
-                    for i, line in enumerate(lines):
-                        clean_line = line.strip()
-                        if not clean_line: continue
-                        if clean_line.startswith(allowed_tags):
-                            f.write(clean_line + "\n")
-            else:
-                logger.error("RDKit failed to load receptor PDB. Falling back to raw PDB.")
-                with open(receptor_pdbqt_path, "w") as f: f.write(receptor_pdb)
+        if not receptor_pdbqt_path:
+            pdb_to_pdbqt(receptor_pdb, local_receptor_pdbqt)
             
         # 3. Convert Ligand SMILES to 3D PDBQT
         if shutil.which("obabel"):
@@ -147,18 +139,22 @@ async def run_vina_docking(receptor_pdb: str, ligand_smiles: str, exhaustiveness
             vina_bin = shutil.which("vina") or "vina"
 
             # Compute protein geometric center for search box
-            cx, cy, cz, sx, sy, sz = _compute_box_center(receptor_pdbqt_path)
+            cx, cy, cz, sx, sy, sz = _compute_box_center(local_receptor_pdbqt)
             logger.info(f"Search box center: ({cx:.2f}, {cy:.2f}, {cz:.2f}), size: ({sx:.1f}, {sy:.1f}, {sz:.1f})")
             
             vina_cmd = [
-                vina_bin, "--receptor", receptor_pdbqt_path, "--ligand", ligand_pdbqt_path, 
+                vina_bin, "--receptor", local_receptor_pdbqt, "--ligand", ligand_pdbqt_path, 
                 "--center_x", str(round(cx, 3)), "--center_y", str(round(cy, 3)), "--center_z", str(round(cz, 3)),
                 "--size_x", str(round(sx, 1)), "--size_y", str(round(sy, 1)), "--size_z", str(round(sz, 1)),
                 "--exhaustiveness", str(exhaustiveness), "--out", out_pdbqt_path
             ]
             
             process = await asyncio.create_subprocess_exec(*vina_cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
-            stdout, stderr = await process.communicate()
+            try:
+                stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=600)
+            except asyncio.TimeoutError:
+                process.kill()
+                raise Exception(f"Vina timeout after 600s: ligand {ligand_smiles[:40]}")
             
             if process.returncode != 0: 
                 err_msg = stderr.decode() or stdout.decode()
@@ -209,7 +205,7 @@ async def run_vina_docking(receptor_pdb: str, ligand_smiles: str, exhaustiveness
             raise e
 
 
-async def run_gnina_docking(receptor_pdb: str, ligand_smiles: str, exhaustiveness: int = 8) -> Dict[str, Any]:
+async def run_gnina_docking(receptor_pdb: str, ligand_smiles: str, exhaustiveness: int = 4, receptor_pdbqt_path: str = None) -> Dict[str, Any]:
     """
     Runs GNINA docking (CNN-based scoring).
     """
@@ -253,7 +249,11 @@ async def run_gnina_docking(receptor_pdb: str, ligand_smiles: str, exhaustivenes
             ]
             
             process = await asyncio.create_subprocess_exec(*gnina_cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
-            stdout, stderr = await process.communicate()
+            try:
+                stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=600)
+            except asyncio.TimeoutError:
+                process.kill()
+                raise Exception(f"GNINA timeout after 600s: ligand {ligand_smiles[:40]}")
             
             if process.returncode != 0: raise Exception(f"Gnina failed: {stderr.decode()}")
             

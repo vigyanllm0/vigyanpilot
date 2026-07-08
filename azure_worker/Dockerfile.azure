@@ -67,15 +67,17 @@ RUN pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cpu 
     pip install --no-cache-dir transformers>=4.40.0 tokenizers>=0.15.0 fair-esm>=2.0.0 \
                           einops>=0.6.0 accelerate>=0.26.0
 
-# Pre-download ESMFold model weights (~8GB) into image to avoid cold-start download on ACI
-COPY azure_worker/preload_esmfold.py /app/azure_worker/preload_esmfold.py
-RUN python /app/azure_worker/preload_esmfold.py 2>&1
-
-# Copy the entire project (needed for primerforge module imports)
+# Copy the entire project (needed for primerforge module imports and warmup validation)
 COPY primerforge/ ./primerforge/
 COPY azure_worker/ ./azure_worker/
 COPY config/ ./config/
 COPY wsgi.py .
+
+# Pre-download ESMFold model weights (~8GB) into image to avoid cold-start download on ACI
+RUN python /app/azure_worker/preload_esmfold.py 2>&1
+
+# Validate all pipeline modules import correctly during build
+RUN python /app/azure_worker/validate_build.py 2>&1
 
 # ── Entrypoint ─────────────────────────────────────────────────────────────
 
