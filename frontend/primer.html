@@ -730,6 +730,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="tab-bar-inner">
     <button class="tab-btn active" data-tab="auto">Auto Design</button>
     <button class="tab-btn" data-tab="manual">Oligo Analyser</button>
+    <button class="tab-btn" data-tab="check">Check Primers</button>
     <button class="tab-btn" data-tab="fetch">Fetch Sequence</button>
     <button class="tab-btn" data-tab="admin" id="admin-tab-btn" style="display:none;color:var(--primary);margin-left:auto;">🛡️ Admin Panel</button>
   </div>
@@ -1014,7 +1015,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <div class="two-col">
       <div>
         <div class="panel-card">
-          <div class="panel-head"><h3>Primer Sequences</h3></div>
+          <div class="panel-head"><h3>Single Pair Analysis</h3></div>
           <div class="panel-body">
             <div class="form-group">
               <label class="form-label">Forward Primer (5'→3')</label>
@@ -1031,10 +1032,80 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             </button>
           </div>
         </div>
+        <div class="panel-card" style="margin-top:14px">
+          <div class="panel-head"><h3>Batch Upload</h3></div>
+          <div class="panel-body">
+            <p style="font-size:12px;color:var(--text2);margin-bottom:10px">Upload a FASTA or CSV file with multiple primer sequences to analyse them all at once.</p>
+            <div style="border:2px dashed var(--slate-border);border-radius:8px;padding:20px;text-align:center;cursor:pointer;background:var(--bg);transition:.2s"
+                 id="batch-upload-zone" onclick="document.getElementById('batch-file-input').click()"
+                 ondrop="handleBatchDrop(event)" ondragover="event.preventDefault()">
+              <div style="font-size:28px;margin-bottom:6px">📁</div>
+              <div style="font-size:12px;color:var(--text2)">Drop FASTA/CSV file here or click to browse</div>
+              <input type="file" id="batch-file-input" accept=".fa,.fasta,.csv,.txt" style="display:none" onchange="handleBatchFile(this)">
+            </div>
+            <div style="margin-top:8px;font-size:11px;color:var(--muted)">
+              <strong>FASTA format:</strong><br>
+              &gt;primer1<br>
+              ATGCGATCGATCGATCG<br>
+              /rev CGATCGATCGATCGCAT<br>
+              <strong>CSV format:</strong><br>
+              name,forward,reverse<br>
+              mypair,ATGC...,CGAT...
+            </div>
+            <button class="btn-secondary" id="btn-batch-analyze" style="margin-top:10px;display:none" onclick="runBatchAnalysis()">
+              <span class="spinner" id="batch-spinner"></span>
+              <span id="btn-batch-text">Analyse All</span>
+            </button>
+            <div id="batch-file-info" style="font-size:12px;color:var(--text2);margin-top:8px"></div>
+          </div>
+        </div>
       </div>
       <div id="manual-results">
         <div style="color:var(--muted);font-size:13px;padding:20px">Enter primers and click Analyze to see full thermodynamic report with pass/fail matrix.</div>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ CHECK PRIMERS TAB ══════════════════════════════════════════════════ -->
+<div id="tab-check" class="tab-panel" style="display:none">
+  <div style="margin-bottom:20px;padding:16px 20px;background:var(--slate);border-radius:10px;border:1px solid var(--slate-border)">
+    <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;color:var(--text);margin-bottom:4px">Check Primers Against Template</h3>
+    <p style="font-size:13px;color:var(--text2)">Upload a template sequence and a list of primers to check alignment, get thermodynamic analysis, and receive ranked suggestions for best primer pairs.</p>
+  </div>
+  <div class="two-col">
+    <div>
+      <div class="panel-card">
+        <div class="panel-head"><h3>Template Sequence</h3></div>
+        <div class="panel-body">
+          <div class="form-group">
+            <label class="form-label">Template (5'→3')</label>
+            <textarea id="check-template" class="form-textarea" rows="4" style="font-family:var(--font-b);font-size:12px" placeholder="Paste template sequence here..."></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="panel-card" style="margin-top:14px">
+        <div class="panel-head"><h3>Primers to Check</h3></div>
+        <div class="panel-body">
+          <div class="form-group">
+            <label class="form-label">Or paste primers (FASTA/CSV)</label>
+            <textarea id="check-primers-text" class="form-textarea" rows="5" style="font-family:var(--font-b);font-size:12px" placeholder="&gt;primer1&#10;ATGCGATCGATCG&#10;/rev CGATCGATCGCAT&#10;&#10;Or CSV:&#10;name,forward,reverse&#10;set1,ATCG...,CGAT..."></textarea>
+          </div>
+          <div style="border:2px dashed var(--slate-border);border-radius:8px;padding:16px;text-align:center;cursor:pointer;margin-bottom:10px"
+               onclick="document.getElementById('check-file-input').click()"
+               ondrop="handleCheckDrop(event)" ondragover="event.preventDefault()">
+            <span style="font-size:12px;color:var(--text2)">📁 Upload primer file (FASTA/CSV)</span>
+            <input type="file" id="check-file-input" accept=".fa,.fasta,.csv,.txt" style="display:none" onchange="handleCheckFile(this)">
+          </div>
+          <button class="btn-primary" id="btn-check-primers" onclick="runCheckPrimers()">
+            <span class="spinner" id="check-spinner"></span>
+            <span id="btn-check-text">Check &amp; Rank Primers</span>
+          </button>
+        </div>
+      </div>
+    </div>
+    <div id="check-results">
+      <div style="color:var(--muted);font-size:13px;padding:20px">Enter template and primers, then click Check &amp; Rank to see alignment scores and recommendations.</div>
     </div>
   </div>
 </div>
@@ -2726,6 +2797,179 @@ async function runManualAnalysis(){
   }catch(e){
     $('manual-results').innerHTML=`<div class="error-card">❌ ${esc(e.message)}</div>`;
   }finally{setLoading('manual-spinner','btn-analyze-text','btn-analyze',false,'Analyze Primers');}
+}
+
+// ── Batch analysis (file upload) ──────────────────────────────────────────
+let _batchData = [];
+
+function handleBatchFile(input){
+  const f=input.files[0];
+  if(!f)return;
+  const r=new FileReader();
+  r.onload=function(e){
+    _batchData=e.target.result;
+    const lines=_batchData.split('\n').filter(l=>l.trim()).length;
+    const names=(_batchData.match(/^>/gm)||[]).length;
+    const info=names?`${names} FASTA entries`:`${lines} lines`;
+    $('batch-file-info').textContent=`📄 ${f.name} (${info})`;
+    $('btn-batch-analyze').style.display='inline-flex';
+  };
+  r.readAsText(f);
+}
+
+function handleBatchDrop(e){
+  e.preventDefault();
+  const f=e.dataTransfer.files[0];
+  if(f){
+    const dt=new DataTransfer();
+    dt.items.add(f);
+    $('batch-file-input').files=dt.files;
+    handleBatchFile($('batch-file-input'));
+  }
+}
+
+async function runBatchAnalysis(){
+  if(!_batchData){return;}
+  setLoading('batch-spinner','btn-batch-text','btn-batch-analyze',true,'Analysing…');
+  $('manual-results').innerHTML='';
+  try{
+    const d=await apiPost('/api/primer/batch-analysis',{file_content:_batchData});
+    let html=`<div class="success-card" style="margin-bottom:12px">✓ Analysed ${d.total} primer sets${d.failed?`, ${d.failed} failed`:''}</div>`;
+    for(const r of d.results){
+      fwdBlock(r.forward,'fwd');
+      html+=`<div class="panel-card" style="margin-bottom:12px">
+        <div class="panel-head"><h3>${esc(r.name)}</h3></div>
+        <div class="panel-body">
+          <div style="display:grid;grid-template-columns:${r.reverse?'1fr 1fr':'1fr'};gap:14px">`;
+      html+=primerBlock(r.forward,'fwd');
+      if(r.reverse)html+=primerBlock(r.reverse,'rev');
+      html+=`</div>`;
+      if(r.pair){
+        const dtmOk=Math.abs(r.pair.tm_delta)<=1.5;
+        const xdgOk=r.pair.cross_dimer_dg>-5.0;
+        html+=`<div class="pair-meta-row">
+          ${mc('ΔTm',fmtNum(r.pair.tm_delta,2,'°C'),dtmOk?'ok':'bad')}
+          ${mc('Heterodimer dG',fmtNum(r.pair.cross_dimer_dg,2),xdgOk?'ok':'bad')}
+          ${mc('Annealing Ta',fmtNum(r.pair.annealing_ta,1,'°C'),'warn')}
+        </div>`;
+        if(r.pair.pair_warnings&&r.pair.pair_warnings.length)
+          html+=`<div class="warn-list">${r.pair.pair_warnings.map(w=>`<div class="warn-item">⚠ ${esc(w)}</div>`).join('')}</div>`;
+      }
+      html+=`</div></div>`;
+    }
+    if(d.errors&&d.errors.length){
+      html+=`<div class="error-card">Errors: ${d.errors.map(e=>esc(e.name+': '+e.error)).join('<br>')}</div>`;
+    }
+    html+=`<button class="btn-secondary" style="margin-top:10px" onclick="downloadBatchCSV(${JSON.stringify(d.results).replace(/"/g,'&quot;')})">⬇ Download CSV</button>`;
+    $('manual-results').innerHTML=html;
+  }catch(e){
+    $('manual-results').innerHTML=`<div class="error-card">❌ ${esc(e.message)}</div>`;
+  }finally{setLoading('batch-spinner','btn-batch-text','btn-batch-analyze',false,'Analyse All');}
+}
+
+function downloadBatchCSV(results){
+  let csv='name,forward,reverse,fwd_tm,rev_tm,fwd_gc,rev_gc,fwd_length,rev_length,fwd_quality,rev_quality,fwd_warnings,rev_warnings,pair_tm_delta,pair_cross_dimer_dg\n';
+  for(const r of results){
+    const f=r.forward,rev=r.reverse;
+    csv+=`${esc(r.name)},${f.sequence},${rev?rev.sequence:''},${f.tm},${rev?rev.tm:''},${f.gc},${rev?rev.gc:''},${f.length},${rev?rev.length:''},${f.quality_score},${rev?rev.quality_score:''},"${(f.warnings||[]).join('; ')}","${(rev?rev.warnings:[]).join('; ')}",${r.pair?r.pair.tm_delta:''},${r.pair?r.pair.cross_dimer_dg:''}\n`;
+  }
+  const blob=new Blob([csv],{type:'text/csv'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='batch_analysis.csv';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+// ── Check Primers Against Template ────────────────────────────────────────
+let _checkPrimerData = [];
+
+function handleCheckFile(input){
+  const f=input.files[0];
+  if(!f)return;
+  const r=new FileReader();
+  r.onload=function(e){
+    _checkPrimerData=e.target.result;
+    $('check-primers-text').value=_checkPrimerData;
+  };
+  r.readAsText(f);
+}
+
+function handleCheckDrop(e){
+  e.preventDefault();
+  const f=e.dataTransfer.files[0];
+  if(f){
+    const dt=new DataTransfer();
+    dt.items.add(f);
+    $('check-file-input').files=dt.files;
+    handleCheckFile($('check-file-input'));
+  }
+}
+
+async function runCheckPrimers(){
+  const tmpl=$('check-template').value.trim();
+  if(!tmpl){$('check-template').classList.add('error');return;}
+  $('check-template').classList.remove('error');
+  const primerText=$('check-primers-text').value.trim();
+  if(!primerText){return;}
+  setLoading('check-spinner','btn-check-text','btn-check-primers',true,'Checking…');
+  $('check-results').innerHTML='';
+  try{
+    const d=await apiPost('/api/primer/check-primers',{template:tmpl,file_content:primerText});
+    let html='';
+    if(d.suggestions&&d.suggestions.length){
+      html+=`<div class="warn-list" style="margin-bottom:12px">${d.suggestions.map(s=>`<div class="warn-item">💡 ${esc(s)}</div>`).join('')}</div>`;
+    }
+    html+=`<div class="success-card" style="margin-bottom:12px">✓ ${d.total} primers ranked</div>`;
+    for(let i=0;i<d.ranked.length;i++){
+      const r=d.ranked[i];
+      const aln=r.alignment;
+      html+=`<div class="panel-card" style="margin-bottom:10px;${i===0?'border-top:3px solid var(--bio)':''}">
+        <div class="panel-head" style="display:flex;justify-content:space-between;align-items:center">
+          <h3>#${i+1} ${esc(r.name)}</h3>
+          <span class="badge ${r.combined_score>=70?'pass-b':'fail-b'}" style="font-size:13px">Score: ${r.combined_score}</span>
+        </div>
+        <div class="panel-body">
+          <div style="font-size:12px;margin-bottom:6px"><strong>Forward:</strong> <code style="font-size:11px">${r.forward}</code></div>
+          ${r.reverse?`<div style="font-size:12px;margin-bottom:6px"><strong>Reverse:</strong> <code style="font-size:11px">${r.reverse}</code></div>`:''}
+          <div class="pair-meta-row">
+            ${mc('Fwd identity',fmtNum(aln.forward.identity_pct,1,'%'),aln.forward.identity_pct>=90?'ok':'bad')}
+            ${mc('Fwd mismatches',fmtNum(aln.forward.mismatches,0),aln.forward.mismatches<=2?'ok':'bad')}
+            ${r.reverse?mc('Rev identity',fmtNum(aln.reverse.identity_pct,1,'%'),aln.reverse.identity_pct>=90?'ok':'bad'):''}
+            ${r.reverse?mc('Rev mismatches',fmtNum(aln.reverse.mismatches,0),aln.reverse.mismatches<=2?'ok':'bad'):''}
+          </div>
+          <div class="pair-meta-row">
+            ${mc('Fwd Tm',fmtNum(r.thermodynamics.forward_tm,1,'°C'),'warn')}
+            ${mc('Fwd GC',fmtNum(r.thermodynamics.forward_gc,1,'%'),r.thermodynamics.forward_gc>=40&&r.thermodynamics.forward_gc<=60?'ok':'bad')}
+            ${r.thermodynamics.reverse_tm!==null?mc('Rev Tm',fmtNum(r.thermodynamics.reverse_tm,1,'°C'),'warn'):''}
+            ${r.thermodynamics.reverse_gc!==null?mc('Rev GC',fmtNum(r.thermodynamics.reverse_gc,1,'%'),'warn'):''}
+          </div>
+          ${r.warnings&&r.warnings.length?`<div class="warn-list">${r.warnings.map(w=>`<div class="warn-item">⚠ ${esc(w)}</div>`).join('')}</div>`:''}
+        </div>
+      </div>`;
+    }
+    if(d.errors&&d.errors.length){
+      html+=`<div class="error-card">${d.errors.map(e=>esc(e.name+': '+e.error)).join('<br>')}</div>`;
+    }
+    html+=`<button class="btn-secondary" style="margin-top:10px" onclick="downloadCheckCSV(${JSON.stringify(d.ranked).replace(/"/g,'&quot;')})">⬇ Download CSV</button>`;
+    $('check-results').innerHTML=html;
+  }catch(e){
+    $('check-results').innerHTML=`<div class="error-card">❌ ${esc(e.message)}</div>`;
+  }finally{setLoading('check-spinner','btn-check-text','btn-check-primers',false,'Check & Rank Primers');}
+}
+
+function downloadCheckCSV(ranked){
+  let csv='rank,name,forward,reverse,combined_score,fwd_identity,fwd_mismatches,rev_identity,rev_mismatches,fwd_tm,rev_tm,fwd_gc,rev_gc,warnings\n';
+  for(let i=0;i<ranked.length;i++){
+    const r=ranked[i];
+    csv+=`${i+1},${esc(r.name)},${r.forward},${r.reverse||''},${r.combined_score},${r.alignment.forward.identity_pct},${r.alignment.forward.mismatches},${r.alignment.reverse?r.alignment.reverse.identity_pct:''},${r.alignment.reverse?r.alignment.reverse.mismatches:''},${r.thermodynamics.forward_tm},${r.thermodynamics.reverse_tm||''},${r.thermodynamics.forward_gc},${r.thermodynamics.reverse_gc||''},"${(r.warnings||[]).join('; ')}"\n`;
+  }
+  const blob=new Blob([csv],{type:'text/csv'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='primer_check_results.csv';
+  a.click();
+  URL.revokeObjectURL(a.href);
 }
 
 // ── Fetch sequence ────────────────────────────────────────────────────────

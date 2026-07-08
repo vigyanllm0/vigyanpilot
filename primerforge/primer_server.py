@@ -1554,6 +1554,189 @@ def create_app() -> Flask:
             logger.error(f"BLAST error: {exc}", exc_info=True)
             return err(f"BLAST failed: {str(exc)[:200]}", "BLAST_FAILED", 500)
 
+    # ════════════════════════════════════════════════════════════════════
+    # Batch Oligo Analysis & Primer Check Endpoints
+    # ════════════════════════════════════════════════════════════════════
+
+    def _parse_oligo_file(text):
+        """Parse FASTA or CSV text into a list of {name, forward, reverse, template} dicts."""
+        import csv, io
+        lines = [l.strip() for l in text.strip().split("\n") if l.strip()]
+        if not lines:
+            return []
+        first = lines[0].lower()
+        if "," in first and ("fwd" in first or "forward" in first or "primer" in first):
+            reader = csv.DictReader(io.StringIO(text))
+            entries = []
+            for row in reader:
+                fwd = (row.get("forward") or row.get("fwd") or row.get("primer") or "").strip()
+                if not fwd:
+                    continue
+                entries.append({
+                    "name": (row.get("name") or row.get("id") or fwd[:20]).strip(),
+                    "forward": fwd.upper(),
+                    "reverse": (row.get("reverse") or row.get("rev") or "").strip().upper(),
+                    "template": (row.get("template") or row.get("seq") or "").strip().upper(),
+                })
+            return entries
+        entries = []
+        current = {"name": "", "forward": "", "reverse": "", "template": ""}
+        for line in lines:
+            if line.startswith(">"):
+                if current["forward"]:
+                    entries.append(current)
+                name = line[1:].split()[0]
+                current = {"name": name, "forward": "", "reverse": "", "template": ""}
+            elif current["forward"] and line.startswith("/rev"):
+                current["reverse"] = line[4:].strip().upper()
+            elif current["forward"] and line.startswith("/template"):
+                current["template"] = line[10:].strip().upper()
+            elif not current["forward"]:
+                current["forward"] = line.upper()
+        if current["forward"]:
+            entries.append(current)
+        return entries
+
+    @app.route("/api/primer/batch-analysis", methods=["POST"])
+    def batch_oligo_analysis():
+        if not READY:
+            return err("Core not available.", "DESIGN_FAILED", 503)
+        data = request.get_json(silent=True) or {}
+        sequences = data.get("sequences")
+        file_content = data.get("file_content")
+        if not sequences and not file_content:
+            return err("Provide 'sequences' (list) or 'file_content' (FASTA/CSV text).", "VALIDATION_ERROR", 400)
+        if file_content:
+            sequences = _parse_oligo_file(file_content)
+        if not sequences:
+            return err("No valid sequences found in input.", "VALIDATION_ERROR", 400)
+        results = []
+        errors = []
+        for entry in sequences:
+            try:
+                fwd = entry.get("forward", "")
+                rev = entry.get("reverse") or None
+                template = entry.get("template") or None
+                if not fwd:
+                    errors.append({"name": entry.get("name", "?"), "error": "No forward primer"})
+                    continue
+                name = entry.get("name", fwd[:25])
+                result = analyse_manual_primer(sequence=fwd, partner_seq=rev, template=template)
+                fwd_thermo = result["thermodynamics"]
+                rev_thermo = None
+                pair_analysis = result.get("pair_analysis") or {}
+                if rev and pair_analysis.get("reverse"):
+                    rev_thermo = pair_analysis["reverse"]
+                results.append({
+                    "name": name,
+                    "forward": {
+                        "sequence": fwd,
+                        "tm": fwd_thermo.get("tm_nearest_neighbor", 0),
+                        "gc": fwd_thermo.get("gc_content", 0),
+                        "length": fwd_thermo.get("length", len(fwd)),
+                        "hairpin_dg": fwd_thermo.get("hairpin_dg", 0),
+                        "dimer_dg": fwd_thermo.get("self_dimer_dg", 0),
+                        "quality_score": fwd_thermo.get("quality_score", 0),
+                        "warnings": fwd_thermo.get("warnings", []),
+                    },
+                    "reverse": {
+                        "sequence": rev or "",
+                        "tm": rev_thermo.get("tm_nearest_neighbor", 0) if rev_thermo else 0,
+                        "gc": rev_thermo.get("gc_content", 0) if rev_thermo else 0,
+                        "length": rev_thermo.get("length", len(rev or "")),
+                        "hairpin_dg": rev_thermo.get("hairpin_dg", 0) if rev_thermo else 0,
+                        "dimer_dg": rev_thermo.get("self_dimer_dg", 0) if rev_thermo else 0,
+                        "quality_score": rev_thermo.get("quality_score", 0) if rev_thermo else 0,
+                        "warnings": rev_thermo.get("warnings", []) if rev_thermo else [],
+                    } if rev else None,
+                    "pair": {
+                        "tm_delta": abs(fwd_thermo.get("tm_nearest_neighbor", 0) - (rev_thermo.get("tm_nearest_neighbor", 0) if rev_thermo else 0)),
+                        "cross_dimer_dg": pair_analysis.get("cross_dimer_dg", 0),
+                        "annealing_ta": pair_analysis.get("annealing_temp_suggested", 0),
+                        "pair_warnings": pair_analysis.get("pair_warnings", []),
+                    } if rev else None,
+                })
+            except Exception as exc:
+                errors.append({"name": entry.get("name", "?"), "error": str(exc)[:200]})
+        return jsonify({"results": results, "errors": errors, "total": len(results), "failed": len(errors)}), 200
+
+    @app.route("/api/primer/check-primers", methods=["POST"])
+    def check_primers_route():
+        if not READY:
+            return err("Core not available.", "DESIGN_FAILED", 503)
+        data = request.get_json(silent=True) or {}
+        template = (data.get("template") or "").strip().upper()
+        primers = data.get("primers") or []
+        file_content = data.get("file_content")
+        if not template:
+            return err("Template sequence is required.", "VALIDATION_ERROR", 400)
+        if not primers and file_content:
+            parsed = _parse_oligo_file(file_content)
+            primers = [{"forward": p["forward"], "reverse": p.get("reverse"), "name": p["name"]} for p in parsed]
+        if not primers:
+            return err("Provide 'primers' list or 'file_content' with primer sequences.", "VALIDATION_ERROR", 400)
+        ranked = []
+        errors = []
+        for p in primers:
+            try:
+                fwd = p.get("forward", "").upper()
+                rev = p.get("reverse", "").upper() if p.get("reverse") else None
+                name = p.get("name", fwd[:25])
+                if not fwd:
+                    continue
+                fwd_aln = align_primer_to_template(fwd, template)
+                rev_aln = None
+                if rev:
+                    rev_aln = align_primer_to_template(rev, template)
+                fwd_thermo = analyse_primer_full(fwd)
+                rev_thermo = None
+                pair_data = None
+                if rev:
+                    pair_data = analyse_primer_pair(fwd, rev)
+                    rev_thermo = pair_data.get("reverse")
+                aln_score = (fwd_aln.get("identity_pct", 0) + (rev_aln.get("identity_pct", 0) if rev_aln else 100)) / 2
+                thermo_score = fwd_thermo.quality_score
+                if rev_thermo:
+                    thermo_score = (thermo_score + rev_thermo["quality_score"]) / 2
+                combined_score = round(aln_score * 0.6 + thermo_score * 0.4, 1)
+                entry = {
+                    "name": name,
+                    "forward": fwd,
+                    "reverse": rev or None,
+                    "combined_score": combined_score,
+                    "alignment": {
+                        "forward": fwd_aln,
+                        "reverse": rev_aln,
+                    },
+                    "thermodynamics": {
+                        "forward_tm": fwd_thermo.tm_nearest_neighbor,
+                        "forward_gc": fwd_thermo.gc_content,
+                        "reverse_tm": rev_thermo["tm_nearest_neighbor"] if rev_thermo else None,
+                        "reverse_gc": rev_thermo["gc_content"] if rev_thermo else None,
+                        "quality_score": thermo_score,
+                    },
+                    "warnings": fwd_thermo.warnings + (pair_data.get("pair_warnings", []) if pair_data else []),
+                }
+                ranked.append(entry)
+            except Exception as exc:
+                errors.append({"name": p.get("name", "?"), "error": str(exc)[:200]})
+        ranked.sort(key=lambda x: -x["combined_score"])
+        suggestions = []
+        if ranked:
+            best = ranked[0]
+            if best["alignment"]["forward"]["identity_pct"] < 90:
+                suggestions.append("Best forward primer has <90% template identity — consider redesigned primers")
+            if best["combined_score"] < 60:
+                suggestions.append("All primers scored poorly — check template sequence or use different target region")
+        else:
+            suggestions.append("No valid primers found — check input sequences")
+        return jsonify({
+            "ranked": ranked,
+            "suggestions": suggestions,
+            "total": len(ranked),
+            "errors": errors,
+        }), 200
+
     @app.route("/api/primer/msa", methods=["POST"])
     def msa_route():
         if not READY:
