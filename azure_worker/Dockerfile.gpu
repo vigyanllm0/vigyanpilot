@@ -56,14 +56,13 @@ COPY requirements.txt requirements-docking.txt ./
 RUN python3.11 -m pip install --no-cache-dir --ignore-installed -r requirements.txt
 
 # Install CUDA-enabled PyTorch
-RUN python3.11 -m pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cu121 "torch>=2.2.0" && \
+RUN     python3.11 -m pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cu121 "torch>=2.2.0" && \
     python3.11 -m pip install --no-cache-dir transformers>=4.40.0 tokenizers>=0.15.0 fair-esm>=2.0.0 \
                           einops>=0.6.0 accelerate>=0.26.0
 
 # Copy the entire project
 COPY primerforge/ ./primerforge/
 COPY azure_worker/ ./azure_worker/
-COPY config/ ./config/
 COPY wsgi.py .
 
 # Pre-download ESMFold model weights (~8GB)
