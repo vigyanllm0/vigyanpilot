@@ -205,7 +205,8 @@ def submit_pipeline():
     Returns:
         {"job_id": "uuid", "status": "queued", "system": "VigyanLLM"}
     """
-    data = request.get_json(silent=True) or {}
+    try:
+        data = request.get_json(silent=True) or {}
 
     # Validate required inputs
     sequence = data.get("sequence", "")
@@ -389,227 +390,260 @@ def submit_pipeline():
         "total_steps": 22,
         "message": "Pipeline job submitted. Poll /api/pipeline/status for progress.",
     })), 202
+    except Exception as exc:
+        logger.error("Pipeline submit failed: %s", exc, exc_info=True)
+        return jsonify(brand_response({
+            "error": brand_error(f"Pipeline submission failed: {str(exc)[:300]}"),
+            "code": "PIPELINE_FAILED",
+        })), 500
+
 @pipeline_bp.route("/api/pipeline/status/<job_id>", methods=["GET"])
 @require_auth
 def get_pipeline_status(job_id: str):
     """Get current status and progress of a pipeline job."""
-    user_id = g.user.get("user_id")
-    is_admin = g.user.get("role") == "admin"
+    try:
+        user_id = g.user.get("user_id")
+        is_admin = g.user.get("role") == "admin"
 
-    # Fetch job (user can only see their own, admin sees all)
-    if is_admin:
-        job = fetch_one("SELECT * FROM pipeline_jobs WHERE id = %s", (job_id,))
-    else:
-        job = fetch_one(
-            "SELECT * FROM pipeline_jobs WHERE id = %s AND user_id = %s",
-            (job_id, user_id)
+        # Fetch job (user can only see their own, admin sees all)
+        if is_admin:
+            job = fetch_one("SELECT * FROM pipeline_jobs WHERE id = %s", (job_id,))
+        else:
+            job = fetch_one(
+                "SELECT * FROM pipeline_jobs WHERE id = %s AND user_id = %s",
+                (job_id, user_id)
+            )
+
+        if not job:
+            return jsonify(brand_response(
+                {"error": brand_error("Job not found.")}
+            )), 404
+
+        # Get step results
+        steps = fetch_all(
+            """SELECT step_number, step_name, status, duration_ms, created_at
+               FROM pipeline_results WHERE job_id = %s ORDER BY step_number""",
+            (job_id,)
         )
 
-    if not job:
-        return jsonify(brand_response(
-            {"error": brand_error("Job not found.")}
-        )), 404
-
-    # Get step results
-    steps = fetch_all(
-        """SELECT step_number, step_name, status, duration_ms, created_at
-           FROM pipeline_results WHERE job_id = %s ORDER BY step_number""",
-        (job_id,)
-    )
-
-    return jsonify(brand_response({
-        "job_id": job_id,
-        "status": job["status"],
-        "mode": job.get("mode", "full"),
-        "phase": job.get("phase"),
-        "current_step": job.get("current_step", 0),
-        "total_steps": job.get("total_steps", 22),
-        "created_at": str(job["created_at"]) if job.get("created_at") else None,
-        "started_at": str(job["started_at"]) if job.get("started_at") else None,
-        "completed_at": str(job["completed_at"]) if job.get("completed_at") else None,
-        "error": job.get("error_log"),
-        "steps": steps,
-    })), 200
+        return jsonify(brand_response({
+            "job_id": job_id,
+            "status": job["status"],
+            "mode": job.get("mode", "full"),
+            "phase": job.get("phase"),
+            "current_step": job.get("current_step", 0),
+            "total_steps": job.get("total_steps", 22),
+            "created_at": str(job["created_at"]) if job.get("created_at") else None,
+            "started_at": str(job["started_at"]) if job.get("started_at") else None,
+            "completed_at": str(job["completed_at"]) if job.get("completed_at") else None,
+            "error": job.get("error_log"),
+            "steps": steps,
+        })), 200
+    except Exception as exc:
+        logger.error("Pipeline status failed: %s", exc, exc_info=True)
+        return jsonify(brand_response({
+            "error": brand_error(f"Status check failed: {str(exc)[:200]}"),
+            "code": "STATUS_ERROR",
+        })), 500
 
 
 @pipeline_bp.route("/api/pipeline/result/<job_id>", methods=["GET"])
 @require_auth
 def get_pipeline_result(job_id: str):
     """Get full results of a completed pipeline job, including compliance and order payloads."""
-    user_id = g.user.get("user_id")
-    is_admin = g.user.get("role") == "admin"
+    try:
+        user_id = g.user.get("user_id")
+        is_admin = g.user.get("role") == "admin"
 
-    if is_admin:
-        job = fetch_one("SELECT * FROM pipeline_jobs WHERE id = %s", (job_id,))
-    else:
-        job = fetch_one(
-            "SELECT * FROM pipeline_jobs WHERE id = %s AND user_id = %s",
-            (job_id, user_id)
+        if is_admin:
+            job = fetch_one("SELECT * FROM pipeline_jobs WHERE id = %s", (job_id,))
+        else:
+            job = fetch_one(
+                "SELECT * FROM pipeline_jobs WHERE id = %s AND user_id = %s",
+                (job_id, user_id)
+            )
+
+        if not job:
+            return jsonify(brand_response(
+                {"error": brand_error("Job not found.")}
+            )), 404
+
+        if job["status"] not in ("completed", "failed"):
+            return jsonify(brand_response({
+                "error": brand_error("Job not yet completed."),
+                "status": job["status"],
+                "current_step": job.get("current_step", 0),
+                "total_steps": job.get("total_steps", 22),
+            })), 202
+
+        # Get all step results with full output data
+        steps = fetch_all(
+            """SELECT step_number, step_name, status, output_data, duration_ms
+               FROM pipeline_results WHERE job_id = %s ORDER BY step_number""",
+            (job_id,)
+        )
+        for s in steps:
+            _decrypt_output(s)
+
+        # Get compliance screening result
+        compliance = fetch_one(
+            """SELECT status, sequences_screened, matched_organism, matched_gene,
+                      percent_identity, alignment_length, screened_at
+               FROM compliance_screening WHERE job_id = %s
+               ORDER BY screened_at DESC LIMIT 1""",
+            (job_id,)
         )
 
-    if not job:
-        return jsonify(brand_response(
-            {"error": brand_error("Job not found.")}
-        )), 404
+        # Get order payloads
+        order_payloads = fetch_all(
+            """SELECT vendor, payload, order_id, oligo_count, scale, created_at
+               FROM order_payloads WHERE job_id = %s ORDER BY created_at""",
+            (job_id,)
+        )
 
-    if job["status"] not in ("completed", "failed"):
         return jsonify(brand_response({
-            "error": brand_error("Job not yet completed."),
+            "job_id": job_id,
             "status": job["status"],
-            "current_step": job.get("current_step", 0),
-            "total_steps": job.get("total_steps", 22),
-        })), 202
-
-    # Get all step results with full output data
-    steps = fetch_all(
-        """SELECT step_number, step_name, status, output_data, duration_ms
-           FROM pipeline_results WHERE job_id = %s ORDER BY step_number""",
-        (job_id,)
-    )
-    for s in steps:
-        _decrypt_output(s)
-
-    # Get compliance screening result
-    compliance = fetch_one(
-        """SELECT status, sequences_screened, matched_organism, matched_gene,
-                  percent_identity, alignment_length, screened_at
-           FROM compliance_screening WHERE job_id = %s
-           ORDER BY screened_at DESC LIMIT 1""",
-        (job_id,)
-    )
-
-    # Get order payloads
-    order_payloads = fetch_all(
-        """SELECT vendor, payload, order_id, oligo_count, scale, created_at
-           FROM order_payloads WHERE job_id = %s ORDER BY created_at""",
-        (job_id,)
-    )
-
-    return jsonify(brand_response({
-        "job_id": job_id,
-        "status": job["status"],
-        "mode": job.get("mode", "full"),
-        "input_params": job.get("input_params"),
-        "steps": steps,
-        "compliance_status": job.get("compliance_status"),
-        "compliance_details": compliance,
-        "order_payloads": order_payloads,
-        "total_duration_ms": sum(s.get("duration_ms", 0) for s in steps if s.get("duration_ms")),
-    })), 200
+            "mode": job.get("mode", "full"),
+            "input_params": job.get("input_params"),
+            "steps": steps,
+            "compliance_status": job.get("compliance_status"),
+            "compliance_details": compliance,
+            "order_payloads": order_payloads,
+            "total_duration_ms": sum(s.get("duration_ms", 0) for s in steps if s.get("duration_ms")),
+        })), 200
+    except Exception as exc:
+        logger.error("Pipeline result failed: %s", exc, exc_info=True)
+        return jsonify(brand_response({
+            "error": brand_error(f"Result fetch failed: {str(exc)[:200]}"),
+            "code": "RESULT_ERROR",
+        })), 500
 
 
 @pipeline_bp.route("/api/pipeline/result/<job_id>/step/<int:step_number>", methods=["GET"])
 @require_auth
 def get_raw_step_output(job_id: str, step_number: int):
     """Get raw output data for a specific pipeline step."""
-    user_id = g.user.get("user_id")
-    is_admin = g.user.get("role") == "admin"
+    try:
+        user_id = g.user.get("user_id")
+        is_admin = g.user.get("role") == "admin"
 
-    if is_admin:
-        job = fetch_one("SELECT id FROM pipeline_jobs WHERE id = %s", (job_id,))
-    else:
-        job = fetch_one(
-            "SELECT id FROM pipeline_jobs WHERE id = %s AND user_id = %s",
-            (job_id, user_id)
+        if is_admin:
+            job = fetch_one("SELECT id FROM pipeline_jobs WHERE id = %s", (job_id,))
+        else:
+            job = fetch_one(
+                "SELECT id FROM pipeline_jobs WHERE id = %s AND user_id = %s",
+                (job_id, user_id)
+            )
+        if not job:
+            return jsonify({"error": "Job not found"}), 404
+
+        step = fetch_one(
+            """SELECT step_number, step_name, status, output_data, duration_ms
+               FROM pipeline_results WHERE job_id = %s AND step_number = %s""",
+            (job_id, step_number)
         )
-    if not job:
-        return jsonify({"error": "Job not found"}), 404
+        if not step:
+            return jsonify({"error": "Step not found"}), 404
 
-    step = fetch_one(
-        """SELECT step_number, step_name, status, output_data, duration_ms
-           FROM pipeline_results WHERE job_id = %s AND step_number = %s""",
-        (job_id, step_number)
-    )
-    if not step:
-        return jsonify({"error": "Step not found"}), 404
+        _decrypt_output(step)
 
-    _decrypt_output(step)
-
-    return jsonify({
-        "job_id": job_id,
-        "step_number": step["step_number"],
-        "step_name": step["step_name"],
-        "status": step["status"],
-        "output_data": step["output_data"],
-        "duration_ms": step.get("duration_ms"),
-    }), 200
+        return jsonify({
+            "job_id": job_id,
+            "step_number": step["step_number"],
+            "step_name": step["step_name"],
+            "status": step["status"],
+            "output_data": step["output_data"],
+            "duration_ms": step.get("duration_ms"),
+        }), 200
+    except Exception as exc:
+        logger.error("Raw step output failed: %s", exc, exc_info=True)
+        return jsonify({"error": f"Step output failed: {str(exc)[:200]}", "code": "STEP_ERROR"}), 500
 
 
 @pipeline_bp.route("/api/pipeline/result/<job_id>/raw", methods=["GET"])
 @require_auth
 def get_raw_pipeline_export(job_id: str):
     """Export all pipeline step results as raw JSON for user download."""
-    user_id = g.user.get("user_id")
-    is_admin = g.user.get("role") == "admin"
+    try:
+        user_id = g.user.get("user_id")
+        is_admin = g.user.get("role") == "admin"
 
-    if is_admin:
-        job = fetch_one("SELECT * FROM pipeline_jobs WHERE id = %s", (job_id,))
-    else:
-        job = fetch_one(
-            "SELECT * FROM pipeline_jobs WHERE id = %s AND user_id = %s",
-            (job_id, user_id)
+        if is_admin:
+            job = fetch_one("SELECT * FROM pipeline_jobs WHERE id = %s", (job_id,))
+        else:
+            job = fetch_one(
+                "SELECT * FROM pipeline_jobs WHERE id = %s AND user_id = %s",
+                (job_id, user_id)
+            )
+        if not job:
+            return jsonify({"error": "Job not found"}), 404
+
+        steps = fetch_all(
+            """SELECT step_number, step_name, status, output_data, duration_ms, phase, error_msg
+               FROM pipeline_results WHERE job_id = %s ORDER BY step_number""",
+            (job_id,)
         )
-    if not job:
-        return jsonify({"error": "Job not found"}), 404
 
-    steps = fetch_all(
-        """SELECT step_number, step_name, status, output_data, duration_ms, phase, error_msg
-           FROM pipeline_results WHERE job_id = %s ORDER BY step_number""",
-        (job_id,)
-    )
-
-    export = {
-        "job_id": job_id,
-        "status": job.get("status"),
-        "mode": job.get("mode"),
-        "input_params": job.get("input_params"),
-        "created_at": str(job.get("created_at", "")),
-        "completed_at": str(job.get("completed_at", "")),
-        "steps": [],
-    }
-    for s in steps:
-        _decrypt_output(s)
-        export["steps"].append({
-            "step_number": s["step_number"],
-            "step_name": s["step_name"],
-            "status": s["status"],
-            "phase": s.get("phase"),
-            "duration_ms": s.get("duration_ms"),
-            "error_msg": s.get("error_msg"),
-            "output_data": s["output_data"],
-        })
-
-    raw = json.dumps(export, indent=2, default=str)
-    return Response(
-        raw,
-        mimetype="application/json",
-        headers={
-            "Content-Disposition": f"attachment; filename=vigyanpilot_raw_{job_id[:8]}.json",
-            "Content-Type": "application/json",
+        export = {
+            "job_id": job_id,
+            "status": job.get("status"),
+            "mode": job.get("mode"),
+            "input_params": job.get("input_params"),
+            "created_at": str(job.get("created_at", "")),
+            "completed_at": str(job.get("completed_at", "")),
+            "steps": [],
         }
-    ), 200
+        for s in steps:
+            _decrypt_output(s)
+            export["steps"].append({
+                "step_number": s["step_number"],
+                "step_name": s["step_name"],
+                "status": s["status"],
+                "phase": s.get("phase"),
+                "duration_ms": s.get("duration_ms"),
+                "error_msg": s.get("error_msg"),
+                "output_data": s["output_data"],
+            })
+
+        raw = json.dumps(export, indent=2, default=str)
+        return Response(
+            raw,
+            mimetype="application/json",
+            headers={
+                "Content-Disposition": f"attachment; filename=vigyanpilot_raw_{job_id[:8]}.json",
+                "Content-Type": "application/json",
+            }
+        ), 200
+    except Exception as exc:
+        logger.error("Raw pipeline export failed: %s", exc, exc_info=True)
+        return jsonify({"error": f"Export failed: {str(exc)[:200]}", "code": "EXPORT_ERROR"}), 500
 
 
 @pipeline_bp.route("/api/pipeline/jobs", methods=["GET"])
 @require_auth
 def list_pipeline_jobs():
     """List all pipeline jobs for the current user."""
-    user_id = g.user.get("user_id")
-    is_admin = g.user.get("role") == "admin"
+    try:
+        user_id = g.user.get("user_id")
+        is_admin = g.user.get("role") == "admin"
 
-    if is_admin:
-        jobs = fetch_all(
-            """SELECT id, status, mode, current_step, total_steps, created_at, completed_at
-               FROM pipeline_jobs ORDER BY created_at DESC LIMIT 50"""
-        )
-    else:
-        jobs = fetch_all(
-            """SELECT id, status, mode, current_step, total_steps, created_at, completed_at
-               FROM pipeline_jobs WHERE user_id = %s ORDER BY created_at DESC LIMIT 20""",
-            (user_id,)
-        )
+        if is_admin:
+            jobs = fetch_all(
+                """SELECT id, status, mode, current_step, total_steps, created_at, completed_at
+                   FROM pipeline_jobs ORDER BY created_at DESC LIMIT 50"""
+            )
+        else:
+            jobs = fetch_all(
+                """SELECT id, status, mode, current_step, total_steps, created_at, completed_at
+                   FROM pipeline_jobs WHERE user_id = %s ORDER BY created_at DESC LIMIT 20""",
+                (user_id,)
+            )
 
-    return jsonify(brand_response({"jobs": jobs, "count": len(jobs)})), 200
+        return jsonify(brand_response({"jobs": jobs, "count": len(jobs)})), 200
+    except Exception as exc:
+        logger.error("List pipeline jobs failed: %s", exc, exc_info=True)
+        return jsonify({"error": f"Failed to list jobs: {str(exc)[:200]}", "code": "JOBS_ERROR"}), 500
 
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -634,44 +668,45 @@ def trigger_order_serialization(job_id: str):
     Returns:
         Order payload JSON with order_id, vendor, oligos, etc.
     """
-    user_id = g.user.get("user_id")
-    is_admin = g.user.get("role") == "admin"
+    try:
+        user_id = g.user.get("user_id")
+        is_admin = g.user.get("role") == "admin"
 
-    # Fetch job
-    if is_admin:
-        job = fetch_one("SELECT * FROM pipeline_jobs WHERE id = %s", (job_id,))
-    else:
-        job = fetch_one(
-            "SELECT * FROM pipeline_jobs WHERE id = %s AND user_id = %s",
-            (job_id, user_id)
+        # Fetch job
+        if is_admin:
+            job = fetch_one("SELECT * FROM pipeline_jobs WHERE id = %s", (job_id,))
+        else:
+            job = fetch_one(
+                "SELECT * FROM pipeline_jobs WHERE id = %s AND user_id = %s",
+                (job_id, user_id)
+            )
+
+        if not job:
+            return jsonify(brand_response(
+                {"error": brand_error("Job not found.")}
+            )), 404
+
+        if job["status"] != "completed":
+            return jsonify(brand_response(
+                {"error": brand_error("Job must be completed before order serialization.")}
+            )), 400
+
+        # Parse query parameters
+        vendor = request.args.get("vendor", "idt").lower()
+        application_type = request.args.get("application_type", "standard_pcr")
+
+        if vendor not in ("idt", "twist"):
+            return jsonify(brand_response(
+                {"error": brand_error("'vendor' must be 'idt' or 'twist'.")}
+            )), 400
+
+        # Gather primer/probe sequences from pipeline results
+        step_results = fetch_all(
+            """SELECT step_number, step_name, output_data
+               FROM pipeline_results WHERE job_id = %s ORDER BY step_number""",
+            (job_id,)
         )
-
-    if not job:
-        return jsonify(brand_response(
-            {"error": brand_error("Job not found.")}
-        )), 404
-
-    if job["status"] != "completed":
-        return jsonify(brand_response(
-            {"error": brand_error("Job must be completed before order serialization.")}
-        )), 400
-
-    # Parse query parameters
-    vendor = request.args.get("vendor", "idt").lower()
-    application_type = request.args.get("application_type", "standard_pcr")
-
-    if vendor not in ("idt", "twist"):
-        return jsonify(brand_response(
-            {"error": brand_error("'vendor' must be 'idt' or 'twist'.")}
-        )), 400
-
-    # Gather primer/probe sequences from pipeline results
-    step_results = fetch_all(
-        """SELECT step_number, step_name, output_data
-           FROM pipeline_results WHERE job_id = %s ORDER BY step_number""",
-        (job_id,)
-    )
-    for sr in step_results:
+        for sr in step_results:
         _decrypt_output(sr)
 
     # Extract sequences for compliance screening and primer pairs for serialization
@@ -830,6 +865,12 @@ def trigger_order_serialization(job_id: str):
         "job_id": job_id,
         "vendor": vendor,
     })), 200
+    except Exception as exc:
+        logger.error("Order serialization failed: %s", exc, exc_info=True)
+        return jsonify(brand_response({
+            "error": brand_error(f"Order serialization failed: {str(exc)[:200]}"),
+            "code": "ORDER_ERROR",
+        })), 500
 
 
 @pipeline_bp.route("/api/pipeline/compliance/<job_id>", methods=["GET"])
@@ -840,48 +881,55 @@ def get_compliance_result(job_id: str):
 
     Returns the most recent compliance_screening record for the given job_id.
     """
-    user_id = g.user.get("user_id")
-    is_admin = g.user.get("role") == "admin"
+    try:
+        user_id = g.user.get("user_id")
+        is_admin = g.user.get("role") == "admin"
 
-    # Verify job ownership
-    if is_admin:
-        job = fetch_one("SELECT id FROM pipeline_jobs WHERE id = %s", (job_id,))
-    else:
-        job = fetch_one(
-            "SELECT id FROM pipeline_jobs WHERE id = %s AND user_id = %s",
-            (job_id, user_id)
+        # Verify job ownership
+        if is_admin:
+            job = fetch_one("SELECT id FROM pipeline_jobs WHERE id = %s", (job_id,))
+        else:
+            job = fetch_one(
+                "SELECT id FROM pipeline_jobs WHERE id = %s AND user_id = %s",
+                (job_id, user_id)
+            )
+
+        if not job:
+            return jsonify(brand_response(
+                {"error": brand_error("Job not found.")}
+            )), 404
+
+        # Fetch latest compliance record
+        compliance = fetch_one(
+            """SELECT status, sequences_screened, matched_organism, matched_gene,
+                      percent_identity, alignment_length, screened_at
+               FROM compliance_screening WHERE job_id = %s
+               ORDER BY screened_at DESC LIMIT 1""",
+            (job_id,)
         )
 
-    if not job:
-        return jsonify(brand_response(
-            {"error": brand_error("Job not found.")}
-        )), 404
+        if not compliance:
+            return jsonify(brand_response({
+                "job_id": job_id,
+                "compliance": None,
+                "message": "No compliance screening has been performed for this job.",
+            })), 200
 
-    # Fetch latest compliance record
-    compliance = fetch_one(
-        """SELECT status, sequences_screened, matched_organism, matched_gene,
-                  percent_identity, alignment_length, screened_at
-           FROM compliance_screening WHERE job_id = %s
-           ORDER BY screened_at DESC LIMIT 1""",
-        (job_id,)
-    )
-
-    if not compliance:
         return jsonify(brand_response({
             "job_id": job_id,
-            "compliance": None,
-            "message": "No compliance screening has been performed for this job.",
+            "compliance": {
+                "status": compliance["status"],
+                "sequences_screened": compliance["sequences_screened"],
+                "matched_organism": compliance.get("matched_organism"),
+                "matched_gene": compliance.get("matched_gene"),
+                "percent_identity": compliance.get("percent_identity"),
+                "alignment_length": compliance.get("alignment_length"),
+                "screened_at": str(compliance["screened_at"]) if compliance.get("screened_at") else None,
+            },
         })), 200
-
-    return jsonify(brand_response({
-        "job_id": job_id,
-        "compliance": {
-            "status": compliance["status"],
-            "sequences_screened": compliance["sequences_screened"],
-            "matched_organism": compliance.get("matched_organism"),
-            "matched_gene": compliance.get("matched_gene"),
-            "percent_identity": compliance.get("percent_identity"),
-            "alignment_length": compliance.get("alignment_length"),
-            "screened_at": str(compliance["screened_at"]) if compliance.get("screened_at") else None,
-        },
-    })), 200
+    except Exception as exc:
+        logger.error("Compliance result failed: %s", exc, exc_info=True)
+        return jsonify(brand_response({
+            "error": brand_error(f"Compliance fetch failed: {str(exc)[:200]}"),
+            "code": "COMPLIANCE_ERROR",
+        })), 500
