@@ -236,7 +236,19 @@ class PipelineOrchestrator:
 
         start_ns = time.perf_counter_ns()
         executor = concurrent.futures.ThreadPoolExecutor(max_workers=1)
-        future = executor.submit(_run_step)
+        try:
+            future = executor.submit(_run_step)
+        except RuntimeError as exc:
+            executor.shutdown(wait=False)
+            return StepOutcome(
+                step_number=registration.step_number,
+                step_name=registration.step_name,
+                status="failed",
+                phase=registration.phase,
+                duration_ms=0,
+                error_msg=f"Executor error: {exc}",
+                penalty=self._config.soft_failure_penalty,
+            )
         try:
             future.result(timeout=self._config.step_timeout_seconds)
         except concurrent.futures.TimeoutError:

@@ -852,50 +852,58 @@ def create_app() -> Flask:
                 },
             })
 
-            job_id = str(_uuid.uuid4())
-            config = PipelineConfig(mode=mode, step_timeout_seconds=120)
-            orchestrator = PipelineOrchestrator(config=config)
-            _dev_register_pipeline_steps(orchestrator)
-            started = time.time()
-            outcomes = orchestrator.run(job_id, input_params)
-            duration_ms = int((time.time() - started) * 1000)
+            try:
+                job_id = str(_uuid.uuid4())
+                config = PipelineConfig(mode=mode, step_timeout_seconds=300)
+                orchestrator = PipelineOrchestrator(config=config)
+                _dev_register_pipeline_steps(orchestrator)
+                started = time.time()
+                outcomes = orchestrator.run(job_id, input_params)
+                duration_ms = int((time.time() - started) * 1000)
 
-            hard_failed = any(
-                outcome.status == "failed"
-                and any(
-                    step.step_number == outcome.step_number and step.hard_failure
-                    for step in orchestrator.steps
+                hard_failed = any(
+                    outcome.status == "failed"
+                    and any(
+                        step.step_number == outcome.step_number and step.hard_failure
+                        for step in orchestrator.steps
+                    )
+                    for outcome in outcomes
                 )
-                for outcome in outcomes
-            )
-            status = "failed" if hard_failed else "completed"
-            error_log = "; ".join(
-                f"Step {o.step_number} ({o.step_name}): {o.error_msg}"
-                for o in outcomes if o.status == "failed"
-            ) or None
+                status = "failed" if hard_failed else "completed"
+                error_log = "; ".join(
+                    f"Step {o.step_number} ({o.step_name}): {o.error_msg}"
+                    for o in outcomes if o.status == "failed"
+                ) or None
 
-            DEV_PIPELINE_JOBS[job_id] = {
-                "job_id": job_id,
-                "user_email": user["email"],
-                "status": status,
-                "mode": mode,
-                "steps": outcomes,
-                "error": error_log,
-                "total_duration_ms": duration_ms,
-                "created_at": started,
-            }
+                DEV_PIPELINE_JOBS[job_id] = {
+                    "job_id": job_id,
+                    "user_email": user["email"],
+                    "status": status,
+                    "mode": mode,
+                    "steps": outcomes,
+                    "error": error_log,
+                    "total_duration_ms": duration_ms,
+                    "created_at": started,
+                }
 
-            if status == "completed" and user.get("role") != "admin":
-                increment_usage(user["email"])
-                log_action(user["email"], "pipeline_run", f"22-step dev pipeline, {duration_ms}ms")
+                if status == "completed" and user.get("role") != "admin":
+                    increment_usage(user["email"])
+                    log_action(user["email"], "pipeline_run", f"22-step dev pipeline, {duration_ms}ms")
 
-            return jsonify({
-                "job_id": job_id,
-                "status": status,
-                "mode": mode,
-                "total_steps": 22,
-                "message": f"Pipeline job completed in development mode. Status: {status}",
-            }), 202
+                return jsonify({
+                    "job_id": job_id,
+                    "status": status,
+                    "mode": mode,
+                    "total_steps": 22,
+                    "message": f"Pipeline job completed in development mode. Status: {status}",
+                }), 202
+
+            except Exception as exc:
+                logger.error("Pipeline submit failed: %s", exc, exc_info=True)
+                return jsonify({
+                    "error": f"Pipeline submission failed: {str(exc)[:300]}",
+                    "code": "PIPELINE_FAILED",
+                }), 500
 
         @app.route("/api/pipeline/status/<job_id>", methods=["GET"])
         def dev_pipeline_status(job_id):

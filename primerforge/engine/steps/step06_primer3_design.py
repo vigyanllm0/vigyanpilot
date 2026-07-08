@@ -141,7 +141,10 @@ def execute(input_data: Dict[str, Any]) -> Dict[str, Any]:
         - low_candidate_yield: bool (True if < 5 pairs after filtering)
         - pair_count: int (number of pairs after filtering)
     """
-    import primer3 as p3
+    try:
+        import primer3 as p3
+    except ImportError:
+        raise RuntimeError("primer3 Python package is required for Primer3 design. Install: pip install primer3")
 
     # Extract sequence
     sequence = input_data.get("consensus_sequence") or input_data.get("target_sequence", "")
