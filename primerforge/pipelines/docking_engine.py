@@ -15,6 +15,8 @@ def _compute_box_center(pdb_path: str, default_size: float = 25.0) -> Tuple[floa
     Parse ATOM/HETATM records from a PDB or PDBQT file and return the
     geometric center (cx, cy, cz) and a recommended search box size (sx, sy, sz).
     Falls back to (0,0,0) with size 60 if parsing fails.
+    Box dimensions are clamped to a max of 30 Å per side to stay within
+    Vina's volume limit (~27,000 Å³).
     """
     xs, ys, zs = [], [], []
     try:
@@ -31,13 +33,13 @@ def _compute_box_center(pdb_path: str, default_size: float = 25.0) -> Tuple[floa
         logger.debug("Suppressed exception: %s", e)
 
     if not xs:
-        return 0.0, 0.0, 0.0, 60.0, 60.0, 60.0
+        return 0.0, 0.0, 0.0, 30.0, 30.0, 30.0
 
     cx, cy, cz = sum(xs) / len(xs), sum(ys) / len(ys), sum(zs) / len(zs)
-    # Box is protein extent + 10 Å padding, minimum 30 Å
-    sx = max(30.0, (max(xs) - min(xs)) + 10.0)
-    sy = max(30.0, (max(ys) - min(ys)) + 10.0)
-    sz = max(30.0, (max(zs) - min(zs)) + 10.0)
+    # Box is protein extent + 10 Å padding, clamped to 30 Å max
+    sx = min(max(30.0, (max(xs) - min(xs)) + 10.0), 30.0)
+    sy = min(max(30.0, (max(ys) - min(ys)) + 10.0), 30.0)
+    sz = min(max(30.0, (max(zs) - min(zs)) + 10.0), 30.0)
     return cx, cy, cz, sx, sy, sz
 
 
