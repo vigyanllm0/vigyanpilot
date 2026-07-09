@@ -1041,6 +1041,7 @@ async function runDocking() {
 
         if (statusResult.status === 'completed') {
           clearInterval(pollInterval);
+          _jobId = statusResult.job_id || '';
           displayResults(statusResult.result);
           $('run-btn').disabled = false;
           $('run-spinner').classList.remove('show');
@@ -1229,7 +1230,9 @@ function displayResults(result) {
   $('results-body').innerHTML = html;
 
   // Initialize 3D viewer (fetches structure data from API lazily)
-  _jobId = result.job_id || '';
+  if (result.job_id) {
+    _jobId = result.job_id;
+  }
   if (result.stage1) {
     initViewer();
   }
@@ -1252,27 +1255,41 @@ function initViewer() {
   var container = $('mol-viewer-container');
   container.style.display = 'block';
   var el = $('mol-3d-viewer');
+  if (typeof $3Dmol === 'undefined') {
+    el.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--red);font-size:13px">3D viewer library not loaded. Please check your internet connection.</div>';
+    return;
+  }
   el.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--muted);font-size:13px">Loading structure data...</div>';
   // Fetch protein structure from API
   var ji = _jobId || (window._lastDockingResult && window._lastDockingResult.job_id);
-  if (!ji) return;
+  if (!ji) {
+    el.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--red);font-size:13px">No job ID found.</div>';
+    return;
+  }
   var xhr = new XMLHttpRequest();
   xhr.open('GET', API + '/primer/docking/structure/' + ji + '/1', true);
   xhr.onload = function() {
     if (xhr.status === 200) {
-      var data = JSON.parse(xhr.responseText);
-      _proteinPdb = data.receptor_pdb || '';
-      _structureCache['1'] = data;
-      el.innerHTML = '';
-      _viewer = $3Dmol.createViewer(el, {backgroundColor: '#ffffff'});
-      if (_proteinPdb) {
-        _viewer.addModel(_proteinPdb, 'pdb');
-        _viewer.setStyle({}, {cartoon: {color: 'spectrum'}});
-        _viewer.zoomTo();
-        _viewer.render();
+      try {
+        var data = JSON.parse(xhr.responseText);
+        _proteinPdb = data.receptor_pdb || '';
+        _structureCache['1'] = data;
+        el.innerHTML = '';
+        _viewer = $3Dmol.createViewer(el, {backgroundColor: '#ffffff'});
+        if (_proteinPdb) {
+          _viewer.addModel(_proteinPdb, 'pdb');
+          _viewer.setStyle({}, {cartoon: {color: 'spectrum'}});
+          _viewer.zoomTo();
+          _viewer.render();
+        }
+        $('mol-viewer-info').textContent = 'Protein backbone (cartoon, spectrum-colored)';
+        updateMolSelector(-1);
+      } catch (e) {
+        el.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--red);font-size:13px">Error loading structure data.</div>';
+        console.warn('initViewer parse error:', e);
       }
-      $('mol-viewer-info').textContent = 'Protein backbone (cartoon, spectrum-colored)';
-      updateMolSelector(-1);
+    } else {
+      el.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--red);font-size:13px">Failed to load structure (status ' + xhr.status + ').</div>';
     }
   };
   xhr.onerror = function() {
@@ -1293,11 +1310,23 @@ function fetchMolStructure(idx, callback) {
   xhr.open('GET', API + '/primer/docking/structure/' + ji + '/' + (idx + 1), true);
   xhr.onload = function() {
     if (xhr.status === 200) {
-      var data = JSON.parse(xhr.responseText);
-      _structureCache[key] = data;
-      if (!_proteinPdb && data.receptor_pdb) _proteinPdb = data.receptor_pdb;
-      callback(data);
+      try {
+        var data = JSON.parse(xhr.responseText);
+        _structureCache[key] = data;
+        if (!_proteinPdb && data.receptor_pdb) _proteinPdb = data.receptor_pdb;
+        callback(data);
+      } catch (e) {
+        console.warn('fetchMolStructure parse error:', e);
+        callback({ receptor_pdb: _proteinPdb || '', ligand_sdf: '' });
+      }
+    } else {
+      console.warn('fetchMolStructure status', xhr.status);
+      callback({ receptor_pdb: _proteinPdb || '', ligand_sdf: '' });
     }
+  };
+  xhr.onerror = function() {
+    console.warn('fetchMolStructure network error');
+    callback({ receptor_pdb: _proteinPdb || '', ligand_sdf: '' });
   };
   xhr.send();
 }
