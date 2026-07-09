@@ -98,18 +98,22 @@ async def _run_pipeline_inner(
 
     try:
         import torch
+        device = "MPS (Apple Silicon)" if hasattr(torch.backends, "mps") and torch.backends.mps.is_available() else "CPU (Standard)"
+        mode_str = f"Mode: Local GPU Inference on {device}"
     except ImportError:
-        return {**result, "status": "error", "message": "ESMFold requires torch. Install: pip install torch"}
+        device = "CPU (ESMFold fallback)"
+        mode_str = "Mode: Extended-chain fallback (no torch)"
+        torch = None
 
-    device = "MPS (Apple Silicon)" if hasattr(torch.backends, "mps") and torch.backends.mps.is_available() else "CPU (Standard)"
     await _progress("PIPELINE", f"Initializing Consensus Discovery Suite on {device}...")
-    await _progress("STAGE 1 / ESMFold", f"Commencing structural folding for sequence (Length: {len(sequence)}aa, Mode: Local GPU Inference)...")
+    await _progress("STAGE 1 / ESMFold", f"Commencing structural folding for sequence (Length: {len(sequence)}aa, {mode_str})...")
 
     try:
         stage1_result = await esmfold_predict(sequence, progress_callback=_progress)
         result["stage1"] = stage1_result
         receptor_pdb = stage1_result["pdb_string"]
-        await _progress("STAGE 1 / ESMFold", f"✅ Structure predicted — pLDDT: {stage1_result['plddt_score']}%")
+        score = stage1_result.get('plddt_score', 0)
+        await _progress("STAGE 1 / ESMFold", f"✅ Structure predicted — pLDDT: {score}%")
     except Exception as e:
         return {**result, "status": "error", "message": f"Stage 1 (ESMFold) failed: {str(e)}"}
 
