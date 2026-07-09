@@ -23,8 +23,8 @@ import subprocess
 import time
 
 def kill_stale_processes():
-    """Kill leftover uvicorn / ngrok and free port 7860."""
-    for cmd in [["pkill", "-f", "uvicron"], ["pkill", "-f", "ngrok"], ["fuser", "-k", "7860/tcp"]]:
+    """Kill leftover uvicorn and free port 7860."""
+    for cmd in [["pkill", "-f", "uvicron"], ["fuser", "-k", "7860/tcp"]]:
         try:
             subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=5)
         except Exception as e:

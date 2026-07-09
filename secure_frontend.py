@@ -147,7 +147,7 @@ class SecureHandler(SimpleHTTPRequestHandler):
         self.send_header("Referrer-Policy", "strict-origin-when-cross-origin")
         self.send_header("Cache-Control", "no-store, max-age=0")
         self.send_header("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
-        self.send_header("Content-Security-Policy", "default-src 'self'; script-src 'self' https://accounts.google.com https://cdn.tailwindcss.com https://checkout.razorpay.com 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' http://localhost:11436 https://*.ngrok-free.dev; frame-src https://accounts.google.com https://checkout.razorpay.com")
+        self.send_header("Content-Security-Policy", "default-src 'self'; script-src 'self' https://accounts.google.com https://cdn.tailwindcss.com https://checkout.razorpay.com 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' http://localhost:11436; frame-src https://accounts.google.com https://checkout.razorpay.com")
         super().end_headers()
 
 
