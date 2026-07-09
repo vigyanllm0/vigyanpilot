@@ -5,6 +5,7 @@ import os
 import time
 import uuid
 import threading
+import asyncio
 import logging
 
 logger = logging.getLogger(__name__)
@@ -140,6 +141,74 @@ def release_stale_jobs(max_age_minutes: float = 10.0):
     if released:
         logger.info("Released %d stale running job(s) back to pending", released)
     return released
+
+# ── Local worker thread ──────────────────────────────────────────────────
+# Processes pending docking jobs directly on this server instead of waiting
+# for an external Azure worker. Spawned by start_local_worker().
+_LOCAL_WORKER_RUNNING = False
+
+def _process_job(job: dict):
+    """Run the consensus pipeline for a single job and save result."""
+    job_id = job["job_id"]
+    sequence = job["sequence"]
+    smiles_list = job.get("ligand_smiles_list") or []
+    top_n = job.get("top_n", 50)
+
+    logger.info("Local worker processing job %s (%d ligands)", job_id, len(smiles_list))
+
+    try:
+        from primerforge.pipelines.consensus_pipeline import run_consensus_pipeline
+        result = asyncio.run(run_consensus_pipeline(sequence, smiles_list, top_n))
+        if result.get("status") == "success":
+            complete_job(job_id, result)
+            logger.info("Local worker completed job %s", job_id)
+        else:
+            error = result.get("message", "Pipeline failed")
+            complete_job(job_id, None, error)
+            logger.error("Local worker failed job %s: %s", job_id, error)
+    except Exception as e:
+        complete_job(job_id, None, str(e))
+        logger.error("Local worker exception on job %s: %s", job_id, e)
+
+
+def _local_worker_loop(interval: float = 5.0):
+    """Background loop: poll pending, claim, process."""
+    global _LOCAL_WORKER_RUNNING
+    logger.info("Local docking worker started (poll interval: %gs)", interval)
+    while _LOCAL_WORKER_RUNNING:
+        try:
+            release_stale_jobs(max_age_minutes=2.0)
+            pending = list_pending_jobs()
+            for job in pending:
+                if not _LOCAL_WORKER_RUNNING:
+                    break
+                job_id = job["job_id"]
+                if claim_job(job_id):
+                    _process_job(job)
+        except Exception as e:
+            logger.debug("Local worker cycle error: %s", e)
+        time.sleep(interval)
+    logger.info("Local docking worker stopped")
+
+
+def start_local_worker(interval: float = 5.0):
+    """Start the local worker thread as a daemon."""
+    global _LOCAL_WORKER_RUNNING
+    if _LOCAL_WORKER_RUNNING:
+        logger.info("Local worker already running")
+        return
+    _LOCAL_WORKER_RUNNING = True
+    t = threading.Thread(target=_local_worker_loop, args=(interval,), daemon=True)
+    t.start()
+    logger.info("Local worker thread started")
+
+
+def stop_local_worker():
+    """Signal the local worker to stop."""
+    global _LOCAL_WORKER_RUNNING
+    _LOCAL_WORKER_RUNNING = False
+    logger.info("Local worker stop signal sent")
+
 
 def cleanup_old_jobs(max_age_hours: float = 1.0):
     """Remove completed/failed jobs older than max_age_hours to prevent disk bloat."""

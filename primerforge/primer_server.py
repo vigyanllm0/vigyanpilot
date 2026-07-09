@@ -2218,6 +2218,14 @@ def create_app() -> Flask:
             "status": status,
         }), 200
 
+    # Start local docking worker if READY
+    if READY:
+        try:
+            from primerforge.docking_queue import start_local_worker
+            start_local_worker(interval=5.0)
+        except Exception as e:
+            logger.warning("Failed to start local docking worker: %s", e)
+
     # Pipeline health validation on startup
     try:
         from core.pipeline_validator import validate_pipeline_health

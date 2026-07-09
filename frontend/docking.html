@@ -1215,7 +1215,7 @@ function initViewer() {
   var ji = _jobId || (window._lastDockingResult && window._lastDockingResult.job_id);
   if (!ji) return;
   var xhr = new XMLHttpRequest();
-  xhr.open('GET', '/api/primer/docking/structure/' + ji + '/1', true);
+  xhr.open('GET', API + '/primer/docking/structure/' + ji + '/1', true);
   xhr.onload = function() {
     if (xhr.status === 200) {
       var data = JSON.parse(xhr.responseText);
@@ -1248,7 +1248,7 @@ function fetchMolStructure(idx, callback) {
   var ji = _jobId || (window._lastDockingResult && window._lastDockingResult.job_id);
   if (!ji) return;
   var xhr = new XMLHttpRequest();
-  xhr.open('GET', '/api/primer/docking/structure/' + ji + '/' + (idx + 1), true);
+  xhr.open('GET', API + '/primer/docking/structure/' + ji + '/' + (idx + 1), true);
   xhr.onload = function() {
     if (xhr.status === 200) {
       var data = JSON.parse(xhr.responseText);
