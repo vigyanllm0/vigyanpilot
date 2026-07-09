@@ -37,9 +37,12 @@ def _compute_box_center(pdb_path: str, default_size: float = 25.0) -> Tuple[floa
 
     cx, cy, cz = sum(xs) / len(xs), sum(ys) / len(ys), sum(zs) / len(zs)
     # Box is protein extent + 10 Å padding, clamped to 30 Å max
-    sx = min(max(30.0, (max(xs) - min(xs)) + 10.0), 30.0)
-    sy = min(max(30.0, (max(ys) - min(ys)) + 10.0), 30.0)
-    sz = min(max(30.0, (max(zs) - min(zs)) + 10.0), 30.0)
+    extent_x = (max(xs) - min(xs)) + 10.0
+    extent_y = (max(ys) - min(ys)) + 10.0
+    extent_z = (max(zs) - min(zs)) + 10.0
+    sx = max(default_size, min(extent_x, 30.0))
+    sy = max(default_size, min(extent_y, 30.0))
+    sz = max(default_size, min(extent_z, 30.0))
     return cx, cy, cz, sx, sy, sz
 
 
@@ -150,44 +153,88 @@ async def run_vina_docking(receptor_pdb: str, ligand_smiles: str, exhaustiveness
                 "--size_x", str(round(sx, 1)), "--size_y", str(round(sy, 1)), "--size_z", str(round(sz, 1)),
                 "--exhaustiveness", str(exhaustiveness), "--out", out_pdbqt_path
             ]
+
+            # Redirect stdout/stderr to files instead of PIPE to avoid pipe-buffer
+            # deadlock when multiple Vina processes run concurrently on low-core
+            # machines (the progress-bar output fills the 64KB pipe buffer and Vina
+            # blocks on write while the event loop is starved of CPU).
+            vina_stdout = os.path.join(temp_dir, "vina_stdout.txt")
+            vina_stderr = os.path.join(temp_dir, "vina_stderr.txt")
+            with open(vina_stdout, "w") as out_f, open(vina_stderr, "w") as err_f:
+                process = await asyncio.create_subprocess_exec(
+                    *vina_cmd, stdout=out_f, stderr=err_f
+                )
+                try:
+                    await asyncio.wait_for(process.wait(), timeout=600)
+                except asyncio.TimeoutError:
+                    process.kill()
+                    raise Exception(f"Vina timeout after 600s: ligand {ligand_smiles[:40]}")
             
-            process = await asyncio.create_subprocess_exec(*vina_cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
-            try:
-                stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=600)
-            except asyncio.TimeoutError:
-                process.kill()
-                raise Exception(f"Vina timeout after 600s: ligand {ligand_smiles[:40]}")
-            
-            if process.returncode != 0: 
-                err_msg = stderr.decode() or stdout.decode()
-                logger.error(f"Vina failed with code {process.returncode}: {err_msg}")
-                raise Exception(f"Vina failed: {err_msg}")
+            if process.returncode != 0:
+                with open(vina_stderr, "r") as f:
+                    err_msg = f.read().strip()
+                with open(vina_stdout, "r") as f:
+                    out_msg = f.read().strip()
+                logger.error(f"Vina failed with code {process.returncode}: {err_msg or out_msg[:200]}")
+                raise Exception(f"Vina failed: {err_msg or out_msg[:200]}")
             
             elapsed = time.time() - start_time
-            output_text = stdout.decode()
+
+            # Parse scores from output PDBQT file (REMARK VINA RESULT lines).
+            # The stdout table is also available in vina_stdout if needed.
             best_score = None
             poses_count = 0
-            # Parse Vina output table — handles both 1.1 and 1.2 formats
-            # Format: "   1       -7.5      0.000      0.000"
-            for line in output_text.splitlines():
-                line = line.strip()
-                parts = line.split()
-                if len(parts) >= 2:
-                    try:
-                        mode_num = int(parts[0])
-                        score_val = float(parts[1])
-                        if mode_num == 1 and score_val < 0:
-                            best_score = score_val
-                        poses_count = max(poses_count, mode_num)
-                    except Exception as e: logger.debug("Suppressed exception: %s", e)
-            
-            if best_score is None:
-                raise Exception("Failed to parse Vina output table. Ensure 'vina' binary is compatible.")
-                
             with open(out_pdbqt_path, "r") as f:
-                ligand_data = f.read()
+                for line in f:
+                    line = line.strip()
+                    if line.startswith("REMARK VINA RESULT:"):
+                        poses_count += 1
+                        parts = line.split()
+                        if len(parts) >= 4:
+                            try:
+                                score_val = float(parts[3])
+                                if best_score is None or score_val < best_score:
+                                    best_score = score_val
+                            except ValueError:
+                                pass
+
+            if best_score is None:
+                raise Exception("Failed to parse Vina score from output PDBQT.")
+
             with open(receptor_pdb_path, "r") as f:
                 receptor_data = f.read()
+
+            # Convert Vina's PDBQT output to SDF for 3D viewer (3Dmol.js)
+            # The frontend passes 'sdf' format to addModel().
+            ligand_view = None
+            if shutil.which("obabel"):
+                sdf_path = os.path.join(temp_dir, "ligand_view.sdf")
+                try:
+                    subprocess.run(
+                        ["obabel", out_pdbqt_path, "-O", sdf_path],
+                        check=True, capture_output=True, timeout=30
+                    )
+                    with open(sdf_path, "r") as f:
+                        ligand_view = f.read()
+                except Exception as e:
+                    logger.debug("PDBQT-to-SDF conversion failed: %s", e)
+            if not ligand_view:
+                # Fallback: extract ATOM/HETATM from PDBQT as plain PDB
+                try:
+                    with open(out_pdbqt_path, "r") as f:
+                        raw = f.read()
+                    clean = []
+                    for line in raw.splitlines():
+                        if line.startswith(("ATOM", "HETATM")):
+                            clean.append(line[:66])
+                    if clean:
+                        ligand_view = "\n".join(clean) + "\n"
+                        logger.debug("Using stripped-PDB fallback for ligand viewer")
+                except Exception as e:
+                    logger.debug("PDB fallback failed: %s", e)
+            if not ligand_view:
+                with open(out_pdbqt_path, "r") as f:
+                    ligand_view = f.read()
 
             return {
                 "binding_affinity": best_score,
@@ -197,7 +244,7 @@ async def run_vina_docking(receptor_pdb: str, ligand_smiles: str, exhaustiveness
                 "status": "success",
                 "message": f"Vina docking successful: {best_score} kcal/mol",
                 "structure": {
-                    "ligand": ligand_data,
+                    "ligand": ligand_view,
                     "receptor": receptor_data
                 }
             }
@@ -248,31 +295,41 @@ async def run_gnina_docking(receptor_pdb: str, ligand_smiles: str, exhaustivenes
                 "--size_x", str(round(sx, 1)), "--size_y", str(round(sy, 1)), "--size_z", str(round(sz, 1)),
                 "--exhaustiveness", str(exhaustiveness), "--cnn_scoring", "--out", out_sdf_path
             ]
+
+            # Redirect stdout/stderr to files to avoid pipe-buffer deadlock
+            gnina_stdout = os.path.join(temp_dir, "gnina_stdout.txt")
+            gnina_stderr = os.path.join(temp_dir, "gnina_stderr.txt")
+            with open(gnina_stdout, "w") as out_f, open(gnina_stderr, "w") as err_f:
+                process = await asyncio.create_subprocess_exec(
+                    *gnina_cmd, stdout=out_f, stderr=err_f
+                )
+                try:
+                    await asyncio.wait_for(process.wait(), timeout=600)
+                except asyncio.TimeoutError:
+                    process.kill()
+                    raise Exception(f"GNINA timeout after 600s: ligand {ligand_smiles[:40]}")
             
-            process = await asyncio.create_subprocess_exec(*gnina_cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
-            try:
-                stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=600)
-            except asyncio.TimeoutError:
-                process.kill()
-                raise Exception(f"GNINA timeout after 600s: ligand {ligand_smiles[:40]}")
-            
-            if process.returncode != 0: raise Exception(f"Gnina failed: {stderr.decode()}")
+            if process.returncode != 0:
+                with open(gnina_stderr, "r") as f:
+                    err_msg = f.read().strip()
+                raise Exception(f"Gnina failed: {err_msg}")
             
             elapsed = time.time() - start_time
-            output_text = stdout.decode()
             best_score = None
             cnn_score = None
             poses_count = 0
-            for line in output_text.splitlines():
-                parts = line.split()
-                if len(parts) >= 6:
-                    try:
-                        mode_num = int(parts[0])
-                        if mode_num == 1:
-                            best_score = float(parts[1])
-                            cnn_score = float(parts[5])
-                        poses_count = max(poses_count, mode_num)
-                    except Exception as e: logger.debug("Suppressed exception: %s", e)
+            with open(gnina_stdout, "r") as f:
+                for line in f:
+                    line = line.strip()
+                    parts = line.split()
+                    if len(parts) >= 6:
+                        try:
+                            mode_num = int(parts[0])
+                            if mode_num == 1:
+                                best_score = float(parts[1])
+                                cnn_score = float(parts[5])
+                            poses_count = max(poses_count, mode_num)
+                        except Exception as e: logger.debug("Suppressed exception: %s", e)
             
             if best_score is None:
                 raise Exception("Failed to parse GNINA output table. Ensure 'gnina' binary is correctly installed.")

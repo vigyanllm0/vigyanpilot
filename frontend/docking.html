@@ -1188,7 +1188,7 @@ function displayResults(result) {
 
   // Initialize 3D viewer (fetches structure data from API lazily)
   _jobId = result.job_id || '';
-  if (result.stage1 && result.stage1.plddt_score) {
+  if (result.stage1) {
     initViewer();
   }
 
@@ -1297,10 +1297,10 @@ function showViewerMol(idx) {
       var ligStr = data.ligand_sdf || '';
       if (ligStr) {
         try {
-          _viewer.addModel(ligStr, 'sdf');
+          _viewer.addModel(ligStr, ligStr.indexOf('$$$$') >= 0 ? 'sdf' : 'pdb');
           _viewer.setStyle({}, {stick: {radius: 0.3, colorscheme: {prop: 'elem', map: {C: 'gray', N: 'blue', O: 'red', S: 'yellow', P: 'orange', F: 'green', Cl: 'green', Br: 'brown', I: 'purple'}}}});
         } catch(e) {
-          console.warn('SDF parse error:', e);
+          console.warn('3Dmol parse error:', e);
         }
       }
       $('mol-viewer-info').textContent = 'Rank #' + (idx + 1) + ' — SMILES: ' + esc(ranked[idx].smiles || '').substring(0, 50) +
