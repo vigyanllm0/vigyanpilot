@@ -1011,11 +1011,33 @@ async function runDocking() {
     setStage(2, 'stub', 'Waiting for stage 1');
     setStage(3, 'stub', 'Waiting for stage 2');
 
-    // Poll for results
+    // Poll for results (max 180 attempts = 9 minutes)
+    var pollAttempts = 0;
     var pollInterval = setInterval(async function() {
       try {
         var pr = await fetch(API + '/primer/docking/status/' + jobId);
+        if (!pr.ok) {
+          clearInterval(pollInterval);
+          setStage(1, 'fail', 'API error: ' + pr.status);
+          showError('Server returned ' + pr.status + ' — the EC2 instance may be overloaded. Try again with fewer ligands.');
+          $('run-btn').disabled = false;
+          $('run-spinner').classList.remove('show');
+          $('run-btn-text').textContent = 'Run Consensus Docking';
+          $('slow-warn').style.display = 'none';
+          return;
+        }
         var statusResult = await pr.json();
+
+        if (statusResult.error) {
+          clearInterval(pollInterval);
+          setStage(1, 'fail', statusResult.error);
+          showError(statusResult.error);
+          $('run-btn').disabled = false;
+          $('run-spinner').classList.remove('show');
+          $('run-btn-text').textContent = 'Run Consensus Docking';
+          $('slow-warn').style.display = 'none';
+          return;
+        }
 
         if (statusResult.status === 'completed') {
           clearInterval(pollInterval);
@@ -1032,9 +1054,29 @@ async function runDocking() {
           $('run-spinner').classList.remove('show');
           $('run-btn-text').textContent = 'Run Consensus Docking';
           $('slow-warn').style.display = 'none';
+        } else {
+          pollAttempts++;
+          if (pollAttempts > 180) {
+            clearInterval(pollInterval);
+            setStage(1, 'fail', 'Timed out after 9 minutes');
+            showError('Docking timed out. The server may be overloaded. Try again with fewer ligands.');
+            $('run-btn').disabled = false;
+            $('run-spinner').classList.remove('show');
+            $('run-btn-text').textContent = 'Run Consensus Docking';
+            $('slow-warn').style.display = 'none';
+          }
         }
       } catch(e) {
-        // Poll error — retry
+        pollAttempts++;
+        if (pollAttempts > 180) {
+          clearInterval(pollInterval);
+          setStage(1, 'fail', 'Network error');
+          showError('Lost connection to server. Try again.');
+          $('run-btn').disabled = false;
+          $('run-spinner').classList.remove('show');
+          $('run-btn-text').textContent = 'Run Consensus Docking';
+          $('slow-warn').style.display = 'none';
+        }
       }
     }, 3000);
   } catch(e) {

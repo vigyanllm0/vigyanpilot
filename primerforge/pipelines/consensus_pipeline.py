@@ -135,8 +135,8 @@ async def _run_pipeline_inner(
     failed = 0
     total_ligands = len(ligand_smiles_list)
 
-    # Run Vina for all ligands — batch with concurrency limit (2 parallel max to save memory)
-    semaphore = asyncio.Semaphore(2)
+    # Run Vina for all ligands — one at a time to stay within 908MB RAM / 2-core limits
+    semaphore = asyncio.Semaphore(1)
 
     async def screen_ligand(smiles: str, idx: int):
         nonlocal failed
@@ -145,7 +145,7 @@ async def _run_pipeline_inner(
                 if idx % 5 == 0 or idx == total_ligands - 1:
                     await _progress("STAGE 2 / Vina", f"Screening ligand {idx+1}/{total_ligands}...", {"current": idx+1, "total": total_ligands})
 
-                docking_result = await run_vina_docking(receptor_pdb, smiles, exhaustiveness=4, receptor_pdbqt_path=_receptor_pdbqt_path)
+                docking_result = await run_vina_docking(receptor_pdb, smiles, exhaustiveness=2, receptor_pdbqt_path=_receptor_pdbqt_path)
                 return {
                     "smiles": smiles,
                     "vina_score": docking_result.get("binding_affinity"),

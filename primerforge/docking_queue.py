@@ -10,7 +10,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-QUEUE_DIR = os.environ.get("DOCKING_QUEUE_DIR", "/tmp/docking_queue")
+QUEUE_DIR = os.environ.get("DOCKING_QUEUE_DIR", os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "docking_queue"))
 PENDING_DIR = os.path.join(QUEUE_DIR, "pending")
 RUNNING_DIR = os.path.join(QUEUE_DIR, "running")
 COMPLETE_DIR = os.path.join(QUEUE_DIR, "complete")
