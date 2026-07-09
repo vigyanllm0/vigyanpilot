@@ -15,18 +15,24 @@ import os
 import base64
 import hashlib
 import logging
+import threading
 
 from cryptography.fernet import Fernet, InvalidToken
 
 logger = logging.getLogger("primerforge.crypto")
 
 _KEY_CACHE = None
+_KEY_LOCK = threading.Lock()
 
 
 def _get_key() -> bytes:
     global _KEY_CACHE
     if _KEY_CACHE is not None:
         return _KEY_CACHE
+
+    with _KEY_LOCK:
+        if _KEY_CACHE is not None:
+            return _KEY_CACHE
 
     raw = os.environ.get("DATA_ENCRYPTION_KEY")
     if raw:

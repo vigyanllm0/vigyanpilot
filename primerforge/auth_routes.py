@@ -98,7 +98,7 @@ def login():
     })
     resp.set_cookie(
         'pf_token', token,
-        httponly=True, secure=True, samesite='None',
+        httponly=True, secure=True, samesite='Lax',
         max_age=86400 * 7, path='/'
     )
     return resp, 200

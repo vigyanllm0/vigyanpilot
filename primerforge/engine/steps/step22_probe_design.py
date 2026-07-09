@@ -135,8 +135,17 @@ class ProbeDesignStep(PipelineStep):
                 "reason": None,
             })
 
+        # Merge probes into ranked_pairs so frontend never loses them
+        for pr in probe_results:
+            idx = pr["pair_index"]
+            if idx < len(ranked_pairs):
+                ranked_pairs[idx]["probes"] = pr.get("probes", [])
+                ranked_pairs[idx]["probe_status"] = pr.get("status", "")
+                ranked_pairs[idx]["probe_reason"] = pr.get("reason", "")
+
         return {
             "probe_results": probe_results,
+            "ranked_pairs": ranked_pairs,  # overwrites current_data so probes are embedded
             "probe_note": f"Probe design completed for {len(ranked_pairs)} pairs",
         }
 

@@ -22,7 +22,7 @@ import json
 import hashlib
 import logging
 from collections import defaultdict
-from datetime import datetime
+from datetime import datetime, timezone
 from threading import Lock
 from functools import wraps
 
@@ -120,7 +120,7 @@ class ThreatStore:
 
             # Quarantine the request
             self._quarantine.append({
-                "timestamp": datetime.utcnow().isoformat(),
+                "timestamp": datetime.now(timezone.utc).isoformat(),
                 "ip": ip,
                 "threat_type": threat_type,
                 "detail": detail[:500],

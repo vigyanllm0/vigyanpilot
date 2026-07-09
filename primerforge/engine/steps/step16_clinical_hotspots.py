@@ -180,8 +180,7 @@ def _extract_clinical_significance(record) -> str:
             if isinstance(clnsig, (list, tuple)):
                 return "/".join(str(s) for s in clnsig)
             return str(clnsig)
-        except (TypeError, KeyError):
-            pass
+        except Exception as e: logger.debug("Suppressed exception: %s", e)
     elif isinstance(record, str):
         # Parse INFO field
         fields = record.split("\t")
@@ -228,8 +227,7 @@ def _extract_gene(record) -> str:
             if isinstance(gene, str) and ":" in gene:
                 return gene.split(":")[0]
             return str(gene) if gene else ""
-        except (TypeError, KeyError):
-            pass
+        except Exception as e: logger.debug("Suppressed exception: %s", e)
     elif isinstance(record, str):
         fields = record.split("\t")
         if len(fields) > 7:
@@ -301,8 +299,7 @@ def _open_vcf(vcf_path: str):
         result = subprocess.run(["tabix", "--version"], capture_output=True, timeout=5)
         if result.returncode == 0:
             return _TabixFallbackReader(vcf_path)
-    except (FileNotFoundError, subprocess.TimeoutExpired):
-        pass
+    except Exception as e: logger.debug("Suppressed exception: %s", e)
 
     return None
 

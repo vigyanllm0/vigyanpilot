@@ -209,9 +209,14 @@ class PipelineOrchestrator:
                         outcome.error_msg,
                     )
 
-        # Final status
+        # Final status + flush all pending step-result inserts
         final_status = "failed" if aborted else "completed"
         self._update_job_status(job_id, final_status)
+        if self._db_session is not None:
+            try:
+                self._db_session.commit()
+            except Exception:
+                logger.exception("VigyanLLM: Failed to flush step results for %s", job_id)
         logger.info(
             "VigyanLLM: Pipeline %s finished with status: %s", job_id, final_status
         )
@@ -426,7 +431,6 @@ class PipelineOrchestrator:
                     "phase": outcome.phase,
                 },
             )
-            self._db_session.commit()
         except Exception:
             logger.exception(
                 "VigyanLLM: Failed to record step result for job %s step %d",

@@ -4,8 +4,8 @@ Gunicorn configuration for VigyanLLM
 """
 import multiprocessing
 
-bind = "0.0.0.0:5000"
-workers = 1
+bind = "0.0.0.0:11436"
+workers = multiprocessing.cpu_count()  # auto-detect cores; 4 on EC2 t3.medium
 timeout = 120
 graceful_timeout = 30
 max_requests = 1000

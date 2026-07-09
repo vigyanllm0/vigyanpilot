@@ -14,6 +14,7 @@ The app sets `app.current_user_id` session variable for RLS enforcement.
 import os
 import time
 import logging
+import threading
 from contextlib import contextmanager
 from urllib.parse import urlparse
 
@@ -22,6 +23,9 @@ import psycopg2.pool
 import psycopg2.extras
 from flask import g
 
+# ── Logging Configuration (LOG-03 FIX) ────────────────────────────────────
+# Standardize all logs to UTC rather than server local time.
+logging.Formatter.converter = time.gmtime
 logger = logging.getLogger("primerforge.database")
 
 # ── Connection Pool Configuration ─────────────────────────────────────────
@@ -39,43 +43,48 @@ POOL_MAX = int(os.environ.get("DB_POOL_MAX", "10"))
 POOL_TIMEOUT = int(os.environ.get("DB_POOL_TIMEOUT", "5"))
 
 _pool = None
+_POOL_LOCK = threading.Lock()
 
 
 def _get_pool():
-    """Lazy-init and return the global connection pool."""
+    """Lazy-init and return the global connection pool (BUG-06 FIX: Thread-safe)."""
     global _pool
+    # Double-checked locking pattern
     if _pool is None:
-        try:
-            _pool = psycopg2.pool.ThreadedConnectionPool(
-                POOL_MIN, POOL_MAX,
-                dsn=DATABASE_URL,
-                cursor_factory=psycopg2.extras.RealDictCursor,
-                connect_timeout=POOL_TIMEOUT,
-                keepalives=1,
-                keepalives_idle=30,
-                keepalives_interval=10,
-                keepalives_count=5,
-            )
-            logger.info(
-                "PostgreSQL pool created (min=%d, max=%d, timeout=%ds)",
-                POOL_MIN, POOL_MAX, POOL_TIMEOUT,
-            )
-        except psycopg2.OperationalError as e:
-            logger.error(f"PostgreSQL pool creation failed: {e}")
-            raise
+        with _POOL_LOCK:
+            if _pool is None:
+                try:
+                    _pool = psycopg2.pool.ThreadedConnectionPool(
+                        POOL_MIN, POOL_MAX,
+                        dsn=DATABASE_URL,
+                        cursor_factory=psycopg2.extras.RealDictCursor,
+                        connect_timeout=POOL_TIMEOUT,
+                        keepalives=1,
+                        keepalives_idle=30,
+                        keepalives_interval=10,
+                        keepalives_count=5,
+                    )
+                    logger.info(
+                        "PostgreSQL pool created (min=%d, max=%d, timeout=%ds)",
+                        POOL_MIN, POOL_MAX, POOL_TIMEOUT,
+                    )
+                except psycopg2.OperationalError as e:
+                    logger.error("PostgreSQL pool creation failed: %s", e)
+                    raise
     return _pool
 
 
 def _reset_pool():
     """Close and rebuild the pool (recovers from exhaustion caused by leaked connections)."""
     global _pool
-    old_pool = _pool
-    _pool = None
+    with _POOL_LOCK:
+        old_pool = _pool
+        _pool = None
     if old_pool is not None:
         try:
             old_pool.close()
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug("Error closing old pool during reset: %s", e)
     logger.warning("PostgreSQL pool reset (connections may have been leaked)")
 
 
@@ -90,8 +99,8 @@ def _get_connection():
             with conn.cursor() as cur:
                 cur.execute("SET statement_timeout = '30s'")
                 cur.execute("SET idle_in_transaction_session_timeout = '30s'")
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning("Failed to set session timeouts on connection: %s", e)
         return conn
     except psycopg2.pool.PoolError as e:
         logger.warning(f"Pool exhausted (max={POOL_MAX}), retrying: {e}")
@@ -118,8 +127,8 @@ def _put_connection(conn):
         if conn.closed == 0:
             try:
                 conn.rollback()
-            except Exception:
-                pass
+            except Exception as e:
+                logger.debug("Rollback failed when returning connection: %s", e)
             pool.putconn(conn)
         else:
             pool.putconn(conn, key=None)
@@ -203,12 +212,13 @@ def set_rls_context(user_id: int):
         try:
             cur.execute("SET app.current_user_id = %s", (str(user_id),))
             db.commit()
-        except Exception:
+        except Exception as e:
+            logger.error("Failed to set RLS context: %s", e)
             db.rollback()
         finally:
             cur.close()
-    except Exception:
-        pass  # RLS context is best-effort
+    except Exception as e:
+        logger.warning("Could not obtain DB connection to set RLS: %s", e)
 
 
 def init_db():
@@ -235,7 +245,7 @@ def init_db():
             WHERE NOT EXISTS (SELECT 1 FROM token_balances tb WHERE tb.user_id = u.id)
         """)
 
-        # Ensure audit_logs table exists
+        # Ensure audit_logs table exists (LOG-05 FIX: TIMESTAMPTZ instead of TIMESTAMP)
         cur.execute("""
             CREATE TABLE IF NOT EXISTS audit_logs (
                 id SERIAL PRIMARY KEY,
@@ -248,7 +258,7 @@ def init_db():
                 ip_address TEXT,
                 user_agent TEXT,
                 details TEXT,
-                created_at TIMESTAMP DEFAULT NOW()
+                created_at TIMESTAMPTZ DEFAULT NOW()
             )
         """)
         cur.execute("CREATE INDEX IF NOT EXISTS idx_audit_logs_created_at ON audit_logs(created_at DESC)")
@@ -271,7 +281,10 @@ def init_db():
 
 def log_audit(action: str, accession: str = "", job_id: str = "", gene_symbol: str = "",
                source: str = "", details: str = "", user_id: int = None):
-    """Insert a row into audit_logs for tracking searches and pipeline runs."""
+    """
+    Insert a row into audit_logs for tracking searches and pipeline runs.
+    DPDP-08 FIX: Logs user_id instead of email address to minimise PII.
+    """
     try:
         from flask import request as _req
         ip = _req.remote_addr if _req else ""
@@ -288,7 +301,7 @@ def log_audit(action: str, accession: str = "", job_id: str = "", gene_symbol: s
         """, (user_id, job_id or None, accession or None, gene_symbol or None,
               action, source or None, ip or None, ua or None, details or None))
     except Exception as e:
-        logger.debug("Audit log skipped: %s", e)
+        logger.warning("Audit log write failed: %s", e)
 
 
 def _in_request_context():

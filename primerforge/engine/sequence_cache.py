@@ -78,11 +78,11 @@ def fetch_with_cache(query: str, source: str = "auto", **kwargs) -> SequenceReco
     # Check cache
     cached = get_cached(source, query)
     if cached and cached.sequence:
-        logger.info(f"Cache HIT: {source}/{query}")
+        logger.info("Cache HIT: %s/%s", source, query)
         return cached
 
     # Cache miss — fetch from API
-    logger.info(f"Cache MISS: {source}/{query} — fetching from API")
+    logger.info("Cache MISS: %s/%s — fetching from API", source, query)
     record = fetch_sequence(query, source, **kwargs)
 
     # Store in cache

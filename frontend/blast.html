@@ -400,8 +400,14 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <div class="panel-card">
   <div class="panel-head"><h3>Actions</h3></div>
   <div class="panel-body" style="display:flex;flex-direction:column;gap:8px">
-    <button class="btn-primary btn-sm" id="btn-b-msa" style="justify-content:center">View MSA of Selected</button>
-    <button class="btn-secondary btn-sm" id="btn-b-dl">Download Selected as FASTA</button>
+    <div style="display:flex;flex-wrap:wrap;gap:6px">
+      <button class="btn-primary btn-sm" id="btn-select-all" style="flex:1;justify-content:center">Select All</button>
+      <button class="btn-secondary btn-sm" id="btn-deselect-all" style="flex:1;justify-content:center">Deselect All</button>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px">
+      <button class="btn-primary btn-sm" id="btn-b-msa" style="flex:1;justify-content:center">View MSA of Selected</button>
+      <button class="btn-secondary btn-sm" id="btn-b-dl" style="flex:1;justify-content:center">Download FASTA</button>
+    </div>
   </div>
 </div>
 </div>
@@ -675,14 +681,49 @@ _on('bfasta','change',async function(){
   if(!this.files.length)return;
   try{var t=await this.files[0].text();var p=parseFasta(t);if(p.length){$('bseq').value=p.map(function(x){return'>'+x.name+'\n'+x.seq}).join('\n');$('bseq-len').textContent=p[0].seq.length}}catch(e){}
 });
-_on('btn-b-msa','click',function(){
+_on('btn-select-all','click',function(){
+  document.querySelectorAll('.bcb').forEach(function(c){c.checked=true});
+});
+_on('btn-deselect-all','click',function(){
+  document.querySelectorAll('.bcb').forEach(function(c){c.checked=false});
+});
+_on('btn-b-msa','click',async function(){
   var s=getBSelected();
   if(s.length<2){alert('Select at least 2 hits for MSA.');return}
   var q=$('bseq').value.trim();
   var sq=q.split('\n').filter(function(l){return!l.startsWith('>')}).join('').replace(/\s/g,'');
-  var fa='>query\n'+sq+'\n'+s.map(function(r){return'>'+(r.subject_id||'hit')+'\n'+(r.subject_sequence||'')}).join('\n');
-  localStorage.setItem('vp_msa_seq',fa);
-  window.location.href='msa.html';
+  // First attempt: use subject_sequence from BLAST results
+  var hasFullSeqs=s.every(function(r){return r.subject_sequence&&r.subject_sequence.length>50});
+  if(hasFullSeqs){
+    var fa='>query\n'+sq+'\n'+s.map(function(r){return'>'+(r.subject_id||'hit')+'\n'+(r.subject_sequence||'')}).join('\n');
+    localStorage.setItem('vp_msa_seq',fa);
+    window.location.href='msa.html';
+    return;
+  }
+  // Fetch full sequences in parallel via backend
+  $('blast-txt').textContent='Fetching sequences…';
+  $('blast-sp').classList.add('active');
+  try{
+    var accessions=s.map(function(r){return r.subject_id||''}).filter(Boolean);
+    var r=await fetch('/api/primer/fetch-sequences',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({accessions:accessions})});
+    if(!r.ok)throw new Error('Failed to fetch sequences');
+    var d=await r.json();
+    var fetched={};
+    (d.results||[]).forEach(function(f){if(f.sequence)fetched[f.accession]=f.sequence});
+    var fa='>query\n'+sq+'\n';
+    s.forEach(function(r){
+      var acc=r.subject_id||'hit';
+      var seq=fetched[acc]||r.subject_sequence||'';
+      fa+='>'+acc+' '+(r.subject_species||'')+'\n'+seq+'\n';
+    });
+    localStorage.setItem('vp_msa_seq',fa);
+    window.location.href='msa.html';
+  }catch(e){
+    // Fallback: use whatever sequences we have
+    var fa='>query\n'+sq+'\n'+s.map(function(r){return'>'+(r.subject_id||'hit')+'\n'+(r.subject_sequence||'')}).join('\n');
+    localStorage.setItem('vp_msa_seq',fa);
+    window.location.href='msa.html';
+  }
 });
 _on('btn-b-dl','click',function(){
   var s=getBSelected();

@@ -27,8 +27,8 @@ def _compute_box_center(pdb_path: str, default_size: float = 25.0) -> Tuple[floa
                         zs.append(float(line[46:54]))
                     except (ValueError, IndexError):
                         continue
-    except Exception:
-        pass
+    except Exception as e:
+        logger.debug("Suppressed exception: %s", e)
 
     if not xs:
         return 0.0, 0.0, 0.0, 60.0, 60.0, 60.0
@@ -52,8 +52,8 @@ def pdb_to_pdbqt(receptor_pdb: str, output_path: str) -> bool:
             subprocess.run(["obabel", _tmp_pdb, "-O", output_path, "-xr"],
                            check=True, capture_output=True, timeout=60)
             return True
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug("Suppressed exception: %s", e)
     from rdkit import Chem
     from meeko import MoleculePreparation
     mol = Chem.MolFromPDBBlock(receptor_pdb, removeHs=False)
@@ -67,9 +67,9 @@ def pdb_to_pdbqt(receptor_pdb: str, output_path: str) -> bool:
         prep.write_pdbqt_file(output_path)
         allowed_tags = ("ATOM", "HETATM")
         with open(output_path, "r") as f:
-            lines = f.readlines()
+            content = f.read()
         with open(output_path, "w", newline="\n") as f:
-            for line in lines:
+            for line in content.splitlines():
                 clean = line.strip()
                 if clean and clean.startswith(allowed_tags):
                     f.write(clean + "\n")
@@ -104,7 +104,7 @@ async def run_vina_docking(receptor_pdb: str, ligand_smiles: str, exhaustiveness
         if shutil.which("obabel"):
             try:
                 subprocess.run(["obabel", ligand_smi_path, "-O", ligand_pdbqt_path, "--gen3d", "-p", "7.4"], check=True, capture_output=True)
-            except:
+            except subprocess.CalledProcessError:
                 from rdkit import Chem; from rdkit.Chem import AllChem; from meeko import MoleculePreparation
                 mol = Chem.MolFromSmiles(ligand_smiles); mol = Chem.AddHs(mol); AllChem.EmbedMolecule(mol, AllChem.ETKDG())
                 prep = MoleculePreparation(); prep.prepare(mol); prep.write_pdbqt_file(ligand_pdbqt_path)
@@ -177,8 +177,7 @@ async def run_vina_docking(receptor_pdb: str, ligand_smiles: str, exhaustiveness
                         if mode_num == 1 and score_val < 0:
                             best_score = score_val
                         poses_count = max(poses_count, mode_num)
-                    except (ValueError, IndexError):
-                        pass
+                    except Exception as e: logger.debug("Suppressed exception: %s", e)
             
             if best_score is None:
                 raise Exception("Failed to parse Vina output table. Ensure 'vina' binary is compatible.")
@@ -222,7 +221,7 @@ async def run_gnina_docking(receptor_pdb: str, ligand_smiles: str, exhaustivenes
         if shutil.which("obabel"):
             try:
                 subprocess.run(["obabel", ligand_smi_path, "-O", ligand_sdf_path, "--gen3d", "-p", "7.4"], check=True, capture_output=True)
-            except:
+            except subprocess.CalledProcessError:
                 from rdkit import Chem; from rdkit.Chem import AllChem
                 mol = Chem.MolFromSmiles(ligand_smiles); mol = Chem.AddHs(mol); AllChem.EmbedMolecule(mol, AllChem.ETKDG())
                 writer = Chem.SDWriter(ligand_sdf_path); writer.write(mol); writer.close()
@@ -271,7 +270,7 @@ async def run_gnina_docking(receptor_pdb: str, ligand_smiles: str, exhaustivenes
                             best_score = float(parts[1])
                             cnn_score = float(parts[5])
                         poses_count = max(poses_count, mode_num)
-                    except (ValueError, IndexError): pass
+                    except Exception as e: logger.debug("Suppressed exception: %s", e)
             
             if best_score is None:
                 raise Exception("Failed to parse GNINA output table. Ensure 'gnina' binary is correctly installed.")

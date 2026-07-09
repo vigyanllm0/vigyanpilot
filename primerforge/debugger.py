@@ -14,7 +14,7 @@ import time
 import json
 import traceback
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from collections import defaultdict
 from threading import Lock
 
@@ -45,7 +45,7 @@ class ErrorMonitor:
         """Record an unhandled exception."""
         with self._lock:
             entry = {
-                "timestamp": datetime.utcnow().isoformat(),
+                "timestamp": datetime.now(timezone.utc).isoformat(),
                 "error_type": type(error).__name__,
                 "message": str(error)[:500],
                 "traceback": traceback.format_exc()[-2000:],  # Last 2000 chars of traceback
@@ -64,7 +64,7 @@ class ErrorMonitor:
         """Record a slow request."""
         with self._lock:
             self._slow_requests.append({
-                "timestamp": datetime.utcnow().isoformat(),
+                "timestamp": datetime.now(timezone.utc).isoformat(),
                 "path": path,
                 "method": method,
                 "duration_ms": duration_ms,

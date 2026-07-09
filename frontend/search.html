@@ -357,7 +357,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <div class="form-group">
       <label class="form-label">Database</label>
       <select id="search-db" class="form-select">
-        <option value="ncbi">NCBI Nucleotide</option>
+        <option value="auto">Auto-detect</option>
+        <option value="ncbi_nucleotide">NCBI Nucleotide</option>
         <option value="ensembl">Ensembl</option>
         <option value="uniprot">UniProt</option>
         <option value="ddbj">DDBJ</option>
@@ -518,7 +519,7 @@ _on('input-type','change',function(){
   $('search-query').placeholder=v==='name'?'e.g. BRCA1, TP53, ACTB':v==='accession'?'e.g. NM_007294, ENST00000357654':'Paste DNA sequence…';
 });
 
-_on('search-query','input',function(){var t=this.value;var c=v==='sequence'?t.replace(/[^ACGTNacgtn]/g,'').length:t.length;$('sq-len').textContent=c});
+_on('search-query','input',function(){var t=this.value;var inputType=$('input-type').value;var c=inputType==='sequence'?t.replace(/[^ACGTNacgtn]/g,'').length:t.length;$('sq-len').textContent=c});
 _on('org-select','change',function(){$('custom-org-group').style.display=this.value==='custom'?'block':'none'});
 
 async function doSearch(){

@@ -225,11 +225,11 @@ def _blast_primer(sequence: str, db_path: str) -> List[Dict[str, Any]]:
                         })
 
     except subprocess.TimeoutExpired:
-        logger.warning(f"BLAST timed out ({BLAST_TIMEOUT_S}s) for sequence: {sequence[:20]}...")
+        logger.warning("BLAST timed out (%ds) for sequence starting: %s...", BLAST_TIMEOUT_S, sequence[:20])
     except FileNotFoundError:
         logger.error("blastn binary not found in PATH")
     except Exception as e:
-        logger.debug(f"BLAST failed for {sequence[:15]}...: {e}")
+        logger.debug("BLAST failed for seq starting %.15s...: %s", sequence, e)
 
     return hits
 

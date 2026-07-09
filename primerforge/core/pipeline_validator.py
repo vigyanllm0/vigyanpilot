@@ -50,8 +50,8 @@ def _check_mafft() -> bool:
             return True
     except FileNotFoundError:
         pass
-    except Exception:
-        pass
+    except Exception as e:
+        logger.debug("Suppressed exception: %s", e)
     VALIDATION_WARNINGS.append(
         "MAFFT not found — MSA will use Biopython pairwise fallback (approximation). "
         "Install: brew install mafft"
@@ -68,8 +68,8 @@ def _check_blast() -> bool:
             return True
     except FileNotFoundError:
         pass
-    except Exception:
-        pass
+    except Exception as e:
+        logger.debug("Suppressed exception: %s", e)
     VALIDATION_WARNINGS.append(
         "BLAST+ not found — target specificity will use exact-string matching fallback. "
         "Install: brew install blast"
@@ -84,8 +84,8 @@ def _check_bowtie2() -> bool:
             return True
     except FileNotFoundError:
         pass
-    except Exception:
-        pass
+    except Exception as e:
+        logger.debug("Suppressed exception: %s", e)
     VALIDATION_WARNINGS.append(
         "Bowtie2 not found — genome alignment step will be skipped. "
         "Install: brew install bowtie2"

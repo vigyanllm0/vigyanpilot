@@ -74,7 +74,8 @@ def fetch_fasta(accession: str) -> tuple[str, str, str]:
         "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi"
         f"?db=nuccore&id={accession}&rettype=fasta&retmode=text"
     )
-    data = urllib.request.urlopen(url, timeout=45).read().decode("utf-8")
+    with urllib.request.urlopen(url, timeout=45) as r:
+        data = r.read().decode("utf-8")
     lines = [line.strip() for line in data.splitlines() if line.strip()]
     title = lines[0][1:] if lines and lines[0].startswith(">") else accession
     seq = re.sub(r"[^ACGTacgt]", "", "".join(line for line in lines if not line.startswith(">"))).upper()

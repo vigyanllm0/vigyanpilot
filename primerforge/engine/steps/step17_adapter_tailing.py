@@ -278,16 +278,14 @@ class AdapterTailingStep(PipelineStep):
                 temp_c=annealing_temp,
             )
             return result.dg / 1000.0  # Convert cal/mol to kcal/mol
-        except (ImportError, Exception):
-            pass
+        except Exception as e: logger.debug("Suppressed exception: %s", e)
 
         # Fallback: use internal thermodynamics engine
         try:
             from ..thermodynamics import predict_cross_dimer
             result = predict_cross_dimer(adapter, gene_specific)
             return result.delta_g
-        except (ImportError, Exception):
-            pass
+        except Exception as e: logger.debug("Suppressed exception: %s", e)
 
         # Last resort: simplified sliding-window calculation
         return self._simplified_cross_dimer_dg(adapter, gene_specific, annealing_temp)

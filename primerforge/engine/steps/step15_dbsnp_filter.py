@@ -182,7 +182,7 @@ def _query_primer_variants(
             })
 
     except Exception as e:
-        logger.debug(f"dbSNP query failed for {chrom}:{start}-{end}: {e}")
+        logger.debug("dbSNP query failed for %s:%d-%d: %s", chrom, start, end, e)
 
     return variants
 
@@ -264,10 +264,8 @@ def _extract_maf(record) -> float:
                     if len(parts) > 1:
                         try:
                             return float(parts[1].split(",")[0])
-                        except (ValueError, IndexError):
-                            pass
-        except (TypeError, ValueError, KeyError):
-            pass
+                        except Exception as e: logger.debug("Suppressed exception: %s", e)
+        except Exception as e: logger.debug("Suppressed exception: %s", e)
     elif isinstance(record, str):
         # Tab-delimited VCF line
         fields = record.split("\t")
@@ -330,8 +328,7 @@ def _open_tabix(vcf_path: str):
             )
             if result.returncode == 0:
                 return _TabixSubprocessReader(vcf_path)
-        except (FileNotFoundError, subprocess.TimeoutExpired):
-            pass
+        except Exception as e: logger.debug("Suppressed exception: %s", e)
 
     if os.path.exists(vcf_path):
         return _PlainVcfReader(vcf_path)

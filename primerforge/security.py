@@ -2,12 +2,23 @@
 """
 VigyanLLM Security Middleware (Production-Hardened)
 =====================================================
-- Security headers (CSP, X-Frame-Options, HSTS, Referrer-Policy)
-- Rate limiting (Redis-backed for multi-worker, memory fallback for dev)
-- Input sanitization (bleach HTML stripping)
-- Request body size limits
-- CORS production configuration
-- Session limits (max concurrent tokens per user)
+This module initialises all security layers on the Flask application.
+
+Layers applied (in order):
+  1. Request body size limit (10 MB max)
+  2. HTTP security headers via flask-talisman (CSP, HSTS, X-Frame-Options)
+  3. Redis-backed rate limiting via flask-limiter (memory fallback for dev)
+  4. Custom error handlers (429, 413, 500) — no stack traces to clients
+  5. CORS header injection (after_request)
+  6. Admin RBAC middleware (before_request, defense-in-depth)
+
+Input validation utilities:
+  validate_email()    — RFC-5321 format check + length guard
+  validate_password() — complexity policy (uppercase, digit, special char)
+  validate_quantity() — reject floats/NaN/Infinity
+  sanitize_string()   — bleach HTML strip + length cap
+
+Security contacts: security@vigyanllm.in
 """
 
 import os
@@ -36,10 +47,15 @@ except ImportError:  # pragma: no cover - exercised when optional dev deps are a
 logger = logging.getLogger("primerforge.security")
 
 # ── Environment Detection ─────────────────────────────────────────────────
-# Production ONLY when FORCE_HTTPS is explicitly set (not just having DATABASE_URL)
-IS_PRODUCTION = os.environ.get("FORCE_HTTPS", "").lower() == "true"
-FORCE_HTTPS = IS_PRODUCTION
-REDIS_URL = os.environ.get("REDIS_URL", "")  # e.g. redis://localhost:6379/0
+# IS_PRODUCTION is True when FORCE_HTTPS=true OR VIGYANLLM_ENV=production.
+# Both flags must be explicitly set — the app never auto-detects "production"
+# from DATABASE_URL or other indirect signals to prevent accidental exposure.
+IS_PRODUCTION = (
+    os.environ.get("FORCE_HTTPS", "").lower() == "true"
+    or os.environ.get("VIGYANLLM_ENV", "").lower() == "production"
+)
+FORCE_HTTPS = os.environ.get("FORCE_HTTPS", "").lower() == "true"
+REDIS_URL = os.environ.get("REDIS_URL", "")  # e.g. redis://:password@host:6379/0
 ALLOWED_ORIGINS = os.environ.get("CORS_ORIGINS", "").split(",") if os.environ.get("CORS_ORIGINS") else None
 MAX_SESSIONS_PER_USER = int(os.environ.get("MAX_SESSIONS", "5"))
 
@@ -93,10 +109,26 @@ def get_production_origins():
     return origins
 
 
-def _get_rate_limit_storage():
-    """Get rate limiter storage URI — Redis if available, memory fallback."""
+def _get_rate_limit_storage() -> str:
+    """
+    Return the rate-limiter storage URI.
+
+    Uses Redis when REDIS_URL is configured (required for multi-worker production
+    deployments so all Gunicorn workers share the same counter). Falls back to
+    in-memory storage for single-worker development.
+
+    BUG-16 FIX: Redis URL is logged with the password masked, regardless of
+    whether the URL contains an '@' character.
+    """
     if REDIS_URL:
-        logger.info(f"Rate limiter: Redis ({REDIS_URL.split('@')[-1] if '@' in REDIS_URL else REDIS_URL})")
+        # Safely mask password from redis://[:password@]host:port/db
+        try:
+            from urllib.parse import urlparse
+            parsed = urlparse(REDIS_URL)
+            display = f"{parsed.hostname}:{parsed.port}/{parsed.path.lstrip('/')}"
+        except Exception:
+            display = "<redis-url-masked>"
+        logger.info("Rate limiter: Redis (%s)", display)
         return REDIS_URL
     logger.info("Rate limiter: in-memory (single-worker only)")
     return "memory://"
@@ -199,14 +231,14 @@ def init_security(app):
 
     @app.errorhandler(500)
     def internal_error(e):
-        """Never expose stack traces to clients."""
-        logger.error(f"Internal error: {e}", exc_info=True)
+        """Never expose stack traces or exception types to clients (SEC-10)."""
+        logger.error("Internal server error: %s", e, exc_info=True)
         return jsonify({
-            "error": "Internal server error.",
+            "error": "An internal error occurred. Please try again later.",
             "code": "INTERNAL_ERROR",
         }), 500
 
-    logger.info(f"Security initialized (production={IS_PRODUCTION}, https={FORCE_HTTPS})")
+    logger.info("Security initialized (production=%s, https=%s)", IS_PRODUCTION, FORCE_HTTPS)
     return limiter
 
 
@@ -372,7 +404,19 @@ def validate_email(email) -> tuple:
 
 
 def validate_password(password) -> tuple:
-    """Validate password strength. Returns (is_valid, error_message)."""
+    """
+    Validate password strength against VigyanLLM password policy.
+
+    Policy (BUG-19 FIX — added special character requirement):
+      - Minimum 8 characters, maximum 128 characters
+      - At least one uppercase letter (A-Z)
+      - At least one lowercase letter (a-z)
+      - At least one digit (0-9)
+      - At least one special character (!@#$%^&*()-_=+[]{}|;:',.<>?/`~)
+
+    Returns:
+        (is_valid: bool, error_message: str) — error_message is "" on success.
+    """
     if not isinstance(password, str):
         return False, "Invalid password format."
     if not password:
@@ -383,8 +427,12 @@ def validate_password(password) -> tuple:
         return False, "Password is too long (max 128 characters)."
     if not re.search(r"[A-Z]", password):
         return False, "Password must contain at least one uppercase letter."
+    if not re.search(r"[a-z]", password):
+        return False, "Password must contain at least one lowercase letter."
     if not re.search(r"[0-9]", password):
-        return False, "Password must contain at least one number."
+        return False, "Password must contain at least one digit (0-9)."
+    if not re.search(r"[!@#$%^&*()\-_=+\[\]{}|;:',.<>?/`~]", password):
+        return False, "Password must contain at least one special character (!@#$%^&* etc.)."
     return True, ""
 
 

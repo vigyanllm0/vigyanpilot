@@ -33,14 +33,14 @@ def require_admin(user: AdminUser = Depends(get_current_user)) -> AdminUser:
 
 def _validate_pf_token(token: str, db: Session):
     try:
-        r = urllib.request.urlopen(
+        with urllib.request.urlopen(
             urllib.request.Request(
                 MAIN_API + "/auth/me",
                 headers={"Authorization": f"Bearer {token}"},
             ),
             timeout=5,
-        )
-        data = json.loads(r.read())
+        ) as r:
+            data = json.loads(r.read())
         email = data.get("email") or data.get("user", {}).get("email", "")
         role = data.get("role") or data.get("user", {}).get("role", "user")
         display_name = data.get("display_name") or data.get("user", {}).get("display_name", email.split("@")[0])

@@ -3,7 +3,31 @@
 VigyanLLM Auth Routes — PostgreSQL Version (Hardened)
 =======================================================
 All inputs are type-validated before processing.
-Includes: register, login, logout, change-password, me, usage, admin.
+
+Endpoints:
+  POST /api/auth/register           — create account (requires consent)
+  GET  /api/auth/verify-email       — email verification
+  POST /api/auth/resend-verification — resend verification email
+  POST /api/auth/login              — authenticate
+  POST /api/auth/refresh            — token refresh
+  POST /api/auth/logout             — invalidate token
+  POST /api/auth/change-password    — update password
+  POST /api/auth/forgot-password    — request reset
+  GET  /api/auth/me                 — current user profile
+  GET  /api/auth/usage              — usage/balance status
+  POST /api/auth/google             — Google OAuth2 login
+
+DPDP Act 2023 compliance endpoints:
+  DELETE /api/auth/account          — §12(3): right to erasure (DPDP-03)
+  GET    /api/auth/export           — §12(5): data portability (DPDP-04)
+  PUT    /api/auth/profile          — §12(4): data correction (DPDP-05)
+
+Admin endpoints:
+  GET  /api/admin/users             — list all users
+  POST /api/admin/users/<id>/block  — suspend user
+  POST /api/admin/users/<id>/unblock— reactivate user
+  POST /api/admin/users/<id>/role   — change role
+  POST /api/admin/users/<id>/unlock-ip — clear IP restriction
 """
 
 import os
@@ -33,16 +57,40 @@ def _safe_str(value, default: str = "") -> str:
 
 @auth_bp.route("/api/auth/register", methods=["POST"])
 def register():
-    """Register a new user account.
+    """
+    Register a new user account.
+
+    DPDP-01 FIX: Requires explicit consent to Terms of Service and Privacy
+    Policy before account creation (§6(1) of the DPDP Act 2023).
+    The `consent_accepted` field must be True; False/missing returns 400.
 
     Users are created in 'pending' status and must verify their email
     address before they can log in. A verification email is sent to the
     provided address with a 24-hour expiry link.
+
+    Body:
+        email (str):            User email address.
+        password (str):         Password (must meet complexity policy).
+        name (str, optional):   Display name.
+        consent_accepted (bool): REQUIRED — must be True (DPDP §6(1)).
+
+    Returns:
+        201: { success, requires_verification, user, message }
+        400: { error } — validation failed or consent not given
     """
     data = request.get_json(silent=True) or {}
     email = _safe_str(data.get("email")).strip().lower()
     password = _safe_str(data.get("password"))
     name = _safe_str(data.get("name"))
+
+    # DPDP-01 FIX: Explicit consent required before collecting any PII
+    consent_accepted = data.get("consent_accepted")
+    if consent_accepted is not True:
+        return jsonify({
+            "error": "You must accept the Terms of Service and Privacy Policy to create an account. "
+                     "Please check the consent checkbox and try again.",
+            "code": "CONSENT_REQUIRED",
+        }), 400
 
     result = register_user(email, password, name)
     if "error" in result:
@@ -173,7 +221,7 @@ def login():
     })
     resp.set_cookie(
         'pf_token', result["token"],
-        httponly=True, secure=True, samesite='None',
+        httponly=True, secure=True, samesite='Lax',
         max_age=86400 * 7, path='/'
     )
     if result["user"].get("role") == "admin":
@@ -184,7 +232,7 @@ def login():
         )
     resp.set_cookie(
         'pf_refresh', refresh_token,
-        httponly=True, secure=True, samesite='None',
+        httponly=True, secure=True, samesite='Lax',
         max_age=86400 * 30, path='/api/auth'
     )
     return resp, 200
@@ -199,7 +247,7 @@ def refresh():
     result = refresh_access_token(refresh_token)
     if not result:
         resp = jsonify({"error": "Invalid or expired refresh token", "code": "BAD_REFRESH"})
-        resp.set_cookie('pf_refresh', '', httponly=True, secure=True, samesite='None', max_age=0, path='/api/auth')
+        resp.set_cookie('pf_refresh', '', httponly=True, secure=True, samesite='Lax', max_age=0, path='/api/auth')
         return resp, 401
     resp = jsonify({
         "success": True,
@@ -208,12 +256,12 @@ def refresh():
     })
     resp.set_cookie(
         'pf_token', result["token"],
-        httponly=True, secure=True, samesite='None',
+        httponly=True, secure=True, samesite='Lax',
         max_age=86400 * 7, path='/'
     )
     resp.set_cookie(
         'pf_refresh', refresh_token,
-        httponly=True, secure=True, samesite='None',
+        httponly=True, secure=True, samesite='Lax',
         max_age=86400 * 30, path='/api/auth'
     )
     return resp, 200
@@ -226,9 +274,9 @@ def logout():
     if auth_header.startswith("Bearer "):
         invalidate_token(auth_header[7:])
     resp = jsonify({"success": True, "message": "Logged out successfully."})
-    resp.set_cookie('pf_token', '', httponly=True, secure=True, samesite='None', max_age=0, path='/')
+    resp.set_cookie('pf_token', '', httponly=True, secure=True, samesite='Lax', max_age=0, path='/')
     resp.set_cookie('admin_tk', '', httponly=True, secure=True, samesite='Strict', max_age=0, path='/')
-    resp.set_cookie('pf_refresh', '', httponly=True, secure=True, samesite='None', max_age=0, path='/api/auth')
+    resp.set_cookie('pf_refresh', '', httponly=True, secure=True, samesite='Lax', max_age=0, path='/api/auth')
     return resp, 200
 
 
@@ -633,3 +681,235 @@ def unlock_user_ip(user_id):
             "user_id": user_id,
             "ip_restriction": "none",
         }), 200
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# DPDP ACT 2023 COMPLIANCE ENDPOINTS
+# ═══════════════════════════════════════════════════════════════════════════
+
+@auth_bp.route("/api/auth/account", methods=["DELETE"])
+@require_auth
+def delete_account():
+    """
+    Delete (anonymise) the authenticated user's account.
+
+    DPDP Act 2023 §12(3) — Right to Erasure.
+    This endpoint anonymises all PII associated with the account:
+      - email → anon_{user_id}@deleted.vigyanllm.in
+      - full_name → 'Deleted User'
+      - password_hash → random bcrypt hash (prevents login)
+      - status → 'deleted'
+      - All active sessions blacklisted
+
+    Pipeline results and audit logs are retained in anonymised form for
+    regulatory compliance (no link back to the individual).
+
+    Body:
+        password (str): Current password for confirmation.
+
+    Returns:
+        200: { success, message }
+        400: { error } — incorrect password
+        401: Authentication required
+    """
+    import bcrypt as _bcrypt
+    import secrets as _secrets
+
+    data = request.get_json(silent=True) or {}
+    password = _safe_str(data.get("password"))
+
+    if not password:
+        return jsonify({"error": "Current password is required to confirm account deletion."}), 400
+
+    user_id = g.user["user_id"]
+    user = fetch_one("SELECT password_hash, role FROM users WHERE id = %s", (user_id,))
+    if not user:
+        return jsonify({"error": "User not found."}), 404
+
+    # Admin accounts cannot be self-deleted for safety
+    if user.get("role") == "admin":
+        return jsonify({
+            "error": "Admin accounts cannot be deleted via this endpoint. Contact the platform owner.",
+        }), 403
+
+    # Verify password before deleting
+    if not _bcrypt.checkpw(password.encode(), user["password_hash"].encode()):
+        return jsonify({"error": "Incorrect password. Account deletion cancelled."}), 400
+
+    # Anonymise all PII — data is retained in anonymised form for audit
+    anon_email = f"anon_{user_id}@deleted.vigyanllm.in"
+    anon_pw_hash = _bcrypt.hashpw(_secrets.token_bytes(32), _bcrypt.gensalt(rounds=4)).decode()
+
+    try:
+        execute(
+            """UPDATE users
+               SET email = %s,
+                   password_hash = %s,
+                   full_name = 'Deleted User',
+                   organization = NULL,
+                   status = 'deleted',
+                   first_login_ip = NULL,
+                   locked_until = NOW() + INTERVAL '100 years',
+                   updated_at = NOW()
+               WHERE id = %s""",
+            (anon_email, anon_pw_hash, user_id),
+        )
+        # Revoke all active tokens for this user
+        from .pg_auth import _USER_SESSIONS, _TOKEN_BLACKLIST, _SESSION_LOCK
+        with _SESSION_LOCK:
+            sessions = _USER_SESSIONS.pop(user_id, [])
+            for tok in sessions:
+                _TOKEN_BLACKLIST.add(tok)
+    except Exception as e:
+        logger.error("Account deletion failed for user_id=%s: %s", user_id, e)
+        return jsonify({"error": "Account deletion failed. Please try again or contact support."}), 500
+
+    logger.info("Account deleted (anonymised) for user_id=%s", user_id)
+    resp = jsonify({
+        "success": True,
+        "message": "Your account has been deleted. All personal data has been removed.",
+    })
+    resp.set_cookie('pf_token', '', httponly=True, secure=True, samesite='Lax', max_age=0, path='/')
+    resp.set_cookie('admin_tk', '', httponly=True, secure=True, samesite='Strict', max_age=0, path='/')
+    resp.set_cookie('pf_refresh', '', httponly=True, secure=True, samesite='Lax', max_age=0, path='/api/auth')
+    return resp, 200
+
+
+@auth_bp.route("/api/auth/export", methods=["GET"])
+@require_auth
+def export_user_data():
+    """
+    Export all data held about the authenticated user.
+
+    DPDP Act 2023 §12(5) — Right to Data Portability.
+    Returns a complete JSON export of: profile, token balance, subscription,
+    pipeline jobs (metadata only, not full results), and payment history.
+
+    Returns:
+        200: { user, tokens, subscription, pipeline_jobs, payments }
+        401: Authentication required
+    """
+    user_id = g.user["user_id"]
+
+    try:
+        profile = fetch_one(
+            """SELECT id, email, full_name, organization, role, status, created_at, last_active_at
+               FROM users WHERE id = %s""",
+            (user_id,),
+        )
+        tokens = fetch_one(
+            "SELECT balance, total_purchased, total_consumed FROM token_balances WHERE user_id = %s",
+            (user_id,),
+        )
+        subscription = fetch_one(
+            """SELECT plan_id, is_active, monthly_quota, quota_used, started_at, expires_at
+               FROM subscriptions WHERE user_id = %s""",
+            (user_id,),
+        )
+        jobs = fetch_all(
+            """SELECT job_id, status, accession, gene_symbol, created_at, completed_at
+               FROM pipeline_jobs WHERE user_id = %s ORDER BY created_at DESC LIMIT 100""",
+            (user_id,),
+        )
+        payments = fetch_all(
+            """SELECT gateway_order_id, amount, currency, status, product_type, tokens_purchased, created_at
+               FROM payments WHERE user_id = %s ORDER BY created_at DESC""",
+            (user_id,),
+        )
+    except Exception as e:
+        logger.error("Data export failed for user_id=%s: %s", user_id, e)
+        return jsonify({"error": "Data export failed. Please try again."}), 500
+
+    # Convert datetime fields to strings for JSON serialisation
+    def _serialise(row):
+        if not row:
+            return None
+        return {k: str(v) if hasattr(v, 'isoformat') else v for k, v in row.items()}
+
+    return jsonify({
+        "export_version": "1.0",
+        "exported_at": str(__import__("datetime").datetime.now(__import__("datetime").timezone.utc).isoformat()),
+        "user": _serialise(profile),
+        "tokens": _serialise(tokens),
+        "subscription": _serialise(subscription),
+        "pipeline_jobs": [_serialise(j) for j in (jobs or [])],
+        "payments": [_serialise(p) for p in (payments or [])],
+        "note": "This export includes all personal data held by VigyanLLM per DPDP Act 2023 §12(5).",
+    }), 200
+
+
+@auth_bp.route("/api/auth/profile", methods=["PUT"])
+@require_auth
+def update_profile():
+    """
+    Update the authenticated user's profile information.
+
+    DPDP Act 2023 §12(4) — Right to Correction.
+    Allows users to correct inaccurate personal data (name, organization).
+    Email changes require re-verification and are not supported here.
+
+    Body (all optional):
+        name (str):         Display name (max 256 chars).
+        organization (str): Organisation/institution (max 512 chars).
+
+    Returns:
+        200: { success, user }
+        400: { error } — validation failed
+        401: Authentication required
+    """
+    from .security import sanitize_string
+
+    data = request.get_json(silent=True) or {}
+
+    name = data.get("name")
+    organization = data.get("organization")
+
+    # At least one field must be provided
+    if name is None and organization is None:
+        return jsonify({"error": "At least one field (name or organization) is required."}), 400
+
+    user_id = g.user["user_id"]
+    updates = []
+    params = []
+
+    if name is not None:
+        clean_name = sanitize_string(_safe_str(name), max_length=256)
+        updates.append("full_name = %s")
+        params.append(clean_name)
+
+    if organization is not None:
+        clean_org = sanitize_string(_safe_str(organization), max_length=512)
+        updates.append("organization = %s")
+        params.append(clean_org)
+
+    if not updates:
+        return jsonify({"error": "No valid fields provided."}), 400
+
+    updates.append("updated_at = NOW()")
+    params.append(user_id)
+
+    try:
+        execute(
+            f"UPDATE users SET {', '.join(updates)} WHERE id = %s",
+            tuple(params),
+        )
+    except Exception as e:
+        logger.error("Profile update failed for user_id=%s: %s", user_id, e)
+        return jsonify({"error": "Profile update failed. Please try again."}), 500
+
+    updated = fetch_one(
+        "SELECT id, email, full_name, organization, role FROM users WHERE id = %s",
+        (user_id,),
+    )
+    logger.info("Profile updated for user_id=%s", user_id)
+    return jsonify({
+        "success": True,
+        "message": "Profile updated successfully.",
+        "user": {
+            "id": updated["id"],
+            "email": updated["email"],
+            "name": updated.get("full_name"),
+            "organization": updated.get("organization"),
+            "role": updated["role"],
+        },
+    }), 200

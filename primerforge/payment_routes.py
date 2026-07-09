@@ -179,7 +179,6 @@ def create_order():
         "prefill": {
             "name": user_name,
             "email": g.user['email'],
-            "contact": "9999999999",
         }
     }), 200
 
@@ -370,13 +369,16 @@ def razorpay_webhook():
 
             if order_row and order_row['status'] != 'verified':
                 runs = order_row['runs_purchased']
-                db.execute(
-                    "UPDATE payments SET status='verified', verified_at=? WHERE upi_ref LIKE ? AND user_email=?",
+                cur = db.execute(
+                    "UPDATE payments SET status='verified', verified_at=? WHERE upi_ref LIKE ? AND user_email=? AND status != 'verified'",
                     (time.time(), f"{order_id}%", email)
                 )
-                db.execute("UPDATE users SET paid_runs = paid_runs + ? WHERE email=?", (runs, email))
-                db.commit()
-                logger.info(f"Webhook: credited {runs} run(s) to {email} for order {order_id}")
+                if cur.rowcount > 0:
+                    db.execute("UPDATE users SET paid_runs = paid_runs + ? WHERE email=?", (runs, email))
+                    db.commit()
+                    logger.info(f"Webhook: credited {runs} run(s) to {email} for order {order_id}")
+                else:
+                    db.commit()
 
             db.close()
 

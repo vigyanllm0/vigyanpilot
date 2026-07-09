@@ -1094,10 +1094,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             <textarea id="check-primers-text" class="form-textarea" rows="5" style="font-family:var(--font-b);font-size:12px" placeholder="&gt;primer1&#10;ATGCGATCGATCG&#10;/rev CGATCGATCGCAT&#10;&#10;Or CSV:&#10;name,forward,reverse&#10;set1,ATCG...,CGAT..."></textarea>
           </div>
           <div style="border:2px dashed var(--slate-border);border-radius:8px;padding:16px;text-align:center;cursor:pointer;margin-bottom:10px"
-               onclick="document.getElementById('check-file-input').click()"
-               ondrop="handleCheckDrop(event)" ondragover="event.preventDefault()">
+           id="check-file-drop-zone"
+                style="border:2px dashed var(--slate-border);border-radius:8px;padding:16px;text-align:center;cursor:pointer;margin-bottom:10px">
             <span style="font-size:12px;color:var(--text2)">📁 Upload primer file (FASTA/CSV)</span>
-            <input type="file" id="check-file-input" accept=".fa,.fasta,.csv,.txt" style="display:none" onchange="handleCheckFile(this)">
+            <input type="file" id="check-file-input" accept=".fa,.fasta,.csv,.txt" style="display:none">
           </div>
           <button class="btn-primary" id="btn-check-primers" onclick="runCheckPrimers()">
             <span class="spinner" id="check-spinner"></span>
@@ -2491,7 +2491,21 @@ function renderPairs(pairs,elapsedMs){
           ${primerBlock(fwd,'fwd')}
           ${primerBlock(rev,'rev')}
         </div>
-        ${p.probes&&p.probes.length?probeBlock(p.probes,fTm,rTm):''}
+        ${p.probes&&p.probes.length?probeBlock(p.probes,fTm,rTm):
+          p.probe_status==='probe_incompatible'?
+            `<div class="probe-block" style="border-left-color:#f59e0b">
+              <div class="probe-block-head">
+                <span style="font-family:var(--font-b);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#d97706">Probe Design — No Candidates</span>
+              </div>
+              <div style="font-size:11px;color:#6b7280;margin-top:4px">⚠ ${esc(p.probe_reason||'No valid probe found')}</div>
+            </div>`:
+          p.probe_status==='probe_designed'?
+            `<div class="probe-block" style="border-left-color:#8b5cf6">
+              <div class="probe-block-head">
+                <span style="font-family:var(--font-b);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#8b5cf6">Probe Design — ${p.probes?p.probes.length+' Candidate(s)':'N/A'}</span>
+              </div>
+            </div>`:
+          ''}
         <div class="pair-meta-row">
           ${mc('ΔTm', dtm === null ? 'N/A' : (dtm < 0.01 ? '<0.01°C' : dtm.toFixed(2)+'°C'), dtm === null?'':(dtm<=1.5?'ok':'bad'))}
           ${mc('Cross-dimer dG',fmtNum(xdg,2),xdg === null?'':(xdg>-5?'ok':'bad'))}
@@ -2761,18 +2775,23 @@ async function runAutoDesign() {
         pairs = output.ranked_pairs || output.top_pairs || [];
       }
 
-      // 5b. Merge probe results from step 24 into each pair
+      // 5b. Merge probe results — step 24 may carry ranked_pairs with probes embedded
       const probeStep = resultData.steps.find(s => s.step_number === 24);
       if (probeStep && probeStep.output_data) {
         const pout = typeof probeStep.output_data === 'string'
           ? JSON.parse(probeStep.output_data) : probeStep.output_data;
-        (pout.probe_results || []).forEach(pr => {
-          if (pr.pair_index < pairs.length) {
-            pairs[pr.pair_index].probes = pr.probes || [];
-            pairs[pr.pair_index].probe_status = pr.status;
-            pairs[pr.pair_index].probe_reason = pr.reason;
-          }
-        });
+        // Priority: step 24's ranked_pairs (has probes embedded) > step 22 pairs + index merge
+        if (pout.ranked_pairs && pout.ranked_pairs.length > 0) {
+          pairs = pout.ranked_pairs;
+        } else {
+          (pout.probe_results || []).forEach(pr => {
+            if (pr.pair_index < pairs.length) {
+              pairs[pr.pair_index].probes = pr.probes || [];
+              pairs[pr.pair_index].probe_status = pr.status;
+              pairs[pr.pair_index].probe_reason = pr.reason;
+            }
+          });
+        }
       }
     }
 
@@ -2963,6 +2982,17 @@ function handleCheckDrop(e){
     r.readAsText(f);
   }
 }
+
+// Wire up file input events after page load (fixes "handleCheckFile is not defined" race)
+(function(){
+  var fi=$('check-file-input'), dz=$('check-file-drop-zone');
+  if(fi) fi.addEventListener('change',function(){handleCheckFile(this)});
+  if(dz){
+    dz.addEventListener('click',function(){if(fi)fi.click()});
+    dz.addEventListener('drop',function(e){handleCheckDrop(e)});
+    dz.addEventListener('dragover',function(e){e.preventDefault()});
+  }
+})();
 
 async function runCheckPrimers(){
   const tmpl=$('check-template').value.trim();

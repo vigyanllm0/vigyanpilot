@@ -172,8 +172,7 @@ def download_report_json(report_id):
     if isinstance(data.get("full_result"), str):
         try:
             data["full_result"] = json.loads(data["full_result"])
-        except (json.JSONDecodeError, TypeError):
-            pass
+        except Exception as e: logger.debug("Suppressed exception: %s", e)
     resp = make_response(json.dumps(data, indent=2))
     resp.headers["Content-Type"] = "application/json"
     resp.headers["Content-Disposition"] = f'attachment; filename="report_{report_id}.json"'

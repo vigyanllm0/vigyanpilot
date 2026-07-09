@@ -606,8 +606,7 @@ def create_app() -> Flask:
         logger.error(f"Unhandled Exception: {type(e).__name__}: {e}", exc_info=True)
         return jsonify({
             "error": "Internal server error",
-            "code": "500",
-            "detail": f"{type(e).__name__}: {e}"
+            "code": "500"
         }), 500
 
     # ── Security Hardening ────────────────────────────────────────────────
@@ -1388,8 +1387,8 @@ def create_app() -> Flask:
             if m:
                 gene = m.group(1)
             log_audit("fetch_sequence", accession=acc, gene_symbol=gene, source=source)
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug("Suppressed exception: %s", e)
 
     @app.route("/api/primer/fetch-sequence", methods=["POST"])
     def fetch_sequence_route():
@@ -1575,6 +1574,53 @@ def create_app() -> Flask:
         except Exception as exc:
             logger.error(f"BLAST error: {exc}", exc_info=True)
             return err(f"BLAST failed: {str(exc)[:200]}", "BLAST_FAILED", 500)
+
+    @app.route("/api/primer/fetch-sequences", methods=["POST"])
+    def fetch_sequences_route():
+        """Fetch full sequences from NCBI in parallel for BLAST hits."""
+        if not READY:
+            return err("Core not available.", "DESIGN_FAILED", 503)
+        data = request.get_json(silent=True) or {}
+        accessions = data.get("accessions", [])
+        if not accessions:
+            return err("Accession list is required.", "VALIDATION_ERROR", 400)
+        if len(accessions) > 200:
+            return err("Maximum 200 sequences per request.", "VALIDATION_ERROR", 400)
+        try:
+            from concurrent.futures import ThreadPoolExecutor, as_completed
+            from Bio import Entrez, SeqIO
+            import io
+
+            Entrez.email = os.environ.get("NCBI_EMAIL", "user@example.com")
+            ncbi_key = os.environ.get("NCBI_API_KEY", "")
+            if ncbi_key:
+                Entrez.api_key = ncbi_key
+
+            def _fetch_one(acc):
+                try:
+                    handle = Entrez.efetch(db="nucleotide", id=acc, rettype="fasta", retmode="text", timeout=30)
+                    raw = handle.read()
+                    handle.close()
+                    record = SeqIO.read(io.StringIO(raw), "fasta")
+                    return {
+                        "accession": acc,
+                        "sequence": str(record.seq).upper(),
+                        "description": record.description,
+                        "length": len(record.seq),
+                    }
+                except Exception as e:
+                    return {"accession": acc, "error": str(e)[:100]}
+
+            results = []
+            with ThreadPoolExecutor(max_workers=8) as pool:
+                futures = {pool.submit(_fetch_one, acc): acc for acc in accessions}
+                for future in as_completed(futures):
+                    results.append(future.result())
+
+            return jsonify({"results": results, "total": len(results)}), 200
+        except Exception as exc:
+            logger.error("Fetch sequences error: %s", exc, exc_info=True)
+            return err(f"Fetch failed: {str(exc)[:200]}", "FETCH_FAILED", 500)
 
     # ════════════════════════════════════════════════════════════════════
     # Batch Oligo Analysis & Primer Check Endpoints

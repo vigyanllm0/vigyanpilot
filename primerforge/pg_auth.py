@@ -2,11 +2,34 @@
 """
 VigyanLLM Auth Module — PostgreSQL Version (Hardened)
 =======================================================
-- Full HMAC-SHA256 signatures (256-bit, not truncated)
-- Constant-time login response (no timing oracle)
-- Type-safe input handling
-- Token blacklist for logout
-- Password change support
+Provides all authentication primitives for the VigyanLLM platform:
+
+  Token lifecycle:
+    create_token()         — sign access tokens (full 256-bit HMAC-SHA256)
+    verify_token()         — validate + decode access tokens
+    create_refresh_token() — long-lived httpOnly cookie token
+    refresh_access_token() — exchange refresh token for new access token
+    invalidate_token()     — blacklist a token (logout)
+
+  User management:
+    register_user()  — create pending account, send verification email
+    login_user()     — constant-time bcrypt login with lockout support
+    change_password()— bcrypt re-hash with session invalidation
+
+  Authorization decorators:
+    @require_auth    — reject unauthenticated requests (401)
+    @require_admin   — reject non-admin requests (403)
+
+  Usage/credits:
+    check_usage()    — subscription + top-up balance check
+    consume_token()  — atomically debit 1 design credit
+
+Security properties:
+  - Constant-time bcrypt to prevent timing oracles on login
+  - BUG-05 FIX: Thread-safe session store (RLock-protected dict/set)
+  - Full 256-bit HMAC-SHA256 signatures (not truncated)
+  - Dummy bcrypt on user-not-found to equalise response time
+  - Per-user session limit with oldest-session eviction
 """
 
 import os
@@ -16,6 +39,7 @@ import time
 import json
 import base64
 import logging
+import threading
 from functools import wraps
 from datetime import datetime, timezone
 
@@ -36,10 +60,13 @@ REFRESH_TOKEN_EXPIRY = 86400 * 30  # 30 days
 ADMIN_EMAIL = os.environ.get("PRIMERFORGE_ADMIN_EMAIL", "")
 ADMIN_PASSWORD = os.environ.get("PRIMERFORGE_ADMIN_PASSWORD", "")
 
-# In-memory token store per user (for session limits). In production use Redis.
-# Format: {user_id: [token1, token2, ...]}
-_USER_SESSIONS = {}
-_TOKEN_BLACKLIST = set()
+# ── Thread-Safe Session Store (BUG-05 FIX) ────────────────────────────────
+# PREVIOUSLY: plain dict/set were shared across threads without locking,
+# causing corruption under concurrent Gunicorn workers.
+# FIX: All mutations go through a reentrant lock (_SESSION_LOCK).
+_SESSION_LOCK = threading.RLock()
+_USER_SESSIONS: dict = {}   # {user_id: [token, ...]}
+_TOKEN_BLACKLIST: set = set()
 
 # SECURITY: Constant-time dummy hash for timing-oracle prevention.
 # When a login attempt is made for a non-existent user, we still perform
@@ -56,8 +83,22 @@ MAX_SESSIONS = int(os.environ.get("MAX_SESSIONS", "5"))
 # ── Token Management (Full 256-bit HMAC) ─────────────────────────────────
 
 def create_token(email: str, role: str, user_id: int) -> str:
-    """Create a signed session token with full 256-bit HMAC-SHA256 signature.
-    Enforces max concurrent sessions per user."""
+    """
+    Create a signed access token with full 256-bit HMAC-SHA256 signature.
+
+    Enforces a per-user concurrent session limit (MAX_SESSIONS). When the
+    limit is reached the oldest token is evicted and blacklisted so it can
+    no longer be used. All session-store mutations are protected by
+    _SESSION_LOCK to prevent race conditions under concurrent requests.
+
+    Args:
+        email:   User's email address (embedded in payload).
+        role:    User role ('user' or 'admin').
+        user_id: Database user ID (used for session-store keying).
+
+    Returns:
+        Signed token string: base64url(payload) + "." + hex(HMAC-SHA256)
+    """
     payload = json.dumps({
         "email": email,
         "role": role,
@@ -68,21 +109,22 @@ def create_token(email: str, role: str, user_id: int) -> str:
     sig = hmac.new(SECRET_KEY.encode(), payload.encode(), hashlib.sha256).hexdigest()
     token = base64.urlsafe_b64encode(payload.encode()).decode() + "." + sig
 
-    # Enforce session limit: evict oldest tokens if at max
-    if user_id not in _USER_SESSIONS:
-        _USER_SESSIONS[user_id] = []
-    sessions = _USER_SESSIONS[user_id]
+    with _SESSION_LOCK:
+        # Enforce session limit: evict oldest tokens if at max
+        if user_id not in _USER_SESSIONS:
+            _USER_SESSIONS[user_id] = []
+        sessions = _USER_SESSIONS[user_id]
 
-    # Remove expired tokens from the session list
-    now = time.time()
-    sessions[:] = [t for t in sessions if _token_not_expired(t)]
+        # Remove expired tokens from the session list
+        now = time.time()
+        sessions[:] = [t for t in sessions if _token_not_expired(t)]
 
-    # If at limit, invalidate the oldest session
-    while len(sessions) >= MAX_SESSIONS:
-        oldest = sessions.pop(0)
-        _TOKEN_BLACKLIST.add(oldest)
+        # If at limit, invalidate the oldest session
+        while len(sessions) >= MAX_SESSIONS:
+            oldest = sessions.pop(0)
+            _TOKEN_BLACKLIST.add(oldest)
 
-    sessions.append(token)
+        sessions.append(token)
     return token
 
 
@@ -181,41 +223,53 @@ def verify_token(token: str) -> dict:
 
 
 def invalidate_token(token: str):
-    """Add token to blacklist and remove from user's session list (logout)."""
-    _TOKEN_BLACKLIST.add(token)
+    """
+    Add token to the blacklist and remove from user's active session list.
 
-    # Remove from user's session list
-    try:
-        parts = token.split(".")
-        if len(parts) == 2:
-            payload = json.loads(base64.urlsafe_b64decode(parts[0] + "==").decode())
-            user_id = payload.get("user_id")
-            if user_id and user_id in _USER_SESSIONS:
-                sessions = _USER_SESSIONS[user_id]
-                if token in sessions:
-                    sessions.remove(token)
-    except Exception as e:
-        logger.debug("Error removing session: %s", e)
+    Called on logout and on password change. All mutations are protected by
+    _SESSION_LOCK to prevent concurrent modification race conditions.
+    """
+    with _SESSION_LOCK:
+        _TOKEN_BLACKLIST.add(token)
 
-    # Prune expired tokens from blacklist periodically
-    if len(_TOKEN_BLACKLIST) > 10000:
-        _prune_blacklist()
+        # Remove from user's session list
+        try:
+            parts = token.split(".")
+            if len(parts) == 2:
+                payload = json.loads(base64.urlsafe_b64decode(parts[0] + "==").decode())
+                user_id = payload.get("user_id")
+                if user_id and user_id in _USER_SESSIONS:
+                    sessions = _USER_SESSIONS[user_id]
+                    if token in sessions:
+                        sessions.remove(token)
+        except Exception as e:
+            logger.debug("Error removing session during invalidation: %s", e)
+
+        # Prune expired tokens from blacklist periodically
+        if len(_TOKEN_BLACKLIST) > 10000:
+            _prune_blacklist()
 
 
 def _prune_blacklist():
-    """Remove expired tokens from blacklist."""
-    to_remove = []
-    for t in _TOKEN_BLACKLIST:
-        try:
-            parts = t.split(".")
-            if len(parts) == 2:
-                payload = json.loads(base64.urlsafe_b64decode(parts[0] + "==").decode())
-                if payload.get("exp", 0) < time.time():
-                    to_remove.append(t)
-        except Exception:
-            to_remove.append(t)
-    for t in to_remove:
-        _TOKEN_BLACKLIST.discard(t)
+    """
+    Remove expired tokens from the blacklist to prevent unbounded memory growth.
+
+    Called automatically when blacklist exceeds 10 000 entries. Protected by
+    _SESSION_LOCK to avoid concurrent modification during iteration.
+    """
+    with _SESSION_LOCK:
+        to_remove = []
+        for t in _TOKEN_BLACKLIST:
+            try:
+                parts = t.split(".")
+                if len(parts) == 2:
+                    payload = json.loads(base64.urlsafe_b64decode(parts[0] + "==").decode())
+                    if payload.get("exp", 0) < time.time():
+                        to_remove.append(t)
+            except Exception:
+                to_remove.append(t)
+        for t in to_remove:
+            _TOKEN_BLACKLIST.discard(t)
 
 
 def get_current_user():
@@ -707,14 +761,25 @@ def ensure_admin_exists():
 
 
 def log_action(email: str, action: str, details: str = ""):
-    """Log user action as a system event."""
+    """
+    Log a user action as a system event.
+
+    Stores the action in the system_events table for audit purposes.
+    Uses user_id (not email) in the context payload to reduce PII exposure
+    in logs (DPDP-08 / LOG-07 partial fix).
+
+    Args:
+        email:   User's email (used only to look up user_id).
+        action:  Action name (e.g. 'registration', 'google_login').
+        details: Optional human-readable description of the action.
+    """
     try:
         user = fetch_one("SELECT id FROM users WHERE email = %s", (email,))
         user_id = user["id"] if user else None
         execute(
             """INSERT INTO system_events (severity, module, message, context)
                VALUES ('INFO', 'user_action', %s, %s)""",
-            (f"{action}: {details}", json.dumps({"email": email, "user_id": user_id}))
+            (f"{action}: {details}", json.dumps({"user_id": user_id}))
         )
-    except Exception:
-        pass  # system_events table may not exist
+    except Exception as e:
+        logger.debug("Suppressed exception: %s", e)  # system_events table may not exist in all environments

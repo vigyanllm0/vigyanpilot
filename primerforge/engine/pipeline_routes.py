@@ -74,13 +74,11 @@ def _decrypt_output(row: dict, key: str = "output_data") -> dict:
                 try:
                     row[key] = json.loads(decrypted)
                     return row
-                except (json.JSONDecodeError, TypeError):
-                    pass
+                except Exception as e: logger.debug("Suppressed exception: %s", e)
         # Plain JSON string (legacy / non-encrypted data)
         try:
             row[key] = json.loads(stripped)
-        except (json.JSONDecodeError, TypeError):
-            pass
+        except Exception as e: logger.debug("Suppressed exception: %s", e)
     elif isinstance(raw, (dict, list)):
         pass  # Already a JSON object — legacy data, nothing to do
     return row
@@ -382,8 +380,8 @@ def submit_pipeline():
                   source=input_params.get("sequence_source",""),
                   details=f"mode={mode}, organism={input_params.get('organism','')}",
                   user_id=user_id)
-    except Exception:
-        pass
+    except Exception as e:
+        logger.debug("Suppressed exception: %s", e)
 
     # Enqueue Celery task only when Redis broker is reachable. Local/dev mode
     # often has no Redis, and Celery can otherwise spend seconds retrying.
@@ -392,7 +390,7 @@ def submit_pipeline():
         try:
             from .tasks import run_pipeline
             run_pipeline.delay(job_id)
-            logger.info(f"VigyanLLM: Pipeline job {job_id} queued via Celery for user {user_id} (mode={mode})")
+            logger.info("VigyanLLM: Pipeline job %s queued for user %s (mode=%s)", job_id, user_id, mode)
         except Exception as e:
             _BACKGROUND_EXECUTOR.submit(_run_pipeline_background, job_id, f"Celery enqueue failed: {e}")
             logger.warning("VigyanLLM: Celery enqueue failed for %s, falling back to ThreadPoolExecutor: %s", job_id, e)

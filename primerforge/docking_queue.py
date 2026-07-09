@@ -91,8 +91,10 @@ def list_pending_jobs() -> list[dict]:
     jobs = []
     for fname in os.listdir(PENDING_DIR):
         if fname.endswith(".json"):
-            with open(os.path.join(PENDING_DIR, fname)) as f:
-                jobs.append(json.load(f))
+            try:
+                with open(os.path.join(PENDING_DIR, fname)) as f:
+                    jobs.append(json.load(f))
+            except Exception as e: logger.debug("Suppressed exception: %s", e)
     return jobs
 
 def list_running_jobs() -> list[dict]:
@@ -100,8 +102,10 @@ def list_running_jobs() -> list[dict]:
     jobs = []
     for fname in os.listdir(RUNNING_DIR):
         if fname.endswith(".json"):
-            with open(os.path.join(RUNNING_DIR, fname)) as f:
-                jobs.append(json.load(f))
+            try:
+                with open(os.path.join(RUNNING_DIR, fname)) as f:
+                    jobs.append(json.load(f))
+            except Exception as e: logger.debug("Suppressed exception: %s", e)
     return jobs
 
 def release_stale_jobs(max_age_minutes: float = 10.0):
@@ -132,8 +136,7 @@ def release_stale_jobs(max_age_minutes: float = 10.0):
                 os.remove(path)
                 released += 1
                 logger.info("Released stale job %s back to pending", job.get("job_id"))
-        except (OSError, json.JSONDecodeError):
-            pass
+        except Exception as e: logger.debug("Suppressed exception: %s", e)
     if released:
         logger.info("Released %d stale running job(s) back to pending", released)
     return released
@@ -154,7 +157,6 @@ def cleanup_old_jobs(max_age_hours: float = 1.0):
                 if mtime < cutoff:
                     os.remove(path)
                     removed += 1
-            except (OSError, FileNotFoundError):
-                pass
+            except Exception as e: logger.debug("Suppressed exception: %s", e)
     if removed:
         logger.info("Cleaned up %d old docking job(s) (>%sh old)", removed, max_age_hours)

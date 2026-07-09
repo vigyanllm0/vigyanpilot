@@ -15,7 +15,7 @@ import time
 import hashlib
 import logging
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timezone
 
 logger = logging.getLogger("primerforge.file_scanner")
 
@@ -118,7 +118,7 @@ def save_baseline():
     """Save current file state as the integrity baseline."""
     baseline = create_baseline()
     baseline["_meta"] = {
-        "created_at": datetime.utcnow().isoformat(),
+        "created_at": datetime.now(timezone.utc).isoformat(),
         "file_count": len(baseline) - 1,
     }
     with open(BASELINE_FILE, "w") as f:
@@ -226,7 +226,7 @@ def full_malware_scan() -> dict:
                 all_findings.extend(findings)
 
     return {
-        "scan_time": datetime.utcnow().isoformat(),
+        "scan_time": datetime.now(timezone.utc).isoformat(),
         "files_scanned": files_scanned,
         "threats_found": len(all_findings),
         "findings": all_findings,
@@ -250,7 +250,7 @@ def quarantine_file(filepath: str) -> dict:
     # Save metadata
     meta = {
         "original_path": str(filepath),
-        "quarantined_at": datetime.utcnow().isoformat(),
+        "quarantined_at": datetime.now(timezone.utc).isoformat(),
         "hash": compute_file_hash(src),
         "size": src.stat().st_size,
     }

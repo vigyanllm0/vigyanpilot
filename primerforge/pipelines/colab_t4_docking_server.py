@@ -24,11 +24,11 @@ import time
 
 def kill_stale_processes():
     """Kill leftover uvicorn / ngrok and free port 7860."""
-    for cmd in ["pkill -f uvicorn", "pkill -f ngrok", "fuser -k 7860/tcp"]:
+    for cmd in [["pkill", "-f", "uvicron"], ["pkill", "-f", "ngrok"], ["fuser", "-k", "7860/tcp"]]:
         try:
-            subprocess.run(cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=5)
-        except Exception:
-            pass
+            subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=5)
+        except Exception as e:
+            print("Suppressed exception: %s", e)
     time.sleep(2)
     print("✅ Stale processes cleared.")
 
@@ -100,9 +100,10 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=["https://vigyanllm.in", "http://localhost:11436", "http://localhost:5000"],
+    allow_methods=["GET", "POST", "OPTIONS", "PUT", "DELETE"],
+    allow_headers=["Authorization", "Content-Type", "X-Requested-With"],
+    allow_credentials=True,
 )
 
 # In-memory job store for consensus pipeline
@@ -290,7 +291,7 @@ async def pulse():
         "runtime": "google_colab",
         "gpu": gpu_info(),
         "cpu_percent": psutil.cpu_percent(),
-        "timestamp": _dt.datetime.utcnow().isoformat() + "Z",
+        "timestamp": _dt.datetime.now(_dt.timezone.utc).isoformat().replace("+00:00", "Z"),
     }
 
 
@@ -377,7 +378,7 @@ async def run_dry_lab(request: Request):
             "status": "running",
             "result": None,
             "log": [],
-            "created_at": _dt.datetime.utcnow().isoformat() + "Z",
+            "created_at": _dt.datetime.now(_dt.timezone.utc).isoformat().replace("+00:00", "Z"),
         }
         threading.Thread(
             target=_run_consensus_job,

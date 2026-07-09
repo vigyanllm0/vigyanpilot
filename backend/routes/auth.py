@@ -31,14 +31,14 @@ def login(req: LoginRequest, db: Session = Depends(get_db)):
 
 def _exchange_token(pf_token: str, db: Session):
     try:
-        r = urllib.request.urlopen(
+        with urllib.request.urlopen(
             urllib.request.Request(
                 MAIN_API + "/auth/me",
                 headers={"Authorization": f"Bearer {pf_token}"},
             ),
             timeout=5,
-        )
-        data = json.loads(r.read())
+        ) as r:
+            data = json.loads(r.read())
         email = data.get("email") or data.get("user", {}).get("email", "")
         role = data.get("role") or data.get("user", {}).get("role", "user")
         display_name = data.get("display_name") or data.get("user", {}).get("display_name", email.split("@")[0])

@@ -4,9 +4,17 @@ VigyanLLM Razorpay Payment Integration — PostgreSQL Version
 ==============================================================
 Hybrid Subscription + Token Pack model with full cost tracking.
 
+Security hardening:
+  PAY-01 FIX: verify_payment() now calls Razorpay API GET /payments/{id}
+              after HMAC verification to confirm payment is actually captured
+              server-side. Prevents forged HMAC claims.
+  PAY-04 FIX: RAZORPAY_WEBHOOK_SECRET must be set explicitly in env;
+              it NO LONGER falls back to RAZORPAY_KEY_SECRET.
+  BUG-38 FIX: Removed hardcoded test phone number from Razorpay orders.
+
 Endpoints:
   POST /api/payments/create-order    — Create Razorpay order
-  POST /api/payments/verify-payment  — Verify signature & credit tokens
+  POST /api/payments/verify-payment  — Verify signature & confirm via API
   POST /api/payments/webhook         — Razorpay webhook (server-to-server)
   GET  /api/payments/pricing         — Public pricing data
   GET  /api/payments/token-balance   — User's token balance & subscription
@@ -40,9 +48,17 @@ RAZORPAY_WEBHOOK_SECRET = os.environ.get("RAZORPAY_WEBHOOK_SECRET", "")
 if not RAZORPAY_KEY_ID or not RAZORPAY_KEY_SECRET:
     logger.warning("RAZORPAY_KEY_ID or RAZORPAY_KEY_SECRET not set — payment endpoints will fail")
 
-# Fallback webhook secret to key secret if not separately configured
+# PAY-04 FIX: RAZORPAY_WEBHOOK_SECRET must be set independently.
+# It MUST NOT fall back to RAZORPAY_KEY_SECRET. If both were the same value,
+# a compromised key secret would also compromise webhook validation.
+# The webhook secret is configured in Razorpay Dashboard → Webhooks → Secret.
 if not RAZORPAY_WEBHOOK_SECRET:
-    RAZORPAY_WEBHOOK_SECRET = RAZORPAY_KEY_SECRET
+    logger.error(
+        "RAZORPAY_WEBHOOK_SECRET is not set. Razorpay webhooks will be REJECTED. "
+        "Set this in your .env file (must differ from RAZORPAY_KEY_SECRET). "
+        "Generate with: python3 -c \"import secrets; print(secrets.token_hex(32))\""
+    )
+    # Do NOT fall back to key secret — fail loudly so operators notice
 
 rz_client = razorpay.Client(auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET)) if RAZORPAY_KEY_ID else None
 
@@ -50,7 +66,21 @@ rz_client = razorpay.Client(auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET)) if RAZO
 # ── Helper: Verify Razorpay Signature ─────────────────────────────────────
 
 def _verify_signature(order_id: str, payment_id: str, signature: str) -> bool:
-    """HMAC-SHA256(order_id|payment_id, secret) == signature"""
+    """
+    Verify the Razorpay payment signature using HMAC-SHA256.
+
+    Signature format: HMAC-SHA256(order_id + '|' + payment_id, key_secret)
+    Uses hmac.compare_digest() for constant-time comparison to prevent
+    timing oracle attacks.
+
+    Args:
+        order_id:   Razorpay order ID (razorpay_order_id from client).
+        payment_id: Razorpay payment ID (razorpay_payment_id from client).
+        signature:  Hex HMAC signature (razorpay_signature from client).
+
+    Returns:
+        True if signature matches, False otherwise.
+    """
     message = f"{order_id}|{payment_id}"
     expected = hmac.new(
         RAZORPAY_KEY_SECRET.encode("utf-8"),
@@ -58,6 +88,41 @@ def _verify_signature(order_id: str, payment_id: str, signature: str) -> bool:
         hashlib.sha256
     ).hexdigest()
     return hmac.compare_digest(expected, signature)
+
+
+def _confirm_payment_server_side(payment_id: str) -> bool:
+    """
+    Confirm payment status via Razorpay API (PAY-01 FIX).
+
+    HMAC signature verification alone is insufficient: a sophisticated attacker
+    who knows the HMAC secret could forge a valid signature for a payment that
+    was never actually captured. This function calls the Razorpay API directly
+    to verify the payment is in 'captured' status before crediting tokens.
+
+    Args:
+        payment_id: Razorpay payment ID to verify.
+
+    Returns:
+        True if payment.status == 'captured', False otherwise.
+        Returns False on API error (fail-closed).
+    """
+    if not rz_client:
+        logger.error("Razorpay client not initialised — cannot confirm payment server-side")
+        return False
+    try:
+        payment = rz_client.payment.fetch(payment_id)
+        status = payment.get("status", "")
+        if status != "captured":
+            logger.warning(
+                "PAY-01: Razorpay API returned status '%s' for payment %s (expected 'captured')",
+                status, payment_id,
+            )
+            return False
+        return True
+    except Exception as e:
+        logger.error("Razorpay API confirmation failed for payment %s: %s", payment_id, e)
+        # Fail-closed: do not credit tokens if we cannot confirm with Razorpay
+        return False
 
 
 def _credit_tokens_atomic(user_id: int, order_id: str, product_id: str,
@@ -277,18 +342,31 @@ def verify_payment():
     if not order:
         return jsonify({"error": "Order not found."}), 404
 
-    # Verify HMAC-SHA256 signature
+    # Verify HMAC-SHA256 signature (client-side check)
     if not _verify_signature(razorpay_order_id, razorpay_payment_id, razorpay_signature):
-        logger.warning(f"Signature mismatch for order {razorpay_order_id} by {g.user['email']}")
+        logger.warning("Signature mismatch for order %s by %s", razorpay_order_id, g.user["email"])
         try:
             execute(
                 """INSERT INTO system_events (severity, module, message, context)
                    VALUES ('WARNING', 'payments', 'Signature verification failed', %s)""",
-                (json.dumps({"order_id": razorpay_order_id, "email": g.user["email"]}),)
+                (json.dumps({"order_id": razorpay_order_id, "user_id": g.user.get("user_id")}),)
             )
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug("Suppressed exception: %s", e)
         return jsonify({"error": "Payment verification failed."}), 400
+
+    # PAY-01 FIX: Server-side confirmation via Razorpay API
+    # HMAC alone cannot prove payment was captured — confirm with Razorpay directly
+    if not _confirm_payment_server_side(razorpay_payment_id):
+        logger.error(
+            "Server-side payment confirmation FAILED for order %s payment %s by %s",
+            razorpay_order_id, razorpay_payment_id, g.user["email"],
+        )
+        return jsonify({
+            "error": "Payment could not be confirmed with the payment gateway. "
+                     "Please wait a few minutes and contact support if your payment was charged.",
+            "code": "PAYMENT_UNCONFIRMED",
+        }), 400
 
     # Get quantity from metadata
     metadata = json.loads(order.get("metadata") or "{}") if isinstance(order.get("metadata"), str) else (order.get("metadata") or {})
@@ -307,8 +385,8 @@ def verify_payment():
     try:
         log_action(g.user["email"], "payment_verified",
                    f"order={razorpay_order_id} payment={razorpay_payment_id} tokens={tokens_credited}")
-    except Exception:
-        pass
+    except Exception as e:
+        logger.debug("Suppressed exception: %s", e)
 
     # Return updated balance
     try:
@@ -504,8 +582,8 @@ def razorpay_webhook():
         if "conn" in locals() and conn is not None:
             try:
                 put_db_standalone(conn)
-            except Exception:
-                pass
+            except Exception as e:
+                logger.debug("Suppressed exception: %s", e)
 
     return jsonify({"status": "ok"}), 200
 

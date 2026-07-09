@@ -133,7 +133,7 @@ def run_pipeline(self, job_id: str):
                  json_mod.dumps(encrypted), outcome.duration_ms, outcome.phase)
             )
         except Exception as e:
-            logger.error(f"Failed to save step {outcome.step_number} result: {e}")
+            logger.error("Failed to save step %d result: %s", outcome.step_number, e)
 
     hard_failed = any(
         o.status == "failed" and any(s.hard_failure for s in orchestrator.steps if s.step_number == o.step_number)

@@ -1,6 +1,12 @@
-import re, json, urllib.request
+import re, json, urllib.request, os, sys
 
-API = "http://localhost:8001"
+API = os.environ.get("CMS_API_URL", "http://localhost:8001")
+ADMIN_EMAIL = os.environ.get("CMS_ADMIN_EMAIL")
+ADMIN_PASSWORD = os.environ.get("CMS_ADMIN_PASSWORD")
+
+if not ADMIN_EMAIL or not ADMIN_PASSWORD:
+    print("FATAL: Set CMS_ADMIN_EMAIL and CMS_ADMIN_PASSWORD environment variables", file=sys.stderr)
+    sys.exit(1)
 
 def api(method, path, data=None, token=None):
     url = API + path
@@ -8,16 +14,22 @@ def api(method, path, data=None, token=None):
     headers = {"Content-Type": "application/json"}
     if token:
         headers["Authorization"] = f"Bearer {token}"
-    r = urllib.request.urlopen(urllib.request.Request(url, data=body, headers=headers, method=method))
-    return json.loads(r.read())
+    with urllib.request.urlopen(urllib.request.Request(url, data=body, headers=headers, method=method), timeout=30) as r:
+        raw = r.read()
+    try:
+        return json.loads(raw)
+    except json.JSONDecodeError as e:
+        print(f"API returned non-JSON: {raw[:200]}", file=sys.stderr)
+        raise
 
 def main():
-    # Login as admin
-    r = api("POST", "/api/v1/cms/auth/login", {"email": "admin@vigyanllm.in", "password": "admin123"})
+    # Login as admin (credentials from environment)
+    r = api("POST", "/api/v1/cms/auth/login", {"email": ADMIN_EMAIL, "password": ADMIN_PASSWORD})
     token = r["token"]
     print("Logged in ✅")
 
-    html = open("../frontend/blog/index.html", encoding="utf-8").read()
+    with open("../frontend/blog/index.html", encoding="utf-8") as f:
+        html = f.read()
     
     pattern = re.compile(
         r'<article class="blog-card">'

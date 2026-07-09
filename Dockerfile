@@ -53,4 +53,4 @@ ENV DFAM_REPEAT_PATH=/opt/postgres_data/dfam/dfam_repeats.tsv
 HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
     CMD curl -f http://localhost:11436/health || exit 1
 
-CMD ["gunicorn", "--bind", "0.0.0.0:11436", "--workers", "1", "--timeout", "120", "--access-logfile", "-", "--error-logfile", "-", "primerforge.primer_server:create_app()"]
+CMD ["gunicorn", "--config", "deploy/gunicorn.conf.py", "--timeout", "120", "--access-logfile", "-", "--error-logfile", "-", "--worker-class", "sync", "primerforge.primer_server:create_app()"]

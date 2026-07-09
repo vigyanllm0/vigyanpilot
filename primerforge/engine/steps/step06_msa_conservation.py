@@ -34,31 +34,40 @@ CONSERVATION_THRESHOLD = 0.95
 MIN_STRAIN_SEQUENCES = 3
 MAX_STRAIN_SEQUENCES = 50
 
-# Check for required tools and config on import
+# Lazy detection — avoid subprocess on import (adds 2-5s to startup)
 _MAFFT_AVAILABLE: bool = False
 _MUSCLE_AVAILABLE: bool = False
+_ALIGNERS_CHECKED: bool = False
 
-try:
-    result = subprocess.run(["mafft", "--version"], capture_output=True, text=True, timeout=10)
-    _MAFFT_AVAILABLE = result.returncode == 0
-except (FileNotFoundError, subprocess.TimeoutExpired, Exception):
-    pass
 
-if not _MAFFT_AVAILABLE:
+def _detect_aligners() -> None:
+    """Run once to check which MSA tools are available."""
+    global _MAFFT_AVAILABLE, _MUSCLE_AVAILABLE, _ALIGNERS_CHECKED
+    if _ALIGNERS_CHECKED:
+        return
+    _ALIGNERS_CHECKED = True
+
     try:
-        result = subprocess.run(["muscle", "-version"], capture_output=True, text=True, timeout=10)
-        _MUSCLE_AVAILABLE = result.returncode == 0
-    except (FileNotFoundError, subprocess.TimeoutExpired, Exception):
-        pass
+        result = subprocess.run(["mafft", "--version"], capture_output=True, text=True, timeout=10)
+        _MAFFT_AVAILABLE = result.returncode == 0
+    except Exception as e:
+        logger.debug("Suppressed exception: %s", e)
 
-if not _MAFFT_AVAILABLE and not _MUSCLE_AVAILABLE:
-    logger.warning(
-        "Neither MAFFT nor MUSCLE are installed. "
-        "MSA will fall back to Biopython pairwise alignment (approximation). "
-        "Install MAFFT (brew install mafft) for proper multiple sequence alignment."
-    )
-elif _MAFFT_AVAILABLE:
-    logger.info("MAFFT detected — will use for multiple sequence alignment")
+    if not _MAFFT_AVAILABLE:
+        try:
+            result = subprocess.run(["muscle", "-version"], capture_output=True, text=True, timeout=10)
+            _MUSCLE_AVAILABLE = result.returncode == 0
+        except Exception as e:
+            logger.debug("Suppressed exception: %s", e)
+
+    if not _MAFFT_AVAILABLE and not _MUSCLE_AVAILABLE:
+        logger.warning(
+            "Neither MAFFT nor MUSCLE are installed. "
+            "MSA will fall back to Biopython pairwise alignment (approximation). "
+            "Install MAFFT (brew install mafft) for proper multiple sequence alignment."
+        )
+    elif _MAFFT_AVAILABLE:
+        logger.info("MAFFT detected — will use for multiple sequence alignment")
 
 _NCBI_EMAIL_CONFIGURED: bool = bool(os.environ.get("NCBI_EMAIL"))
 if not _NCBI_EMAIL_CONFIGURED:
@@ -197,6 +206,7 @@ def execute(input_data: Dict[str, Any]) -> Dict[str, Any]:
 
 def _run_msa(reference: str, strain_seqs: List[str]) -> Dict[str, Any]:
     """Run MSA using best available aligner: MAFFT > MUSCLE > Biopython."""
+    _detect_aligners()  # lazy check (runs once)
     global _MAFFT_AVAILABLE, _MUSCLE_AVAILABLE
 
     # Try MAFFT first (best quality)
@@ -204,14 +214,14 @@ def _run_msa(reference: str, strain_seqs: List[str]) -> Dict[str, Any]:
         try:
             return _run_mafft_msa(reference, strain_seqs)
         except Exception as e:
-            logger.warning(f"MAFFT MSA failed: {e}")
+            logger.warning("MAFFT MSA failed: %s", e)
 
     # Try MUSCLE second
     if _MUSCLE_AVAILABLE:
         try:
             return _run_muscle_msa(reference, strain_seqs)
         except Exception as e:
-            logger.warning(f"MUSCLE MSA failed: {e}")
+            logger.warning("MUSCLE MSA failed: %s", e)
 
     # Biopython pairwise fallback
     logger.warning(
@@ -236,7 +246,7 @@ def _run_mafft_msa(reference: str, strain_seqs: List[str]) -> Dict[str, Any]:
 
     output_path = fasta_path + ".afa"
     try:
-        cmd = ["mafft", "--auto", "--anysymbol", fasta_path]
+        cmd = ["mafft", "--fft-NS-1", "--retree", "1", "--anysymbol", "--thread", "4", fasta_path]
         with open(output_path, "w") as out_f:
             subprocess.run(cmd, capture_output=False, stdout=out_f,
                          text=True, timeout=MSA_TIMEOUT_S, check=True)
