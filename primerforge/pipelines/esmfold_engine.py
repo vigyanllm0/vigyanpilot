@@ -170,7 +170,7 @@ async def predict_structure(sequence: str, progress_callback=None) -> Dict[str, 
         pdb = _generate_fallback_pdb(seq)
         return {
             "status": "success",
-            "tool": "Fallback extended-chain",
+            "tool": "Fallback helical bundle",
             "pdb_string": pdb,
             "plddt_score": 0,
             "sequence_length": len(seq),
@@ -209,11 +209,11 @@ def _run_esmfold_sync(sequence: str, main_loop: asyncio.AbstractEventLoop, progr
         pdb = _generate_fallback_pdb(sequence)
         return {
             "status": "success",
-            "tool": "Fallback extended-chain",
+            "tool": "Fallback helical bundle",
             "pdb_string": pdb,
             "plddt_score": 0,
             "sequence_length": len(sequence),
-            "message": "ESMFold model unavailable — generated extended-chain PDB for Vina docking.",
+            "message": "ESMFold model unavailable — generated helical bundle PDB for Vina docking.",
             "license": "MIT",
         }
 
