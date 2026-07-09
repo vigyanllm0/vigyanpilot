@@ -512,6 +512,12 @@ function loading(on){
   $('search-sp').classList.toggle('active',on);
   $('btn-search').disabled=on;
   $('search-txt').textContent=on?'Searching…':'Search';
+  if(on){
+    setTimeout(function(){
+      var el=$('search-txt');
+      if(el.textContent==='Searching…')el.textContent='Searching… (NCBI may take 30-60s)';
+    },15000);
+  }
 }
 
 _on('input-type','change',function(){
@@ -544,20 +550,23 @@ function renderResults(data){
   var results=data.results||[];
   searchData=results;
   count.textContent='('+results.length+' found)';
-  if(!results.length){area.innerHTML='<div style="padding:40px;text-align:center;color:var(--muted);font-size:13px">No results found.</div>';return}
+  var warns=data.warnings||[];
+  var warnHtml=warns.length?'<div style="padding:8px 12px;margin-bottom:8px;background:#fffbeb;border:1px solid #fde68a;border-radius:6px;font-size:11px;color:#92400e">'+warns.map(function(w){return esc(w)}).join('<br>')+'</div>':'';
+  if(!results.length){area.innerHTML=warnHtml+'<div style="padding:40px;text-align:center;color:var(--muted);font-size:13px">No results found.</div>';return}
   var html='<table class="results-table"><thead><tr>'
     +'<th style="width:30px"><input type="checkbox" id="selall" checked></th>'
     +'<th>ID</th><th>Description</th><th>Species</th><th>Length</th><th>DB</th><th>Source</th>'
     +'</tr></thead><tbody>';
   results.forEach(function(r,i){
-    var db=r.source_database||'';
-    var dbCls=db.toLowerCase().includes('ncbi')?'ncbi':db.toLowerCase().includes('ensembl')?'ensembl':db.toLowerCase().includes('uniprot')?'uniprot':db.toLowerCase().includes('ddbj')?'ddbj':'ena';
+    var db=r.database||r.source_database||'';
+    var dbLower=db.toLowerCase();
+    var dbCls=dbLower.includes('ncbi')?'ncbi':dbLower.includes('ensembl')?'ensembl':dbLower.includes('uniprot')?'uniprot':dbLower.includes('ddbj')?'ddbj':'ena';
     html+='<tr>'
       +'<td><input type="checkbox" class="scb" data-idx="'+i+'" checked></td>'
       +'<td><div class="hit-id">'+esc(r.accession||r.id||'')+'</div></td>'
-      +'<td><div class="hit-desc">'+esc((r.description||'').slice(0,80))+'</div></td>'
-      +'<td class="hit-species">'+esc(r.species||'')+'</td>'
-      +'<td>'+(r.sequence_length||r.length||'')+'</td>'
+      +'<td><div class="hit-desc">'+esc((r.description||r.name||'').slice(0,80))+'</div></td>'
+      +'<td class="hit-species">'+esc(r.organism||r.species||'')+'</td>'
+      +'<td>'+(r.length||r.sequence_length||'')+'</td>'
       +'<td><span class="db-badge '+dbCls+'">'+esc(db)+'</span></td>'
       +'<td>'+(r.source_url?'<a href="'+esc(r.source_url)+'" target="_blank" rel="noopener" class="source-link">Open ↗</a>':'')+'</td></tr>';
   });
@@ -579,21 +588,21 @@ _on('btn-send-design','click',function(){
   var s=getSelected();
   if(!s.length){alert('Select at least one sequence.');return}
   var seq=s.map(function(r){return'>'+(r.accession||r.id||'seq')+'\n'+(r.sequence||'')}).join('\n');
-  localStorage.setItem('vp_design_seq',seq);
+  localStorage.setItem('vp_design_seq',seq||'');
   window.location.href='primer.html';
 });
 _on('btn-send-blast','click',function(){
   var s=getSelected();
   if(!s.length){alert('Select at least one sequence.');return}
   var seq=s.map(function(r){return'>'+(r.accession||r.id||'seq')+'\n'+(r.sequence||'')}).join('\n');
-  localStorage.setItem('vp_blast_seq',seq);
+  localStorage.setItem('vp_blast_seq',seq||'');
   window.location.href='blast.html';
 });
 _on('btn-send-msa','click',function(){
   var s=getSelected();
   if(s.length<2){alert('Select at least 2 sequences for MSA.');return}
   var seq=s.map(function(r){return'>'+(r.accession||r.id||'seq')+'\n'+(r.sequence||'')}).join('\n');
-  localStorage.setItem('vp_msa_seq',seq);
+  localStorage.setItem('vp_msa_seq',seq||'');
   window.location.href='msa.html';
 });
 </script>

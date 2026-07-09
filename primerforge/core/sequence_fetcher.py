@@ -90,8 +90,8 @@ def _make_result(data: dict, source: str, source_id: str = None) -> dict:
 
 
 def _rate_limit_ncbi():
-    """Enforce NCBI rate limit."""
-    time.sleep(0.4 if NCBI_API_KEY else 0.35)
+    """Enforce NCBI rate limit: 10 req/sec with key, 3 req/sec without."""
+    time.sleep(0.1 if NCBI_API_KEY else 0.35)
 
 
 @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10))
@@ -571,6 +571,7 @@ def search_databases(query: str, database: str = "auto", organism: str = "human"
     else:
         databases = [database]
 
+    errors = []
     for db_name in databases:
         db_info = DATABASE_REGISTRY.get(db_name)
         if not db_info or query_type not in db_info.get("accepts", []):
@@ -583,7 +584,8 @@ def search_databases(query: str, database: str = "auto", organism: str = "human"
                     r["database_label"] = db_info["label"]
                 all_results.extend(results)
         except Exception as e:
-            logger.debug(f"Search {db_name} failed: {e}")
+            errors.append(f"{db_name}: {str(e)[:150]}")
+            logger.warning("Search %s failed: %s", db_name, e)
             continue
 
     return {
@@ -593,4 +595,5 @@ def search_databases(query: str, database: str = "auto", organism: str = "human"
         "query_type": query_type,
         "database": database,
         "databases_searched": databases,
+        "warnings": errors,
     }
