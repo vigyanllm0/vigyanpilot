@@ -47,8 +47,12 @@ docker build -t "$IMAGE" -f "$DOCKERFILE" .
 # Step 2: Push to ACR
 echo
 echo "--- Step 2: Push to ACR ---"
-az acr login --name vigyanregistry01
+az acr login --name vigyanregistry01 --expose-token 2>/dev/null || az acr login --name vigyanregistry01
 docker push "$IMAGE"
+
+# Get ACR credentials for ACI deployment (capture before stdin is used)
+ACR_USERNAME="vigyanregistry01"
+ACR_PASSWORD=$(az acr credential show -n vigyanregistry01 --query passwords[0].value -o tsv 2>/dev/null || echo "")
 
 # Step 3: Delete old container
 echo
@@ -62,8 +66,12 @@ az container create \
     --resource-group "$RG" \
     --name "$CONTAINER_NAME" \
     --image "$IMAGE" \
+    --os-type Linux \
     --cpu 4 --memory 24 \
     $GPU_ARGS \
+    --registry-login-server "$REGISTRY" \
+    --registry-username "$ACR_USERNAME" \
+    --registry-password "$ACR_PASSWORD" \
     --environment-variables \
         API_BASE_URL="$API_BASE" \
         POLL_INTERVAL=10 \
