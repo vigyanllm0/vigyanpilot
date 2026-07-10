@@ -75,6 +75,7 @@ PRICE_REGISTRY: Dict[str, ProductConfig] = {
 
 # Single top-up pricing
 TOPUP_PRICE_INR: int = 49  # ₹49 per single primer design run
+DOCK_TOPUP_PRICE_INR: int = 99  # ₹99 per single docking run
 
 # Free trial allocation
 FREE_TRIAL_RUNS: int = 2
@@ -91,6 +92,8 @@ def get_amount_paise(product_id: str, quantity: int = 1) -> int:
     """
     if product_id == "top_up":
         return quantity * TOPUP_PRICE_INR * 100
+    if product_id == "dock_top_up":
+        return quantity * DOCK_TOPUP_PRICE_INR * 100
     product = PRICE_REGISTRY.get(product_id)
     if not product:
         raise ValueError(f"Unknown product_id: {product_id}")
@@ -102,7 +105,7 @@ def validate_order_request(product_id: str, quantity: int) -> Optional[str]:
     Validate an order creation request.
     Returns error message string or None if valid.
     """
-    if product_id == "top_up":
+    if product_id in ("top_up", "dock_top_up"):
         if quantity < 1:
             return "Minimum 1 design required."
         if quantity > 100:
@@ -121,7 +124,7 @@ def validate_order_request(product_id: str, quantity: int) -> Optional[str]:
 
 def get_designs_for_product(product_id: str, quantity: int = 1) -> int:
     """Get number of design credits for a product purchase."""
-    if product_id == "top_up":
+    if product_id in ("top_up", "dock_top_up"):
         return quantity
     product = PRICE_REGISTRY.get(product_id)
     return product.designs_included if product else 0

@@ -648,7 +648,8 @@ def create_app() -> Flask:
         from primerforge.database import init_db, close_db
         from primerforge.pg_auth import (
             get_current_user, check_usage, consume_token,
-            record_operation_cost, ensure_admin_exists, log_action
+            record_operation_cost, ensure_admin_exists, log_action,
+            check_docking_usage, consume_docking_token
         )
         from primerforge.pg_auth_routes import auth_bp
         from primerforge.pg_payment_routes import payment_bp
@@ -677,7 +678,7 @@ def create_app() -> Flask:
 
         logger.info("Database: PostgreSQL (production mode)")
     else:
-        from primerforge.auth import init_db, close_db, get_current_user, check_usage, increment_usage, log_action
+        from primerforge.auth import init_db, close_db, get_current_user, check_usage, increment_usage, log_action, check_docking_usage, increment_docking_usage
         from primerforge.auth_routes import auth_bp
         init_db()
         app.teardown_appcontext(close_db)
@@ -694,6 +695,7 @@ def create_app() -> Flask:
         except ImportError as exc:
             logger.warning("Reports routes disabled: %s", exc)
         consume_token = None
+        consume_docking_token = None
         record_operation_cost = None
         logger.info("Database: SQLite (development mode)")
 
@@ -1982,7 +1984,30 @@ def create_app() -> Flask:
         if not ligand_smiles_list or not isinstance(ligand_smiles_list, list):
             return err("'ligand_smiles_list' must be a non-empty list of SMILES strings.", "VALIDATION_ERROR", 400)
 
+        # ── Auth & Docking Usage Check ────────────────────────────────────
+        user = get_current_user()
+        if not user:
+            return jsonify({"error": "Authentication required. Please login or register to use molecular docking.",
+                           "code": "AUTH_REQUIRED", "action": "show_auth"}), 401
+        dock_usage = check_docking_usage(user['email'])
+        if not dock_usage['can_run'] and user.get('role') != 'admin':
+            return jsonify({"error": "Docking usage limit reached. Purchase more docking runs to continue.",
+                           "code": "PAYMENT_REQUIRED", "action": "show_docking_payment",
+                           "usage": dock_usage}), 402
+
+        # Consume token BEFORE queuing (PostgreSQL mode)
+        if USE_POSTGRES and consume_docking_token:
+            if user.get('role') != 'admin':
+                if not consume_docking_token(user.get('user_id'), user['email']):
+                    return jsonify({"error": "No docking tokens remaining. Purchase more to continue.",
+                                   "code": "PAYMENT_REQUIRED", "action": "show_docking_payment"}), 402
+
         job_id = create_job(sequence, ligand_smiles_list, top_n)
+
+        # Increment usage AFTER successful job creation (SQLite mode)
+        if not USE_POSTGRES:
+            increment_docking_usage(user['email'])
+
         return jsonify({"job_id": job_id, "status": "queued"}), 202
 
     @app.route("/api/primer/docking/status/<job_id>", methods=["GET"])

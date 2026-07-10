@@ -706,6 +706,50 @@ def consume_token(user_id: int, email: str) -> bool:
     return rowcount > 0
 
 
+def check_docking_usage(email: str) -> dict:
+    """Check if user can run docking. Checks balance (same pool as primer design)."""
+    if not isinstance(email, str):
+        return {"can_run": False, "error": "Invalid input"}
+    try:
+        row = fetch_one(
+            """SELECT u.id, u.role, tb.balance, tb.total_consumed
+               FROM users u
+               LEFT JOIN token_balances tb ON tb.user_id = u.id
+               WHERE u.email = %s""",
+            (email,)
+        )
+    except Exception:
+        row = None
+    if not row:
+        return {"can_run": False, "error": "User not found"}
+    balance = row.get("balance") or 0
+    is_admin = row.get("role") == "admin"
+    can_run = is_admin or balance > 0
+    return {
+        "can_run": can_run,
+        "balance": balance,
+        "needs_payment": not can_run,
+        "is_admin": is_admin,
+        "price_per_run": 99,
+    }
+
+
+def consume_docking_token(user_id: int, email: str) -> bool:
+    """Consume 1 docking credit from token_balances."""
+    user = fetch_one("SELECT role FROM users WHERE id = %s", (user_id,))
+    if user and user["role"] == "admin":
+        return True
+    rowcount = execute(
+        """UPDATE token_balances
+           SET balance = balance - 1,
+               total_consumed = total_consumed + 1,
+               last_consumed_at = NOW()
+           WHERE user_id = %s AND balance > 0""",
+        (user_id,)
+    )
+    return rowcount > 0
+
+
 def record_operation_cost(user_id: int, trigger_type: str, agent_work_log_id: int = None,
                           cpu_seconds: float = 0, llm_input_tokens: int = 0,
                           llm_output_tokens: int = 0, api_calls_external: int = 0,

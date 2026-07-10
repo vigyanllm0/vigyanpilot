@@ -47,6 +47,8 @@ if not ADMIN_PASSWORD:
 # Pricing
 PRICE_PER_DESIGN = 49  # ₹49 per primer design run
 FREE_RUNS = 2          # 2 free runs per new user
+PRICE_PER_DOCK = 99    # ₹99 per docking run
+FREE_DOCK_RUNS = 2     # 2 free docking runs per new user
 UPI_ID = os.environ.get("PRIMERFORGE_UPI_ID", "vigyanllm@upi")
 
 
@@ -78,6 +80,8 @@ def init_db():
             role TEXT DEFAULT 'user',
             run_count INTEGER DEFAULT 0,
             paid_runs INTEGER DEFAULT 0,
+            dock_run_count INTEGER DEFAULT 0,
+            dock_paid_runs INTEGER DEFAULT 0,
             created_at REAL DEFAULT (strftime('%s','now')),
             last_login REAL DEFAULT 0
         );
@@ -102,6 +106,7 @@ def init_db():
             upi_ref TEXT DEFAULT '',
             status TEXT DEFAULT 'pending',
             runs_purchased INTEGER DEFAULT 1,
+            product_type TEXT DEFAULT 'top_up',
             created_at REAL DEFAULT (strftime('%s','now')),
             verified_at REAL DEFAULT 0
         );
@@ -326,6 +331,38 @@ def increment_usage(email: str):
     db.execute("UPDATE users SET run_count = run_count + 1 WHERE email=?", (email,))
     db.execute("INSERT INTO usage_log (user_email, action, details) VALUES (?, ?, ?)",
                (email, "pipeline_run", f"Run #{db.execute('SELECT run_count FROM users WHERE email=?', (email,)).fetchone()['run_count']}"))
+    db.commit()
+
+
+# ── Docking Usage Checking ────────────────────────────────────────────────
+
+def check_docking_usage(email: str) -> dict:
+    """Check if user can run docking. Returns {can_run, runs_used, free_remaining, needs_payment}."""
+    db = get_db()
+    row = db.execute("SELECT dock_run_count, dock_paid_runs FROM users WHERE email=?", (email,)).fetchone()
+    if not row:
+        return {"can_run": False, "error": "User not found"}
+    run_count = row["dock_run_count"]
+    paid_runs = row["dock_paid_runs"]
+    total_allowed = FREE_DOCK_RUNS + paid_runs
+    can_run = run_count < total_allowed
+    return {
+        "can_run": can_run,
+        "runs_used": run_count,
+        "free_remaining": max(0, FREE_DOCK_RUNS - run_count),
+        "paid_remaining": max(0, total_allowed - run_count),
+        "needs_payment": not can_run,
+        "price_per_run": PRICE_PER_DOCK,
+        "upi_id": UPI_ID,
+    }
+
+
+def increment_docking_usage(email: str):
+    """Increment docking run count after successful job submission."""
+    db = get_db()
+    db.execute("UPDATE users SET dock_run_count = dock_run_count + 1 WHERE email=?", (email,))
+    db.execute("INSERT INTO usage_log (user_email, action, details) VALUES (?, ?, ?)",
+               (email, "docking_run", f"Dock Run #{db.execute('SELECT dock_run_count FROM users WHERE email=?', (email,)).fetchone()['dock_run_count']}"))
     db.commit()
 
 

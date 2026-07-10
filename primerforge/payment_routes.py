@@ -16,11 +16,12 @@ import logging
 import razorpay
 from flask import Blueprint, request, jsonify, g
 
-from .auth import get_db, get_current_user, require_auth, log_action, check_usage, DB_PATH
+from .auth import get_db, get_current_user, require_auth, log_action, check_usage, check_docking_usage, DB_PATH, PRICE_PER_DOCK, FREE_DOCK_RUNS
 from .price_registry import (
     FREE_TRIAL_RUNS,
     PRICE_REGISTRY,
     TOPUP_PRICE_INR,
+    DOCK_TOPUP_PRICE_INR,
     get_amount_paise,
     get_designs_for_product,
     validate_order_request,
@@ -73,11 +74,16 @@ def _resolve_order_request(data):
         amount = get_amount_paise(product_id, quantity)
         runs = get_designs_for_product(product_id, quantity)
         product = PRICE_REGISTRY.get(product_id)
-        description = (
-            f"VigyanLLM: {runs} primer design run(s)"
-            if product_id == "top_up"
-            else f"VigyanLLM: {product.display_name} ({runs} design credits)"
-        )
+        if product_id == "dock_top_up":
+            description = f"VigyanLLM: {runs} docking run(s)"
+        elif product_id == "top_up":
+            description = f"VigyanLLM: {runs} primer design run(s)"
+        else:
+            description = (
+                f"VigyanLLM: {runs} primer design run(s)"
+                if product_id == "top_up"
+                else f"VigyanLLM: {product.display_name} ({runs} design credits)"
+            )
         return {
             "amount": amount,
             "runs": runs,
@@ -155,8 +161,8 @@ def create_order():
     # Store order in DB for tracking
     db = get_db()
     db.execute(
-        "INSERT INTO payments (user_email, amount, upi_ref, status, runs_purchased) VALUES (?, ?, ?, ?, ?)",
-        (g.user['email'], amount // 100, order['id'], "created", resolved["runs"])
+        "INSERT INTO payments (user_email, amount, upi_ref, status, runs_purchased, product_type) VALUES (?, ?, ?, ?, ?, ?)",
+        (g.user['email'], amount // 100, order['id'], "created", resolved["runs"], resolved["product_id"])
     )
     db.commit()
 
@@ -218,7 +224,7 @@ def verify_razorpay_payment():
 
     # Find the order to get runs_purchased
     order_row = db.execute(
-        """SELECT id, runs_purchased, status FROM payments
+        """SELECT id, runs_purchased, product_type, status FROM payments
            WHERE user_email=? AND (upi_ref=? OR upi_ref LIKE ?)
            ORDER BY id DESC LIMIT 1""",
         (email, razorpay_order_id, f"{razorpay_order_id}|%")
@@ -228,8 +234,12 @@ def verify_razorpay_payment():
         return jsonify({"error": "Order not found."}), 404
 
     runs = order_row['runs_purchased']
+    product_type = order_row['product_type'] or 'top_up'
     if order_row["status"] == "verified":
-        usage = check_usage(email)
+        if product_type == "dock_top_up":
+            usage = check_docking_usage(email)
+        else:
+            usage = check_usage(email)
         return jsonify({
             "success": True,
             "message": "Payment already verified.",
@@ -246,7 +256,10 @@ def verify_razorpay_payment():
     )
     if cur.rowcount == 0:
         db.commit()
-        usage = check_usage(email)
+        if product_type == "dock_top_up":
+            usage = check_docking_usage(email)
+        else:
+            usage = check_usage(email)
         return jsonify({
             "success": True,
             "message": "Payment already verified.",
@@ -256,13 +269,17 @@ def verify_razorpay_payment():
         }), 200
 
     # Credit runs to user
-    db.execute("UPDATE users SET paid_runs = paid_runs + ? WHERE email=?", (runs, email))
+    if product_type == "dock_top_up":
+        db.execute("UPDATE users SET dock_paid_runs = dock_paid_runs + ? WHERE email=?", (runs, email))
+        log_action(email, "payment_verified",
+                   f"Razorpay: order={razorpay_order_id} payment={razorpay_payment_id} dock_runs={runs}")
+        usage = check_docking_usage(email)
+    else:
+        db.execute("UPDATE users SET paid_runs = paid_runs + ? WHERE email=?", (runs, email))
+        log_action(email, "payment_verified",
+                   f"Razorpay: order={razorpay_order_id} payment={razorpay_payment_id} runs={runs}")
+        usage = check_usage(email)
     db.commit()
-
-    log_action(email, "payment_verified",
-               f"Razorpay: order={razorpay_order_id} payment={razorpay_payment_id} runs={runs}")
-
-    usage = check_usage(email)
     return jsonify({
         "success": True,
         "message": f"Payment verified! {runs} run(s) unlocked.",
@@ -304,7 +321,9 @@ def pricing():
             if cfg.is_active
         ],
         "top_up_price_inr": TOPUP_PRICE_INR,
+        "dock_top_up_price_inr": DOCK_TOPUP_PRICE_INR,
         "free_trial_runs": FREE_TRIAL_RUNS,
+        "free_dock_runs": FREE_DOCK_RUNS,
         "currency": "INR",
     }), 200
 
@@ -369,14 +388,19 @@ def razorpay_webhook():
 
             if order_row and order_row['status'] != 'verified':
                 runs = order_row['runs_purchased']
+                product_type = order_row['product_type'] or 'top_up'
                 cur = db.execute(
                     "UPDATE payments SET status='verified', verified_at=? WHERE upi_ref LIKE ? AND user_email=? AND status != 'verified'",
                     (time.time(), f"{order_id}%", email)
                 )
                 if cur.rowcount > 0:
-                    db.execute("UPDATE users SET paid_runs = paid_runs + ? WHERE email=?", (runs, email))
+                    if product_type == "dock_top_up":
+                        db.execute("UPDATE users SET dock_paid_runs = dock_paid_runs + ? WHERE email=?", (runs, email))
+                        logger.info("Webhook: credited %s dock run(s) to %s for order %s", runs, email, order_id)
+                    else:
+                        db.execute("UPDATE users SET paid_runs = paid_runs + ? WHERE email=?", (runs, email))
+                        logger.info("Webhook: credited %s run(s) to %s for order %s", runs, email, order_id)
                     db.commit()
-                    logger.info("Webhook: credited %s run(s) to %s for order %s", runs, email, order_id)
                 else:
                     db.commit()
 
