@@ -11,9 +11,14 @@ import logging
 import io
 import os
 import asyncio
-from typing import Dict, Any
+import urllib.request
+import urllib.error
+from typing import Dict, Any, Optional
 
 logger = logging.getLogger(__name__)
+
+# ESMFold web API — free, no auth, used as fallback when local model OOMs
+_ESMFOLD_API_URL = "https://api.esmatlas.com/foldSequence/v1/pdb/"
 
 # Lazy-load so the model only loads when first needed (saves memory on startup)
 _esmfold_model = None
@@ -77,6 +82,83 @@ def _load_model(report=None):
             f"ESMFold dependencies missing: {e}. "
             "Run: pip install transformers torch einops"
         )
+
+
+# ── ESMFold Web API Fallback ──────────────────────────────────────────────
+
+def _extract_plddt_from_pdb(pdb_string: str) -> float:
+    """Extract mean pLDDT from B-factor column (cols 55-60) in PDB ATOM records.
+    
+    The ESMFold web API stores per-residue confidence in the B-factor field,
+    0-100 scale. Falls back to 0 if no ATOM records can be parsed.
+    """
+    b_factors = []
+    for line in pdb_string.splitlines():
+        if line.startswith(("ATOM  ", "HETATM")):
+            try:
+                b = float(line[54:60].strip())
+                b_factors.append(b)
+            except (ValueError, IndexError):
+                continue
+    if b_factors:
+        return sum(b_factors) / len(b_factors)
+    return 0.0
+
+
+def _fetch_esmfold_api_pdb(sequence: str, report=None) -> Optional[Dict[str, Any]]:
+    """Fetch protein structure from the free ESMFold web API (api.esmatlas.com).
+    
+    Returns the same dict format as local ESMFold, or None on failure.
+    The API has no auth, rate-limited to ~10 req/min per IP.
+    """
+    def _log(msg: str):
+        logger.info(msg)
+        if report:
+            try:
+                import asyncio
+                if asyncio.iscoroutinefunction(report):
+                    asyncio.run(report(msg))
+                else:
+                    report(msg)
+            except Exception:
+                pass
+
+    seq = sequence.strip().upper().replace(" ", "").replace("\n", "")
+    _log("ESMFold web API: submitting %daa sequence..." % len(seq))
+
+    try:
+        data = seq.encode()
+        req = urllib.request.Request(
+            _ESMFOLD_API_URL,
+            data=data,
+            method="POST",
+            headers={"Content-Type": "text/plain; charset=utf-8"},
+        )
+        with urllib.request.urlopen(req, timeout=180) as resp:
+            pdb_string = resp.read().decode()
+
+        if not pdb_string or len(pdb_string) < 100:
+            _log("ESMFold web API: response too short (%d bytes)" % len(pdb_string))
+            return None
+
+        plddt = _extract_plddt_from_pdb(pdb_string)
+        _log("ESMFold web API: structure received (pLDDT=%.1f%%)" % plddt)
+
+        return {
+            "status": "success",
+            "tool": "ESMFold (web API, free)",
+            "pdb_string": pdb_string,
+            "plddt_score": round(plddt, 2),
+            "sequence_length": len(seq),
+            "message": (
+                "Structure predicted via ESMFold web API (api.esmatlas.com). "
+                "Free service provided by Meta AI — no API key required."
+            ),
+            "license": "MIT — ESMFold (Meta AI)",
+        }
+    except Exception as e:
+        _log("ESMFold web API: failed — %s" % e)
+        return None
 
 
 # ── Residue library for fallback PDB generation ──────────────────────────
@@ -165,7 +247,11 @@ async def predict_structure(sequence: str, progress_callback=None) -> Dict[str, 
     try:
         import torch
     except ImportError:
-        await _internal_report("ESMFold requires PyTorch — generating fallback extended-chain PDB")
+        await _internal_report("PyTorch not available — trying ESMFold Web API...")
+        api_result = _fetch_esmfold_api_pdb(sequence)
+        if api_result:
+            return api_result
+        await _internal_report("ESMFold Web API unavailable — generating fallback helical bundle")
         seq = sequence.strip().upper().replace(" ", "").replace("\n", "")
         pdb = _generate_fallback_pdb(seq)
         return {
@@ -175,7 +261,7 @@ async def predict_structure(sequence: str, progress_callback=None) -> Dict[str, 
             "plddt_score": 0,
             "sequence_length": len(seq),
             "message": (
-                "PyTorch not available — generated extended-chain PDB for Vina docking. "
+                "PyTorch not available and Web API unreachable — generated helical bundle for Vina docking. "
                 "Results are approximate; install torch and ESMFold for accurate structure prediction."
             ),
             "license": "MIT",
@@ -204,8 +290,12 @@ def _run_esmfold_sync(sequence: str, main_loop: asyncio.AbstractEventLoop, progr
 
     try:
         model, tokenizer = _load_model(_report)
-    except Exception:
-        logger.warning("ESMFold model failed to load — using fallback extended-chain PDB")
+    except Exception as exc:
+        logger.warning("ESMFold model failed to load (%s) — trying Web API fallback...", exc)
+        api_result = _fetch_esmfold_api_pdb(sequence, _report)
+        if api_result:
+            return api_result
+        logger.warning("Web API also failed — generating fallback helical bundle")
         pdb = _generate_fallback_pdb(sequence)
         return {
             "status": "success",
@@ -213,7 +303,7 @@ def _run_esmfold_sync(sequence: str, main_loop: asyncio.AbstractEventLoop, progr
             "pdb_string": pdb,
             "plddt_score": 0,
             "sequence_length": len(sequence),
-            "message": "ESMFold model unavailable — generated helical bundle PDB for Vina docking.",
+            "message": "ESMFold model + Web API unavailable — generated helical bundle PDB for Vina docking.",
             "license": "MIT",
         }
 

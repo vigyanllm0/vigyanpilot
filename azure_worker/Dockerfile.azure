@@ -1,6 +1,6 @@
 # ────────────────────────────────────────────────────────────────────────────
-# VigyanLLM Azure Worker Container
-# ==================================
+# VigyanLLM Azure Worker Container (v5 — 24GB RAM)
+# ==================================================
 # Designed to run on Azure Container Instances (ACI) for heavy computational
 # workloads that would OOM the main EC2 t3.micro instance.
 #
@@ -9,19 +9,23 @@
 #
 # Push to Azure Container Registry:
 #   az acr login --name vigyanregistry01
-#   docker tag vigyanllm-azure-worker vigyanregistry01.azurecr.io/vigyan-worker:latest
-#   docker push vigyanregistry01.azurecr.io/vigyan-worker:latest
+#   docker tag vigyanllm-azure-worker vigyanregistry01.azurecr.io/vigyan-worker:v5
+#   docker push vigyanregistry01.azurecr.io/vigyan-worker:v5
 #
-# Run on ACI:
+# Run on ACI (24GB RAM for ESMFold ~8.4GB model + torch overhead):
 #   az container create \
 #     --resource-group VigyanComputeGroup \
 #     --name vigyan-high-perf-worker \
-#     --image vigyanregistry01.azurecr.io/vigyan-worker:latest \
-#     --cpu 4 --memory 8 \
+#     --image vigyanregistry01.azurecr.io/vigyan-worker:v5 \
+#     --cpu 4 --memory 24 \
 #     --environment-variables \
 #       API_BASE_URL=https://www.vigyanllm.in \
 #       POLL_INTERVAL=15 \
 #     --command-line "python /app/azure_worker/worker.py --daemon"
+#
+# To update an existing container (replace in-place):
+#   az container delete --resource-group VigyanComputeGroup --name vigyan-high-perf-worker
+#   Then run the create command above.
 #
 # ────────────────────────────────────────────────────────────────────────────
 
