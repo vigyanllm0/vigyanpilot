@@ -295,7 +295,7 @@ class ProteinANN(nn.Module):
                     break
             
             if epoch % 10 == 0:
-                logger.info("Epoch %s: Train Loss: %s, Val Loss: %s", epoch, train_loss:.4f, val_loss:.4f)
+                logger.info("Epoch %s: Train Loss: %.4f, Val Loss: %.4f", epoch, train_loss, val_loss)
 
 class DoublePredictor:
     """Double prediction method combining HMM and ANN"""

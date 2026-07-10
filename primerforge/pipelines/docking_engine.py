@@ -145,7 +145,7 @@ async def run_vina_docking(receptor_pdb: str, ligand_smiles: str, exhaustiveness
 
             # Compute protein geometric center for search box
             cx, cy, cz, sx, sy, sz = _compute_box_center(local_receptor_pdbqt)
-            logger.info("Search box center: (%s, %s, %s), size: (%s, %s, %s)", cx:.2f, cy:.2f, cz:.2f, sx:.1f, sy:.1f, sz:.1f)
+            logger.info("Search box center: (%.2f, %.2f, %.2f), size: (%.1f, %.1f, %.1f)", cx, cy, cz, sx, sy, sz)
             
             vina_cmd = [
                 vina_bin, "--receptor", local_receptor_pdbqt, "--ligand", ligand_pdbqt_path, 
@@ -287,7 +287,7 @@ async def run_gnina_docking(receptor_pdb: str, ligand_smiles: str, exhaustivenes
 
             # Compute protein geometric center for search box
             cx, cy, cz, sx, sy, sz = _compute_box_center(receptor_pdb_path)
-            logger.info("GNINA search box: (%s, %s, %s), size: (%s, %s, %s)", cx:.2f, cy:.2f, cz:.2f, sx:.1f, sy:.1f, sz:.1f)
+            logger.info("GNINA search box: (%.2f, %.2f, %.2f), size: (%.1f, %.1f, %.1f)", cx, cy, cz, sx, sy, sz)
 
             gnina_cmd = [
                 gnina_bin, "--receptor", receptor_pdb_path, "--ligand", ligand_sdf_path, 

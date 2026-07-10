@@ -20,7 +20,7 @@ def warmup_all():
     _warmup_docking_binaries()
 
     elapsed = time.time() - t0
-    logger.info("Warm-up: complete in %ss", elapsed:.1f)
+    logger.info("Warm-up: complete in %.1fs", elapsed)
 
 
 def _warmup_torch():
