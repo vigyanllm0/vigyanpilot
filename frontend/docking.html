@@ -773,25 +773,109 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <!-- PAYMENT MODAL -->
 <div class="pay-overlay" id="pay-overlay">
   <div class="pay-card">
-    <div class="pay-title" id="pay-title">Subscribe to Small Lab</div>
-    <div class="pay-amount" id="pay-amount">&#x20B9;2,999</div>
-    <p style="font-size:12px;color:var(--text2);text-align:center">Pay via UPI or card</p>
-    <div class="pay-upi" id="pay-upi-id" onclick="copyUpi()">vigyanllm@upi</div>
-    <div class="pay-steps">
-      <ol>
-        <li>Open any UPI app (GPay, PhonePe, Paytm)</li>
-        <li>Pay to <strong>vigyanllm@upi</strong></li>
-        <li>Enter transaction ID below</li>
-      </ol>
+    <div class="pay-title">Buy Docking Runs</div>
+    <div class="pay-amount">&#x20B9;99 <span style="font-size:14px;color:var(--muted)">per docking run</span></div>
+    <p style="font-size:12px;color:var(--text2);text-align:center">Purchase docking credits to continue. Payments are processed securely by Razorpay.</p>
+    <div style="display:flex;gap:8px;margin:16px 0;align-items:center;justify-content:center">
+      <input type="number" id="dock-pay-qty" class="form-input" value="1" min="1" max="100" style="width:70px;text-align:center">
+      <span style="font-size:13px;color:var(--muted)">run(s) = &#x20B9;<span id="dock-pay-total">99</span></span>
     </div>
-    <input type="text" id="pay-txn" class="form-input" placeholder="Transaction ID (UPI ref no.)">
-    <input type="hidden" id="pay-plan">
-    <button class="btn-primary" onclick="verifyPayment()">Verify Payment</button>
+    <div id="dock-pay-error" class="error-msg" style="margin-bottom:8px"></div>
+    <button class="btn-primary" id="dock-pay-btn" onclick="handleDockPayment()">Pay with Razorpay</button>
     <div style="margin-top:10px;text-align:center;font-size:11px;color:var(--muted)">
-      Powered by Razorpay. Your payment is processed securely.
+      Secured by Razorpay · UPI, Cards, NetBanking
     </div>
   </div>
 </div>
+
+<script>
+function showDockingPayment(usage) {
+  var qty = $('dock-pay-qty');
+  var total = $('dock-pay-total');
+  qty.value = 1;
+  total.textContent = 99;
+  qty.oninput = function() {
+    var v = Math.min(100, Math.max(1, parseInt(qty.value) || 1));
+    qty.value = v;
+    total.textContent = v * 99;
+  };
+  $('pay-overlay').classList.add('show');
+}
+
+async function handleDockPayment() {
+  var qty = Math.min(100, Math.max(1, parseInt($('dock-pay-qty').value) || 1));
+  var errEl = $('dock-pay-error');
+  errEl.classList.remove('show');
+  var authToken = sessionStorage.getItem('pf_token') || localStorage.getItem('pf_token');
+  if (!authToken) { showAuth(); return; }
+
+  try {
+    var r = await fetch(API + '/api/payments/create-order', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken },
+      body: JSON.stringify({ product_id: 'dock_top_up', quantity: qty })
+    });
+    var order = await r.json();
+    if (!r.ok) { errEl.textContent = order.error || 'Payment service unavailable'; errEl.classList.add('show'); return; }
+    await openRazorpayCheckout(order, { errorEl: errEl });
+  } catch (e) {
+    errEl.textContent = e.message || 'Payment failed';
+    errEl.classList.add('show');
+  }
+}
+
+async function openRazorpayCheckout(order, context) {
+  if (!window.Razorpay) {
+    await new Promise(function(resolve, reject) {
+      var s = document.createElement('script');
+      s.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      s.onload = resolve;
+      s.onerror = function() { reject(new Error('Failed to load Razorpay SDK')); };
+      document.body.appendChild(s);
+    });
+  }
+  var authToken = sessionStorage.getItem('pf_token') || localStorage.getItem('pf_token');
+  var opts = {
+    key: order.key_id,
+    amount: order.amount,
+    currency: order.currency || 'INR',
+    name: 'VigyanLLM',
+    description: order.description || qty + ' docking run(s)',
+    order_id: order.order_id,
+    theme: { color: '#2563EB' },
+    prefill: order.prefill || {},
+    handler: async function(response) {
+      try {
+        var vr = await fetch(API + '/api/payments/verify-payment', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken },
+          body: JSON.stringify({
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_order_id: response.razorpay_order_id,
+            razorpay_signature: response.razorpay_signature
+          })
+        });
+        var vd = await vr.json();
+        if (vr.ok && vd.success) {
+          $('pay-overlay').classList.remove('show');
+          alert('Payment successful! ' + (vd.runs_purchased || vd.tokens_credited || qty) + ' docking run(s) credited.');
+        } else {
+          alert(vd.error || 'Verification failed');
+        }
+      } catch(e) {
+        alert('Verification error: ' + e.message);
+      }
+    },
+    modal: { ondismiss: function() {} }
+  };
+  var rzp = new window.Razorpay(opts);
+  rzp.on('payment.failed', function(response) {
+    alert(response.error?.description || 'Payment failed');
+  });
+  rzp.open();
+  $('pay-overlay').classList.remove('show');
+}
+</script>
 
 <script>
 var API = window.VIGYAN_BACKEND_URL || '/api';
@@ -893,23 +977,6 @@ function openPayModal(plan, name, amount) {
   $('pay-amount').textContent = '\u20B9' + amount;
   $('pay-overlay').classList.add('show');
 }
-function copyUpi() {
-  var el = $('pay-upi-id');
-  navigator.clipboard.writeText(el.textContent).catch(function(){});
-  el.style.borderColor = 'var(--bio)';
-  setTimeout(function(){ el.style.borderColor = ''; }, 1500);
-}
-async function verifyPayment() {
-  var txn = $('pay-txn').value.trim();
-  if (!txn) { alert('Enter transaction ID'); return; }
-  try {
-    var r = await fetch(API + '/payments/verify', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ plan:$('pay-plan').value, transaction_id:txn }) });
-    var d = await r.json();
-    if (r.ok) { alert('Payment verified! Your plan is active.'); $('pay-overlay').classList.remove('show'); location.reload(); }
-    else { alert(d.error || 'Verification failed'); }
-  } catch(e) { alert('Network error'); }
-}
-
 // ── Slider ──────────────────────────────────────────────────────────────
 $('top-n-slider').addEventListener('input', function() {
   $('top-n-val').textContent = this.value;
@@ -993,12 +1060,26 @@ async function runDocking() {
   setStage(1, 'running', 'Submitting docking job...');
 
   try {
+    var authToken = sessionStorage.getItem('pf_token') || localStorage.getItem('pf_token');
+    var headers = { 'Content-Type': 'application/json' };
+    if (authToken) headers['Authorization'] = 'Bearer ' + authToken;
     var r = await fetch(API + '/primer/docking/consensus', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: headers,
       body: JSON.stringify({ sequence: validAA, ligand_smiles_list: smilesList, top_n: topN })
     });
     var submitResult = await r.json();
+
+    if (r.status === 401) {
+      setStage(1, 'fail', 'Login required');
+      showAuth();
+      return;
+    }
+    if (r.status === 402) {
+      setStage(1, 'fail', 'Docking limit reached');
+      showDockingPayment(submitResult.usage);
+      return;
+    }
 
     if (!r.ok) {
       setStage(1, 'fail', submitResult.error || 'Request failed');

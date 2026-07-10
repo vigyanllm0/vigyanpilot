@@ -5,7 +5,6 @@ VigyanLLM Auth API Routes
 POST /api/auth/register  — Create new user account
 POST /api/auth/login     — Login and get token
 GET  /api/auth/me        — Get current user info + usage
-POST /api/auth/verify-payment — Verify UPI payment & unlock runs
 GET  /api/admin/users    — Admin: list all users
 GET  /api/admin/logs     — Admin: usage logs
 GET  /api/admin/payments — Admin: payment history
@@ -19,7 +18,7 @@ from flask import Blueprint, request, jsonify, g
 from .auth import (
     get_db, get_current_user, require_auth, require_admin,
     create_token, check_usage, increment_usage, log_action,
-    ADMIN_EMAIL, PRICE_PER_DESIGN, UPI_ID, FREE_RUNS
+    ADMIN_EMAIL, PRICE_PER_DESIGN, FREE_RUNS
 )
 
 auth_bp = Blueprint('auth', __name__)
@@ -207,48 +206,6 @@ def google_auth():
     }), 200
 
 
-@auth_bp.route('/api/auth/verify-payment', methods=['POST'])
-@require_auth
-def verify_payment():
-    """User submits UPI transaction reference to unlock runs."""
-    data = request.get_json(silent=True) or {}
-    upi_ref = (data.get('upi_ref') or '').strip()
-    runs = int(data.get('runs', 1))
-
-    if not upi_ref or len(upi_ref) < 6:
-        return jsonify({"error": "Valid UPI transaction reference is required."}), 400
-    if runs < 1 or runs > 100:
-        return jsonify({"error": "Runs must be between 1 and 100."}), 400
-
-    email = g.user['email']
-    db = get_db()
-
-    # Check for duplicate UPI ref
-    existing = db.execute("SELECT id FROM payments WHERE upi_ref=?", (upi_ref,)).fetchone()
-    if existing:
-        return jsonify({"error": "This transaction reference has already been used."}), 409
-
-    # Record payment
-    amount = PRICE_PER_DESIGN * runs
-    db.execute(
-        "INSERT INTO payments (user_email, amount, upi_ref, status, runs_purchased, verified_at) VALUES (?, ?, ?, ?, ?, ?)",
-        (email, amount, upi_ref, "verified", runs, time.time())
-    )
-    # Credit runs to user
-    db.execute("UPDATE users SET paid_runs = paid_runs + ? WHERE email=?", (runs, email))
-    db.commit()
-
-    log_action(email, "payment_verified", f"₹{amount} for {runs} run(s), UTR: {upi_ref}")
-
-    usage = check_usage(email)
-    return jsonify({
-        "message": f"Payment verified. {runs} run(s) unlocked.",
-        "amount": amount,
-        "runs_purchased": runs,
-        "usage": usage,
-    }), 200
-
-
 # ═══════════════════════════════════════════════════════════════════════════
 # ADMIN ROUTES
 # ═══════════════════════════════════════════════════════════════════════════
@@ -300,5 +257,4 @@ def admin_stats():
         "active_today": active_today,
         "free_runs_per_user": FREE_RUNS,
         "price_per_design": PRICE_PER_DESIGN,
-        "upi_id": UPI_ID,
     }), 200

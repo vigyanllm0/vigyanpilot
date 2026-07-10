@@ -321,7 +321,6 @@ def check_usage(email: str) -> dict:
         "paid_remaining": max(0, total_allowed - run_count),
         "needs_payment": not can_run,
         "price_per_run": PRICE_PER_DESIGN,
-        "upi_id": UPI_ID,
     }
 
 
@@ -353,7 +352,6 @@ def check_docking_usage(email: str) -> dict:
         "paid_remaining": max(0, total_allowed - run_count),
         "needs_payment": not can_run,
         "price_per_run": PRICE_PER_DOCK,
-        "upi_id": UPI_ID,
     }
 
 
