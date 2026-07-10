@@ -581,7 +581,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <div id="mol-3d-viewer"></div>
         <div class="mv-foot">
           <div class="mol-selector" id="mol-selector">
-            <button class="mol-btn active" data-view="protein" onclick="showViewerMol('protein')">Protein</button>
+            <button class="mol-btn active" data-view="protein" onclick="showViewerMol(-1)">Protein</button>
           </div>
           <span id="mv-download-links"></span>
         </div>
@@ -1271,27 +1271,26 @@ function initViewer() {
   xhr.onload = function() {
     if (xhr.status === 200) {
       try {
-        console.log('initViewer: response OK, parsing...');
         var data = JSON.parse(xhr.responseText);
         _proteinPdb = data.receptor_pdb || '';
         _structureCache['1'] = data;
-        console.log('initViewer: receptor_pdb length', (_proteinPdb||'').length);
         el.innerHTML = '';
-        console.log('initViewer: creating viewer, el.clientHeight=' + el.clientHeight + ' el.clientWidth=' + el.clientWidth);
-        _viewer = $3Dmol.createViewer(el, {backgroundColor: '#ffffff'});
-        console.log('initViewer: viewer created, _viewer=' + (!!_viewer));
-        if (_proteinPdb) {
-          _viewer.addModel(_proteinPdb, 'pdb');
-          _viewer.setStyle({}, {cartoon: {color: 'spectrum'}});
-          _viewer.zoomTo();
-          _viewer.render();
+        // Force layout so offsetWidth/offsetHeight are correct
+        void el.offsetHeight;
+        _viewer = $3Dmol.createViewer(el, {backgroundColor: '#0f0f0f'});
+        if (_viewer) {
+          if (_proteinPdb) {
+            _viewer.addModel(_proteinPdb, 'pdb');
+            _viewer.setStyle({}, {cartoon: {color: 'spectrum'}});
+            _viewer.zoomTo();
+            _viewer.render();
+          }
+          $('mol-viewer-info').textContent = 'Protein backbone (cartoon, spectrum-colored)';
+          updateMolSelector(-1);
         }
-        $('mol-viewer-info').textContent = 'Protein backbone (cartoon, spectrum-colored)';
-        updateMolSelector(-1);
-        console.log('initViewer: render complete');
       } catch (e) {
         el.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--red);font-size:13px">Error loading structure data.</div>';
-        console.warn('initViewer parse error:', e);
+        console.warn('initViewer error:', e);
       }
     } else {
       el.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--red);font-size:13px">Failed to load structure (status ' + xhr.status + ').</div>';
