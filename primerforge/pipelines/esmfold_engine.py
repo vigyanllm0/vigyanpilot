@@ -23,13 +23,20 @@ _ESMFOLD_API_URL = "https://api.esmatlas.com/foldSequence/v1/pdb/"
 # Lazy-load so the model only loads when first needed (saves memory on startup)
 _esmfold_model = None
 _esmfold_tokenizer = None
+_esmfold_lock = None
+import threading
+_esmfold_lock = threading.Lock()
 
 
 def _load_model(report=None):
-    """Load ESMFold model and tokenizer. Called once, cached globally."""
+    """Load ESMFold model and tokenizer. Called once, cached globally. Thread-safe."""
     global _esmfold_model, _esmfold_tokenizer
     if _esmfold_model is not None:
         return _esmfold_model, _esmfold_tokenizer
+
+    with _esmfold_lock:
+        if _esmfold_model is not None:
+            return _esmfold_model, _esmfold_tokenizer
 
     def _log(msg: str):
         logger.info(msg)
@@ -50,25 +57,34 @@ def _load_model(report=None):
             resume_download=True
         )
         
-        # Disable torch.load mmap — model is ~7.9GB and doesn't fit in 8GB RAM as mmap
         os.environ["TORCH_LOAD_MMAP"] = "0"
         
         _log(f"📡 ESMFold: Weights located. Loading into memory...")
+
+        # Auto-detect best compute device
+        if torch.cuda.is_available():
+            device = "cuda"
+            dtype = torch.float16
+            _log("📡 ESMFold: CUDA detected — using float16 for 2x memory efficiency")
+        elif hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
+            device = "mps"
+            dtype = torch.float32
+            _log("📡 ESMFold: MPS (Apple Silicon) detected — using float32")
+        else:
+            device = "cpu"
+            dtype = torch.float32
+            _log("📡 ESMFold: CPU mode — using float32 (float16 no benefit on CPU)")
+
+        # Limit torch threads to avoid CPU oversubscription on shared ACI
+        cpu_count = os.cpu_count() or 4
+        torch.set_num_threads(min(cpu_count, 8))
         
         _esmfold_tokenizer = AutoTokenizer.from_pretrained(model_path)
         _esmfold_model = EsmForProteinFolding.from_pretrained(
             model_path,
-            torch_dtype=torch.float32,
+            torch_dtype=dtype,
             low_cpu_mem_usage=True
         )
-
-        # Use GPU (CUDA or MPS) if available, else CPU
-        if torch.cuda.is_available():
-            device = "cuda"
-        elif hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
-            device = "mps"
-        else:
-            device = "cpu"
             
         _log(f"📡 ESMFold: Moving model to {device.upper()} for high-speed inference...")
         _esmfold_model = _esmfold_model.to(device)

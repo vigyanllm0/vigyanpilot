@@ -500,12 +500,21 @@ def _run_daemon():
     poll_interval = int(os.environ.get("POLL_INTERVAL", "15"))
     logger.info("Daemon mode: polling %s every %ds for pending docking jobs", api_base, poll_interval)
 
-    # Pre-warm all heavy modules to prevent cold-start delays
-    try:
-        from primerforge.pipelines.warmup import warmup_all
-        warmup_all()
-    except Exception as e:
-        logger.warning("Warm-up failed (non-fatal): %s", e)
+    # Pre-warm all heavy modules in background thread
+    # ESMFold model ~8.4GB downloads on first start; subsequent starts load from cache
+    import threading as _threading
+    def _background_warmup():
+        try:
+            from primerforge.pipelines.warmup import warmup_all
+            t0 = time.time()
+            warmup_all()
+            elapsed = time.time() - t0
+            logger.info("Background warm-up complete in %.1fs (model cached for next time)", elapsed)
+        except Exception as e:
+            logger.warning("Background warm-up failed (non-fatal): %s", e)
+    _warmup_thread = _threading.Thread(target=_background_warmup, daemon=True)
+    _warmup_thread.start()
+    logger.info("Warm-up started in background (job processing can begin immediately)")
 
     while True:
         try:

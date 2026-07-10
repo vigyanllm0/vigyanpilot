@@ -1,31 +1,40 @@
 # ────────────────────────────────────────────────────────────────────────────
-# VigyanLLM Azure Worker Container (v5 — 24GB RAM)
+# VigyanLLM Azure Worker Container (v6 — 24GB RAM, GPU/CPU unified)
 # ==================================================
-# Designed to run on Azure Container Instances (ACI) for heavy computational
-# workloads that would OOM the main EC2 t3.micro instance.
-#
-# Build:
+# Build (no ESMFold weights in image — downloaded on first ACI start):
 #   docker build -t vigyanllm-azure-worker -f azure_worker/Dockerfile.azure .
 #
 # Push to Azure Container Registry:
 #   az acr login --name vigyanregistry01
-#   docker tag vigyanllm-azure-worker vigyanregistry01.azurecr.io/vigyan-worker:v5
-#   docker push vigyanregistry01.azurecr.io/vigyan-worker:v5
+#   docker tag vigyanllm-azure-worker vigyanregistry01.azurecr.io/vigyan-worker:v6
+#   docker push vigyanregistry01.azurecr.io/vigyan-worker:v6
 #
-# Run on ACI (24GB RAM for ESMFold ~8.4GB model + torch overhead):
+# Deploy CPU ACI (24GB RAM):
+#   az container delete -g VigyanComputeGroup -n vigyan-worker-cpu --yes
 #   az container create \
 #     --resource-group VigyanComputeGroup \
-#     --name vigyan-high-perf-worker \
-#     --image vigyanregistry01.azurecr.io/vigyan-worker:v5 \
+#     --name vigyan-worker-cpu \
+#     --image vigyanregistry01.azurecr.io/vigyan-worker:v6 \
 #     --cpu 4 --memory 24 \
 #     --environment-variables \
 #       API_BASE_URL=https://www.vigyanllm.in \
-#       POLL_INTERVAL=15 \
-#     --command-line "python /app/azure_worker/worker.py --daemon"
+#       POLL_INTERVAL=10 \
+#       WORKER_MODE=daemon \
+#     --command-line "python /app/azure_worker/worker.py"
 #
-# To update an existing container (replace in-place):
-#   az container delete --resource-group VigyanComputeGroup --name vigyan-high-perf-worker
-#   Then run the create command above.
+# Deploy GPU ACI (more expensive, 60x faster ESMFold):
+#   az container delete -g VigyanComputeGroup -n vigyan-worker-gpu --yes
+#   az container create \
+#     --resource-group VigyanComputeGroup \
+#     --name vigyan-worker-gpu \
+#     --image vigyanregistry01.azurecr.io/vigyan-worker:v6 \
+#     --cpu 4 --memory 24 \
+#     --gpu count=1 sku=V100 \
+#     --environment-variables \
+#       API_BASE_URL=https://www.vigyanllm.in \
+#       POLL_INTERVAL=10 \
+#       WORKER_MODE=daemon \
+#     --command-line "python /app/azure_worker/worker.py"
 #
 # ────────────────────────────────────────────────────────────────────────────
 
@@ -35,7 +44,9 @@ FROM python:3.11-slim AS base
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     DEBIAN_FRONTEND=noninteractive \
-    TORCH_LOAD_MMAP=0
+    TORCH_LOAD_MMAP=0 \
+    OMP_NUM_THREADS=4 \
+    MKL_NUM_THREADS=4
 
 # Enable non-free repository for vienna-rna
 RUN sed -i 's/Components: main/Components: main contrib non-free/g' /etc/apt/sources.list.d/debian.sources || sed -i 's/main/main contrib non-free/g' /etc/apt/sources.list
@@ -56,8 +67,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     vienna-rna \
     && rm -rf /var/lib/apt/lists/*
 
-# Download GNINA binary (CNN docking scorer) — pre-built Linux binary from GitHub
-# GNINA v1.3 — asset name is just "gnina" (v1.3.2 renamed to "gnina.1.3.2")
+# Download GNINA binary (CNN docking scorer)
 RUN curl -fsSL https://github.com/gnina/gnina/releases/download/v1.3/gnina -o /usr/local/bin/gnina \
     && chmod +x /usr/local/bin/gnina
 
@@ -66,24 +76,23 @@ WORKDIR /app
 # Copy and install Python dependencies first (for Docker layer caching)
 COPY requirements.txt requirements-docking.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
-# Install CPU-only torch (no CUDA toolkit — ACI has no GPU)
+
+# Install CPU-only torch by default
+# The esmfold_engine auto-detects CUDA at runtime for GPU ACI
 RUN pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cpu "torch>=2.2.0" && \
     pip install --no-cache-dir transformers>=4.40.0 tokenizers>=0.15.0 fair-esm>=2.0.0 \
                           einops>=0.6.0 accelerate>=0.26.0
 
-# Copy the entire project (needed for primerforge module imports and warmup validation)
+# Create HuggingFace cache directory so it persists across restarts
+RUN mkdir -p /root/.cache/huggingface
+
+# Copy the entire project
 COPY primerforge/ ./primerforge/
 COPY azure_worker/ ./azure_worker/
 COPY wsgi.py .
 
-# Pre-download ESMFold model weights (~8GB) into image to avoid cold-start download on ACI
-RUN python /app/azure_worker/preload_esmfold.py 2>&1
-
-# Validate all pipeline modules import correctly during build
 RUN python /app/azure_worker/validate_build.py 2>&1
 
-# ── Entrypoint ─────────────────────────────────────────────────────────────
-
-# Default: print help. Users override via ACI command-line.
+# Entrypoint
 ENTRYPOINT ["python", "/app/azure_worker/worker.py"]
-CMD ["--help"]
+CMD ["--daemon"]
