@@ -1995,18 +1995,16 @@ def create_app() -> Flask:
                            "code": "PAYMENT_REQUIRED", "action": "show_docking_payment",
                            "usage": dock_usage}), 402
 
-        # Consume token BEFORE queuing (PostgreSQL mode)
-        if USE_POSTGRES and consume_docking_token:
-            if user.get('role') != 'admin':
+        job_id = create_job(sequence, ligand_smiles_list, top_n)
+
+        # Consume token AFTER successful queuing (both SQLite and PostgreSQL)
+        if user.get('role') != 'admin':
+            if USE_POSTGRES and consume_docking_token:
                 if not consume_docking_token(user.get('user_id'), user['email']):
                     return jsonify({"error": "No docking tokens remaining. Purchase more to continue.",
                                    "code": "PAYMENT_REQUIRED", "action": "show_docking_payment"}), 402
-
-        job_id = create_job(sequence, ligand_smiles_list, top_n)
-
-        # Increment usage AFTER successful job creation (SQLite mode)
-        if not USE_POSTGRES:
-            increment_docking_usage(user['email'])
+            else:
+                increment_docking_usage(user['email'])
 
         return jsonify({"job_id": job_id, "status": "queued"}), 202
 

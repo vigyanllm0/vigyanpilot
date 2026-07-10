@@ -6,7 +6,7 @@ VigyanLLM Auth + Usage + Payment Module
 - bcrypt password hashing
 - Session token management (simple JWT-like signed tokens)
 - Admin/User role separation
-- UPI payment verification flow
+- Razorpay payment verification flow
 """
 
 import os
@@ -49,7 +49,7 @@ PRICE_PER_DESIGN = 49  # ₹49 per primer design run
 FREE_RUNS = 2          # 2 free runs per new user
 PRICE_PER_DOCK = 99    # ₹99 per docking run
 FREE_DOCK_RUNS = 2     # 2 free docking runs per new user
-UPI_ID = os.environ.get("PRIMERFORGE_UPI_ID", "vigyanllm@upi")
+UPI_ID = os.environ.get("PRIMERFORGE_UPI_ID", "vigyanllm@upi")  # unused — kept for backwards compat
 
 
 def get_db():

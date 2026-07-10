@@ -79,11 +79,7 @@ def _resolve_order_request(data):
         elif product_id == "top_up":
             description = f"VigyanLLM: {runs} primer design run(s)"
         else:
-            description = (
-                f"VigyanLLM: {runs} primer design run(s)"
-                if product_id == "top_up"
-                else f"VigyanLLM: {product.display_name} ({runs} design credits)"
-            )
+            description = f"VigyanLLM: {product.display_name} ({runs} design credits)"
         return {
             "amount": amount,
             "runs": runs,
