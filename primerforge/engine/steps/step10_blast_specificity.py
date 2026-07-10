@@ -96,7 +96,7 @@ def execute(input_data: Dict[str, Any]) -> Dict[str, Any]:
     # ── Check database exists ──────────────────────────────────────────────
     db_exists = _check_db_exists(db_path)
     if not db_exists:
-        logger.warning(f"BLAST database not found at '{db_path}' — skipping specificity check.")
+        logger.warning("BLAST database not found at '%s' — skipping specificity check.", db_path)
         for pair in refined_pairs:
             pair["specificity_pass"] = None
             pair["blast_status"] = "unchecked_no_db"

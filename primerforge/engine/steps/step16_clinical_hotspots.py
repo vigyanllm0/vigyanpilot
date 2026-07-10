@@ -167,7 +167,7 @@ def _query_clinvar(
                 }
                 variants.append(variant_info)
     except Exception as e:
-        logger.debug(f"ClinVar query failed for {chrom}:{start}-{end}: {e}")
+        logger.debug("ClinVar query failed for %s:%s-%s: %s", chrom, start, end, e)
 
     return variants
 
@@ -291,7 +291,7 @@ def _open_vcf(vcf_path: str):
     except ImportError:
         logger.debug("pysam not available — trying subprocess tabix fallback")
     except Exception as e:
-        logger.debug(f"pysam open failed for {vcf_path}: {e}")
+        logger.debug("pysam open failed for %s: %s", vcf_path, e)
 
     # Subprocess fallback
     try:
@@ -321,7 +321,7 @@ class _TabixFallbackReader:
             if result.returncode == 0 and result.stdout.strip():
                 return result.stdout.strip().split("\n")
         except Exception as e:
-            logger.debug(f"Tabix fetch failed: {e}")
+            logger.debug("Tabix fetch failed: %s", e)
         return []
 
     def close(self):

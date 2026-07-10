@@ -123,7 +123,7 @@ def save_baseline():
     }
     with open(BASELINE_FILE, "w") as f:
         json.dump(baseline, f, indent=2)
-    logger.info(f"Baseline saved: {len(baseline)-1} files")
+    logger.info("Baseline saved: %s files", len(baseline)-1)
     return baseline
 
 
@@ -261,7 +261,7 @@ def quarantine_file(filepath: str) -> dict:
         meta_file = QUARANTINE_DIR / f"{dest_name}.meta.json"
         with open(meta_file, "w") as f:
             json.dump(meta, f, indent=2)
-        logger.warning(f"File quarantined: {filepath} → .quarantine/{dest_name}")
+        logger.warning("File quarantined: %s → .quarantine/%s", filepath, dest_name)
         return {"success": True, "quarantined_as": dest_name, "metadata": meta}
     except Exception as e:
         return {"error": f"Quarantine failed: {e}"}

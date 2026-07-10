@@ -39,7 +39,7 @@ def get_cached(source: str, query_key: str) -> Optional[SequenceRecord]:
                 transcripts=metadata.get("transcripts", []),
             )
     except Exception as e:
-        logger.debug(f"Cache lookup failed: {e}")
+        logger.debug("Cache lookup failed: %s", e)
     return None
 
 
@@ -63,7 +63,7 @@ def store_cached(record: SequenceRecord) -> None:
             (record.source, record.accession, record.sequence, json.dumps(metadata))
         )
     except Exception as e:
-        logger.debug(f"Cache store failed: {e}")
+        logger.debug("Cache store failed: %s", e)
 
 
 def fetch_with_cache(query: str, source: str = "auto", **kwargs) -> SequenceRecord:

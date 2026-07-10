@@ -404,5 +404,5 @@ def complete_referral():
         (REFERRAL_TOKENS, ref["referrer_email"])
     )
     db.commit()
-    logger.info(f"Referral completed: {ref['referrer_email']} earned {REFERRAL_TOKENS} runs from {email}")
+    logger.info("Referral completed: %s earned %s runs from %s", ref['referrer_email'], REFERRAL_TOKENS, email)
     return jsonify({"message": "Referral completed. Tokens awarded to referrer."}), 200

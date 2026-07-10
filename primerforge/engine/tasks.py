@@ -33,7 +33,7 @@ def run_pipeline(self, job_id: str):
     Execute the primer design pipeline for a given job.
     Runs all steps sequentially via the PipelineOrchestrator.
     """
-    logger.info(f"Pipeline started for job_id={job_id}")
+    logger.info("Pipeline started for job_id=%s", job_id)
 
     from .orchestrator import PipelineOrchestrator, PipelineConfig
     from .steps import (
@@ -66,7 +66,7 @@ def run_pipeline(self, job_id: str):
     from primerforge.database import fetch_one, execute as db_execute
     job = fetch_one("SELECT input_params FROM pipeline_jobs WHERE id = %s", (job_id,))
     if not job:
-        logger.error(f"Job {job_id} not found in database")
+        logger.error("Job %s not found in database", job_id)
         return {"job_id": job_id, "status": "failed", "error": "Job not found"}
 
     input_params = job["input_params"] if isinstance(job["input_params"], dict) else {}

@@ -179,7 +179,7 @@ def init_db():
     else:
         logger.warning("ADMIN_PASSWORD not set — skipping admin user creation in SQLite DB")
     db.close()
-    logger.info(f"Database initialized at {DB_PATH}")
+    logger.info("Database initialized at %s", DB_PATH)
 
 
 # ── Token Management ──────────────────────────────────────────────────────

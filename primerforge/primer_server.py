@@ -45,7 +45,7 @@ if _env_path.exists():
 from flask import Flask, request, jsonify, Response
 from flask_cors import CORS
 
-# ── No .env file loading — all config via environment variables only ──
+# ── Configuration: .env loaded above, additional env vars override ──
 
 VERSION = "2.0.0"
 MAX_SEQ_LEN = 50_000
@@ -603,7 +603,7 @@ def create_app() -> Flask:
     
     @app.errorhandler(Exception)
     def handle_global_error(e):
-        logger.error(f"Unhandled Exception: {type(e).__name__}: {e}", exc_info=True)
+        logger.error("Unhandled Exception: %s: %s", type(e).__name__, e, exc_info=True)
         return jsonify({
             "error": "Internal server error",
             "code": "500"
@@ -669,7 +669,7 @@ def create_app() -> Flask:
             try:
                 ensure_admin_exists()
             except Exception as e:
-                logger.warning(f"Admin init deferred: {e}")
+                logger.warning("Admin init deferred: %s", e)
 
         def increment_usage(email):
             """PostgreSQL: consume token + record cost (called after pipeline run)."""
@@ -717,7 +717,7 @@ def create_app() -> Flask:
         READY = True
         logger.info("VigyanLLM core loaded.")
     except ImportError as exc:
-        logger.error(f"Import failed: {exc}")
+        logger.error("Import failed: %s", exc)
         READY = False
 
     def err(msg, code, status):
@@ -1110,10 +1110,10 @@ def create_app() -> Flask:
             elapsed_ms = round((time.time() - t0) * 1000)
             num_returned = p3_result.get('PRIMER_PAIR_NUM_RETURNED', 0)
         except ValueError as exc:
-            logger.warning(f"Design validation: {exc}")
+            logger.warning("Design validation: %s", exc)
             return err(str(exc), "VALIDATION_ERROR", 422)
         except Exception as exc:
-            logger.error(f"Design error: {exc}", exc_info=True)
+            logger.error("Design error: %s", exc, exc_info=True)
             env = _build_pipeline_status([], 0, "Internal error")
             return jsonify({
                 "pipeline_status": env["pipeline_status"],
@@ -1371,10 +1371,10 @@ def create_app() -> Flask:
                 "penalty_score": _penalty_score(fwd_out, rev_out or fwd_out, pair_meta) if rev_out else None,
             }), 200
         except ValueError as exc:
-            logger.warning(f"Manual analysis validation: {exc}")
+            logger.warning("Manual analysis validation: %s", exc)
             return err(str(exc), "VALIDATION_ERROR", 400)
         except Exception as exc:
-            logger.error(f"Manual analysis error: {exc}", exc_info=True)
+            logger.error("Manual analysis error: %s", exc, exc_info=True)
             return err("Analysis failed due to an internal error.", "DESIGN_FAILED", 500)
 
     def _log_fetch(acc, source, description=""):
@@ -1477,7 +1477,7 @@ def create_app() -> Flask:
                                 "molecule_type": r.get("molecule_type", "DNA"),
                                 "unit": "bp", **usable}), 200
         except Exception as exc:
-            logger.error(f"Fetch error: {exc}", exc_info=True)
+            logger.error("Fetch error: %s", exc, exc_info=True)
             # Provide user-friendly error messages for common failures
             exc_str = str(exc)
             if "UndefinedSequence" in exc_str:
@@ -1519,7 +1519,7 @@ def create_app() -> Flask:
                 ),
             }), 200
         except Exception as exc:
-            logger.error(f"Thermodynamics error: {exc}", exc_info=True)
+            logger.error("Thermodynamics error: %s", exc, exc_info=True)
             return err("Analysis failed due to an internal error.", "DESIGN_FAILED", 500)
 
     # ════════════════════════════════════════════════════════════════════
@@ -1541,7 +1541,7 @@ def create_app() -> Flask:
             result = search_databases(query, database=database, organism=organism)
             return jsonify(result), 200
         except Exception as exc:
-            logger.error(f"Search error: {exc}", exc_info=True)
+            logger.error("Search error: %s", exc, exc_info=True)
             return err(f"Search failed: {str(exc)[:200]}", "SEARCH_FAILED", 500)
 
     @app.route("/api/primer/blast", methods=["POST"])
@@ -1572,7 +1572,7 @@ def create_app() -> Flask:
                 result = run_remote_blast(query_sequence, database=database, organism=organism)
             return jsonify(result), 200
         except Exception as exc:
-            logger.error(f"BLAST error: {exc}", exc_info=True)
+            logger.error("BLAST error: %s", exc, exc_info=True)
             return err(f"BLAST failed: {str(exc)[:200]}", "BLAST_FAILED", 500)
 
     @app.route("/api/primer/fetch-sequences", methods=["POST"])
@@ -1840,7 +1840,7 @@ def create_app() -> Flask:
             viewer["summary"] = get_msa_summary(viewer)
             return jsonify(viewer), 200
         except Exception as exc:
-            logger.error(f"MSA error: {exc}", exc_info=True)
+            logger.error("MSA error: %s", exc, exc_info=True)
             return err(f"MSA failed: {str(exc)[:200]}", "MSA_FAILED", 500)
 
     @app.route("/api/primer/msa/submit", methods=["POST"])
@@ -2232,15 +2232,15 @@ def create_app() -> Flask:
         health = validate_pipeline_health()
         if health["status"] == "error":
             for e in health["errors"]:
-                logger.error(f"PIPELINE VALIDATION ERROR: {e}")
+                logger.error("PIPELINE VALIDATION ERROR: %s", e)
         if health["warnings"]:
             for w in health["warnings"]:
-                logger.warning(f"PIPELINE VALIDATION: {w}")
-        logger.info(f"Pipeline health: {health['status']} ({health['summary']})")
+                logger.warning("PIPELINE VALIDATION: %s", w)
+        logger.info("Pipeline health: %s (%s)", health['status'], health['summary'])
     except ImportError as e:
-        logger.warning(f"Pipeline validator not available: {e}")
+        logger.warning("Pipeline validator not available: %s", e)
     except Exception as e:
-        logger.warning(f"Pipeline validation failed: {e}")
+        logger.warning("Pipeline validation failed: %s", e)
 
     # WSGI middleware to strip Server header (runs after gunicorn adds it)
     class _ServerHeaderMiddleware:
@@ -2265,5 +2265,5 @@ if __name__ == "__main__":
     wsgi_app = create_app()
     # create_app() returns a _ServerHeaderMiddleware wrapper; unwrap to get the Flask app for .run()
     flask_app = wsgi_app.wsgi_app if hasattr(wsgi_app, "wsgi_app") else wsgi_app
-    logger.info(f"VigyanLLM 22-step pipeline server on http://{host}:{port}")
+    logger.info("VigyanLLM 22-step pipeline server on http://%s:%s", host, port)
     flask_app.run(host=host, port=port, debug=debug)

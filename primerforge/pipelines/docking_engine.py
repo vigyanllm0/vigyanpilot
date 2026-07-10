@@ -145,7 +145,7 @@ async def run_vina_docking(receptor_pdb: str, ligand_smiles: str, exhaustiveness
 
             # Compute protein geometric center for search box
             cx, cy, cz, sx, sy, sz = _compute_box_center(local_receptor_pdbqt)
-            logger.info(f"Search box center: ({cx:.2f}, {cy:.2f}, {cz:.2f}), size: ({sx:.1f}, {sy:.1f}, {sz:.1f})")
+            logger.info("Search box center: (%s, %s, %s), size: (%s, %s, %s)", cx:.2f, cy:.2f, cz:.2f, sx:.1f, sy:.1f, sz:.1f)
             
             vina_cmd = [
                 vina_bin, "--receptor", local_receptor_pdbqt, "--ligand", ligand_pdbqt_path, 
@@ -175,7 +175,7 @@ async def run_vina_docking(receptor_pdb: str, ligand_smiles: str, exhaustiveness
                     err_msg = f.read().strip()
                 with open(vina_stdout, "r") as f:
                     out_msg = f.read().strip()
-                logger.error(f"Vina failed with code {process.returncode}: {err_msg or out_msg[:200]}")
+                logger.error("Vina failed with code %s: %s", process.returncode, err_msg or out_msg[:200])
                 raise Exception(f"Vina failed: {err_msg or out_msg[:200]}")
             
             elapsed = time.time() - start_time
@@ -249,7 +249,7 @@ async def run_vina_docking(receptor_pdb: str, ligand_smiles: str, exhaustiveness
                 }
             }
         except Exception as e:
-            logger.error(f"Vina Error: {str(e)}")
+            logger.error("Vina Error: %s", str(e))
             raise e
 
 
@@ -287,7 +287,7 @@ async def run_gnina_docking(receptor_pdb: str, ligand_smiles: str, exhaustivenes
 
             # Compute protein geometric center for search box
             cx, cy, cz, sx, sy, sz = _compute_box_center(receptor_pdb_path)
-            logger.info(f"GNINA search box: ({cx:.2f}, {cy:.2f}, {cz:.2f}), size: ({sx:.1f}, {sy:.1f}, {sz:.1f})")
+            logger.info("GNINA search box: (%s, %s, %s), size: (%s, %s, %s)", cx:.2f, cy:.2f, cz:.2f, sx:.1f, sy:.1f, sz:.1f)
 
             gnina_cmd = [
                 gnina_bin, "--receptor", receptor_pdb_path, "--ligand", ligand_sdf_path, 
@@ -352,5 +352,5 @@ async def run_gnina_docking(receptor_pdb: str, ligand_smiles: str, exhaustivenes
             }
             
         except Exception as e:
-            logger.error(f"Gnina Error: {str(e)}")
+            logger.error("Gnina Error: %s", str(e))
             raise e

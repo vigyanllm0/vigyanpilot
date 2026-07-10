@@ -20,16 +20,16 @@ def warmup_all():
     _warmup_docking_binaries()
 
     elapsed = time.time() - t0
-    logger.info(f"Warm-up: complete in {elapsed:.1f}s")
+    logger.info("Warm-up: complete in %ss", elapsed:.1f)
 
 
 def _warmup_torch():
     """Pre-import PyTorch (heavy ~2GB)."""
     try:
         import torch
-        logger.info(f"Warm-up: torch {torch.__version__} loaded (device: {torch.device('cuda' if torch.cuda.is_available() else 'cpu')})")
+        logger.info("Warm-up: torch %s loaded (device: %s)", torch.__version__, torch.device('cuda' if torch.cuda.is_available() else 'cpu'))
     except Exception as e:
-        logger.warning(f"Warm-up: torch import failed: {e}")
+        logger.warning("Warm-up: torch import failed: %s", e)
 
 
 def _warmup_esmfold():
@@ -39,7 +39,7 @@ def _warmup_esmfold():
         _load_model()
         logger.info("Warm-up: ESMFold model loaded into memory")
     except Exception as e:
-        logger.warning(f"Warm-up: ESMFold model load failed: {e}")
+        logger.warning("Warm-up: ESMFold model load failed: %s", e)
 
 
 def _warmup_rdkit():
@@ -50,7 +50,7 @@ def _warmup_rdkit():
         from meeko import MoleculePreparation
         logger.info("Warm-up: RDKit and Meeko imported")
     except Exception as e:
-        logger.warning(f"Warm-up: RDKit/Meeko import failed: {e}")
+        logger.warning("Warm-up: RDKit/Meeko import failed: %s", e)
 
 
 def _warmup_docking_binaries():
@@ -59,4 +59,4 @@ def _warmup_docking_binaries():
     vina = shutil.which("vina")
     gnina = shutil.which("gnina")
     obabel = shutil.which("obabel")
-    logger.info(f"Warm-up: binaries — vina={vina}, gnina={gnina}, obabel={obabel}")
+    logger.info("Warm-up: binaries — vina=%s, gnina=%s, obabel=%s", vina, gnina, obabel)

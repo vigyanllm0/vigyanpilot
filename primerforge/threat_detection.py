@@ -134,7 +134,7 @@ class ThreatStore:
             recent = [v for v in self._violations[ip] if now - v[0] < 3600]
             if len(recent) >= MAX_VIOLATIONS_BEFORE_BAN:
                 self._banned_ips[ip] = now + BAN_DURATION_SECONDS
-                logger.warning(f"IP BANNED: {ip} — {len(recent)} violations in 1h (ban: {BAN_DURATION_SECONDS}s)")
+                logger.warning("IP BANNED: %s — %s violations in 1h (ban: %ss)", ip, len(recent), BAN_DURATION_SECONDS)
                 return True  # Newly banned
         return False
 

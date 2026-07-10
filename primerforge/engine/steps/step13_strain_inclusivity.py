@@ -411,13 +411,13 @@ def _get_strain_sequences(organism: str, input_data: Dict[str, Any]) -> Dict[str
                 if current_id and current_seq:
                     strains[current_id] = "".join(current_seq)
             except Exception as e:
-                logger.debug(f"NCBI strain fetch error: {e}")
+                logger.debug("NCBI strain fetch error: %s", e)
                 continue
 
         return strains
 
     except Exception as e:
-        logger.warning(f"Strain sequence fetch failed: {e}")
+        logger.warning("Strain sequence fetch failed: %s", e)
         return {}
 
 

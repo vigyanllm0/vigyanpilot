@@ -177,7 +177,7 @@ def init_debugger(app):
         # Flag slow requests
         if duration_ms > SLOW_REQUEST_THRESHOLD_MS:
             _monitor.record_slow_request(path, method, duration_ms, user)
-            logger.warning(f"SLOW REQUEST: {method} {path} — {duration_ms}ms (user={user})")
+            logger.warning("SLOW REQUEST: %s %s — %sms (user=%s)", method, path, duration_ms, user)
 
         # Add debug header
         response.headers["X-Request-Id"] = getattr(g, "_request_id", "")
@@ -201,7 +201,7 @@ def init_debugger(app):
             "request_id": getattr(g, "_request_id", ""),
         }
         _monitor.record_error(error, context)
-        logger.error(f"Unhandled exception: {type(error).__name__}: {error}", exc_info=True)
+        logger.error("Unhandled exception: %s: %s", type(error).__name__, error, exc_info=True)
 
         # Never expose internals to client
         return jsonify({
@@ -217,7 +217,7 @@ def init_debugger(app):
         from .pg_auth import require_admin
     except Exception as exc:
         logger.warning("Debug admin endpoints disabled: %s", exc)
-        logger.info(f"Debug monitor initialized (slow_threshold={SLOW_REQUEST_THRESHOLD_MS}ms)")
+        logger.info("Debug monitor initialized (slow_threshold=%sms)", SLOW_REQUEST_THRESHOLD_MS)
         return
 
     @app.route("/api/admin/debug/stats", methods=["GET"])
@@ -250,7 +250,7 @@ def init_debugger(app):
         _monitor.clear()
         return jsonify({"success": True, "message": "Monitor data cleared."}), 200
 
-    logger.info(f"Debug monitor initialized (slow_threshold={SLOW_REQUEST_THRESHOLD_MS}ms)")
+    logger.info("Debug monitor initialized (slow_threshold=%sms)", SLOW_REQUEST_THRESHOLD_MS)
 
 
 def get_monitor() -> ErrorMonitor:

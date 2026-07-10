@@ -211,7 +211,7 @@ def login():
                     "code": "IP_MISMATCH",
                 }), 403
         except Exception as e:
-            logger.warning(f"IP check failed (skipping): {e}")
+            logger.warning("IP check failed (skipping): %s", e)
 
     refresh_token = create_refresh_token(result["user"]["id"])
     resp = jsonify({

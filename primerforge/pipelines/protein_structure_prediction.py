@@ -108,7 +108,7 @@ class ProteinHMM:
     
     def train_baum_welch(self, sequences: List[str], max_iter: int = 100, tol: float = 1e-6) -> float:
         """Baum-Welch algorithm for HMM training"""
-        logger.info(f"Training HMM on {len(sequences)} sequences")
+        logger.info("Training HMM on %s sequences", len(sequences))
         
         prev_log_likelihood = -np.inf
         
@@ -168,7 +168,7 @@ class ProteinHMM:
             
             # Check convergence
             if abs(total_log_likelihood - prev_log_likelihood) < tol:
-                logger.info(f"HMM converged after {iteration} iterations")
+                logger.info("HMM converged after %s iterations", iteration)
                 break
             
             prev_log_likelihood = total_log_likelihood
@@ -244,7 +244,7 @@ class ProteinANN(nn.Module):
     def train_steepest_descent(self, train_loader, val_loader, epochs: int = 100, 
                            learning_rate: float = 0.01):
         """Train using steepest descent with overfitting prevention"""
-        logger.info(f"Training ANN with steepest descent for {epochs} epochs")
+        logger.info("Training ANN with steepest descent for %s epochs", epochs)
         
         criterion = nn.CrossEntropyLoss()
         optimizer = optim.SGD(self.parameters(), lr=learning_rate, momentum=0.9)
@@ -291,11 +291,11 @@ class ProteinANN(nn.Module):
             else:
                 patience_counter += 1
                 if patience_counter >= 10:
-                    logger.info(f"Early stopping at epoch {epoch}")
+                    logger.info("Early stopping at epoch %s", epoch)
                     break
             
             if epoch % 10 == 0:
-                logger.info(f"Epoch {epoch}: Train Loss: {train_loss:.4f}, Val Loss: {val_loss:.4f}")
+                logger.info("Epoch %s: Train Loss: %s, Val Loss: %s", epoch, train_loss:.4f, val_loss:.4f)
 
 class DoublePredictor:
     """Double prediction method combining HMM and ANN"""

@@ -450,7 +450,7 @@ def _search_ncbi_nucleotide_by_name(query: str, organism: str = "") -> List[Dict
         r.raise_for_status()
         ids = r.json().get("esearchresult", {}).get("idlist", [])
     except Exception as e:
-        logger.debug(f"NCBI nucleotide search failed: {e}")
+        logger.debug("NCBI nucleotide search failed: %s", e)
         return []
 
     if not ids:
@@ -463,7 +463,7 @@ def _search_ncbi_nucleotide_by_name(query: str, organism: str = "") -> List[Dict
             data = fetch_ncbi_nucleotide(gid)
             results.append(_make_result(data, "ncbi", gid))
         except Exception as e:
-            logger.debug(f"Failed to fetch {gid}: {e}")
+            logger.debug("Failed to fetch %s: %s", gid, e)
             continue
     return results
 
@@ -507,7 +507,7 @@ def _search_ensembl_by_name(query: str, organism: str = "human") -> List[Dict]:
                 continue
         return results
     except Exception as e:
-        logger.debug(f"Ensembl search failed: {e}")
+        logger.debug("Ensembl search failed: %s", e)
         return []
 
 
@@ -537,7 +537,7 @@ def _search_uniprot_by_name(query: str) -> List[Dict]:
             }, "uniprot", accession))
         return results
     except Exception as e:
-        logger.debug(f"UniProt search failed: {e}")
+        logger.debug("UniProt search failed: %s", e)
         return []
 
 

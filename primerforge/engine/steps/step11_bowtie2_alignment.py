@@ -102,7 +102,7 @@ def execute(input_data: Dict[str, Any]) -> Dict[str, Any]:
     # ── Check index exists ─────────────────────────────────────────────────
     index_exists = _check_index_exists(index_path)
     if not index_exists:
-        logger.warning(f"Bowtie2 index not found at '{index_path}' — skipping alignment.")
+        logger.warning("Bowtie2 index not found at '%s' — skipping alignment.", index_path)
         for pair in pairs:
             pair["forward"]["mapping_count"] = None
             pair["reverse"]["mapping_count"] = None
@@ -359,7 +359,7 @@ def _run_bowtie2_batch(
     except FileNotFoundError:
         logger.error("bowtie2 binary not found in PATH")
     except Exception as e:
-        logger.debug(f"Bowtie2 batch alignment failed: {e}")
+        logger.debug("Bowtie2 batch alignment failed: %s", e)
 
     return results
 

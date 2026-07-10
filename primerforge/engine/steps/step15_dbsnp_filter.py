@@ -317,7 +317,7 @@ def _open_tabix(vcf_path: str):
     except ImportError:
         logger.debug("pysam not available — trying manual tabix")
     except Exception as e:
-        logger.debug(f"pysam TabixFile failed: {e}")
+        logger.debug("pysam TabixFile failed: %s", e)
 
     # Fallback: try subprocess tabix
     if has_index:
@@ -354,7 +354,7 @@ class _TabixSubprocessReader:
             if result.returncode == 0 and result.stdout.strip():
                 return result.stdout.strip().split("\n")
         except Exception as e:
-            logger.debug(f"Tabix subprocess failed: {e}")
+            logger.debug("Tabix subprocess failed: %s", e)
         return []
 
     def close(self):

@@ -117,7 +117,7 @@ def calculate_tm_nearest_neighbor(
             dS_sum += dS
         else:
             # Skip ambiguous bases — log a warning
-            logger.debug(f"Skipping ambiguous doublet: {doublet}")
+            logger.debug("Skipping ambiguous doublet: %s", doublet)
 
     # Add initiation parameters — check both termini
     first = seq[0]

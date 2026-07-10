@@ -57,7 +57,7 @@ async def run_consensus_pipeline(
     """
 
     async def _progress(stage: str, msg: str, metadata: dict = None):
-        logger.info(f"[{stage}] {msg}")
+        logger.info("[%s] %s", stage, msg)
         if progress_callback:
             await progress_callback(stage, msg, metadata)
 
@@ -155,7 +155,7 @@ async def _run_pipeline_inner(
                     "structure": docking_result.get("structure"),
                 }
             except Exception as e:
-                logger.debug(f"Vina failed for ligand #{idx}: {e}")
+                logger.debug("Vina failed for ligand #%s: %s", idx, e)
                 failed += 1
                 return None
 
@@ -210,7 +210,7 @@ async def _run_pipeline_inner(
                 candidate["status"] = "refined"
                 return candidate
             except Exception as e:
-                logger.debug(f"GNINA failed for candidate: {e}")
+                logger.debug("GNINA failed for candidate: %s", e)
                 candidate["gnina_score"] = None
                 candidate["status"] = "gnina_failed"
                 return candidate

@@ -176,7 +176,7 @@ def _predict_folding_engine(amplicon_seq: str) -> Dict[str, Any]:
             "structure_length": None,
         }
     except Exception as e:
-        logger.debug(f"Engine folding prediction failed: {e}")
+        logger.debug("Engine folding prediction failed: %s", e)
         return _predict_folding_heuristic(amplicon_seq)
 
 

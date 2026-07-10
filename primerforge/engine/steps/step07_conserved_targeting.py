@@ -95,7 +95,7 @@ def _filter_usable_regions(
 
 
 def _no_targeting(reason: str, input_data: Dict[str, Any]) -> Dict[str, Any]:
-    logger.info(f"Conserved targeting skipped: {reason}")
+    logger.info("Conserved targeting skipped: %s", reason)
 
     sequence = input_data.get("consensus_sequence") or input_data.get("target_sequence") or input_data.get("sequence", "")
     total_len = len(sequence) if sequence else 0

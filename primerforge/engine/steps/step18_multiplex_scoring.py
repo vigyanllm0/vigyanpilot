@@ -272,16 +272,16 @@ def _run_primer_pooler(
         if result.returncode == 0 and os.path.exists(out_file_path):
             pool_assignments = _parse_pooler_output(out_file_path, pairs)
         else:
-            logger.warning(f"PrimerPooler failed (rc={result.returncode}): {result.stderr[:200]}")
+            logger.warning("PrimerPooler failed (rc=%s): %s", result.returncode, result.stderr[:200])
             incompatible = _build_incompatible_map(pairs, interaction_matrix)
             pool_assignments = _greedy_pool_assignment(pairs, incompatible)
 
     except subprocess.TimeoutExpired:
-        logger.warning(f"PrimerPooler timed out ({PRIMER_POOLER_TIMEOUT_S}s) — using greedy pooling.")
+        logger.warning("PrimerPooler timed out (%ss) — using greedy pooling.", PRIMER_POOLER_TIMEOUT_S)
         incompatible = _build_incompatible_map(pairs, interaction_matrix)
         pool_assignments = _greedy_pool_assignment(pairs, incompatible)
     except Exception as e:
-        logger.warning(f"PrimerPooler error: {e} — using greedy pooling.")
+        logger.warning("PrimerPooler error: %s — using greedy pooling.", e)
         incompatible = _build_incompatible_map(pairs, interaction_matrix)
         pool_assignments = _greedy_pool_assignment(pairs, incompatible)
     finally:
@@ -315,7 +315,7 @@ def _parse_pooler_output(
                     if pair_id not in assignments:
                         assignments[pair_id] = current_pool
     except Exception as e:
-        logger.debug(f"Failed to parse PrimerPooler output: {e}")
+        logger.debug("Failed to parse PrimerPooler output: %s", e)
 
     # Fill in any unassigned pairs
     for pair in pairs:

@@ -62,7 +62,7 @@ def execute(input_data: Dict[str, Any]) -> Dict[str, Any]:
             exon_map = getattr(record, "exon_map", []) or []
             transcripts = getattr(record, "transcripts", []) or []
         except Exception as e:
-            logger.warning(f"Sequence fetch failed for '{query}': {e}")
+            logger.warning("Sequence fetch failed for '%s': %s", query, e)
             # Try Ensembl REST API as fallback
             transcripts, exon_map, fetched_seq = _fetch_ensembl_transcripts(
                 query, organism
@@ -449,6 +449,6 @@ def _fetch_ensembl_transcripts(
                 sequence = seq_data.get("seq", "")
 
     except Exception as e:
-        logger.warning(f"Ensembl API fetch failed for '{query}': {e}")
+        logger.warning("Ensembl API fetch failed for '%s': %s", query, e)
 
     return transcripts, exon_map, sequence

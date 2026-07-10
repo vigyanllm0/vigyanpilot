@@ -146,10 +146,10 @@ def create_order():
             }
         })
     except razorpay.errors.BadRequestError as e:
-        logger.error(f"Razorpay BadRequest: {e}")
+        logger.error("Razorpay BadRequest: %s", e)
         return jsonify({"error": "Payment service error. Please try again."}), 500
     except Exception as e:
-        logger.error(f"Razorpay error: {e}")
+        logger.error("Razorpay error: %s", e)
         return jsonify({"error": "Payment service unavailable."}), 500
 
     # Store order in DB for tracking
@@ -209,7 +209,7 @@ def verify_razorpay_payment():
     ).hexdigest()
 
     if not hmac.compare_digest(expected_signature, razorpay_signature):
-        logger.warning(f"Signature mismatch for order {razorpay_order_id}")
+        logger.warning("Signature mismatch for order %s", razorpay_order_id)
         return jsonify({"error": "Payment verification failed. Signature mismatch."}), 400
 
     # Signature valid — credit runs to user
@@ -347,7 +347,7 @@ def razorpay_webhook():
         return jsonify({"error": "Invalid JSON"}), 400
 
     event_type = event.get('event', '')
-    logger.info(f"Razorpay webhook: {event_type}")
+    logger.info("Razorpay webhook: %s", event_type)
 
     if event_type == 'payment.captured':
         payload = event.get('payload', {}).get('payment', {}).get('entity', {})
@@ -376,7 +376,7 @@ def razorpay_webhook():
                 if cur.rowcount > 0:
                     db.execute("UPDATE users SET paid_runs = paid_runs + ? WHERE email=?", (runs, email))
                     db.commit()
-                    logger.info(f"Webhook: credited {runs} run(s) to {email} for order {order_id}")
+                    logger.info("Webhook: credited %s run(s) to %s for order %s", runs, email, order_id)
                 else:
                     db.commit()
 
@@ -385,7 +385,7 @@ def razorpay_webhook():
     elif event_type == 'payment.failed':
         payload = event.get('payload', {}).get('payment', {}).get('entity', {})
         order_id = payload.get('order_id', '')
-        logger.warning(f"Payment failed for order {order_id}")
+        logger.warning("Payment failed for order %s", order_id)
 
     # Always return 200 to acknowledge webhook
     return jsonify({"status": "ok"}), 200

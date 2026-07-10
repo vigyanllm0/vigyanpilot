@@ -119,7 +119,7 @@ def execute(input_data: Dict[str, Any]) -> Dict[str, Any]:
             refined_pairs.append(refined)
         except Exception as e:
             pair_label = pair.get("pair_id") or pair.get("rank") or pair.get("pair_index", "?")
-            logger.warning(f"Thermo calc failed for pair {pair_label}: {e}")
+            logger.warning("Thermo calc failed for pair %s: %s", pair_label, e)
             pair["thermo_pass"] = False
             pair["thermo_error"] = str(e)
             refined_pairs.append(pair)

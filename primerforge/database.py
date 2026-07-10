@@ -103,7 +103,7 @@ def _get_connection():
             logger.warning("Failed to set session timeouts on connection: %s", e)
         return conn
     except psycopg2.pool.PoolError as e:
-        logger.warning(f"Pool exhausted (max={POOL_MAX}), retrying: {e}")
+        logger.warning("Pool exhausted (max=%s), retrying: %s", POOL_MAX, e)
         time.sleep(0.5)
         try:
             conn = pool.getconn()
@@ -133,7 +133,7 @@ def _put_connection(conn):
         else:
             pool.putconn(conn, key=None)
     except Exception as e:
-        logger.warning(f"Error returning connection to pool: {e}")
+        logger.warning("Error returning connection to pool: %s", e)
 
 
 def get_db():
@@ -236,7 +236,7 @@ def init_db():
         # Verify connection
         cur.execute("SELECT version()")
         version = cur.fetchone()
-        logger.info(f"PostgreSQL connected: {version['version'][:50]}...")
+        logger.info("PostgreSQL connected: %s...", version['version'][:50])
 
         # Ensure token_balances exist for all users that don't have one
         cur.execute("""
@@ -269,7 +269,7 @@ def init_db():
         cur.close()
         logger.info("Database initialization check complete.")
     except Exception as e:
-        logger.error(f"Database init check failed: {e}")
+        logger.error("Database init check failed: %s", e)
         # Don't crash the app — it might be starting before Postgres is ready
         # Docker healthcheck + depends_on handles ordering
     finally:

@@ -178,7 +178,7 @@ def process_job(job_id: str):
         logger.info("MSA job %s completed (%d sequences, %d columns)", job_id, n, alen)
 
     except Exception as e:
-        logger.error(f"MSA job {job_id} failed: {e}", exc_info=True)
+        logger.error("MSA job %s failed: %s", job_id, e, exc_info=True)
         job["status"] = "ERROR"
         job["error"] = str(e)[:300]
         _save_job(job_id, job)
@@ -225,7 +225,7 @@ def _align_mafft(sequences: List[str], auto: bool = True, fast: bool = False) ->
             return aligned
         return _align_python(sequences)
     except Exception as e:
-        logger.debug(f"MAFFT alignment failed: {e}")
+        logger.debug("MAFFT alignment failed: %s", e)
         return _align_python(sequences)
 
 

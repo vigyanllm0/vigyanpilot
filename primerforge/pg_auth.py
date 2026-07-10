@@ -466,7 +466,7 @@ def register_user(email: str, password: str, name: str = "") -> dict:
         db.commit()
     except Exception as e:
         db.rollback()
-        logger.error(f"Registration failed: {e}")
+        logger.error("Registration failed: %s", e)
         return {"error": "Registration failed. Please try again."}
     finally:
         cur.close()
@@ -587,7 +587,7 @@ def _log_login(user_id, ip_address: str, user_agent: str, result: str):
             (user_id, ip_address or "0.0.0.0", user_agent or "", result)
         )
     except Exception as e:
-        logger.error(f"Failed to log login: {e}")
+        logger.error("Failed to log login: %s", e)
 
 
 # ── Usage & Token Balance ─────────────────────────────────────────────────
@@ -749,7 +749,7 @@ def ensure_admin_exists():
             "UPDATE users SET password_hash = %s, role = 'admin', status = 'active' WHERE email = %s",
             (password_hash, ADMIN_EMAIL)
         )
-        logger.info(f"Admin password updated: {ADMIN_EMAIL}")
+        logger.info("Admin password updated: %s", ADMIN_EMAIL)
     else:
         execute(
             """INSERT INTO users (email, password_hash, full_name, role, status)
@@ -757,7 +757,7 @@ def ensure_admin_exists():
                ON CONFLICT (email) DO NOTHING""",
             (ADMIN_EMAIL, password_hash, "Admin")
         )
-        logger.info(f"Admin user created: {ADMIN_EMAIL}")
+        logger.info("Admin user created: %s", ADMIN_EMAIL)
 
 
 def log_action(email: str, action: str, details: str = ""):

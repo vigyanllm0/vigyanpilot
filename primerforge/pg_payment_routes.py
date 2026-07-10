@@ -283,7 +283,7 @@ def create_order():
             }
         })
     except Exception as e:
-        logger.error(f"Razorpay order creation failed: {e}")
+        logger.error("Razorpay order creation failed: %s", e)
         return jsonify({"error": "Payment service unavailable."}), 500
 
     # Persist order in database
@@ -379,7 +379,7 @@ def verify_payment():
             quantity, razorpay_payment_id
         )
     except Exception as e:
-        logger.error(f"Token credit failed: {e}")
+        logger.error("Token credit failed: %s", e)
         return jsonify({"error": "Token credit failed. Contact support."}), 500
 
     try:
@@ -442,7 +442,7 @@ def razorpay_webhook():
         conn.commit()
 
         if validation_status == "untrusted":
-            logger.warning(f"Webhook signature failed for event: {event_type}")
+            logger.warning("Webhook signature failed for event: %s", event_type)
             cur.close()
             put_db_standalone(conn)
             return jsonify({"status": "signature_invalid"}), 200
@@ -502,7 +502,7 @@ def razorpay_webhook():
                             )
 
                         conn.commit()
-                        logger.info(f"Webhook: credited {tokens} tokens to user_id={user_id} for order {order_id}")
+                        logger.info("Webhook: credited %s tokens to user_id=%s for order %s", tokens, user_id, order_id)
 
         elif event_type == "payment.failed":
             payload = event.get("payload", {}).get("payment", {}).get("entity", {})
@@ -530,7 +530,7 @@ def razorpay_webhook():
                     (sub_id,)
                 )
                 conn.commit()
-                logger.info(f"Webhook: subscription.charged — quota reset for sub {sub_id}")
+                logger.info("Webhook: subscription.charged — quota reset for sub %s", sub_id)
 
         elif event_type == "subscription.authenticated":
             # New subscription authorized — activate plan
@@ -559,7 +559,7 @@ def razorpay_webhook():
                          plan_id, plan_id, product.designs_included, product.max_seats, sub_id)
                     )
                     conn.commit()
-                    logger.info(f"Webhook: subscription.authenticated — {email} activated {plan_id}")
+                    logger.info("Webhook: subscription.authenticated — %s activated %s", email, plan_id)
 
         elif event_type in ("subscription.halted", "subscription.cancelled"):
             # Subscription stopped — deactivate
@@ -572,13 +572,13 @@ def razorpay_webhook():
                     (sub_id,)
                 )
                 conn.commit()
-                logger.info(f"Webhook: {event_type} — subscription {sub_id} deactivated")
+                logger.info("Webhook: %s — subscription %s deactivated", event_type, sub_id)
 
         cur.close()
         put_db_standalone(conn)
 
     except Exception as e:
-        logger.error(f"Webhook processing error: {e}")
+        logger.error("Webhook processing error: %s", e)
         if "conn" in locals() and conn is not None:
             try:
                 put_db_standalone(conn)

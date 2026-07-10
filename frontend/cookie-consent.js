@@ -11,9 +11,10 @@
 
 (function () {
     const CONSENT_KEY = 'vigyanllm_cookie_consent';
-    const GTM_ID = 'GTM-XXXXXXX'; // Replace with actual GTM ID
+    const GTM_ID = ''; // Set to your GTM container ID (e.g., 'GTM-ABC123') when using Google Tag Manager
 
     function loadGTM() {
+        if (!GTM_ID) return;
         if (window.gtmLoaded) return;
         window.gtmLoaded = true;
 

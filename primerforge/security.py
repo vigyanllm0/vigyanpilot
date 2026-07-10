@@ -256,7 +256,7 @@ def apply_rate_limits(app):
             fn = app.view_functions.get(endpoint)
             if fn:
                 app.view_functions[endpoint] = limiter.limit(limit_str)(fn)
-                logger.debug(f"Rate limit {limit_str} applied to {endpoint}")
+                logger.debug("Rate limit %s applied to %s", limit_str, endpoint)
 
         logger.info("Rate limits applied to sensitive endpoints.")
     else:

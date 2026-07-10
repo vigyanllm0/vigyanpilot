@@ -440,7 +440,7 @@ class OrganelleScreeningStep(PipelineStep):
                             "parent_gene": parts[5] if len(parts) > 5 else "",
                         })
         except (OSError, IOError) as e:
-            logger.warning(f"VigyanLLM: Failed to load pseudogene DB: {e}")
+            logger.warning("VigyanLLM: Failed to load pseudogene DB: %s", e)
         return coords
 
     def _find_pseudogene_overlap(

@@ -144,8 +144,8 @@ class AutoPrimerDesigner:
         else:
             target_start_0 = target_end_0 = 0
 
-        logger.info(f"AutoDesign: {annotation} | template {n}nt | "
-                    f"target {target_region_start}-{target_region_end}")
+        logger.info("AutoDesign: %s | template %snt | target %s-%s",
+                     annotation, n, target_region_start, target_region_end)
 
         # ── Step 1: Candidate forward primers ─────────────────────────────────
         fwd_seeds = []
@@ -174,7 +174,7 @@ class AutoPrimerDesigner:
                     "thermo": thermo.__dict__
                 })
 
-        logger.info(f"  Forward candidates: {len(fwd_candidates)}")
+        logger.info("  Forward candidates: %s", len(fwd_candidates))
 
         # ── Step 2: Precompute all reverse primers once ────────────────────────
         reverse_seeds = []
@@ -204,7 +204,7 @@ class AutoPrimerDesigner:
                     "thermo": rev_thermo.__dict__,
                 })
 
-        logger.info(f"  Reverse candidates: {len(reverse_candidates)}")
+        logger.info("  Reverse candidates: %s", len(reverse_candidates))
 
         # ── Step 3: Build a cheap compatible-pair pool, then score the best ────
         pair_pool = []
@@ -233,7 +233,7 @@ class AutoPrimerDesigner:
                 ))
 
         pair_pool.sort(key=lambda item: item[0])
-        logger.info(f"  Compatible cheap pair pool: {len(pair_pool)}")
+        logger.info("  Compatible cheap pair pool: %s", len(pair_pool))
 
         pairs = []
         for _cheap_score, fwd, rev, product_size in pair_pool[:self.cfg.max_pair_candidates_to_score]:
@@ -293,7 +293,7 @@ class AutoPrimerDesigner:
             if len(pairs) >= max(self.cfg.top_n * 25, 50):
                 break
 
-        logger.info(f"  Valid hits found: {len(pairs)}")
+        logger.info("  Valid hits found: %s", len(pairs))
 
         # ── Step 4: Cross-validate with primer3.design_primers() ───────────────
         p3_result = self._run_primer3_design_primers(seq, target_start_0, target_end_0)
@@ -526,7 +526,7 @@ class AutoPrimerDesigner:
                 }
             )
         except Exception as e:
-            logger.warning(f"primer3.design_primers() cross-validation failed: {e}")
+            logger.warning("primer3.design_primers() cross-validation failed: %s", e)
             return {"PRIMER_PAIR_NUM_RETURNED": 0}
 
     def _cross_validate_with_primer3(

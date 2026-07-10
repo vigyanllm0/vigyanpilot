@@ -46,7 +46,7 @@ def _check_mafft() -> bool:
     try:
         r = subprocess.run(["mafft", "--version"], capture_output=True, text=True, timeout=10)
         if r.returncode == 0:
-            logger.info(f"MAFFT: {r.stdout.strip() or r.stderr.strip()}")
+            logger.info("MAFFT: %s", r.stdout.strip() or r.stderr.strip())
             return True
     except FileNotFoundError:
         pass
@@ -64,7 +64,7 @@ def _check_blast() -> bool:
         r = subprocess.run(["blastn", "-version"], capture_output=True, text=True, timeout=10)
         if r.returncode == 0:
             version = (r.stdout or r.stderr).split("\n")[0][:80]
-            logger.info(f"BLAST+: {version}")
+            logger.info("BLAST+: %s", version)
             return True
     except FileNotFoundError:
         pass

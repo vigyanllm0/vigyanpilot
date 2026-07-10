@@ -490,7 +490,7 @@ def _fetch_strain_sequences(
 
         sequences = _fetch_sequences_by_ids(ids, max_count=MAX_STRAIN_SEQUENCES)
     except Exception as e:
-        logger.warning(f"NCBI strain fetch failed: {e}")
+        logger.warning("NCBI strain fetch failed: %s", e)
 
     return sequences
 
@@ -509,7 +509,7 @@ def _search_refseq_by_organism(organism: str, api_key: str = "", email: str = ""
         handle.close()
         return record.get("IdList", [])
     except Exception as e:
-        logger.debug(f"Organism-based RefSeq search failed: {e}")
+        logger.debug("Organism-based RefSeq search failed: %s", e)
         return []
 
 
@@ -547,7 +547,7 @@ def _search_related_accessions(accession: str, organism: str, api_key: str = "",
         return record.get("IdList", [])
 
     except Exception as e:
-        logger.debug(f"Related accession search failed for '{accession}': {e}")
+        logger.debug("Related accession search failed for '%s': %s", accession, e)
         return _search_refseq_by_organism(organism, api_key, email)
 
 
@@ -622,7 +622,7 @@ def _find_related_by_accession(accession: str, organism: str, email: str) -> Lis
         return _search_refseq_by_organism(search_organism, "", email)
 
     except Exception as e:
-        logger.debug(f"Related seq by accession failed for '{accession}': {e}")
+        logger.debug("Related seq by accession failed for '%s': %s", accession, e)
         return _search_refseq_by_organism(organism, "", email)
 
 
@@ -695,7 +695,7 @@ def _find_related_ensembl(accession: str, organism: str, email: str) -> List[str
                 return ids
 
     except Exception as e:
-        logger.debug(f"Ensembl lookup failed for '{accession}': {e}")
+        logger.debug("Ensembl lookup failed for '%s': %s", accession, e)
 
     # Step 5: Fall back to organism-based RefSeq search
     return _search_refseq_by_organism(organism, "", email)
@@ -719,7 +719,7 @@ def _fetch_sequences_by_ids(ids: List[str], max_count: int = MAX_STRAIN_SEQUENCE
             seqs = _parse_fasta(raw)
             sequences.extend(seqs)
         except Exception as e:
-            logger.debug(f"NCBI fetch batch failed: {e}")
+            logger.debug("NCBI fetch batch failed: %s", e)
             continue
 
     return sequences
@@ -746,7 +746,7 @@ def _fallback(
     strain_seqs: Optional[List[str]] = None,
 ) -> Dict[str, Any]:
     sequence = input_data.get("consensus_sequence") or input_data.get("target_sequence") or input_data.get("sequence", "")
-    logger.info(f"MSA fallback: {reason}")
+    logger.info("MSA fallback: %s", reason)
     strain_count = len(strain_seqs) if strain_seqs else 0
 
     result = {

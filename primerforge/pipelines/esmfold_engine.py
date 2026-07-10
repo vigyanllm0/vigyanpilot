@@ -197,7 +197,7 @@ def _run_esmfold_sync(sequence: str, main_loop: asyncio.AbstractEventLoop, progr
                 # Schedule the async report onto the main loop from this thread
                 asyncio.run_coroutine_threadsafe(progress_report_coro(msg), main_loop)
             except Exception as e:
-                logger.debug(f"Failed to report progress: {e}")
+                logger.debug("Failed to report progress: %s", e)
 
     # Sanitise sequence
     sequence = sequence.strip().upper().replace(" ", "").replace("\n", "")
@@ -237,7 +237,7 @@ def _run_esmfold_sync(sequence: str, main_loop: asyncio.AbstractEventLoop, progr
     # Extract mean pLDDT (confidence score, 0-100)
     plddt = outputs.plddt.mean().item() * 100  # Model outputs 0-1, convert to %
 
-    logger.info(f"Structure predicted. Mean pLDDT: {plddt:.1f}%")
+    logger.info("Structure predicted. Mean pLDDT: %s%", plddt:.1f)
 
     return {
         "status": "success",
