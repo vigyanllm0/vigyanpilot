@@ -899,7 +899,7 @@ async function openRazorpayCheckout(order, context) {
 </script>
 
 <script>
-var API = window.VIGYAN_BACKEND_URL || '/api';
+var API = window.VIGYAN_BACKEND_URL || '';
 var authMode = 'login';
 var authUser = null;
 
@@ -961,7 +961,7 @@ async function handleAuth() {
   var errEl = $('auth-error');
   errEl.classList.remove('show');
   if (!email || !pass) { errEl.textContent = 'Email and password are required.'; errEl.classList.add('show'); return; }
-  var endpoint = authMode === 'login' ? '/auth/login' : '/auth/register';
+  var endpoint = authMode === 'login' ? '/api/auth/login' : '/api/auth/register';
   var body = { email, password: pass };
   if (authMode === 'register') body.name = name || email.split('@')[0];
   try {
@@ -1084,7 +1084,7 @@ async function runDocking() {
     var authToken = sessionStorage.getItem('pf_token') || localStorage.getItem('pf_token');
     var headers = { 'Content-Type': 'application/json' };
     if (authToken) headers['Authorization'] = 'Bearer ' + authToken;
-    var r = await fetch(API + '/primer/docking/consensus', {
+    var r = await fetch(API + '/api/primer/docking/consensus', {
       method: 'POST',
       headers: headers,
       body: JSON.stringify({ sequence: validAA, ligand_smiles_list: smilesList, top_n: topN })
@@ -1117,7 +1117,7 @@ async function runDocking() {
     var pollAttempts = 0;
     var pollInterval = setInterval(async function() {
       try {
-        var pr = await fetch(API + '/primer/docking/status/' + jobId);
+        var pr = await fetch(API + '/api/primer/docking/status/' + jobId);
         if (!pr.ok) {
           clearInterval(pollInterval);
           setStage(1, 'fail', 'API error: ' + pr.status);
