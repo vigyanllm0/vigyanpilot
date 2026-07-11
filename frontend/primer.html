@@ -1679,32 +1679,18 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       </ul>
       <button class="btn-price fill-green purchase-plan-btn" data-product-id="corporate">Subscribe — ₹49,999/mo</button>
     </div>
-    <!-- ── Pay-As-You-Go ── -->
-    <div class="price-card">
-      <span class="price-tier">Pay-As-You-Go Top-Up</span>
-      <div class="price-amount">₹49</div>
-      <div class="price-period">per primer design</div>
-      <ul class="price-features">
-        <li><strong>1 primer design</strong></li>
-        <li><strong>Docking top-up: ₹99/run</strong></li>
-        <li>No subscription needed</li>
-        <li>Use after free trial or overage</li>
-        <li>Credits never expire</li>
-      </ul>
-      <button class="btn-price outline purchase-plan-btn" data-product-id="top_up">Buy 1 Design — ₹49</button>
-    </div>
   </div>
 
   <!-- Bulk Top-Up -->
   <div style="max-width:600px;margin:28px auto 0;background:transparent;border:1px solid var(--slate-border);border-radius:12px;padding:20px;text-align:center">
-    <div style="font-size:13px;font-weight:600;margin-bottom:12px">Need multiple top-ups? Buy in bulk.</div>
+    <div style="font-size:13px;font-weight:600;margin-bottom:12px">Need extra runs? Buy top-up credits in bulk.</div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:8px">₹99/run — use for primer design OR docking. Credits never expire.</div>
     <div style="display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap">
       <input type="range" id="topup-slider" min="1" max="100" value="5" oninput="updateTopup()" style="width:200px">
       <input type="number" id="topup-input" min="1" max="100" value="5" oninput="updateTopupFromInput()" class="form-input" style="width:70px;text-align:center;margin:0;padding:6px">
     </div>
-    <div style="font-family:var(--font-b);font-size:14px;margin:10px 0;color:var(--primary)" id="topup-display">Pay ₹245 for 5 Designs</div>
-    <button class="btn-price fill" id="bulk-topup-btn" style="margin-top:8px">Buy <span id="topup-count">5</span> Designs — ₹<span id="topup-total">245</span></button>
-    <div style="font-size:10px;color:var(--muted);margin-top:8px">Docking top-up available in the Docking Lab — ₹99/run</div>
+    <div style="font-family:var(--font-b);font-size:14px;margin:10px 0;color:var(--primary)" id="topup-display">Pay ₹495 for 5 Runs</div>
+    <button class="btn-price fill" id="bulk-topup-btn" style="margin-top:8px">Buy <span id="topup-count">5</span> Runs — ₹<span id="topup-total">495</span></button>
   </div>
 
   <!-- Referral Program Banner -->
@@ -1999,11 +1985,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="pay-card">
     <div class="pay-title">🔬 Unlock More Primer Designs</div>
     <div style="font-size:13px;color:var(--text2);text-align:center;margin-bottom:12px">Your free trial run has been used. Pay to continue designing primers.</div>
-    <div class="pay-amount">₹49 <span style="font-size:14px;color:var(--text2)">per design</span></div>
+    <div class="pay-amount">₹99 <span style="font-size:14px;color:var(--text2)">per run (primer design or docking)</span></div>
     <div class="form-group" style="margin-top:16px">
       <label class="form-label">How many runs to purchase?</label>
       <input type="number" id="pay-runs" class="form-input" value="1" min="1" max="100" style="width:100px">
-      <span style="font-size:12px;color:var(--muted);margin-left:8px">× ₹49 = ₹<span id="pay-total">49</span></span>
+      <span style="font-size:12px;color:var(--muted);margin-left:8px">× ₹99 = ₹<span id="pay-total">99</span></span>
     </div>
     <button class="btn-primary" id="pay-razorpay-btn" style="margin-top:12px">Pay with Razorpay (Cards/UPI/NetBanking)</button>
     <div class="auth-error" id="pay-error"></div>
@@ -4090,7 +4076,7 @@ async function initAuth() {
   // Payment modal events
   $('pay-runs')?.addEventListener('input', () => {
     const runs = Math.max(1, parseInt($('pay-runs').value)||1);
-    $('pay-total').textContent = runs * 49;
+    $('pay-total').textContent = runs * 99;
   });
   $('pay-razorpay-btn')?.addEventListener('click', handlePayment);
   $('pay-close')?.addEventListener('click', () => $('pay-overlay').classList.remove('show'));
@@ -4317,8 +4303,8 @@ function showPaymentModal() {
 function updateTopup() {
   const val = parseInt($('topup-slider')?.value) || 1;
   $('topup-input').value = val;
-  const total = val * 49;
-  $('topup-display').textContent = `Pay ₹${total.toLocaleString('en-IN')} for ${val} Design${val>1?'s':''}`;
+  const total = val * 99;
+  $('topup-display').textContent = `Pay ₹${total.toLocaleString('en-IN')} for ${val} Run${val>1?'s':''}`;
   $('topup-total').textContent = total.toLocaleString('en-IN');
   $('topup-count').textContent = val;
 }

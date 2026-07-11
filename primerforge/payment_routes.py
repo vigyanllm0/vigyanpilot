@@ -26,7 +26,6 @@ from .auth import (
     require_auth,
 )
 from .price_registry import (
-    DOCK_TOPUP_PRICE_INR,
     FREE_TRIAL_RUNS,
     PRICE_REGISTRY,
     TOPUP_PRICE_INR,
@@ -325,7 +324,6 @@ def pricing():
             if cfg.is_active
         ],
         "top_up_price_inr": TOPUP_PRICE_INR,
-        "dock_top_up_price_inr": DOCK_TOPUP_PRICE_INR,
         "free_trial_runs": FREE_TRIAL_RUNS,
         "free_dock_runs": FREE_DOCK_RUNS,
         "currency": "INR",

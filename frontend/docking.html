@@ -727,8 +727,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </div>
   </div>
   <div style="text-align:center;margin-top:24px">
-    <p style="font-size:12px;color:var(--muted)">🎟️ Docking top-up also available: ₹99/run · No subscription needed</p>
-    <button class="btn-price outline" style="margin-top:8px" onclick="handleDockPayment()">Buy Docking Top-Up — ₹99</button>
+    <p style="font-size:12px;color:var(--muted)">🎟️ Top-up available: ₹99/run for primer design OR docking · No subscription needed</p>
+    <button class="btn-price outline" style="margin-top:8px" onclick="handleDockPayment()">Buy Top-Up — ₹99/run</button>
   </div>
   <p class="pricing-footer">All prices in INR. GST extra. 2 free trial runs included on signup. Unified plans cover both primer design and molecular docking.</p>
 </div>
@@ -776,9 +776,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <!-- PAYMENT MODAL -->
 <div class="pay-overlay" id="pay-overlay">
   <div class="pay-card">
-    <div class="pay-title">Buy Docking Runs</div>
-    <div class="pay-amount">&#x20B9;99 <span style="font-size:14px;color:var(--muted)">per docking run</span></div>
-    <p style="font-size:12px;color:var(--text2);text-align:center">Purchase docking credits to continue. Payments are processed securely by Razorpay.</p>
+    <div class="pay-title">Buy Top-Up Runs</div>
+    <div class="pay-amount">&#x20B9;99 <span style="font-size:14px;color:var(--muted)">per run (primer design or docking)</span></div>
+    <p style="font-size:12px;color:var(--text2);text-align:center">Top-up credits work for both primer design and molecular docking. Payments are processed securely by Razorpay.</p>
     <div style="display:flex;gap:8px;margin:16px 0;align-items:center;justify-content:center">
       <input type="number" id="dock-pay-qty" class="form-input" value="1" min="1" max="100" style="width:70px;text-align:center">
       <span style="font-size:13px;color:var(--muted)">run(s) = &#x20B9;<span id="dock-pay-total">99</span></span>
@@ -879,7 +879,8 @@ async function openRazorpayCheckout(order, context) {
         var vd = await vr.json();
         if (vr.ok && vd.success) {
           $('pay-overlay').classList.remove('show');
-          alert('Payment successful! ' + (vd.runs_purchased || vd.tokens_credited || qty) + ' docking run(s) credited.');
+          var runsCredited = vd.runs_purchased || vd.tokens_credited || (typeof qty === 'number' ? qty : 1);
+          alert('Payment successful! ' + runsCredited + ' run(s) credited.');
         } else {
           alert(vd.error || 'Verification failed');
         }

@@ -10,7 +10,7 @@ Tiers:
   - Individual: ₹2,499/mo → 250 designs + 50 docking
   - Institutional: ₹14,999/mo → 2,000 designs + 500 docking, 5 seats
   - Corporate: ₹49,999/mo → 7,500 designs + 2,000 docking, unlimited seats
-  - Top-Up: ₹49/design, ₹99/docking
+  - Top-Up: ₹99/run (covers both primer design and molecular docking)
 """
 
 from dataclasses import dataclass
@@ -87,9 +87,8 @@ PRICE_REGISTRY: dict[str, ProductConfig] = {
     ),
 }
 
-# Single top-up pricing
-TOPUP_PRICE_INR: int = 49  # ₹49 per single primer design run
-DOCK_TOPUP_PRICE_INR: int = 99  # ₹99 per single docking run
+# Single unified top-up pricing — ₹99 covers ONE run (primer design OR docking)
+TOPUP_PRICE_INR: int = 99
 
 # Free trial allocation
 FREE_TRIAL_RUNS: int = 2
@@ -105,10 +104,8 @@ def get_amount_paise(product_id: str, quantity: int = 1) -> int:
     Calculate exact payment amount in paise.
     Integer arithmetic only — no floating point.
     """
-    if product_id == "top_up":
+    if product_id in ("top_up", "dock_top_up"):
         return quantity * TOPUP_PRICE_INR * 100
-    if product_id == "dock_top_up":
-        return quantity * DOCK_TOPUP_PRICE_INR * 100
     product = PRICE_REGISTRY.get(product_id)
     if not product:
         raise ValueError(f"Unknown product_id: {product_id}")
@@ -147,7 +144,7 @@ def get_designs_for_product(product_id: str, quantity: int = 1) -> int:
 
 def get_dock_runs_for_product(product_id: str, quantity: int = 1) -> int:
     """Get number of docking credits for a product purchase."""
-    if product_id == "dock_top_up":
+    if product_id in ("dock_top_up", "top_up"):
         return quantity
     product = PRICE_REGISTRY.get(product_id)
     return product.dock_runs_included if product else 0
