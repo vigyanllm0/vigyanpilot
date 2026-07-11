@@ -11,14 +11,21 @@ GET  /api/admin/payments — Admin: payment history
 GET  /api/admin/stats    — Admin: system stats
 """
 
-import bcrypt
 import time
-from flask import Blueprint, request, jsonify, g
+
+import bcrypt
+from flask import Blueprint, g, jsonify, request
 
 from .auth import (
-    get_db, get_current_user, require_auth, require_admin,
-    create_token, check_usage, increment_usage, log_action,
-    ADMIN_EMAIL, PRICE_PER_DESIGN, FREE_RUNS
+    ADMIN_EMAIL,
+    FREE_RUNS,
+    PRICE_PER_DESIGN,
+    check_usage,
+    create_token,
+    get_db,
+    log_action,
+    require_admin,
+    require_auth,
 )
 
 auth_bp = Blueprint('auth', __name__)
@@ -26,7 +33,7 @@ auth_bp = Blueprint('auth', __name__)
 
 @auth_bp.route('/api/auth/register', methods=['POST'])
 def register():
-    from .security import validate_email, validate_password, sanitize_string
+    from .security import sanitize_string, validate_email, validate_password
 
     data = request.get_json(silent=True) or {}
     email = (data.get('email') or '').strip().lower()
@@ -165,7 +172,7 @@ def google_auth():
             return jsonify({"error": "Invalid Google token."}), 401
         ginfo = r.json()
     except Exception as e:
-        return jsonify({"error": f"Google verification failed: {str(e)}"}), 500
+        return jsonify({"error": f"Google verification failed: {e!s}"}), 500
 
     email = ginfo.get('email', '').strip().lower()
     name = ginfo.get('name', '')

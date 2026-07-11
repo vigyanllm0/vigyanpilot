@@ -6,8 +6,9 @@ Structures BLAST results into a uniform table format.
 No local BLAST binary needed — uses NCBI API or exact matching.
 """
 
-import os, re, logging
-from typing import Dict, List, Optional
+import logging
+import os
+import re
 
 logger = logging.getLogger(__name__)
 
@@ -41,7 +42,7 @@ def run_remote_blast(
     database: str = "nt",
     organism: str = "",
     max_hits: int = 50,
-) -> Dict:
+) -> dict:
     """
     Run BLAST via NCBI Remote API.
     database: nt, nr, refseq_rna, refseq_protein
@@ -171,8 +172,8 @@ def run_remote_blast(
 
 def run_local_blast(
     query_sequence: str,
-    subject_sequences: List[Dict],
-) -> Dict:
+    subject_sequences: list[dict],
+) -> dict:
     """
     Simple exact/ungapped alignment against provided sequences.
     No local BLAST binary required.
@@ -229,7 +230,7 @@ def run_local_blast(
     }
 
 
-def _fallback_exact_match(query: str, organism: str = "") -> List[Dict]:
+def _fallback_exact_match(query: str, organism: str = "") -> list[dict]:
     """Fallback when BLAST remote fails — returns empty list."""
     return []
 
@@ -257,7 +258,7 @@ def _estimate_evalue(pct: float, align_len: int, db_len: int) -> str:
     return _format_evalue(raw)
 
 
-def format_results_table(results: List[Dict]) -> List[List]:
+def format_results_table(results: list[dict]) -> list[list]:
     """Convert BLAST results to table rows for frontend."""
     rows = []
     for r in results:

@@ -20,7 +20,7 @@ Penalty weights (from design spec):
 """
 
 import logging
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -53,7 +53,7 @@ TOP_N_PAIRS = 10
 # Public API
 # ---------------------------------------------------------------------------
 
-def execute(input_data: Dict[str, Any]) -> Dict[str, Any]:
+def execute(input_data: dict[str, Any]) -> dict[str, Any]:
     """
     Step 19: Final penalty aggregation and ranking.
 
@@ -176,7 +176,7 @@ def execute(input_data: Dict[str, Any]) -> Dict[str, Any]:
 # Candidate Selection
 # ---------------------------------------------------------------------------
 
-def _select_pairs_to_rank(input_data: Dict[str, Any]) -> Tuple[List[Dict[str, Any]], str]:
+def _select_pairs_to_rank(input_data: dict[str, Any]) -> tuple[list[dict[str, Any]], str]:
     """Return the richest available pair-shaped list for final ranking."""
     for key in (
         "multiplex_scored",
@@ -199,7 +199,7 @@ def _select_pairs_to_rank(input_data: Dict[str, Any]) -> Tuple[List[Dict[str, An
 # Output Normalization
 # ---------------------------------------------------------------------------
 
-def _normalize_frontend_aliases(pair: Dict[str, Any], target_seq: str = "") -> None:
+def _normalize_frontend_aliases(pair: dict[str, Any], target_seq: str = "") -> None:
     """Populate canonical UI/export aliases without changing ranking inputs."""
     fwd = _primer_dict(pair.get("forward"), pair.get("forward_tm"))
     rev = _primer_dict(pair.get("reverse"), pair.get("reverse_tm"))
@@ -306,7 +306,7 @@ def _normalize_frontend_aliases(pair: Dict[str, Any], target_seq: str = "") -> N
     rev.setdefault("quality_score", pair["reverse_primer"].get("quality_score"))
 
 
-def _primer_dict(value: Any, fallback_tm: Any = None) -> Dict[str, Any]:
+def _primer_dict(value: Any, fallback_tm: Any = None) -> dict[str, Any]:
     if isinstance(value, dict):
         primer = dict(value)
     else:
@@ -323,7 +323,7 @@ def _primer_dict(value: Any, fallback_tm: Any = None) -> Dict[str, Any]:
     return primer
 
 
-def _infer_positions(pair: Dict[str, Any], fwd: Dict[str, Any], rev: Dict[str, Any], target_seq: str) -> None:
+def _infer_positions(pair: dict[str, Any], fwd: dict[str, Any], rev: dict[str, Any], target_seq: str) -> None:
     fwd_seq = fwd.get("sequence", "")
     rev_seq = rev.get("sequence", "")
     target_upper = target_seq.upper()
@@ -352,7 +352,7 @@ def _infer_positions(pair: Dict[str, Any], fwd: Dict[str, Any], rev: Dict[str, A
         pair["product_end"] = rev["stop_pos"]
 
 
-def _extract_amplicon_sequence(pair: Dict[str, Any], target_seq: str) -> str:
+def _extract_amplicon_sequence(pair: dict[str, Any], target_seq: str) -> str:
     if not target_seq:
         return ""
     start = pair.get("product_start")
@@ -395,7 +395,7 @@ def _numeric_or_none(value: Any):
         return None
 
 
-def _measured_primer_quality(primer: Dict[str, Any]):
+def _measured_primer_quality(primer: dict[str, Any]):
     tm = _numeric_or_none(primer.get("tm"))
     gc = _numeric_or_none(primer.get("gc"))
     hairpin_dg = _numeric_or_none(primer.get("hairpin_dg"))
@@ -422,7 +422,7 @@ def _reverse_complement(sequence: str) -> str:
 # Penalty Aggregation
 # ---------------------------------------------------------------------------
 
-def _aggregate_penalties(pair: Dict[str, Any]) -> float:
+def _aggregate_penalties(pair: dict[str, Any]) -> float:
     """
     Aggregate all penalties from steps 5, 7, 10, 11, 12, 13, 14, 15, 16, 18.
     Uses the design-spec weights.
@@ -540,7 +540,7 @@ def _assign_status(total_penalty: float) -> str:
 # Penalty Breakdown
 # ---------------------------------------------------------------------------
 
-def _build_penalty_breakdown(pair: Dict[str, Any]) -> List[Dict[str, Any]]:
+def _build_penalty_breakdown(pair: dict[str, Any]) -> list[dict[str, Any]]:
     """Build a detailed breakdown of penalties for reporting."""
     breakdown = []
 

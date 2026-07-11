@@ -12,7 +12,7 @@ Requirements: 5.1, 5.2, 5.3, 5.4, 5.5, 5.6
 import logging
 import os
 import re
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -43,7 +43,7 @@ _TRINUCLEOTIDE_RE = re.compile(r'(.{3})\1{' + str(TRINUCLEOTIDE_MIN_UNITS - 1) +
 # Local Dfam annotation query
 # ---------------------------------------------------------------------------
 
-def _query_dfam_annotations(coordinates: str, annotation_path: Optional[str] = None) -> List[Dict[str, Any]]:
+def _query_dfam_annotations(coordinates: str, annotation_path: str | None = None) -> list[dict[str, Any]]:
     """
     Query a local Dfam-style repeat annotation TSV.
 
@@ -80,10 +80,10 @@ def _query_dfam_annotations(coordinates: str, annotation_path: Optional[str] = N
             f"Dfam repeat annotations are not available at {repeat_path!r}"
         )
 
-    repeat_regions: List[Dict[str, Any]] = []
+    repeat_regions: list[dict[str, Any]] = []
     try:
-        with open(repeat_path, "r", encoding="utf-8") as handle:
-            header: Optional[List[str]] = None
+        with open(repeat_path, encoding="utf-8") as handle:
+            header: list[str] | None = None
             for line in handle:
                 line = line.strip()
                 if not line or line.startswith("#"):
@@ -155,7 +155,7 @@ def _classify_repeat_element(rep_class: str, rep_family: str) -> str:
 # Complexity scan (fallback when no genomic coordinates or local annotations fail)
 # ---------------------------------------------------------------------------
 
-def _complexity_scan(seq: str) -> List[Dict[str, Any]]:
+def _complexity_scan(seq: str) -> list[dict[str, Any]]:
     """
     Detect low-complexity regions in a DNA sequence using pattern matching.
 
@@ -177,8 +177,8 @@ def _complexity_scan(seq: str) -> List[Dict[str, Any]]:
             repeat_type (str): "homopolymer", "dinucleotide", or "trinucleotide"
     """
     upper_seq = seq.upper()
-    regions: List[Dict[str, Any]] = []
-    seen_ranges: List[tuple] = []
+    regions: list[dict[str, Any]] = []
+    seen_ranges: list[tuple] = []
 
     # Scan for homopolymer runs ≥ 6
     for match in _HOMOPOLYMER_RE.finditer(upper_seq):
@@ -227,7 +227,7 @@ def _complexity_scan(seq: str) -> List[Dict[str, Any]]:
     return regions
 
 
-def _is_subsumed(start: int, end: int, existing: List[tuple]) -> bool:
+def _is_subsumed(start: int, end: int, existing: list[tuple]) -> bool:
     """Check if a range [start, end) is entirely within any existing range."""
     for ex_start, ex_end in existing:
         if start >= ex_start and end <= ex_end:
@@ -239,7 +239,7 @@ def _is_subsumed(start: int, end: int, existing: List[tuple]) -> bool:
 # Soft masking
 # ---------------------------------------------------------------------------
 
-def _soft_mask(seq: str, regions: List[Dict[str, Any]]) -> str:
+def _soft_mask(seq: str, regions: list[dict[str, Any]]) -> str:
     """
     Lowercase all identified repeat/low-complexity positions in the sequence.
 
@@ -309,8 +309,8 @@ def _check_primer_repeat_overlap(
     primer_seq: str,
     primer_start: int,
     masked_seq: str,
-    regions: List[Dict[str, Any]],
-) -> Optional[Dict[str, Any]]:
+    regions: list[dict[str, Any]],
+) -> dict[str, Any] | None:
     """
     Check if a primer overlaps masked repeat regions by ≥ 50%.
 
@@ -347,7 +347,7 @@ def _check_primer_repeat_overlap(
 
 
 def _identify_overlapping_element(
-    primer_positions: set, regions: List[Dict[str, Any]]
+    primer_positions: set, regions: list[dict[str, Any]]
 ) -> str:
     """Identify the repeat element type with the most overlap to the primer."""
     best_overlap = 0
@@ -367,7 +367,7 @@ def _identify_overlapping_element(
 # Module-level execute function
 # ---------------------------------------------------------------------------
 
-def execute(input_data: Dict[str, Any]) -> Dict[str, Any]:
+def execute(input_data: dict[str, Any]) -> dict[str, Any]:
     """
     Step 5: Repeat Masking — mask repetitive elements before primer design.
 
@@ -397,7 +397,7 @@ def execute(input_data: Dict[str, Any]) -> Dict[str, Any]:
         raise ValueError("No target_sequence provided for repeat masking")
 
     # --------------- Identify repeat regions ---------------
-    repeat_regions: List[Dict[str, Any]] = []
+    repeat_regions: list[dict[str, Any]] = []
     masking_source = "complexity_scan"
 
     if genomic_coordinates:
@@ -433,7 +433,7 @@ def execute(input_data: Dict[str, Any]) -> Dict[str, Any]:
     masked_sequence = _soft_mask(target_sequence, repeat_regions)
 
     # --------------- Primer overlap rejection (Requirements 5.4, 5.5) -------
-    flagged_primers: List[Dict[str, Any]] = []
+    flagged_primers: list[dict[str, Any]] = []
 
     if primer_candidates:
         for candidate in primer_candidates:

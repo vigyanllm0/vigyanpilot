@@ -13,9 +13,9 @@ then post-filter for strict enforcement of:
 - Max ΔTm ≤ 1.5°C between forward and reverse (Requirement 6.7)
 """
 
-import re
 import logging
-from typing import Any, Dict, List, Tuple
+import re
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -69,7 +69,7 @@ def _has_3prime_homopolymer(sequence: str) -> bool:
     return max_run > HOMOPOLYMER_MAX_RUN
 
 
-def _validate_tm_window(tm_min: float, tm_max: float) -> Tuple[float, float]:
+def _validate_tm_window(tm_min: float, tm_max: float) -> tuple[float, float]:
     """
     Validate and clamp the Tm window to absolute bounds [50, 72]°C.
 
@@ -98,10 +98,10 @@ def _passes_tm_constraint(tm: float, tm_min: float, tm_max: float) -> bool:
 
 
 def _filter_candidate(
-    primer_info: Dict[str, Any],
+    primer_info: dict[str, Any],
     tm_min: float,
     tm_max: float,
-) -> Tuple[bool, str]:
+) -> tuple[bool, str]:
     """
     Post-filter a single primer against constraints.
 
@@ -127,7 +127,7 @@ def _filter_candidate(
     return True, ""
 
 
-def execute(input_data: Dict[str, Any]) -> Dict[str, Any]:
+def execute(input_data: dict[str, Any]) -> dict[str, Any]:
     """
     Step 6: Run Primer3 to generate baseline candidate pairs, then post-filter.
 

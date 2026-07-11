@@ -11,7 +11,7 @@ sequences for sense and antisense strands.
 """
 
 import logging
-from typing import Any, Dict, List, Tuple
+from typing import Any
 
 from .base import PipelineStep
 
@@ -27,7 +27,7 @@ class BisulfiteConversionStep(PipelineStep):
     def __init__(self):
         super().__init__(name="Bisulfite Conversion Simulation", step_number=3)
 
-    def execute(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
+    def execute(self, input_data: dict[str, Any]) -> dict[str, Any]:
         """
         Simulate bisulfite conversion on sense and antisense strands.
 
@@ -132,7 +132,7 @@ class BisulfiteConversionStep(PipelineStep):
 
         return "".join(result)
 
-    def _count_cpg_sites(self, seq: str) -> Tuple[int, List[int]]:
+    def _count_cpg_sites(self, seq: str) -> tuple[int, list[int]]:
         """
         Count CpG dinucleotides and return their 0-indexed positions.
 
@@ -145,13 +145,13 @@ class BisulfiteConversionStep(PipelineStep):
         Returns:
             Tuple of (count, list of 0-indexed positions of C in CpG).
         """
-        positions: List[int] = []
+        positions: list[int] = []
         for i in range(len(seq) - 1):
             if seq[i] == "C" and seq[i + 1] == "G":
                 positions.append(i)
         return len(positions), positions
 
-    def _find_ambiguous_positions(self, seq: str) -> List[Dict]:
+    def _find_ambiguous_positions(self, seq: str) -> list[dict]:
         """
         Identify positions with IUPAC ambiguity codes (non-ACGT characters).
 
@@ -165,7 +165,7 @@ class BisulfiteConversionStep(PipelineStep):
             List of dicts with 'position', 'code', and 'note' for each
             ambiguous position.
         """
-        ambiguous: List[Dict] = []
+        ambiguous: list[dict] = []
         for i, base in enumerate(seq):
             if base in IUPAC_AMBIGUITY_CODES:
                 ambiguous.append({
@@ -202,7 +202,7 @@ class BisulfiteConversionStep(PipelineStep):
         return "".join(complement_map.get(base, "N") for base in reversed(seq))
 
 
-def execute(input_data: Dict[str, Any]) -> Dict[str, Any]:
+def execute(input_data: dict[str, Any]) -> dict[str, Any]:
     """
     Module-level execute function that instantiates BisulfiteConversionStep
     and runs the step.

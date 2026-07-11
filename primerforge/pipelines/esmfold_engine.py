@@ -7,13 +7,12 @@ Model is downloaded once (~2.5GB) and cached at ~/.cache/huggingface/
 No API calls, no rate limits, fully offline after first run.
 """
 
-import logging
-import io
-import os
 import asyncio
-import urllib.request
+import logging
+import os
 import urllib.error
-from typing import Dict, Any, Optional
+import urllib.request
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -25,6 +24,7 @@ _esmfold_model = None
 _esmfold_tokenizer = None
 _esmfold_lock = None
 import threading
+
 _esmfold_lock = threading.Lock()
 
 
@@ -48,7 +48,7 @@ def _load_model(report=None):
 
         _log("📡 ESMFold: INITIALIZING ENGINE...")
         from huggingface_hub import snapshot_download
-        
+
         _log("📡 ESMFold: Checking/Downloading weights (~8.4GB)...")
         print(">>> ESMFold: Starting weight download/check. This may take a while...")
         model_path = snapshot_download(
@@ -56,10 +56,10 @@ def _load_model(report=None):
             local_files_only=False,
             resume_download=True
         )
-        
+
         os.environ["TORCH_LOAD_MMAP"] = "0"
-        
-        _log(f"📡 ESMFold: Weights located. Loading into memory...")
+
+        _log("📡 ESMFold: Weights located. Loading into memory...")
 
         # Auto-detect best compute device
         if torch.cuda.is_available():
@@ -78,14 +78,14 @@ def _load_model(report=None):
         # Limit torch threads to avoid CPU oversubscription on shared ACI
         cpu_count = os.cpu_count() or 4
         torch.set_num_threads(min(cpu_count, 8))
-        
+
         _esmfold_tokenizer = AutoTokenizer.from_pretrained(model_path)
         _esmfold_model = EsmForProteinFolding.from_pretrained(
             model_path,
             torch_dtype=dtype,
             low_cpu_mem_usage=True
         )
-            
+
         _log(f"📡 ESMFold: Moving model to {device.upper()} for high-speed inference...")
         _esmfold_model = _esmfold_model.to(device)
         _esmfold_model.eval()
@@ -121,7 +121,7 @@ def _extract_plddt_from_pdb(pdb_string: str) -> float:
     return 0.0
 
 
-def _fetch_esmfold_api_pdb(sequence: str, report=None) -> Optional[Dict[str, Any]]:
+def _fetch_esmfold_api_pdb(sequence: str, report=None) -> dict[str, Any] | None:
     """Fetch protein structure from the free ESMFold web API (api.esmatlas.com).
     
     Returns the same dict format as local ESMFold, or None on failure.
@@ -206,7 +206,7 @@ def _generate_fallback_pdb(sequence: str) -> str:
     CA_DIST = 1.5      # Cα step along the helix axis (Å)
     ANGLE   = math.radians(100)  # 100° per residue = ~3.6 residues/turn
     HELIX_R = 2.3      # helix radius (Å)
-    
+
     atom_serial = 1
     for i, aa in enumerate(seq):
         res_name = _AA_COORD.get(aa, ('UNK', 0))[0]
@@ -215,7 +215,7 @@ def _generate_fallback_pdb(sequence: str) -> str:
         x = HELIX_R * math.cos(theta)
         y = HELIX_R * math.sin(theta)
         z = i * CA_DIST
-        
+
         # N atom
         nt = theta + 0.3
         nx = HELIX_R * math.cos(nt)
@@ -223,11 +223,11 @@ def _generate_fallback_pdb(sequence: str) -> str:
         nz = z + 0.3
         lines.append(f"ATOM  {atom_serial:>5d}  N   {res_name:<3s} A{1:>4d}    {nx:>8.3f}{ny:>8.3f}{nz:>8.3f}  1.00  0.00           N  ")
         atom_serial += 1
-        
+
         # CA atom
         lines.append(f"ATOM  {atom_serial:>5d}  CA  {res_name:<3s} A{1:>4d}    {x:>8.3f}{y:>8.3f}{z:>8.3f}  1.00  0.00           C  ")
         atom_serial += 1
-        
+
         # C atom
         ct = theta - 0.3
         cx = HELIX_R * math.cos(ct)
@@ -235,7 +235,7 @@ def _generate_fallback_pdb(sequence: str) -> str:
         cz = z - 0.3
         lines.append(f"ATOM  {atom_serial:>5d}  C   {res_name:<3s} A{1:>4d}    {cx:>8.3f}{cy:>8.3f}{cz:>8.3f}  1.00  0.00           C  ")
         atom_serial += 1
-        
+
         # O atom
         ot = theta + 0.8
         ox = HELIX_R * math.cos(ot)
@@ -249,13 +249,13 @@ def _generate_fallback_pdb(sequence: str) -> str:
     return "\n".join(lines)
 
 
-async def predict_structure(sequence: str, progress_callback=None) -> Dict[str, Any]:
+async def predict_structure(sequence: str, progress_callback=None) -> dict[str, Any]:
     """
     Predict protein 3D structure from amino acid sequence using ESMFold.
     Falls back to extended-chain PDB if ESMFold model is unavailable.
     """
     import asyncio
-    
+
     async def _internal_report(msg: str):
         if progress_callback:
             await progress_callback("STAGE 1 / ESMFold", msg)
@@ -288,7 +288,7 @@ async def predict_structure(sequence: str, progress_callback=None) -> Dict[str, 
     return result
 
 
-def _run_esmfold_sync(sequence: str, main_loop: asyncio.AbstractEventLoop, progress_report_coro=None) -> Dict[str, Any]:
+def _run_esmfold_sync(sequence: str, main_loop: asyncio.AbstractEventLoop, progress_report_coro=None) -> dict[str, Any]:
     """Synchronous ESMFold inference (runs in thread pool executor)."""
     import torch
 
@@ -330,7 +330,7 @@ def _run_esmfold_sync(sequence: str, main_loop: asyncio.AbstractEventLoop, progr
             return_tensors="pt",
             add_special_tokens=False
         )
-        _report(f"🚀 ESMFold: Structural folding in progress (Scale: $O(N^2)$)...")
+        _report("🚀 ESMFold: Structural folding in progress (Scale: $O(N^2)$)...")
         # Move inputs to same device as model
         device = next(model.parameters()).device
         tokenized = {k: v.to(device) for k, v in tokenized.items()}

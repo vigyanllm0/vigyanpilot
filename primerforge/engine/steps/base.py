@@ -6,16 +6,16 @@ Abstract base class and result dataclass for all pipeline steps.
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import Any, Dict, Optional
+from typing import Any
 
 
 @dataclass
 class StepResult:
     """Structured result returned by each pipeline step execution."""
     status: str  # passed | failed | skipped
-    output_data: Dict[str, Any] = field(default_factory=dict)
+    output_data: dict[str, Any] = field(default_factory=dict)
     duration_ms: int = 0
-    error_msg: Optional[str] = None
+    error_msg: str | None = None
 
 
 class PipelineStep(ABC):
@@ -33,7 +33,7 @@ class PipelineStep(ABC):
         self.step_number = step_number
 
     @abstractmethod
-    def execute(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
+    def execute(self, input_data: dict[str, Any]) -> dict[str, Any]:
         """
         Run this step's logic.
 
@@ -48,7 +48,7 @@ class PipelineStep(ABC):
         """
         ...
 
-    def validate_input(self, data: Dict[str, Any]) -> bool:
+    def validate_input(self, data: dict[str, Any]) -> bool:
         """
         Check whether required keys are present in input_data.
 

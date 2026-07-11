@@ -11,10 +11,10 @@ Key derivation order:
 Encryption is applied server-side only. The key never leaves the server.
 """
 
-import os
 import base64
 import hashlib
 import logging
+import os
 import threading
 
 from cryptography.fernet import Fernet, InvalidToken
@@ -51,7 +51,6 @@ def _get_key() -> bytes:
         logger.info("DATA_ENCRYPTION_KEY derived from PRIMERFORGE_SECRET (SHA-256)")
         return _KEY_CACHE
 
-    import secrets as _secrets
     _KEY_CACHE = Fernet.generate_key()
     logger.warning(
         "No DATA_ENCRYPTION_KEY or PRIMERFORGE_SECRET set — "

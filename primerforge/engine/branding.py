@@ -5,7 +5,6 @@ Centralizes brand identity constants and utility functions for consistent
 branding across API responses, error messages, and order identifiers.
 """
 
-from typing import Dict
 
 # Brand constants
 SYSTEM_BRAND: str = "VigyanLLM"
@@ -13,7 +12,7 @@ ORDER_PREFIX: str = "VL-"
 LEGACY_PREFIXES: list = ["PF-", "Glixtron", "PrimerForge"]
 
 
-def brand_response(response: Dict) -> Dict:
+def brand_response(response: dict) -> dict:
     """Inject 'system': 'VigyanLLM' into an API response dictionary.
 
     Adds the system brand identifier to the response while preserving

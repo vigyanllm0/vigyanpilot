@@ -35,7 +35,10 @@ def run_pipeline(self, job_id: str):
     """
     logger.info("Pipeline started for job_id=%s", job_id)
 
-    from .orchestrator import PipelineOrchestrator, PipelineConfig
+    from primerforge.database import execute as db_execute
+    from primerforge.database import fetch_one
+
+    from .orchestrator import PipelineConfig, PipelineOrchestrator
     from .steps import (
         step01_execute,
         step02_execute,
@@ -62,8 +65,6 @@ def run_pipeline(self, job_id: str):
         step23_execute,
         step24_execute,
     )
-
-    from primerforge.database import fetch_one, execute as db_execute
     job = fetch_one("SELECT input_params FROM pipeline_jobs WHERE id = %s", (job_id,))
     if not job:
         logger.error("Job %s not found in database", job_id)
@@ -117,6 +118,7 @@ def run_pipeline(self, job_id: str):
     outcomes = orchestrator.run(job_id, input_params)
 
     import json as json_mod
+
     from primerforge.crypto_utils import encrypt_data
     for outcome in outcomes:
         try:

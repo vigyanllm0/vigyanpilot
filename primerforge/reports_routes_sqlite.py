@@ -19,14 +19,14 @@ Endpoints:
 import csv
 import io
 import json
+import logging
 import os
-import re
 import secrets
 import time
-import logging
-from flask import Blueprint, request, jsonify, g, make_response
 
-from .auth import get_db, get_current_user, require_auth
+from flask import Blueprint, g, jsonify, make_response, request
+
+from .auth import get_db, require_auth
 
 logger = logging.getLogger("primerforge.reports")
 

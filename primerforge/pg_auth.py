@@ -32,21 +32,21 @@ Security properties:
   - Per-user session limit with oldest-session eviction
 """
 
-import os
+import base64
 import hashlib
 import hmac
-import time
 import json
-import base64
 import logging
+import os
 import threading
+import time
+from datetime import datetime
 from functools import wraps
-from datetime import datetime, timezone
 
 import bcrypt
-from flask import request, jsonify, g
+from flask import g, jsonify, request
 
-from .database import get_db, fetch_one, fetch_all, execute, execute_returning, db_transaction, set_rls_context
+from .database import execute, execute_returning, fetch_one, get_db, set_rls_context
 
 logger = logging.getLogger("primerforge.auth")
 
@@ -427,7 +427,7 @@ def register_user(email: str, password: str, name: str = "") -> dict:
     Users are created in 'pending' status until their email is verified.
     No session token is returned — user must verify email first.
     """
-    from .security import validate_email, validate_password, sanitize_string
+    from .security import sanitize_string, validate_email, validate_password
 
     if not isinstance(email, str) or not isinstance(password, str):
         return {"error": "Invalid input types."}
@@ -482,7 +482,7 @@ def register_user(email: str, password: str, name: str = "") -> dict:
             if env == "development":
                 logger.warning("Email sending failed — verification token: %s", verify_token)
 
-    log_action(email, "registration", f"User registered (status: pending, verification sent)")
+    log_action(email, "registration", "User registered (status: pending, verification sent)")
     return {"user": {"email": user["email"], "id": user["id"]}, "requires_verification": True}
 
 
@@ -707,10 +707,23 @@ def consume_token(user_id: int, email: str) -> bool:
 
 
 def check_docking_usage(email: str) -> dict:
-    """Check if user can run docking. Checks balance (same pool as primer design)."""
+    """Check if user can run docking. Checks subscription dock quota OR top-up balance."""
     if not isinstance(email, str):
         return {"can_run": False, "error": "Invalid input"}
     try:
+        row = fetch_one(
+            """SELECT u.id, u.role, tb.balance, tb.total_consumed,
+                      s.is_active AS has_subscription, s.plan_id,
+                      s.dock_monthly_quota, s.dock_quota_used, s.expires_at
+               FROM users u
+               LEFT JOIN token_balances tb ON tb.user_id = u.id
+               LEFT JOIN subscriptions s ON s.user_id = u.id
+               WHERE u.email = %s""",
+            (email,)
+        )
+    except Exception:
+        row = None
+    if not row:
         row = fetch_one(
             """SELECT u.id, u.role, tb.balance, tb.total_consumed
                FROM users u
@@ -718,27 +731,74 @@ def check_docking_usage(email: str) -> dict:
                WHERE u.email = %s""",
             (email,)
         )
-    except Exception:
-        row = None
-    if not row:
-        return {"can_run": False, "error": "User not found"}
+        if not row:
+            return {"can_run": False, "error": "User not found"}
+        balance = row.get("balance") or 0
+        is_admin = row.get("role") == "admin"
+        return {"can_run": is_admin or balance > 0, "balance": balance, "plan": "none",
+                "needs_payment": not (is_admin or balance > 0), "is_admin": is_admin,
+                "price_per_run": 99}
+
     balance = row.get("balance") or 0
     is_admin = row.get("role") == "admin"
-    can_run = is_admin or balance > 0
+
+    has_subscription = False
+    dock_remaining = 0
+    plan_id = row.get("plan_id") or "none"
+    dock_monthly_quota = row.get("dock_monthly_quota") or 0
+    dock_quota_used = row.get("dock_quota_used") or 0
+
+    if row.get("has_subscription") and plan_id != "none":
+        expires = row.get("expires_at")
+        if expires is None:
+            has_subscription = True
+        elif isinstance(expires, datetime):
+            has_subscription = expires.timestamp() > time.time()
+        elif isinstance(expires, (int, float)):
+            has_subscription = expires > time.time()
+        if has_subscription:
+            dock_remaining = max(0, dock_monthly_quota - dock_quota_used)
+
+    can_run = is_admin or dock_remaining > 0 or balance > 0
+
     return {
         "can_run": can_run,
         "balance": balance,
-        "needs_payment": not can_run,
+        "subscription_dock_remaining": dock_remaining,
+        "dock_monthly_quota": dock_monthly_quota,
+        "dock_quota_used": dock_quota_used,
+        "plan": plan_id if has_subscription else "none",
+        "has_subscription": has_subscription,
         "is_admin": is_admin,
+        "needs_payment": not can_run,
         "price_per_run": 99,
     }
 
 
 def consume_docking_token(user_id: int, email: str) -> bool:
-    """Consume 1 docking credit from token_balances."""
+    """Consume 1 docking credit. Priority: subscription dock quota, then top-up balance."""
     user = fetch_one("SELECT role FROM users WHERE id = %s", (user_id,))
     if user and user["role"] == "admin":
         return True
+
+    # Try subscription dock quota first
+    try:
+        rowcount = execute(
+            """UPDATE subscriptions
+               SET dock_quota_used = dock_quota_used + 1
+               WHERE user_id = %s AND is_active = TRUE AND dock_quota_used < dock_monthly_quota""",
+            (user_id,)
+        )
+    except Exception:
+        rowcount = 0
+    if rowcount > 0:
+        execute(
+            "UPDATE token_balances SET total_consumed = total_consumed + 1, last_consumed_at = NOW() WHERE user_id = %s",
+            (user_id,)
+        )
+        return True
+
+    # Fall back to top-up balance
     rowcount = execute(
         """UPDATE token_balances
            SET balance = balance - 1,

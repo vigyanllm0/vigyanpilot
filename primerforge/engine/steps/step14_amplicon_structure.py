@@ -14,7 +14,7 @@ Strategy:
 
 import logging
 import math
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -33,7 +33,7 @@ MIN_STEM_LENGTH = 4
 # Public API
 # ---------------------------------------------------------------------------
 
-def execute(input_data: Dict[str, Any]) -> Dict[str, Any]:
+def execute(input_data: dict[str, Any]) -> dict[str, Any]:
     """
     Step 14: Check amplicon folding stability at extension temperature.
 
@@ -121,7 +121,7 @@ def execute(input_data: Dict[str, Any]) -> Dict[str, Any]:
 # Amplicon Extraction
 # ---------------------------------------------------------------------------
 
-def _extract_amplicon(pair: Dict[str, Any], target_seq: str) -> str:
+def _extract_amplicon(pair: dict[str, Any], target_seq: str) -> str:
     """Extract amplicon sequence from target using primer positions."""
     fwd = pair.get("forward", {})
     rev = pair.get("reverse", {})
@@ -162,7 +162,7 @@ def _extract_amplicon(pair: Dict[str, Any], target_seq: str) -> str:
 # Structure Prediction
 # ---------------------------------------------------------------------------
 
-def _predict_folding_engine(amplicon_seq: str) -> Dict[str, Any]:
+def _predict_folding_engine(amplicon_seq: str) -> dict[str, Any]:
     """Use the internal thermodynamics engine for folding prediction."""
     try:
         from ..thermodynamics import predict_amplicon_folding
@@ -180,7 +180,7 @@ def _predict_folding_engine(amplicon_seq: str) -> Dict[str, Any]:
         return _predict_folding_heuristic(amplicon_seq)
 
 
-def _predict_folding_heuristic(amplicon_seq: str) -> Dict[str, Any]:
+def _predict_folding_heuristic(amplicon_seq: str) -> dict[str, Any]:
     """
     Heuristic amplicon folding prediction based on palindrome/inverted repeat detection.
     Estimates ΔG at extension temperature using nearest-neighbor model.

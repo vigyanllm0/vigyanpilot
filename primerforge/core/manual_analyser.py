@@ -17,13 +17,13 @@ Performs COMPLETE analysis on any primer the user supplies:
 All values are real — computed using SantaLucia 1998 + primer3.
 """
 
-import math, logging, re
-from typing import Dict, Optional, List, Tuple
-from Bio.Seq import Seq
+import logging
+import math
+import re
+
 from Bio import pairwise2
 
-from .thermodynamics import (analyse_primer_full, analyse_primer_pair,
-                               calculate_tm_wallace, TmResult)
+from .thermodynamics import TmResult, analyse_primer_full, analyse_primer_pair
 
 logger = logging.getLogger("primerforge.manual")
 
@@ -49,7 +49,7 @@ def shannon_entropy(seq: str) -> float:
     return round(entropy, 4)
 
 
-def positional_gc_analysis(seq: str) -> Dict:
+def positional_gc_analysis(seq: str) -> dict:
     """
     Analyse GC content positionally:
     - First 5 bases (5' terminus)
@@ -75,7 +75,7 @@ def positional_gc_analysis(seq: str) -> Dict:
     }
 
 
-def run_length_analysis(seq: str) -> Dict:
+def run_length_analysis(seq: str) -> dict:
     """
     Identify all mono/di-nucleotide repeats.
     Critical for: poly-AAAA (low stability), poly-GGGG (G-quadruplex risk).
@@ -113,7 +113,7 @@ def run_length_analysis(seq: str) -> Dict:
 
 
 def align_primer_to_template(primer: str, template: str,
-                               mode: str = "local") -> Dict:
+                               mode: str = "local") -> dict:
     """
     Align primer to template using BioPython pairwise2.
     mode: 'local' (Smith-Waterman) or 'global' (Needleman-Wunsch)
@@ -159,25 +159,25 @@ def align_primer_to_template(primer: str, template: str,
     }
 
 
-def generate_primer_report(result: TmResult, pos_gc: Dict,
-                             run_info: Dict, entropy: float,
-                             template_alignment: Optional[Dict] = None) -> str:
+def generate_primer_report(result: TmResult, pos_gc: dict,
+                             run_info: dict, entropy: float,
+                             template_alignment: dict | None = None) -> str:
     """Generate a complete formatted primer analysis report string."""
 
     lines = [
         "═" * 70,
-        f"  PRIMER ANALYSIS REPORT — VigyanLLM v2.0",
-        f"  Thermodynamics: SantaLucia 1998 | Structure: primer3 v2.6.1",
+        "  PRIMER ANALYSIS REPORT — VigyanLLM v2.0",
+        "  Thermodynamics: SantaLucia 1998 | Structure: primer3 v2.6.1",
         "═" * 70,
         f"\n  SEQUENCE:  5'-{result.sequence}-3'",
         f"  Length:    {result.length} nt",
-        f"\n  ── MELTING TEMPERATURE ──────────────────────────────────────",
+        "\n  ── MELTING TEMPERATURE ──────────────────────────────────────",
         f"  Tm (Nearest-Neighbor, SantaLucia 1998): {result.tm_nearest_neighbor:6.2f} °C  ← PRIMARY",
         f"  Tm (Wallace rule, reference only):      {result.tm_basic_wallace:6.1f} °C",
         f"  ΔH°:   {result.delta_h:8.2f} kcal/mol",
         f"  ΔS°:   {result.delta_s:8.2f} cal/mol·K",
         f"  ΔG°₃₇: {result.delta_g_37:8.2f} kcal/mol",
-        f"\n  ── GC CONTENT AND COMPOSITION ──────────────────────────────",
+        "\n  ── GC CONTENT AND COMPOSITION ──────────────────────────────",
         f"  Overall GC:     {result.gc_content:5.1f}%  (target: 40-60%)",
         f"  5' terminus GC: {pos_gc['5prime_5nt_gc_pct']:5.1f}%  (first 5 bases)",
         f"  Middle GC:      {pos_gc['middle_gc_pct']:5.1f}%",
@@ -185,7 +185,7 @@ def generate_primer_report(result: TmResult, pos_gc: Dict,
         f"  3' last base:   {pos_gc['3prime_1nt']}   (GC clamp: {'✓ PASS' if pos_gc['gc_clamp_ok'] else '✗ FAIL'})",
         f"  3' last 3 bases: {pos_gc['3prime_3nt']}  ({pos_gc['3prime_gc_clamp_count']}/3 are GC)",
         f"  Sequence complexity (Shannon entropy): {entropy:.4f} bits (max=2.0)",
-        f"\n  ── SECONDARY STRUCTURE (primer3 thermodynamics) ────────────",
+        "\n  ── SECONDARY STRUCTURE (primer3 thermodynamics) ────────────",
         f"  Hairpin Tm:     {result.hairpin_tm:6.2f} °C  (alarm: >47°C)",
         f"  Hairpin ΔG₃₇:  {result.hairpin_dg:6.2f} kcal/mol  (alarm: <-3.0)",
         f"  Self-dimer Tm:  {result.self_dimer_tm:6.2f} °C  (alarm: >47°C)",
@@ -193,7 +193,7 @@ def generate_primer_report(result: TmResult, pos_gc: Dict,
         f"  3' end ΔG₃₇:   {result.end_stability:6.2f} kcal/mol  (3' stability)",
         f"  Self-complement (any):   {result.self_complement_any:.0f}  (0=no, 1=yes)",
         f"  Self-complement (3'):    {result.self_complement_3prime:.0f}  (0=no, 1=yes)",
-        f"\n  ── REPEAT ANALYSIS ─────────────────────────────────────────",
+        "\n  ── REPEAT ANALYSIS ─────────────────────────────────────────",
     ]
     for base in "ATGC":
         run = run_info["runs"][f"max_{base}_run"]
@@ -202,7 +202,7 @@ def generate_primer_report(result: TmResult, pos_gc: Dict,
 
     if template_alignment:
         lines += [
-            f"\n  ── TEMPLATE ALIGNMENT ──────────────────────────────────────",
+            "\n  ── TEMPLATE ALIGNMENT ──────────────────────────────────────",
             f"  Alignment mode:   {template_alignment.get('mode','?').upper()}",
             f"  Score:            {template_alignment.get('score', '?')}",
             f"  Identity:         {template_alignment.get('identity_pct', '?')}%",
@@ -211,7 +211,7 @@ def generate_primer_report(result: TmResult, pos_gc: Dict,
         ]
 
     lines += [
-        f"\n  ── QUALITY ASSESSMENT ──────────────────────────────────────",
+        "\n  ── QUALITY ASSESSMENT ──────────────────────────────────────",
         f"  Quality Score:  {result.quality_score:.1f}/100",
         f"  Verdict:        {'✅ PASS — primer is suitable for PCR' if result.is_valid else '⚠️  REVIEW WARNINGS before use'}",
     ]
@@ -228,12 +228,12 @@ def generate_primer_report(result: TmResult, pos_gc: Dict,
 
 def analyse_manual_primer(
     sequence:    str,
-    partner_seq: Optional[str] = None,
-    template:    Optional[str] = None,
+    partner_seq: str | None = None,
+    template:    str | None = None,
     na_mM:       float = 50.0,
     mg_mM:       float = 1.5,
     primer_conc_nM: float = 50.0,
-) -> Dict:
+) -> dict:
     """
     Complete analysis of a user-supplied primer.
     Returns all thermodynamic values, structural analysis, and formatted report.

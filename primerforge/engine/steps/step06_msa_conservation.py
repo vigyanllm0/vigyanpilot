@@ -22,10 +22,10 @@ Output keys:
 
 import logging
 import os
+import re
 import subprocess
 import tempfile
-import re
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -150,7 +150,7 @@ TARGET_ORGANISM_NCBI_MAP = {
 }
 
 
-def execute(input_data: Dict[str, Any]) -> Dict[str, Any]:
+def execute(input_data: dict[str, Any]) -> dict[str, Any]:
     sequence = input_data.get("consensus_sequence") or input_data.get("target_sequence") or input_data.get("sequence", "")
     if not sequence:
         return _fallback("No target sequence for MSA.", input_data)
@@ -204,7 +204,7 @@ def execute(input_data: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
-def _run_msa(reference: str, strain_seqs: List[str]) -> Dict[str, Any]:
+def _run_msa(reference: str, strain_seqs: list[str]) -> dict[str, Any]:
     """Run MSA using best available aligner: MAFFT > MUSCLE > Biopython."""
     _detect_aligners()  # lazy check (runs once)
     global _MAFFT_AVAILABLE, _MUSCLE_AVAILABLE
@@ -235,7 +235,7 @@ def _run_msa(reference: str, strain_seqs: List[str]) -> Dict[str, Any]:
         return {"error": f"All MSA methods failed. Last error: {e2}"}
 
 
-def _run_mafft_msa(reference: str, strain_seqs: List[str]) -> Dict[str, Any]:
+def _run_mafft_msa(reference: str, strain_seqs: list[str]) -> dict[str, Any]:
     """Run MSA using MAFFT FFT-NS-2 progressive method."""
     with tempfile.NamedTemporaryFile(mode="w", suffix=".fa", delete=False) as f:
         f.write(f">reference\n{reference}\n")
@@ -285,7 +285,7 @@ def _run_mafft_msa(reference: str, strain_seqs: List[str]) -> Dict[str, Any]:
     return {"aligned": aligned, "reference": aligned[0] if aligned else reference}
 
 
-def _run_muscle_msa(reference: str, strain_seqs: List[str]) -> Dict[str, Any]:
+def _run_muscle_msa(reference: str, strain_seqs: list[str]) -> dict[str, Any]:
     with tempfile.NamedTemporaryFile(mode="w", suffix=".fa", delete=False) as f:
         f.write(f">reference\n{reference}\n")
         for i, seq in enumerate(strain_seqs):
@@ -341,7 +341,7 @@ def _run_muscle_msa(reference: str, strain_seqs: List[str]) -> Dict[str, Any]:
     return {"aligned": aligned, "reference": aligned[0] if aligned else reference}
 
 
-def _run_biopython_msa(reference: str, strain_seqs: List[str]) -> Dict[str, Any]:
+def _run_biopython_msa(reference: str, strain_seqs: list[str]) -> dict[str, Any]:
     """
     Fallback MSA using Biopython pairwise alignment when MUSCLE is unavailable.
     Aligns each strain to the reference independently using global pairwise
@@ -399,7 +399,7 @@ def _pairwise_aln_to_string(alignment, ref_seq: str, qry_seq: str) -> str:
     return "".join(result)
 
 
-def _compute_conservation_scores(aligned: List[str], reference: str) -> List[float]:
+def _compute_conservation_scores(aligned: list[str], reference: str) -> list[float]:
     if not aligned or len(aligned) < 2:
         return [1.0] * len(reference)
 
@@ -435,7 +435,7 @@ def _compute_conservation_scores(aligned: List[str], reference: str) -> List[flo
     return scores
 
 
-def _find_conserved_regions(scores: List[float], threshold: float, min_length: int = 20) -> List[Dict[str, Any]]:
+def _find_conserved_regions(scores: list[float], threshold: float, min_length: int = 20) -> list[dict[str, Any]]:
     regions = []
     in_region = False
     start = 0
@@ -468,8 +468,8 @@ def _find_conserved_regions(scores: List[float], threshold: float, min_length: i
 
 
 def _fetch_strain_sequences(
-    reference: str, organism: str, accession: str, input_data: Dict[str, Any]
-) -> List[str]:
+    reference: str, organism: str, accession: str, input_data: dict[str, Any]
+) -> list[str]:
     from Bio import Entrez
 
     Entrez.email = input_data.get("ncbi_email") or os.environ.get("NCBI_EMAIL", "user@example.com")
@@ -495,7 +495,7 @@ def _fetch_strain_sequences(
     return sequences
 
 
-def _search_refseq_by_organism(organism: str, api_key: str = "", email: str = "") -> List[str]:
+def _search_refseq_by_organism(organism: str, api_key: str = "", email: str = "") -> list[str]:
     """Search for RefSeq nucleotide records for a given organism."""
     from Bio import Entrez
     try:
@@ -513,7 +513,7 @@ def _search_refseq_by_organism(organism: str, api_key: str = "", email: str = ""
         return []
 
 
-def _search_related_accessions(accession: str, organism: str, api_key: str = "", email: str = "") -> List[str]:
+def _search_related_accessions(accession: str, organism: str, api_key: str = "", email: str = "") -> list[str]:
     """
     Find related strain sequences for a given accession from ANY database.
     Works with NCBI GenBank, RefSeq, DDBJ, ENA/EMBL (all INSDC members via NCBI Entrez),
@@ -551,7 +551,7 @@ def _search_related_accessions(accession: str, organism: str, api_key: str = "",
         return _search_refseq_by_organism(organism, api_key, email)
 
 
-def _find_related_by_accession(accession: str, organism: str, email: str) -> List[str]:
+def _find_related_by_accession(accession: str, organism: str, email: str) -> list[str]:
     """
     Given a nucleotide accession from any INSDC database (NCBI, DDBJ, ENA),
     find related RefSeq sequences for the same gene via NCBI Entrez.
@@ -626,14 +626,14 @@ def _find_related_by_accession(accession: str, organism: str, email: str) -> Lis
         return _search_refseq_by_organism(organism, "", email)
 
 
-def _find_related_ensembl(accession: str, organism: str, email: str) -> List[str]:
+def _find_related_ensembl(accession: str, organism: str, email: str) -> list[str]:
     """
     Given an Ensembl stable ID, find related strain sequences.
     Maps Ensembl transcript/gene ID to NCBI via the Ensembl REST API,
     then finds related RefSeq sequences.
     """
-    import urllib.request
     import json as _json
+    import urllib.request
 
     try:
         # Step 1: Query Ensembl REST API for the stable ID to get gene info
@@ -701,7 +701,7 @@ def _find_related_ensembl(accession: str, organism: str, email: str) -> List[str
     return _search_refseq_by_organism(organism, "", email)
 
 
-def _fetch_sequences_by_ids(ids: List[str], max_count: int = MAX_STRAIN_SEQUENCES) -> List[str]:
+def _fetch_sequences_by_ids(ids: list[str], max_count: int = MAX_STRAIN_SEQUENCES) -> list[str]:
     if not ids:
         return []
 
@@ -725,7 +725,7 @@ def _fetch_sequences_by_ids(ids: List[str], max_count: int = MAX_STRAIN_SEQUENCE
     return sequences
 
 
-def _parse_fasta(raw: str) -> List[str]:
+def _parse_fasta(raw: str) -> list[str]:
     sequences = []
     current = []
     for line in raw.splitlines():
@@ -742,9 +742,9 @@ def _parse_fasta(raw: str) -> List[str]:
 
 def _fallback(
     reason: str,
-    input_data: Dict[str, Any],
-    strain_seqs: Optional[List[str]] = None,
-) -> Dict[str, Any]:
+    input_data: dict[str, Any],
+    strain_seqs: list[str] | None = None,
+) -> dict[str, Any]:
     sequence = input_data.get("consensus_sequence") or input_data.get("target_sequence") or input_data.get("sequence", "")
     logger.info("MSA fallback: %s", reason)
     strain_count = len(strain_seqs) if strain_seqs else 0

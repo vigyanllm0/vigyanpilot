@@ -15,18 +15,15 @@ Auto-response:
 - Alert generation for admin review
 """
 
+import logging
 import os
 import re
 import time
-import json
-import hashlib
-import logging
 from collections import defaultdict
 from datetime import datetime, timezone
 from threading import Lock
-from functools import wraps
 
-from flask import request, jsonify, g
+from flask import jsonify, request
 
 logger = logging.getLogger("primerforge.threat")
 

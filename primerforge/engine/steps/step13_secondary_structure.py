@@ -15,7 +15,7 @@ before final scoring.
 """
 
 import logging
-from typing import Any, Dict, List, Tuple
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -33,7 +33,7 @@ DIMER_PENALTY = 8.0
 # Public API
 # ---------------------------------------------------------------------------
 
-def execute(input_data: Dict[str, Any]) -> Dict[str, Any]:
+def execute(input_data: dict[str, Any]) -> dict[str, Any]:
     """
     Step 13: Secondary structure validation for all primer candidates.
 
@@ -186,7 +186,7 @@ def execute(input_data: Dict[str, Any]) -> Dict[str, Any]:
 # Thermodynamic Computation Methods
 # ---------------------------------------------------------------------------
 
-def _normalise_pair_schema(pair: Dict[str, Any]) -> Dict[str, Any]:
+def _normalise_pair_schema(pair: dict[str, Any]) -> dict[str, Any]:
     """Accept nested, alias, and flat Primer3 pair schemas without inventing measurements."""
     pair = dict(pair)
     fwd = _normalise_primer(
@@ -216,7 +216,7 @@ def _normalise_pair_schema(pair: Dict[str, Any]) -> Dict[str, Any]:
     return pair
 
 
-def _normalise_primer(value: Any, **aliases: Any) -> Dict[str, Any]:
+def _normalise_primer(value: Any, **aliases: Any) -> dict[str, Any]:
     if isinstance(value, dict):
         primer = dict(value)
     elif isinstance(value, str):
@@ -240,7 +240,7 @@ def _normalise_primer(value: Any, **aliases: Any) -> Dict[str, Any]:
     return primer
 
 
-def _select_pair_shaped_candidates(input_data: Dict[str, Any]) -> List[Dict[str, Any]]:
+def _select_pair_shaped_candidates(input_data: dict[str, Any]) -> list[dict[str, Any]]:
     """Pick primer-pair records, not flat single-primer lists with similar names."""
     for key in ("aligned_pairs", "refined_pairs", "candidate_pairs", "filtered_pairs"):
         candidates = input_data.get(key) or []
@@ -266,7 +266,7 @@ def _compute_with_primer3(
     mg_mm: float,
     dntp_mm: float,
     oligo_nm: float,
-) -> Dict[str, float]:
+) -> dict[str, float]:
     """Compute all ΔG values using primer3-py library."""
     import primer3 as p3
 
@@ -300,9 +300,9 @@ def _compute_with_primer3(
     }
 
 
-def _compute_with_engine(fwd_seq: str, rev_seq: str) -> Dict[str, float]:
+def _compute_with_engine(fwd_seq: str, rev_seq: str) -> dict[str, float]:
     """Fallback: compute ΔG using internal thermodynamics engine."""
-    from ..thermodynamics import predict_hairpin, predict_self_dimer, predict_cross_dimer
+    from ..thermodynamics import predict_cross_dimer, predict_hairpin, predict_self_dimer
 
     fwd_hp = predict_hairpin(fwd_seq)
     rev_hp = predict_hairpin(rev_seq)

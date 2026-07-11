@@ -9,9 +9,8 @@ Professional 3-stage drug discovery workflow:
 import asyncio
 import logging
 import os
-import subprocess
 import tempfile
-from typing import Dict, Any, List, Optional
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +22,7 @@ except ImportError:
     logger.warning("ESMFold engine not available.")
 
 try:
-    from primerforge.pipelines.docking_engine import run_vina_docking, run_gnina_docking
+    from primerforge.pipelines.docking_engine import run_gnina_docking, run_vina_docking
 except ImportError:
     run_vina_docking = None
     run_gnina_docking = None
@@ -32,10 +31,10 @@ except ImportError:
 
 async def run_consensus_pipeline(
     sequence: str,
-    ligand_smiles_list: List[str],
+    ligand_smiles_list: list[str],
     top_n: int = 50,
     progress_callback=None
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Full 3-stage consensus pipeline.
 
@@ -81,12 +80,12 @@ async def run_consensus_pipeline(
 
 async def _run_pipeline_inner(
     sequence: str,
-    ligand_smiles_list: List[str],
+    ligand_smiles_list: list[str],
     top_n: int,
     _receptor_pdbqt_dir: str,
     _progress,
     result: dict,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
 
     _receptor_pdbqt_path = os.path.join(_receptor_pdbqt_dir, "receptor.pdbqt")
 
@@ -115,7 +114,7 @@ async def _run_pipeline_inner(
         score = stage1_result.get('plddt_score', 0)
         await _progress("STAGE 1 / ESMFold", f"✅ Structure predicted — pLDDT: {score}%")
     except Exception as e:
-        return {**result, "status": "error", "message": f"Stage 1 (ESMFold) failed: {str(e)}"}
+        return {**result, "status": "error", "message": f"Stage 1 (ESMFold) failed: {e!s}"}
 
     await _progress("PIPELINE", "─── STAGE 2 INITIATED: BROAD SCREENING ───")
     # ══════════════════════════════════════════════════════════════════════════

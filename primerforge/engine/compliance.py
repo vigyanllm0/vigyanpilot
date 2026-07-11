@@ -15,10 +15,10 @@ import json
 import logging
 import os
 import subprocess
-import time
 import threading
-from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Tuple
+import time
+from dataclasses import dataclass
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -59,10 +59,10 @@ class ComplianceResult:
     """
 
     status: str  # biosecurity_cleared | biosecurity_hold | compliance_unavailable | compliance_timeout
-    matched_organism: Optional[str] = None
-    matched_gene: Optional[str] = None
-    percent_identity: Optional[float] = None
-    alignment_length: Optional[int] = None
+    matched_organism: str | None = None
+    matched_gene: str | None = None
+    percent_identity: float | None = None
+    alignment_length: int | None = None
     sequences_screened: int = 0
 
 
@@ -98,7 +98,7 @@ class IGSCComplianceModule:
         """Return the configured screening timeout."""
         return self._timeout_seconds
 
-    def screen(self, sequences: List[str], job_id: str) -> ComplianceResult:
+    def screen(self, sequences: list[str], job_id: str) -> ComplianceResult:
         """Screen sequences against the pathogen database for biosecurity concerns.
 
         Aligns all provided sequences (primers, probes, amplicons) against
@@ -122,8 +122,8 @@ class IGSCComplianceModule:
             return result
 
         # Screen with timeout enforcement (Requirement 27.6)
-        result_container: List[ComplianceResult] = []
-        exception_container: List[Exception] = []
+        result_container: list[ComplianceResult] = []
+        exception_container: list[Exception] = []
 
         def _run_screening():
             try:
@@ -227,7 +227,7 @@ class IGSCComplianceModule:
         return False
 
     def _perform_screening(
-        self, sequences: List[str], job_id: str
+        self, sequences: list[str], job_id: str
     ) -> ComplianceResult:
         """Execute BLASTN alignment of sequences against pathogen DB.
 
@@ -241,7 +241,7 @@ class IGSCComplianceModule:
         Returns:
             ComplianceResult with cleared or hold status.
         """
-        all_hits: List[AlignmentHit] = []
+        all_hits: list[AlignmentHit] = []
 
         for seq in sequences:
             if not seq or len(seq) < 20:
@@ -271,7 +271,7 @@ class IGSCComplianceModule:
             sequences_screened=len(sequences),
         )
 
-    def _align_against_pathogens(self, seq: str) -> List[AlignmentHit]:
+    def _align_against_pathogens(self, seq: str) -> list[AlignmentHit]:
         """Run BLASTN alignment of a single sequence against the pathogen DB.
 
         Uses subprocess to invoke blastn with tabular output format.
@@ -283,7 +283,7 @@ class IGSCComplianceModule:
         Returns:
             List of AlignmentHit objects for significant matches.
         """
-        hits: List[AlignmentHit] = []
+        hits: list[AlignmentHit] = []
 
         # Determine BLAST DB path (could be directory or prefix)
         db_path = self._resolve_db_path()
@@ -345,7 +345,7 @@ class IGSCComplianceModule:
 
         return hits
 
-    def _check_select_agents(self, seq: str) -> List[AlignmentHit]:
+    def _check_select_agents(self, seq: str) -> list[AlignmentHit]:
         """Screen sequence specifically against Select Agent toxin genes.
 
         This is a secondary check targeting the most dangerous regulated
@@ -365,7 +365,7 @@ class IGSCComplianceModule:
             # Fall back to general pathogen DB alignment
             return self._align_against_pathogens(seq)
 
-        hits: List[AlignmentHit] = []
+        hits: list[AlignmentHit] = []
         try:
             cmd = [
                 "blastn",
@@ -452,7 +452,7 @@ class IGSCComplianceModule:
 
     def _parse_subject_title(
         self, stitle: str, subject_id: str
-    ) -> Tuple[str, str]:
+    ) -> tuple[str, str]:
         """Extract organism name and gene name from BLAST subject title.
 
         Common title formats:
@@ -494,7 +494,7 @@ class IGSCComplianceModule:
 
         return (organism, gene)
 
-    def _resolve_db_path(self) -> Optional[str]:
+    def _resolve_db_path(self) -> str | None:
         """Resolve the actual BLAST database path/prefix.
 
         BLAST databases can be referenced by:
@@ -576,7 +576,7 @@ class IGSCComplianceModule:
         self,
         severity: str,
         message: str,
-        context: Dict[str, Any],
+        context: dict[str, Any],
     ) -> None:
         """Insert a record into the system_events table.
 

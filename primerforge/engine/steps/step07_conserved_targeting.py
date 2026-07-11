@@ -19,14 +19,14 @@ Output keys:
 """
 
 import logging
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
 MIN_PRIMER_LENGTH = 18
 
 
-def execute(input_data: Dict[str, Any]) -> Dict[str, Any]:
+def execute(input_data: dict[str, Any]) -> dict[str, Any]:
     conserved_regions = input_data.get("conserved_regions", [])
     scores = input_data.get("conservation_scores", [])
     msa_status = input_data.get("msa_status", "")
@@ -89,12 +89,12 @@ def execute(input_data: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def _filter_usable_regions(
-    regions: List[Dict[str, Any]], min_length: int = MIN_PRIMER_LENGTH
-) -> List[Dict[str, Any]]:
+    regions: list[dict[str, Any]], min_length: int = MIN_PRIMER_LENGTH
+) -> list[dict[str, Any]]:
     return [r for r in regions if r.get("length", 0) >= min_length]
 
 
-def _no_targeting(reason: str, input_data: Dict[str, Any]) -> Dict[str, Any]:
+def _no_targeting(reason: str, input_data: dict[str, Any]) -> dict[str, Any]:
     logger.info("Conserved targeting skipped: %s", reason)
 
     sequence = input_data.get("consensus_sequence") or input_data.get("target_sequence") or input_data.get("sequence", "")

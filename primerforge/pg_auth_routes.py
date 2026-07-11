@@ -30,16 +30,24 @@ Admin endpoints:
   POST /api/admin/users/<id>/unlock-ip — clear IP restriction
 """
 
-import os
 import logging
-from flask import Blueprint, request, jsonify, g
+import os
 
+from flask import Blueprint, g, jsonify, request
+
+from .database import execute, fetch_all, fetch_one
 from .pg_auth import (
-    register_user, login_user, change_password, invalidate_token,
-    get_current_user, require_auth, require_admin, check_usage, log_action,
-    create_refresh_token, refresh_access_token
+    change_password,
+    check_usage,
+    create_refresh_token,
+    invalidate_token,
+    log_action,
+    login_user,
+    refresh_access_token,
+    register_user,
+    require_admin,
+    require_auth,
 )
-from .database import fetch_one, fetch_all, execute
 
 logger = logging.getLogger("primerforge.auth_routes")
 
@@ -141,8 +149,8 @@ def verify_email():
 @auth_bp.route("/api/auth/resend-verification", methods=["POST"])
 def resend_verification():
     """Resend the verification email for a pending account."""
-    from .pg_auth import create_verification_token, send_verification_email
     from .database import fetch_one
+    from .pg_auth import create_verification_token, send_verification_email
 
     data = request.get_json(silent=True) or {}
     email = _safe_str(data.get("email")).strip().lower()
@@ -306,8 +314,8 @@ def change_password_route():
 def _send_reset_email(email: str, reset_token: str) -> bool:
     """Send password reset email via SMTP."""
     import smtplib
-    from email.mime.text import MIMEText
     from email.mime.multipart import MIMEMultipart
+    from email.mime.text import MIMEText
 
     smtp_host = os.environ.get("SMTP_HOST")
     smtp_port = int(os.environ.get("SMTP_PORT", "587"))
@@ -477,6 +485,7 @@ def usage():
 def google_auth():
     """Verify Google OAuth2 access token and create/login user."""
     import requests as http_requests
+
     from .security import sanitize_string
 
     data = request.get_json(silent=True) or {}
@@ -505,8 +514,11 @@ def google_auth():
         return jsonify({"error": "Could not retrieve email from Google."}), 400
 
     # Check if user exists
+    import os
+
+    import bcrypt
+
     from .database import get_db
-    import bcrypt, os
 
     existing = fetch_one("SELECT id, email, role, status FROM users WHERE email = %s", (email,))
 
@@ -712,8 +724,9 @@ def delete_account():
         400: { error } — incorrect password
         401: Authentication required
     """
-    import bcrypt as _bcrypt
     import secrets as _secrets
+
+    import bcrypt as _bcrypt
 
     data = request.get_json(silent=True) or {}
     password = _safe_str(data.get("password"))
@@ -755,7 +768,7 @@ def delete_account():
             (anon_email, anon_pw_hash, user_id),
         )
         # Revoke all active tokens for this user
-        from .pg_auth import _USER_SESSIONS, _TOKEN_BLACKLIST, _SESSION_LOCK
+        from .pg_auth import _SESSION_LOCK, _TOKEN_BLACKLIST, _USER_SESSIONS
         with _SESSION_LOCK:
             sessions = _USER_SESSIONS.pop(user_id, [])
             for tok in sessions:

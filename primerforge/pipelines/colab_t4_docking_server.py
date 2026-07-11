@@ -22,6 +22,7 @@ import os
 import subprocess
 import time
 
+
 def kill_stale_processes():
     """Kill leftover uvicorn and free port 7860."""
     for cmd in [["pkill", "-f", "uvicron"], ["fuser", "-k", "7860/tcp"]]:
@@ -55,14 +56,13 @@ print(f"✅ GPU detected: {_GPU_NAME}  |  VRAM: {_GPU_VRAM_TOTAL_GB} GB")
 # 2.  STANDARD IMPORTS  (safe on both CPU & GPU — no heavy GPU-only libs yet)
 # ═══════════════════════════════════════════════════════════════════════════════
 import datetime as _dt
-import json
 import re
 import shutil
 import tempfile
 import threading
 import uuid
 from pathlib import Path
-from typing import Any, Dict, List, Tuple
+from typing import Any
 
 import psutil
 import requests
@@ -74,18 +74,18 @@ from fastapi.responses import JSONResponse
 # 3.  GPU-ONLY IMPORTS  (gated — never run on the Mac backend)
 # ═══════════════════════════════════════════════════════════════════════════════
 try:
-    from vina import Vina                   # AutoDock Vina Python bindings
+    from vina import Vina  # AutoDock Vina Python bindings
 except ImportError:
     Vina = None
     print("⚠️  vina not installed — docking will be unavailable.")
 
 try:
-    import rdkit                            # cheminformatics (SMILES handling)
+    import rdkit  # cheminformatics (SMILES handling)
 except ImportError:
     rdkit = None
 
 try:
-    import meeko                            # Meeko ligand preparation
+    import meeko  # Meeko ligand preparation
 except ImportError:
     meeko = None
 
@@ -107,12 +107,12 @@ app.add_middleware(
 )
 
 # In-memory job store for consensus pipeline
-JOBS: Dict[str, Dict[str, Any]] = {}
+JOBS: dict[str, dict[str, Any]] = {}
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # 5.  GPU INFO HELPER
 # ═══════════════════════════════════════════════════════════════════════════════
-def gpu_info() -> Dict[str, Any]:
+def gpu_info() -> dict[str, Any]:
     """Return current GPU stats using PyTorch (no pynvml dependency)."""
     try:
         free_vram, total_vram = torch.cuda.mem_get_info(0)
@@ -135,7 +135,7 @@ def gpu_info() -> Dict[str, Any]:
 # ═══════════════════════════════════════════════════════════════════════════════
 # 6.  DOCKING UTILITIES
 # ═══════════════════════════════════════════════════════════════════════════════
-def compute_box_center(pdb_path: str) -> Tuple[float, float, float, float, float, float]:
+def compute_box_center(pdb_path: str) -> tuple[float, float, float, float, float, float]:
     """Compute a bounding box center + size from ATOM/HETATM records."""
     xs, ys, zs = [], [], []
     with open(pdb_path) as fh:
@@ -170,7 +170,7 @@ def fetch_pdb(pdb_id: str) -> str:
     return res.text
 
 
-def _run(cmd: List[str]) -> str:
+def _run(cmd: list[str]) -> str:
     proc = subprocess.run(cmd, check=True, capture_output=True, text=True)
     return (proc.stdout or "") + (proc.stderr or "")
 
@@ -191,9 +191,9 @@ def prepare_ligand(smiles: str, out_pdbqt: str) -> None:
 def run_vina_python(
     receptor_pdb: str,
     ligand_smiles: str,
-    grid_box: Dict[str, Any] | None = None,
+    grid_box: dict[str, Any] | None = None,
     exhaustiveness: int = 8,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Execute a full Vina docking run. Returns affinity + 3-D structures."""
     if Vina is None:
         raise RuntimeError("AutoDock Vina Python bindings are not installed.")
@@ -238,7 +238,7 @@ def run_vina_python(
             "source": "COLAB_T4_VINA",
             "binding_affinity_kcal_mol": round(best_score, 3),
             "binding_mode": 1,
-            "poses": int(len(energies)),
+            "poses": len(energies),
             "pose_rmsd": 0.0,
             "computation_time": f"{time.time() - start:.1f}s",
             "confidence": 90 if best_score < -7 else 82,
@@ -252,7 +252,7 @@ def run_vina_python(
         }
 
 
-def parse_query(query: str) -> Dict[str, str]:
+def parse_query(query: str) -> dict[str, str]:
     """Extract PDB ID and SMILES from a natural-language docking query."""
     pdb_match = re.search(r"\b[0-9][A-Za-z0-9]{3}\b", query)
     smiles_match = re.search(r"SMILES\s*[:=]\s*([^\s,;]+)", query, re.I)
@@ -391,7 +391,7 @@ async def run_dry_lab(request: Request):
         return JSONResponse({"status": "error", "error": str(exc)}, status_code=500)
 
 
-def _run_consensus_job(job_id: str, protein_pdb: str, smiles_list: List[str], top_n: int) -> None:
+def _run_consensus_job(job_id: str, protein_pdb: str, smiles_list: list[str], top_n: int) -> None:
     """Background worker for multi-ligand consensus screening."""
     job = JOBS[job_id]
     job["log"].append({"stage": "Vina", "message": f"Screening {len(smiles_list)} ligands"})
@@ -449,6 +449,6 @@ async def consensus_status(job_id: str):
 # ═══════════════════════════════════════════════════════════════════════════════
 if __name__ == "__main__":
     import uvicorn
-    print(f"🚀 Starting VigyanLLM Colab T4 Bridge on port 7860 …")
+    print("🚀 Starting VigyanLLM Colab T4 Bridge on port 7860 …")
     print(f"   GPU: {_GPU_NAME}  |  VRAM: {_GPU_VRAM_TOTAL_GB} GB")
     uvicorn.run(app, host="0.0.0.0", port=7860, log_level="info")

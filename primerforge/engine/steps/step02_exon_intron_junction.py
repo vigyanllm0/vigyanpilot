@@ -13,7 +13,7 @@ require a spliced mRNA template.
 """
 
 import logging
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +31,7 @@ MIN_INTRON_FOR_FLANKING = 1000  # bp
 # Public API
 # ---------------------------------------------------------------------------
 
-def execute(input_data: Dict[str, Any]) -> Dict[str, Any]:
+def execute(input_data: dict[str, Any]) -> dict[str, Any]:
     """
     Step 2: Map exon-intron junctions for RT-PCR safety.
 
@@ -229,8 +229,8 @@ def execute(input_data: Dict[str, Any]) -> Dict[str, Any]:
 # ---------------------------------------------------------------------------
 
 def _rank_junction_sites(
-    sites: List[Dict[str, Any]],
-    sorted_exons: List[Dict[str, Any]],
+    sites: list[dict[str, Any]],
+    sorted_exons: list[dict[str, Any]],
 ) -> None:
     """
     Rank junction-spanning sites by quality:

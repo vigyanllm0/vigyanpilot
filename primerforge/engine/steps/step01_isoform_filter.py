@@ -10,9 +10,8 @@ Output: target regions with transcript IDs and exon boundaries for downstream pr
 """
 
 import logging
-import os
 import re
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +20,7 @@ logger = logging.getLogger(__name__)
 # Public API
 # ---------------------------------------------------------------------------
 
-def execute(input_data: Dict[str, Any]) -> Dict[str, Any]:
+def execute(input_data: dict[str, Any]) -> dict[str, Any]:
     """
     Step 1: Fetch sequence and filter isoforms.
 
@@ -49,8 +48,8 @@ def execute(input_data: Dict[str, Any]) -> Dict[str, Any]:
     target_transcript = input_data.get("target_transcript", "")
     organism = input_data.get("organism", "human")
 
-    transcripts: List[Dict[str, Any]] = []
-    exon_map: List[Dict[str, Any]] = []
+    transcripts: list[dict[str, Any]] = []
+    exon_map: list[dict[str, Any]] = []
 
     # ── Fetch sequence and transcript data ─────────────────────────────────
     if not sequence and (accession or gene_symbol):
@@ -112,10 +111,10 @@ def execute(input_data: Dict[str, Any]) -> Dict[str, Any]:
 # ---------------------------------------------------------------------------
 
 def _common_exon_regions(
-    transcripts: List[Dict[str, Any]],
-    exon_map: List[Dict[str, Any]],
+    transcripts: list[dict[str, Any]],
+    exon_map: list[dict[str, Any]],
     seq_length: int,
-) -> List[Dict[str, Any]]:
+) -> list[dict[str, Any]]:
     """
     Identify exonic regions that are present in ALL transcript isoforms.
     These are the most conserved and reliable regions for primer design.
@@ -136,7 +135,7 @@ def _common_exon_regions(
         return [{"start": 0, "end": seq_length, "type": "full_sequence"}]
 
     # Group exons by transcript
-    transcript_exon_sets: Dict[str, List[Tuple[int, int]]] = {}
+    transcript_exon_sets: dict[str, list[tuple[int, int]]] = {}
     for exon in exon_map:
         tid = exon.get("transcript_id", "unknown")
         start = exon.get("start", 0)
@@ -154,7 +153,7 @@ def _common_exon_regions(
     n_transcripts = len(all_tids)
 
     # Use a sweep-line approach: count how many transcripts cover each position
-    events: List[Tuple[int, int]] = []  # (position, +1 or -1)
+    events: list[tuple[int, int]] = []  # (position, +1 or -1)
     for tid, exons in transcript_exon_sets.items():
         merged = _merge_intervals(exons)
         for start, end in merged:
@@ -181,9 +180,9 @@ def _common_exon_regions(
 
 
 def _intersect_all_transcripts(
-    transcript_exon_sets: Dict[str, List[Tuple[int, int]]],
+    transcript_exon_sets: dict[str, list[tuple[int, int]]],
     seq_length: int,
-) -> List[Tuple[int, int]]:
+) -> list[tuple[int, int]]:
     """Find intervals covered by ALL transcripts using successive intersection."""
     all_tids = list(transcript_exon_sets.keys())
     if not all_tids:
@@ -203,8 +202,8 @@ def _intersect_all_transcripts(
 
 
 def _intersect_intervals(
-    a: List[Tuple[int, int]], b: List[Tuple[int, int]]
-) -> List[Tuple[int, int]]:
+    a: list[tuple[int, int]], b: list[tuple[int, int]]
+) -> list[tuple[int, int]]:
     """Compute intersection of two sorted interval lists."""
     result = []
     i, j = 0, 0
@@ -221,7 +220,7 @@ def _intersect_intervals(
     return result
 
 
-def _merge_intervals(intervals: List[Tuple[int, int]]) -> List[Tuple[int, int]]:
+def _merge_intervals(intervals: list[tuple[int, int]]) -> list[tuple[int, int]]:
     """Merge overlapping intervals into non-overlapping sorted list."""
     if not intervals:
         return []
@@ -240,11 +239,11 @@ def _merge_intervals(intervals: List[Tuple[int, int]]) -> List[Tuple[int, int]]:
 # ---------------------------------------------------------------------------
 
 def _isoform_specific_regions(
-    transcripts: List[Dict[str, Any]],
-    exon_map: List[Dict[str, Any]],
+    transcripts: list[dict[str, Any]],
+    exon_map: list[dict[str, Any]],
     target_transcript: str,
     seq_length: int,
-) -> List[Dict[str, Any]]:
+) -> list[dict[str, Any]]:
     """
     Identify regions unique to a specific isoform (not present in other isoforms).
     Useful for designing primers that specifically detect one splice variant.
@@ -253,7 +252,7 @@ def _isoform_specific_regions(
         return [{"start": 0, "end": seq_length, "type": "isoform_specific"}]
 
     # Group exons by transcript
-    transcript_exon_sets: Dict[str, List[Tuple[int, int]]] = {}
+    transcript_exon_sets: dict[str, list[tuple[int, int]]] = {}
     for exon in exon_map:
         tid = exon.get("transcript_id", "unknown")
         start = exon.get("start", 0)
@@ -280,7 +279,7 @@ def _isoform_specific_regions(
     target_merged = _merge_intervals(target_exons)
 
     # Collect all OTHER transcripts' exons
-    other_intervals: List[Tuple[int, int]] = []
+    other_intervals: list[tuple[int, int]] = []
     for tid, exons in transcript_exon_sets.items():
         if tid != target_transcript:
             other_intervals.extend(exons)
@@ -333,8 +332,8 @@ def _isoform_specific_regions(
 
 
 def _subtract_intervals(
-    a: List[Tuple[int, int]], b: List[Tuple[int, int]]
-) -> List[Tuple[int, int]]:
+    a: list[tuple[int, int]], b: list[tuple[int, int]]
+) -> list[tuple[int, int]]:
     """Subtract intervals b from intervals a. Returns remaining portions of a."""
     result = []
     b_idx = 0
@@ -360,14 +359,14 @@ def _subtract_intervals(
 
 def _fetch_ensembl_transcripts(
     query: str, organism: str
-) -> Tuple[List[Dict], List[Dict], str]:
+) -> tuple[list[dict], list[dict], str]:
     """
     Fetch transcript isoforms from Ensembl REST API.
     Returns: (transcripts_list, exon_map, sequence)
     """
     import json
-    from urllib.request import urlopen, Request
-    from urllib.error import URLError, HTTPError
+    from urllib.error import HTTPError, URLError
+    from urllib.request import Request, urlopen
 
     transcripts = []
     exon_map = []

@@ -20,7 +20,7 @@ Reference:
 
 import logging
 import math
-from typing import Any, Dict, List
+from typing import Any
 
 from .base import PipelineStep
 
@@ -40,7 +40,7 @@ class MgCorrectionStep(PipelineStep):
     def __init__(self):
         super().__init__(name="Divalent Cation Mg²+ Scaling", step_number=9)
 
-    def execute(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
+    def execute(self, input_data: dict[str, Any]) -> dict[str, Any]:
         """
         Apply Mg²+ correction to all primer candidates.
 
@@ -108,7 +108,7 @@ class MgCorrectionStep(PipelineStep):
             ),
         }
 
-    def _resolve_free_mg(self, input_data: Dict[str, Any]) -> float:
+    def _resolve_free_mg(self, input_data: dict[str, Any]) -> float:
         """
         Resolve free Mg²+ concentration from input data.
 
@@ -167,8 +167,8 @@ class MgCorrectionStep(PipelineStep):
         return ""
 
     def _apply_correction(
-        self, candidates: List[Dict[str, Any]], free_mg_mm: float
-    ) -> List[Dict[str, Any]]:
+        self, candidates: list[dict[str, Any]], free_mg_mm: float
+    ) -> list[dict[str, Any]]:
         """
         Apply the von Ahsen 2001 Mg²+ Tm correction to all candidates.
 
@@ -205,7 +205,7 @@ class MgCorrectionStep(PipelineStep):
         return candidates
 
 
-def execute(input_data: Dict[str, Any]) -> Dict[str, Any]:
+def execute(input_data: dict[str, Any]) -> dict[str, Any]:
     """
     Module-level execute function that instantiates MgCorrectionStep
     and runs the step.
@@ -216,7 +216,7 @@ def execute(input_data: Dict[str, Any]) -> Dict[str, Any]:
     return step.execute(input_data)
 
 
-def _candidate_tm(candidate: Dict[str, Any]) -> float:
+def _candidate_tm(candidate: dict[str, Any]) -> float:
     value = (
         candidate.get("tm_salt_adjusted")
         or candidate.get("tm_nn")
@@ -228,13 +228,13 @@ def _candidate_tm(candidate: Dict[str, Any]) -> float:
     return float(value)
 
 
-def _primer_candidates_from_pairs(input_data: Dict[str, Any]) -> List[Dict[str, Any]]:
+def _primer_candidates_from_pairs(input_data: dict[str, Any]) -> list[dict[str, Any]]:
     """Flatten upstream primer pairs so Mg correction runs on real primers."""
     for key in ("refined_pairs", "candidate_pairs", "filtered_pairs", "aligned_pairs"):
         pairs = input_data.get(key)
         if not pairs:
             continue
-        candidates: List[Dict[str, Any]] = []
+        candidates: list[dict[str, Any]] = []
         for idx, pair in enumerate(pairs, start=1):
             pair_id = pair.get("pair_id") or pair.get("rank") or pair.get("pair_index") or idx
             for direction in ("forward", "reverse"):

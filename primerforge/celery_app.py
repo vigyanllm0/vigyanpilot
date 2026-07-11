@@ -6,6 +6,7 @@ Uses Redis as both broker and result backend.
 """
 
 import os
+
 from celery import Celery
 
 # Redis connection URL from environment, defaulting to localhost

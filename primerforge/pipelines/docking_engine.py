@@ -1,16 +1,16 @@
+import asyncio
+import logging
 import os
+import shutil
 import subprocess
 import tempfile
-import logging
-import asyncio
-import shutil
 import time
-from typing import Dict, Any, Tuple
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
 
-def _compute_box_center(pdb_path: str, default_size: float = 25.0) -> Tuple[float, float, float, float, float, float]:
+def _compute_box_center(pdb_path: str, default_size: float = 25.0) -> tuple[float, float, float, float, float, float]:
     """
     Parse ATOM/HETATM records from a PDB or PDBQT file and return the
     geometric center (cx, cy, cz) and a recommended search box size (sx, sy, sz).
@@ -20,7 +20,7 @@ def _compute_box_center(pdb_path: str, default_size: float = 25.0) -> Tuple[floa
     """
     xs, ys, zs = [], [], []
     try:
-        with open(pdb_path, "r") as f:
+        with open(pdb_path) as f:
             for line in f:
                 if line.startswith(("ATOM  ", "HETATM")):
                     try:
@@ -59,8 +59,8 @@ def pdb_to_pdbqt(receptor_pdb: str, output_path: str) -> bool:
             return True
         except Exception as e:
             logger.debug("Suppressed exception: %s", e)
-    from rdkit import Chem
     from meeko import MoleculePreparation
+    from rdkit import Chem
     mol = Chem.MolFromPDBBlock(receptor_pdb, removeHs=False)
     if mol:
         frags = Chem.GetMolFrags(mol, asMols=True)
@@ -71,7 +71,7 @@ def pdb_to_pdbqt(receptor_pdb: str, output_path: str) -> bool:
         prep.prepare(mol)
         prep.write_pdbqt_file(output_path)
         allowed_tags = ("ATOM", "HETATM")
-        with open(output_path, "r") as f:
+        with open(output_path) as f:
             content = f.read()
         with open(output_path, "w", newline="\n") as f:
             for line in content.splitlines():
@@ -83,7 +83,7 @@ def pdb_to_pdbqt(receptor_pdb: str, output_path: str) -> bool:
     return False
 
 
-async def run_vina_docking(receptor_pdb: str, ligand_smiles: str, exhaustiveness: int = 8, receptor_pdbqt_path: str = None) -> Dict[str, Any]:
+async def run_vina_docking(receptor_pdb: str, ligand_smiles: str, exhaustiveness: int = 8, receptor_pdbqt_path: str = None) -> dict[str, Any]:
     """
     Runs AutoDock Vina physics engine locally.
     
@@ -98,25 +98,27 @@ async def run_vina_docking(receptor_pdb: str, ligand_smiles: str, exhaustiveness
         ligand_smi_path = os.path.join(temp_dir, "ligand.smi")
         ligand_pdbqt_path = os.path.join(temp_dir, "ligand.pdbqt")
         out_pdbqt_path = os.path.join(temp_dir, "out.pdbqt")
-        
+
         with open(receptor_pdb_path, "w") as f: f.write(receptor_pdb)
         with open(ligand_smi_path, "w") as f: f.write(ligand_smiles)
-            
+
         if not receptor_pdbqt_path:
             pdb_to_pdbqt(receptor_pdb, local_receptor_pdbqt)
-            
+
         # 3. Convert Ligand SMILES to 3D PDBQT
         if shutil.which("obabel"):
             try:
                 subprocess.run(["obabel", ligand_smi_path, "-O", ligand_pdbqt_path, "--gen3d", "-p", "7.4"], check=True, capture_output=True)
             except subprocess.CalledProcessError:
-                from rdkit import Chem; from rdkit.Chem import AllChem; from meeko import MoleculePreparation
+                from meeko import MoleculePreparation
+                from rdkit import Chem
+                from rdkit.Chem import AllChem
                 mol = Chem.MolFromSmiles(ligand_smiles); mol = Chem.AddHs(mol); AllChem.EmbedMolecule(mol, AllChem.ETKDG())
                 prep = MoleculePreparation(); prep.prepare(mol); prep.write_pdbqt_file(ligand_pdbqt_path)
-                
+
                 # Clean PDBQT for FLEXIBLE LIGAND (ROOT/BRANCH allowed)
                 allowed_tags = ("ATOM", "HETATM", "TER", "REMARK", "ROOT", "ENDROOT", "BRANCH", "ENDBRANCH", "TORSDOF", "MODEL", "ENDMDL", "END")
-                with open(ligand_pdbqt_path, "r") as f: lines = f.readlines()
+                with open(ligand_pdbqt_path) as f: lines = f.readlines()
                 with open(ligand_pdbqt_path, "w", newline="\n") as f:
                     for i, line in enumerate(lines):
                         clean_line = line.strip()
@@ -124,20 +126,22 @@ async def run_vina_docking(receptor_pdb: str, ligand_smiles: str, exhaustiveness
                         if clean_line.startswith(allowed_tags):
                             f.write(clean_line + "\n")
         else:
-            from rdkit import Chem; from rdkit.Chem import AllChem; from meeko import MoleculePreparation
+            from meeko import MoleculePreparation
+            from rdkit import Chem
+            from rdkit.Chem import AllChem
             mol = Chem.MolFromSmiles(ligand_smiles); mol = Chem.AddHs(mol); AllChem.EmbedMolecule(mol, AllChem.ETKDG())
             prep = MoleculePreparation(); prep.prepare(mol); prep.write_pdbqt_file(ligand_pdbqt_path)
-            
+
             # Clean PDBQT for FLEXIBLE LIGAND
             allowed_tags = ("ATOM", "HETATM", "TER", "REMARK", "ROOT", "ENDROOT", "BRANCH", "ENDBRANCH", "TORSDOF", "MODEL", "ENDMDL", "END")
-            with open(ligand_pdbqt_path, "r") as f: lines = f.readlines()
+            with open(ligand_pdbqt_path) as f: lines = f.readlines()
             with open(ligand_pdbqt_path, "w", newline="\n") as f:
                 for i, line in enumerate(lines):
                     clean_line = line.strip()
                     if not clean_line: continue
                     if clean_line.startswith(allowed_tags):
                         f.write(clean_line + "\n")
-            
+
         # 4. Run Vina
         start_time = time.time()
         try:
@@ -146,9 +150,9 @@ async def run_vina_docking(receptor_pdb: str, ligand_smiles: str, exhaustiveness
             # Compute protein geometric center for search box
             cx, cy, cz, sx, sy, sz = _compute_box_center(local_receptor_pdbqt)
             logger.info("Search box center: (%.2f, %.2f, %.2f), size: (%.1f, %.1f, %.1f)", cx, cy, cz, sx, sy, sz)
-            
+
             vina_cmd = [
-                vina_bin, "--receptor", local_receptor_pdbqt, "--ligand", ligand_pdbqt_path, 
+                vina_bin, "--receptor", local_receptor_pdbqt, "--ligand", ligand_pdbqt_path,
                 "--center_x", str(round(cx, 3)), "--center_y", str(round(cy, 3)), "--center_z", str(round(cz, 3)),
                 "--size_x", str(round(sx, 1)), "--size_y", str(round(sy, 1)), "--size_z", str(round(sz, 1)),
                 "--exhaustiveness", str(exhaustiveness), "--out", out_pdbqt_path
@@ -169,22 +173,22 @@ async def run_vina_docking(receptor_pdb: str, ligand_smiles: str, exhaustiveness
                 except asyncio.TimeoutError:
                     process.kill()
                     raise Exception(f"Vina timeout after 600s: ligand {ligand_smiles[:40]}")
-            
+
             if process.returncode != 0:
-                with open(vina_stderr, "r") as f:
+                with open(vina_stderr) as f:
                     err_msg = f.read().strip()
-                with open(vina_stdout, "r") as f:
+                with open(vina_stdout) as f:
                     out_msg = f.read().strip()
                 logger.error("Vina failed with code %s: %s", process.returncode, err_msg or out_msg[:200])
                 raise Exception(f"Vina failed: {err_msg or out_msg[:200]}")
-            
+
             elapsed = time.time() - start_time
 
             # Parse scores from output PDBQT file (REMARK VINA RESULT lines).
             # The stdout table is also available in vina_stdout if needed.
             best_score = None
             poses_count = 0
-            with open(out_pdbqt_path, "r") as f:
+            with open(out_pdbqt_path) as f:
                 for line in f:
                     line = line.strip()
                     if line.startswith("REMARK VINA RESULT:"):
@@ -201,7 +205,7 @@ async def run_vina_docking(receptor_pdb: str, ligand_smiles: str, exhaustiveness
             if best_score is None:
                 raise Exception("Failed to parse Vina score from output PDBQT.")
 
-            with open(receptor_pdb_path, "r") as f:
+            with open(receptor_pdb_path) as f:
                 receptor_data = f.read()
 
             # Convert Vina's PDBQT output to SDF for 3D viewer (3Dmol.js)
@@ -214,14 +218,14 @@ async def run_vina_docking(receptor_pdb: str, ligand_smiles: str, exhaustiveness
                         ["obabel", out_pdbqt_path, "-O", sdf_path],
                         check=True, capture_output=True, timeout=30
                     )
-                    with open(sdf_path, "r") as f:
+                    with open(sdf_path) as f:
                         ligand_view = f.read()
                 except Exception as e:
                     logger.debug("PDBQT-to-SDF conversion failed: %s", e)
             if not ligand_view:
                 # Fallback: extract ATOM/HETATM from PDBQT as plain PDB
                 try:
-                    with open(out_pdbqt_path, "r") as f:
+                    with open(out_pdbqt_path) as f:
                         raw = f.read()
                     clean = []
                     for line in raw.splitlines():
@@ -233,7 +237,7 @@ async def run_vina_docking(receptor_pdb: str, ligand_smiles: str, exhaustiveness
                 except Exception as e:
                     logger.debug("PDB fallback failed: %s", e)
             if not ligand_view:
-                with open(out_pdbqt_path, "r") as f:
+                with open(out_pdbqt_path) as f:
                     ligand_view = f.read()
 
             return {
@@ -253,7 +257,7 @@ async def run_vina_docking(receptor_pdb: str, ligand_smiles: str, exhaustiveness
             raise e
 
 
-async def run_gnina_docking(receptor_pdb: str, ligand_smiles: str, exhaustiveness: int = 4, receptor_pdbqt_path: str = None) -> Dict[str, Any]:
+async def run_gnina_docking(receptor_pdb: str, ligand_smiles: str, exhaustiveness: int = 4, receptor_pdbqt_path: str = None) -> dict[str, Any]:
     """
     Runs GNINA docking (CNN-based scoring).
     """
@@ -263,22 +267,24 @@ async def run_gnina_docking(receptor_pdb: str, ligand_smiles: str, exhaustivenes
         ligand_smi_path = os.path.join(temp_dir, "ligand.smi")
         ligand_sdf_path = os.path.join(temp_dir, "ligand.sdf")
         out_sdf_path = os.path.join(temp_dir, "out.sdf")
-        
+
         with open(receptor_pdb_path, "w") as f: f.write(receptor_pdb)
         with open(ligand_smi_path, "w") as f: f.write(ligand_smiles)
-            
+
         if shutil.which("obabel"):
             try:
                 subprocess.run(["obabel", ligand_smi_path, "-O", ligand_sdf_path, "--gen3d", "-p", "7.4"], check=True, capture_output=True)
             except subprocess.CalledProcessError:
-                from rdkit import Chem; from rdkit.Chem import AllChem
+                from rdkit import Chem
+                from rdkit.Chem import AllChem
                 mol = Chem.MolFromSmiles(ligand_smiles); mol = Chem.AddHs(mol); AllChem.EmbedMolecule(mol, AllChem.ETKDG())
                 writer = Chem.SDWriter(ligand_sdf_path); writer.write(mol); writer.close()
         else:
-            from rdkit import Chem; from rdkit.Chem import AllChem
+            from rdkit import Chem
+            from rdkit.Chem import AllChem
             mol = Chem.MolFromSmiles(ligand_smiles); mol = Chem.AddHs(mol); AllChem.EmbedMolecule(mol, AllChem.ETKDG())
             writer = Chem.SDWriter(ligand_sdf_path); writer.write(mol); writer.close()
-            
+
         start_time = time.time()
         try:
             project_bin = os.path.join(os.path.dirname(__file__), "bin")
@@ -290,7 +296,7 @@ async def run_gnina_docking(receptor_pdb: str, ligand_smiles: str, exhaustivenes
             logger.info("GNINA search box: (%.2f, %.2f, %.2f), size: (%.1f, %.1f, %.1f)", cx, cy, cz, sx, sy, sz)
 
             gnina_cmd = [
-                gnina_bin, "--receptor", receptor_pdb_path, "--ligand", ligand_sdf_path, 
+                gnina_bin, "--receptor", receptor_pdb_path, "--ligand", ligand_sdf_path,
                 "--center_x", str(round(cx, 3)), "--center_y", str(round(cy, 3)), "--center_z", str(round(cz, 3)),
                 "--size_x", str(round(sx, 1)), "--size_y", str(round(sy, 1)), "--size_z", str(round(sz, 1)),
                 "--exhaustiveness", str(exhaustiveness), "--cnn_scoring", "--out", out_sdf_path
@@ -308,17 +314,17 @@ async def run_gnina_docking(receptor_pdb: str, ligand_smiles: str, exhaustivenes
                 except asyncio.TimeoutError:
                     process.kill()
                     raise Exception(f"GNINA timeout after 600s: ligand {ligand_smiles[:40]}")
-            
+
             if process.returncode != 0:
-                with open(gnina_stderr, "r") as f:
+                with open(gnina_stderr) as f:
                     err_msg = f.read().strip()
                 raise Exception(f"Gnina failed: {err_msg}")
-            
+
             elapsed = time.time() - start_time
             best_score = None
             cnn_score = None
             poses_count = 0
-            with open(gnina_stdout, "r") as f:
+            with open(gnina_stdout) as f:
                 for line in f:
                     line = line.strip()
                     parts = line.split()
@@ -330,11 +336,11 @@ async def run_gnina_docking(receptor_pdb: str, ligand_smiles: str, exhaustivenes
                                 cnn_score = float(parts[5])
                             poses_count = max(poses_count, mode_num)
                         except Exception as e: logger.debug("Suppressed exception: %s", e)
-            
+
             if best_score is None:
                 raise Exception("Failed to parse GNINA output table. Ensure 'gnina' binary is correctly installed.")
-                
-            with open(out_sdf_path, "r") as f:
+
+            with open(out_sdf_path) as f:
                 ligand_data = f.read()
 
             return {
@@ -350,7 +356,7 @@ async def run_gnina_docking(receptor_pdb: str, ligand_smiles: str, exhaustivenes
                     "receptor": receptor_pdb
                 }
             }
-            
+
         except Exception as e:
             logger.error("Gnina Error: %s", str(e))
             raise e

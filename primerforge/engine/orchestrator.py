@@ -12,16 +12,17 @@ Supports:
 - Phase-based step grouping (A–E)
 """
 
-import time
-import logging
 import concurrent.futures
+import logging
+import time
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
 # Steps included in express mode (subset execution)
-EXPRESS_STEPS: Set[int] = {1, 6, 7, 10, 19, 22}
+EXPRESS_STEPS: set[int] = {1, 6, 7, 10, 19, 22}
 
 
 @dataclass
@@ -40,7 +41,7 @@ class StepRegistration:
 
     step_number: int
     step_name: str
-    step_function: Callable[[Dict[str, Any]], Dict[str, Any]]
+    step_function: Callable[[dict[str, Any]], dict[str, Any]]
     hard_failure: bool = False  # If True, failure aborts the entire pipeline
     phase: str = "A"  # A, B, C, D, E
     express_included: bool = False  # True for steps 1, 6, 7, 10, 19, 22
@@ -54,9 +55,9 @@ class StepOutcome:
     step_name: str
     status: str  # passed | failed | skipped
     phase: str = "A"
-    output_data: Dict[str, Any] = field(default_factory=dict)
+    output_data: dict[str, Any] = field(default_factory=dict)
     duration_ms: int = 0
-    error_msg: Optional[str] = None
+    error_msg: str | None = None
     penalty: float = 0.0
 
 
@@ -71,14 +72,14 @@ class PipelineOrchestrator:
         results = orchestrator.run(job_id, input_params)
     """
 
-    def __init__(self, db_session=None, config: Optional[PipelineConfig] = None):
+    def __init__(self, db_session=None, config: PipelineConfig | None = None):
         """
         Args:
             db_session: Optional database session for persisting job/step status.
                         If None, status updates are logged but not persisted.
             config: Pipeline configuration. If None, uses default PipelineConfig.
         """
-        self._steps: List[StepRegistration] = []
+        self._steps: list[StepRegistration] = []
         self._db_session = db_session
         self._config = config or PipelineConfig()
 
@@ -91,7 +92,7 @@ class PipelineOrchestrator:
         self,
         step_number: int,
         step_name: str,
-        step_function: Callable[[Dict[str, Any]], Dict[str, Any]],
+        step_function: Callable[[dict[str, Any]], dict[str, Any]],
         hard_failure: bool = False,
         phase: str = "A",
         express_included: bool = False,
@@ -111,7 +112,7 @@ class PipelineOrchestrator:
         self._steps.sort(key=lambda s: s.step_number)
 
     @property
-    def steps(self) -> List[StepRegistration]:
+    def steps(self) -> list[StepRegistration]:
         """Return the ordered list of registered steps."""
         return list(self._steps)
 
@@ -129,8 +130,8 @@ class PipelineOrchestrator:
     def run(
         self,
         job_id: str,
-        input_params: Dict[str, Any],
-    ) -> List[StepOutcome]:
+        input_params: dict[str, Any],
+    ) -> list[StepOutcome]:
         """
         Execute all registered pipeline steps sequentially.
 
@@ -141,7 +142,7 @@ class PipelineOrchestrator:
         Returns:
             List of StepOutcome objects (one per registered step).
         """
-        outcomes: List[StepOutcome] = []
+        outcomes: list[StepOutcome] = []
         current_data = dict(input_params)
         aborted = False
 
@@ -226,11 +227,11 @@ class PipelineOrchestrator:
     def _execute_step_with_timeout(
         self,
         registration: StepRegistration,
-        input_data: Dict[str, Any],
+        input_data: dict[str, Any],
     ) -> StepOutcome:
         """Execute a single step with timeout enforcement and error handling."""
-        result_container: List[StepOutcome] = []
-        exception_container: List[Exception] = []
+        result_container: list[StepOutcome] = []
+        exception_container: list[Exception] = []
 
         def _run_step():
             try:
@@ -314,7 +315,7 @@ class PipelineOrchestrator:
     def _execute_step(
         self,
         registration: StepRegistration,
-        input_data: Dict[str, Any],
+        input_data: dict[str, Any],
     ) -> StepOutcome:
         """Execute a single step with timing and error handling (no timeout).
 
@@ -357,7 +358,7 @@ class PipelineOrchestrator:
     # ─── Database Interaction ─────────────────────────────────────────────
 
     def _update_job_status(
-        self, job_id: str, status: str, phase: Optional[str] = None
+        self, job_id: str, status: str, phase: str | None = None
     ) -> None:
         """Update the pipeline_jobs row with current status and phase."""
         if self._db_session is None:

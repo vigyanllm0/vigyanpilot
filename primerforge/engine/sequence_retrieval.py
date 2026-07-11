@@ -20,11 +20,11 @@ Max 50 queries per request, 256 chars per query, whitespace trimmed.
 Results are normalized to a common SequenceRecord dataclass.
 """
 
+import logging
 import os
 import re
-import logging
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -60,9 +60,9 @@ class SequenceRecord:
     sequence: str
     description: str = ""
     length: int = 0
-    metadata: Dict[str, Any] = field(default_factory=dict)
-    exon_map: List[Dict[str, Any]] = field(default_factory=list)
-    transcripts: List[Dict[str, Any]] = field(default_factory=list)
+    metadata: dict[str, Any] = field(default_factory=dict)
+    exon_map: list[dict[str, Any]] = field(default_factory=list)
+    transcripts: list[dict[str, Any]] = field(default_factory=list)
 
     def __post_init__(self):
         if self.length == 0 and self.sequence:
@@ -75,7 +75,7 @@ class InputParseResult:
     query: str
     input_type: str  # ncbi_accession | ensembl_id | genomic_coordinate | gene_symbol | invalid
     source: str  # ncbi | ensembl | ensembl_region | ncbi_gene | invalid
-    error: Optional[str] = None
+    error: str | None = None
 
 
 @dataclass
@@ -83,7 +83,7 @@ class ValidationError:
     """Validation error for an input query."""
     query: str
     error: str
-    supported_formats: List[str] = field(default_factory=lambda: list(SUPPORTED_FORMATS))
+    supported_formats: list[str] = field(default_factory=lambda: list(SUPPORTED_FORMATS))
 
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -568,7 +568,7 @@ def classify_input(query: str) -> InputParseResult:
     )
 
 
-def validate_input(query: str) -> Tuple[str, Optional[str]]:
+def validate_input(query: str) -> tuple[str, str | None]:
     """
     Validate and sanitize a single input query string.
 
@@ -592,7 +592,7 @@ def validate_input(query: str) -> Tuple[str, Optional[str]]:
     return trimmed, None
 
 
-def validate_batch(queries: List[str]) -> Tuple[List[str], List[ValidationError]]:
+def validate_batch(queries: list[str]) -> tuple[list[str], list[ValidationError]]:
     """
     Validate a batch of input queries.
 
@@ -604,7 +604,7 @@ def validate_batch(queries: List[str]) -> Tuple[List[str], List[ValidationError]
     Returns:
         Tuple of (valid_trimmed_queries, validation_errors).
     """
-    errors: List[ValidationError] = []
+    errors: list[ValidationError] = []
 
     if not queries:
         errors.append(ValidationError(
@@ -623,7 +623,7 @@ def validate_batch(queries: List[str]) -> Tuple[List[str], List[ValidationError]
         ))
         return [], errors
 
-    valid_queries: List[str] = []
+    valid_queries: list[str] = []
     for raw_query in queries:
         trimmed, error = validate_input(raw_query)
         if error:
@@ -634,7 +634,7 @@ def validate_batch(queries: List[str]) -> Tuple[List[str], List[ValidationError]
     return valid_queries, errors
 
 
-def parse_queries(queries: List[str]) -> Tuple[List[InputParseResult], List[ValidationError]]:
+def parse_queries(queries: list[str]) -> tuple[list[InputParseResult], list[ValidationError]]:
     """
     Parse and classify a batch of input queries.
 
@@ -649,7 +649,7 @@ def parse_queries(queries: List[str]) -> Tuple[List[InputParseResult], List[Vali
     """
     valid_queries, errors = validate_batch(queries)
 
-    results: List[InputParseResult] = []
+    results: list[InputParseResult] = []
     for query in valid_queries:
         result = classify_input(query)
         if result.input_type == "invalid":
@@ -692,7 +692,7 @@ _FETCHER_MAP = {
 }
 
 
-def detect_source(query: str) -> Optional[str]:
+def detect_source(query: str) -> str | None:
     """
     Auto-detect the database source from the query format.
 
@@ -759,7 +759,7 @@ def fetch_sequence(query: str, source: str = "auto", **kwargs) -> SequenceRecord
     return fetcher(trimmed, **kwargs)
 
 
-def fetch_sequences(queries: List[str], **kwargs) -> Tuple[List[SequenceRecord], List[ValidationError]]:
+def fetch_sequences(queries: list[str], **kwargs) -> tuple[list[SequenceRecord], list[ValidationError]]:
     """
     Fetch sequences for a batch of queries with validation and classification.
 
@@ -775,7 +775,7 @@ def fetch_sequences(queries: List[str], **kwargs) -> Tuple[List[SequenceRecord],
     """
     parse_results, errors = parse_queries(queries)
 
-    records: List[SequenceRecord] = []
+    records: list[SequenceRecord] = []
     for result in parse_results:
         fetcher = _FETCHER_MAP.get(result.source)
         if fetcher is None:
@@ -791,7 +791,7 @@ def fetch_sequences(queries: List[str], **kwargs) -> Tuple[List[SequenceRecord],
         except Exception as e:
             errors.append(ValidationError(
                 query=result.query,
-                error=f"Fetch failed from {result.source}: {str(e)}",
+                error=f"Fetch failed from {result.source}: {e!s}",
             ))
 
     return records, errors
@@ -803,7 +803,6 @@ def fetch_sequences(queries: List[str], **kwargs) -> Tuple[List[SequenceRecord],
 # ═══════════════════════════════════════════════════════════════════════════
 
 import asyncio
-import time as _time
 from concurrent.futures import ThreadPoolExecutor
 
 # Thread pool for running blocking fetchers in async context
@@ -873,7 +872,7 @@ async def fetch_sequence_async(
         source, trimmed,
     )
 
-    last_exception: Optional[Exception] = None
+    last_exception: Exception | None = None
     loop = asyncio.get_event_loop()
 
     for attempt in range(1, max_retries + 1):
@@ -926,9 +925,9 @@ async def fetch_sequence_async(
 
 
 async def fetch_sequences_async(
-    queries: List[str],
+    queries: list[str],
     **kwargs,
-) -> Tuple[List[SequenceRecord], List[ValidationError]]:
+) -> tuple[list[SequenceRecord], list[ValidationError]]:
     """
     Batch async sequence fetcher with retry/timeout for each query.
 
@@ -971,9 +970,9 @@ async def fetch_sequences_async(
         tasks.append((query, query_source))
 
     # Fetch all concurrently
-    records: List[SequenceRecord] = []
+    records: list[SequenceRecord] = []
 
-    async def _fetch_one(query: str, src: str) -> Optional[SequenceRecord]:
+    async def _fetch_one(query: str, src: str) -> SequenceRecord | None:
         try:
             return await fetch_sequence_async(
                 query,
@@ -985,7 +984,7 @@ async def fetch_sequences_async(
         except Exception as e:
             errors.append(ValidationError(
                 query=query,
-                error=f"Async fetch failed from {src}: {str(e)}",
+                error=f"Async fetch failed from {src}: {e!s}",
             ))
             return None
 

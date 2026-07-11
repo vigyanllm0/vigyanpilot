@@ -28,8 +28,13 @@ Amplicon Tm (Marmur-Schildkraut-Doty formula):
   Tm = 81.5 + 16.6*log10([Na+]) + 0.41*(%GC) - 675/length
 """
 
-import os, re, math, time, logging
+import logging
+import math
+import os
+import re
+import time
 from pathlib import Path
+
 from dotenv import load_dotenv
 
 logging.basicConfig(level=logging.INFO,
@@ -42,8 +47,7 @@ if _env_path.exists():
     load_dotenv(_env_path)
     logger.info("Loaded environment from %s", _env_path)
 
-from flask import Flask, request, jsonify, Response
-from flask_cors import CORS
+from flask import Flask, Response, jsonify, request
 
 # ── Configuration: .env loaded above, additional env vars override ──
 
@@ -600,7 +604,7 @@ def create_app() -> Flask:
         SESSION_COOKIE_HTTPONLY=True,
         SESSION_COOKIE_SAMESITE='Strict',
     )
-    
+
     @app.errorhandler(Exception)
     def handle_global_error(e):
         logger.error("Unhandled Exception: %s: %s", type(e).__name__, e, exc_info=True)
@@ -610,10 +614,10 @@ def create_app() -> Flask:
         }), 500
 
     # ── Security Hardening ────────────────────────────────────────────────
-    from primerforge.security import init_security, get_production_origins
-    from primerforge.threat_detection import init_threat_detection
-    from primerforge.file_scanner import init_file_scanner
     from primerforge.debugger import init_debugger
+    from primerforge.file_scanner import init_file_scanner
+    from primerforge.security import get_production_origins, init_security
+    from primerforge.threat_detection import init_threat_detection
 
     # CORS — validate against allowlist, never echo arbitrary origins
     allowed_origins = get_production_origins()
@@ -645,11 +649,16 @@ def create_app() -> Flask:
     USE_POSTGRES = bool(os.environ.get("DATABASE_URL"))
 
     if USE_POSTGRES:
-        from primerforge.database import init_db, close_db
+        from primerforge.database import close_db, init_db
         from primerforge.pg_auth import (
-            get_current_user, check_usage, consume_token,
-            record_operation_cost, ensure_admin_exists, log_action,
-            check_docking_usage, consume_docking_token
+            check_docking_usage,
+            check_usage,
+            consume_docking_token,
+            consume_token,
+            ensure_admin_exists,
+            get_current_user,
+            log_action,
+            record_operation_cost,
         )
         from primerforge.pg_auth_routes import auth_bp
         from primerforge.pg_payment_routes import payment_bp
@@ -678,7 +687,16 @@ def create_app() -> Flask:
 
         logger.info("Database: PostgreSQL (production mode)")
     else:
-        from primerforge.auth import init_db, close_db, get_current_user, check_usage, increment_usage, log_action, check_docking_usage, increment_docking_usage
+        from primerforge.auth import (
+            check_docking_usage,
+            check_usage,
+            close_db,
+            get_current_user,
+            increment_docking_usage,
+            increment_usage,
+            init_db,
+            log_action,
+        )
         from primerforge.auth_routes import auth_bp
         init_db()
         app.teardown_appcontext(close_db)
@@ -704,14 +722,16 @@ def create_app() -> Flask:
     apply_rate_limits(app)
 
     try:
-        from primerforge.core.auto_designer import AutoPrimerDesigner, PrimerDesignConfig
-        from primerforge.core.manual_analyser import analyse_manual_primer
-        from primerforge.core.sequence_fetcher import (
-            fetch_ncbi_nucleotide, fetch_ensembl_sequence,
-            fetch_uniprot_sequence, search_ncbi_gene
-        )
-        from primerforge.core.thermodynamics import analyse_primer_full
         import primerforge.core.sequence_fetcher as sf
+        from primerforge.core.auto_designer import AutoPrimerDesigner, PrimerDesignConfig
+        from primerforge.core.manual_analyser import align_primer_to_template, analyse_manual_primer
+        from primerforge.core.sequence_fetcher import (
+            fetch_ensembl_sequence,
+            fetch_ncbi_nucleotide,
+            fetch_uniprot_sequence,
+            search_ncbi_gene,
+        )
+        from primerforge.core.thermodynamics import analyse_primer_full, analyse_primer_pair
         if NCBI_API_KEY:
             sf.NCBI_API_KEY = NCBI_API_KEY
             from Bio import Entrez
@@ -795,6 +815,7 @@ def create_app() -> Flask:
         @app.route("/api/pipeline/submit", methods=["POST"])
         def dev_submit_pipeline():
             import uuid as _uuid
+
             from primerforge.engine.orchestrator import PipelineConfig, PipelineOrchestrator
 
             try:
@@ -1382,8 +1403,9 @@ def create_app() -> Flask:
     def _log_fetch(acc, source, description=""):
         """Log a sequence fetch to the audit log."""
         try:
-            from ..database import log_audit
             import re as _re
+
+            from ..database import log_audit
             gene = ""
             m = _re.search(r"\((\w+)\)", description)
             if m:
@@ -1589,9 +1611,10 @@ def create_app() -> Flask:
         if len(accessions) > 200:
             return err("Maximum 200 sequences per request.", "VALIDATION_ERROR", 400)
         try:
-            from concurrent.futures import ThreadPoolExecutor, as_completed
-            from Bio import Entrez, SeqIO
             import io
+            from concurrent.futures import ThreadPoolExecutor, as_completed
+
+            from Bio import Entrez, SeqIO
 
             Entrez.email = os.environ.get("NCBI_EMAIL", "user@example.com")
             ncbi_key = os.environ.get("NCBI_API_KEY", "")
@@ -1630,7 +1653,8 @@ def create_app() -> Flask:
 
     def _parse_oligo_file(text):
         """Parse FASTA or CSV text into a list of {name, forward, reverse, template} dicts."""
-        import csv, io
+        import csv
+        import io
         lines = [l.strip() for l in text.strip().split("\n") if l.strip()]
         if not lines:
             return []
@@ -1819,7 +1843,16 @@ def create_app() -> Flask:
             return err("At least 2 sequences are required for MSA.", "VALIDATION_ERROR", 400)
 
         try:
-            from primerforge.engine.msa_viewer import build_msa_view, format_fasta, format_clustal, get_msa_summary, create_job, process_job
+            from primerforge.engine.msa_viewer import (
+                build_msa_view,
+                create_job,
+                format_clustal,
+                format_clustal_from_job,
+                format_fasta,
+                format_fasta_from_job,
+                get_msa_summary,
+                process_job,
+            )
             n = len(sequences)
             if n > 500:
                 job_id = create_job(sequences, reference_id)
@@ -1854,7 +1887,7 @@ def create_app() -> Flask:
         reference_id = data.get("reference_id")
         if not sequences or len(sequences) < 2:
             return err("At least 2 sequences required.", "VALIDATION_ERROR", 400)
-        from primerforge.engine.msa_viewer import create_job
+        from primerforge.engine.msa_viewer import create_job, process_job
         job_id = create_job(sequences, reference_id)
         import threading
         threading.Thread(target=process_job, args=(job_id,), daemon=True).start()
@@ -1895,7 +1928,7 @@ def create_app() -> Flask:
 
     @app.route("/api/primer/msa/download/<job_id>", methods=["GET"])
     def msa_download_route(job_id):
-        from primerforge.engine.msa_viewer import format_fasta_from_job, format_clustal_from_job
+        from primerforge.engine.msa_viewer import format_clustal_from_job, format_fasta_from_job
         fmt = request.args.get("format", "fasta")
         if fmt == "clustal":
             content = format_clustal_from_job(job_id)
@@ -1945,7 +1978,7 @@ def create_app() -> Flask:
         if len(seqs) < 2:
             return err("FASTA file must contain at least 2 sequences.", "VALIDATION_ERROR", 400)
         reference_id = request.form.get("reference_id") or None
-        from primerforge.engine.msa_viewer import create_job
+        from primerforge.engine.msa_viewer import create_job, process_job
         job_id = create_job(seqs, reference_id)
         import threading
         threading.Thread(target=process_job, args=(job_id,), daemon=True).start()
@@ -1964,6 +1997,11 @@ def create_app() -> Flask:
     # GNINA), and POSTs results back. Frontend polls /status/<job_id>.
 
     from primerforge.docking_queue import create_job, get_job, list_pending_jobs
+    try:
+        from primerforge.docking_db import init_schema
+        init_schema()
+    except Exception:
+        pass
 
     @app.route("/api/primer/docking/consensus", methods=["POST"])
     def docking_consensus():
@@ -2063,10 +2101,36 @@ def create_app() -> Flask:
             "gnina_score": mol.get("gnina_score"),
         }), 200
 
+    @app.route("/api/primer/docking/structure/batch/<job_id>", methods=["GET"])
+    def docking_structure_batch(job_id):
+        job = get_job(job_id)
+        if not job:
+            return err("Job not found.", "NOT_FOUND", 404)
+        result = job.get("result") or {}
+        ranked = result.get("ranked_results") or []
+        stage1 = result.get("stage1") or {}
+        ligands = []
+        for rank, mol in enumerate(ranked, 1):
+            structure = mol.get("structure") or {}
+            ligands.append({
+                "rank": rank,
+                "smiles": mol.get("smiles", ""),
+                "vina_score": mol.get("vina_score"),
+                "gnina_score": mol.get("gnina_score"),
+                "consensus_score": mol.get("consensus_score"),
+                "ligand_sdf": structure.get("ligand", ""),
+            })
+        return jsonify({
+            "receptor_pdb": stage1.get("pdb_string", ""),
+            "ligands": ligands,
+        }), 200
+
     @app.route("/api/primer/docking/structure/upload/<job_id>/<int:rank>", methods=["POST"])
     def docking_structure_upload(job_id, rank):
-        from primerforge.docking_queue import _ensure_dirs, COMPLETE_DIR, FAILED_DIR, RUNNING_DIR
-        import os, json as jmod
+        import json as jmod
+        import os
+
+        from primerforge.docking_queue import COMPLETE_DIR, FAILED_DIR, RUNNING_DIR
         data = request.get_json(silent=True) or {}
         # Find the job file in complete or failed dir
         for d in (COMPLETE_DIR, FAILED_DIR, RUNNING_DIR):
@@ -2167,8 +2231,9 @@ def create_app() -> Flask:
         # ── Update PostgreSQL (production) ────────────────────────────
         if USE_POSTGRES:
             try:
-                from primerforge.database import execute as db_execute
                 import json as _json
+
+                from primerforge.database import execute as db_execute
 
                 # Update or insert into pipeline_jobs
                 db_execute("""

@@ -16,7 +16,7 @@ Strategy:
 
 import logging
 import os
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +31,7 @@ CLINVAR_SIGNIFICANCE_FILTER = {"Pathogenic", "Likely_pathogenic", "Pathogenic/Li
 # Public API
 # ---------------------------------------------------------------------------
 
-def execute(input_data: Dict[str, Any]) -> Dict[str, Any]:
+def execute(input_data: dict[str, Any]) -> dict[str, Any]:
     """
     Step 16: Check primers against ClinVar clinical hotspots.
 
@@ -135,8 +135,8 @@ def execute(input_data: Dict[str, Any]) -> Dict[str, Any]:
 # ---------------------------------------------------------------------------
 
 def _query_clinvar(
-    primer_data: Dict[str, Any], reader: Any
-) -> List[Dict[str, Any]]:
+    primer_data: dict[str, Any], reader: Any
+) -> list[dict[str, Any]]:
     """
     Query ClinVar for Pathogenic/Likely pathogenic variants overlapping the primer.
     """
@@ -239,7 +239,7 @@ def _extract_gene(record) -> str:
     return ""
 
 
-def _fetch_records(reader, chrom: str, start: int, end: int) -> List:
+def _fetch_records(reader, chrom: str, start: int, end: int) -> list:
     """Fetch records from a VCF reader (pysam or subprocess-based)."""
     try:
         return list(reader.fetch(chrom, max(0, start - 1), end))
@@ -256,7 +256,7 @@ def _fetch_records(reader, chrom: str, start: int, end: int) -> List:
 # Reporting
 # ---------------------------------------------------------------------------
 
-def _build_clinical_details(clinvar_variants: List[Dict]) -> List[Dict[str, Any]]:
+def _build_clinical_details(clinvar_variants: list[dict]) -> list[dict[str, Any]]:
     """Build a combined clinical details report."""
     details = []
     for v in clinvar_variants:
@@ -310,7 +310,7 @@ class _TabixFallbackReader:
     def __init__(self, vcf_path: str):
         self._path = vcf_path
 
-    def fetch(self, chrom: str, start: int, end: int) -> List[str]:
+    def fetch(self, chrom: str, start: int, end: int) -> list[str]:
         import subprocess
         try:
             region = f"{chrom}:{start+1}-{end}"

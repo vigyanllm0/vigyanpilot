@@ -16,7 +16,7 @@ import logging
 import os
 import subprocess
 import tempfile
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +35,7 @@ DEFAULT_DB_PATH = os.environ.get("BLAST_DB_PATH", "/opt/blast_db/human_genome")
 # Public API
 # ---------------------------------------------------------------------------
 
-def execute(input_data: Dict[str, Any]) -> Dict[str, Any]:
+def execute(input_data: dict[str, Any]) -> dict[str, Any]:
     """
     Step 10: BLAST specificity check.
 
@@ -171,7 +171,7 @@ def execute(input_data: Dict[str, Any]) -> Dict[str, Any]:
 # BLAST Execution
 # ---------------------------------------------------------------------------
 
-def _blast_primer(sequence: str, db_path: str) -> List[Dict[str, Any]]:
+def _blast_primer(sequence: str, db_path: str) -> list[dict[str, Any]]:
     """
     Run blastn for a single primer sequence and return parsed hits.
     Uses outfmt 6 (tabular) with specific columns for downstream filtering.
@@ -235,9 +235,9 @@ def _blast_primer(sequence: str, db_path: str) -> List[Dict[str, Any]]:
 
 
 def _run_internal_reference_specificity(
-    refined_pairs: List[Dict[str, Any]],
-    reference_sequences: Dict[str, str],
-) -> Dict[str, Any]:
+    refined_pairs: list[dict[str, Any]],
+    reference_sequences: dict[str, str],
+) -> dict[str, Any]:
     """Run a deterministic local reference scan when BLAST is unavailable."""
     filtered_pairs = []
     expected_subject_ids = {"target_sequence"}
@@ -302,15 +302,15 @@ def _run_internal_reference_specificity(
 
 def _scan_reference_primer(
     sequence: str,
-    reference_sequences: Dict[str, str],
-) -> List[Dict[str, Any]]:
+    reference_sequences: dict[str, str],
+) -> list[dict[str, Any]]:
     """Find exact primer matches on supplied reference sequences."""
     if not sequence:
         return []
 
     seq = sequence.upper()
     rc_seq = _reverse_complement(seq)
-    hits: List[Dict[str, Any]] = []
+    hits: list[dict[str, Any]] = []
 
     for subject_id, reference in reference_sequences.items():
         ref = reference.upper()
@@ -345,8 +345,8 @@ def _scan_reference_primer(
 # ---------------------------------------------------------------------------
 
 def _filter_significant_hits(
-    hits: List[Dict[str, Any]], query_length: int
-) -> List[Dict[str, Any]]:
+    hits: list[dict[str, Any]], query_length: int
+) -> list[dict[str, Any]]:
     """
     Filter BLAST hits by identity (≥85%) and coverage (≥80% of query).
     """
@@ -367,7 +367,7 @@ def _filter_significant_hits(
 
 
 def _detect_off_target_amplicon(
-    fwd_hits: List[Dict[str, Any]], rev_hits: List[Dict[str, Any]]
+    fwd_hits: list[dict[str, Any]], rev_hits: list[dict[str, Any]]
 ) -> bool:
     """
     Detect off-target amplicon: both primers have significant hits on the same
@@ -379,7 +379,7 @@ def _detect_off_target_amplicon(
         return False
 
     # Build a map of subject_id → positions for forward hits
-    fwd_loci: Dict[str, List[int]] = {}
+    fwd_loci: dict[str, list[int]] = {}
     for hit in fwd_hits:
         sid = hit["subject_id"]
         pos = min(hit["subject_start"], hit["subject_end"])
@@ -473,14 +473,14 @@ def _resolve_db_path(organism: str) -> str:
     return os.path.join(db_base, db_name)
 
 
-def _get_reference_sequences(input_data: Dict[str, Any]) -> Dict[str, str]:
+def _get_reference_sequences(input_data: dict[str, Any]) -> dict[str, str]:
     """Normalize optional in-memory/local references for internal checks."""
     raw_refs = (
         input_data.get("reference_sequences")
         or input_data.get("specificity_references")
         or input_data.get("local_reference_sequences")
     )
-    refs: Dict[str, str] = {}
+    refs: dict[str, str] = {}
 
     if isinstance(raw_refs, dict):
         refs = {str(k): str(v) for k, v in raw_refs.items() if v}

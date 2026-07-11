@@ -1,12 +1,12 @@
 """File-based job queue for docking dispatch to Azure worker."""
 
+import asyncio
 import json
+import logging
 import os
+import threading
 import time
 import uuid
-import threading
-import asyncio
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -42,6 +42,11 @@ def create_job(sequence: str, ligand_smiles_list: list, top_n: int = 50) -> str:
         with open(path, "w") as f:
             json.dump(job, f)
     logger.info("Docking job %s created (%d ligands)", job_id, len(ligand_smiles_list))
+    try:
+        from primerforge.docking_db import save_job as db_save
+        db_save(job_id, sequence, ligand_smiles_list, top_n)
+    except Exception:
+        pass
     return job_id
 
 def get_job(job_id: str) -> dict | None:
@@ -85,6 +90,11 @@ def complete_job(job_id: str, result: dict, error: str = None) -> bool:
         with open(dst, "w") as f:
             json.dump(job, f)
         os.remove(src)
+    try:
+        from primerforge.docking_db import complete_job as db_complete
+        db_complete(job_id, result, error)
+    except Exception:
+        pass
     return True
 
 def list_pending_jobs() -> list[dict]:

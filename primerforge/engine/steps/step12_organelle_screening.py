@@ -10,7 +10,7 @@ Requirements: 12.1, 12.2, 12.3, 12.4, 12.5
 
 import logging
 import os
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 from .base import PipelineStep
 
@@ -52,14 +52,14 @@ class OrganelleScreeningStep(PipelineStep):
 
     def __init__(
         self,
-        pseudogene_db_path: Optional[str] = None,
-        mito_ref_path: Optional[str] = None,
+        pseudogene_db_path: str | None = None,
+        mito_ref_path: str | None = None,
     ):
         super().__init__(name="Organelle & Pseudogene Screening", step_number=12)
         self.pseudogene_db_path = pseudogene_db_path or DEFAULT_PSEUDOGENE_DB_PATH
         self.mito_ref_path = mito_ref_path or DEFAULT_MITO_REF_PATH
 
-    def execute(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
+    def execute(self, input_data: dict[str, Any]) -> dict[str, Any]:
         """
         Screen primer alignment hits against organelle and pseudogene databases.
 
@@ -157,7 +157,7 @@ class OrganelleScreeningStep(PipelineStep):
         """Check if the mitochondrial reference sequence is accessible."""
         return os.path.exists(self.mito_ref_path)
 
-    def _check_mitochondrial(self, alignment_hits: List[Dict]) -> List[Dict]:
+    def _check_mitochondrial(self, alignment_hits: list[dict]) -> list[dict]:
         """
         Cross-reference alignment hits against mitochondrial genome (chrM/MT).
 
@@ -198,7 +198,7 @@ class OrganelleScreeningStep(PipelineStep):
 
         return mito_hits
 
-    def _check_pseudogenes(self, alignment_hits: List[Dict]) -> List[Dict]:
+    def _check_pseudogenes(self, alignment_hits: list[dict]) -> list[dict]:
         """
         Cross-reference alignment hits against pseudogene coordinate database.
 
@@ -258,10 +258,10 @@ class OrganelleScreeningStep(PipelineStep):
 
     def _flag_same_locus_pairs(
         self,
-        primer_candidates: List[Dict],
-        organelle_hits: List[Dict],
-        pseudogene_hits: List[Dict],
-    ) -> List[str]:
+        primer_candidates: list[dict],
+        organelle_hits: list[dict],
+        pseudogene_hits: list[dict],
+    ) -> list[str]:
         """
         Reject primer pairs where both fwd and rev align to the same
         pseudogene or organelle locus within 5000bp.
@@ -275,7 +275,7 @@ class OrganelleScreeningStep(PipelineStep):
         flagged_pairs = []
 
         # Group hits by primer_id
-        hits_by_primer: Dict[str, List[Dict]] = {}
+        hits_by_primer: dict[str, list[dict]] = {}
         for h in all_hits:
             pid = h.get("primer_id", "")
             if pid not in hits_by_primer:
@@ -311,8 +311,8 @@ class OrganelleScreeningStep(PipelineStep):
         return flagged_pairs
 
     def _check_proximity(
-        self, fwd_hits: List[Dict], rev_hits: List[Dict]
-    ) -> Tuple[bool, List[Dict]]:
+        self, fwd_hits: list[dict], rev_hits: list[dict]
+    ) -> tuple[bool, list[dict]]:
         """
         Check if any forward hit and reverse hit map to the same chromosome
         within LOCUS_PROXIMITY_BP of each other.
@@ -373,7 +373,7 @@ class OrganelleScreeningStep(PipelineStep):
 
         return (len(locus_details) > 0, locus_details)
 
-    def _extract_hits_from_entry(self, entry: Dict) -> List[Dict]:
+    def _extract_hits_from_entry(self, entry: dict) -> list[dict]:
         """
         Extract individual alignment hits from an entry which may be
         a flat hit dict or a nested pair structure from Step 11.
@@ -412,7 +412,7 @@ class OrganelleScreeningStep(PipelineStep):
 
         return hits
 
-    def _load_pseudogene_coordinates(self) -> List[Dict]:
+    def _load_pseudogene_coordinates(self) -> list[dict]:
         """
         Load pseudogene coordinates from the database file.
 
@@ -424,7 +424,7 @@ class OrganelleScreeningStep(PipelineStep):
         """
         coords = []
         try:
-            with open(self.pseudogene_db_path, "r") as f:
+            with open(self.pseudogene_db_path) as f:
                 for line in f:
                     line = line.strip()
                     if not line or line.startswith("#"):
@@ -439,17 +439,17 @@ class OrganelleScreeningStep(PipelineStep):
                             "end": int(parts[4]),
                             "parent_gene": parts[5] if len(parts) > 5 else "",
                         })
-        except (OSError, IOError) as e:
+        except OSError as e:
             logger.warning("VigyanLLM: Failed to load pseudogene DB: %s", e)
         return coords
 
     def _find_pseudogene_overlap(
         self,
-        pseudogene_coords: List[Dict],
+        pseudogene_coords: list[dict],
         chrom: str,
         start: int,
         end: int,
-    ) -> List[Dict]:
+    ) -> list[dict]:
         """
         Find pseudogene entries that overlap the given genomic interval.
 
@@ -466,7 +466,7 @@ class OrganelleScreeningStep(PipelineStep):
         return overlaps
 
 
-def execute(input_data: Dict[str, Any]) -> Dict[str, Any]:
+def execute(input_data: dict[str, Any]) -> dict[str, Any]:
     """
     Module-level execute function for Step 12: Organelle & Pseudogene Screening.
 

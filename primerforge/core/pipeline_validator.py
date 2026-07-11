@@ -14,15 +14,14 @@ Usage:
 """
 
 import logging
-import subprocess
 import os
 import re
-from typing import Dict, List, Optional, Tuple
+import subprocess
 
 logger = logging.getLogger("primerforge.validator")
 
-VALIDATION_WARNINGS: List[str] = []
-VALIDATION_ERRORS: List[str] = []
+VALIDATION_WARNINGS: list[str] = []
+VALIDATION_ERRORS: list[str] = []
 
 
 def _check_primer3() -> bool:
@@ -110,7 +109,7 @@ def _check_ncbi_config() -> bool:
     return True
 
 
-def validate_pipeline_health() -> Dict:
+def validate_pipeline_health() -> dict:
     """
     Run all health checks and return a report.
     Call this once at server startup.
@@ -144,7 +143,7 @@ def validate_pipeline_health() -> Dict:
     }
 
 
-def validate_primer_result(pair: Dict) -> List[str]:
+def validate_primer_result(pair: dict) -> list[str]:
     """
     Validate a single primer pair result for internal consistency.
     Returns a list of warnings (empty = fully valid).
@@ -180,7 +179,7 @@ def validate_primer_result(pair: Dict) -> List[str]:
     return warnings
 
 
-def validate_all_pairs(pairs: List[Dict]) -> Dict:
+def validate_all_pairs(pairs: list[dict]) -> dict:
     """
     Validate all primer pairs in a result set.
     Returns summary of validation findings.

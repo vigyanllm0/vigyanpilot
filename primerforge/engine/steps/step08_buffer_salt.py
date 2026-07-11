@@ -11,7 +11,7 @@ References:
 """
 
 import logging
-from typing import Any, Dict, List, Tuple
+from typing import Any
 
 from .base import PipelineStep
 
@@ -55,7 +55,7 @@ class BufferSaltStep(PipelineStep):
     def __init__(self):
         super().__init__(name="buffer_salt_adjustment", step_number=8)
 
-    def execute(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
+    def execute(self, input_data: dict[str, Any]) -> dict[str, Any]:
         """
         Recalculate Tm with custom or default buffer conditions.
 
@@ -69,7 +69,7 @@ class BufferSaltStep(PipelineStep):
             buffer_conditions_used (dict): The buffer conditions applied.
             free_mg_mm (float): Free [Mg²+] after dNTP chelation (mM).
         """
-        from ..thermodynamics import calculate_tm, BufferConditions
+        from ..thermodynamics import BufferConditions, calculate_tm
 
         primer_candidates = input_data.get("primer_candidates", [])
         if not primer_candidates:
@@ -150,7 +150,7 @@ class BufferSaltStep(PipelineStep):
             "free_mg_mm": round(free_mg_mm, 4),
         }
 
-    def _validate_buffer(self, conditions: Dict[str, float]) -> Tuple[bool, str]:
+    def _validate_buffer(self, conditions: dict[str, float]) -> tuple[bool, str]:
         """
         Validate buffer conditions are within acceptable ranges.
 
@@ -200,13 +200,13 @@ class BufferSaltStep(PipelineStep):
 _step_instance = BufferSaltStep()
 
 
-def _primer_candidates_from_pairs(input_data: Dict[str, Any]) -> List[Dict[str, Any]]:
+def _primer_candidates_from_pairs(input_data: dict[str, Any]) -> list[dict[str, Any]]:
     """Flatten upstream primer pairs so buffer correction runs on real primers."""
     for key in ("refined_pairs", "candidate_pairs", "filtered_pairs", "aligned_pairs"):
         pairs = input_data.get(key)
         if not pairs:
             continue
-        candidates: List[Dict[str, Any]] = []
+        candidates: list[dict[str, Any]] = []
         for idx, pair in enumerate(pairs, start=1):
             pair_id = pair.get("pair_id") or pair.get("rank") or pair.get("pair_index") or idx
             for direction in ("forward", "reverse"):
@@ -227,7 +227,7 @@ def _primer_candidates_from_pairs(input_data: Dict[str, Any]) -> List[Dict[str, 
     return []
 
 
-def execute(input_data: Dict[str, Any]) -> Dict[str, Any]:
+def execute(input_data: dict[str, Any]) -> dict[str, Any]:
     """
     Module-level entry point for Step 8: Dynamic Buffer & Salt Adjustments.
 

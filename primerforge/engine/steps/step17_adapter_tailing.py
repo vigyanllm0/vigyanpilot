@@ -17,7 +17,7 @@ oligos exceeding 60nt total length.
 import logging
 import math
 import re
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 from .base import PipelineStep
 
@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 # ADAPTER TEMPLATES
 # ═══════════════════════════════════════════════════════════════════════════
 
-ADAPTER_TEMPLATES: Dict[str, str] = {
+ADAPTER_TEMPLATES: dict[str, str] = {
     "illumina_nextera_r1": "TCGTCGGCAGCGTCAGATGTGTATAAGAGACAG",
     "illumina_nextera_r2": "GTCTCGTGGGCTCGGAGATGTGTATAAGAGACAG",
     "illumina_truseq_r1": "AGATCGGAAGAGCACACGTCTGAACTCCAGTCA",
@@ -37,7 +37,7 @@ ADAPTER_TEMPLATES: Dict[str, str] = {
 }
 
 # Mapping from platform name to (R1 adapter key, R2 adapter key)
-PLATFORM_ADAPTER_MAP: Dict[str, Tuple[str, str]] = {
+PLATFORM_ADAPTER_MAP: dict[str, tuple[str, str]] = {
     "illumina_nextera": ("illumina_nextera_r1", "illumina_nextera_r2"),
     "illumina_truseq": ("illumina_truseq_r1", "illumina_truseq_r2"),
     "ion_torrent": ("ion_torrent_a", "ion_torrent_p1"),
@@ -62,7 +62,7 @@ class AdapterTailingStep(PipelineStep):
     def __init__(self):
         super().__init__(name="adapter_tailing", step_number=17)
 
-    def execute(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
+    def execute(self, input_data: dict[str, Any]) -> dict[str, Any]:
         """
         Append 5' adapter overhangs to primer candidates.
 
@@ -105,9 +105,9 @@ class AdapterTailingStep(PipelineStep):
         # Get annealing temperature from upstream step (default 60°C)
         annealing_temp = input_data.get("annealing_temp", 60.0)
 
-        tailed_primers: List[Dict[str, Any]] = []
-        foldback_flags: List[str] = []
-        purification_recs: List[Dict[str, Any]] = []
+        tailed_primers: list[dict[str, Any]] = []
+        foldback_flags: list[str] = []
+        purification_recs: list[dict[str, Any]] = []
         all_failed_foldback = True
 
         for primer in candidates:
@@ -203,8 +203,8 @@ class AdapterTailingStep(PipelineStep):
         }
 
     def _resolve_adapters(
-        self, platform: str, custom_adapter: Optional[str]
-    ) -> Tuple[Optional[str], Optional[str]]:
+        self, platform: str, custom_adapter: str | None
+    ) -> tuple[str | None, str | None]:
         """
         Resolve adapter sequences from platform or custom input.
 
@@ -227,7 +227,7 @@ class AdapterTailingStep(PipelineStep):
 
         return None, None
 
-    def _validate_custom_adapter(self, adapter: str) -> Tuple[bool, str]:
+    def _validate_custom_adapter(self, adapter: str) -> tuple[bool, str]:
         """
         Validate custom adapter: 15-35nt, ACGT only.
 
@@ -351,7 +351,7 @@ class AdapterTailingStep(PipelineStep):
                 return 64.9 + 41.0 * (gc - 16.4) / len(seq)
 
         try:
-            from ..thermodynamics import calculate_tm, BufferConditions
+            from ..thermodynamics import BufferConditions, calculate_tm
             result = calculate_tm(seq, BufferConditions())
             return result.tm_salt_adjusted
         except (ImportError, Exception):
@@ -366,7 +366,7 @@ class AdapterTailingStep(PipelineStep):
 # ═══════════════════════════════════════════════════════════════════════════
 
 
-def execute(input_data: Dict[str, Any]) -> Dict[str, Any]:
+def execute(input_data: dict[str, Any]) -> dict[str, Any]:
     """
     Module-level entry point for the Adapter Tailing step.
 
@@ -386,7 +386,7 @@ def execute(input_data: Dict[str, Any]) -> Dict[str, Any]:
     return step.execute(input_data)
 
 
-def _primer_candidates_from_pairs(input_data: Dict[str, Any]) -> List[Dict[str, Any]]:
+def _primer_candidates_from_pairs(input_data: dict[str, Any]) -> list[dict[str, Any]]:
     """Build flat adapter-tailing candidates from the richest available pair list."""
     for key in (
         "clinical_checked",
@@ -400,7 +400,7 @@ def _primer_candidates_from_pairs(input_data: Dict[str, Any]) -> List[Dict[str, 
     ):
         pairs = input_data.get(key)
         if pairs:
-            candidates: List[Dict[str, Any]] = []
+            candidates: list[dict[str, Any]] = []
             for idx, pair in enumerate(pairs, start=1):
                 pair_id = pair.get("pair_id") or pair.get("rank") or idx
                 for direction, primer_key in (("forward", "forward"), ("reverse", "reverse")):

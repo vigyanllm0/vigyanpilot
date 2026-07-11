@@ -8,14 +8,15 @@ ALL sequences are fetched in real-time — no cached or simulated data.
 Rate limiting: NCBI max 3 req/sec without key, 10/sec with key.
 """
 
-import os, time, logging, re
-from typing import Optional, Dict, Tuple, List
+import io
+import logging
+import os
+import re
+import time
 
 import requests
+from Bio import Entrez, SeqIO
 from tenacity import retry, stop_after_attempt, wait_exponential
-from Bio import Entrez, SeqIO, SeqRecord
-from Bio.Seq import Seq
-import io
 
 logger = logging.getLogger("primerforge.fetch")
 
@@ -96,7 +97,7 @@ def _rate_limit_ncbi():
 
 @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10))
 def fetch_ncbi_nucleotide(accession: str, seq_start: int = 0,
-                           seq_stop: int = 0) -> Dict:
+                           seq_stop: int = 0) -> dict:
     """
     Fetch a nucleotide sequence from NCBI by accession number.
     Supports: NM_, NR_, NP_, NC_, NG_, XM_, XR_ accessions.
@@ -193,7 +194,7 @@ def fetch_ncbi_fasta(accession_or_id: str, db: str = "nucleotide") -> str:
 
 
 @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10))
-def search_ncbi_gene(gene_name: str, organism: str = "human") -> List[Dict]:
+def search_ncbi_gene(gene_name: str, organism: str = "human") -> list[dict]:
     """
     Search NCBI Gene database and return gene summaries.
     Returns list of genes with ID, symbol, description, RefSeq accessions.
@@ -241,7 +242,7 @@ def search_ncbi_gene(gene_name: str, organism: str = "human") -> List[Dict]:
     return genes
 
 
-def fetch_gene_refseq_accessions(gene_id: str) -> Dict:
+def fetch_gene_refseq_accessions(gene_id: str) -> dict:
     """Fetch RefSeq mRNA and protein accessions linked to a Gene ID."""
     _rate_limit_ncbi()
     try:
@@ -275,7 +276,7 @@ def fetch_gene_refseq_accessions(gene_id: str) -> Dict:
 
 @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10))
 def fetch_ensembl_sequence(ensembl_id: str, seq_type: str = "genomic",
-                            expand_5prime: int = 0, expand_3prime: int = 0) -> Dict:
+                            expand_5prime: int = 0, expand_3prime: int = 0) -> dict:
     """
     Fetch sequence from Ensembl REST API.
     ensembl_id: ENSG (gene), ENST (transcript), ENSP (protein), ENSE (exon)
@@ -308,7 +309,7 @@ def fetch_ensembl_sequence(ensembl_id: str, seq_type: str = "genomic",
 
 
 @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10))
-def fetch_ensembl_gene_info(gene_symbol: str, species: str = "human") -> Dict:
+def fetch_ensembl_gene_info(gene_symbol: str, species: str = "human") -> dict:
     """Fetch gene coordinates, transcripts, and exons from Ensembl."""
     # Map species to Ensembl name
     species_map = {"human": "homo_sapiens", "mouse": "mus_musculus",
@@ -357,7 +358,7 @@ def fetch_ensembl_gene_info(gene_symbol: str, species: str = "human") -> Dict:
 
 
 @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10))
-def fetch_uniprot_sequence(uniprot_id: str) -> Dict:
+def fetch_uniprot_sequence(uniprot_id: str) -> dict:
     """Fetch protein sequence and metadata from UniProt."""
     r_fasta = requests.get(f"{UNIPROT_BASE}/{uniprot_id}.fasta",
                            headers=HEADERS, timeout=20)
@@ -437,7 +438,7 @@ DATABASE_REGISTRY = {
 }
 
 
-def _search_ncbi_nucleotide_by_name(query: str, organism: str = "") -> List[Dict]:
+def _search_ncbi_nucleotide_by_name(query: str, organism: str = "") -> list[dict]:
     """Search NCBI Nucleotide database by gene name/description."""
     _rate_limit_ncbi()
     org_part = f" AND {organism}[Organism]" if organism else ""
@@ -468,7 +469,7 @@ def _search_ncbi_nucleotide_by_name(query: str, organism: str = "") -> List[Dict
     return results
 
 
-def _search_ensembl_by_name(query: str, organism: str = "human") -> List[Dict]:
+def _search_ensembl_by_name(query: str, organism: str = "human") -> list[dict]:
     """Search Ensembl by gene symbol."""
     species_map = {"human": "homo_sapiens", "mouse": "mus_musculus",
                    "rat": "rattus_norvegicus", "zebrafish": "danio_rerio",
@@ -511,7 +512,7 @@ def _search_ensembl_by_name(query: str, organism: str = "human") -> List[Dict]:
         return []
 
 
-def _search_uniprot_by_name(query: str) -> List[Dict]:
+def _search_uniprot_by_name(query: str) -> list[dict]:
     """Search UniProt by gene/protein name."""
     url = f"{UNIPROT_BASE}/search"
     params = {"query": query, "format": "json", "size": 20}
@@ -555,7 +556,7 @@ def detect_input_type(text: str) -> str:
     return "name"
 
 
-def search_databases(query: str, database: str = "auto", organism: str = "human") -> Dict:
+def search_databases(query: str, database: str = "auto", organism: str = "human") -> dict:
     """
     Search one or all databases for the given query.
     query: gene name, accession, or sequence text

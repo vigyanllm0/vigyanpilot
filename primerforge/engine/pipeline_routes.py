@@ -15,18 +15,16 @@ import json
 import logging
 import os
 import socket
-import uuid
 from concurrent.futures import ThreadPoolExecutor
+from functools import wraps
 from urllib.parse import urlparse
 
-from functools import wraps
+from flask import Blueprint, Response, g, jsonify, request
 
-from flask import Blueprint, request, jsonify, Response, g
-
-from ..pg_auth import require_auth, require_admin, check_usage, consume_token
-from ..database import fetch_one, fetch_all, execute, execute_returning
 from ..crypto_utils import decrypt_data
-from .branding import brand_response, brand_error
+from ..database import execute, execute_returning, fetch_all, fetch_one
+from ..pg_auth import consume_token, require_auth
+from .branding import brand_error, brand_response
 
 logger = logging.getLogger("primerforge.engine.pipeline_routes")
 
@@ -766,7 +764,7 @@ def trigger_order_serialization(job_id: str):
     except Exception as e:
         logger.error("Compliance screening failed for job %s: %s", job_id, e)
         return jsonify(brand_response(
-            {"error": brand_error(f"Compliance screening failed: {str(e)}")}
+            {"error": brand_error(f"Compliance screening failed: {e!s}")}
         )), 500
 
     # Save compliance result to database
@@ -825,7 +823,7 @@ def trigger_order_serialization(job_id: str):
     except Exception as e:
         logger.error("Order serialization failed for job %s: %s", job_id, e)
         return jsonify(brand_response(
-            {"error": brand_error(f"Order serialization failed: {str(e)}")}
+            {"error": brand_error(f"Order serialization failed: {e!s}")}
         )), 500
 
     # Save order payload to database

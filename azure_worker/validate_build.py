@@ -2,8 +2,8 @@
 Build validation script — verifies all pipeline modules import correctly.
 This runs during Docker build (not at runtime).
 """
-import sys
 import logging
+import sys
 
 logging.basicConfig(level=logging.INFO, stream=sys.stdout)
 sys.path.insert(0, "/app")

@@ -8,7 +8,7 @@ and reject sequences exceeding the 256-fold threshold.
 """
 
 import logging
-from typing import Any, Dict, List, Set
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +28,7 @@ IUPAC_MAP = {
 }
 
 # Reverse: degenerate code → set of constituent nucleotides
-DEGENERATE_EXPAND: Dict[str, Set[str]] = {
+DEGENERATE_EXPAND: dict[str, set[str]] = {
     'R': {'A', 'G'},
     'Y': {'C', 'T'},
     'M': {'A', 'C'},
@@ -47,7 +47,7 @@ DEGENERATE_EXPAND: Dict[str, Set[str]] = {
 }
 
 # Degeneracy fold: how many nucleotides a code represents
-DEGENERACY_FOLD: Dict[str, int] = {
+DEGENERACY_FOLD: dict[str, int] = {
     'A': 1, 'C': 1, 'G': 1, 'T': 1,
     'R': 2, 'Y': 2, 'M': 2, 'K': 2, 'S': 2, 'W': 2,
     'B': 3, 'D': 3, 'H': 3, 'V': 3,
@@ -78,7 +78,7 @@ def _validate_sequence(sequence: str) -> None:
 
 
 def _generate_consensus_from_msa(
-    target_sequence: str, msa_sequences: List[str]
+    target_sequence: str, msa_sequences: list[str]
 ) -> str:
     """
     Generate a consensus sequence from aligned sequences using IUPAC codes.
@@ -90,9 +90,9 @@ def _generate_consensus_from_msa(
     all_sequences = [target_sequence.upper()] + [s.upper() for s in msa_sequences]
     seq_len = min(len(s) for s in all_sequences)
 
-    consensus_chars: List[str] = []
+    consensus_chars: list[str] = []
     for i in range(seq_len):
-        bases_at_pos: Set[str] = set()
+        bases_at_pos: set[str] = set()
         for seq in all_sequences:
             base = seq[i]
             # Expand any existing IUPAC codes in the input
@@ -117,7 +117,7 @@ def _generate_consensus_from_msa(
     return "".join(consensus_chars)
 
 
-def _find_degenerate_positions(sequence: str) -> List[Dict[str, Any]]:
+def _find_degenerate_positions(sequence: str) -> list[dict[str, Any]]:
     """
     Identify all degenerate (non-standard base) positions in the sequence.
 
@@ -127,7 +127,7 @@ def _find_degenerate_positions(sequence: str) -> List[Dict[str, Any]]:
         - nucleotides: sorted list of constituent nucleotides
         - fold: degeneracy fold (2, 3, or 4)
     """
-    positions: List[Dict[str, Any]] = []
+    positions: list[dict[str, Any]] = []
     for i, base in enumerate(sequence.upper()):
         if base not in ('A', 'C', 'G', 'T'):
             nucleotides = sorted(DEGENERATE_EXPAND.get(base, {'A', 'C', 'G', 'T'}))
@@ -142,7 +142,7 @@ def _find_degenerate_positions(sequence: str) -> List[Dict[str, Any]]:
 
 
 def _calculate_max_degeneracy_per_window(
-    degenerate_positions: List[Dict[str, Any]], seq_length: int, window_size: int = 25
+    degenerate_positions: list[dict[str, Any]], seq_length: int, window_size: int = 25
 ) -> int:
     """
     Calculate the maximum effective degeneracy across all windows of a given size.
@@ -169,7 +169,7 @@ def _calculate_max_degeneracy_per_window(
     return max_degeneracy
 
 
-def execute(input_data: Dict[str, Any]) -> Dict[str, Any]:
+def execute(input_data: dict[str, Any]) -> dict[str, Any]:
     """
     Step 4: Parse degenerate bases from MSA or detect ambiguous positions.
 

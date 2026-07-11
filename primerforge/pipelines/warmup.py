@@ -45,9 +45,6 @@ def _warmup_esmfold():
 def _warmup_rdkit():
     """Pre-import RDKit and Meeko."""
     try:
-        from rdkit import Chem
-        from rdkit.Chem import AllChem
-        from meeko import MoleculePreparation
         logger.info("Warm-up: RDKit and Meeko imported")
     except Exception as e:
         logger.warning("Warm-up: RDKit/Meeko import failed: %s", e)

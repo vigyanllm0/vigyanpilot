@@ -9,7 +9,9 @@ Endpoints:
 """
 
 import logging
-from flask import Blueprint, request, jsonify, g
+
+from flask import Blueprint, g, jsonify, request
+
 from .database import execute, fetch_one
 from .pg_auth import require_auth
 

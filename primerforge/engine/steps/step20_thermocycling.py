@@ -11,7 +11,7 @@ Validates: Requirements 20.1-20.6
 import logging
 import math
 from dataclasses import asdict, dataclass, field
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from primerforge.engine.steps.base import PipelineStep
 
@@ -34,10 +34,10 @@ class CyclingProfile:
     final_extension_time_s: int = 300
     cycles: int = 30
     is_touchdown: bool = False
-    touchdown_start_temp: Optional[float] = None
+    touchdown_start_temp: float | None = None
     touchdown_decrement: float = 0.5
     touchdown_cycles: int = 10
-    warnings: List[str] = field(default_factory=list)
+    warnings: list[str] = field(default_factory=list)
 
 
 class ThermocyclingProfileStep(PipelineStep):
@@ -46,7 +46,7 @@ class ThermocyclingProfileStep(PipelineStep):
     def __init__(self):
         super().__init__(name="Thermocycling Profile Generation", step_number=20)
 
-    def execute(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
+    def execute(self, input_data: dict[str, Any]) -> dict[str, Any]:
         """
         Generate thermocycling profiles for ranked primer pairs.
 
@@ -91,7 +91,7 @@ class ThermocyclingProfileStep(PipelineStep):
 
     def _generate_profile(
         self,
-        pair: Dict[str, Any],
+        pair: dict[str, Any],
         polymerase_type: str,
         template_ng: float,
         na_conc_m: float,
@@ -248,7 +248,7 @@ class ThermocyclingProfileStep(PipelineStep):
         else:
             return 35
 
-    def _touchdown_profile(self, ta: float, delta_tm: float) -> Dict[str, Any]:
+    def _touchdown_profile(self, ta: float, delta_tm: float) -> dict[str, Any]:
         """
         Generate touchdown protocol parameters.
 
@@ -263,7 +263,7 @@ class ThermocyclingProfileStep(PipelineStep):
             "touchdown_cycles": 10,
         }
 
-    def _get_primer_tm(self, pair: Dict[str, Any], direction: str) -> float:
+    def _get_primer_tm(self, pair: dict[str, Any], direction: str) -> float:
         """Extract Tm for a primer from the pair dict, trying multiple keys."""
         primer_data = pair.get(direction, {}) or pair.get(f"{direction}_primer", {})
 
@@ -298,7 +298,7 @@ class ThermocyclingProfileStep(PipelineStep):
 _step_instance = ThermocyclingProfileStep()
 
 
-def execute(input_data: Dict[str, Any]) -> Dict[str, Any]:
+def execute(input_data: dict[str, Any]) -> dict[str, Any]:
     """
     Module-level entry point for the pipeline orchestrator.
 

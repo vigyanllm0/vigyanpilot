@@ -20,18 +20,18 @@ Usage (injected via ACI environment variables or CLI args):
 
 import os
 import sys
+
 # Ensure /app is on sys.path (worker.py lives in /app/azure_worker/)
 _app_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if _app_root not in sys.path:
     sys.path.insert(0, _app_root)
 
-import json
-import time
-import uuid
-import logging
 import argparse
+import json
+import logging
+import time
 import traceback
-from typing import Dict, Optional, Any
+import uuid
 
 # ── Logging ────────────────────────────────────────────────────────────────
 
@@ -48,7 +48,7 @@ CALLBACK_TIMEOUT = int(os.environ.get("CALLBACK_TIMEOUT", "30"))
 WORKER_VERSION = "1.0.0"
 
 
-def _load_job_config() -> Optional[Dict]:
+def _load_job_config() -> dict | None:
     """Load job configuration from CLI arg, env var, or stdin (in that order).
 
     Priority:
@@ -100,7 +100,7 @@ def _load_job_config() -> Optional[Dict]:
     sys.exit(1)
 
 
-def _get_callback_url() -> Optional[str]:
+def _get_callback_url() -> str | None:
     """Get callback URL from CLI arg or environment variable."""
     parser = argparse.ArgumentParser()
     parser.add_argument("--callback-url", type=str, default=None)
@@ -109,7 +109,7 @@ def _get_callback_url() -> Optional[str]:
     return args.callback_url or os.environ.get("CALLBACK_URL")
 
 
-def _get_callback_token() -> Optional[str]:
+def _get_callback_token() -> str | None:
     """Get callback token from CLI arg or environment variable."""
     parser = argparse.ArgumentParser()
     parser.add_argument("--callback-url", type=str, default=None)
@@ -118,7 +118,7 @@ def _get_callback_token() -> Optional[str]:
     return args.callback_token or os.environ.get("CALLBACK_TOKEN")
 
 
-def _post_callback(url: str, token: Optional[str], payload: Dict):
+def _post_callback(url: str, token: str | None, payload: dict):
     """POST the result payload to the callback URL."""
     try:
         import requests
@@ -144,8 +144,8 @@ def _post_callback(url: str, token: Optional[str], payload: Dict):
 
 # ── Job Type Dispatchers ──────────────────────────────────────────────────
 
-def run_primer_design_job(config: Dict, callback_url: Optional[str] = None,
-                           callback_token: Optional[str] = None) -> Dict:
+def run_primer_design_job(config: dict, callback_url: str | None = None,
+                           callback_token: str | None = None) -> dict:
     """Run the full 22-step primer design pipeline.
     
     Imports and invokes the same PipelineOrchestrator used by the
@@ -153,27 +153,27 @@ def run_primer_design_job(config: Dict, callback_url: Optional[str] = None,
     """
     job_id = config.get("job_id", uuid.uuid4().hex[:12])
     logger.info("Primer design job %s started", job_id)
-    
+
     try:
-        from primerforge.engine.orchestrator import PipelineOrchestrator, PipelineConfig
+        from primerforge.engine.orchestrator import PipelineConfig, PipelineOrchestrator
         from primerforge.engine.steps import STEP_REGISTRY
     except ImportError:
         logger.warning("primerforge not installed — running simulated pipeline")
         return _run_simulated_pipeline(config, "primer_design", callback_url, callback_token)
-    
+
     sequence = config.get("sequence", "")
     accession = config.get("accession", "")
     mode = config.get("mode", "full")
-    
+
     input_params = dict(config)
     input_params.setdefault("mode", mode)
     input_params.setdefault("organism", config.get("organism", "human"))
     input_params.setdefault("product_min", config.get("product_min", 80))
     input_params.setdefault("product_max", config.get("product_max", 500))
-    
+
     pipeline_config = PipelineConfig(mode=mode)
     orchestrator = PipelineOrchestrator(config=pipeline_config)
-    
+
     # Register all 24 steps
     express_steps = {1, 6, 7, 8, 9, 12, 22, 24}
     step_meta = {
@@ -202,25 +202,25 @@ def run_primer_design_job(config: Dict, callback_url: Optional[str] = None,
         23: ("Thermocycling Profile Generation", False, "E"),
         24: ("Probe Design (qPCR/TaqMan)", False, "E"),
     }
-    
+
     for number, (name, hard_failure, phase) in step_meta.items():
         orchestrator.register_step(
             number, name, STEP_REGISTRY[number],
             hard_failure=hard_failure, phase=phase,
             express_included=number in express_steps,
         )
-    
+
     t0 = time.time()
     outcomes = orchestrator.run(job_id, input_params)
     elapsed = time.time() - t0
-    
+
     hard_failed = any(
         o.status == "failed"
         and any(s.hard_failure for s in orchestrator.steps if s.step_number == o.step_number)
         for o in outcomes
     )
     status = "failed" if hard_failed else "completed"
-    
+
     result = {
         "job_id": job_id,
         "job_type": "primer_design",
@@ -242,16 +242,16 @@ def run_primer_design_job(config: Dict, callback_url: Optional[str] = None,
             for o in outcomes
         ],
     }
-    
+
     # POST callback
     if callback_url:
         _post_callback(callback_url, callback_token, result)
-    
+
     return result
 
 
-def run_msa_job(config: Dict, callback_url: Optional[str] = None,
-                 callback_token: Optional[str] = None) -> Dict:
+def run_msa_job(config: dict, callback_url: str | None = None,
+                 callback_token: str | None = None) -> dict:
     """Run large-scale MSA alignment.
     
     Handles 100–100,000 sequences using the same alignment strategies
@@ -259,11 +259,15 @@ def run_msa_job(config: Dict, callback_url: Optional[str] = None,
     """
     job_id = config.get("job_id", uuid.uuid4().hex[:12])
     logger.info("MSA job %s started", job_id)
-    
+
     try:
         from primerforge.engine.msa_viewer import (
-            create_job, process_job, get_job, format_fasta_from_job,
-            format_clustal_from_job, get_msa_summary,
+            create_job,
+            format_clustal_from_job,
+            format_fasta_from_job,
+            get_job,
+            get_msa_summary,
+            process_job,
         )
     except ImportError:
         logger.warning("primerforge msa_viewer not available — simulating")
@@ -276,10 +280,10 @@ def run_msa_job(config: Dict, callback_url: Optional[str] = None,
             "elapsed_s": 0,
             "note": "Simulated — primerforge not installed",
         }
-    
+
     sequences = config.get("sequences", [])
     reference_id = config.get("reference_id")
-    
+
     if not sequences or len(sequences) < 2:
         result = {
             "job_id": job_id,
@@ -290,13 +294,13 @@ def run_msa_job(config: Dict, callback_url: Optional[str] = None,
         if callback_url:
             _post_callback(callback_url, callback_token, result)
         return result
-    
+
     t0 = time.time()
     msa_job_id = create_job(sequences, reference_id)
     process_job(msa_job_id)
     job = get_job(msa_job_id)
     elapsed = time.time() - t0
-    
+
     result = {
         "job_id": job_id,
         "msa_job_id": msa_job_id,
@@ -310,27 +314,27 @@ def run_msa_job(config: Dict, callback_url: Optional[str] = None,
         "summary": get_msa_summary({"stats": job.get("stats", {})}),
         "error": job.get("error"),
     }
-    
+
     if callback_url:
         _post_callback(callback_url, callback_token, result)
-    
+
     return result
 
 
-def run_stress_test_job(config: Dict, callback_url: Optional[str] = None,
-                         callback_token: Optional[str] = None) -> Dict:
+def run_stress_test_job(config: dict, callback_url: str | None = None,
+                         callback_token: str | None = None) -> dict:
     """Run the stress tester workload.
     
     Processes configurable number of records (default 105,000)
     in chunks to measure pipeline throughput.
     """
     logger.info("Stress test job started")
-    
+
     from azure_worker.stress_tester import run_stress_test
-    
+
     total = config.get("total", 105_000)
     chunk_size = config.get("chunk_size", 5_000)
-    
+
     summary = run_stress_test(
         total=total,
         chunk_size=chunk_size,
@@ -340,7 +344,7 @@ def run_stress_test_job(config: Dict, callback_url: Optional[str] = None,
     return summary
 
 
-def _strip_structures(result: Dict) -> Dict:
+def _strip_structures(result: dict) -> dict:
     """Remove bulky PDB/SDF structure strings from the result before POSTing."""
     if not result:
         return result
@@ -354,10 +358,10 @@ def _strip_structures(result: Dict) -> Dict:
     return result
 
 
-def _upload_structures(api_base: str, job_id: str, result: Dict):
+def _upload_structures(api_base: str, job_id: str, result: dict):
     """Upload individual docked structures to the server for the 3D viewer."""
-    import urllib.request
     import urllib.error
+    import urllib.request
     ranked = result.get("ranked_results") or []
     for i, mol in enumerate(ranked):
         struct = mol.get("structure")
@@ -376,8 +380,8 @@ def _upload_structures(api_base: str, job_id: str, result: Dict):
             logger.warning("Failed to upload structure rank %d for %s: %s", i + 1, job_id, e)
 
 
-def run_docking_job(config: Dict, callback_url: Optional[str] = None,
-                     callback_token: Optional[str] = None) -> Dict:
+def run_docking_job(config: dict, callback_url: str | None = None,
+                     callback_token: str | None = None) -> dict:
     """Run the consensus docking pipeline on Azure.
 
     Accepts protein sequence (AA) and ligand SMILES list, runs the
@@ -450,28 +454,27 @@ def run_docking_job(config: Dict, callback_url: Optional[str] = None,
     return result
 
 
-def _run_simulated_pipeline(config: Dict, job_type: str,
-                             callback_url: Optional[str] = None,
-                             callback_token: Optional[str] = None) -> Dict:
+def _run_simulated_pipeline(config: dict, job_type: str,
+                             callback_url: str | None = None,
+                             callback_token: str | None = None) -> dict:
     """Fallback: simulate pipeline execution when primerforge is not installed.
     
     Useful for testing the Azure worker infrastructure independently
     of the full codebase.
     """
     import random
-    import string
-    
+
     job_id = config.get("job_id", uuid.uuid4().hex[:12])
     n_steps = random.randint(10, 24)
     t0 = time.time()
-    
+
     # Simulate processing time
     seq_len = len(config.get("sequence", ""))
     sim_time = max(0.5, seq_len * 0.0005) if seq_len else random.uniform(1.0, 5.0)
     time.sleep(min(sim_time, 30.0))
-    
+
     elapsed = time.time() - t0
-    
+
     result = {
         "job_id": job_id,
         "job_type": job_type,
@@ -484,10 +487,10 @@ def _run_simulated_pipeline(config: Dict, job_type: str,
         "steps_skipped": 0,
         "note": f"Simulated pipeline run ({n_steps} steps, {elapsed:.1f}s)",
     }
-    
+
     if callback_url:
         _post_callback(callback_url, callback_token, result)
-    
+
     return result
 
 

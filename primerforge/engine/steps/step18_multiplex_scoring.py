@@ -16,7 +16,7 @@ import logging
 import os
 import subprocess
 import tempfile
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -33,7 +33,7 @@ MULTIPLEX_PENALTY = 8.0
 # Public API
 # ---------------------------------------------------------------------------
 
-def execute(input_data: Dict[str, Any]) -> Dict[str, Any]:
+def execute(input_data: dict[str, Any]) -> dict[str, Any]:
     """
     Step 18: Score multiplex compatibility across all primer pairs.
 
@@ -92,7 +92,7 @@ def execute(input_data: Dict[str, Any]) -> Dict[str, Any]:
     oligo_nm = buffer.get("oligo_conc_nm", 250.0)
 
     # ── Collect all primer sequences ───────────────────────────────────────
-    all_primers: List[Tuple[str, str, str]] = []  # (pair_id, direction, sequence)
+    all_primers: list[tuple[str, str, str]] = []  # (pair_id, direction, sequence)
     for pair in pairs:
         pair_id = pair.get("pair_id", f"pair_{pairs.index(pair)}")
         pair.setdefault("pair_id", pair_id)
@@ -100,9 +100,9 @@ def execute(input_data: Dict[str, Any]) -> Dict[str, Any]:
         all_primers.append((pair_id, "rev", pair["reverse"]["sequence"]))
 
     # ── Compute cross-dimer ΔG matrix ─────────────────────────────────────
-    interaction_matrix: List[Dict[str, Any]] = []
-    worst_dg_per_pair: Dict[str, float] = {pair["pair_id"]: 0.0 for pair in pairs}
-    incompatible_pairs: Dict[str, List[str]] = {pair["pair_id"]: [] for pair in pairs}
+    interaction_matrix: list[dict[str, Any]] = []
+    worst_dg_per_pair: dict[str, float] = {pair["pair_id"]: 0.0 for pair in pairs}
+    incompatible_pairs: dict[str, list[str]] = {pair["pair_id"]: [] for pair in pairs}
 
     for i in range(len(all_primers)):
         for j in range(i + 1, len(all_primers)):
@@ -141,7 +141,7 @@ def execute(input_data: Dict[str, Any]) -> Dict[str, Any]:
                 incompatible_pairs[all_primers[j][0]].append(all_primers[i][0])
 
     # ── Invoke PrimerPooler for pool optimization (>10 pairs) ──────────────
-    pool_assignments: Dict[str, int] = {}
+    pool_assignments: dict[str, int] = {}
     if len(pairs) > PRIMER_POOLER_THRESHOLD:
         pool_assignments = _run_primer_pooler(pairs, interaction_matrix)
     else:
@@ -212,14 +212,14 @@ def _compute_cross_dimer_dg(
 # ---------------------------------------------------------------------------
 
 def _run_primer_pooler(
-    pairs: List[Dict[str, Any]],
-    interaction_matrix: List[Dict[str, Any]],
-) -> Dict[str, int]:
+    pairs: list[dict[str, Any]],
+    interaction_matrix: list[dict[str, Any]],
+) -> dict[str, int]:
     """
     Invoke PrimerPooler to optimally partition primers into pools.
     Returns: dict of pair_id → pool_number (1-indexed).
     """
-    pool_assignments: Dict[str, int] = {}
+    pool_assignments: dict[str, int] = {}
 
     try:
         # Check if PrimerPooler is available
@@ -297,10 +297,10 @@ def _run_primer_pooler(
 
 
 def _parse_pooler_output(
-    output_path: str, pairs: List[Dict[str, Any]]
-) -> Dict[str, int]:
+    output_path: str, pairs: list[dict[str, Any]]
+) -> dict[str, int]:
     """Parse PrimerPooler output file into pool assignments."""
-    assignments: Dict[str, int] = {}
+    assignments: dict[str, int] = {}
     try:
         with open(output_path) as f:
             current_pool = 0
@@ -331,15 +331,15 @@ def _parse_pooler_output(
 # ---------------------------------------------------------------------------
 
 def _greedy_pool_assignment(
-    pairs: List[Dict[str, Any]],
-    incompatible_pairs: Dict[str, List[str]],
-) -> Dict[str, int]:
+    pairs: list[dict[str, Any]],
+    incompatible_pairs: dict[str, list[str]],
+) -> dict[str, int]:
     """
     Greedy graph coloring algorithm to assign pairs to pools.
     Each pair is a node; incompatible pairs are edges.
     Minimize pool count (max MAX_POOLS).
     """
-    assignments: Dict[str, int] = {}
+    assignments: dict[str, int] = {}
 
     for pair in pairs:
         pid = pair.get("pair_id", f"pair_{pairs.index(pair)}")
@@ -372,11 +372,11 @@ def _greedy_pool_assignment(
 
 
 def _build_incompatible_map(
-    pairs: List[Dict[str, Any]],
-    interaction_matrix: List[Dict[str, Any]],
-) -> Dict[str, List[str]]:
+    pairs: list[dict[str, Any]],
+    interaction_matrix: list[dict[str, Any]],
+) -> dict[str, list[str]]:
     """Build incompatible pairs map from interaction matrix."""
-    incompatible: Dict[str, List[str]] = {
+    incompatible: dict[str, list[str]] = {
         pair.get("pair_id", ""): [] for pair in pairs
     }
     for interaction in interaction_matrix:

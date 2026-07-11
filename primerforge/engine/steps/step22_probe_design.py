@@ -7,7 +7,7 @@ Validates: Requirements 22.1, 22.2, 22.3, 22.4, 22.5, 22.6, 22.7
 """
 
 import logging
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 from primerforge.engine.steps.base import PipelineStep
 from primerforge.engine.thermodynamics import (
@@ -31,7 +31,7 @@ class ProbeDesignStep(PipelineStep):
     def __init__(self):
         super().__init__(name="probe_design", step_number=22)
 
-    def execute(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
+    def execute(self, input_data: dict[str, Any]) -> dict[str, Any]:
         """
         Design TaqMan probes for each ranked primer pair.
 
@@ -65,7 +65,7 @@ class ProbeDesignStep(PipelineStep):
             oligo_conc_nm=buffer_cond.get("oligo_conc_nm", 250.0),
         )
 
-        probe_results: List[Dict[str, Any]] = []
+        probe_results: list[dict[str, Any]] = []
 
         for i, pair in enumerate(ranked_pairs):
             # Get amplicon sequence for this pair
@@ -149,7 +149,7 @@ class ProbeDesignStep(PipelineStep):
             "probe_note": f"Probe design completed for {len(ranked_pairs)} pairs",
         }
 
-    def _get_fwd_end(self, pair: Dict[str, Any], amplicon: str) -> int:
+    def _get_fwd_end(self, pair: dict[str, Any], amplicon: str) -> int:
         """Get the end position of the forward primer in the amplicon."""
         fwd = _primer_dict(pair.get("forward"))
         fwd_seq = fwd.get("sequence", "")
@@ -160,7 +160,7 @@ class ProbeDesignStep(PipelineStep):
         fwd_len = fwd.get("length", pair.get("fwd_length", 20))
         return fwd_len - 1
 
-    def _get_rev_start(self, pair: Dict[str, Any], amplicon: str) -> int:
+    def _get_rev_start(self, pair: dict[str, Any], amplicon: str) -> int:
         """Get the start position of the reverse primer in the amplicon."""
         rev = _primer_dict(pair.get("reverse"))
         rev_seq = rev.get("sequence", "")
@@ -200,7 +200,7 @@ class ProbeDesignStep(PipelineStep):
 
     def _validate_probe(
         self, probe_seq: str, primer_mean_tm: float, buffer: BufferConditions
-    ) -> Tuple[bool, str]:
+    ) -> tuple[bool, str]:
         """
         Validate a candidate probe against all constraints.
 
@@ -257,7 +257,7 @@ class ProbeDesignStep(PipelineStep):
 
         return True, ""
 
-    def _assign_labels(self, probe_len: int) -> Dict[str, str]:
+    def _assign_labels(self, probe_len: int) -> dict[str, str]:
         """
         Assign reporter and quencher labels based on probe length.
 
@@ -280,7 +280,7 @@ class ProbeDesignStep(PipelineStep):
         fwd_end: int,
         mean_primer_tm: float,
         buffer: BufferConditions,
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Generate and score all valid probe candidates from the probe region.
 
@@ -289,7 +289,7 @@ class ProbeDesignStep(PipelineStep):
         """
         region = probe_region.upper()
         region_len = len(region)
-        candidates: List[Dict[str, Any]] = []
+        candidates: list[dict[str, Any]] = []
 
         # The probe region starts at fwd_end + 2 in the amplicon
         # (fwd_end + 1 for 0-index adjustment, +1 for gap)
@@ -347,7 +347,7 @@ class ProbeDesignStep(PipelineStep):
 # ═══════════════════════════════════════════════════════════════════════════
 
 
-def execute(input_data: Dict[str, Any]) -> Dict[str, Any]:
+def execute(input_data: dict[str, Any]) -> dict[str, Any]:
     """
     Module-level entry point for the probe design step.
 
@@ -375,7 +375,7 @@ def _primer_tm(primer: Any, fallback: Any = 0) -> float:
         return 0.0
 
 
-def _primer_dict(primer: Any) -> Dict[str, Any]:
+def _primer_dict(primer: Any) -> dict[str, Any]:
     if isinstance(primer, dict):
         return primer
     if isinstance(primer, str):

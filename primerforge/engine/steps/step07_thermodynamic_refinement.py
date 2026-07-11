@@ -6,7 +6,7 @@ No GC-content approximations — pure nearest-neighbor physics.
 """
 
 import logging
-from typing import Any, Dict, List
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -19,14 +19,14 @@ def _gc_percent(sequence: str) -> float:
     return round(((seq.count("G") + seq.count("C")) / len(seq)) * 100.0, 2)
 
 
-def execute(input_data: Dict[str, Any]) -> Dict[str, Any]:
+def execute(input_data: dict[str, Any]) -> dict[str, Any]:
     """
     Step 7: Refine thermodynamics for all candidate pairs.
     
     Input: candidate_pairs, buffer conditions
     Output: refined_pairs with NN-calculated Tm, salt-adjusted, Mg-adjusted
     """
-    from ..thermodynamics import calculate_tm, BufferConditions
+    from ..thermodynamics import BufferConditions, calculate_tm
 
     candidate_pairs = input_data.get("candidate_pairs", [])
     if not candidate_pairs:
@@ -45,7 +45,7 @@ def execute(input_data: Dict[str, Any]) -> Dict[str, Any]:
         # Handle both formats: forward can be a string or a dict with 'sequence' key
         fwd_data = pair.get("forward", "")
         rev_data = pair.get("reverse", "")
-        
+
         if isinstance(fwd_data, str):
             fwd_seq = fwd_data
             fwd_dict = {
@@ -65,7 +65,7 @@ def execute(input_data: Dict[str, Any]) -> Dict[str, Any]:
             fwd_dict = dict(fwd_data)
             fwd_dict.setdefault("gc", _gc_percent(fwd_seq))
             fwd_dict.setdefault("length", len(fwd_seq))
-        
+
         if isinstance(rev_data, str):
             rev_seq = rev_data
             rev_dict = {

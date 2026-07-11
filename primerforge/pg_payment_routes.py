@@ -21,19 +21,34 @@ Endpoints:
   GET  /api/payments/financial-summary — Admin: P&L and ROI views
 """
 
-import os
-import hmac
 import hashlib
-import time
+import hmac
 import json
 import logging
+import os
+import time
 
 import razorpay
-from flask import Blueprint, request, jsonify, g
+from flask import Blueprint, g, jsonify, request
 
-from .database import get_db, get_db_standalone, put_db_standalone, fetch_one, fetch_all, execute, execute_returning, db_transaction
-from .pg_auth import get_current_user, require_auth, require_admin, log_action, check_usage
-from .price_registry import PRICE_REGISTRY, TOPUP_PRICE_INR, FREE_TRIAL_RUNS, get_amount_paise, validate_order_request, get_designs_for_product
+from .database import (
+    execute,
+    fetch_all,
+    fetch_one,
+    get_db,
+    get_db_standalone,
+    put_db_standalone,
+)
+from .pg_auth import check_usage, log_action, require_admin, require_auth
+from .price_registry import (
+    FREE_TRIAL_RUNS,
+    PRICE_REGISTRY,
+    TOPUP_PRICE_INR,
+    get_amount_paise,
+    get_designs_for_product,
+    get_dock_runs_for_product,
+    validate_order_request,
+)
 from .security import validate_quantity
 
 logger = logging.getLogger("primerforge.payments")
@@ -151,26 +166,32 @@ def _credit_tokens_atomic(user_id: int, order_id: str, product_id: str,
         return 0  # Already processed (idempotent)
 
     designs = get_designs_for_product(product_id, quantity)
+    dock_runs = get_dock_runs_for_product(product_id, quantity)
 
     if product_id in PRICE_REGISTRY:
-        # Subscription plan — activate and set monthly quota
+        # Subscription plan — activate and set monthly quotas
         product = PRICE_REGISTRY[product_id]
+        expiry_interval = "24 hours" if product.period == "daily" else "30 days"
         cur.execute(
-            """INSERT INTO subscriptions (user_id, is_active, plan_id, plan_type, monthly_quota,
-                   quota_used, started_at, expires_at, last_renewed_at, max_seats, quota_reset_at)
-               VALUES (%s, TRUE, %s, %s, %s, 0, NOW(), NOW() + INTERVAL '30 days', NOW(), %s, NOW() + INTERVAL '30 days')
+            f"""INSERT INTO subscriptions (user_id, is_active, plan_id, plan_type, monthly_quota,
+                   dock_monthly_quota, quota_used, dock_quota_used,
+                   started_at, expires_at, last_renewed_at, max_seats, quota_reset_at)
+               VALUES (%s, TRUE, %s, %s, %s, %s, 0, 0,
+                       NOW(), NOW() + INTERVAL '{expiry_interval}', NOW(), %s, NOW() + INTERVAL '{expiry_interval}')
                ON CONFLICT (user_id) DO UPDATE SET
                  is_active = TRUE,
                  plan_id = %s,
                  plan_type = %s,
                  monthly_quota = %s,
+                 dock_monthly_quota = %s,
                  quota_used = 0,
-                 expires_at = NOW() + INTERVAL '30 days',
+                 dock_quota_used = 0,
+                 expires_at = NOW() + INTERVAL '{expiry_interval}',
                  last_renewed_at = NOW(),
                  max_seats = %s,
-                 quota_reset_at = NOW() + INTERVAL '30 days'""",
-            (user_id, product_id, product_id, designs, product.max_seats,
-             product_id, product_id, designs, product.max_seats)
+                 quota_reset_at = NOW() + INTERVAL '{expiry_interval}'""",
+            (user_id, product_id, product_id, designs, dock_runs, product.max_seats,
+             product_id, product_id, designs, dock_runs, product.max_seats)
         )
     else:
         # Top-up — add to balance directly
@@ -523,6 +544,7 @@ def razorpay_webhook():
             if sub_id:
                 cur.execute(
                     """UPDATE subscriptions SET quota_used = 0,
+                              dock_quota_used = 0,
                               quota_reset_at = NOW() + INTERVAL '30 days',
                               last_renewed_at = NOW(),
                               expires_at = NOW() + INTERVAL '30 days'
@@ -543,20 +565,26 @@ def razorpay_webhook():
                 user_row = cur.fetchone()
                 if user_row and plan_id in PRICE_REGISTRY:
                     product = PRICE_REGISTRY[plan_id]
+                    expiry_interval = "24 hours" if product.period == "daily" else "30 days"
                     cur.execute(
-                        """INSERT INTO subscriptions (user_id, is_active, plan_id, plan_type,
-                               monthly_quota, quota_used, started_at, expires_at,
-                               last_renewed_at, max_seats, razorpay_subscription_id, quota_reset_at)
-                           VALUES (%s, TRUE, %s, %s, %s, 0, NOW(), NOW() + INTERVAL '30 days', NOW(), %s, %s, NOW() + INTERVAL '30 days')
+                        f"""INSERT INTO subscriptions (user_id, is_active, plan_id, plan_type,
+                               monthly_quota, dock_monthly_quota, quota_used, dock_quota_used,
+                               started_at, expires_at, last_renewed_at, max_seats,
+                               razorpay_subscription_id, quota_reset_at)
+                           VALUES (%s, TRUE, %s, %s, %s, %s, 0, 0,
+                                   NOW(), NOW() + INTERVAL '{expiry_interval}', NOW(), %s, %s, NOW() + INTERVAL '{expiry_interval}')
                            ON CONFLICT (user_id) DO UPDATE SET
                              is_active = TRUE, plan_id = %s, plan_type = %s,
-                             monthly_quota = %s, quota_used = 0,
-                             expires_at = NOW() + INTERVAL '30 days',
+                             monthly_quota = %s, dock_monthly_quota = %s,
+                             quota_used = 0, dock_quota_used = 0,
+                             expires_at = NOW() + INTERVAL '{expiry_interval}',
                              last_renewed_at = NOW(), max_seats = %s,
                              razorpay_subscription_id = %s,
-                             quota_reset_at = NOW() + INTERVAL '30 days'""",
-                        (user_row["id"], plan_id, plan_id, product.designs_included, product.max_seats, sub_id,
-                         plan_id, plan_id, product.designs_included, product.max_seats, sub_id)
+                             quota_reset_at = NOW() + INTERVAL '{expiry_interval}'""",
+                        (user_row["id"], plan_id, plan_id, product.designs_included, product.dock_runs_included,
+                         product.max_seats, sub_id,
+                         plan_id, plan_id, product.designs_included, product.dock_runs_included,
+                         product.max_seats, sub_id)
                     )
                     conn.commit()
                     logger.info("Webhook: subscription.authenticated — %s activated %s", email, plan_id)

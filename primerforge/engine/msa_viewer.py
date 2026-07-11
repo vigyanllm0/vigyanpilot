@@ -8,8 +8,13 @@ Job state is persisted in Redis (instead of local memory) so it survives
 Gunicorn worker restarts and can be shared across workers.
 """
 
-import os, json, logging, tempfile, subprocess, time, uuid
-from typing import Dict, List, Optional, Tuple
+import json
+import logging
+import os
+import subprocess
+import tempfile
+import time
+import uuid
 from collections import Counter
 
 logger = logging.getLogger(__name__)
@@ -55,7 +60,7 @@ def _save_job(job_id: str, data: dict, ttl: int = _DEFAULT_TTL):
     r.setex(_job_key(job_id), ttl, json.dumps(data, default=str))
 
 
-def _load_job(job_id: str) -> Optional[Dict]:
+def _load_job(job_id: str) -> dict | None:
     """Load a job dict from Redis, or None if missing/expired."""
     r = _get_redis()
     raw = r.get(_job_key(job_id))
@@ -71,7 +76,7 @@ def _delete_job(job_id: str):
 
 # ── Job lifecycle ──────────────────────────────────────────────
 
-def create_job(sequences: List[Dict], reference_id: Optional[str] = None) -> str:
+def create_job(sequences: list[dict], reference_id: str | None = None) -> str:
     job_id = uuid.uuid4().hex[:12]
     job_data = {
         "status": "QUEUED",
@@ -90,7 +95,7 @@ def create_job(sequences: List[Dict], reference_id: Optional[str] = None) -> str
     return job_id
 
 
-def get_job(job_id: str) -> Optional[Dict]:
+def get_job(job_id: str) -> dict | None:
     return _load_job(job_id)
 
 
@@ -185,7 +190,7 @@ def process_job(job_id: str):
 
 # ── Alignment strategies ───────────────────────────────────────
 
-def _align_mafft(sequences: List[str], auto: bool = True, fast: bool = False) -> Optional[List[str]]:
+def _align_mafft(sequences: list[str], auto: bool = True, fast: bool = False) -> list[str] | None:
     """Align with MAFFT binary; fall back to pure-Python progressive alignment."""
     try:
         subprocess.run(["mafft", "--version"], capture_output=True, timeout=10)
@@ -229,7 +234,7 @@ def _align_mafft(sequences: List[str], auto: bool = True, fast: bool = False) ->
         return _align_python(sequences)
 
 
-def _align_python(sequences: List[str]) -> Optional[List[str]]:
+def _align_python(sequences: list[str]) -> list[str] | None:
     """Reference-based pairwise progressive alignment (pure Python).
     
     Picks the longest sequence as reference and aligns all others
@@ -310,7 +315,7 @@ def _pairwise_gaps(query: str, target: str, use_bio: bool) -> str:
             j -= 1
     return "".join(reversed(res))
 
-def _align_kmer_profile(sequences: List[str]) -> List[str]:
+def _align_kmer_profile(sequences: list[str]) -> list[str]:
     """K-mer based profile alignment for medium-large sets."""
     if not sequences:
         return []
@@ -359,24 +364,24 @@ def _align_kmer_profile(sequences: List[str]) -> List[str]:
         return _align_fast_padding(sequences)
     return _align_to_max_length(aligned_results)
 
-def _align_fast_padding(sequences: List[str]) -> List[str]:
+def _align_fast_padding(sequences: list[str]) -> list[str]:
     if not sequences:
         return []
     max_len = max(len(s) for s in sequences)
     return [s.upper().ljust(max_len, "-") for s in sequences]
 
-def _pick_reference(sequences: List[str]) -> str:
+def _pick_reference(sequences: list[str]) -> str:
     median_len = sorted(len(s) for s in sequences)[len(sequences) // 2]
     candidates = [s for s in sequences if abs(len(s) - median_len) < median_len * 0.1]
     return candidates[0] if candidates else sequences[0]
 
-def _align_to_max_length(sequences: List[str]) -> List[str]:
+def _align_to_max_length(sequences: list[str]) -> list[str]:
     max_len = max(len(s) for s in sequences)
     return [s.ljust(max_len, "-") for s in sequences]
 
 # ── Conservation ───────────────────────────────────────────────
 
-def _build_conservation(aligned: List[str]) -> List[Dict]:
+def _build_conservation(aligned: list[str]) -> list[dict]:
     if not aligned or not aligned[0]:
         return []
     n = len(aligned)
@@ -396,7 +401,7 @@ def _build_conservation(aligned: List[str]) -> List[Dict]:
         })
     return conservation
 
-def _build_conservation_sampled(aligned: List[str], sample_size: int = 5000) -> List[Dict]:
+def _build_conservation_sampled(aligned: list[str], sample_size: int = 5000) -> list[dict]:
     n = len(aligned)
     if not aligned or not aligned[0]:
         return []
@@ -420,7 +425,7 @@ def _build_conservation_sampled(aligned: List[str], sample_size: int = 5000) -> 
 
 # ── Stats ──────────────────────────────────────────────────────
 
-def _compute_stats(aligned: List[str], names: List[str], conservation: List[Dict] = None) -> Dict:
+def _compute_stats(aligned: list[str], names: list[str], conservation: list[dict] = None) -> dict:
     if not aligned or not aligned[0]:
         return {}
     n = len(aligned)
@@ -443,7 +448,7 @@ def _compute_stats(aligned: List[str], names: List[str], conservation: List[Dict
 # ── Paginated view ────────────────────────────────────────────
 
 def get_paginated_alignment(job_id: str, offset: int = 0, limit: int = 50,
-                            col_start: int = 0, col_end: int = 0) -> Dict:
+                            col_start: int = 0, col_end: int = 0) -> dict:
     job = _load_job(job_id)
     if not job:
         return {"error": "Job not found", "status": "NOT_FOUND"}
@@ -482,7 +487,7 @@ def _get_char_class(char: str) -> str:
 
 # ── Legacy API (backward compat, small alignments) ────────────
 
-def build_msa_view(sequences: List[Dict], reference_id: Optional[str] = None) -> Dict:
+def build_msa_view(sequences: list[dict], reference_id: str | None = None) -> dict:
     if not sequences:
         return {"alignment": [], "conservation": [], "stats": {}}
     seq_seqs = [s.get("sequence", "").upper() for s in sequences]
@@ -508,7 +513,7 @@ def build_msa_view(sequences: List[Dict], reference_id: Optional[str] = None) ->
 
 # ── Export ─────────────────────────────────────────────────────
 
-def format_fasta(sequences: List[Dict]) -> str:
+def format_fasta(sequences: list[dict]) -> str:
     lines = []
     for s in sequences:
         sid = s.get("id") or s.get("accession") or s.get("name") or "seq"
@@ -517,7 +522,7 @@ def format_fasta(sequences: List[Dict]) -> str:
         lines.append(seq)
     return "\n".join(lines)
 
-def format_clustal(alignment_rows: List[Dict]) -> str:
+def format_clustal(alignment_rows: list[dict]) -> str:
     if not alignment_rows:
         return ""
     lines = ["CLUSTAL W formatted alignment\n"]
@@ -546,7 +551,7 @@ def format_fasta_from_job(job_id: str) -> str:
         lines.append(row["sequence"])
     return "\n".join(lines)
 
-def get_msa_summary(msa_view: Dict) -> str:
+def get_msa_summary(msa_view: dict) -> str:
     stats = msa_view.get("stats", {})
     if not stats:
         return "No alignment data available."

@@ -14,21 +14,22 @@ Algorithm:
 NO simulation. All scores from real primer3 thermodynamic calculations.
 """
 
-import time, json, logging, re, copy
-from typing import List, Dict, Optional, Tuple
-from dataclasses import dataclass, field, asdict
-from Bio.Seq import Seq
-import requests
-import primer3 as p3
+import copy
+import logging
+import re
+from dataclasses import asdict, dataclass
 
+import primer3 as p3
+import requests
+from Bio.Seq import Seq
+
+from .sequence_fetcher import HEADERS, _rate_limit_ncbi
 from .thermodynamics import (
+    TmResult,
     analyse_primer_full,
-    analyse_primer_pair,
     calculate_gc_content,
     calculate_tm_nearest_neighbor,
-    TmResult,
 )
-from .sequence_fetcher import NCBI_BASE, NCBI_API_KEY, HEADERS, _rate_limit_ncbi
 
 logger = logging.getLogger("primerforge.auto")
 
@@ -90,30 +91,30 @@ class PrimerDesignConfig:
 @dataclass
 class PrimerPairResult:
     rank:          int
-    forward:       Dict
-    reverse:       Dict
-    pair_analysis: Dict
+    forward:       dict
+    reverse:       dict
+    pair_analysis: dict
     product_start:  int    # 1-based start on template
     product_end:    int    # 1-based end on template
     product_size:   int
     product_gc:     float  # GC% of amplicon
     product_seq:    str    # full amplicon sequence
-    specificity:    Optional[Dict] = None  # Primer-BLAST result
-    amplicon_tm:    Optional[float] = None  # Tm of amplicon if <100nt
+    specificity:    dict | None = None  # Primer-BLAST result
+    amplicon_tm:    float | None = None  # Tm of amplicon if <100nt
     primer3_design_primers_validated: bool = False  # also found by primer3.design_primers()
 
 
 class AutoPrimerDesigner:
     """Sliding-window automatic primer pair designer."""
 
-    def __init__(self, config: Optional[PrimerDesignConfig] = None):
+    def __init__(self, config: PrimerDesignConfig | None = None):
         self.cfg = config or PrimerDesignConfig()
 
     def design(self, template_seq: str,
                target_region_start: int = 0,
                target_region_end:   int = 0,
-               excluded_regions:    List[Tuple[int,int]] = None,
-               annotation:          str = "") -> List[PrimerPairResult]:
+               excluded_regions:    list[tuple[int,int]] = None,
+               annotation:          str = "") -> list[PrimerPairResult]:
         """
         Design primer pairs for template_seq.
         template_seq:           Full template (DNA, 5'→3')
@@ -401,7 +402,7 @@ class AutoPrimerDesigner:
                 return False
         return True
 
-    def _single_seed_score(self, seq: str) -> Optional[float]:
+    def _single_seed_score(self, seq: str) -> float | None:
         """Cheap prefilter before primer3 secondary-structure analysis."""
         try:
             tm_nn, _, _ = calculate_tm_nearest_neighbor(
@@ -432,7 +433,7 @@ class AutoPrimerDesigner:
             return False
         return True
 
-    def _analyse_pair_cached(self, fwd: Dict, rev: Dict) -> Dict:
+    def _analyse_pair_cached(self, fwd: dict, rev: dict) -> dict:
         """Pair analysis that reuses already-computed single-primer thermodynamics."""
         fwd_result = dict(fwd["thermo"])
         rev_result = dict(rev["thermo"])
@@ -485,7 +486,7 @@ class AutoPrimerDesigner:
 
     def _run_primer3_design_primers(
         self, clean_seq: str, target_start_0: int, target_end_0: int
-    ) -> Dict:
+    ) -> dict:
         """
         Run primer3.design_primers() with identical settings to cross-validate.
         Returns the raw primer3 result dict so callers can compare.
@@ -531,9 +532,9 @@ class AutoPrimerDesigner:
 
     def _cross_validate_with_primer3(
         self,
-        auto_pairs: List[Dict],
-        p3_result: Dict,
-    ) -> List[Dict]:
+        auto_pairs: list[dict],
+        p3_result: dict,
+    ) -> list[dict]:
         """
         Cross-reference auto-designer results against primer3.design_primers().
         Adds validation metadata to each pair.
@@ -561,7 +562,7 @@ class AutoPrimerDesigner:
         return validated
 
     def _primer_blast_check(self, fwd: str, rev: str,
-                             min_size: int, max_size: int) -> Dict:
+                             min_size: int, max_size: int) -> dict:
         """
         Verify primer specificity via NCBI Primer-BLAST API.
         Returns specificity data: expected targets, off-targets, organism matches.

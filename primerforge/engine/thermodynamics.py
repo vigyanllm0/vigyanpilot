@@ -15,7 +15,6 @@ Reference: SantaLucia J Jr. (1998) Proc Natl Acad Sci USA 95:1460-1465
 
 import math
 from dataclasses import dataclass
-from typing import Tuple, Optional
 
 # ═══════════════════════════════════════════════════════════════════════════
 # CONSTANTS
@@ -95,7 +94,7 @@ class BufferConditions:
 # CORE CALCULATIONS
 # ═══════════════════════════════════════════════════════════════════════════
 
-def compute_nn_params(sequence: str) -> Tuple[float, float]:
+def compute_nn_params(sequence: str) -> tuple[float, float]:
     """
     Compute total ΔH and ΔS for a DNA sequence using nearest-neighbor model.
     
@@ -255,12 +254,12 @@ def predict_hairpin(sequence: str, buffer: BufferConditions = None) -> Structure
             # Check if bases on either side of loop can pair
             stem_5 = seq[:loop_start]
             stem_3 = seq[loop_end:]
-            
+
             # Find maximum stem length
             stem_len = min(len(stem_5), len(stem_3))
             pairs = 0
             dg = 0.0
-            
+
             for i in range(stem_len):
                 b5 = stem_5[-(i+1)]
                 b3 = stem_3[i]
@@ -374,7 +373,7 @@ def predict_amplicon_folding(sequence: str, temperature_c: float = 72.0) -> Stru
     """
     seq = sequence.upper()
     n = len(seq)
-    
+
     if n < 20:
         return StructureResult(delta_g=0.0, structure_type="amplicon_fold",
                               is_stable=False, details="Amplicon too short for stable folding")
@@ -386,13 +385,13 @@ def predict_amplicon_folding(sequence: str, temperature_c: float = 72.0) -> Stru
 
     # Check windows of 40-100bp for internal structure
     window_sizes = [40, 60, 80, 100] if n > 100 else [min(n, 40)]
-    
+
     for ws in window_sizes:
         for start in range(0, n - ws, ws // 2):
             window = seq[start:start + ws]
             # Look for palindromic regions
             rc_window = _reverse_complement(window)
-            
+
             # Count self-complementary stretches
             max_run = 0
             current_run = 0

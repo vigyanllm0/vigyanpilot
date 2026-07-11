@@ -2,19 +2,18 @@
 """
 VigyanLLM Price Registry — Disrupted Pricing Model
 ======================================================
-Volume-optimized, India-market aggressive pricing.
-COGS: ~₹2-5 per run. All tiers maintain 70%+ gross margins.
+Unified subscription model — each plan includes primer design + docking credits.
 
 Tiers:
-  - Free Trial: 2 free runs per new user
-  - Individual: ₹2,499/mo → 250 designs
-  - Institutional: ₹14,999/mo → 2,000 designs, 5 seats
-  - Corporate: ₹49,999/mo → 7,500 designs, unlimited seats
-  - Top-Up: ₹49 per single run (post-trial/overage)
+  - Free Trial: 2 free runs (primer) + 2 free docking runs per new user
+  - Daily:        ₹99/d → 5 designs + 2 docking
+  - Individual: ₹2,499/mo → 250 designs + 50 docking
+  - Institutional: ₹14,999/mo → 2,000 designs + 500 docking, 5 seats
+  - Corporate: ₹49,999/mo → 7,500 designs + 2,000 docking, unlimited seats
+  - Top-Up: ₹49/design, ₹99/docking
 """
 
 from dataclasses import dataclass
-from typing import Dict, Optional
 from enum import Enum
 
 
@@ -30,7 +29,8 @@ class ProductConfig:
     product_type: ProductType
     price_inr: int              # Exact INR (integer, no decimals)
     designs_included: int       # Monthly design quota (0 for top-up)
-    period: str                 # 'monthly', 'one_time'
+    dock_runs_included: int     # Monthly docking quota (0 for top-up)
+    period: str                 # 'daily', 'monthly', 'one_time'
     max_seats: int              # Multi-user seats
     description: str
     is_active: bool = True
@@ -40,16 +40,28 @@ class ProductConfig:
 # CANONICAL PRICING — Single source of truth
 # ═══════════════════════════════════════════════════════════════════════════
 
-PRICE_REGISTRY: Dict[str, ProductConfig] = {
+PRICE_REGISTRY: dict[str, ProductConfig] = {
+    "daily": ProductConfig(
+        product_id="daily",
+        display_name="Daily Pass",
+        product_type=ProductType.SUBSCRIPTION,
+        price_inr=99,
+        designs_included=5,
+        dock_runs_included=2,
+        period="daily",
+        max_seats=1,
+        description="5 primer designs + 2 docking runs — valid for 24 hours"
+    ),
     "individual": ProductConfig(
         product_id="individual",
         display_name="Individual / Researcher",
         product_type=ProductType.SUBSCRIPTION,
         price_inr=2499,
         designs_included=250,
+        dock_runs_included=50,
         period="monthly",
         max_seats=1,
-        description="250 validated primer/probe designs/month — ~₹10/design"
+        description="250 primer designs + 50 docking runs/month — ~₹8.33/design"
     ),
     "institutional": ProductConfig(
         product_id="institutional",
@@ -57,9 +69,10 @@ PRICE_REGISTRY: Dict[str, ProductConfig] = {
         product_type=ProductType.SUBSCRIPTION,
         price_inr=14999,
         designs_included=2000,
+        dock_runs_included=500,
         period="monthly",
         max_seats=5,
-        description="2,000 validated primer/probe designs/month, 5 researcher seats — ~₹7.50/design"
+        description="2,000 primer designs + 500 docking runs/month, 5 seats — ~₹6/design"
     ),
     "corporate": ProductConfig(
         product_id="corporate",
@@ -67,9 +80,10 @@ PRICE_REGISTRY: Dict[str, ProductConfig] = {
         product_type=ProductType.SUBSCRIPTION,
         price_inr=49999,
         designs_included=7500,
+        dock_runs_included=2000,
         period="monthly",
-        max_seats=999,              # Unlimited
-        description="7,500 validated primer/probe designs/month, unlimited seats, dedicated API — ~₹6.67/design"
+        max_seats=999,
+        description="7,500 primer designs + 2,000 docking runs/month, unlimited seats, API — ~₹5/design"
     ),
 }
 
@@ -79,6 +93,7 @@ DOCK_TOPUP_PRICE_INR: int = 99  # ₹99 per single docking run
 
 # Free trial allocation
 FREE_TRIAL_RUNS: int = 2
+FREE_DOCK_RUNS: int = 2
 
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -100,7 +115,7 @@ def get_amount_paise(product_id: str, quantity: int = 1) -> int:
     return product.price_inr * 100
 
 
-def validate_order_request(product_id: str, quantity: int) -> Optional[str]:
+def validate_order_request(product_id: str, quantity: int) -> str | None:
     """
     Validate an order creation request.
     Returns error message string or None if valid.
@@ -128,3 +143,11 @@ def get_designs_for_product(product_id: str, quantity: int = 1) -> int:
         return quantity
     product = PRICE_REGISTRY.get(product_id)
     return product.designs_included if product else 0
+
+
+def get_dock_runs_for_product(product_id: str, quantity: int = 1) -> int:
+    """Get number of docking credits for a product purchase."""
+    if product_id == "dock_top_up":
+        return quantity
+    product = PRICE_REGISTRY.get(product_id)
+    return product.dock_runs_included if product else 0

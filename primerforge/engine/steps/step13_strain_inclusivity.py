@@ -18,10 +18,8 @@ Output keys:
 """
 
 import logging
-import math
 import os
-import re
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +32,7 @@ MIN_STRAIN_COVERAGE_FOR_REPORT = 5
 STRAIN_DB_PATH = os.environ.get("STRAIN_DB_PATH", "/opt/strain_db")
 
 
-def execute(input_data: Dict[str, Any]) -> Dict[str, Any]:
+def execute(input_data: dict[str, Any]) -> dict[str, Any]:
     # Get primer pairs from upstream (after BLAST)
     filtered_pairs = input_data.get("filtered_pairs", [])
     if not filtered_pairs:
@@ -167,7 +165,7 @@ def execute(input_data: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
-def _get_primer_seq(pair: Dict[str, Any], direction: str) -> str:
+def _get_primer_seq(pair: dict[str, Any], direction: str) -> str:
     """Extract primer sequence from various possible schema formats."""
     primer = pair.get(direction)
     if isinstance(primer, str):
@@ -179,7 +177,7 @@ def _get_primer_seq(pair: Dict[str, Any], direction: str) -> str:
     return pair.get("reverse_sequence", pair.get("rev_seq", ""))
 
 
-def _evaluate_binding(primer_seq: str, template_seq: str, direction: str = "forward") -> Dict[str, Any]:
+def _evaluate_binding(primer_seq: str, template_seq: str, direction: str = "forward") -> dict[str, Any]:
     """
     Evaluate whether a primer can bind to a template sequence, allowing for
     1-2 mismatches (discontinuous attachment). Uses a nearest-neighbor
@@ -297,7 +295,7 @@ def _estimate_perfect_binding_dg(sequence: str) -> float:
     return round(total, 2)
 
 
-def _get_strain_sequences(organism: str, input_data: Dict[str, Any]) -> Dict[str, str]:
+def _get_strain_sequences(organism: str, input_data: dict[str, Any]) -> dict[str, str]:
     """
     Retrieve strain sequences for the target organism.
     Uses cached local database first, then fetches from NCBI.
@@ -421,7 +419,7 @@ def _get_strain_sequences(organism: str, input_data: Dict[str, Any]) -> Dict[str
         return {}
 
 
-def _load_local_strain_db(organism: str) -> Dict[str, str]:
+def _load_local_strain_db(organism: str) -> dict[str, str]:
     """Try to load cached strain sequences from local file."""
     db_path = os.path.join(STRAIN_DB_PATH, f"{organism}_strains.fa")
     if not os.path.exists(db_path):
@@ -449,7 +447,7 @@ def _load_local_strain_db(organism: str) -> Dict[str, str]:
     return strains
 
 
-def _extract_gene_symbol(input_data: Dict[str, Any]) -> str:
+def _extract_gene_symbol(input_data: dict[str, Any]) -> str:
     """Try to extract a gene symbol from various input fields."""
     for field in ["gene_symbol", "gene", "accession", "target_name"]:
         val = input_data.get(field, "")
@@ -458,7 +456,7 @@ def _extract_gene_symbol(input_data: Dict[str, Any]) -> str:
     return ""
 
 
-def _align_to_target(strain_seq: str, target_seq: str) -> Optional[Dict[str, Any]]:
+def _align_to_target(strain_seq: str, target_seq: str) -> dict[str, Any] | None:
     """
     Locate the best sub-sequence within strain_seq that aligns to target_seq.
     Uses a k-mer seed (12nt) to find the homologous region, then extends.
@@ -532,7 +530,7 @@ def _reverse_complement(seq: str) -> str:
     return "".join(comp.get(b, b) for b in reversed(seq))
 
 
-def _empty_result(reason: str) -> Dict[str, Any]:
+def _empty_result(reason: str) -> dict[str, Any]:
     return {
         "strain_results": [],
         "strain_coverage_score": 0.0,

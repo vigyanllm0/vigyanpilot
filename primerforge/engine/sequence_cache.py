@@ -7,14 +7,13 @@ Reduces API calls to NCBI/Ensembl/NCBI Virus/ENA/DDBJ.
 
 import json
 import logging
-from typing import Optional
 
 from .sequence_retrieval import SequenceRecord
 
 logger = logging.getLogger(__name__)
 
 
-def get_cached(source: str, query_key: str) -> Optional[SequenceRecord]:
+def get_cached(source: str, query_key: str) -> SequenceRecord | None:
     """
     Check cache for a sequence. Returns SequenceRecord if found and not expired.
     """
@@ -70,7 +69,7 @@ def fetch_with_cache(query: str, source: str = "auto", **kwargs) -> SequenceReco
     """
     Fetch a sequence, checking cache first. If cache miss, fetch from API and store.
     """
-    from .sequence_retrieval import fetch_sequence, detect_source
+    from .sequence_retrieval import detect_source, fetch_sequence
 
     if source == "auto":
         source = detect_source(query) or "ncbi"

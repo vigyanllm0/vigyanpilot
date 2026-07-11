@@ -7,8 +7,7 @@ and recommends purification methods for flagged primers.
 """
 
 import logging
-import re
-from typing import Any, Dict, List
+from typing import Any
 
 from primerforge.engine.steps.base import PipelineStep
 
@@ -37,7 +36,7 @@ class ManufacturingFeasibilityStep(PipelineStep):
     def __init__(self):
         super().__init__(name="Manufacturing Feasibility Screening", step_number=21)
 
-    def execute(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
+    def execute(self, input_data: dict[str, Any]) -> dict[str, Any]:
         """
         Step 21: Manufacturing feasibility screening.
 
@@ -106,9 +105,9 @@ class ManufacturingFeasibilityStep(PipelineStep):
             "feasibility_scores": feasibility_scores,
         }
 
-    def _screen_primer(self, seq: str) -> List[str]:
+    def _screen_primer(self, seq: str) -> list[str]:
         """Run all synthesis feasibility checks on a primer sequence."""
-        flags: List[str] = []
+        flags: list[str] = []
 
         if self._check_homopolymer(seq):
             flags.append("synthesis_difficult")
@@ -163,7 +162,7 @@ class ManufacturingFeasibilityStep(PipelineStep):
         """
         return "GGGGG" in seq.upper()
 
-    def _compute_feasibility_score(self, flags: List[str]) -> int:
+    def _compute_feasibility_score(self, flags: list[str]) -> int:
         """
         Compute manufacturing feasibility score (0-100).
 
@@ -180,7 +179,7 @@ class ManufacturingFeasibilityStep(PipelineStep):
         return max(0, score)
 
 
-def execute(input_data: Dict[str, Any]) -> Dict[str, Any]:
+def execute(input_data: dict[str, Any]) -> dict[str, Any]:
     """
     Module-level execute function for Step 21: Manufacturing Feasibility Screening.
 

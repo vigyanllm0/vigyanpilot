@@ -48,20 +48,20 @@ from .step03_bisulfite_conversion import execute as step03_execute
 from .step04_degenerate_bases import execute as step04_execute
 from .step05_repeat_masking import execute as step05_execute
 from .step06_msa_conservation import execute as step06_execute
-from .step07_conserved_targeting import execute as step07_execute
 
 # Phase B: Thermodynamic Validation (Steps 8-11)
 from .step06_primer3_design import execute as step08_execute
+from .step07_conserved_targeting import execute as step07_execute
 from .step07_thermodynamic_refinement import execute as step09_execute
 from .step08_buffer_salt import execute as step10_execute
 from .step09_mg_correction import execute as step11_execute
 
 # Phase C: Specificity & Inclusivity (Steps 12-16)
 from .step10_blast_specificity import execute as step12_execute
-from .step13_strain_inclusivity import execute as step13_execute
 from .step11_bowtie2_alignment import execute as step14_execute
 from .step12_organelle_screening import execute as step15_execute
 from .step13_secondary_structure import execute as step16_execute
+from .step13_strain_inclusivity import execute as step13_execute
 
 # Phase D: Structural & Multiplex Analysis (Steps 17-22)
 from .step14_amplicon_structure import execute as step17_execute
@@ -104,9 +104,9 @@ STEP_REGISTRY = {
 }
 
 __all__ = [
+    "STEP_REGISTRY",
     "PipelineStep",
     "StepResult",
-    "STEP_REGISTRY",
     "step01_execute",
     "step02_execute",
     "step03_execute",

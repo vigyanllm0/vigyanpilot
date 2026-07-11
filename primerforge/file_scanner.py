@@ -8,14 +8,13 @@ VigyanLLM File System Scanner & Integrity Monitor
 - Auto-quarantines suspicious files
 """
 
-import os
-import re
-import json
-import time
 import hashlib
+import json
 import logging
-from pathlib import Path
+import re
+import time
 from datetime import datetime, timezone
+from pathlib import Path
 
 logger = logging.getLogger("primerforge.file_scanner")
 
@@ -90,7 +89,7 @@ def compute_file_hash(filepath: Path) -> str:
         with open(filepath, "rb") as f:
             for chunk in iter(lambda: f.read(8192), b""):
                 h.update(chunk)
-    except (IOError, PermissionError):
+    except (OSError, PermissionError):
         return ""
     return h.hexdigest()
 
@@ -132,9 +131,9 @@ def load_baseline() -> dict:
     if not BASELINE_FILE.exists():
         return {}
     try:
-        with open(BASELINE_FILE, "r") as f:
+        with open(BASELINE_FILE) as f:
             return json.load(f)
-    except (json.JSONDecodeError, IOError):
+    except (OSError, json.JSONDecodeError):
         return {}
 
 
@@ -186,7 +185,7 @@ def scan_file_for_malware(filepath: Path) -> list:
     findings = []
     try:
         content = filepath.read_text(errors="ignore")
-    except (IOError, PermissionError):
+    except (OSError, PermissionError):
         return findings
 
     for category, patterns in _COMPILED_SIGS.items():
@@ -273,7 +272,7 @@ def restore_from_quarantine(quarantine_name: str) -> dict:
     if not meta_file.exists():
         return {"error": "Quarantine metadata not found."}
 
-    with open(meta_file, "r") as f:
+    with open(meta_file) as f:
         meta = json.load(f)
 
     src = QUARANTINE_DIR / quarantine_name
@@ -295,7 +294,8 @@ def restore_from_quarantine(quarantine_name: str) -> dict:
 
 def init_file_scanner(app):
     """Register file scanner admin endpoints."""
-    from flask import jsonify, request as flask_request
+    from flask import jsonify
+    from flask import request as flask_request
 
     try:
         from .pg_auth import require_admin

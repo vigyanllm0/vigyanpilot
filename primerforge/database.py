@@ -11,16 +11,15 @@ Usage in app:
 The app sets `app.current_user_id` session variable for RLS enforcement.
 """
 
-import os
-import time
 import logging
+import os
 import threading
+import time
 from contextlib import contextmanager
-from urllib.parse import urlparse
 
 import psycopg2
-import psycopg2.pool
 import psycopg2.extras
+import psycopg2.pool
 from flask import g
 
 # ── Logging Configuration (LOG-03 FIX) ────────────────────────────────────

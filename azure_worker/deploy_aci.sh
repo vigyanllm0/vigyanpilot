@@ -22,6 +22,7 @@ set -euo pipefail
 REGISTRY="vigyanregistry01.azurecr.io"
 RG="VigyanComputeGroup"
 API_BASE="${API_BASE_URL:-https://www.vigyanllm.in}"
+DOCKING_DB="${DOCKING_DATABASE_URL:-}"
 
 MODE="${1:-cpu}"
 
@@ -76,6 +77,7 @@ az container create \
         API_BASE_URL="$API_BASE" \
         POLL_INTERVAL=10 \
         WORKER_MODE=daemon \
+        DOCKING_DATABASE_URL="$DOCKING_DB" \
     --command-line "python /app/azure_worker/worker.py"
 
 # Step 5: Verify

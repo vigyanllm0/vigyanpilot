@@ -20,7 +20,7 @@ import os
 import re
 import subprocess
 import tempfile
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -51,7 +51,7 @@ PSEUDOGENE_PENALTY = 20.0
 # Public API
 # ---------------------------------------------------------------------------
 
-def execute(input_data: Dict[str, Any]) -> Dict[str, Any]:
+def execute(input_data: dict[str, Any]) -> dict[str, Any]:
     """
     Step 11: Bowtie2 genome-wide alignment.
 
@@ -116,7 +116,7 @@ def execute(input_data: Dict[str, Any]) -> Dict[str, Any]:
         }
 
     # ── Collect all unique primer sequences ────────────────────────────────
-    primer_sequences: Dict[str, str] = {}  # id → sequence
+    primer_sequences: dict[str, str] = {}  # id → sequence
     for i, pair in enumerate(pairs):
         fwd_id = f"pair{i}_fwd"
         rev_id = f"pair{i}_rev"
@@ -190,9 +190,9 @@ def execute(input_data: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def _run_internal_reference_alignment(
-    pairs: List[Dict[str, Any]],
-    reference_sequences: Dict[str, str],
-) -> Dict[str, Any]:
+    pairs: list[dict[str, Any]],
+    reference_sequences: dict[str, str],
+) -> dict[str, Any]:
     """Run deterministic exact mapping against supplied references."""
     aligned_pairs = []
 
@@ -254,14 +254,14 @@ def _run_internal_reference_alignment(
 
 def _scan_reference_locations(
     sequence: str,
-    reference_sequences: Dict[str, str],
-) -> List[Dict[str, Any]]:
+    reference_sequences: dict[str, str],
+) -> list[dict[str, Any]]:
     if not sequence:
         return []
 
     seq = sequence.upper()
     rc_seq = _reverse_complement(seq)
-    locations: List[Dict[str, Any]] = []
+    locations: list[dict[str, Any]] = []
 
     for chrom, reference in reference_sequences.items():
         ref = reference.upper()
@@ -292,13 +292,13 @@ def _scan_reference_locations(
 # ---------------------------------------------------------------------------
 
 def _batch_align(
-    primer_sequences: Dict[str, str], index_path: str
-) -> Dict[str, Dict[str, Any]]:
+    primer_sequences: dict[str, str], index_path: str
+) -> dict[str, dict[str, Any]]:
     """
     Align primers in batches of BATCH_SIZE using Bowtie2 end-to-end mode.
     Returns dict of primer_id → {mapping_count, locations}.
     """
-    results: Dict[str, Dict[str, Any]] = {}
+    results: dict[str, dict[str, Any]] = {}
     items = list(primer_sequences.items())
 
     for batch_start in range(0, len(items), BATCH_SIZE):
@@ -315,10 +315,10 @@ def _batch_align(
 
 
 def _run_bowtie2_batch(
-    batch: List[Tuple[str, str]], index_path: str
-) -> Dict[str, Dict[str, Any]]:
+    batch: list[tuple[str, str]], index_path: str
+) -> dict[str, dict[str, Any]]:
     """Run Bowtie2 for a batch of primer sequences."""
-    results: Dict[str, Dict[str, Any]] = {}
+    results: dict[str, dict[str, Any]] = {}
 
     try:
         # Write FASTA file for the batch
@@ -364,9 +364,9 @@ def _run_bowtie2_batch(
     return results
 
 
-def _parse_sam_output(sam_text: str) -> Dict[str, Dict[str, Any]]:
+def _parse_sam_output(sam_text: str) -> dict[str, dict[str, Any]]:
     """Parse SAM output from Bowtie2 into structured results."""
-    results: Dict[str, Dict[str, Any]] = {}
+    results: dict[str, dict[str, Any]] = {}
 
     if not sam_text:
         return results
@@ -407,7 +407,7 @@ def _parse_sam_output(sam_text: str) -> Dict[str, Dict[str, Any]]:
 # Pseudogene Detection
 # ---------------------------------------------------------------------------
 
-def _has_pseudogene_hit(locations: List[Dict[str, Any]]) -> bool:
+def _has_pseudogene_hit(locations: list[dict[str, Any]]) -> bool:
     """Check if any alignment location maps to a pseudogene or non-standard contig (not organelle)."""
     for loc in locations:
         chrom = loc.get("chromosome", "")
@@ -421,7 +421,7 @@ def _has_pseudogene_hit(locations: List[Dict[str, Any]]) -> bool:
     return False
 
 
-def _has_organelle_hit(locations: List[Dict[str, Any]]) -> bool:
+def _has_organelle_hit(locations: list[dict[str, Any]]) -> bool:
     """Check if any alignment location maps to mitochondrial DNA."""
     for loc in locations:
         chrom = loc.get("chromosome", "")
@@ -468,14 +468,14 @@ def _resolve_index_path(organism: str) -> str:
     return os.path.join(base, idx_name)
 
 
-def _get_reference_sequences(input_data: Dict[str, Any]) -> Dict[str, str]:
+def _get_reference_sequences(input_data: dict[str, Any]) -> dict[str, str]:
     """Normalize optional in-memory/local references for internal alignment."""
     raw_refs = (
         input_data.get("reference_sequences")
         or input_data.get("alignment_references")
         or input_data.get("local_reference_sequences")
     )
-    refs: Dict[str, str] = {}
+    refs: dict[str, str] = {}
 
     if isinstance(raw_refs, dict):
         refs = {str(k): str(v) for k, v in raw_refs.items() if v}

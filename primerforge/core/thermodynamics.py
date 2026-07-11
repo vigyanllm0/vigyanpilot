@@ -10,9 +10,8 @@ Salt correction: Owczarzy 2004 magnesium correction when applicable.
 NO simulation. NO approximation beyond the published models.
 """
 
-import math
 import logging
-from typing import Tuple, Optional, Dict, List
+import math
 from dataclasses import dataclass, field
 
 # primer3-py exposes the exact same Tm engine as Primer3 v2.6.1
@@ -25,7 +24,7 @@ logger = logging.getLogger("primerforge.thermo")
 # Source: Table 2 of SantaLucia 1998 PNAS 95:1460-1465
 # Order: 5'→3' / 3'→5' complement
 
-NN_DNA_DNA: Dict[str, Tuple[float, float]] = {
+NN_DNA_DNA: dict[str, tuple[float, float]] = {
     #     dH        dS
     "AA": (-7.9,  -22.2),   # AA/TT
     "AT": (-7.2,  -20.4),   # AT/TA
@@ -75,7 +74,7 @@ class TmResult:
     self_complement_any:    float  # Any-position self-complementarity (primer3)
     end_stability:     float   # ΔG of last 5 bases at 3' end (primer3)
     is_valid:          bool
-    warnings:          List[str] = field(default_factory=list)
+    warnings:          list[str] = field(default_factory=list)
     quality_score:     float = 0.0  # composite quality 0–100
 
 
@@ -85,7 +84,7 @@ def calculate_tm_nearest_neighbor(
     conc_Na_mM:     float = 50.0,    # [Na+] mM
     conc_Mg_mM:     float = 1.5,     # [Mg2+] mM — typical PCR buffer
     dna_conc_type:  str   = "oligo", # "oligo" = non-self-complementary
-) -> Tuple[float, float, float]:
+) -> tuple[float, float, float]:
     """
     Calculate Tm using SantaLucia 1998 nearest-neighbor model.
     Returns: (Tm_celsius, delta_H_kcal_mol, delta_S_cal_mol_K)
@@ -181,7 +180,7 @@ def calculate_tm_wallace(sequence: str) -> float:
     return float(2 * at + 4 * gc)
 
 
-def calculate_gc_content(sequence: str) -> Tuple[float, int, int]:
+def calculate_gc_content(sequence: str) -> tuple[float, int, int]:
     """Returns (gc_percent, gc_count, at_count)."""
     seq = sequence.upper()
     gc = seq.count("G") + seq.count("C")
@@ -339,7 +338,7 @@ def analyse_primer_full(
 
 def analyse_primer_pair(fwd: str, rev: str,
                          na_mM: float = 50.0, mg_mM: float = 1.5,
-                         primer_conc_nM: float = 50.0) -> Dict:
+                         primer_conc_nM: float = 50.0) -> dict:
     """
     Full thermodynamic analysis of a primer pair.
     Includes heterodimerisation (cross-dimer) analysis.
@@ -354,7 +353,7 @@ def analyse_primer_pair(fwd: str, rev: str,
               dntp_conc=0.2, dna_conc=primer_conc_nM)
         cross_dimer_tm = round(hd.tm, 2)
         cross_dimer_dg = round(hd.dg / 1000.0, 2)
-    except Exception as e:
+    except Exception:
         cross_dimer_tm = 0.0
         cross_dimer_dg = 0.0
 

@@ -668,66 +668,69 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <!-- PRICING -->
 <div class="pricing-section">
   <div class="pricing-header">
-    <span class="pricing-eyebrow">Pricing</span>
-    <h2 class="pricing-title">Start Screening Today</h2>
-    <p class="pricing-subtitle">Pay-per-run or subscribe for batch screening. All runs use sovereign infrastructure.</p>
+    <span class="pricing-eyebrow">Unified Subscription</span>
+    <h2 class="pricing-title">One Plan for Primer Design + Docking</h2>
+    <p class="pricing-subtitle">All subscription plans now include both primer design and molecular docking credits. No more separate plans.</p>
   </div>
   <div class="pricing-grid">
-    <div class="price-card featured">
-      <span class="price-tier">Free Researcher</span>
-      <div class="price-amount">&#x20B9;0</div>
-      <div class="price-period">3 docking runs / month</div>
+    <div class="price-card">
+      <span class="price-tier">Daily Pass</span>
+      <div class="price-amount">₹99</div>
+      <div class="price-period">valid for 24 hours</div>
       <ul class="price-features">
-        <li>3 consensus pipeline runs</li>
-        <li>Up to 50 ligands per run</li>
-        <li>Full result download (JSON)</li>
+        <li><strong>5 primer designs</strong></li>
+        <li><strong>2 docking runs</strong></li>
+        <li>Up to 50 ligands/run</li>
+        <li>Full 3D viewer access</li>
+        <li>Standard queue</li>
+      </ul>
+      <button class="btn-price fill purchase-plan-btn" data-product-id="daily" onclick="handlePlanPurchase('daily')">Buy Now — ₹99</button>
+    </div>
+    <div class="price-card featured">
+      <span class="price-tier">Individual / Researcher</span>
+      <div class="price-amount">₹2,499</div>
+      <div class="price-period">per month</div>
+      <ul class="price-features">
+        <li><strong>250 primer designs/mo</strong></li>
+        <li><strong>50 docking runs/mo</strong></li>
+        <li>Up to 50 ligands/run</li>
+        <li>Full 3D viewer + downloads</li>
         <li>Standard queue priority</li>
       </ul>
-      <button class="btn-price fill-green" onclick="document.querySelector('.nav-login').click()">Get Started</button>
+      <button class="btn-price fill purchase-plan-btn" data-product-id="individual" onclick="handlePlanPurchase('individual')">Subscribe — ₹2,499/mo</button>
     </div>
     <div class="price-card">
-      <span class="price-tier">Small Lab</span>
-      <div class="price-amount">&#x20B9;2,999</div>
-      <div class="price-period">/ month</div>
+      <span class="price-tier">Lab / Academic Institute</span>
+      <div class="price-amount">₹14,999</div>
+      <div class="price-period">per month</div>
       <ul class="price-features">
-        <li>30 docking runs</li>
-        <li>Up to 200 ligands per run</li>
-        <li>CSV + JSON result export</li>
-        <li>Priority queue</li>
-        <li>Email support</li>
+        <li><strong>2,000 primer designs/mo</strong></li>
+        <li><strong>500 docking runs/mo</strong></li>
+        <li>Up to 200 ligands/run</li>
+        <li>5 researcher seats</li>
+        <li>Priority queue + support</li>
       </ul>
-      <button class="btn-price outline" onclick="openPayModal('small_lab','Small Lab','2999')">Subscribe</button>
+      <button class="btn-price fill-green purchase-plan-btn" data-product-id="institutional" onclick="handlePlanPurchase('institutional')">Subscribe — ₹14,999/mo</button>
     </div>
     <div class="price-card">
-      <span class="price-tier">Department</span>
-      <div class="price-amount">&#x20B9;9,999</div>
-      <div class="price-period">/ month</div>
+      <span class="price-tier">Corporate R&D</span>
+      <div class="price-amount">₹49,999</div>
+      <div class="price-period">per month</div>
       <ul class="price-features">
-        <li>100 docking runs</li>
-        <li>Up to 500 ligands per run</li>
-        <li>All export formats</li>
-        <li>Highest priority queue</li>
-        <li>Dedicated support</li>
-        <li>Batch processing API</li>
+        <li><strong>7,500 primer designs/mo</strong></li>
+        <li><strong>2,000 docking runs/mo</strong></li>
+        <li>Unlimited ligands/run</li>
+        <li>Unlimited seats</li>
+        <li>API access + SLA</li>
       </ul>
-      <button class="btn-price outline" onclick="openPayModal('dept','Department','9999')">Subscribe</button>
-    </div>
-    <div class="price-card">
-      <span class="price-tier">Enterprise</span>
-      <div class="price-amount">Custom</div>
-      <div class="price-period">/ month</div>
-      <ul class="price-features">
-        <li>Unlimited runs</li>
-        <li>Unlimited ligands</li>
-        <li>On-premises deployment</li>
-        <li>Custom scoring models</li>
-        <li>SLAs &amp; training</li>
-        <li>HIPAA compliance ready</li>
-      </ul>
-      <button class="btn-price outline" onclick="window.location.href='mailto:enterprise@vigyanllm.in'">Contact Us</button>
+      <button class="btn-price outline purchase-plan-btn" data-product-id="corporate" onclick="handlePlanPurchase('corporate')">Subscribe — ₹49,999/mo</button>
     </div>
   </div>
-  <p class="pricing-footer">All prices in INR. GST extra. Free tier includes 3 runs/month. Academic partners may qualify for free access.</p>
+  <div style="text-align:center;margin-top:24px">
+    <p style="font-size:12px;color:var(--muted)">🎟️ Docking top-up also available: ₹99/run · No subscription needed</p>
+    <button class="btn-price outline" style="margin-top:8px" onclick="handleDockPayment()">Buy Docking Top-Up — ₹99</button>
+  </div>
+  <p class="pricing-footer">All prices in INR. GST extra. 2 free trial runs included on signup. Unified plans cover both primer design and molecular docking.</p>
 </div>
 
 </div><!-- /dashboard-wrap -->
@@ -824,6 +827,24 @@ async function handleDockPayment() {
   }
 }
 
+async function handlePlanPurchase(productId) {
+  var authToken = sessionStorage.getItem('pf_token') || localStorage.getItem('pf_token');
+  if (!authToken) { showAuth(); return; }
+
+  try {
+    var r = await fetch(API + '/api/payments/create-order', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken },
+      body: JSON.stringify({ product_id: productId, quantity: 1 })
+    });
+    var order = await r.json();
+    if (!r.ok) { alert(order.error || 'Payment service unavailable'); return; }
+    await openRazorpayCheckout(order, {});
+  } catch (e) {
+    alert('Payment error: ' + (e.message || 'Unknown error'));
+  }
+}
+
 async function openRazorpayCheckout(order, context) {
   if (!window.Razorpay) {
     await new Promise(function(resolve, reject) {
@@ -840,7 +861,7 @@ async function openRazorpayCheckout(order, context) {
     amount: order.amount,
     currency: order.currency || 'INR',
     name: 'VigyanLLM',
-    description: order.description || qty + ' docking run(s)',
+    description: order.description || 'VigyanLLM purchase',
     order_id: order.order_id,
     theme: { color: '#2563EB' },
     prefill: order.prefill || {},
@@ -1331,104 +1352,98 @@ var _viewer = null;
 var _proteinPdb = '';
 var _jobId = '';
 var _structureCache = {};
+var _batchLigands = [];
+var _ligandColors = [
+  '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7',
+  '#DDA0DD', '#98D8C8', '#F7DC6F', '#BB8FCE', '#85C1E9',
+  '#F0B27A', '#82E0AA', '#F1948A', '#85929E', '#73C6B6',
+];
+var _ligandModels = [];
 
 function initViewer() {
   var container = $('mol-viewer-container');
   container.style.display = 'block';
   var el = $('mol-3d-viewer');
   if (typeof $3Dmol === 'undefined') {
-    el.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--red);font-size:13px">3D viewer library not loaded. Please check your internet connection.</div>';
+    el.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--red);font-size:13px">3D viewer library not loaded.</div>';
     return;
   }
   el.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--muted);font-size:13px">Loading structure data...</div>';
-  // Fetch protein structure from API
   var ji = _jobId || (window._lastDockingResult && window._lastDockingResult.job_id);
   if (!ji) {
     el.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--red);font-size:13px">No job ID found.</div>';
     return;
   }
-  var xhr = new XMLHttpRequest();
-  xhr.open('GET', API + '/primer/docking/structure/' + ji + '/1', true);
-  xhr.onload = function() {
-    if (xhr.status === 200) {
-      try {
-        var data = JSON.parse(xhr.responseText);
-        _proteinPdb = data.receptor_pdb || '';
-        _structureCache['1'] = data;
-        el.innerHTML = '';
-        // Force layout so offsetWidth/offsetHeight are correct
-        void el.offsetHeight;
-        _viewer = $3Dmol.createViewer(el, {backgroundColor: '#0f0f0f'});
-        if (_viewer) {
-          if (_proteinPdb) {
-            _viewer.addModel(_proteinPdb, 'pdb');
-            _viewer.setStyle({}, {cartoon: {color: 'spectrum'}});
-            _viewer.zoomTo();
-            _viewer.render();
-          }
-          $('mol-viewer-info').textContent = 'Protein backbone (cartoon, spectrum-colored)';
-          updateMolSelector(-1);
-        }
-      } catch (e) {
-        el.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--red);font-size:13px">Error loading structure data.</div>';
-        console.warn('initViewer error:', e);
-      }
-    } else {
-      el.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--red);font-size:13px">Failed to load structure (status ' + xhr.status + ').</div>';
+  fetchBatchStructure(ji, function(batchData) {
+    _proteinPdb = batchData.receptor_pdb || '';
+    _batchLigands = batchData.ligands || [];
+    el.innerHTML = '';
+    void el.offsetHeight;
+    _viewer = $3Dmol.createViewer(el, {backgroundColor: '#0f0f0f'});
+    if (!_viewer) return;
+    var allCount = 0;
+    if (_proteinPdb) {
+      _viewer.addModel(_proteinPdb, 'pdb');
+      _viewer.setStyle({}, {cartoon: {color: 'spectrum'}});
+      allCount++;
     }
-  };
-  xhr.onerror = function() {
-    el.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--red);font-size:13px">Failed to load structure.</div>';
-  };
-  xhr.send();
+    _ligandModels = [];
+    for (var i = 0; i < _batchLigands.length; i++) {
+      var lig = _batchLigands[i];
+      var ligStr = lig.ligand_sdf || '';
+      if (!ligStr) continue;
+      var color = _ligandColors[i % _ligandColors.length];
+      try {
+        var model = _viewer.addModel(ligStr, ligStr.indexOf('$$$$') >= 0 ? 'sdf' : 'pdb');
+        if (model) {
+          _viewer.setStyle({model: model}, {
+            stick: {radius: 0.25, colorscheme: {prop: 'elem', map: {C: color, N: '#5DADE2', O: '#E74C3C', S: '#F4D03F', P: '#E67E22', F: '#2ECC71', Cl: '#2ECC71', Br: '#A569BD', I: '#8E44AD'}}}
+          });
+          _ligandModels.push({model: model, rank: lig.rank, lig: lig});
+          allCount++;
+        }
+      } catch(e) {
+        console.warn('3Dmol parse error for rank', lig.rank, e);
+      }
+    }
+    if (allCount > 0) {
+      _viewer.zoomTo();
+      _viewer.render();
+    }
+    updateViewerInfo(-1);
+    updateMolSelector(-1);
+  });
 }
 
-function fetchMolStructure(idx, callback) {
-  var key = '' + (idx + 1);
-  if (_structureCache[key] && _structureCache[key].ligand_sdf) {
-    callback(_structureCache[key]);
-    return;
-  }
-  var ji = _jobId || (window._lastDockingResult && window._lastDockingResult.job_id);
-  if (!ji) return;
+function fetchBatchStructure(jobId, callback) {
   var xhr = new XMLHttpRequest();
-  xhr.open('GET', API + '/primer/docking/structure/' + ji + '/' + (idx + 1), true);
+  xhr.open('GET', API + '/primer/docking/structure/batch/' + jobId, true);
   xhr.onload = function() {
     if (xhr.status === 200) {
-      try {
-        var data = JSON.parse(xhr.responseText);
-        _structureCache[key] = data;
-        if (!_proteinPdb && data.receptor_pdb) _proteinPdb = data.receptor_pdb;
-        callback(data);
-      } catch (e) {
-        console.warn('fetchMolStructure parse error:', e);
-        callback({ receptor_pdb: _proteinPdb || '', ligand_sdf: '' });
-      }
+      try { callback(JSON.parse(xhr.responseText)); }
+      catch(e) { callback({receptor_pdb: '', ligands: []}); }
     } else {
-      console.warn('fetchMolStructure status', xhr.status);
-      callback({ receptor_pdb: _proteinPdb || '', ligand_sdf: '' });
+      callback({receptor_pdb: '', ligands: []});
     }
   };
   xhr.onerror = function() {
-    console.warn('fetchMolStructure network error');
-    callback({ receptor_pdb: _proteinPdb || '', ligand_sdf: '' });
+    callback({receptor_pdb: '', ligands: []});
   };
   xhr.send();
 }
 
 function updateMolSelector(activeIdx) {
-  var result = window._lastDockingResult;
-  if (!result) return;
-  var ranked = result.ranked_results || [];
   var sel = $('mol-selector');
-  sel.innerHTML = '<button class="mol-btn' + (activeIdx === -1 ? ' active' : '') + '" onclick="showViewerMol(-1)">Protein</button>';
-  for (var i = 0; i < ranked.length; i++) {
-    var m = ranked[i];
-    if (!m._has_structure) continue;
-    sel.innerHTML += '<button class="mol-btn' + (activeIdx === i ? ' active' : '') + '" onclick="showViewerMol(' + i + ')">#' + (i + 1) + '</button>';
+  var html = '<button class="mol-btn' + (activeIdx === -1 ? ' active' : '') + '" onclick="showViewerMol(-1)">Protein</button>';
+  for (var i = 0; i < _batchLigands.length; i++) {
+    var lig = _batchLigands[i];
+    if (!lig.ligand_sdf) continue;
+    var color = _ligandColors[i % _ligandColors.length];
+    html += '<button class="mol-btn' + (activeIdx === i ? ' active' : '') + '" onclick="showViewerMol(' + i + ')" style="border-left:3px solid ' + color + '">#' + lig.rank + '</button>';
   }
+  sel.innerHTML = html;
   var dl = $('mv-download-links');
-  if (activeIdx >= 0 && ranked[activeIdx] && ranked[activeIdx]._has_structure) {
+  if (activeIdx >= 0 && _batchLigands[activeIdx] && _batchLigands[activeIdx].ligand_sdf) {
     dl.innerHTML = '<button class="btn-secondary btn-sm" onclick="downloadLigandSDF(' + activeIdx + ')">Download Ligand SDF</button>' +
       '<button class="btn-secondary btn-sm" onclick="downloadComplexPDB(' + activeIdx + ')">Download Complex PDB</button>';
   } else {
@@ -1438,39 +1453,49 @@ function updateMolSelector(activeIdx) {
 
 function showViewerMol(idx) {
   if (!_viewer) return;
-  var result = window._lastDockingResult;
-  if (!result) return;
-  var ranked = result.ranked_results || [];
   _viewer.removeAllModels();
+  _ligandModels = [];
   if (_proteinPdb) {
     _viewer.addModel(_proteinPdb, 'pdb');
     _viewer.setStyle({}, {cartoon: {color: 'spectrum'}});
   }
-  if (idx >= 0 && ranked[idx] && ranked[idx]._has_structure) {
-    $('mol-viewer-info').textContent = 'Loading docked pose for Rank #' + (idx + 1) + '...';
-    _viewer.render();
-    fetchMolStructure(idx, function(data) {
-      var ligStr = data.ligand_sdf || '';
-      if (ligStr) {
-        try {
-          _viewer.addModel(ligStr, ligStr.indexOf('$$$$') >= 0 ? 'sdf' : 'pdb');
-          _viewer.setStyle({}, {stick: {radius: 0.3, colorscheme: {prop: 'elem', map: {C: 'gray', N: 'blue', O: 'red', S: 'yellow', P: 'orange', F: 'green', Cl: 'green', Br: 'brown', I: 'purple'}}}});
-        } catch(e) {
-          console.warn('3Dmol parse error:', e);
-        }
+  var allLigands = (idx === -1);
+  for (var i = 0; i < _batchLigands.length; i++) {
+    if (!allLigands && i !== idx) continue;
+    var lig = _batchLigands[i];
+    var ligStr = lig.ligand_sdf || '';
+    if (!ligStr) continue;
+    var color = _ligandColors[i % _ligandColors.length];
+    try {
+      var model = _viewer.addModel(ligStr, ligStr.indexOf('$$$$') >= 0 ? 'sdf' : 'pdb');
+      if (model) {
+        _viewer.setStyle({model: model}, {
+          stick: {radius: 0.25, colorscheme: {prop: 'elem', map: {C: color, N: '#5DADE2', O: '#E74C3C', S: '#F4D03F', P: '#E67E22', F: '#2ECC71', Cl: '#2ECC71', Br: '#A569BD', I: '#8E44AD'}}}
+        });
+        _ligandModels.push({model: model, rank: lig.rank, lig: lig});
       }
-      $('mol-viewer-info').textContent = 'Rank #' + (idx + 1) + ' — SMILES: ' + esc(ranked[idx].smiles || '').substring(0, 50) +
-        ' | Vina: ' + (ranked[idx].vina_score !== null && ranked[idx].vina_score !== undefined ? ranked[idx].vina_score.toFixed(2) : '—') + ' kcal/mol' +
-        (ranked[idx].gnina_score !== null && ranked[idx].gnina_score !== undefined ? ' | GNINA: ' + ranked[idx].gnina_score.toFixed(2) : '');
-      _viewer.zoomTo();
-      _viewer.render();
-      updateMolSelector(idx);
-    });
-  } else {
-    $('mol-viewer-info').textContent = 'Protein backbone (cartoon, spectrum-colored)';
-    _viewer.zoomTo();
-    _viewer.render();
-    updateMolSelector(idx);
+    } catch(e) {
+      console.warn('3Dmol parse error for rank', lig.rank, e);
+    }
+  }
+  updateViewerInfo(idx);
+  _viewer.zoomTo();
+  _viewer.render();
+  updateMolSelector(idx);
+}
+
+function updateViewerInfo(idx) {
+  var info = $('mol-viewer-info');
+  if (idx === -1) {
+    var count = _batchLigands.filter(function(l){return l.ligand_sdf;}).length;
+    info.textContent = 'All ' + count + ' top ligands docked at predicted binding sites — click a rank to isolate';
+  } else if (idx >= 0 && _batchLigands[idx]) {
+    var lig = _batchLigands[idx];
+    var txt = 'Rank #' + lig.rank + ' — Vina: ' + (lig.vina_score !== null && lig.vina_score !== undefined ? lig.vina_score.toFixed(2) : '—') + ' kcal/mol';
+    if (lig.gnina_score !== null && lig.gnina_score !== undefined) txt += ' | GNINA: ' + lig.gnina_score.toFixed(2);
+    if (lig.consensus_score !== null && lig.consensus_score !== undefined) txt += ' | Consensus: ' + lig.consensus_score.toFixed(3);
+    txt += ' | SMILES: ' + esc(lig.smiles || '').substring(0, 40);
+    info.textContent = txt;
   }
 }
 
@@ -1483,39 +1508,47 @@ function viewMol3D(idx) {
 
 function downloadPDB() {
   if (_proteinPdb) { downloadFile(_proteinPdb, 'protein.pdb', 'chemical/x-pdb'); return; }
-  fetchMolStructure(0, function(data) {
-    if (data.receptor_pdb) downloadFile(data.receptor_pdb, 'protein.pdb', 'chemical/x-pdb');
-  });
+  if (_batchLigands.length > 0) {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', API + '/primer/docking/structure/batch/' + _jobId, true);
+    xhr.onload = function() {
+      if (xhr.status === 200) {
+        try {
+          var d = JSON.parse(xhr.responseText);
+          if (d.receptor_pdb) downloadFile(d.receptor_pdb, 'protein.pdb', 'chemical/x-pdb');
+        } catch(e) {}
+      }
+    };
+    xhr.send();
+  }
 }
 
 function downloadLigandSDF(idx) {
-  fetchMolStructure(idx, function(data) {
-    if (data.ligand_sdf) downloadFile(data.ligand_sdf, 'ligand_rank' + (idx + 1) + '.sdf', 'chemical/x-mdl-sdfile');
-  });
+  if (!_batchLigands[idx] || !_batchLigands[idx].ligand_sdf) return;
+  downloadFile(_batchLigands[idx].ligand_sdf, 'ligand_rank' + _batchLigands[idx].rank + '.sdf', 'chemical/x-mdl-sdfile');
 }
 
 function downloadComplexPDB(idx) {
+  var lig = _batchLigands[idx];
+  if (!lig || !lig.ligand_sdf) return;
+  var ligStr = lig.ligand_sdf;
+  var protPdb = _proteinPdb;
+  if (!protPdb) return;
   var result = window._lastDockingResult;
-  if (!result || !result.ranked_results || !result.ranked_results[idx]) return;
-  var mol = result.ranked_results[idx];
-  fetchMolStructure(idx, function(data) {
-    var ligStr = data.ligand_sdf || '';
-    var protPdb = data.receptor_pdb || _proteinPdb;
-    if (!protPdb) return;
-    var complexPdb = 'REMARK   1 Docked complex generated by VigyanLLM Consensus Docking Pipeline\n';
-    complexPdb += 'REMARK   1 Protein: ESMFold (pLDDT ' + (result.stage1 && result.stage1.plddt_score ? result.stage1.plddt_score : '?') + '%)\n';
-    complexPdb += 'REMARK   1 Ligand SMILES: ' + (mol.smiles || '') + '\n';
-    complexPdb += 'REMARK   1 Vina: ' + (mol.vina_score !== null && mol.vina_score !== undefined ? mol.vina_score.toFixed(2) : '—') + ' kcal/mol\n';
-    if (mol.gnina_score !== null && mol.gnina_score !== undefined) {
-      complexPdb += 'REMARK   1 GNINA: ' + mol.gnina_score.toFixed(2) + ' kcal/mol\n';
-    }
-    complexPdb += 'REMARK   1 Consensus: ' + (mol.consensus_score ? mol.consensus_score.toFixed(3) : '—') + '\n';
-    complexPdb += 'MODEL        1\n' + protPdb + '\nENDMDL\n';
-    if (ligStr) {
-      complexPdb += 'MODEL        2\n' + sdfToPdb(ligStr) + '\nENDMDL\n';
-    }
-    downloadFile(complexPdb, 'complex_rank' + (idx + 1) + '.pdb', 'chemical/x-pdb');
-  });
+  var mol = (result && result.ranked_results) ? result.ranked_results[idx] : null;
+  var complexPdb = 'REMARK   1 Docked complex generated by VigyanLLM Consensus Docking Pipeline\n';
+  complexPdb += 'REMARK   1 Protein: ESMFold (pLDDT ' + (result && result.stage1 && result.stage1.plddt_score ? result.stage1.plddt_score : '?') + '%)\n';
+  complexPdb += 'REMARK   1 Ligand SMILES: ' + (lig.smiles || '') + '\n';
+  complexPdb += 'REMARK   1 Vina: ' + (lig.vina_score !== null && lig.vina_score !== undefined ? lig.vina_score.toFixed(2) : '—') + ' kcal/mol\n';
+  if (lig.gnina_score !== null && lig.gnina_score !== undefined) {
+    complexPdb += 'REMARK   1 GNINA: ' + lig.gnina_score.toFixed(2) + ' kcal/mol\n';
+  }
+  complexPdb += 'REMARK   1 Consensus: ' + (lig.consensus_score ? lig.consensus_score.toFixed(3) : '—') + '\n';
+  complexPdb += 'MODEL        1\n' + protPdb + '\nENDMDL\n';
+  if (ligStr) {
+    complexPdb += 'MODEL        2\n' + sdfToPdb(ligStr) + '\nENDMDL\n';
+  }
+  downloadFile(complexPdb, 'complex_rank' + lig.rank + '.pdb', 'chemical/x-pdb');
 }
 
 // ── Utility Functions ────────────────────────────────────────────────────

@@ -14,23 +14,24 @@ Endpoints:
   POST /api/auth/check-ip             — IP uniqueness enforcement (called on login/register)
 """
 
+import base64
 import csv
+import hashlib
+import hmac
 import io
 import json
 import logging
 import os
 import secrets
-import hmac
-import hashlib
 import time
-import base64
 from datetime import datetime, timezone
 from pathlib import Path
-from flask import Blueprint, request, jsonify, g, make_response
+
+from flask import Blueprint, g, jsonify, make_response, request
 from werkzeug.utils import secure_filename
 
-from .pg_auth import require_auth, require_admin
-from .database import fetch_one, fetch_all, execute, execute_returning
+from .database import execute, execute_returning, fetch_all, fetch_one
+from .pg_auth import require_admin, require_auth
 
 logger = logging.getLogger("primerforge.reports")
 
@@ -161,9 +162,9 @@ def check_ip_allowed(user_id: int, current_ip: str, role: str = "user") -> dict:
         "allowed": False,
         "registered_ip": registered_ip,
         "message": (
-            f"This account is registered to a different IP address. "
-            f"For security, each account can only be accessed from the IP it was registered on. "
-            f"If you've changed networks, contact support."
+            "This account is registered to a different IP address. "
+            "For security, each account can only be accessed from the IP it was registered on. "
+            "If you've changed networks, contact support."
         )
     }
 
@@ -392,7 +393,7 @@ def _resolve_download_user(report_id: int):
     2. Short-lived download token (?token= query parameter) — secure share flow.
     3. JWT auth token (?token= query parameter) — direct download from frontend.
     """
-    from .pg_auth import verify_token, get_current_user
+    from .pg_auth import get_current_user, verify_token
 
     token_param = request.args.get("token", "")
     if token_param:

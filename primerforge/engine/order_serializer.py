@@ -9,10 +9,9 @@ Requirements: 28.1, 28.2, 28.3, 28.4, 28.5, 28.6, 28.7
 
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 from primerforge.engine.branding import generate_order_id
-
 
 # Maximum oligos per vendor payload (Requirements 28.1, 28.2)
 MAX_OLIGOS_PER_PAYLOAD: int = 96
@@ -22,7 +21,7 @@ IDT_MAX_LENGTH: int = 200
 TWIST_MAX_LENGTH: int = 300
 
 # Scale mapping by application type (Requirement 28.4)
-SCALE_MAP: Dict[str, str] = {
+SCALE_MAP: dict[str, str] = {
     "standard_pcr": "25nmol",
     "standard": "25nmol",
     "high_throughput": "100nmol",
@@ -51,8 +50,8 @@ class ValidatedDesign:
 
     job_id: str
     compliance_status: str
-    primer_pairs: List[Dict[str, Any]]
-    probes: List[Dict[str, Any]] = field(default_factory=list)
+    primer_pairs: list[dict[str, Any]]
+    probes: list[dict[str, Any]] = field(default_factory=list)
     application_type: str = "standard_pcr"
 
 
@@ -64,7 +63,7 @@ class OrderSerializer:
     refused (Requirement 28.6).
     """
 
-    def serialize_idt(self, design: ValidatedDesign) -> Dict[str, Any]:
+    def serialize_idt(self, design: ValidatedDesign) -> dict[str, Any]:
         """Generate IDT bulk order payload.
 
         Fields per oligo: Name, Sequence, Scale, Purification.
@@ -83,9 +82,9 @@ class OrderSerializer:
         self._enforce_compliance(design)
 
         scale = self._assign_scale(design.application_type)
-        oligos: List[Dict[str, str]] = []
-        errors: List[Dict[str, str]] = []
-        notes: List[str] = []
+        oligos: list[dict[str, str]] = []
+        errors: list[dict[str, str]] = []
+        notes: list[str] = []
 
         if scale == DEFAULT_SCALE and design.application_type not in SCALE_MAP:
             notes.append(
@@ -148,7 +147,7 @@ class OrderSerializer:
 
         order_id = self._generate_order_id(design.job_id)
 
-        result: Dict[str, Any] = {
+        result: dict[str, Any] = {
             "order_id": order_id,
             "vendor": "idt",
             "oligos": oligos,
@@ -161,7 +160,7 @@ class OrderSerializer:
 
         return result
 
-    def serialize_twist(self, design: ValidatedDesign) -> Dict[str, Any]:
+    def serialize_twist(self, design: ValidatedDesign) -> dict[str, Any]:
         """Generate Twist Bioscience order payload.
 
         Fields per oligo: name, sequence, length, purification_type.
@@ -180,9 +179,9 @@ class OrderSerializer:
         self._enforce_compliance(design)
 
         scale = self._assign_scale(design.application_type)
-        oligos: List[Dict[str, Any]] = []
-        errors: List[Dict[str, str]] = []
-        notes: List[str] = []
+        oligos: list[dict[str, Any]] = []
+        errors: list[dict[str, str]] = []
+        notes: list[str] = []
 
         if scale == DEFAULT_SCALE and design.application_type not in SCALE_MAP:
             notes.append(
@@ -245,7 +244,7 @@ class OrderSerializer:
 
         order_id = self._generate_order_id(design.job_id)
 
-        result: Dict[str, Any] = {
+        result: dict[str, Any] = {
             "order_id": order_id,
             "vendor": "twist",
             "oligos": oligos,
@@ -289,7 +288,7 @@ class OrderSerializer:
         """
         return SCALE_MAP.get(application_type, DEFAULT_SCALE)
 
-    def _validate_length(self, sequence: str, vendor: str) -> Tuple[bool, str]:
+    def _validate_length(self, sequence: str, vendor: str) -> tuple[bool, str]:
         """Validate oligo sequence length against vendor limits.
 
         Requirement 28.7: IDT max 200nt, Twist max 300nt.
@@ -320,7 +319,7 @@ class OrderSerializer:
 
         return (True, "")
 
-    def _recommend_purification_idt(self, primer: Dict[str, Any]) -> str:
+    def _recommend_purification_idt(self, primer: dict[str, Any]) -> str:
         """Recommend purification method for IDT orders.
 
         Uses PAGE for longer oligos or those flagged for purification;
@@ -335,7 +334,7 @@ class OrderSerializer:
             return "PAGE"
         return "STD"
 
-    def _recommend_purification_twist(self, primer: Dict[str, Any]) -> str:
+    def _recommend_purification_twist(self, primer: dict[str, Any]) -> str:
         """Recommend purification type for Twist orders."""
         if primer.get("purification_recommendation") == "HPLC":
             return "HPLC"

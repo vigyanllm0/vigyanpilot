@@ -13,7 +13,7 @@ Strategy:
 
 import logging
 import os
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +28,7 @@ DEFAULT_DBSNP_PATH = os.environ.get("DBSNP_VCF_PATH", "/opt/dbsnp/common_all.vcf
 # Public API
 # ---------------------------------------------------------------------------
 
-def execute(input_data: Dict[str, Any]) -> Dict[str, Any]:
+def execute(input_data: dict[str, Any]) -> dict[str, Any]:
     """
     Step 15: Filter primers overlapping common population variants.
 
@@ -140,10 +140,10 @@ def execute(input_data: Dict[str, Any]) -> Dict[str, Any]:
 # ---------------------------------------------------------------------------
 
 def _query_primer_variants(
-    primer_data: Dict[str, Any],
+    primer_data: dict[str, Any],
     tabix_reader: Any,
     organism: str,
-) -> List[Dict[str, Any]]:
+) -> list[dict[str, Any]]:
     """
     Query dbSNP for variants overlapping a primer's genomic position.
     Classify each variant as 3prime, interior, or 5prime based on position.
@@ -366,7 +366,7 @@ class _PlainVcfReader:
 
     def __init__(self, vcf_path: str):
         self._records = []
-        with open(vcf_path, "r") as handle:
+        with open(vcf_path) as handle:
             for line in handle:
                 line = line.strip()
                 if not line or line.startswith("#"):
@@ -395,7 +395,7 @@ class _PlainVcfReader:
 # Heuristic Fallback
 # ---------------------------------------------------------------------------
 
-def _heuristic_snp_check(pairs: List[Dict[str, Any]]) -> Dict[str, Any]:
+def _heuristic_snp_check(pairs: list[dict[str, Any]]) -> dict[str, Any]:
     """
     Fallback when dbSNP is not available: check for CpG dinucleotides at the 3' end
     (CpG → TpG transitions are the most common human SNPs).

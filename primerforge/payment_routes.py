@@ -6,22 +6,30 @@ POST /api/create-order   — Create Razorpay order (₹49 per design)
 POST /api/verify-payment — Verify Razorpay payment signature & credit runs
 """
 
-import os
-import hmac
 import hashlib
-import time
+import hmac
 import json
 import logging
+import os
+import time
 
 import razorpay
-from flask import Blueprint, request, jsonify, g
+from flask import Blueprint, g, jsonify, request
 
-from .auth import get_db, get_current_user, require_auth, log_action, check_usage, check_docking_usage, DB_PATH, PRICE_PER_DOCK, FREE_DOCK_RUNS
+from .auth import (
+    DB_PATH,
+    FREE_DOCK_RUNS,
+    check_docking_usage,
+    check_usage,
+    get_db,
+    log_action,
+    require_auth,
+)
 from .price_registry import (
+    DOCK_TOPUP_PRICE_INR,
     FREE_TRIAL_RUNS,
     PRICE_REGISTRY,
     TOPUP_PRICE_INR,
-    DOCK_TOPUP_PRICE_INR,
     get_amount_paise,
     get_designs_for_product,
     validate_order_request,
@@ -126,7 +134,7 @@ def create_order():
     # Get user name from DB for prefill — sanitize for Razorpay (letters/spaces only, min 3 chars)
     db = get_db()
     user_row = db.execute("SELECT name, email FROM users WHERE email=?", (g.user['email'],)).fetchone()
-    raw_name = (user_row['name'] if user_row and user_row['name'] else 
+    raw_name = (user_row['name'] if user_row and user_row['name'] else
                 g.user['email'].split('@')[0])
     # Razorpay requires: alphabets and spaces only, min 3 chars
     import re as _re
