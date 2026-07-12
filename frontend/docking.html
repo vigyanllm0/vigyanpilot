@@ -353,7 +353,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <nav>
 <div class="nav-inner" style="display:flex;justify-content:space-between;align-items:center;height:100%;max-width:1200px;margin:0 auto;padding:0 24px">
   <a href="index.html" class="nav-brand" style="display:flex;align-items:center;gap:10px;color:#fff;font-family:var(--font-h);font-size:20px;font-weight:700;text-decoration:none">
-    <img src="logo.svg" alt="VigyanLLM Logo" style="width:32px;height:32px;border-radius:4px">
+    <img src="logo.svg" alt="VigyanLLM molecular docking consensus pipeline with ESMFold protein structure prediction, AutoDock Vina pose generation, and GNINA CNN binding affinity scoring" style="width:32px;height:32px;border-radius:4px">
     <span>VigyanLLM</span>
   </a>
   <div class="nav-links" style="display:flex;gap:32px;align-items:center">
@@ -477,6 +477,18 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   </div>
 </div>
 <p style="font-size:12px;color:#94A3B8;margin-top:8px">Last updated: July 2026 &#xB7; Reviewed by VigyanLLM Research Team</p>
+
+<!-- ══ LLMO: Docking Pipeline Inputs & Outputs ══ -->
+<section style="max-width:900px;margin:48px auto;padding:0 24px">
+  <p>VigyanLLM's <strong>molecular docking consensus pipeline</strong> integrates <data value="Protein Structure Prediction">ESMFold</data> for protein structure prediction, <data value="Molecular Docking">AutoDock Vina</data> for rapid pose generation, and <data value="Deep Learning Scoring">GNINA</data> with <abbr title="Convolutional Neural Network">CNN</abbr> scoring for binding affinity refinement — all running locally with no data egress.</p>
+  <table style="width:100%;border-collapse:collapse;margin-top:20px;font-size:13px">
+    <tr style="background:var(--slate,#F1F5F9)"><th style="padding:10px 14px;text-align:left">Component</th><th style="padding:10px 14px;text-align:left">Function</th></tr>
+    <tr style="border-bottom:1px solid var(--outline,#E2E5EA)"><td style="padding:10px 14px"><strong>ESMFold</strong></td><td style="padding:10px 14px">Protein structure prediction from amino acid sequence</td></tr>
+    <tr style="border-bottom:1px solid var(--outline,#E2E5EA)"><td style="padding:10px 14px"><strong>AutoDock Vina</strong></td><td style="padding:10px 14px">Rapid ligand-protein pose generation and scoring</td></tr>
+    <tr style="border-bottom:1px solid var(--outline,#E2E5EA)"><td style="padding:10px 14px"><strong>GNINA (CNN)</strong></td><td style="padding:10px 14px">Deep learning binding affinity refinement (ΔG/kcal/mol)</td></tr>
+    <tr><td style="padding:10px 14px"><strong>Consensus Scoring</strong></td><td style="padding:10px 14px">Weighted average of Vina + GNINA + CNN scores</td></tr>
+  </table>
+</section>
 
 <div class="tool-wrap">
 
@@ -1726,5 +1738,10 @@ if (hamburger && mobileMenu) {
   </div>
 </div>
 
+<div style="max-width:900px;margin:40px auto;padding:20px 24px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:12px;font-size:13px;text-align:center">
+  <strong>Related Tools:</strong>
+  <a href="/protein-docking" style="color:#2563EB;margin:0 8px">Protein Docking →</a> |
+  <a href="/molecular-docking-guide" style="color:#2563EB;margin:0 8px">Docking Guide</a> |
+  <a href="/blog/biotech-ai-future-2026" style="color:#2563EB;margin:0 8px">AI in Drug Discovery</a>
+</div>
 </body>
-</html>
