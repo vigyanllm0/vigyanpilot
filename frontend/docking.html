@@ -726,9 +726,16 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <button class="btn-price outline purchase-plan-btn" data-product-id="corporate" onclick="handlePlanPurchase('corporate')">Subscribe — ₹49,999/mo</button>
     </div>
   </div>
-  <div style="text-align:center;margin-top:24px">
-    <p style="font-size:12px;color:var(--muted)">🎟️ Top-up available: ₹99/run for primer design OR docking · No subscription needed</p>
-    <button class="btn-price outline" style="margin-top:8px" onclick="handleDockPayment()">Buy Top-Up — ₹99/run</button>
+  <!-- Bulk Top-Up -->
+  <div style="max-width:600px;margin:28px auto 0;background:transparent;border:1px solid var(--slate-border);border-radius:12px;padding:20px;text-align:center">
+    <div style="font-size:13px;font-weight:600;margin-bottom:12px">Need extra runs? Buy top-up credits in bulk.</div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:8px">₹99/run — use for primer design OR docking. Credits never expire.</div>
+    <div style="display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap">
+      <input type="range" id="dock-topup-slider" min="1" max="100" value="5" oninput="updateDockTopup()" style="width:200px">
+      <input type="number" id="dock-topup-input" min="1" max="100" value="5" oninput="updateDockTopupFromInput()" class="form-input" style="width:70px;text-align:center;margin:0;padding:6px">
+    </div>
+    <div style="font-family:var(--font-b);font-size:14px;margin:10px 0;color:var(--primary)" id="dock-topup-display">Pay ₹495 for 5 Runs</div>
+    <button class="btn-price fill" id="dock-bulk-topup-btn" style="margin-top:8px">Buy <span id="dock-topup-count">5</span> Runs — ₹<span id="dock-topup-total">495</span></button>
   </div>
   <p class="pricing-footer">All prices in INR. GST extra. 2 free trial runs included on signup. Unified plans cover both primer design and molecular docking.</p>
 </div>
@@ -792,6 +799,22 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 </div>
 
 <script>
+function updateDockTopup() {
+  var val = parseInt($('dock-topup-slider')?.value) || 1;
+  $('dock-topup-input').value = val;
+  var total = val * 99;
+  $('dock-topup-display').textContent = 'Pay \u20B9' + total.toLocaleString('en-IN') + ' for ' + val + ' Run' + (val > 1 ? 's' : '');
+  $('dock-topup-total').textContent = total.toLocaleString('en-IN');
+  $('dock-topup-count').textContent = val;
+}
+function updateDockTopupFromInput() {
+  var val = Math.min(100, Math.max(1, parseInt($('dock-topup-input')?.value) || 1));
+  $('dock-topup-slider').value = val;
+  updateDockTopup();
+}
+window.updateDockTopup = updateDockTopup;
+window.updateDockTopupFromInput = updateDockTopupFromInput;
+
 function showDockingPayment(usage) {
   var qty = $('dock-pay-qty');
   var total = $('dock-pay-total');
@@ -805,8 +828,8 @@ function showDockingPayment(usage) {
   $('pay-overlay').classList.add('show');
 }
 
-async function handleDockPayment() {
-  var qty = Math.min(100, Math.max(1, parseInt($('dock-pay-qty').value) || 1));
+async function handleDockPayment(qtyOverride) {
+  var qty = qtyOverride || Math.min(100, Math.max(1, parseInt($('dock-pay-qty').value) || 1));
   var errEl = $('dock-pay-error');
   errEl.classList.remove('show');
   var authToken = sessionStorage.getItem('pf_token') || localStorage.getItem('pf_token');
@@ -820,7 +843,7 @@ async function handleDockPayment() {
     });
     var order = await r.json();
     if (!r.ok) { errEl.textContent = order.error || 'Payment service unavailable'; errEl.classList.add('show'); return; }
-    await openRazorpayCheckout(order, { errorEl: errEl });
+    await openRazorpayCheckout(order, { errorEl: errEl, runs: qty });
   } catch (e) {
     errEl.textContent = e.message || 'Payment failed';
     errEl.classList.add('show');
@@ -879,7 +902,7 @@ async function openRazorpayCheckout(order, context) {
         var vd = await vr.json();
         if (vr.ok && vd.success) {
           $('pay-overlay').classList.remove('show');
-          var runsCredited = vd.runs_purchased || vd.tokens_credited || (typeof qty === 'number' ? qty : 1);
+          var runsCredited = vd.runs_purchased || vd.tokens_credited || (context && context.runs) || 1;
           alert('Payment successful! ' + runsCredited + ' run(s) credited.');
         } else {
           alert(vd.error || 'Verification failed');
@@ -1625,6 +1648,16 @@ function downloadResults(fmt) {
 
 // ── Init ────────────────────────────────────────────────────────────────
 loadAuth();
+
+// Bulk top-up button
+var dockBulkBtn = document.getElementById('dock-bulk-topup-btn');
+if (dockBulkBtn) {
+  dockBulkBtn.addEventListener('click', function(e) {
+    e.preventDefault();
+    var val = parseInt(document.getElementById('dock-topup-slider')?.value) || 1;
+    handleDockPayment(val);
+  });
+}
 
 // Close modals on overlay click
 document.getElementById('auth-overlay').addEventListener('click', function(e) {
