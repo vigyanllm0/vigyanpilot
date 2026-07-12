@@ -111,83 +111,80 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 }</script>
 
   <style>
-    :root {
-  --navy: #0F172A;
-  --navy-light: #1E293B;
-  --white: #FFFFFF;
-  --slate: #F8FAFC;
-  --slate-border: #E2E8F0;
-  --text: #0F172A;
-  --text2: #475569;
-  --muted: #94A3B8;
-  --primary: #2563EB;
-  --bio: #059669;
-  --amber: #D97706;
-  --accent: #22D3EE;
-  --font-h: 'Plus Jakarta Sans', sans-serif;
-  --font-b: 'Inter', sans-serif;
-  --max-w: 1100px;
-  --sec-p: 100px;
-  --bg: #FFFFFF;
-  --bg-surface: #0F172A;
-  --border: #E2E8F0;
-  --border-light: #E2E8F0;
-  --font-stack: 'Inter', sans-serif;
-  --text-secondary: #475569;
-  --text-muted: #94A3B8;
-  --bg-card: #F8FAFC;
-  --accent-light: #EFF6FF;
-  --max-width: 1100px;
-  --radius: 8px;
-}
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: var(--font-stack); background-color: var(--bg); color: var(--text); line-height: 1.7; -webkit-font-smoothing: antialiased; }
-    .nav { position: sticky; top: 0; z-index: 100; background: var(--bg-surface); border-bottom: 1px solid var(--border); padding: 0.75rem 1.5rem; display: flex; align-items: center; justify-content: space-between; backdrop-filter: blur(12px); }
-    .nav-brand { font-weight: 700; font-size: 1.1rem; color: var(--accent); text-decoration: none; }
-    .nav-links { display: flex; gap: 1.25rem; align-items: center; list-style: none; }
-    .nav-links a { color: var(--text-secondary); text-decoration: none; font-size: 0.875rem; transition: color 0.2s; }
-    .nav-links a:hover { color: var(--accent); }
-    .breadcrumb { max-width: var(--max-width); margin: 1.25rem auto 0; padding: 0 1.5rem; font-size: 0.8rem; color: var(--text-muted); }
-    .breadcrumb a { color: var(--text-secondary); text-decoration: none; }
-    .breadcrumb a:hover { color: var(--accent); }
-    .breadcrumb .sep { margin: 0 0.4rem; }
-    main { max-width: var(--max-width); margin: 0 auto; padding: 2rem 1.5rem 4rem; }
-    .article-header { margin-bottom: 2.5rem; padding-bottom: 2rem; border-bottom: 1px solid var(--border); }
-    .article-header h1 { font-size: 2.25rem; font-weight: 800; letter-spacing: -0.03em; line-height: 1.2; margin-bottom: 0.75rem; }
-    .article-header .subtitle { color: var(--text-secondary); font-size: 1.1rem; margin-bottom: 1rem; }
-    .article-meta { display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap; }
-    .badge { display: inline-flex; align-items: center; padding: 0.2rem 0.65rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600; border: 1px solid var(--border-light); background: var(--bg-card); color: var(--text-secondary); }
-    .badge.accent { border-color: rgba(59,130,246,0.3); color: var(--accent); background: var(--accent-light); }
-    .section { margin-bottom: 2.5rem; }
-    .section h2 { font-size: 1.35rem; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border); }
-    .section h3 { font-size: 1.1rem; font-weight: 600; margin: 1.5rem 0 0.75rem; }
-    .section p { color: var(--text-secondary); font-size: 1rem; line-height: 1.8; margin-bottom: 1rem; }
-    .section ul, .section ol { color: var(--text-secondary); font-size: 1rem; line-height: 1.8; margin-bottom: 1rem; padding-left: 1.5rem; }
-    .section li { margin-bottom: 0.5rem; }
-    table { width: 100%; border-collapse: collapse; margin: 1.25rem 0; font-size: 0.9rem; }
-    thead { background: var(--bg-card); }
-    th { color: var(--text); font-weight: 600; padding: 0.75rem 1rem; text-align: left; border-bottom: 2px solid var(--border-light); }
-    td { color: var(--text-secondary); padding: 0.6rem 1rem; border-bottom: 1px solid var(--border); }
-    tr:hover td { background: var(--accent-light); }
-    .callout { background: var(--accent-light); border-left: 4px solid var(--accent); border-radius: 0 var(--radius) var(--radius) 0; padding: 1rem 1.25rem; margin: 1.25rem 0; }
-    .callout p { color: var(--text); margin-bottom: 0; }
-    .callout strong { color: var(--accent); }
-    .glossary-links { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 1rem 0; }
-    .glossary-link { display: inline-block; padding: 0.35rem 0.75rem; border-radius: var(--radius); background: var(--bg-card); color: var(--accent); text-decoration: none; font-size: 0.8rem; font-weight: 500; border: 1px solid var(--border-light); transition: all 0.2s; }
-    .glossary-link:hover { background: var(--accent); color: #fff; }
-    .faq-item { border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 0.75rem; overflow: hidden; background: var(--bg-surface); }
-    .faq-question { padding: 1rem 1.25rem; cursor: pointer; font-weight: 600; font-size: 0.95rem; color: var(--text); list-style: none; display: flex; justify-content: space-between; align-items: center; }
-    .faq-question::after { content: "+"; font-size: 1.2rem; color: var(--text-muted); }
-    .faq-item[open] .faq-question::after { content: "\2212"; }
-    .faq-answer { padding: 0 1.25rem 1.25rem; color: var(--text-secondary); line-height: 1.8; font-size: 0.95rem; }
-    .related-articles { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-top: 1.25rem; }
-    .related-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; text-decoration: none; transition: all 0.2s; }
-    .related-card:hover { border-color: var(--accent); transform: translateY(-2px); }
-    .related-card h4 { color: var(--text); font-size: 0.95rem; margin-bottom: 0.5rem; }
-    .related-card p { color: var(--text-muted); font-size: 0.8rem; line-height: 1.5; }
-    @media (max-width: 640px) { .nav { padding: 0.6rem 1rem; } .nav-links { gap: 0.75rem; } .article-header h1 { font-size: 1.6rem; } }
-  </style>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+
+:root{--blue:#1565C0;--blue-light:#42A5F5;--blue-bg:#E3F2FD;--navy:#0F172A;--black:#0A0A0F;--surface:#FFFFFF;--surface-alt:#F5F7FA;--outline:#E2E5EA;--text:#0A0A0F;--text2:#4A4A6A;--muted:#7A7A9A;--font-h:'Montserrat',sans-serif;--font-b:'Open Sans',sans-serif;--max-w:1200px}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--surface);color:var(--text);font-family:var(--font-b);line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{text-decoration:none;color:inherit}
+img{max-width:100%}
+nav{position:sticky;top:0;background:var(--navy);z-index:1000;height:72px;border-bottom:1px solid rgba(255,255,255,.08)}
+.nav-inner{display:flex;justify-content:space-between;align-items:center;height:100%;max-width:var(--max-w);margin:0 auto;padding:0 32px 0 8px}
+.nav-brand{display:flex;align-items:center;gap:10px;color:#fff;font-family:var(--font-h);font-size:20px;font-weight:800}
+.nav-brand img{width:34px;height:34px;border-radius:8px;transition:transform .3s}
+.nav-brand:hover img{transform:rotate(-10deg)}
+.nav-links{display:flex;gap:32px;align-items:center;margin-left:40px}
+.nav-links>a,.drop-trigger{font-family:var(--font-b);font-size:13px;color:rgba(255,255,255,.7);font-weight:600;cursor:pointer;padding:6px 0;text-transform:uppercase;letter-spacing:.04em;transition:color .15s}
+.nav-links>a:hover,.drop-trigger:hover{color:#fff}
+.drop-wrap{position:relative;display:inline-block}
+.drop-menu{display:none;position:absolute;top:100%;left:-16px;background:#fff;border:1px solid var(--outline);border-radius:12px;min-width:240px;padding:8px;z-index:1001;box-shadow:0 12px 40px rgba(0,0,0,.12);opacity:0;transform:translateY(4px);transition:opacity .2s,transform .2s}
+.drop-wrap:hover .drop-menu{display:block;opacity:1;transform:translateY(0)}
+.drop-menu a{display:block;padding:10px 16px;font-size:13px;color:var(--text2);border-radius:8px;font-weight:500;transition:all .12s}
+.drop-menu a:hover{background:var(--blue-bg);color:var(--blue);padding-left:20px}
+.nav-right{display:flex;align-items:center;gap:8px;margin-left:auto;padding-right:4px}
+.nav-btns{display:flex;flex-direction:column;gap:6px}
+.nav-search-wrap{position:relative;display:flex;align-items:center}
+.nav-search-wrap input{width:200px;padding:7px 32px 7px 12px;border-radius:8px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:#fff;font-family:var(--font-b);font-size:12px;outline:none;transition:all .2s}
+.nav-search-wrap input::placeholder{color:rgba(255,255,255,.4)}
+.nav-search-wrap input:focus{border-color:rgba(255,255,255,.4);background:rgba(255,255,255,.12);width:260px}
+.nav-search-wrap .ns-icon{position:absolute;right:8px;color:rgba(255,255,255,.4);pointer-events:none;display:flex}
+.nav-search-results{position:absolute;top:calc(100% + 8px);right:0;width:360px;background:#fff;border-radius:12px;box-shadow:0 12px 48px rgba(0,0,0,.25);overflow:hidden;display:none;z-index:1001}
+.nav-search-results.open{display:block}
+.nav-search-results .nsr-group{padding:4px 0 0}
+.nav-search-results .nsr-label{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#94A3B8;font-weight:700;padding:6px 14px 2px}
+.nav-search-results .nsr-item{display:flex;align-items:center;gap:10px;padding:8px 14px;cursor:pointer;text-decoration:none;transition:background .1s}
+.nav-search-results .nsr-item:hover{background:#F1F5F9}
+.nav-search-results .nsr-item .r-icon{font-size:14px;flex-shrink:0}
+.nav-search-results .nsr-item .r-text{flex:1;min-width:0}
+.nav-search-results .nsr-item .r-title{font-size:12px;font-weight:600;color:#0F172A}
+.nav-search-results .nsr-item .r-desc{font-size:10px;color:#64748B;margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nav-search-no{font-size:12px;color:#94A3B8;padding:20px 14px;text-align:center}
+@media(max-width:900px){.nav-search-wrap input{width:120px}.nav-search-wrap input:focus{width:160px}.nav-search-results{width:280px}}
+@media(max-width:768px){.nav-search-wrap{display:none}.nav-right{gap:6px}.nav-login{padding:5px 12px;font-size:10px}.nav-cta{padding:5px 14px;font-size:9px}.nav-btns{gap:3px}}
+@media(max-width:480px){.nav-right{gap:4px}.nav-login{padding:4px 10px;font-size:9px;border-width:1px}.nav-cta{padding:4px 12px;font-size:8px}.nav-btns{gap:2px}}
+.nav-cta{padding:6px 20px;background:#fff;color:var(--navy);border:none;border-radius:6px;font-family:var(--font-h);font-size:10px;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:.06em;transition:all .2s;line-height:1.3}
+.nav-cta:hover{background:var(--blue-light);color:#fff;box-shadow:0 4px 16px rgba(21,101,192,.3)}
+.nav-login{padding:5px 16px;background:transparent;color:rgba(255,255,255,.8);border:1.5px solid rgba(255,255,255,.25);border-radius:6px;font-family:var(--font-b);font-size:11px;font-weight:600;cursor:pointer;transition:all .15s;line-height:1.3}
+.nav-login:hover{border-color:#fff;color:#fff;background:rgba(255,255,255,.06)}
+.hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;background:none;border:none;padding:4px;z-index:1001}
+.hamburger span{width:22px;height:2.5px;background:#fff;border-radius:2px;transition:all .3s}
+.hamburger.active span:nth-child(1){transform:rotate(45deg) translate(5px,5px)}
+.hamburger.active span:nth-child(2){opacity:0}
+.hamburger.active span:nth-child(3){transform:rotate(-45deg) translate(5px,-5px)}
+.mobile-menu{display:none;position:fixed;top:72px;left:0;right:0;background:var(--navy);padding:20px 24px;z-index:999;border-bottom:1px solid rgba(255,255,255,.08);max-height:calc(100vh-72px);overflow-y:auto}
+.mobile-menu.open{display:block}
+.mobile-menu .mm-group{margin-bottom:16px}
+.mobile-menu .mm-hdr{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.4);font-weight:700;padding:8px 0 4px}
+.mobile-menu a{display:block;color:rgba(255,255,255,.7);font-size:14px;padding:10px 0;font-weight:500}
+.mobile-menu .mm-cta{display:block;margin-top:8px;padding:12px;background:#fff;color:var(--navy);border-radius:8px;text-align:center;font-weight:700;font-size:13px}
+.auth-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center;padding:24px}
+.auth-overlay.open{display:flex}
+.auth-modal{background:#fff;border-radius:16px;padding:36px;width:100%;max-width:400px;box-shadow:0 24px 64px rgba(0,0,0,.25);position:relative;max-height:90vh;overflow-y:auto}
+.auth-modal .close-btn{position:absolute;top:14px;right:16px;background:none;border:none;font-size:22px;cursor:pointer;color:var(--muted);line-height:1}
+.auth-modal h2{font-family:var(--font-h);font-size:20px;font-weight:800;color:var(--text);margin-bottom:2px}
+.auth-modal .sub{font-size:13px;color:var(--muted);margin-bottom:24px}
+.auth-modal .field{margin-bottom:14px}
+.auth-modal .field label{display:block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text2);margin-bottom:5px}
+.auth-modal .field input{width:100%;padding:11px 13px;border:1px solid var(--outline);border-radius:8px;font-family:var(--font-b);font-size:14px;color:var(--text);transition:border-color .15s}
+.auth-modal .field input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(21,101,192,.1)}
+.auth-modal .auth-btn{width:100%;padding:13px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-family:var(--font-b);font-size:14px;font-weight:700;cursor:pointer;transition:opacity .15s}
+.auth-modal .auth-btn:hover{opacity:.9}
+.auth-modal .toggle-link{text-align:center;font-size:12px;color:var(--muted);margin-top:14px}
+.auth-modal .toggle-link a{color:var(--blue);font-weight:600;cursor:pointer}
+.auth-modal .auth-err{color:#DC2626;font-size:12px;text-align:center;margin-top:8px;display:none}
+
+</style>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 <script type="application/ld+json">
 {
@@ -241,6 +238,10 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   }
 }
 </script>
+<link rel="icon" type="image/svg+xml" href="/logo.svg">
+<link rel="apple-touch-icon" href="/logo.svg">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 </head>
 <body><main>
 
@@ -251,16 +252,94 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <!-- End Google Tag Manager (noscript) -->
 
-  <nav class="nav">
-    <a href="index.html" class="nav-brand">VigyanLLM</a>
-    <ul class="nav-links">
-      <li><a href="https://vigyanllm.in/index.html">Learn</a></li>
-      <li><a href="https://vigyanllm.in/primer.html">Primer</a></li>
-      <li><a href="https://vigyanllm.in/demo.html">Demo</a></li>
-      <li><a href="https://vigyanllm.in/Learning-vigyanllm.html">Glossary</a></li>
-      <li><a href="https://vigyanllm.in/academic-partnership.html">Academic Partnership</a></li>
-    </ul>
-  </nav>
+  <nav>
+<div class="nav-inner">
+  <a href="index.html" class="nav-brand">
+    <img src="logo.svg" alt="VigyanLLM Logo" width="48" height="48" style="border-radius:8px">
+    <span>VigyanLLM</span>
+  </a>
+  <div class="nav-links">
+    <div class="drop-wrap">
+      <span class="drop-trigger">Products ▾</span>
+      <div class="drop-menu">
+        <a href="primer.html">VPrime 2.0 — Primer Design</a>
+        <a href="search.html">Sequence Search</a>
+        <a href="blast.html">BLAST</a>
+        <a href="msa.html">MSA</a>
+        <a href="pcr-analysis.html">PCR Analysis</a>
+        <a href="crispr-analysis.html">CRISPR Analysis</a>
+        <a href="tm-calculator.html">Tm Calculator</a>
+        <a href="gc-calculator.html">GC Calculator</a>
+        <a href="protein-docking.html">Protein Docking</a>
+        <a href="dna-to-rna.html" style="display:flex;align-items:center;gap:6px">DNA → RNA Converter <span style="font-size:9px;font-weight:700;color:#fff;background:#16A34A;padding:2px 7px;border-radius:99px;line-height:1.4">Free</span></a>
+      </div>
+    </div>
+    <div class="drop-wrap">
+      <span class="drop-trigger">Platform ▾</span>
+      <div class="drop-menu">
+        <a href="platform.html">Overview</a>
+        <a href="architecture.html">Architecture</a>
+        <a href="problem.html">Problem</a>
+        <a href="solution.html">Solution</a>
+        <a href="compare.html">Compare</a>
+        <a href="roadmap.html">Roadmap</a>
+      </div>
+    </div>
+    <a href="Learning-vigyanllm.html">Learning</a>
+    <a href="academic-partnership.html">Partnership</a>
+    <a href="contact.html">Support</a>
+    <a href="cite.html" style="font-size:11px;opacity:.6">Cite</a>
+  </div>
+  <div class="nav-right">
+    <div class="nav-search-wrap">
+      <input type="text" id="navSearchInput" placeholder="Search tools, learning, blog..." autocomplete="off">
+      <span class="ns-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
+      <div class="nav-search-results" id="navSearchResults"></div>
+    </div>
+    <div class="nav-btns">
+      <button class="nav-login" onclick="openAuthModal()">Sign in</button>
+      <button class="nav-cta" onclick="openAuthModal()">Get started</button>
+    </div>
+  </div>
+  <button class="hamburger" id="hamburger" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</div>
+<div class="mobile-menu" id="mobile-menu">
+  <div class="mm-group"><div class="mm-hdr">Products</div>
+    <a href="primer.html">VPrime 2.0 — Primer Design</a>
+    <a href="search.html">Sequence Search</a>
+    <a href="blast.html">BLAST</a>
+    <a href="msa.html">MSA</a>
+    <a href="pcr-analysis.html">PCR Analysis</a>
+    <a href="crispr-analysis.html">CRISPR Analysis</a>
+    <a href="tm-calculator.html">Tm Calculator</a>
+    <a href="gc-calculator.html">GC Calculator</a>
+    <a href="protein-docking.html">Protein Docking</a>
+    <a href="dna-to-rna.html" style="display:flex;align-items:center;gap:6px">DNA → RNA Converter <span style="font-size:9px;font-weight:700;color:#fff;background:#16A34A;padding:2px 7px;border-radius:99px;line-height:1.4">Free</span></a>
+  </div>
+  <div class="mm-group"><div class="mm-hdr">Platform</div>
+    <a href="platform.html">Overview</a>
+    <a href="architecture.html">Architecture</a>
+    <a href="problem.html">Problem</a>
+    <a href="solution.html">Solution</a>
+    <a href="compare.html">Compare</a>
+    <a href="roadmap.html">Roadmap</a>
+  </div>
+  <div class="mm-group">
+    <a href="Learning-vigyanllm.html">Learning</a>
+    <a href="academic-partnership.html">Academic Partnership</a>
+    <a href="mailto:contact@vigyanllm.in">Enterprise Inquiry</a>
+  </div>
+  <div class="mm-group"><div class="mm-hdr">Support</div>
+    <a href="contact.html">Help Centre</a>
+    <a href="mailto:contact@vigyanllm.in">Contact Us</a>
+    <a href="cite.html" style="font-size:11px;opacity:.6">Cite Us</a>
+  </div>
+  <a href="javascript:void(0)" onclick="closeMobileMenu();var e=document.getElementById('navSearchInput');if(e){e.focus();e.scrollIntoView({behavior:'smooth',block:'center'})}" class="mm-cta" style="background:transparent;border:1px solid rgba(255,255,255,.25);color:rgba(255,255,255,.8);margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:8px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Search</a>
+  <a href="javascript:void(0)" class="mm-cta" onclick="openAuthModal()">Sign in</a>
+</div>
+</nav>
 
   <div class="breadcrumb">
     <a href="https://vigyanllm.in">Home</a> <span class="sep">&rsaquo;</span>
@@ -524,6 +603,38 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       </p>
     </section>
   
+<!-- Auth Modal -->
+<div class="auth-overlay" id="authOverlay" onclick="if(event.target===this)closeAuthModal()">
+  <div class="auth-modal" id="authModal">
+    <button class="close-btn" onclick="closeAuthModal()">&times;</button>
+    <h2 id="authTitle">Sign in</h2>
+    <p class="sub" id="authSub">Access your VigyanLLM account</p>
+    <div id="authError" class="auth-err"></div>
+    <form id="authForm" onsubmit="return handleAuth(event)">
+      <div class="field" id="nameField" style="display:none">
+        <label for="authName">Full name</label>
+        <input type="text" id="authName" placeholder="Dr. A.P.J. Abdul Kalam" autocomplete="name">
+      </div>
+      <div class="field">
+        <label for="authEmail">Email</label>
+        <input type="email" id="authEmail" placeholder="researcher@institution.edu" autocomplete="email" required>
+      </div>
+      <div class="field">
+        <label for="authPass">Password</label>
+        <input type="password" id="authPass" placeholder="Min 8 characters" autocomplete="current-password" required minlength="8">
+      </div>
+      <button type="submit" class="auth-btn" id="authSubmit">Sign in</button>
+    </form>
+    <p class="toggle-link" id="authToggle">Don't have an account? <a onclick="toggleAuthMode()">Register</a></p>
+  </div>
+</div>
+<script>
+var AUTH_MODE='login';
+function openAuthModal(){document.getElementById('authOverlay').classList.add('open');document.body.style.overflow='hidden'}
+function closeAuthModal(){document.getElementById('authOverlay').classList.remove('open');document.body.style.overflow=''}
+function toggleAuthMode(){AUTH_MODE=AUTH_MODE==='login'?'register':'login';var t=document.getElementById('authTitle'),s=document.getElementById('authSub'),b=document.getElementById('authSubmit'),n=document.getElementById('nameField'),tg=document.getElementById('authToggle');if(AUTH_MODE==='register'){t.textContent='Create account';s.textContent='Join VigyanLLM — free for Indian academic institutions';b.textContent='Create account';n.style.display='block';tg.innerHTML="Already have an account? <a onclick=\"toggleAuthMode()\">Sign in</a>"}else{t.textContent='Sign in';s.textContent='Access your VigyanLLM account';b.textContent='Sign in';n.style.display='none';tg.innerHTML="Don't have an account? <a onclick=\"toggleAuthMode()\">Register</a>"}document.getElementById('authError').style.display='none'}
+async function handleAuth(e){e.preventDefault();var err=document.getElementById('authError');err.style.display='none';var email=document.getElementById('authEmail').value;var pass=document.getElementById('authPass').value;if(pass.length<8){err.textContent='Password must be at least 8 characters';err.style.display='block';return false}try{var api=window.VIGYAN_BACKEND_URL||'';var ep=AUTH_MODE==='login'?'/api/auth/login':'/api/auth/register';var body={email:email,password:pass};if(AUTH_MODE==='register'){body.name=document.getElementById('authName').value||'User'}var r=await fetch(api+ep,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});var d=await r.json();if(!r.ok){err.textContent=d.error||'Authentication failed';err.style.display='block';return false}closeAuthModal();window.location.reload()}catch(a){err.textContent='Network error. Please try again.';err.style.display='block'}return false}
+</script>
 </body>
 </html>
 
