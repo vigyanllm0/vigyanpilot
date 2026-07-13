@@ -1651,28 +1651,123 @@ def create_app() -> Flask:
     # Batch Oligo Analysis & Primer Check Endpoints
     # ════════════════════════════════════════════════════════════════════
 
-    def _parse_oligo_file(text):
-        """Parse FASTA or CSV text into a list of {name, forward, reverse, template} dicts."""
+    def _parse_oligo_file(text, return_meta=False):
+        """Parse FASTA, CSV, or TSV text into a list of {name, forward, reverse, template} dicts.
+        
+        Supports:
+        - FASTA: >name / ATGC... / /rev ... / /template ...
+        - CSV with header: name,forward,reverse,template or fwd,rev,sequence
+        - VigyanLLM pipeline CSV: Fwd_Sequence,Rev_Sequence columns
+        - CSV single-column (no header): one sequence per line
+        - TSV with header: same column names as CSV
+        - Raw list: one sequence per line (auto-named Primer1, Primer2...)
+        
+        If return_meta=True, returns (entries, meta_dict) with parse count info.
+        """
         import csv
         import io
         lines = [l.strip() for l in text.strip().split("\n") if l.strip()]
         if not lines:
-            return []
+            return ([] if not return_meta else ([], {"format": "empty", "count": 0}))
+        
         first = lines[0].lower()
-        if "," in first and ("fwd" in first or "forward" in first or "primer" in first):
-            reader = csv.DictReader(io.StringIO(text))
+        is_csv = "," in first
+        is_tsv = not is_csv and "\t" in first
+        has_fasta = first.startswith(">")
+        
+        # ── Detect columnar formats (CSV/TSV) ────────────────────────
+        KNOWN_COLUMNS = {"forward","fwd","primer","primer_sequence","sequence","seq",
+                         "fwd_sequence","fwd_seq",
+                         "reverse","rev","rev_sequence","rev_seq",
+                         "name","id","primer_name",
+                         "template","target"}
+        FWD_KEYS = ["forward","fwd","primer","primer_sequence","sequence","seq",
+                    "fwd_sequence","fwd_seq"]
+        REV_KEYS = ["reverse","rev","rev_sequence","rev_seq"]
+        NAME_KEYS = ["name","id","primer_name"]
+        TEMPLATE_KEYS = ["template","target"]
+        
+        if (is_csv or is_tsv) and not has_fasta:
+            header_cols = [c.strip().lower().replace('"','') for c in first.split("," if is_csv else "\t")]
+            has_known_header = any(c in KNOWN_COLUMNS for c in header_cols)
+            if has_known_header or len(header_cols) >= 2:
+                reader = csv.DictReader(io.StringIO(text), delimiter="," if is_csv else "\t")
+                entries = []
+                for row in reader:
+                    row_lower = {k.lower().strip(): v for k, v in row.items()}
+                    fwd = ""
+                    for key in FWD_KEYS:
+                        val = row_lower.get(key, "").strip()
+                        if val:
+                            fwd = val
+                            break
+                    if not fwd:
+                        fwd = (row_lower.get(header_cols[0]) or "").strip()
+                    if not fwd:
+                        continue
+                    name = ""
+                    for key in NAME_KEYS:
+                        val = row_lower.get(key, "").strip()
+                        if val:
+                            name = val
+                            break
+                    rev = ""
+                    for key in REV_KEYS:
+                        val = row_lower.get(key, "").strip()
+                        if val:
+                            rev = val
+                            break
+                    tmpl = ""
+                    for key in TEMPLATE_KEYS:
+                        val = row_lower.get(key, "").strip()
+                        if val:
+                            tmpl = val
+                            break
+                    entries.append({
+                        "name": name or fwd[:20],
+                        "forward": fwd.upper(),
+                        "reverse": rev.upper(),
+                        "template": tmpl.upper(),
+                    })
+                if return_meta:
+                    return entries, {"format": "csv" if is_csv else "tsv", "count": len(entries), "has_header": True}
+                return entries
+            # Headless multi-column CSV — treat first column as forward primer
+            rows = [r for r in csv.reader(io.StringIO(text), delimiter="," if is_csv else "\t") if r]
             entries = []
-            for row in reader:
-                fwd = (row.get("forward") or row.get("fwd") or row.get("primer") or "").strip()
-                if not fwd:
+            for idx, row in enumerate(rows):
+                fwd = (row[0] or "").strip()
+                if not fwd or not set(fwd.upper()).intersection("ACGTU"):
                     continue
                 entries.append({
-                    "name": (row.get("name") or row.get("id") or fwd[:20]).strip(),
+                    "name": f"Primer{idx+1}",
                     "forward": fwd.upper(),
-                    "reverse": (row.get("reverse") or row.get("rev") or "").strip().upper(),
-                    "template": (row.get("template") or row.get("seq") or "").strip().upper(),
+                    "reverse": (row[1] if len(row) > 1 else "").strip().upper(),
+                    "template": (row[2] if len(row) > 2 else "").strip().upper(),
                 })
+            if return_meta:
+                return entries, {"format": "csv-headless" if is_csv else "tsv-headless", "count": len(entries), "has_header": False}
             return entries
+        
+        # ── Single-column CSV/TSV detection (no header, one sequence per line) ──
+        if (is_csv or is_tsv) and not has_fasta:
+            rows = [r for r in csv.reader(io.StringIO(text), delimiter="," if is_csv else "\t") if r]
+            entries = []
+            for idx, row in enumerate(rows):
+                val = (row[0] or "").strip()
+                if not val or not set(val.upper()).intersection("ACGTU"):
+                    continue
+                entries.append({
+                    "name": f"Seq{idx+1}",
+                    "forward": val.upper(),
+                    "reverse": "",
+                    "template": "",
+                })
+            if return_meta:
+                return entries, {"format": "csv-single" if is_csv else "tsv-single", "count": len(entries), "has_header": False}
+            return entries
+        
+        # ── FASTA parsing ────────────────────────────────────────────
         entries = []
         current = {"name": "", "forward": "", "reverse": "", "template": ""}
         for line in lines:
@@ -1689,6 +1784,24 @@ def create_app() -> Flask:
                 current["forward"] = line.upper()
         if current["forward"]:
             entries.append(current)
+        if entries:
+            if return_meta:
+                return entries, {"format": "fasta", "count": len(entries), "has_header": True}
+            return entries
+        
+        # ── Raw list fallback (one sequence per line, no header, no FASTA) ──
+        for idx, line in enumerate(lines):
+            seq = line.upper()
+            if not set(seq).intersection("ACGTU"):
+                continue
+            entries.append({
+                "name": f"Primer{idx+1}",
+                "forward": seq,
+                "reverse": "",
+                "template": "",
+            })
+        if return_meta:
+            return entries, {"format": "raw", "count": len(entries), "has_header": False}
         return entries
 
     @app.route("/api/primer/batch-analysis", methods=["POST"])
@@ -1700,10 +1813,11 @@ def create_app() -> Flask:
         file_content = data.get("file_content")
         if not sequences and not file_content:
             return err("Provide 'sequences' (list) or 'file_content' (FASTA/CSV text).", "VALIDATION_ERROR", 400)
+        parse_meta = None
         if file_content:
-            sequences = _parse_oligo_file(file_content)
+            sequences, parse_meta = _parse_oligo_file(file_content, return_meta=True)
         if not sequences:
-            return err("No valid sequences found in input.", "VALIDATION_ERROR", 400)
+            return err("No valid sequences found in input. Supported formats: FASTA (>name), CSV (name,forward,reverse), or one sequence per line.", "VALIDATION_ERROR", 400)
         results = []
         errors = []
         for entry in sequences:
@@ -1752,7 +1866,10 @@ def create_app() -> Flask:
                 })
             except Exception as exc:
                 errors.append({"name": entry.get("name", "?"), "error": str(exc)[:200]})
-        return jsonify({"results": results, "errors": errors, "total": len(results), "failed": len(errors)}), 200
+        resp = {"results": results, "errors": errors, "total": len(results), "failed": len(errors)}
+        if parse_meta:
+            resp["parse_info"] = f"Detected {parse_meta['count']} {parse_meta['format']} entries"
+        return jsonify(resp), 200
 
     @app.route("/api/primer/check-primers", methods=["POST"])
     def check_primers_route():
@@ -1764,11 +1881,15 @@ def create_app() -> Flask:
         file_content = data.get("file_content")
         if not template:
             return err("Template sequence is required.", "VALIDATION_ERROR", 400)
+        parse_meta = None
         if not primers and file_content:
-            parsed = _parse_oligo_file(file_content)
+            parsed, parse_meta = _parse_oligo_file(file_content, return_meta=True)
             primers = [{"forward": p["forward"], "reverse": p.get("reverse"), "name": p["name"]} for p in parsed]
         if not primers:
-            return err("Provide 'primers' list or 'file_content' with primer sequences.", "VALIDATION_ERROR", 400)
+            fmt_hint = ""
+            if parse_meta:
+                fmt_hint = f" (parsed {parse_meta['format']}: found 0 valid sequences — check column names or sequence content)"
+            return err(f"Provide 'primers' list or 'file_content' with primer sequences.{fmt_hint}", "VALIDATION_ERROR", 400)
         ranked = []
         errors = []
         for p in primers:
@@ -1824,12 +1945,10 @@ def create_app() -> Flask:
                 suggestions.append("All primers scored poorly — check template sequence or use different target region")
         else:
             suggestions.append("No valid primers found — check input sequences")
-        return jsonify({
-            "ranked": ranked,
-            "suggestions": suggestions,
-            "total": len(ranked),
-            "errors": errors,
-        }), 200
+        resp = {"ranked": ranked, "suggestions": suggestions, "total": len(ranked), "errors": errors}
+        if parse_meta:
+            resp["parse_info"] = f"Detected {parse_meta['count']} {parse_meta['format']} entries"
+        return jsonify(resp), 200
 
     @app.route("/api/primer/msa", methods=["POST"])
     def msa_route():

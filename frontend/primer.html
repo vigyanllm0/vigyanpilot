@@ -1132,9 +1132,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           </div>
           <div style="border:2px dashed var(--slate-border);border-radius:8px;padding:16px;text-align:center;cursor:pointer;margin-bottom:10px"
            id="check-file-drop-zone"
-                style="border:2px dashed var(--slate-border);border-radius:8px;padding:16px;text-align:center;cursor:pointer;margin-bottom:10px">
-            <span style="font-size:12px;color:var(--text2)">📁 Upload primer file (FASTA/CSV)</span>
-            <input type="file" id="check-file-input" accept=".fa,.fasta,.csv,.txt" style="display:none">
+           style="border:2px dashed var(--slate-border);border-radius:8px;padding:16px;text-align:center;cursor:pointer;margin-bottom:10px">
+             <span style="font-size:12px;color:var(--text2)">📁 Upload primer file (FASTA/CSV)</span>
+             <div id="check-file-info" style="font-size:11px;color:var(--bio);margin-top:6px;display:none"></div>
+             <input type="file" id="check-file-input" accept=".fa,.fasta,.csv,.txt" style="display:none">
           </div>
           <button class="btn-primary" id="btn-check-primers" onclick="runCheckPrimers()">
             <span class="spinner" id="check-spinner"></span>
@@ -2100,6 +2101,7 @@ const PIPELINE_DEFS=[
 
 function $(id){return document.getElementById(id);}
 function esc(s){return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function csvEsc(s){var v=String(s??'');return v.includes(',')||v.includes('"')||v.includes('\n')?'"'+v.replace(/"/g,'""')+'"':v;}
 
 // ── Backend status ────────────────────────────────────────────────────────
 function setStatus(online,checking){
@@ -2933,9 +2935,9 @@ function handleBatchFile(input){
   const r=new FileReader();
   r.onload=function(e){
     _batchData=e.target.result;
-    const lines=_batchData.split('\n').filter(l=>l.trim()).length;
+    const seqCount=countSeqsInText(_batchData);
     const names=(_batchData.match(/^>/gm)||[]).length;
-    const info=names?`${names} FASTA entries`:`${lines} lines`;
+    const info=names?`${names} FASTA entries (${seqCount} sequences)`:`${seqCount} sequences detected`;
     $('batch-file-info').textContent=`📄 ${f.name} (${info})`;
     $('btn-batch-analyze').style.display='inline-flex';
   };
@@ -2959,7 +2961,11 @@ async function runBatchAnalysis(){
   $('manual-results').innerHTML='';
   try{
     const d=await apiPost('/api/primer/batch-analysis',{file_content:_batchData});
-    let html=`<div class="success-card" style="margin-bottom:12px">✓ Analysed ${d.total} primer sets${d.failed?`, ${d.failed} failed`:''}</div>`;
+    let html='';
+    if(d.parse_info){
+      html+=`<div class="success-card" style="margin-bottom:12px">📄 ${esc(d.parse_info)}</div>`;
+    }
+    html+=`<div class="success-card" style="margin-bottom:12px">✓ Analysed ${d.total} primer sets${d.failed?`, ${d.failed} failed`:''}</div>`;
     for(const r of d.results){
       fwdBlock(r.forward,'fwd');
       html+=`<div class="panel-card" style="margin-bottom:12px">
@@ -2996,7 +3002,7 @@ function downloadBatchCSV(results){
   let csv='name,forward,reverse,fwd_tm,rev_tm,fwd_gc,rev_gc,fwd_length,rev_length,fwd_quality,rev_quality,fwd_warnings,rev_warnings,pair_tm_delta,pair_cross_dimer_dg\n';
   for(const r of results){
     const f=r.forward,rev=r.reverse;
-    csv+=`${esc(r.name)},${f.sequence},${rev?rev.sequence:''},${f.tm},${rev?rev.tm:''},${f.gc},${rev?rev.gc:''},${f.length},${rev?rev.length:''},${f.quality_score},${rev?rev.quality_score:''},"${(f.warnings||[]).join('; ')}","${(rev?rev.warnings:[]).join('; ')}",${r.pair?r.pair.tm_delta:''},${r.pair?r.pair.cross_dimer_dg:''}\n`;
+    csv+=`${csvEsc(r.name)},${csvEsc(f.sequence)},${csvEsc(rev?rev.sequence:'')},${f.tm},${rev?rev.tm:''},${f.gc},${rev?rev.gc:''},${f.length},${rev?rev.length:''},${f.quality_score},${rev?rev.quality_score:''},${csvEsc((f.warnings||[]).join('; '))},${csvEsc((rev?rev.warnings:[]).join('; '))},${r.pair?r.pair.tm_delta:''},${r.pair?r.pair.cross_dimer_dg:''}\n`;
   }
   const blob=new Blob([csv],{type:'text/csv'});
   const a=document.createElement('a');
@@ -3009,6 +3015,15 @@ function downloadBatchCSV(results){
 // ── Check Primers Against Template ────────────────────────────────────────
 let _checkPrimerData = [];
 
+function countSeqsInText(txt){
+  var lines=txt.split('\n').map(function(l){return l.trim()}).filter(function(l){return l.length>0});
+  var fastaCount=(txt.match(/^>/gm)||[]).length;
+  if(fastaCount>0)return fastaCount;
+  var headerRe=/^(name|forward|fwd|primer|sequence|seq|reverse|rev|template|id|target),/i;
+  var seqLines=lines.filter(function(l){return !headerRe.test(l) && !l.startsWith('/rev') && !l.startsWith('/template') && /[ACGTUacgtu]/g.test(l)});
+  return seqLines.length;
+}
+
 function handleCheckFile(input){
   const f=input.files[0];
   if(!f)return;
@@ -3016,6 +3031,10 @@ function handleCheckFile(input){
   r.onload=function(e){
     _checkPrimerData=e.target.result;
     $('check-primers-text').value=_checkPrimerData;
+    const n=countSeqsInText(_checkPrimerData);
+    const info=n>0?`📄 ${f.name} (${n} sequences detected)`:`📄 ${f.name} loaded`;
+    $('check-file-info').textContent=info;
+    $('check-file-info').style.display='block';
   };
   r.readAsText(f);
 }
@@ -3028,6 +3047,9 @@ function handleCheckDrop(e){
     r.onload=function(ev){
       _checkPrimerData=ev.target.result;
       $('check-primers-text').value=_checkPrimerData;
+      const n=countSeqsInText(_checkPrimerData);
+      $('check-file-info').textContent=n>0?`📄 ${f.name} (${n} sequences)`:`📄 ${f.name} loaded`;
+      $('check-file-info').style.display='block';
     };
     r.readAsText(f);
   }
@@ -3055,6 +3077,9 @@ async function runCheckPrimers(){
   try{
     const d=await apiPost('/api/primer/check-primers',{template:tmpl,file_content:primerText});
     let html='';
+    if(d.parse_info){
+      html+=`<div class="success-card" style="margin-bottom:12px">📄 ${esc(d.parse_info)}</div>`;
+    }
     if(d.suggestions&&d.suggestions.length){
       html+=`<div class="warn-list" style="margin-bottom:12px">${d.suggestions.map(s=>`<div class="warn-item">💡 ${esc(s)}</div>`).join('')}</div>`;
     }
@@ -3100,7 +3125,7 @@ function downloadCheckCSV(ranked){
   let csv='rank,name,forward,reverse,combined_score,fwd_identity,fwd_mismatches,rev_identity,rev_mismatches,fwd_tm,rev_tm,fwd_gc,rev_gc,warnings\n';
   for(let i=0;i<ranked.length;i++){
     const r=ranked[i];
-    csv+=`${i+1},${esc(r.name)},${r.forward},${r.reverse||''},${r.combined_score},${r.alignment.forward.identity_pct},${r.alignment.forward.mismatches},${r.alignment.reverse?r.alignment.reverse.identity_pct:''},${r.alignment.reverse?r.alignment.reverse.mismatches:''},${r.thermodynamics.forward_tm},${r.thermodynamics.reverse_tm||''},${r.thermodynamics.forward_gc},${r.thermodynamics.reverse_gc||''},"${(r.warnings||[]).join('; ')}"\n`;
+    csv+=`${i+1},${csvEsc(r.name)},${csvEsc(r.forward)},${csvEsc(r.reverse||'')},${r.combined_score},${r.alignment.forward.identity_pct},${r.alignment.forward.mismatches},${r.alignment.reverse?r.alignment.reverse.identity_pct:''},${r.alignment.reverse?r.alignment.reverse.mismatches:''},${r.thermodynamics.forward_tm},${r.thermodynamics.reverse_tm||''},${r.thermodynamics.forward_gc},${r.thermodynamics.reverse_gc||''},${csvEsc((r.warnings||[]).join('; '))}\n`;
   }
   const blob=new Blob([csv],{type:'text/csv'});
   const a=document.createElement('a');
