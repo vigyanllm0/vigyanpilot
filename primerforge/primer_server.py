@@ -1670,6 +1670,48 @@ def create_app() -> Flask:
         if not lines:
             return ([] if not return_meta else ([], {"format": "empty", "count": 0}))
         
+        # ── Primer-BLAST / NCBI report detection (must come before CSV check, as first line may contain commas) ──
+        has_primer_blast = any("primer pair" in l.lower()
+                              or l.lower().startswith("forward primer sequence")
+                              or l.lower().startswith("reverse primer sequence")
+                              or l.lower().startswith("input pcr template")
+                              or l.lower().startswith("range:")
+                              for l in lines[:10])
+        if has_primer_blast:
+            import re
+            entries = []
+            current_pair = ""
+            current_set = {}
+            for line in lines:
+                m_pair = re.match(r"Primer pair\s+(\d+)", line, re.IGNORECASE)
+                if m_pair:
+                    if current_set.get("forward"):
+                        entries.append(current_set)
+                    current_pair = f"Pair {m_pair.group(1)}"
+                    current_set = {"name": "", "forward": "", "reverse": "", "template": ""}
+                    continue
+                m_fwd = re.match(r"Forward primer sequence.*?:\s*([ACGTUacgtu]+)", line, re.IGNORECASE)
+                if m_fwd:
+                    current_set["forward"] = m_fwd.group(1).upper()
+                    if not current_set["name"]:
+                        current_set["name"] = "Primer " + (current_pair or str(len(entries)+1))
+                    continue
+                m_rev = re.match(r"Reverse primer sequence.*?:\s*([ACGTUacgtu]+)", line, re.IGNORECASE)
+                if m_rev:
+                    current_set["reverse"] = m_rev.group(1).upper()
+                    if not current_set["name"]:
+                        current_set["name"] = "Primer " + (current_pair or str(len(entries)+1))
+                    continue
+            if current_set.get("forward"):
+                entries.append(current_set)
+            if entries:
+                if not any(e["name"] for e in entries):
+                    for i, e in enumerate(entries):
+                        e["name"] = f"Primer pair {i+1}"
+                if return_meta:
+                    return entries, {"format": "primer-blast", "count": len(entries), "has_header": True}
+                return entries
+        
         first = lines[0].lower()
         is_csv = "," in first
         is_tsv = not is_csv and "\t" in first
