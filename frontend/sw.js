@@ -5,6 +5,7 @@ const PRECACHE_ASSETS = [
   '/index.html',
   '/about.html',
   '/primer.html',
+  '/pcr-analysis.html',
   '/demo.html',
   '/404.html',
   '/privacy.html',
@@ -15,7 +16,7 @@ const PRECACHE_ASSETS = [
   '/manifest.json',
 ];
 
-const CACHE_VERSION = 20;
+const CACHE_VERSION = 21;
 
 self.addEventListener('install', e => {
   self.skipWaiting();

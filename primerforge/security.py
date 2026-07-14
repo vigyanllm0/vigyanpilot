@@ -148,11 +148,12 @@ def init_security(app):
             "https://checkout.razorpay.com",
             "https://api.razorpay.com",
             "https://accounts.google.com",
+            "https://www.googletagmanager.com",
             "'unsafe-inline'",
         ],
         "style-src": ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
         "font-src": ["'self'", "https://fonts.gstatic.com"],
-        "img-src": ["'self'", "data:", "https:"],
+        "img-src": ["'self'", "data:", "https:", "https://www.googletagmanager.com", "https://www.google-analytics.com"],
         "connect-src": [
             "'self'",
             "https://api.razorpay.com",

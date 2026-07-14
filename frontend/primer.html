@@ -8,7 +8,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
 })(window,document,'script','dataLayer','GTM-KRP5LLPR');</script>
 <!-- End Google Tag Manager -->
-
 <meta charset="UTF-8">
 <meta name="google-site-verification" content="WP61CgW3hd6FNvLabkXLmVU0rNzXpkK8ynYRxr5FqBo">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -68,19 +67,23 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 html{scroll-behavior:smooth}
 body{background:var(--slate);color:var(--text);font-family:var(--font-b);line-height:1.6;-webkit-font-smoothing:antialiased}
 a{text-decoration:none;color:inherit}
-
 /* DASHBOARD WRAPPER */
 .dashboard-wrap{background:transparent;max-width:var(--max-w);margin:0 auto;border-radius:0 0 12px 12px;box-shadow:0 1px 3px rgba(0,0,0,0.04)}
-
 /* NAV */
 nav{position:sticky;top:0;background:var(--navy);z-index:100;height:72px}
 .nav-inner{display:flex;justify-content:space-between;align-items:center;height:100%;max-width:1200px;margin:0 auto;padding:0 24px}
-.logo{font-family:var(--font-h);font-size:20px;color:#fff;display:inline-flex;align-items:center;gap:9px;text-decoration:none;font-weight:700}
-.logo-img{width:36px;height:36px;border-radius:6px;background:#0d1117;padding:3px;object-fit:contain;flex-shrink:0}
-.logo-text{font-family:var(--font-h);font-size:20px;color:#fff;line-height:1;font-weight:700}
+.nav-brand{display:flex;align-items:center;gap:10px;color:#fff;font-family:var(--font-h);font-size:20px;font-weight:800}
+.nav-brand img{width:34px;height:34px;border-radius:8px;transition:transform .3s}
+.nav-brand:hover img{transform:rotate(-10deg)}
 .nav-links{display:flex;gap:32px;align-items:center;margin-left:40px}
 .nav-links a{font-size:13px;color:#CBD5E1;transition:color .15s;font-weight:500;letter-spacing:0.02em}
 .nav-links a:hover{color:#fff}
+.drop-wrap{position:relative;display:inline-block}
+.drop-trigger{font-family:var(--font-b);font-size:13px;color:#CBD5E1;font-weight:500;cursor:pointer;white-space:nowrap}
+.drop-menu{display:none;position:absolute;top:100%;left:0;background:#fff;border:1px solid #E2E5EA;border-radius:12px;min-width:220px;padding:8px;z-index:1001;box-shadow:0 12px 40px rgba(0,0,0,.08);opacity:0;transform:translateY(4px);transition:opacity .2s,transform .2s}
+.drop-menu a{display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px;text-decoration:none}
+.drop-wrap:hover .drop-menu{display:block;opacity:1;transform:translateY(0)}
+.drop-menu a:hover{background:#E0F2F1;color:#009688;padding-left:20px}
 .nav-right{display:flex;align-items:center;gap:12px}
 .status-pill{display:inline-flex;align-items:center;gap:6px;border:1px solid rgba(255,255,255,0.2);border-radius:99px;padding:5px 14px;font-family:var(--font-b);font-size:11px;background:rgba(255,255,255,0.08);white-space:nowrap;transition:all .3s}
 .status-pill.online{border-color:rgba(5,150,105,.4);color:var(--bio)}
@@ -92,12 +95,10 @@ nav{position:sticky;top:0;background:var(--navy);z-index:100;height:72px}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 .btn-nav{border:1.5px solid rgba(255,255,255,0.3);border-radius:4px;padding:7px 18px;font-size:12px;font-weight:600;background:transparent;cursor:pointer;transition:all .2s;color:#fff}
 .btn-nav:hover{border-color:#fff;background:rgba(255,255,255,0.1)}
-
 /* DISCLAIMER - Amber alert bar */
 .disclaimer{background:#fffbeb;border-bottom:1px solid #fde68a;padding:10px 24px;text-align:center;font-size:13px;color:#92400e;font-weight:500;display:flex;align-items:center;justify-content:center;gap:8px}
 .disclaimer strong{font-weight:700}
 .disclaimer-icon{font-size:16px;flex-shrink:0}
-
 /* PAGE HEADER */
 .page-header{padding:32px 0 24px;border-bottom:1px solid var(--slate-border);background:transparent}
 .page-header .container{max-width:var(--max-w);margin:0 auto;padding:0 24px;display:flex;align-items:flex-start;justify-content:space-between;gap:20px;flex-wrap:wrap}
@@ -108,25 +109,21 @@ nav{position:sticky;top:0;background:var(--navy);z-index:100;height:72px}
 .ph-sub{font-size:14px;color:var(--text2);max-width:520px}
 .ph-meta{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
 .ph-chip{font-family:var(--font-b);font-size:10px;background:var(--slate);border:1px solid var(--slate-border);border-radius:6px;padding:4px 10px;color:var(--text2);font-weight:500}
-
 /* TABS */
 .tab-bar{background:transparent}
 .tab-bar-inner{max-width:var(--max-w);margin:0 auto;padding:0 24px;display:flex;gap:0;border-bottom:1px solid var(--slate-border)}
 .tab-btn{padding:14px 24px;font-size:13px;font-weight:600;color:var(--muted);background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-1px;cursor:pointer;transition:all .15s;letter-spacing:.01em;font-family:var(--font-b)}
 .tab-btn:hover{color:var(--text)}
 .tab-btn.active{color:var(--navy);border-bottom-color:var(--navy);font-weight:700}
-
 /* THREE-COLUMN TOOL LAYOUT */
 .tool-wrap{max-width:var(--max-w);margin:0 auto;padding:28px 24px;display:flex;flex-direction:row;gap:24px;align-items:flex-start}
 .tool-left{position:sticky;top:80px;align-self:start;order:-1;flex:0 0 var(--sidebar-l);min-width:0}.tool-right{position:sticky;top:80px;align-self:start;flex:0 0 var(--sidebar-r);min-width:0}.tool-center{flex:1;min-width:0}
 .sidebar-section+.sidebar-section{margin-top:16px}
-
 /* SIDEBAR SECTIONS */
 .sidebar-section{border:1px solid var(--slate-border);border-radius:10px;background:transparent;margin-bottom:16px}
 .sidebar-section-head{padding:12px 16px;border-bottom:1px solid var(--slate-border);display:flex;align-items:center;gap:8px;background:var(--slate);border-radius:10px 10px 0 0}
 .sidebar-section-head h3{font-family:var(--font-h);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text2)}
 .sidebar-section-body{padding:16px}
-
 /* FORM ELEMENTS */
 .form-group{margin-bottom:14px}
 .form-label{font-family:var(--font-h);font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;display:flex;align-items:center;justify-content:space-between}
@@ -143,7 +140,6 @@ nav{position:sticky;top:0;background:var(--navy);z-index:100;height:72px}
 .toggle-row:first-child{border-top:none}
 .toggle-label{font-size:12px;color:var(--text2)}
 .toggle-sub{font-size:10px;color:var(--muted)}
-
 /* BUTTONS */
 .btn-primary{background:var(--primary);color:#fff;border:none;border-radius:8px;padding:12px 20px;font-size:13px;font-weight:700;cursor:pointer;transition:background .15s;display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%}
 .btn-primary:hover{background:#0044ff}
@@ -155,7 +151,6 @@ nav{position:sticky;top:0;background:var(--navy);z-index:100;height:72px}
 .spinner{width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:none}
 .spinner.show{display:inline-block}
 @keyframes spin{to{transform:rotate(360deg)}}
-
 /* PIPELINE STEPS */
 .pipeline-steps{display:grid;gap:6px;max-height:80vh;overflow-y:auto;position:relative}
 .p-step{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:7px;border:1px solid var(--slate-border);background:transparent;transition:all .25s}
@@ -175,23 +170,19 @@ nav{position:sticky;top:0;background:var(--navy);z-index:100;height:72px}
 .step-sub{font-size:10px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .step-status{font-family:var(--font-b);font-size:9px;font-weight:600;flex-shrink:0}
 .step-status.pass{color:var(--bio)}.step-status.fail{color:var(--red)}.step-status.stub-s{color:var(--muted)}.step-status.run{color:var(--primary)}
-
 /* QUALITY LEGEND */
 .q-legend{display:grid;gap:6px}
 .q-row{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--text2)}
 .q-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
-
 /* RESULT CARDS */
 .results-wrap{min-height:200px}
 .results-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:8px;padding-bottom:14px;border-bottom:1px solid var(--slate-border)}
 .results-title{font-family:var(--font-h);font-size:15px;font-weight:700}
 .elapsed-chip{font-family:var(--font-b);font-size:10px;color:var(--muted)}
-
 .result-card{border:1px solid var(--slate-border);border-radius:12px;background:transparent;margin-bottom:20px;overflow:hidden;transition:box-shadow .2s}
 .result-card:hover{box-shadow:0 4px 20px rgba(0,0,0,.07)}
 .result-card.pass-card{border-top:3px solid var(--bio)}
 .result-card.fail-card{border-top:3px solid var(--amber);opacity:.85}
-
 /* Card header */
 .rc-head{padding:16px 20px;background:var(--slate);border-bottom:1px solid var(--slate-border);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .rc-head-left{display:flex;align-items:center;gap:12px}
@@ -209,7 +200,6 @@ nav{position:sticky;top:0;background:var(--navy);z-index:100;height:72px}
 .rc-head-right{text-align:right}
 .ta-val{font-family:var(--font-b);font-size:18px;font-weight:700;color:var(--amber)}
 .ta-label{font-size:10px;color:var(--muted)}
-
 /* Primer blocks */
 .rc-body{padding:18px 20px}
 .primer-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
@@ -229,10 +219,8 @@ nav{position:sticky;top:0;background:var(--navy);z-index:100;height:72px}
 .mc.warn{border-color:rgba(217,119,6,.3);background:var(--amber-soft);color:#92400e}
 .mc.bad{border-color:rgba(220,38,38,.3);background:var(--red-soft);color:#991b1b}
 .qs-bar{height:4px;border-radius:2px;margin-top:8px;transition:width .4s}
-
 /* Pair metrics */
 .pair-meta-row{display:flex;flex-wrap:wrap;gap:8px;padding:12px 14px;background:var(--slate);border-radius:8px;margin-bottom:12px}
-
 /* Pass/fail matrix */
 .pf-matrix{margin-top:12px}
 .pf-toggle{font-size:11px;color:var(--primary);cursor:pointer;font-weight:600;margin-bottom:8px;display:inline-flex;align-items:center;gap:4px}
@@ -245,20 +233,16 @@ nav{position:sticky;top:0;background:var(--navy);z-index:100;height:72px}
 .pf-note{color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:var(--font-b)}
 .pf-result{font-family:var(--font-b);font-size:9px;font-weight:700;white-space:nowrap}
 .pf-pass{color:var(--bio)}.pf-fail{color:var(--red)}.pf-stub{color:var(--muted)}.pf-warn{color:var(--amber)}
-
 /* Warnings */
 .warn-list{margin-top:10px}
 .warn-item{display:flex;gap:6px;align-items:flex-start;font-size:11px;color:var(--amber);padding:3px 0}
-
 /* Info/error cards */
 .info-card{border:1px solid #bfdbfe;background:#eff6ff;border-radius:10px;padding:16px 18px;font-size:13px;color:#1d4ed8;margin-top:12px}
 .error-card{border:1px solid #fecaca;background:var(--red-soft);border-radius:10px;padding:16px 18px;font-size:13px;color:#991b1b;margin-top:12px}
 .success-card{border:1px solid #bbf7d0;background:var(--bio-soft);border-radius:10px;padding:14px 18px;font-size:13px;color:#166534;margin-top:12px}
-
 /* Slow warning */
 .slow-warn{display:none;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:10px 14px;font-size:12px;color:#1d4ed8;margin-top:12px}
 .slow-warn.show{display:block}
-
 /* Manual/fetch panels */
 .two-col{display:grid;grid-template-columns:1fr 1.3fr;gap:28px;align-items:flex-start}
 .panel-card{border:1px solid var(--slate-border);border-radius:10px;background:transparent;overflow:hidden}
@@ -267,12 +251,10 @@ nav{position:sticky;top:0;background:var(--navy);z-index:100;height:72px}
 .panel-body{padding:18px}
 .report-block{font-family:var(--font-b);font-size:11px;background:#0d1117;color:#e2e8f0;border-radius:8px;padding:16px;white-space:pre;overflow-x:auto;line-height:1.7;margin-top:12px}
 .seq-display{font-family:var(--font-b);font-size:11px;background:var(--slate);border:1px solid var(--slate-border);border-radius:7px;padding:12px;word-break:break-all;line-height:1.8;color:var(--text2);max-height:180px;overflow-y:auto}
-
 /* Quick load */
 .quick-load{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 .quick-btn{font-family:var(--font-b);font-size:10px;border:1px solid var(--slate-border);border-radius:5px;padding:4px 10px;background:var(--slate);color:var(--text2);cursor:pointer;transition:all .15s}
 .quick-btn:hover{border-color:var(--primary);color:var(--primary)}
-
 /* PRODUCTION PROOF SECTIONS */
 .proof-section{padding:56px 0;border-top:1px solid var(--slate-border);background:transparent}
 .proof-section.alt{background:var(--slate)}
@@ -312,13 +294,11 @@ nav{position:sticky;top:0;background:var(--navy);z-index:100;height:72px}
 .cta-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
 .btn-hero{border:none;border-radius:8px;padding:11px 18px;font-size:13px;font-weight:800;cursor:pointer;background:var(--primary);color:#fff}
 .btn-hero.secondary{background:transparent;color:var(--text);border:1.5px solid var(--slate-border)}
-
 /* Tooltip */
 .tooltip-wrap{position:relative;display:inline-flex}
 .tooltip-icon{font-size:11px;color:var(--muted);cursor:help;margin-left:4px}
 .tooltip-box{display:none;position:absolute;bottom:calc(100%+6px);left:50%;transform:translateX(-50%);background:#0d1117;color:#e2e8f0;font-size:11px;font-family:var(--font-b);padding:8px 12px;border-radius:6px;width:260px;line-height:1.5;z-index:50;white-space:normal;font-weight:400}
 .tooltip-wrap:hover .tooltip-box{display:block}
-
 /* PRICING */
 .pricing-section{padding:60px 0;background:var(--slate);border-top:1px solid var(--slate-border)}
 .pricing-header{text-align:center;margin-bottom:36px}
@@ -345,15 +325,12 @@ nav{position:sticky;top:0;background:var(--navy);z-index:100;height:72px}
 .btn-price.fill-green{background:var(--bio);color:#fff}.btn-price.fill-green:hover{background:#047857}
 .btn-price:disabled{opacity:.45;cursor:not-allowed;filter:grayscale(.15)}
 .pricing-footer{text-align:center;font-family:var(--font-b);font-size:11px;color:#94a3b8;margin-top:20px;max-width:var(--max-w);margin-left:auto;margin-right:auto;padding:0 24px}
-
 /* Footer */
 footer{padding:32px 0;border-top:1px solid var(--slate-border)}
 .footer-inner{max-width:var(--max-w);margin:0 auto;padding:0 24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;font-size:12px;color:var(--muted)}
 .footer-logo{font-family:var(--font-h);font-size:18px;color:#fff;font-weight:700}
-
 /* Manual analysis full-width */
 .manual-wrap,.fetch-wrap{max-width:var(--max-w);margin:0 auto;padding:28px 24px}
-
 /* Responsive */
 @media(max-width:1100px){
   .tool-right{display:none}
@@ -366,7 +343,7 @@ footer{padding:32px 0;border-top:1px solid var(--slate-border)}
   .pricing-grid{grid-template-columns:1fr 1fr}
   .proof-grid,.sample-report,.trust-list,.faq-grid{grid-template-columns:1fr}
   .db-health-grid{grid-template-columns:1fr 1fr}
-  .nav-links{display:none}
+  .nav-links{display:flex;gap:32px;align-items:center;margin-left:40px}
 }
 @media(max-width:500px){
   .pricing-grid{grid-template-columns:1fr}
@@ -382,7 +359,6 @@ footer{padding:32px 0;border-top:1px solid var(--slate-border)}
 .auth-toggle{font-size:12px;color:var(--primary);cursor:pointer;text-align:center;margin-top:16px;font-weight:600}
 .auth-error{font-size:12px;color:var(--red);text-align:center;margin-top:10px;display:none}
 .auth-error.show{display:block}
-
 /* PAYMENT MODAL */
 .pay-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:9998;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
 .pay-overlay.show{display:flex}
@@ -392,7 +368,6 @@ footer{padding:32px 0;border-top:1px solid var(--slate-border)}
 .pay-upi{font-family:var(--font-b);font-size:14px;background:var(--slate);border:1px solid var(--slate-border);border-radius:8px;padding:12px;text-align:center;margin:12px 0;user-select:all;cursor:pointer}
 .pay-steps{font-size:12px;color:var(--text2);line-height:1.8;margin:12px 0}
 .pay-steps ol{padding-left:20px}
-
 /* USER NAV */
 .user-pill{display:none;align-items:center;gap:8px;border:1px solid var(--slate-border);border-radius:99px;padding:4px 14px 4px 8px;font-size:11px;color:var(--text2);cursor:pointer}
 .user-pill.show{display:inline-flex}
@@ -402,7 +377,6 @@ footer{padding:32px 0;border-top:1px solid var(--slate-border)}
 .user-menu-item{padding:8px 16px;font-size:12px;color:var(--text2);cursor:pointer;transition:background 0.1s}
 .user-menu-item:hover{background:var(--slate)}
 .user-menu-item.danger{color:var(--red)}
-
 /* ADMIN PANEL */
 .admin-panel{display:none;max-width:var(--max-w);margin:0 auto;padding:28px 24px}
 .admin-panel.show{display:block}
@@ -414,8 +388,13 @@ footer{padding:32px 0;border-top:1px solid var(--slate-border)}
 .admin-table th{background:var(--slate);padding:10px 12px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);border-bottom:1px solid var(--slate-border)}
 .admin-table td{padding:8px 12px;border-bottom:1px solid var(--slate-border);color:var(--text2)}
 .admin-table tr:last-child td{border-bottom:none}
+.mobile-menu{display:none;position:fixed;top:72px;left:0;right:0;background:var(--navy);padding:20px 24px;z-index:999;border-bottom:1px solid rgba(255,255,255,.08);max-height:calc(100vh-72px);overflow-y:auto}
+.mobile-menu.open{display:block}
+.mobile-menu .mm-group{margin-bottom:16px}
+.mobile-menu .mm-hdr{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.4);font-weight:700;padding:8px 0 4px}
+.mobile-menu a{display:block;color:rgba(255,255,255,.7);font-size:14px;padding:10px 0;font-weight:500}
+.mobile-menu .mm-cta{display:block;margin-top:8px;padding:12px;background:#fff;color:var(--navy);border-radius:8px;text-align:center;font-weight:700;font-size:13px}
 </style>
-
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -501,6 +480,12 @@ footer{padding:32px 0;border-top:1px solid var(--slate-border)}
 .search-result-item{padding:10px 12px;margin-bottom:6px;border:1px solid var(--slate-border);border-radius:8px;font-size:12px;transition:border-color .15s}.search-result-item:hover{border-color:var(--primary)}.search-result-header{display:flex;align-items:center;justify-content:space-between;gap:8px}.search-result-name{font-weight:600;color:var(--text)}.search-result-org{font-size:10px;color:var(--muted)}.search-result-desc{font-size:11px;color:var(--text2);margin-top:4px}.search-result-meta{display:flex;gap:12px;margin-top:6px;font-size:10px;color:var(--muted)}.search-result-actions{margin-top:6px;display:flex;gap:4px}
 /* ── Blast results ── */
 .blast-hit{display:flex;align-items:center;padding:8px;margin-bottom:4px;background:var(--slate);border-radius:6px;font-size:11px}.blast-hit-info{flex:1}.blast-hit-id{font-weight:600;color:var(--text)}.blast-hit-score{font-size:10px;color:var(--muted)}.blast-hit-pct{font-weight:700;font-size:13px;color:var(--bio);margin-right:12px}
+.mobile-menu{display:none;position:fixed;top:72px;left:0;right:0;background:var(--navy);padding:20px 24px;z-index:999;border-bottom:1px solid rgba(255,255,255,.08);max-height:calc(100vh-72px);overflow-y:auto}
+.mobile-menu.open{display:block}
+.mobile-menu .mm-group{margin-bottom:16px}
+.mobile-menu .mm-hdr{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.4);font-weight:700;padding:8px 0 4px}
+.mobile-menu a{display:block;color:rgba(255,255,255,.7);font-size:14px;padding:10px 0;font-weight:500}
+.mobile-menu .mm-cta{display:block;margin-top:8px;padding:12px;background:#fff;color:var(--navy);border-radius:8px;text-align:center;font-weight:700;font-size:13px}
 </style>
 <script type="application/ld+json">
 {
@@ -559,7 +544,6 @@ footer{padding:32px 0;border-top:1px solid var(--slate-border)}
 }
 </script>
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"DefinedTermSet","name":"Molecular Biology Tools","description":"VigyanLLM provides AI-powered tools for primer design, PCR analysis, CRISPR guide design, protein docking, Tm calculation, and GC content analysis for molecular biology research."}</script>
-
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -615,97 +599,67 @@ footer{padding:32px 0;border-top:1px solid var(--slate-border)}
 </script>
 </head>
 <body><main>
-
-
 <!-- Google Tag Manager (noscript) -->
 <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-KRP5LLPR"
 height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <!-- End Google Tag Manager (noscript) -->
-
-
 <!-- NAV -->
 <nav>
-<div class="nav-inner" style="display:flex;justify-content:space-between;align-items:center;height:100%;max-width:1200px;margin:0 auto;padding:0 24px">
-  <a href="index.html" class="nav-brand" style="display:flex;align-items:center;gap:10px;color:#fff;font-family:var(--font-h);font-size:20px;font-weight:700;text-decoration:none">
-    <img src="logo.svg" alt="VigyanLLM Logo" style="width:32px;height:32px;border-radius:4px">
+<div class="nav-inner">
+  <a href="index.html" class="nav-brand">
+    <img src="logo.svg" alt="VigyanLLM Logo" width="48" height="48" style="border-radius:8px">
     <span>VigyanLLM</span>
   </a>
-  <div class="nav-links" style="display:flex;gap:32px;align-items:center">
-    <a href="index.html" style="font-family:var(--font-b);font-size:13px;color:#CBD5E1;font-weight:500">Home</a>
-    <div class="drop-wrap" style="position:relative;display:inline-block">
-      <span class="drop-trigger" style="font-family:var(--font-b);font-size:13px;color:#CBD5E1;font-weight:500;cursor:pointer">Platform Architecture ▾</span>
-      <div class="drop-menu" style="display:none;position:absolute;top:100%;left:0;background:#fff;border:1px solid #E2E5EA;border-radius:12px;min-width:200px;padding:8px;z-index:1001;box-shadow:0 12px 40px rgba(0,0,0,.08);opacity:0;transform:translateY(4px);transition:opacity .2s,transform .2s">
-        <a href="platform.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">Platform</a>
-        <a href="architecture.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">Architecture</a>
-        <a href="problem.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">Problem</a>
-        <a href="solution.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">Solution</a>
-        <a href="compare.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">Compare</a>
-        <a href="roadmap.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">Roadmap</a>
+  <div class="nav-links">
+    <div class="drop-wrap">
+      <span class="drop-trigger">Products ▾</span>
+      <div class="drop-menu">
+        <a href="primer.html">VPrime 2.0 — Primer Design</a>
+        <a href="search.html">Sequence Search</a>
+        <a href="blast.html">BLAST</a>
+        <a href="msa.html">MSA</a>
+        <a href="pcr-analysis.html">PCR Analysis</a>
+        <a href="crispr-analysis.html">CRISPR Analysis</a>
+        <a href="tm-calculator.html">Tm Calculator</a>
+        <a href="gc-calculator.html">GC Calculator</a>
+        <a href="protein-docking.html">Protein Docking</a>
+        <a href="dna-to-rna.html" style="display:flex;align-items:center;gap:6px">DNA → RNA Converter <span style="font-size:9px;font-weight:700;color:#fff;background:#16A34A;padding:2px 7px;border-radius:99px;line-height:1.4">Free</span></a>
       </div>
     </div>
-    <div class="drop-wrap" style="position:relative;display:inline-block">
-      <span class="drop-trigger" style="font-family:var(--font-b);font-size:13px;color:#22D3EE;font-weight:600;cursor:pointer">Products &amp; Services ▾</span>
-      <div class="drop-menu" style="display:none;position:absolute;top:100%;left:0;background:#fff;border:1px solid #E2E5EA;border-radius:12px;min-width:220px;padding:8px;z-index:1001;box-shadow:0 12px 40px rgba(0,0,0,.08);opacity:0;transform:translateY(4px);transition:opacity .2s,transform .2s">
-        <a href="primer.html" style="display:block;padding:10px 16px;font-size:13px;color:#22D3EE;border-radius:8px;font-weight:600">VPrime 2.0 ↗</a>
-        <a href="search.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">Sequence Search</a>
-        <a href="blast.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">BLAST</a>
-        <a href="msa.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">MSA</a>
-        <a href="pcr-analysis.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">PCR Analysis <span style="background:#FEF3C7;color:#92400E;font-size:9px;font-weight:700;padding:2px 8px;border-radius:20px;margin-left:6px;text-transform:uppercase">Soon</span></a>
-        <a href="crispr-analysis.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">CRISPR Analysis <span style="background:#FEF3C7;color:#92400E;font-size:9px;font-weight:700;padding:2px 8px;border-radius:20px;margin-left:6px;text-transform:uppercase">Soon</span></a>
-        <a href="tm-calculator.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">Tm Calculator</a>
-        <a href="gc-calculator.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">GC Calculator</a>
-        <a href="docking.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">Consensus Docking <span style="background:#DCFCE7;color:#166534;font-size:9px;font-weight:700;padding:2px 8px;border-radius:20px;margin-left:6px;text-transform:uppercase">Live</span></a>
+    <div class="drop-wrap">
+      <span class="drop-trigger">Platform ▾</span>
+      <div class="drop-menu">
+        <a href="platform.html">Overview</a>
+        <a href="architecture.html">Architecture</a>
+        <a href="problem.html">Problem</a>
+        <a href="solution.html">Solution</a>
+        <a href="compare.html">Compare</a>
+        <a href="roadmap.html">Roadmap</a>
       </div>
     </div>
-    <div class="drop-wrap" style="position:relative;display:inline-block">
-      <span class="drop-trigger" style="font-family:var(--font-b);font-size:13px;color:#CBD5E1;font-weight:500;cursor:pointer">Collab &amp; Partnership ▾</span>
-      <div class="drop-menu" style="display:none;position:absolute;top:100%;left:0;background:#fff;border:1px solid #E2E5EA;border-radius:12px;min-width:200px;padding:8px;z-index:1001;box-shadow:0 12px 40px rgba(0,0,0,.08);opacity:0;transform:translateY(4px);transition:opacity .2s,transform .2s">
-        <a href="academic-partnership.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">Academic Partnership</a>
-        <a href="mailto:contact@vigyanllm.in" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">Enterprise Inquiry</a>
-      </div>
+    <a href="Learning-vigyanllm.html">Learning</a>
+    <a href="academic-partnership.html">Partnership</a>
+    <a href="contact.html">Support</a>
+    <a href="cite.html" style="font-size:11px;opacity:.6">Cite</a>
+  </div>
+  <div class="nav-right">
+    <div class="nav-search-wrap">
+      <input type="text" id="navSearchInput" placeholder="Search tools, learning, blog..." autocomplete="off">
+      <span class="ns-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
+      <div class="nav-search-results" id="navSearchResults"></div>
+    </div>
+    <div class="nav-btns">
+      <button class="nav-login" id="nav-login-btn" onclick="openAuthModal()">Sign in</button>
+      <button class="nav-cta" onclick="openAuthModal()">Get started</button>
     </div>
   </div>
-  <button class="hamburger" id="hamburger" aria-label="Menu" style="display:none;flex-direction:column;gap:5px;cursor:pointer;background:none;border:none;padding:4px;margin-left:8px">
-    <span style="width:24px;height:2px;background:rgba(255,255,255,.6);border-radius:2px;display:block"></span>
-    <span style="width:24px;height:2px;background:rgba(255,255,255,.6);border-radius:2px;display:block"></span>
-    <span style="width:24px;height:2px;background:rgba(255,255,255,.6);border-radius:2px;display:block"></span>
+  <button class="hamburger" id="hamburger" aria-label="Menu">
+    <span></span><span></span><span></span>
   </button>
-  <div class="nav-right" style="display:flex;align-items:center;gap:16px">
-    <button class="nav-login" id="nav-login-btn" onclick="toggleUserMenu()" style="border:1.5px solid rgba(255,255,255,0.3);border-radius:4px;padding:8px 20px;font-family:var(--font-b);font-size:13px;font-weight:600;color:#fff;background:transparent;cursor:pointer">Login</button>
-  </div>
 </div>
-</nav>
-<style>
-.drop-wrap:hover .drop-menu{display:block !important;opacity:1 !important;transform:translateY(0) !important}
-.drop-menu a:hover{background:#E0F2F1 !important;color:#009688 !important;padding-left:20px !important}
-.hamburger{display:none !important;flex-direction:column;gap:5px;cursor:pointer;background:none;border:none;padding:4px;margin-left:8px}
-.hamburger span{width:24px;height:2px;background:rgba(255,255,255,.6);border-radius:2px;transition:all .3s}
-.hamburger.active span:nth-child(1){transform:rotate(45deg) translate(5px,5px)}
-.hamburger.active span:nth-child(2){opacity:0}
-.hamburger.active span:nth-child(3){transform:rotate(-45deg) translate(5px,-5px)}
-.mobile-menu{display:none;position:fixed;top:72px;left:0;right:0;background:var(--navy);padding:16px 24px;z-index:999;border-top:1px solid rgba(255,255,255,.1);max-height:calc(100vh - 72px);overflow-y:auto}
-.mobile-menu.open{display:block}
-.mobile-menu .mm-group{margin-bottom:12px}
-.mobile-menu .mm-hdr{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700;padding:8px 0 4px}
-.mobile-menu a{display:block;color:#CBD5E1;font-family:var(--font-b);font-size:14px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04)}
-.mobile-menu .mm-login{display:block;font-family:var(--font-b);font-size:14px;padding:10px 0;font-weight:600;color:var(--accent)}
-@media(max-width:768px){.nav-links{display:none}.hamburger{display:flex !important}}
-</style>
-
 <div class="mobile-menu" id="mobile-menu">
-  <div class="mm-group"><div class="mm-hdr">Home</div>
-    <a href="index.html">Home</a>
-  </div>
-  <div class="mm-group"><div class="mm-hdr">Platform Architecture</div>
-    <a href="platform.html">Platform</a>
-    <a href="architecture.html">Architecture</a>
-    <a href="problem.html">Problem</a>
-    <a href="solution.html">Solution</a>
-    <a href="compare.html">Compare</a>
-    <a href="roadmap.html">Roadmap</a>
-  </div>
-  <div class="mm-group"><div class="mm-hdr">Products &amp; Services</div>
-    <a href="primer.html">VPrime 2.0 ↗</a>
+  <div class="mm-group"><div class="mm-hdr">Products</div>
+    <a href="primer.html">VPrime 2.0 — Primer Design</a>
     <a href="search.html">Sequence Search</a>
     <a href="blast.html">BLAST</a>
     <a href="msa.html">MSA</a>
@@ -713,24 +667,38 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <a href="crispr-analysis.html">CRISPR Analysis</a>
     <a href="tm-calculator.html">Tm Calculator</a>
     <a href="gc-calculator.html">GC Calculator</a>
-    <a href="docking.html">Consensus Docking</a>
+    <a href="protein-docking.html">Protein Docking</a>
+    <a href="dna-to-rna.html" style="display:flex;align-items:center;gap:6px">DNA → RNA Converter <span style="font-size:9px;font-weight:700;color:#fff;background:#16A34A;padding:2px 7px;border-radius:99px;line-height:1.4">Free</span></a>
   </div>
-  <div class="mm-group"><div class="mm-hdr">Collab &amp; Partnership</div>
+  <div class="mm-group"><div class="mm-hdr">Platform</div>
+    <a href="platform.html">Overview</a>
+    <a href="architecture.html">Architecture</a>
+    <a href="problem.html">Problem</a>
+    <a href="solution.html">Solution</a>
+    <a href="compare.html">Compare</a>
+    <a href="roadmap.html">Roadmap</a>
+  </div>
+  <div class="mm-group">
+    <a href="Learning-vigyanllm.html">Learning</a>
     <a href="academic-partnership.html">Academic Partnership</a>
     <a href="mailto:contact@vigyanllm.in">Enterprise Inquiry</a>
   </div>
-  <div class="mm-group"><a href="login.html" class="mm-login">Log in</a></div>
+  <div class="mm-group"><div class="mm-hdr">Support</div>
+    <a href="contact.html">Help Centre</a>
+    <a href="mailto:contact@vigyanllm.in">Contact Us</a>
+    <a href="cite.html" style="font-size:11px;opacity:.6">Cite Us</a>
+  </div>
+  <a href="javascript:void(0)" onclick="closeMobileMenu();var e=document.getElementById('navSearchInput');if(e){e.focus();e.scrollIntoView({behavior:'smooth',block:'center'})}" class="mm-cta" style="background:transparent;border:1px solid rgba(255,255,255,.25);color:rgba(255,255,255,.8);margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:8px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Search</a>
+  <a href="javascript:void(0)" class="mm-cta" onclick="openAuthModal()">Sign in</a>
 </div>
-
+</nav>
 <!-- DASHBOARD WRAPPER -->
 <div class="dashboard-wrap">
-
 <!-- DISCLAIMER -->
 <div class="disclaimer">
   <span class="disclaimer-icon">⚠️</span>
   <strong>Research Use Only.</strong> Not validated for clinical diagnostic use. All primer outputs require independent experimental verification before lab application.
 </div>
-
 <!-- PAGE HEADER -->
 <div class="page-header">
   <div class="container" style="max-width:var(--max-w);margin:0 auto;padding:0 24px">
@@ -763,22 +731,18 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   </div>
 </div>
 <p style="font-size:12px;color:#94A3B8;margin-top:8px">Last updated: July 2026 · Reviewed by VigyanLLM Research Team</p>
-
 <!-- TAB BAR -->
 <div class="tab-bar">
   <div class="tab-bar-inner">
     <button class="tab-btn active" data-tab="auto">Auto Design</button>
     <button class="tab-btn" data-tab="manual">Oligo Analyser</button>
-    <button class="tab-btn" data-tab="check">Check Primers</button>
     <button class="tab-btn" data-tab="fetch">Fetch Sequence</button>
     <button class="tab-btn" data-tab="admin" id="admin-tab-btn" style="display:none;color:var(--primary);margin-left:auto;">🛡️ Admin Panel</button>
   </div>
 </div>
-
 <!-- ══ AUTO DESIGN TAB ══════════════════════════════════════════════════════ -->
 <div id="tab-auto" class="tab-panel">
   <div class="tool-wrap">
-
     <!-- LEFT SIDEBAR: Inputs -->
     <div class="tool-left">
       <div class="sidebar-section">
@@ -869,7 +833,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           </div>
         </div>
       </div>
-
       <div class="sidebar-section">
         <div class="sidebar-section-head">
           <h3>Design Parameters</h3>
@@ -901,7 +864,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             </div>
             <input type="checkbox" id="specificity-check" style="width:15px;height:15px;accent-color:var(--primary);cursor:pointer">
           </div>
-
           <div class="toggle-row">
             <div>
               <div class="toggle-label">Pipeline Mode</div>
@@ -944,12 +906,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           </div>
         </div>
       </div>
-
       <button class="btn-primary" id="btn-run" style="margin-bottom:10px">
         <span class="spinner" id="run-spinner"></span>
         <span id="btn-run-text">▶ Run Pipeline</span>
       </button>
-
       <div class="dl-row">
         <button class="btn-secondary" id="btn-dl-csv" disabled>↓ CSV</button>
         <button class="btn-secondary" id="btn-dl-json" disabled>↓ JSON</button>
@@ -960,10 +920,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <button class="btn-secondary" id="btn-dl-idt" disabled>IDT Report</button>
         <button class="btn-secondary" id="btn-dl-twist" disabled>Twist Report</button>
       </div>
-
       <div class="slow-warn" id="slow-warn">⏳ Still running… large sequences may take up to 60s.</div>
     </div>
-
     <!-- CENTER: Results -->
     <div class="tool-center">
       <div id="auto-results" class="results-wrap">
@@ -974,7 +932,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         </div>
       </div>
     </div>
-
     <!-- RIGHT SIDEBAR: Pipeline + Quality -->
     <div class="tool-right">
       <div class="sidebar-section">
@@ -987,7 +944,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           </div>
         </div>
       </div>
-
       <div class="sidebar-section">
         <div class="sidebar-section-head">
           <h3>Quality Guide</h3>
@@ -1014,7 +970,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           </div>
         </div>
       </div>
-
       <div class="sidebar-section">
         <div class="sidebar-section-head">
           <h3>Recent Reports</h3>
@@ -1023,7 +978,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           No saved reports in this browser session yet.
         </div>
       </div>
-
       <div class="sidebar-section">
         <div class="sidebar-section-head">
           <h3>Tm Definitions</h3>
@@ -1040,10 +994,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         </div>
       </div>
     </div>
-
   </div><!-- /tool-wrap -->
 </div><!-- /tab-auto -->
-
 <!-- ══ MANUAL ANALYSIS TAB ══════════════════════════════════════════════════ -->
 <div id="tab-manual" class="tab-panel" style="display:none">
   <div style="margin-bottom:20px;padding:16px 20px;background:var(--slate);border-radius:10px;border:1px solid var(--slate-border)">
@@ -1105,51 +1057,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </div>
   </div>
 </div>
-
-<!-- ══ CHECK PRIMERS TAB ══════════════════════════════════════════════════ -->
-<div id="tab-check" class="tab-panel" style="display:none">
-  <div style="margin-bottom:20px;padding:16px 20px;background:var(--slate);border-radius:10px;border:1px solid var(--slate-border)">
-    <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;color:var(--text);margin-bottom:4px">Check Primers Against Template</h3>
-    <p style="font-size:13px;color:var(--text2)">Upload a template sequence and a list of primers to check alignment, get thermodynamic analysis, and receive ranked suggestions for best primer pairs.</p>
-  </div>
-  <div class="two-col">
-    <div>
-      <div class="panel-card">
-        <div class="panel-head"><h3>Template Sequence</h3></div>
-        <div class="panel-body">
-          <div class="form-group">
-            <label class="form-label">Template (5'→3')</label>
-            <textarea id="check-template" class="form-textarea" rows="4" style="font-family:var(--font-b);font-size:12px" placeholder="Paste template sequence here..."></textarea>
-          </div>
-        </div>
-      </div>
-      <div class="panel-card" style="margin-top:14px">
-        <div class="panel-head"><h3>Primers to Check</h3></div>
-        <div class="panel-body">
-          <div class="form-group">
-            <label class="form-label">Or paste primers (FASTA/CSV)</label>
-            <textarea id="check-primers-text" class="form-textarea" rows="5" style="font-family:var(--font-b);font-size:12px" placeholder="&gt;primer1&#10;ATGCGATCGATCG&#10;/rev CGATCGATCGCAT&#10;&#10;Or CSV:&#10;name,forward,reverse&#10;set1,ATCG...,CGAT..."></textarea>
-          </div>
-          <div style="border:2px dashed var(--slate-border);border-radius:8px;padding:16px;text-align:center;cursor:pointer;margin-bottom:10px"
-           id="check-file-drop-zone"
-           style="border:2px dashed var(--slate-border);border-radius:8px;padding:16px;text-align:center;cursor:pointer;margin-bottom:10px">
-             <span style="font-size:12px;color:var(--text2)">📁 Upload primer file (FASTA/CSV)</span>
-             <div id="check-file-info" style="font-size:11px;color:var(--bio);margin-top:6px;display:none"></div>
-             <input type="file" id="check-file-input" accept=".fa,.fasta,.csv,.txt" style="display:none">
-          </div>
-          <button class="btn-primary" id="btn-check-primers" onclick="runCheckPrimers()">
-            <span class="spinner" id="check-spinner"></span>
-            <span id="btn-check-text">Check &amp; Rank Primers</span>
-          </button>
-        </div>
-      </div>
-    </div>
-    <div id="check-results">
-      <div style="color:var(--muted);font-size:13px;padding:20px">Enter template and primers, then click Check &amp; Rank to see alignment scores and recommendations.</div>
-    </div>
-  </div>
-</div>
-
 <!-- ══ FETCH SEQUENCE TAB ══════════════════════════════════════════════════ -->
 <div id="tab-fetch" class="tab-panel" style="display:none">
   <div class="fetch-wrap">
@@ -1197,7 +1104,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </div>
   </div>
 </div>
-
 <!-- ══ PRODUCTION PROOF / SAMPLE REPORT / COMPARISON ══════════════════════ -->
 <section class="proof-section alt" id="sample-report">
   <div class="proof-inner">
@@ -1224,7 +1130,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </div>
   </div>
 </section>
-
 <section class="proof-section" id="comparison">
   <div class="proof-inner">
     <span class="section-kicker">Competitive Advantage</span>
@@ -1256,7 +1161,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </div>
   </div>
 </section>
-
 <section class="proof-section alt" id="workflow-proof">
   <div class="proof-inner">
     <span class="section-kicker">P1 Workflow</span>
@@ -1281,7 +1185,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </div>
   </div>
 </section>
-
 <section class="proof-section" id="database-health">
   <div class="proof-inner">
     <span class="section-kicker">Database Coverage</span>
@@ -1300,7 +1203,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <div class="proof-meta" id="db-last-checked">Last checked when backend health became available in this browser session.</div>
   </div>
 </section>
-
 <section class="proof-section alt" id="security-trust">
   <div class="proof-inner">
     <span class="section-kicker">Security and Payment Trust</span>
@@ -1316,219 +1218,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </div>
   </div>
 </section>
-
-<!-- ══ SEARCH SEQUENCES TAB ═══════════════════════════════════════════════════ -->
-<div id="tab-search" class="tab-panel" style="display:none">
-  <div class="fetch-wrap">
-    <div class="two-col">
-      <div>
-        <div class="panel-card">
-          <div class="panel-head"><h3>Search Sequences</h3></div>
-          <div class="panel-body">
-            <div class="form-group">
-              <label class="form-label">Search Gene, Accession, or Sequence</label>
-              <input type="text" id="search-query" class="form-input" style="font-family:var(--font-b);font-size:12px" placeholder="BRCA1, TP53, NM_007294, or paste sequence…">
-              <div class="form-hint">Enter a gene symbol, accession number, or paste a DNA sequence (auto-detected)</div>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Database</label>
-              <select id="search-db" class="form-input">
-                <option value="auto">Auto-detect</option>
-                <option value="ncbi_nucleotide">NCBI Nucleotide</option>
-                <option value="ncbi_gene">NCBI Gene</option>
-                <option value="ensembl">Ensembl</option>
-                <option value="uniprot">UniProt</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Organism</label>
-              <select id="search-organism" class="form-input">
-                <optgroup label="Vertebrates">
-                  <option value="human">Human</option>
-                  <option value="mouse">Mouse</option>
-                  <option value="rat">Rat</option>
-                  <option value="zebrafish">Zebrafish</option>
-                  <option value="pig">Pig</option>
-                  <option value="dog">Dog</option>
-                  <option value="cow">Cow</option>
-                  <option value="chicken">Chicken</option>
-                  <option value="rabbit">Rabbit</option>
-                  <option value="sheep">Sheep</option>
-                  <option value="goat">Goat</option>
-                  <option value="horse">Horse</option>
-                  <option value="cat">Cat</option>
-                  <option value="monkey">Monkey (Rhesus)</option>
-                  <option value="xenopus">Frog (Xenopus)</option>
-                  <option value="arabidopsis">Thale cress</option>
-                </optgroup>
-                <optgroup label="Bacteria">
-                  <option value="ecoli">E. coli</option>
-                  <option value="staph">S. aureus</option>
-                  <option value="mtb">M. tuberculosis</option>
-                  <option value="salmonella">Salmonella</option>
-                  <option value="pseudomonas">P. aeruginosa</option>
-                  <option value="bacillus">B. subtilis</option>
-                  <option value="clostridium">C. difficile</option>
-                  <option value="neisseria">N. gonorrhoeae</option>
-                </optgroup>
-                <optgroup label="Viruses">
-                  <option value="sars-cov-2">SARS-CoV-2</option>
-                  <option value="hiv-1">HIV-1</option>
-                  <option value="hbv">Hepatitis B</option>
-                  <option value="hcv">Hepatitis C</option>
-                  <option value="influenza-a">Influenza A</option>
-                  <option value="influenza-b">Influenza B</option>
-                  <option value="rsv">RSV</option>
-                  <option value="hpv">HPV</option>
-                  <option value="hsv-1">HSV-1</option>
-                  <option value="hsv-2">HSV-2</option>
-                  <option value="adenovirus">Adenovirus</option>
-                  <option value="zikv">Zika</option>
-                  <option value="ebov">Ebola</option>
-                  <option value="denv">Dengue</option>
-                </optgroup>
-              </select>
-              <div style="margin-top:6px">
-                <input type="text" id="search-organism-custom" class="form-input" style="font-size:11px" placeholder="Or type custom organism name…">
-              </div>
-            </div>
-            <button class="btn-primary" id="btn-search-seq">
-              <span class="spinner" id="search-spinner"></span>
-              <span id="btn-search-text">Search</span>
-            </button>
-          </div>
-        </div>
-      </div>
-      <div>
-        <div class="panel-card">
-          <div class="panel-head">
-            <h3>Results</h3>
-            <span id="search-results-count" style="font-size:12px;color:var(--muted)">0 found</span>
-          </div>
-          <div class="panel-body" id="search-results-area">
-            <div style="padding:40px 20px;text-align:center;color:var(--muted);font-size:13px">Enter a search query and click Search</div>
-          </div>
-          <div class="panel-footer" id="search-actions" style="display:none">
-            <label><input type="checkbox" id="search-select-all"> Select All</label>
-            <button class="btn-primary btn-sm" id="btn-send-to-design">Send to Auto Design</button>
-            <button class="btn-secondary btn-sm" id="btn-send-to-blast">Send to BLAST</button>
-            <button class="btn-secondary btn-sm" id="btn-send-to-msa">Send to MSA</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ══ BLAST TAB ═══════════════════════════════════════════════════════════════ -->
-<div id="tab-blast" class="tab-panel" style="display:none">
-  <div class="fetch-wrap">
-    <div class="two-col">
-      <div>
-        <div class="panel-card">
-          <div class="panel-head"><h3>BLAST Search</h3></div>
-          <div class="panel-body">
-            <div class="form-group">
-              <label class="form-label">Query Sequence <span style="font-size:10px;color:var(--muted);font-weight:400">DNA or protein</span></label>
-              <textarea id="blast-query-seq" class="form-textarea" placeholder="Paste sequence to BLAST&#10;&#10;ATGCGATCGATCGATCGATCGA…" rows="6"></textarea>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Fasta Upload</label>
-              <input type="file" id="blast-fasta-input" accept=".fa,.fasta,.txt" class="form-input" style="padding:6px;font-size:11px">
-              <div style="font-size:10px;color:var(--muted);margin-top:4px">Upload multi-FASTA to BLAST all entries</div>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Search Mode</label>
-              <select id="blast-mode" class="form-input">
-                <option value="auto">Auto (remote BLAST)</option>
-                <option value="local">Local exact match</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Database</label>
-              <select id="blast-db" class="form-input">
-                <option value="nt">NCBI nt (nucleotide)</option>
-                <option value="refseq_rna">NCBI RefSeq RNA</option>
-                <option value="nr">NCBI nr (protein)</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Organism filter (optional)</label>
-              <input type="text" id="blast-organism" class="form-input" placeholder="Homo sapiens, Mus musculus…">
-            </div>
-            <button class="btn-primary" id="btn-blast">
-              <span class="spinner" id="blast-spinner"></span>
-              <span id="btn-blast-text">Run BLAST</span>
-            </button>
-          </div>
-        </div>
-      </div>
-      <div>
-        <div class="panel-card">
-          <div class="panel-head">
-            <h3>BLAST Results</h3>
-            <span id="blast-results-count" style="font-size:12px;color:var(--muted)">0 hits</span>
-          </div>
-          <div class="panel-body" id="blast-results-area" style="overflow-x:auto">
-            <div style="padding:40px 20px;text-align:center;color:var(--muted);font-size:13px">Run a BLAST search to see results</div>
-          </div>
-          <div class="panel-footer" id="blast-actions" style="display:none">
-            <label><input type="checkbox" id="blast-select-all"> Select All</label>
-            <button class="btn-secondary btn-sm" id="btn-blast-view-msa">View MSA</button>
-            <button class="btn-secondary btn-sm" id="btn-blast-download-fasta">Download FASTA</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ══ MSA TAB ═════════════════════════════════════════════════════════════════ -->
-<div id="tab-msa" class="tab-panel" style="display:none">
-  <div class="fetch-wrap">
-    <div class="two-col">
-      <div>
-        <div class="panel-card">
-          <div class="panel-head"><h3>MSA Input</h3></div>
-          <div class="panel-body">
-            <div class="form-group">
-              <label class="form-label">Sequences (FASTA format)</label>
-              <textarea id="msa-sequences" class="form-textarea" placeholder="&gt;seq1&#10;ATGCGATCGATCGATCGA&#10;&gt;seq2&#10;ATGCGATCGATCGATCGG&#10;&gt;seq3&#10;ATGCGATCGATCGATCCA" rows="8"></textarea>
-            </div>
-            <div class="form-group">
-              <label class="form-label">FASTA Upload</label>
-              <input type="file" id="msa-fasta-input" accept=".fa,.fasta,.txt" class="form-input" style="padding:6px;font-size:11px">
-            </div>
-            <div class="form-group">
-              <label class="form-label">Reference sequence ID (optional)</label>
-              <input type="text" id="msa-reference" class="form-input" placeholder="Leave blank to use first sequence">
-            </div>
-            <button class="btn-primary" id="btn-msa">
-              <span class="spinner" id="msa-spinner"></span>
-              <span id="btn-msa-text">Align</span>
-            </button>
-          </div>
-        </div>
-      </div>
-      <div>
-        <div class="panel-card">
-          <div class="panel-head">
-            <h3>Alignment</h3>
-            <span id="msa-stats" style="font-size:12px;color:var(--muted)"></span>
-          </div>
-          <div class="panel-body" id="msa-results-area" style="overflow-x:auto;max-height:600px;overflow-y:auto">
-            <div style="padding:40px 20px;text-align:center;color:var(--muted);font-size:13px">Align sequences to see results</div>
-          </div>
-          <div class="panel-footer" id="msa-actions" style="display:none">
-            <button class="btn-secondary btn-sm" id="btn-msa-download-fasta">Download FASTA</button>
-            <button class="btn-secondary btn-sm" id="btn-msa-download-clustal">Download Clustal</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
 <!-- ══ ADMIN PANEL (hidden unless admin is logged in) ═══════════════════════ -->
 <div id="tab-admin" class="tab-panel" style="display:none">
 <div class="admin-panel show" style="display:block">
@@ -1536,7 +1225,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <h2 style="font-family:var(--font-b);font-size:1.6rem;">🛡️ Admin Security & Operations</h2>
     <button class="btn-secondary" onclick="refreshAdminPanel()">↻ Refresh</button>
   </div>
-
   <!-- Stats Grid -->
   <div class="admin-stat-grid" id="admin-stats-grid">
     <div class="admin-stat"><div class="admin-stat-val" id="as-users">—</div><div class="admin-stat-label">Total Users</div></div>
@@ -1548,7 +1236,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <div class="admin-stat"><div class="admin-stat-val" id="as-files">—</div><div class="admin-stat-label">Files Scanned</div></div>
     <div class="admin-stat"><div class="admin-stat-val" id="as-requests">—</div><div class="admin-stat-label">Total Requests</div></div>
   </div>
-
   <!-- Admin Sub-tabs -->
   <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;" id="admin-subtabs">
     <button class="btn-secondary" style="font-weight:700;border-color:var(--primary);color:var(--primary)" data-asub="threats" onclick="showAdminSub('threats')">🚨 Threats</button>
@@ -1560,7 +1247,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <button class="btn-secondary" data-asub="finance" onclick="showAdminSub('finance')">💰 Finance</button>
     <button class="btn-secondary" data-asub="academic" onclick="showAdminSub('academic')">🎓 Academic</button>
   </div>
-
   <!-- Threats Sub -->
   <div class="admin-sub-panel" id="asub-threats">
     <h3 style="font-size:14px;font-weight:700;margin-bottom:12px;">Recent Threat Detections</h3>
@@ -1569,7 +1255,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <tbody id="admin-threat-tbody"><tr><td colspan="5" style="text-align:center;color:var(--muted)">Loading...</td></tr></tbody>
     </table></div>
   </div>
-
   <!-- Users Sub -->
   <div class="admin-sub-panel" id="asub-users" style="display:none">
     <h3 style="font-size:14px;font-weight:700;margin-bottom:12px;">All Users</h3>
@@ -1578,7 +1263,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <tbody id="admin-user-tbody"><tr><td colspan="7" style="text-align:center;color:var(--muted)">Loading...</td></tr></tbody>
     </table></div>
   </div>
-
   <!-- Scanner Sub -->
   <div class="admin-sub-panel" id="asub-scanner" style="display:none">
     <div style="display:flex;gap:8px;margin-bottom:16px;">
@@ -1588,13 +1272,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </div>
     <div id="admin-scan-results" style="font-size:13px;color:var(--text2);">Click a button above to run a scan.</div>
   </div>
-
   <!-- Errors Sub -->
   <div class="admin-sub-panel" id="asub-errors" style="display:none">
     <h3 style="font-size:14px;font-weight:700;margin-bottom:12px;">Recent Application Errors</h3>
     <div id="admin-error-list" style="font-size:12px;">Loading...</div>
   </div>
-
   <!-- Performance Sub -->
   <div class="admin-sub-panel" id="asub-performance" style="display:none">
     <h3 style="font-size:14px;font-weight:700;margin-bottom:12px;">Slowest Endpoints</h3>
@@ -1608,7 +1290,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <tbody id="admin-slow-tbody"><tr><td colspan="4" style="text-align:center;color:var(--muted)">No slow requests</td></tr></tbody>
     </table></div>
   </div>
-
   <!-- Bans Sub -->
   <div class="admin-sub-panel" id="asub-bans" style="display:none">
     <div style="display:flex;gap:8px;margin-bottom:16px;align-items:center;">
@@ -1621,23 +1302,19 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <tbody id="admin-ban-tbody"><tr><td colspan="3" style="text-align:center;color:var(--muted)">No active bans</td></tr></tbody>
     </table></div>
   </div>
-
   <!-- Finance Sub -->
   <div class="admin-sub-panel" id="asub-finance" style="display:none">
     <h3 style="font-size:14px;font-weight:700;margin-bottom:12px;">Financial Summary</h3>
     <div id="admin-finance-content" style="font-size:13px;color:var(--text2);">Loading...</div>
   </div>
-
   <!-- Academic Claims Sub -->
   <div class="admin-sub-panel" id="asub-academic" style="display:none">
     <h3 style="font-size:14px;font-weight:700;margin-bottom:12px;">Academic Claims</h3>
     <div id="admin-academic-content" style="font-size:13px;color:var(--text2);">Loading...</div>
   </div>
-
 </div>
 </div>
 <!-- ══ END ADMIN PANEL ═══════════════════════════════════════════════════════ -->
-
 <section class="pricing-section" id="pricing">
   <div class="pricing-header" style="max-width:var(--max-w);margin:0 auto 36px;padding:0 24px">
     <span class="pricing-eyebrow">Pricing · India-First · Razorpay</span>
@@ -1718,7 +1395,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <button class="btn-price fill-green purchase-plan-btn" data-product-id="corporate">Subscribe — ₹49,999/mo</button>
     </div>
   </div>
-
   <!-- Bulk Top-Up -->
   <div style="max-width:600px;margin:28px auto 0;background:transparent;border:1px solid var(--slate-border);border-radius:12px;padding:20px;text-align:center">
     <div style="font-size:13px;font-weight:600;margin-bottom:12px">Need extra runs? Buy top-up credits in bulk.</div>
@@ -1730,7 +1406,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <div style="font-family:var(--font-b);font-size:14px;margin:10px 0;color:var(--primary)" id="topup-display">Pay ₹495 for 5 Runs</div>
     <button class="btn-price fill" id="bulk-topup-btn" style="margin-top:8px">Buy <span id="topup-count">5</span> Runs — ₹<span id="topup-total">495</span></button>
   </div>
-
   <!-- Referral Program Banner -->
   <div style="max-width:680px;margin:28px auto 0;background:linear-gradient(135deg,#eff3ff 0%,#f0fdf4 100%);border:1px solid rgba(26,86,255,.2);border-radius:14px;padding:22px 24px;display:flex;align-items:center;gap:20px;flex-wrap:wrap">
     <div style="font-size:32px;flex-shrink:0">🎁</div>
@@ -1740,13 +1415,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </div>
     <button class="btn-price fill" style="flex-shrink:0;white-space:nowrap;padding:10px 18px" onclick="openReferralPanel()">Get My Referral Link</button>
   </div>
-
   <div class="pricing-footer">
     <p style="margin-bottom:6px">All payments are secured via Razorpay · UPI, Cards, Net Banking · GST included</p>
     <p>2 free trial runs are included on sign-up · Academic Free Access with verified institutional email · Research Use Only</p>
   </div>
 </section>
-
 <!-- ══ LLMO: Autonomous Primer Design Comparison ══ -->
 <section style="max-width:900px;margin:48px auto;padding:0 24px">
   <h2>Autonomous Primer Design &amp; Validation Engine</h2>
@@ -1759,7 +1432,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <tr><td style="padding:10px 14px">Specificity Check</td><td style="padding:10px 14px">External BLAST dependency</td><td style="padding:10px 14px">Built-in BLAST + dbSNP filtering</td></tr>
   </table>
 </section>
-
 <!-- ══ REFERRAL PANEL MODAL ═══════════════════════════════════════════════ -->
 <div class="auth-overlay" id="referral-overlay" style="z-index:9997">
   <div class="auth-card" style="max-width:460px;position:relative">
@@ -1772,7 +1444,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </div>
   </div>
 </div>
-
 <section class="proof-section" id="faq">
   <div class="proof-inner">
     <span class="section-kicker">FAQ and Policies</span>
@@ -1813,16 +1484,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </div>
   </div>
 </section>
-
 <!-- /DASHBOARD WRAPPER -->
 </div>
-
 <!-- FOOTER -->
-      
-
-
-
-
 </main>
 <footer style="background:var(--navy);color:#CBD5E1;padding:80px 0 32px">
     <div style="max-width:1200px;margin:0 auto;padding:0 24px">
@@ -1873,17 +1537,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <span>WWW.VIGYANLLM.IN</span>
       </div>
     </div>
-  
-
-
-
-
-
-
-
-
 </footer>
-
 <!-- AUTH MODAL -->
 <div class="auth-overlay" id="auth-overlay">
   <div class="auth-card">
@@ -1923,7 +1577,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </div>
   </div>
 </div>
-
 <!-- ══ ACADEMIC FREE ACCESS POPUP ══════════════════════════════════════════ -->
 <div class="auth-overlay" id="academic-overlay" style="z-index:10000">
   <div class="auth-card" style="max-width:480px;position:relative">
@@ -2001,7 +1654,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </div>
   </div>
 </div>
-
 <!-- ══ REPORT HISTORY MODAL ══════════════════════════════════════════════════ -->
 <div class="auth-overlay" id="history-overlay" style="z-index:9998;align-items:flex-start;padding:40px 16px">
   <div class="auth-card" style="max-width:780px;width:100%;max-height:85vh;overflow-y:auto;position:relative">
@@ -2013,7 +1665,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </div>
   </div>
 </div>
-
 <!-- ══ USER MENU POPUP ════════════════════════════════════════════════════ -->
 <div class="auth-overlay" id="user-menu-overlay" style="z-index:9998">
   <div class="auth-card" style="max-width:320px;width:90%;position:relative">
@@ -2030,7 +1681,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </div>
   </div>
 </div>
-
 <!-- PAYMENT MODAL -->
 <div class="pay-overlay" id="pay-overlay">
   <div class="pay-card">
@@ -2052,7 +1702,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </div>
   </div>
 </div>
-
 <!-- BLAST DETAIL VIEWER MODAL -->
 <div class="auth-overlay" id="blast-overlay" style="z-index:9997">
   <div style="background:transparent;border-radius:12px;max-width:700px;width:90vw;max-height:80vh;overflow-y:auto;padding:20px;box-shadow:0 20px 60px rgba(0,0,0,0.25)">
@@ -2063,7 +1712,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <div id="blast-modal-body"></div>
   </div>
 </div>
-
 <script>
 (function VigyanLLM(){
 'use strict';
@@ -2071,7 +1719,6 @@ var API = window.VIGYAN_BACKEND_URL || '';
 const HEALTH_MS=10000;
 let PF_CONFIG=null;
 const state={online:false,results:[],slowTimer:null,hTimer:null,pipelineTimers:[],templateSeq:'',templateLength:0,lastJobId:'',lastResult:null,searchResults:[],blastResults:[],msaData:null,additionalSequences:[]};
-
 const PIPELINE_DEFS=[
   {id:'step1',  label:'1. Transcript Isoform Filter',       tool:'Ensembl/GENCODE',         phase:'A'},
   {id:'step2',  label:'2. Exon-Intron Junction Mapping',    tool:'RT-PCR safety',           phase:'A'},
@@ -2098,11 +1745,9 @@ const PIPELINE_DEFS=[
   {id:'step23', label:'23. Thermocycling Profile',          tool:'Rychlik formula',         phase:'E'},
   {id:'step24', label:'24. Probe Design',                   tool:'TaqMan/qPCR',             phase:'E'},
 ];
-
 function $(id){return document.getElementById(id);}
 function esc(s){return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function csvEsc(s){var v=String(s??'');return v.includes(',')||v.includes('"')||v.includes('\n')?'"'+v.replace(/"/g,'""')+'"':v;}
-
 // ── Backend status ────────────────────────────────────────────────────────
 function setStatus(online,checking){
   state.online=online;
@@ -2119,32 +1764,27 @@ function setStatus(online,checking){
     ? `Last checked: ${new Date().toLocaleString()} — backend and public database links available.`
     : 'Last checked: backend unavailable. Database browser links remain available.';
 }
-
 function setCommerceAvailability(online, checking=false){
   document.querySelectorAll('.purchase-plan-btn,#bulk-topup-btn,#pay-razorpay-btn').forEach(btn=>{
     btn.disabled=!online || checking;
     btn.title=online?'':'Backend unavailable. Please try again later.';
   });
 }
-
 function setReportButtons(enabled){
   ['btn-dl-csv','btn-dl-json','btn-dl-pdf','btn-dl-raw','btn-dl-idt','btn-dl-twist'].forEach(id=>{
     const b=$(id);
     if(b)b.disabled=!enabled;
   });
 }
-
 async function checkHealth(){
   try{const r=await fetch(API+'/health',{headers:{}, signal:AbortSignal.timeout(4000)});setStatus(r.ok,false);}
   catch{setStatus(false,false);}
 }
-
 async function apiPost(ep,body){
   const headers = {'Content-Type':'application/json'};
   if(auth.token) headers['Authorization'] = 'Bearer ' + auth.token;
   const r=await fetch(API+ep,{method:'POST',headers,
     body:JSON.stringify(body),signal:AbortSignal.timeout(60000)});
-  
   if (!r.ok) {
     const text = await r.text().catch(() => '');
     let errMsg = '', action = '', code = '';
@@ -2157,7 +1797,6 @@ async function apiPost(ep,body){
   }
   return await r.json();
 }
-
 // ── Tab switching ─────────────────────────────────────────────────────────
 function switchTab(id){
   if(id==='admin' && (!auth.user || auth.user.role !== 'admin')){
@@ -2172,7 +1811,6 @@ function switchTab(id){
   const p=$('tab-'+id);if(p)p.style.display='';
 }
 window.switchTab=switchTab;
-
 // ── Pipeline step tracker ─────────────────────────────────────────────────
 function initPipelineSteps(){
   const container=$('pipeline-steps');
@@ -2188,7 +1826,6 @@ function initPipelineSteps(){
     </div>`
   ).join('');
 }
-
 function setPipelineStep(stepId,status,note){
   const row=$(`ps-${stepId}`),icon=$(`psi-${stepId}`),
         sub=$(`psub-${stepId}`),st=$(`pst-${stepId}`);
@@ -2213,22 +1850,18 @@ function setPipelineStep(stepId,status,note){
   }
   if(note&&sub)sub.textContent=note;
 }
-
 function clearPipelineTimers(){
   state.pipelineTimers.forEach(t=>clearTimeout(t));
   state.pipelineTimers=[];
 }
-
 function queuePipelineTimer(fn,ms){
   const t=setTimeout(fn,ms);
   state.pipelineTimers.push(t);
 }
-
 function resetPipeline(){
   clearPipelineTimers();
   PIPELINE_DEFS.forEach(s=>setPipelineStep(s.id,'waiting'));
 }
-
 function applyPipelineFromResult(pipeline){
   if(!pipeline)return;
   Object.entries(pipeline).forEach(([key,val])=>{
@@ -2238,13 +1871,11 @@ function applyPipelineFromResult(pipeline){
     else setPipelineStep(key,'fail',val.note||'');
   });
 }
-
 // ── Amplicon Tm formula (Marmur-Schildkraut-Doty) ─────────────────────────
 function calcAmpliconTm(gcPct,length,naMM=50){
   if(length<10)return 0;
   return +(81.5+16.6*Math.log10(naMM/1000)+0.41*gcPct-675/length).toFixed(1);
 }
-
 // ── Quality score helpers ─────────────────────────────────────────────────
 function qsColor(score){
   if(score>=80)return '#059669';
@@ -2259,28 +1890,23 @@ function qsLabel(score){
   if(score>=40)return 'Marginal';
   return 'Poor';
 }
-
 function asNum(value){
   if(value === null || value === undefined || value === '') return null;
   const n = Number(value);
   return Number.isFinite(n) ? n : null;
 }
-
 function fmtNum(value, digits=1, suffix=''){
   const n = asNum(value);
   return n === null ? 'N/A' : n.toFixed(digits) + suffix;
 }
-
 function fmtScore(value, digits=1){
   const n = asNum(value);
   return n === null ? 'N/A' : n.toFixed(digits) + '/100';
 }
-
 // ── Metric chip helper ─────────────────────────────────────────────────────
 function mc(label,val,cls=''){
   return `<span class="mc ${cls}" title="${esc(label)}: ${esc(val)}">${esc(label)}: <strong>${esc(val)}</strong></span>`;
 }
-
 // ── Render a single primer block ──────────────────────────────────────────
 function primerBlock(p,dir){
   if(!p||!p.sequence)return '';
@@ -2320,7 +1946,6 @@ function primerBlock(p,dir){
     ${(p.warnings||[]).length?`<div class="warn-list">${p.warnings.map(w=>`<div class="warn-item">⚠ ${esc(w)}</div>`).join('')}</div>`:''}
   </div>`;
 }
-
 function probeBlock(probes,fTm,rTm){
   if(!probes||!probes.length)return '';
   const pb=probes[0];
@@ -2351,7 +1976,6 @@ function probeBlock(probes,fTm,rTm){
     <div style="font-size:10px;margin-top:6px;color:#6b7280">Reporter: ${esc(pb.reporter_5prime||'FAM')} / Quencher: ${esc(pb.quencher_3prime||'BHQ-1')} &mdash; HPLC purification recommended</div>
   </div>`;
 }
-
 // ── Render pass/fail matrix ───────────────────────────────────────────────
 function pfMatrix(pipeline,cardId){
   if(!pipeline)return '';
@@ -2382,19 +2006,16 @@ window.togglePF=function(id){
   const toggle=el.previousElementSibling;
   if(toggle)toggle.textContent=(show?'▼ ':'▶ ')+'Pipeline matrix';
 };
-
 // ── Render primer pair result cards — consumes primers_found schema ────────
 function renderPairs(pairs,elapsedMs){
   const container=$('auto-results');
   if(!container)return; // guard: only runs in auto tab
   const emptyEl=$('auto-empty');
   if(emptyEl)emptyEl.style.display='none';
-
   if(!pairs||!pairs.length){
     container.innerHTML=`<div class="info-card">ℹ️ No primer pairs passed the strict 24-step pipeline. Try widening the amplicon range or adjusting Tm.</div>`;
     return;
   }
-
   const hdr=`<div class="results-header">
     <div>
       <div class="results-title">${pairs.length} Pair${pairs.length>1?'s':''} — Sorted by Pair Score (higher = better)</div>
@@ -2402,7 +2023,6 @@ function renderPairs(pairs,elapsedMs){
     </div>
     <div class="elapsed-chip">${elapsedMs?((elapsedMs/1000).toFixed(1)+'s'):'—'}</div>
   </div>`;
-
   const cards=pairs.map((p,idx)=>{
     // Use canonical schema fields, fall back to legacy aliases
     let fwd = p.forward_primer || p.forward || '';
@@ -2424,13 +2044,11 @@ function renderPairs(pairs,elapsedMs){
     const amTm      = measuredAmTm ?? (ampliconGc !== null && ampliconSize !== null ? calcAmpliconTm(ampliconGc, ampliconSize) : null);
     const dtm       = asNum(p.tm_delta);
     const xdg       = asNum(p.cross_dimer_dg);
-
     // Primer Tm — from forward_primer.tm (canonical) or forward.tm (legacy)
     const fTm = asNum(fwd.tm);
     const rTm = asNum(rev.tm);
     // Annealing Ta from explicit field or compute from Tm
     const ta  = asNum(p.annealing_ta) ?? (fTm !== null && rTm !== null ? Math.round((fTm + rTm)/2 - 5) : null);
-
     const specPass = p.specificity_pass !== undefined ? p.specificity_pass : p.pipeline?.step4_specificity?.pass;
     const specBadge = p.specificity
       ? (specPass === true
@@ -2439,20 +2057,17 @@ function renderPairs(pairs,elapsedMs){
             ? `<span class="badge fail-b">⚠ ${p.specificity.off_target_count||0} off-target(s)</span>`
             : `<span class="badge fail-b">Specificity inconclusive</span>`)
       : `<span class="badge penalty">Specificity not run</span>`;
-
     // ── Strain inclusivity / discontinuous attachment ──
     const strainCov = p.strain_coverage;
     const strainBadge = strainCov && typeof strainCov === 'object' && strainCov.coverage_percent != null
       ? `<span class="badge ${strainCov.coverage_percent >= 95 ? 'pass-b' : strainCov.coverage_percent >= 80 ? '' : 'fail-b'}">Strain: ${strainCov.coverage_percent.toFixed(1)}%</span>`
       : '';
-
     // ── Amplicon structure (step17) ──
     const ampliconDg = asNum(p.amplicon_dg_72C);
     const stallRisk = p.amplicon_stall_risk;
     const ampBadge = stallRisk !== undefined
       ? `<span class="badge ${stallRisk ? 'fail-b' : 'pass-b'}" title="Amplicon folding \u0394G at 72\u00b0C${ampliconDg !== null ? ': ' + ampliconDg.toFixed(1) + ' kcal/mol' : ''}">${stallRisk ? '\u26a0 Stall risk' : '\u2713 No stall'}</span>`
       : '';
-
     // ── SNP / dbSNP filter (step18) ──
     const snpPass = p.snp_pass;
     const snpTotal = asNum(p.snp_total_variants);
@@ -2461,19 +2076,16 @@ function renderPairs(pairs,elapsedMs){
     const snpBadge = snpPass !== undefined
       ? `<span class="badge ${snpPass ? 'pass-b' : 'fail-b'}" title="${snpTotal ?? 0} total variants, ${(fwdSnp3 ?? 0) + (revSnp3 ?? 0)} critical at 3\u2032">SNP ${snpPass ? '\u2713' : '\u26a0 critical'}</span>`
       : '';
-
     // ── ClinVar clinical hotspot (step19) ──
     const clinicalPass = p.clinical_pass;
     const clinBadge = clinicalPass !== undefined
       ? `<span class="badge ${clinicalPass ? 'pass-b' : 'fail-b'}" title="ClinVar clinical hotspot overlap check">${clinicalPass ? '\u2713 ClinVar' : '\u26a0 Hotspot'}</span>`
       : '';
-
     // ── Multiplex compatibility (step21) ──
     const multiCompat = p.multiplex_compatible;
     const multiBadge = multiCompat !== undefined
       ? `<span class="badge ${multiCompat ? 'pass-b' : 'fail-b'}" title="Multiplex cross-reaction scoring">${multiCompat ? '\u2713 Multiplex' : '\u26a0 Incompatible'}</span>`
       : '';
-
     // ── Conserved region targeting with percentage ──
     const consPct = asNum(p.conservation_percent);
     const consBadge = consPct !== null
@@ -2485,7 +2097,6 @@ function renderPairs(pairs,elapsedMs){
         : p.conserved_region_pass === true
           ? `<span class="badge pass-b" title="Passed ≥95% conservation threshold">✓ ≥95% Conserved</span>`
           : `<span class="badge penalty">Conservation: N/A</span>`;
-
     // ── BLAST detail viewer ──
     const fwdHits = p.forward_primer?.blast_hits || p.forward?.blast_hits || [];
     const revHits = p.reverse_primer?.blast_hits || p.reverse?.blast_hits || [];
@@ -2493,7 +2104,6 @@ function renderPairs(pairs,elapsedMs){
     const blastViewBtn = hasBlastData
       ? `<span class="badge" style="cursor:pointer;border-color:var(--primary);color:var(--primary)" onclick="event.stopPropagation();openBlastViewer(${idx})">View BLAST</span>`
       : '';
-
     // ── Raw step output links (show only for steps that ran) ──
     const jobId = state.lastJobId;
     const rawLinks = [];
@@ -2510,7 +2120,6 @@ function renderPairs(pairs,elapsedMs){
       }
     }
     const rawLinksHtml = rawLinks.length ? `<div style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap">${rawLinks.join('')}</div>` : '';
-
     return `<div class="result-card ${isPass?'pass-card':'fail-card'}">
       <div class="rc-head">
         <div class="rc-head-left">
@@ -2573,31 +2182,26 @@ function renderPairs(pairs,elapsedMs){
       </div>
     </div>`;
   }).join('');
-
   const preferred = renderPreferredBestSequence(pairs, state.templateSeq);
   container.innerHTML=hdr+preferred+cards;
 }
-
 // ── BLAST detail viewer ────────────────────────────────────────────────────
 function openBlastViewer(pairIdx) {
   const pair = state.results[pairIdx];
   if (!pair) return;
   const body = $('blast-modal-body');
   if (!body) return;
-
   const fwd = pair.forward_primer || pair.forward || {};
   const rev = pair.reverse_primer || pair.reverse || {};
   const specData = pair.specificity || {};
   const specAlns = specData.alignments || [];
   const fwdHits = fwd.blast_hits || [];
   const revHits = rev.blast_hits || [];
-
   let html = '<div style="margin-bottom:14px">';
   html += `<div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:6px">Pair #${pair.pair_id || pair.rank || pairIdx + 1}</div>`;
   const specPass = pair.specificity_pass;
   html += `<span class="badge ${specPass === true ? 'pass-b' : specPass === false ? 'fail-b' : ''}">Specificity: ${specPass === true ? 'PASS' : specPass === false ? 'FAIL' : 'N/A'}</span>`;
   html += '</div>';
-
   function renderHits(title, hits) {
     if (!hits.length) return `<div style="margin:10px 0;font-size:11px;color:var(--muted)">${title}: No alignments recorded.</div>`;
     let h = `<div style="margin:10px 0"><div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:6px">${title} (${hits.length} hit${hits.length>1?'s':''})</div>`;
@@ -2619,7 +2223,6 @@ function openBlastViewer(pairIdx) {
     h += '</div>';
     return h;
   }
-
   if (specAlns.length) {
     html += renderHits('Specificity Alignments (from pipeline)', specAlns);
   }
@@ -2632,16 +2235,13 @@ function openBlastViewer(pairIdx) {
   if (!specAlns.length && !fwdHits.length && !revHits.length) {
     html += '<div style="font-size:12px;color:var(--muted);padding:20px 0;text-align:center">No BLAST alignment data available for this pair.</div>';
   }
-
   body.innerHTML = html;
   $('blast-overlay').classList.add('show');
 }
-
 function getSavedReports(){
   try { return JSON.parse(localStorage.getItem('pf_design_history') || '[]'); }
   catch { return []; }
 }
-
 function saveDesignReport(jobId, pairs, sequenceLength){
   if(!pairs || !pairs.length) return;
   const top = pairs[0] || {};
@@ -2661,7 +2261,6 @@ function saveDesignReport(jobId, pairs, sequenceLength){
   localStorage.setItem('pf_design_history', JSON.stringify(next));
   renderSavedReports();
 }
-
 function renderSavedReports(){
   const el=$('history-list');
   if(!el) return;
@@ -2678,7 +2277,6 @@ function renderSavedReports(){
     </div>
   `).join('');
 }
-
 // ── Auto design — consumes `pipeline_status`, `stages`, `primers_found` ──
 async function runAutoDesign() {
   const seqRaw = $('template-seq').value;
@@ -2704,22 +2302,18 @@ async function runAutoDesign() {
   }
   seqEl.classList.remove('error');
   errEl.classList.remove('show');
-
   // Gate: login required to run pipeline
   if (!auth.token) {
     state._pendingRun = true;
     showAuthModal();
     return;
   }
-
   const _ae = $('auto-empty'); if (_ae) _ae.style.display = 'none';
   $('auto-results').innerHTML = '';
   resetPipeline();
   setLoading('run-spinner', 'btn-run-text', 'btn-run', true, '▶ Running Pipeline…');
   setReportButtons(false);
-
   state.slowTimer = setTimeout(() => $('slow-warn').classList.add('show'), 20000);
-
   try {
     // 1. Submit job to the 24-step pipeline
     const submitData = {
@@ -2736,38 +2330,30 @@ async function runAutoDesign() {
       template_ng: 100,
       multiplex: ($('design-mode')?.value === 'multiplex'),
       specificity_check: !!$('specificity-check')?.checked,
-
       product_min: productMin,
       product_max: productMax,
       min_tm: (parseFloat($('opt-tm').value) || 62) - 4,
       max_tm: (parseFloat($('opt-tm').value) || 62) + 3,
     };
-
     const submitResp = await apiPost('/api/pipeline/submit', submitData);
     const jobId = submitResp.job_id;
-
     if (!jobId) throw new Error('No job_id returned from pipeline submit');
-
     // 2. Poll for status every 2 seconds
     let finalStatus = null;
     let pollCount = 0;
     const MAX_POLLS = 90; // 3 minutes max
-
     while (pollCount < MAX_POLLS) {
       await new Promise(r => setTimeout(r, 2000));
       pollCount++;
-
       const headers = {'Content-Type': 'application/json', };
       if (auth.token) headers['Authorization'] = 'Bearer ' + auth.token;
       const statusResp = await fetch(API + '/api/pipeline/status/' + jobId, {headers, signal: AbortSignal.timeout(10000)});
       const statusData = await statusResp.json();
-
       if (!statusResp.ok) {
         const errMsg = statusData.error || ('Status request failed (' + statusResp.status + ')');
         throw new Error(errMsg);
       }
       if (statusResp.status === 401) { showAuthModal(); throw new Error('__AUTH__'); }
-
       // Update pipeline steps in real-time
       if (statusData.steps && statusData.steps.length > 0) {
         statusData.steps.forEach(step => {
@@ -2777,26 +2363,21 @@ async function runAutoDesign() {
           else if (step.status === 'skipped') setPipelineStep(stepId, 'stub', 'Skipped');
         });
       }
-
       // Mark current running step
       const currentStep = statusData.current_step;
       if (currentStep > 0 && currentStep <= 24) {
         setPipelineStep('step' + currentStep, 'running', 'Processing…');
       }
-
       // Check if done
       if (statusData.status === 'completed' || statusData.status === 'failed') {
         finalStatus = statusData.status;
         break;
       }
     }
-
     clearTimeout(state.slowTimer);
     clearPipelineTimers();
     $('slow-warn').classList.remove('show');
-
     if (!finalStatus) throw new Error('Pipeline timed out — check status later');
-
     // 3. Fetch full results
     const headers2 = {'Content-Type': 'application/json', };
     if (auth.token) headers2['Authorization'] = 'Bearer ' + auth.token;
@@ -2806,7 +2387,6 @@ async function runAutoDesign() {
       const errMsg = resultData.error || ('Result request failed (' + resultResp.status + ')');
       throw new Error(errMsg);
     }
-
     // 4. Apply final pipeline status
     if (resultData.steps) {
       resultData.steps.forEach(step => {
@@ -2816,7 +2396,6 @@ async function runAutoDesign() {
         else if (step.status === 'skipped') setPipelineStep(stepId, 'stub', 'Skipped');
       });
     }
-
     // 5. Extract primer pairs from step 22 (ranking) output
     let pairs = [];
     if (resultData.steps) {
@@ -2826,7 +2405,6 @@ async function runAutoDesign() {
           ? JSON.parse(rankingStep.output_data) : rankingStep.output_data;
         pairs = output.ranked_pairs || output.top_pairs || [];
       }
-
       // 5b. Merge probe results — step 24 may carry ranked_pairs with probes embedded
       const probeStep = resultData.steps.find(s => s.step_number === 24);
       if (probeStep && probeStep.output_data) {
@@ -2846,7 +2424,6 @@ async function runAutoDesign() {
         }
       }
     }
-
     state.results = pairs;
     state.templateSeq = clean;
     state.templateLength = clean.length;
@@ -2855,7 +2432,6 @@ async function runAutoDesign() {
     state.accession = (resultData.input_params?.accession || submitData.accession || '').trim();
     state.organism = (resultData.input_params?.organism || submitData.organism || '').trim();
     state.sequenceSource = (resultData.input_params?.sequence_source || submitData.sequence_source || '').trim();
-
     // 6. Render results
     if (finalStatus === 'failed') {
       $('auto-results').innerHTML = `<div class="error-card">❌ Pipeline failed: ${esc(resultData.error || 'Unknown error')}</div>`;
@@ -2869,14 +2445,12 @@ async function runAutoDesign() {
       autoSaveReport(jobId, pairs, clean.length, geneInput);
       setReportButtons(true);
     }
-
     // Show compliance status if available
     if (resultData.compliance_status) {
       const compClass = resultData.compliance_status === 'biosecurity_cleared' ? 'success-card' : 'error-card';
       const compIcon = resultData.compliance_status === 'biosecurity_cleared' ? '✅' : '🚫';
       $('auto-results').innerHTML += `<div class="${compClass}" style="margin-top:12px">${compIcon} Compliance: ${esc(resultData.compliance_status)}</div>`;
     }
-
   } catch (e) {
     clearTimeout(state.slowTimer);
     clearPipelineTimers();
@@ -2889,7 +2463,6 @@ async function runAutoDesign() {
     setLoading('run-spinner', 'btn-run-text', 'btn-run', false, '▶ Run Pipeline');
   }
 }
-
 // ── Manual analysis ───────────────────────────────────────────────────────
 async function runManualAnalysis(){
   const fwd=$('fwd-primer').value.trim(),rev=$('rev-primer').value.trim();
@@ -2925,10 +2498,16 @@ async function runManualAnalysis(){
     $('manual-results').innerHTML=`<div class="error-card">❌ ${esc(e.message)}</div>`;
   }finally{setLoading('manual-spinner','btn-analyze-text','btn-analyze',false,'Analyze Primers');}
 }
-
 // ── Batch analysis (file upload) ──────────────────────────────────────────
+function countSeqsInText(txt){
+  var lines=txt.split('\n').map(function(l){return l.trim()}).filter(function(l){return l.length>0});
+  var fastaCount=(txt.match(/^>/gm)||[]).length;
+  if(fastaCount>0)return fastaCount;
+  var headerRe=/^(name|forward|fwd|primer|sequence|seq|reverse|rev|template|id|target),/i;
+  var seqLines=lines.filter(function(l){return !headerRe.test(l) && !l.startsWith('/rev') && !l.startsWith('/template') && /[ACGTUacgtu]/g.test(l)});
+  return seqLines.length;
+}
 let _batchData = [];
-
 function handleBatchFile(input){
   const f=input.files[0];
   if(!f)return;
@@ -2943,7 +2522,6 @@ function handleBatchFile(input){
   };
   r.readAsText(f);
 }
-
 function handleBatchDrop(e){
   e.preventDefault();
   const f=e.dataTransfer.files[0];
@@ -2954,7 +2532,6 @@ function handleBatchDrop(e){
     handleBatchFile($('batch-file-input'));
   }
 }
-
 async function runBatchAnalysis(){
   if(!_batchData){return;}
   setLoading('batch-spinner','btn-batch-text','btn-batch-analyze',true,'Analysing…');
@@ -2997,7 +2574,6 @@ async function runBatchAnalysis(){
     $('manual-results').innerHTML=`<div class="error-card">❌ ${esc(e.message)}</div>`;
   }finally{setLoading('batch-spinner','btn-batch-text','btn-batch-analyze',false,'Analyse All');}
 }
-
 function downloadBatchCSV(results){
   let csv='name,forward,reverse,fwd_tm,rev_tm,fwd_gc,rev_gc,fwd_length,rev_length,fwd_quality,rev_quality,fwd_warnings,rev_warnings,pair_tm_delta,pair_cross_dimer_dg\n';
   for(const r of results){
@@ -3011,227 +2587,6 @@ function downloadBatchCSV(results){
   a.click();
   URL.revokeObjectURL(a.href);
 }
-
-// ── Check Primers Against Template ────────────────────────────────────────
-let _checkPrimerData = [];
-
-function countSeqsInText(txt){
-  var lines=txt.split('\n').map(function(l){return l.trim()}).filter(function(l){return l.length>0});
-  var fastaCount=(txt.match(/^>/gm)||[]).length;
-  if(fastaCount>0)return fastaCount;
-  var headerRe=/^(name|forward|fwd|primer|sequence|seq|reverse|rev|template|id|target),/i;
-  var seqLines=lines.filter(function(l){return !headerRe.test(l) && !l.startsWith('/rev') && !l.startsWith('/template') && /[ACGTUacgtu]/g.test(l)});
-  return seqLines.length;
-}
-
-function handleCheckFile(input){
-  const f=input.files[0];
-  if(!f)return;
-  const r=new FileReader();
-  r.onload=function(e){
-    _checkPrimerData=e.target.result;
-    $('check-primers-text').value=_checkPrimerData;
-    const n=countSeqsInText(_checkPrimerData);
-    const info=n>0?`📄 ${f.name} (${n} sequences detected)`:`📄 ${f.name} loaded`;
-    $('check-file-info').textContent=info;
-    $('check-file-info').style.display='block';
-  };
-  r.readAsText(f);
-}
-
-function handleCheckDrop(e){
-  e.preventDefault();
-  const f=e.dataTransfer.files[0];
-  if(f){
-    const r=new FileReader();
-    r.onload=function(ev){
-      _checkPrimerData=ev.target.result;
-      $('check-primers-text').value=_checkPrimerData;
-      const n=countSeqsInText(_checkPrimerData);
-      $('check-file-info').textContent=n>0?`📄 ${f.name} (${n} sequences)`:`📄 ${f.name} loaded`;
-      $('check-file-info').style.display='block';
-    };
-    r.readAsText(f);
-  }
-}
-
-// Wire up file input events after page load (fixes "handleCheckFile is not defined" race)
-(function(){
-  var fi=$('check-file-input'), dz=$('check-file-drop-zone');
-  if(fi) fi.addEventListener('change',function(){handleCheckFile(this)});
-  if(dz){
-    dz.addEventListener('click',function(){if(fi)fi.click()});
-    dz.addEventListener('drop',function(e){handleCheckDrop(e)});
-    dz.addEventListener('dragover',function(e){e.preventDefault()});
-  }
-})();
-
-async function runCheckPrimers(){
-  const tmpl=$('check-template').value.trim();
-  if(!tmpl){$('check-template').classList.add('error');return;}
-  $('check-template').classList.remove('error');
-  const primerText=$('check-primers-text').value.trim();
-  if(!primerText){$('check-primers-text').classList.add('error');return;}
-  setLoading('check-spinner','btn-check-text','btn-check-primers',true,'Checking…');
-  $('check-results').innerHTML='';
-  try{
-    const d=await apiPost('/api/primer/check-primers',{template:tmpl,file_content:primerText});
-    let html='';
-    if(d.parse_info){
-      html+=`<div class="success-card" style="margin-bottom:12px">📄 ${esc(d.parse_info)}</div>`;
-    }
-    if(d.suggestions&&d.suggestions.length){
-      html+=`<div class="warn-list" style="margin-bottom:12px">${d.suggestions.map(s=>`<div class="warn-item">💡 ${esc(s)}</div>`).join('')}</div>`;
-    }
-    html+=`<div class="success-card" style="margin-bottom:12px">✓ ${d.total} primers ranked</div>`;
-    // ── Best pair recommendation ──
-    const best=d.ranked[0];
-    if(best){
-      const isGood=best.combined_score>=70;
-      html+=`<div class="panel-card" style="margin-bottom:14px;border:2px solid ${isGood?'var(--bio)':'var(--amber)'};border-radius:10px">
-        <div class="panel-head" style="background:${isGood?'var(--bio-soft)':'var(--amber-soft)'};border-radius:8px 8px 0 0;padding:10px 14px">
-          <h3 style="margin:0;font-size:15px">${isGood?'🏆 Best Recommended Pair':'⚠ No Ideal Pair Found'}</h3>
-        </div>
-        <div class="panel-body" style="padding:12px 14px">
-          ${isGood
-            ? `<div style="font-size:13px;margin-bottom:6px"><strong>${esc(best.name)}</strong> — Score: ${best.combined_score}</div>
-               <div style="font-size:12px;color:var(--text2)"><code>${best.forward}</code> ${best.reverse?'+ <code>'+esc(best.reverse)+'</code>':''}</div>
-               <div style="font-size:11px;color:var(--bio);margin-top:4px">✓ Passes all quality checks — ready for ordering</div>`
-            : `<div style="font-size:13px;color:var(--text2);margin-bottom:8px">Best score (${best.combined_score}) is below the quality threshold (70). No primer pair meets all criteria.</div>
-               <button class="btn-primary" onclick="document.getElementById('template-seq').focus();switchTab('auto')" style="font-size:12px">🎯 Design New Primers</button>`
-          }
-        </div>
-      </div>`;
-    }
-    for(let i=0;i<d.ranked.length;i++){
-      const r=d.ranked[i];
-      const aln=r.alignment;
-      const t=r.thermodynamics;
-      const isBest=i===0;
-      html+=`<div class="panel-card" style="margin-bottom:10px;${isBest?'border-top:3px solid var(--bio)':''}">
-        <div class="panel-head" style="display:flex;justify-content:space-between;align-items:center">
-          <h3>#${i+1} ${esc(r.name)}</h3>
-          <span class="badge ${r.combined_score>=70?'pass-b':'fail-b'}" style="font-size:13px">Score: ${r.combined_score}</span>
-        </div>
-        <div class="panel-body">
-          <div style="font-size:12px;margin-bottom:6px">
-            <strong>Forward:</strong> <code style="font-size:11px">${r.forward}</code>
-            <span style="color:var(--text2);font-size:10px;margin-left:4px">(len=${t.forward_length})</span>
-          </div>
-          ${r.reverse?`<div style="font-size:12px;margin-bottom:8px"><strong>Reverse:</strong> <code style="font-size:11px">${r.reverse}</code>
-            <span style="color:var(--text2);font-size:10px;margin-left:4px">(len=${t.reverse_length})</span></div>`:''}
-          <table style="width:100%;border-collapse:collapse;font-size:11px;margin-bottom:8px">
-            <tr><td colspan="2" style="font-weight:700;padding:4px 0;color:var(--text);border-bottom:1px solid var(--slate-border)">🔬 Alignment</td></tr>
-            <tr>
-              <td style="padding:3px 8px 3px 0;color:var(--text2);width:50%">
-                Fwd identity: <strong style="color:${aln.forward.identity_pct>=90?'var(--bio)':'var(--red)'}">${fmtNum(aln.forward.identity_pct,1,'%')}</strong>
-              </td>
-              <td style="padding:3px 0;color:var(--text2)">
-                Rev identity: <strong style="color:${aln.reverse&&aln.reverse.identity_pct>=90?'var(--bio)':'var(--red)'}">${aln.reverse?fmtNum(aln.reverse.identity_pct,1,'%'):'-'}</strong>
-              </td>
-            </tr>
-            <tr>
-              <td style="padding:3px 8px 3px 0;color:var(--text2)">
-                Fwd mismatches: <strong>${fmtNum(aln.forward.mismatches,0)}</strong>
-              </td>
-              <td style="padding:3px 0;color:var(--text2)">
-                Rev mismatches: <strong>${aln.reverse?fmtNum(aln.reverse.mismatches,0):'-'}</strong>
-              </td>
-            </tr>
-            <tr>
-              <td style="padding:3px 8px 3px 0;color:var(--text2)">
-                Fwd start: <strong>${aln.forward.start_pos}</strong>
-              </td>
-              <td style="padding:3px 0;color:var(--text2)">
-                Rev start: <strong>${aln.reverse?aln.reverse.start_pos:'-'}</strong>
-              </td>
-            </tr>
-            <tr><td colspan="2" style="font-weight:700;padding:6px 0 4px;color:var(--text);border-bottom:1px solid var(--slate-border)">🌡 Thermodynamics</td></tr>
-            <tr>
-              <td style="padding:3px 8px 3px 0;color:var(--text2)">
-                Fwd Tm: <strong>${fmtNum(t.forward_tm,1,'°C')}</strong>
-              </td>
-              <td style="padding:3px 0;color:var(--text2)">
-                Rev Tm: <strong>${t.reverse_tm!==null?fmtNum(t.reverse_tm,1,'°C'):'-'}</strong>
-              </td>
-            </tr>
-            <tr>
-              <td style="padding:3px 8px 3px 0;color:var(--text2)">
-                Fwd GC: <strong>${fmtNum(t.forward_gc,1,'%')}</strong>
-              </td>
-              <td style="padding:3px 0;color:var(--text2)">
-                Rev GC: <strong>${t.reverse_gc!==null?fmtNum(t.reverse_gc,1,'%'):'-'}</strong>
-              </td>
-            </tr>
-            <tr>
-              <td style="padding:3px 8px 3px 0;color:var(--text2)">
-                Fwd hairpin ΔG: <strong>${fmtNum(t.forward_hairpin_dg,2)} kcal/mol</strong>
-              </td>
-              <td style="padding:3px 0;color:var(--text2)">
-                Rev hairpin ΔG: <strong>${t.reverse_hairpin_dg!==null?fmtNum(t.reverse_hairpin_dg,2)+' kcal/mol':'-'}</strong>
-              </td>
-            </tr>
-            <tr>
-              <td style="padding:3px 8px 3px 0;color:var(--text2)">
-                Fwd self-dimer ΔG: <strong>${fmtNum(t.forward_self_dimer_dg,2)} kcal/mol</strong>
-              </td>
-              <td style="padding:3px 0;color:var(--text2)">
-                Rev self-dimer ΔG: <strong>${t.reverse_self_dimer_dg!==null?fmtNum(t.reverse_self_dimer_dg,2)+' kcal/mol':'-'}</strong>
-              </td>
-            </tr>
-            <tr>
-              <td style="padding:3px 8px 3px 0;color:var(--text2)">
-                Fwd 3' GC clamp: <strong>${t.forward_gc_clamp?'YES':'NO'}</strong>
-              </td>
-              <td style="padding:3px 0;color:var(--text2)">
-                Rev 3' GC clamp: <strong>${t.reverse_gc_clamp!==null?(t.reverse_gc_clamp?'YES':'NO'):'-'}</strong>
-              </td>
-            </tr>
-            ${t.tm_delta!==null?`<tr><td colspan="2" style="font-weight:700;padding:6px 0 4px;color:var(--text);border-bottom:1px solid var(--slate-border)">🔗 Pair Parameters</td></tr>
-            <tr>
-              <td style="padding:3px 8px 3px 0;color:var(--text2)">
-                Tm delta: <strong>${fmtNum(t.tm_delta,1,'°C')}</strong>
-                ${t.tm_delta>5?'<span style="color:var(--red)">⚠ >5°C — gradient PCR recommended</span>':''}
-              </td>
-              <td style="padding:3px 0;color:var(--text2)">
-                Annealing Ta: <strong>${t.annealing_temp!==null?fmtNum(t.annealing_temp,1,'°C'):'-'}</strong>
-              </td>
-            </tr>
-            <tr>
-              <td style="padding:3px 0;color:var(--text2)" colspan="2">
-                Cross-dimer ΔG: <strong>${t.cross_dimer_dg!==null?fmtNum(t.cross_dimer_dg,2)+' kcal/mol':'-'}</strong>
-                ${t.cross_dimer_dg!==null&&t.cross_dimer_dg<-9?'<span style="color:var(--red)">⚠ Strong interaction</span>':''}
-              </td>
-            </tr>`:''}
-          </table>
-          ${r.warnings&&r.warnings.length?`<div class="warn-list">${r.warnings.map(w=>`<div class="warn-item">⚠ ${esc(w)}</div>`).join('')}</div>`:''}
-        </div>
-      </div>`;
-    }
-    if(d.errors&&d.errors.length){
-      html+=`<div class="error-card">${d.errors.map(e=>esc(e.name+': '+e.error)).join('<br>')}</div>`;
-    }
-    html+=`<button class="btn-secondary" style="margin-top:10px" onclick="downloadCheckCSV(${JSON.stringify(d.ranked).replace(/"/g,'&quot;')})">⬇ Download CSV</button>`;
-    $('check-results').innerHTML=html;
-  }catch(e){
-    $('check-results').innerHTML=`<div class="error-card">❌ ${esc(e.message)}</div>`;
-  }finally{setLoading('check-spinner','btn-check-text','btn-check-primers',false,'Check & Rank Primers');}
-}
-
-function downloadCheckCSV(ranked){
-  let csv='rank,name,forward,reverse,combined_score,fwd_identity,fwd_mismatches,rev_identity,rev_mismatches,fwd_tm,rev_tm,fwd_gc,rev_gc,warnings\n';
-  for(let i=0;i<ranked.length;i++){
-    const r=ranked[i];
-    csv+=`${i+1},${csvEsc(r.name)},${csvEsc(r.forward)},${csvEsc(r.reverse||'')},${r.combined_score},${r.alignment.forward.identity_pct},${r.alignment.forward.mismatches},${r.alignment.reverse?r.alignment.reverse.identity_pct:''},${r.alignment.reverse?r.alignment.reverse.mismatches:''},${r.thermodynamics.forward_tm},${r.thermodynamics.reverse_tm||''},${r.thermodynamics.forward_gc},${r.thermodynamics.reverse_gc||''},${csvEsc((r.warnings||[]).join('; '))}\n`;
-  }
-  const blob=new Blob([csv],{type:'text/csv'});
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(blob);
-  a.download='primer_check_results.csv';
-  a.click();
-  URL.revokeObjectURL(a.href);
-}
-
 // ── Fetch sequence ────────────────────────────────────────────────────────
 async function fetchSequence(acc){
   if(!acc)acc=$('accession-input').value.trim();
@@ -3338,278 +2693,6 @@ async function fetchSequence(acc){
     $('fetch-results').innerHTML=`<div class="error-card">❌ ${esc(e.message)}<br><span style="font-size:11px;margin-top:6px;display:block">Try <a href="https://www.ncbi.nlm.nih.gov/nuccore/" target="_blank" style="color:var(--primary)">NCBI Nucleotide</a> directly and paste the sequence.</span></div>`;
   }finally{setLoading('fetch-spinner','btn-fetch-text','btn-fetch',false,'Fetch Sequence');}
 }
-
-// ── Search Sequences ─────────────────────────────────────────────────────────
-async function doSearch(){
-  const query=$('search-query').value.trim();
-  if(!query){ alert('Enter a search query.'); return; }
-  setLoading('search-spinner','btn-search-text','btn-search-seq',true,'Searching…');
-  const db=$('search-db').value;
-  const org=$('search-organism-custom').value.trim() || $('search-organism').value;
-  try{
-    const d=await apiPost('/api/primer/search-sequences',{query,database:db,organism:org});
-    renderSearchResults(d);
-  }catch(e){
-    $('search-results-area').innerHTML=`<div class="error-card">❌ ${esc(e.message)}</div>`;
-  }finally{setLoading('search-spinner','btn-search-text','btn-search-seq',false,'Search');}
-}
-function renderSearchResults(data){
-  const area=$('search-results-area');
-  const count=$('search-results-count');
-  const actions=$('search-actions');
-  const results=data.results||[];
-  count.textContent=results.length+' found';
-  if(!results.length){
-    area.innerHTML='<div style="padding:40px 20px;text-align:center;color:var(--muted);font-size:13px">No results found. Try a different query or database.</div>';
-    actions.style.display='none';
-    return;
-  }
-  state.searchResults=results;
-  actions.style.display='flex';
-  let html='<div>';
-  results.forEach((r,i)=>{
-    const name=r.name||r.accession||r.id||'Unknown';
-    const org=r.organism||'';
-    const desc=r.description||'';
-    const len=r.length||'';
-    const source=r.source||'';
-    const url=r.source_url||'';
-    const gc=r.gc_content||'';
-    html+=`<div class="search-result-item">
-      <div class="search-result-header">
-        <label><input type="checkbox" class="search-cb" data-idx="${i}" checked> <span class="search-result-name">${esc(name)}</span></label>
-        <span class="search-result-org">${esc(org)}</span>
-      </div>
-      <div class="search-result-desc">${esc(desc)}</div>
-      <div class="search-result-meta">
-        <span>${len} bp</span>
-        ${gc?`<span>GC ${gc}%</span>`:''}
-        <span>${esc(source)}</span>
-        ${url?`<a href="${esc(url)}" target="_blank" rel="noopener" class="source-link">🔗 View source</a>`:''}
-      </div>
-    </div>`;
-  });
-  html+='</div>';
-  area.innerHTML=html;
-  $('search-select-all').onclick=function(){document.querySelectorAll('.search-cb').forEach(c=>c.checked=this.checked);};
-}
-function _on(id,evt,fn) { var el=$(id); if(el) el.addEventListener(evt,fn); }
-_on('btn-search-seq','click',doSearch);
-_on('search-query','keydown',function(e){if(e.key==='Enter')doSearch();});
-_on('btn-send-to-design','click',function(){
-  const selected=getSelectedSearchResults();
-  if(!selected.length){alert('Select at least one sequence.');return;}
-  const primary=selected[0];
-  const template=primary.sequence||'';
-  if(template.length<100){alert('Primary sequence too short for auto-design (≥100 bp).');return;}
-  $('template-seq').value=template;
-  $('seq-len').textContent=template.length;
-  state.additionalSequences=selected.slice(1);
-  switchTab('auto');
-});
-_on('btn-send-to-blast','click',function(){
-  const selected=getSelectedSearchResults();
-  if(!selected.length){alert('Select at least one sequence.');return;}
-  const seq=selected.map(s=>`>${s.name||s.accession||'seq'}\n${s.sequence||''}`).join('\n');
-  $('blast-query-seq').value=seq;
-  switchTab('blast');
-});
-_on('btn-send-to-msa','click',function(){
-  const selected=getSelectedSearchResults();
-  if(selected.length<2){alert('Select at least 2 sequences for MSA.');return;}
-  const fasta=selected.map(s=>`>${s.name||s.accession||'seq'}\n${s.sequence||''}`).join('\n');
-  $('msa-sequences').value=fasta;
-  switchTab('msa');
-});
-function getSelectedSearchResults(){
-  const cbs=document.querySelectorAll('.search-cb:checked');
-  return Array.from(cbs).map(cb=>state.searchResults[parseInt(cb.dataset.idx)]);
-}
-
-// ── BLAST ────────────────────────────────────────────────────────────────────
-async function doBlast(){
-  const seq=$('blast-query-seq').value.trim();
-  if(!seq){ alert('Enter a query sequence.'); return; }
-  setLoading('blast-spinner','btn-blast-text','btn-blast',true,'BLASTing…');
-  const mode=$('blast-mode').value;
-  const db=$('blast-db').value;
-  const org=$('blast-organism').value.trim();
-  const files=$('blast-fasta-input').files;
-  let body={sequence:seq,mode,db,organism:org};
-  if(files.length){
-    try{
-      const fastaText=await files[0].text();
-      const parsed=parseFasta(fastaText);
-      if(parsed.length>1){
-        // Multi-FASTA: run BLAST on first, store rest as subjects
-        body.sequence=parsed[0].sequence;
-        body.subject_sequences=parsed.slice(1);
-      }
-    }catch(e){}
-  }
-  try{
-    const d=await apiPost('/api/primer/blast',body);
-    renderBlastResults(d);
-  }catch(e){
-    $('blast-results-area').innerHTML=`<div class="error-card">❌ ${esc(e.message)}</div>`;
-  }finally{setLoading('blast-spinner','btn-blast-text','btn-blast',false,'Run BLAST');}
-}
-function renderBlastResults(data){
-  const area=$('blast-results-area');
-  const count=$('blast-results-count');
-  const actions=$('blast-actions');
-  const results=data.results||[];
-  count.textContent=results.length+' hits';
-  if(!results.length){
-    area.innerHTML='<div style="padding:40px 20px;text-align:center;color:var(--muted);font-size:13px">No BLAST hits found.</div>';
-    actions.style.display='none';
-    return;
-  }
-  state.blastResults=results;
-  actions.style.display='flex';
-  let html='<table class="results-table"><thead><tr><th><input type="checkbox" id="blast-select-all-inner" checked></th><th>Subject</th><th>Species</th><th>Identity%</th><th>E-value</th><th>Bit Score</th><th>Cover</th><th>Source</th></tr></thead><tbody>';
-  results.forEach((r,i)=>{
-    html+=`<tr>
-      <td><input type="checkbox" class="blast-cb" data-idx="${i}" checked></td>
-      <td><span class="search-result-name">${esc(r.subject_id||'')}</span><br><span style="font-size:10px;color:var(--muted)">${esc((r.subject_description||'').slice(0,60))}</span></td>
-      <td>${esc(r.subject_species||'')}</td>
-      <td style="font-weight:700;color:var(--bio)">${r.identity_pct||0}%</td>
-      <td style="font-size:10px">${esc(r.e_value||'')}</td>
-      <td>${r.bit_score||0}</td>
-      <td>${r.query_cover||0}%</td>
-      <td>${r.source_url?`<a href="${esc(r.source_url)}" target="_blank" class="source-link">🔗</a>`:esc(r.source||'')}</td>
-    </tr>`;
-  });
-  html+='</tbody></table>';
-  area.innerHTML=html;
-  $('blast-select-all-inner').onclick=function(){document.querySelectorAll('.blast-cb').forEach(c=>c.checked=this.checked);};
-}
-_on('btn-blast','click',doBlast);
-_on('blast-fasta-input','change',async function(){
-  const files=this.files;
-  if(!files.length)return;
-  try{
-    const text=await files[0].text();
-    const parsed=parseFasta(text);
-    if(parsed.length){
-      $('blast-query-seq').value=parsed.map(p=>`>${p.name}\n${p.sequence}`).join('\n');
-    }
-  }catch(e){}
-});
-_on('btn-blast-view-msa','click',function(){
-  const selected=getSelectedBlastResults();
-  if(selected.length<2){alert('Select at least 2 hits for MSA.');return;}
-  const fasta=selected.map(r=>`>${r.subject_id||'hit'}\n${r.subject_sequence||r.subject_id}`).join('\n');
-  const query=$('blast-query-seq').value.trim();
-  const seqOnly=query.split('\n').filter(l=>!l.startsWith('>')).join('');
-  $('msa-sequences').value=`>query\n${seqOnly}\n${fasta}`;
-  switchTab('msa');
-  setTimeout(()=>doMsa(),500);
-});
-_on('btn-blast-download-fasta','click',function(){
-  const selected=getSelectedBlastResults();
-  if(!selected.length){alert('No results selected.');return;}
-  const fasta=selected.map(r=>`>${r.subject_id||'hit'} ${r.subject_species||''}\n${r.subject_sequence||r.subject_id}`).join('\n');
-  blobDl(fasta,'text/plain','blast_results.fa');
-});
-function getSelectedBlastResults(){
-  const cbs=document.querySelectorAll('.blast-cb:checked');
-  return Array.from(cbs).map(cb=>state.blastResults[parseInt(cb.dataset.idx)]);
-}
-
-// ── MSA ──────────────────────────────────────────────────────────────────────
-async function doMsa(){
-  const text=$('msa-sequences').value.trim();
-  if(!text){alert('Enter sequences in FASTA format.');return;}
-  setLoading('msa-spinner','btn-msa-text','btn-msa',true,'Aligning…');
-  const ref=$('msa-reference').value.trim()||undefined;
-  const parsed=parseFasta(text);
-  if(parsed.length<2){alert('Need at least 2 sequences.');setLoading('msa-spinner','btn-msa-text','btn-msa',false,'Align');return;}
-  try{
-    const d=await apiPost('/api/primer/msa',{sequences:parsed,reference_id:ref});
-    renderMsaResults(d);
-  }catch(e){
-    $('msa-results-area').innerHTML=`<div class="error-card">❌ ${esc(e.message)}</div>`;
-  }finally{setLoading('msa-spinner','btn-msa-text','btn-msa',false,'Align');}
-}
-function renderMsaResults(data){
-  const area=$('msa-results-area');
-  const stats=$('msa-stats');
-  const actions=$('msa-actions');
-  const alignment=data.alignment||[];
-  const conservation=data.conservation||[];
-  state.msaData=data;
-  if(!alignment.length){
-    area.innerHTML='<div style="padding:40px 20px;text-align:center;color:var(--muted);font-size:13px">Alignment failed or no data.</div>';
-    actions.style.display='none';
-    return;
-  }
-  const s=data.stats||{};
-  stats.textContent=`${s.n_sequences||0} seqs, ${s.alignment_length||0} cols, ${s.conserved_pct||0}% conserved`;
-  actions.style.display='flex';
-  let html='<div class="msa-viewer">';
-  // Legend
-  html+='<div class="msa-legend"><span class="msa-legend-item"><span class="msa-legend-swatch" style="background:#4CAF50"></span> Match</span><span class="msa-legend-item"><span class="msa-legend-swatch" style="background:#F44336"></span> Mismatch</span><span class="msa-legend-item"><span class="msa-legend-swatch" style="background:#FFEB3B"></span> Gap</span><span class="msa-legend-item"><span class="msa-legend-swatch" style="background:#9E9E9E"></span> Ambiguous</span></div>';
-  // Conservation bar
-  if(conservation.length){
-    html+='<div class="msa-conservation" style="margin-bottom:8px">';
-    conservation.forEach(c=>{
-      const h=c.pct||0;
-      const color=h>=90?'#4CAF50':h>=70?'#8BC34A':h>=50?'#FFC107':'#F44336';
-      html+=`<div class="msa-conservation-bar" style="width:${Math.max(2,100/conservation.length)}px;background:${color}" title="${h}% conserved"></div>`;
-    });
-    html+='</div>';
-  }
-  // Alignment rows
-  alignment.forEach(row=>{
-    const name=esc(row.name||'');
-    const shortName=name.length>20?name.slice(0,20)+'…':name;
-    html+=`<div class="msa-row"><span class="msa-label" title="${name}">${shortName}</span><span class="msa-seq">`;
-    (row.positions||[]).forEach(p=>{
-      const ch=esc(p.char||'');
-      const cls=p.css_class||'msa-char';
-      // Determine match/mismatch relative to reference
-      let extraCls='';
-      if(cls==='msa-char'||cls==='msa-char msa-match'||cls==='msa-char msa-mismatch'){
-        // Compare to conservation consensus
-        const col=p.col;
-        if(conservation[col]){
-          const consensus=conservation[col].char;
-          if(ch===consensus) extraCls=' msa-match';
-          else if(ch==='-') extraCls=' msa-gap';
-          else extraCls=' msa-mismatch';
-        }
-      }else if(cls==='msa-gap') extraCls=' msa-gap';
-      else if(cls==='msa-ambiguous') extraCls=' msa-ambiguous';
-      html+=`<span class="msa-char${extraCls}">${ch||' '}</span>`;
-    });
-    html+='</span></div>';
-  });
-  // Stats summary
-  if(s.n_sequences){
-    html+=`<div style="margin-top:12px;padding:8px;background:var(--slate);border-radius:6px;font-size:10px;color:var(--text2)">
-      <strong>Stats:</strong> ${s.n_sequences} sequences · ${s.alignment_length} columns · ${s.conserved_columns} conserved (${s.conserved_pct}%) · ${s.identities}% identity · ${s.gap_only_columns} gap-only columns · Mean ${s.mean_gaps_per_seq} gaps/seq
-    </div>`;
-  }
-  html+='</div>';
-  area.innerHTML=html;
-}
-_on('btn-msa','click',doMsa);
-_on('msa-fasta-input','change',async function(){
-  const files=this.files;
-  if(!files.length)return;
-  try{
-    const text=await files[0].text();
-    $('msa-sequences').value=text;
-  }catch(e){}
-});
-_on('btn-msa-download-fasta','click',function(){
-  if(state.msaData&&state.msaData.fasta) blobDl(state.msaData.fasta,'text/plain','alignment.fa');
-});
-_on('btn-msa-download-clustal','click',function(){
-  if(state.msaData&&state.msaData.clustal) blobDl(state.msaData.clustal,'text/plain','alignment.clustal');
-});
-
 // ── FASTA parser ─────────────────────────────────────────────────────────────
 function parseFasta(text){
   const lines=text.split('\n');
@@ -3627,7 +2710,6 @@ function parseFasta(text){
   if(current&&current.sequence) seqs.push(current);
   return seqs;
 }
-
 // ── Downloads ─────────────────────────────────────────────────────────────
 function downloadCSV(){
   if(!state.results.length)return;
@@ -3655,7 +2737,6 @@ function downloadCSV(){
   }).join(','))].join('\n');
   blobDl(csvContent, 'text/csv;charset=utf-8', `VigyanLLM_Results_${new Date().toISOString().slice(0,10)}.csv`);
 }
-
 function downloadJSON(){
   if(!state.results.length)return;
   const exportData = {
@@ -3686,7 +2767,6 @@ function downloadJSON(){
   };
   blobDl(JSON.stringify(exportData, null, 2), 'application/json', `VigyanLLM_Results_${new Date().toISOString().slice(0,10)}.json`);
 }
-
 function downloadRawData(){
   const jobId = state.lastJobId;
   if (!jobId) { alert('No pipeline job found. Run the pipeline first.'); return; }
@@ -3694,7 +2774,6 @@ function downloadRawData(){
   const pdf = makeSimplePdf(buildRawDataReportText());
   blobDl(pdf, 'application/pdf', `VigyanLLM_Raw_Report_${jobId.slice(0,8)}.pdf`);
 }
-
 function buildRawDataReportText(){
   const lines=[];
   const generated=new Date().toISOString();
@@ -3762,7 +2841,6 @@ function buildRawDataReportText(){
   lines.push('=== END OF REPORT ===');
   return lines.join('\n');
 }
-
 function buildRunReportText(){
   const lines=[];
   const generated=new Date().toISOString();
@@ -3827,7 +2905,6 @@ function buildRunReportText(){
   lines.push('This report is generated from in silico analysis. It is not clinical diagnostic validation and does not replace experimental verification, institutional biosafety review, or vendor order review.');
   return lines.join('\n');
 }
-
 function makeSimplePdf(text){
   const pageW=612, pageH=792, margin=54, fontSize=10, lineH=14;
   const maxChars=86;
@@ -3879,17 +2956,14 @@ function makeSimplePdf(text){
   pdf+=`trailer\n<< /Size ${objects.length+1} /Root ${catalogId} 0 R >>\nstartxref\n${xref}\n%%EOF`;
   return pdf;
 }
-
 function pdfEsc(s){
   return String(s ?? '').replace(/[\\()]/g,m=>'\\'+m).replace(/[^\x09\x0A\x0D\x20-\x7E]/g,'?');
 }
-
 function downloadPDFReport(){
   if(!state.results.length)return;
   const pdf=makeSimplePdf(buildRunReportText());
   blobDl(pdf,'application/pdf',`VigyanLLM_Report_${state.lastJobId||new Date().toISOString().slice(0,10)}.pdf`);
 }
-
 function buildVendorPayload(vendor){
   const scale='25nmol';
   const oligos=[];
@@ -3914,7 +2988,6 @@ function buildVendorPayload(vendor){
     oligos
   };
 }
-
 function makeVendorOligo(vendor,name,sequence,meta,scale,isProbe=false){
   const purification=isProbe?'HPLC':((sequence||'').length>60?'PAGE':'STD');
   if(vendor==='idt'){
@@ -3934,7 +3007,6 @@ function makeVendorOligo(vendor,name,sequence,meta,scale,isProbe=false){
     notes:isProbe?'Probe: verify dye/quencher with vendor before ordering':'Primer: verify synthesis settings before ordering'
   };
 }
-
 function vendorCsv(vendor,payload){
   const rows = vendor==='idt'
     ? [['Name','Sequence','Scale','Purification','Notes'], ...payload.oligos.map(o=>[o.Name,o.Sequence,o.Scale,o.Purification,o.Notes])]
@@ -3944,7 +3016,6 @@ function vendorCsv(vendor,payload){
     return s.includes(',')||s.includes('"')?`"${s.replace(/"/g,'""')}"`:s;
   }).join(',')).join('\n');
 }
-
 function downloadVendorReport(vendor){
   if(!state.results.length)return;
   const payload=buildVendorPayload(vendor);
@@ -3952,7 +3023,6 @@ function downloadVendorReport(vendor){
   blobDl(vendorCsv(vendor,payload),'text/csv;charset=utf-8',`VigyanLLM_${vendor.toUpperCase()}_Order_${stamp}.csv`);
   setTimeout(()=>blobDl(JSON.stringify(payload,null,2),'application/json',`VigyanLLM_${vendor.toUpperCase()}_Order_${stamp}.json`),150);
 }
-
 function blobDl(content,mime,fname){
   const blob = new Blob([content], {type: mime});
   const url = URL.createObjectURL(blob);
@@ -3962,7 +3032,6 @@ function blobDl(content,mime,fname){
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
 }
-
 // ── Preferred best sequence + primer location visualization ──────────────
 function renderPreferredBestSequence(pairs, templateSeq) {
   const map = buildBindingMapData(pairs?.[0], templateSeq);
@@ -3978,7 +3047,6 @@ function renderPreferredBestSequence(pairs, templateSeq) {
         ${map.forward.start_pos}${map.reverse.start_pos}${map.reverse.stop_pos}
       </div>
     </div>
-
     <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:12px">
       <div style="background:transparent;border:1px solid var(--slate-border);border-radius:6px;padding:9px">
         <div style="font-size:10px;color:var(--muted);text-transform:uppercase;font-weight:700">Forward</div>
@@ -3993,7 +3061,6 @@ function renderPreferredBestSequence(pairs, templateSeq) {
         <div style="font-family:var(--font-b);font-size:12px;color:var(--primary);margin-top:3px">${map.ampliconSize}bp</div>
       </div>
     </div>
-
     <div style="position:relative;height:52px;background:var(--slate);border-radius:6px;border:1px solid var(--slate-border);margin-bottom:12px;overflow:hidden">
       <div style="position:absolute;top:23px;left:0;right:0;height:6px;background:var(--slate-border);border-radius:3px"></div>
       <div style="position:absolute;top:21px;left:${map.amplicon.leftPct}%;width:${map.amplicon.widthPct}%;height:10px;background:rgba(26,86,255,0.15);border:1px solid rgba(26,86,255,0.3);border-radius:3px" title="Amplicon: ${map.ampliconSize}bp"></div>
@@ -4004,7 +3071,6 @@ function renderPreferredBestSequence(pairs, templateSeq) {
       <div style="position:absolute;top:2px;left:${map.forward.leftPct}%;font-family:var(--font-b);font-size:9px;color:var(--bio)">${map.forward.start_pos}</div>
       <div style="position:absolute;top:38px;left:${map.reverse.leftPct}%;font-family:var(--font-b);font-size:9px;color:var(--amber)">${map.reverse.start_pos}</div>
     </div>
-
     <div style="font-family:var(--font-b);font-size:11px;line-height:1.8;word-break:break-all;background:transparent;padding:10px;border-radius:6px;border:1px solid var(--slate-border)">
       <span style="color:var(--muted)">pos ${map.contextStart} </span>${map.contextHtml}<span style="color:var(--muted)"> pos ${map.contextEnd}</span>
     </div>
@@ -4014,7 +3080,6 @@ function renderPreferredBestSequence(pairs, templateSeq) {
     </div>
   </div>`;
 }
-
 function buildBindingMapData(pair, templateSeq) {
   const clean = String(templateSeq || '').replace(/\s/g, '').toUpperCase();
   if (!pair || !clean) return null;
@@ -4022,7 +3087,6 @@ function buildBindingMapData(pair, templateSeq) {
   const fp = normalisePrimerForMap(pair.forward_primer || pair.forward || '', 'forward', pair, clean);
   const rp = normalisePrimerForMap(pair.reverse_primer || pair.reverse || '', 'reverse', pair, clean);
   if (!fp.sequence || !rp.sequence) return null;
-
   const fStart0 = clampInt((fp.start_pos || 1) - 1, 0, templateLength - 1);
   const fEnd0 = clampInt((fp.stop_pos || fp.start_pos + fp.length - 1 || fStart0 + fp.length) - 1, fStart0, templateLength - 1);
   const rMin0 = clampInt(Math.min((rp.start_pos || templateLength) - 1, (rp.stop_pos || templateLength) - 1), 0, templateLength - 1);
@@ -4031,7 +3095,6 @@ function buildBindingMapData(pair, templateSeq) {
   const ampEnd0 = clampInt(Math.max(fEnd0, rMax0), ampStart0, templateLength - 1);
   const ampliconSize = pair.amplicon_size || pair.product_size || (ampEnd0 - ampStart0 + 1);
   const context = buildSequenceContext(clean, fStart0, fEnd0, rMin0, rMax0, ampStart0, ampEnd0);
-
   return {
     templateLength,
     ampliconSize,
@@ -4061,7 +3124,6 @@ function buildBindingMapData(pair, templateSeq) {
     }
   };
 }
-
 function buildPreferredSequenceExport() {
   const map = buildBindingMapData(state.results?.[0], state.templateSeq);
   if (!map) return null;
@@ -4086,14 +3148,12 @@ function buildPreferredSequenceExport() {
     sequence_context: map.contextSequence,
   };
 }
-
 function normalisePrimerForMap(primer, type, pair, cleanTemplate) {
   const p = typeof primer === 'string' ? {sequence: primer} : {...(primer || {})};
   p.sequence = String(p.sequence || '').toUpperCase();
   p.length = Number(p.length || p.sequence.length || pair[`${type}_length`] || 0);
   p.start_pos = Number(p.start_pos || pair[`${type}_start_pos`] || 0);
   p.stop_pos = Number(p.stop_pos || pair[`${type}_stop_pos`] || 0);
-
   if (!p.start_pos && p.sequence) {
     const needle = type === 'reverse' ? revComp(p.sequence) : p.sequence;
     const idx = cleanTemplate.indexOf(needle);
@@ -4106,7 +3166,6 @@ function normalisePrimerForMap(primer, type, pair, cleanTemplate) {
   if (p.start_pos && !p.stop_pos && p.length) p.stop_pos = p.start_pos + p.length - 1;
   return p;
 }
-
 function buildSequenceContext(seq, fStart, fEnd, rStart, rEnd, ampStart, ampEnd) {
   const flank = 60;
   const start = Math.max(0, ampStart - flank);
@@ -4121,21 +3180,17 @@ function buildSequenceContext(seq, fStart, fEnd, rStart, rEnd, ampStart, ampEnd)
   if (end < seq.length - 1) html += '<span style="color:var(--muted)">...</span>';
   return {html, start, end, sequence: seq.slice(start, end + 1)};
 }
-
 function pct(value, total) {
   return Math.max(0, Math.min(100, (value / Math.max(1, total)) * 100)).toFixed(2);
 }
-
 function clampInt(value, min, max) {
   const n = Number.isFinite(value) ? Math.round(value) : min;
   return Math.max(min, Math.min(max, n));
 }
-
 function revComp(sequence) {
   const comp = {A:'T', C:'G', G:'C', T:'A', N:'N'};
   return String(sequence || '').toUpperCase().split('').reverse().map(b => comp[b] || 'N').join('');
 }
-
 // ── Loading state helper ──────────────────────────────────────────────────
 function setLoading(spId,txtId,btnId,loading,label){
   const sp=$(spId),tx=$(txtId),bt=$(btnId);
@@ -4143,7 +3198,6 @@ function setLoading(spId,txtId,btnId,loading,label){
   if(tx)tx.textContent=loading?'Working…':label;
   if(bt)bt.disabled=loading||!state.online;
 }
-
 window.openRazorpay=function(plan){
   // Legacy function — redirect to new buyPlan flow
   const planMap = {'starter':'individual', 'lab':'institutional', 'credits':'top_up'};
@@ -4154,7 +3208,6 @@ window.buyPlan = buyPlan;
 window.buyCustomTopup = buyCustomTopup;
 window.updateTopup = updateTopup;
 window.updateTopupFromInput = updateTopupFromInput;
-
 // ── Init ──────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded',function(){
   initPipelineSteps();
@@ -4163,7 +3216,6 @@ document.addEventListener('DOMContentLoaded',function(){
   checkHealth();
   state.hTimer=setInterval(checkHealth,HEALTH_MS);
   ['btn-run','btn-analyze','btn-fetch'].forEach(id=>{const b=$(id);if(b)b.disabled=true;});
-
   document.querySelectorAll('.tab-btn').forEach(b=>b.addEventListener('click',()=>switchTab(b.dataset.tab)));
   $('btn-run')?.addEventListener('click',runAutoDesign);
   $('btn-dl-csv')?.addEventListener('click',downloadCSV);
@@ -4181,23 +3233,19 @@ document.addEventListener('DOMContentLoaded',function(){
   document.querySelectorAll('button.db-link[data-url]').forEach(b=>b.addEventListener('click',()=>{
     window.open(b.dataset.url, '_blank', 'noopener,noreferrer');
   }));
-
   const ta=$('template-seq'),cnt=$('seq-len');
   if(ta&&cnt){ta.addEventListener('input',()=>{
     const c=ta.value.replace(/\s/g,'');
     cnt.textContent=c.length;
     if(c.length>=100&&/^[ACGTacgt]+$/.test(c)){ta.classList.remove('error');$('seq-error').classList.remove('show');}
   });}
-
   // ── Auth UI Logic ──────────────────────────────────────────────────────
   initAuth();
 });
-
 // ═══════════════════════════════════════════════════════════════════════════
 // AUTH MODULE
 // ═══════════════════════════════════════════════════════════════════════════
 const auth = { token: sessionStorage.getItem('pf_token')||localStorage.getItem('pf_token')||'', user: null, mode: 'login' };
-
 // ── Fetch wrapper with auto-refresh ───────────────────────────────────────
 const _origFetch = window.fetch;
 let _refreshing = null;
@@ -4229,22 +3277,18 @@ function _saveAuth() {
   try { sessionStorage.setItem('pf_token', auth.token || ''); localStorage.setItem('pf_token', auth.token || ''); } catch(e) {}
   try { if (auth.user) { sessionStorage.setItem('pf_user', JSON.stringify(auth.user)); localStorage.setItem('pf_user', JSON.stringify(auth.user)); } } catch(e) {}
 }
-
 async function initAuth() {
   // Fetch public config (Google Client ID, etc.)
   try { const r=await fetch(API+'/api/config/public', {}); if(r.ok) PF_CONFIG=await r.json(); } catch(_) {}
   // Restore session
   if (auth.token) { fetchMe(); }
   updateAuthUI();
-
   // Auth modal events
   $('auth-toggle')?.addEventListener('click', toggleAuthMode);
   $('auth-submit-btn')?.addEventListener('click', handleAuthSubmit);
   $('auth-password')?.addEventListener('keydown', e => { if(e.key==='Enter') handleAuthSubmit(); });
-
   // Google Sign-In button
   $('google-signin-btn')?.addEventListener('click', handleGoogleSignIn);
-
   // Payment modal events
   $('pay-runs')?.addEventListener('input', () => {
     const runs = Math.max(1, parseInt($('pay-runs').value)||1);
@@ -4262,14 +3306,12 @@ async function initAuth() {
     e.preventDefault();
     buyCustomTopup();
   });
-
   // Auto-show login modal if ?showLogin=1
   var _sp = new URLSearchParams(window.location.search);
   if (_sp.get('showLogin') === '1' && !auth.token) {
     setTimeout(showAuthModal, 600);
   }
 }
-
 function updateAuthUI() {
   const navRight = document.querySelector('.nav-right');
   if (!navRight) return;
@@ -4286,7 +3328,6 @@ function updateAuthUI() {
     $('popup-referral')?.addEventListener('click', () => { $('user-menu-overlay').classList.remove('show'); openReferralPanel(); });
     $('popup-logout')?.addEventListener('click', () => { $('user-menu-overlay').classList.remove('show'); logout(); });
   }
-
   const loginBtn = $('nav-login-btn');
   if (auth.user) {
     pill.classList.add('show');
@@ -4312,23 +3353,19 @@ function updateAuthUI() {
     if ($('tab-admin')?.style.display !== 'none') switchTab('auto');
   }
 }
-
 function toggleUserMenu() {
   if (!auth.token) { showAuthModal(); return; }
   $('user-menu-overlay')?.classList.add('show');
   fetchUsageForMenu();
 }
-
 function showAuthModal() {
   $('auth-overlay')?.classList.add('show');
   $('auth-error')?.classList.remove('show');
   $('auth-email')?.focus();
 }
-
 function hideAuthModal() {
   $('auth-overlay')?.classList.remove('show');
 }
-
 function toggleAuthMode() {
   auth.mode = auth.mode === 'login' ? 'register' : 'login';
   const isReg = auth.mode === 'register';
@@ -4339,41 +3376,33 @@ function toggleAuthMode() {
   $('auth-toggle').textContent = isReg ? 'Already have an account? Log in' : "Don't have an account? Register";
   $('auth-error')?.classList.remove('show');
 }
-
 async function handleAuthSubmit() {
   const email = $('auth-email')?.value.trim();
   const password = $('auth-password')?.value;
   const name = $('auth-name')?.value.trim();
   const errEl = $('auth-error');
-
   if (!email || !password) { errEl.textContent='Email and password required'; errEl.classList.add('show'); return; }
-
   const endpoint = auth.mode === 'register' ? '/api/auth/register' : '/api/auth/login';
   const body = auth.mode === 'register' ? {email,password,name} : {email,password};
-
   try {
     const r = await fetch(API+endpoint, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
     const d = await r.json();
     if (!r.ok) { errEl.textContent = d.error || 'Authentication failed'; errEl.classList.add('show'); return; }
-
     auth.token = d.token;
     auth.user = d.user;
     sessionStorage.setItem('pf_token', d.token); localStorage.setItem('pf_token', d.token);
     sessionStorage.setItem('pf_user', JSON.stringify(d.user || {})); localStorage.setItem('pf_user', JSON.stringify(d.user || {}));
     hideAuthModal();
     updateAuthUI();
-
     // Apply any pending referral code from URL
     if (auth.mode === 'register' && d.user?.email) {
       applyPendingReferral(d.user.email);
     }
-
     // If there was a pending run, execute it now
     if (state._pendingRun) {
       state._pendingRun = false;
       runAutoDesign();
     }
-
     // Redirect after login if ?redirect= was set
     var _rd = new URLSearchParams(window.location.search).get('redirect');
     if (_rd) { window.location.href = _rd; return; }
@@ -4382,7 +3411,6 @@ async function handleAuthSubmit() {
     errEl.classList.add('show');
   }
 }
-
 async function handleGoogleSignIn() {
   const GOOGLE_CLIENT_ID = (PF_CONFIG && PF_CONFIG.googleClientId) || '598272150916-57hl3s7jijaamh3er18alk93gj2op6jt.apps.googleusercontent.com';
   if (!GOOGLE_CLIENT_ID) {
@@ -4440,7 +3468,6 @@ async function handleGoogleSignIn() {
     $('auth-error').classList.add('show');
   }
 }
-
 async function fetchMe() {
   try {
     const r = await fetch(API+'/api/auth/me', {headers:{'Authorization':'Bearer '+auth.token}});
@@ -4456,7 +3483,6 @@ async function fetchMe() {
     }
   } catch(e) { /* silent */ }
 }
-
 function logout() {
   auth.token = ''; auth.user = null;
   sessionStorage.removeItem('pf_token'); localStorage.removeItem('pf_token');
@@ -4465,12 +3491,10 @@ function logout() {
   $('user-menu-overlay')?.classList.remove('show');
   fetch(API+'/api/auth/logout', {method:'POST',headers:{'Content-Type':'application/json'},credentials:'include'}).catch(()=>{});
 }
-
 function showPaymentModal() {
   $('pay-overlay')?.classList.add('show');
   $('pay-error')?.classList.remove('show');
 }
-
 // ── Token-Based Purchase Flow (Razorpay) ──────────────────────────────
 function updateTopup() {
   const val = parseInt($('topup-slider')?.value) || 1;
@@ -4485,7 +3509,6 @@ function updateTopupFromInput() {
   $('topup-slider').value = val;
   updateTopup();
 }
-
 async function buyPlan(productId) {
   if (!auth.token) { showAuthModal(); return; }
   const body = {product_id: productId};
@@ -4493,14 +3516,12 @@ async function buyPlan(productId) {
   if (!state.online) console.warn('buyPlan: state.online is false, attempting anyway');
   await startRazorpayCheckout(body);
 }
-
 async function buyCustomTopup() {
   if (!auth.token) { showAuthModal(); return; }
   const qty = parseInt($('topup-input')?.value) || 1;
   if (!state.online) console.warn('buyCustomTopup: state.online is false, attempting anyway');
   await startRazorpayCheckout({product_id: 'top_up', quantity: qty});
 }
-
 async function createPaymentOrder(body) {
   const r = await fetch(API + '/api/payments/create-order', {
     method: 'POST',
@@ -4513,7 +3534,6 @@ async function createPaymentOrder(body) {
   }
   return d;
 }
-
 async function startRazorpayCheckout(body, context={}) {
   if (!state.online) console.warn('startRazorpayCheckout: state.online is false, attempting anyway');
   try {
@@ -4529,7 +3549,6 @@ async function startRazorpayCheckout(body, context={}) {
     }
   }
 }
-
 function loadRazorpay() {
   return new Promise((resolve, reject) => {
     if (window.Razorpay) return resolve();
@@ -4540,7 +3559,6 @@ function loadRazorpay() {
     document.body.appendChild(script);
   });
 }
-
 async function openRazorpayCheckout(order, context={}) {
   try {
     await loadRazorpay();
@@ -4630,7 +3648,6 @@ async function openRazorpayCheckout(order, context={}) {
   rzp.open();
   $('pay-overlay')?.classList.remove('show');
 }
-
 async function handlePayment() {
   const runs = Math.max(1, parseInt($('pay-runs')?.value)||1);
   const errEl = $('pay-error');
@@ -4638,7 +3655,6 @@ async function handlePayment() {
   if (!state.online) console.warn('handlePayment: state.online is false, attempting anyway');
   await startRazorpayCheckout({product_id: 'top_up', quantity: runs}, {errorEl: errEl, runs});
 }
-
 // ══ ADMIN PANEL LOGIC ═══════════════════════════════════════════════════
 function showAdminSub(name) {
   document.querySelectorAll('.admin-sub-panel').forEach(p => p.style.display = 'none');
@@ -4656,7 +3672,6 @@ function showAdminSub(name) {
   if (name === 'finance') loadAdminFinance();
   if (name === 'academic') loadAdminAcademic();
 }
-
 async function adminApi(path, method='GET', body=null) {
   if (!auth.user || auth.user.role !== 'admin') return null;
   const opts = {method, credentials: 'include', headers: { 'Authorization': `Bearer ${auth.token}`, 'Content-Type': 'application/json'}};
@@ -4665,7 +3680,6 @@ async function adminApi(path, method='GET', body=null) {
   if (r.status === 401 || r.status === 403) return null;
   return r.json();
 }
-
 async function refreshAdminPanel() {
   // Load stats
   const [threats, debug, users] = await Promise.all([
@@ -4706,7 +3720,6 @@ async function refreshAdminPanel() {
   }
   $('as-files').textContent = '—';
 }
-
 async function loadAdminUsers() {
   const data = await adminApi('/api/admin/users');
   if (!data) return;
@@ -4725,20 +3738,17 @@ async function loadAdminUsers() {
     </tr>
   `).join('');
 }
-
 window.adminBlockUser = async function(userId) {
   if (!confirm('Block this user? They will not be able to log in.')) return;
   const r = await adminApi('/api/admin/users/' + userId + '/block', 'POST');
   if (r && r.success) { alert('✅ ' + r.message); loadAdminUsers(); }
   else alert('Failed: ' + (r?.error || 'Unknown error'));
 };
-
 window.adminUnblockUser = async function(userId) {
   const r = await adminApi('/api/admin/users/' + userId + '/unblock', 'POST');
   if (r && r.success) { alert('✅ ' + r.message); loadAdminUsers(); }
   else alert('Failed: ' + (r?.error || 'Unknown error'));
 };
-
 async function loadAdminErrors() {
   const data = await adminApi('/api/admin/debug/errors');
   if (!data) return;
@@ -4756,7 +3766,6 @@ async function loadAdminErrors() {
     el.innerHTML = '<div style="text-align:center;color:var(--bio);padding:20px;">✓ No errors — all clean</div>';
   }
 }
-
 async function loadAdminPerformance() {
   const [stats, slow] = await Promise.all([
     adminApi('/api/admin/debug/stats'),
@@ -4773,7 +3782,6 @@ async function loadAdminPerformance() {
     `).join('');
   }
 }
-
 async function loadAdminBans() {
   const data = await adminApi('/api/admin/threats');
   if (!data) return;
@@ -4790,7 +3798,6 @@ async function loadAdminBans() {
     tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:var(--bio);">No active bans</td></tr>';
   }
 }
-
 async function loadAdminFinance() {
   const data = await adminApi('/api/payments/financial-summary');
   const el = $('admin-finance-content');
@@ -4813,7 +3820,6 @@ async function loadAdminFinance() {
   if (!html) html = '<div style="color:var(--muted);text-align:center;padding:20px;">No financial data yet. Revenue appears after payments are captured.</div>';
   el.innerHTML = html;
 }
-
 async function loadAdminAcademic() {
   const data = await adminApi('/api/admin/academic/list');
   const el = $('admin-academic-content');
@@ -4842,20 +3848,17 @@ async function loadAdminAcademic() {
   html += '</tbody></table></div>';
   el.innerHTML = html;
 }
-
 window.approveAcademicClaim = async function(claimId) {
   const r = await adminApi('/api/admin/academic/review', 'POST', { claim_id: claimId, action: 'approve' });
   if (r && r.success) loadAdminAcademic();
   else alert('Failed to approve claim');
 };
-
 window.rejectAcademicClaim = async function(claimId) {
   if (!confirm('Reject this academic claim?')) return;
   const r = await adminApi('/api/admin/academic/review', 'POST', { claim_id: claimId, action: 'reject' });
   if (r && r.success) loadAdminAcademic();
   else alert('Failed to reject claim');
 };
-
 async function adminRunScan() {
   $('admin-scan-results').innerHTML = '<div style="color:var(--primary);">Scanning files...</div>';
   const data = await adminApi('/api/admin/scanner/scan', 'POST');
@@ -4871,7 +3874,6 @@ async function adminRunScan() {
   }
   $('admin-scan-results').innerHTML = html;
 }
-
 async function adminCheckIntegrity() {
   $('admin-scan-results').innerHTML = '<div style="color:var(--primary);">Checking integrity...</div>';
   const data = await adminApi('/api/admin/scanner/integrity');
@@ -4887,7 +3889,6 @@ async function adminCheckIntegrity() {
   if (data.error) html += `<div style="color:var(--amber);">${data.error}</div>`;
   $('admin-scan-results').innerHTML = html;
 }
-
 async function adminCreateBaseline() {
   const data = await adminApi('/api/admin/scanner/baseline', 'POST');
   if (data) {
@@ -4895,13 +3896,11 @@ async function adminCreateBaseline() {
     $('as-files').textContent = data.files_baselined;
   }
 }
-
 async function adminUnban(ip) {
   await adminApi('/api/admin/threats/unban', 'POST', {ip});
   loadAdminBans();
   refreshAdminPanel();
 }
-
 async function adminBanIp() {
   const ip = $('admin-ban-ip')?.value.trim();
   if (!ip) return;
@@ -4910,7 +3909,6 @@ async function adminBanIp() {
   loadAdminBans();
   refreshAdminPanel();
 }
-
 // Auto-load admin panel when tab is shown
 const origTabSwitch = document.querySelectorAll('.tab-btn');
 origTabSwitch.forEach(btn => {
@@ -4919,7 +3917,6 @@ origTabSwitch.forEach(btn => {
     if (btn.dataset.tab === 'admin') refreshAdminPanel();
   });
 });
-
 async function fetchUsageForMenu() {
   if (!auth.token) return;
   try {
@@ -4935,19 +3932,15 @@ async function fetchUsageForMenu() {
     }
   } catch(e) { /* silent */ }
 }
-
 // ═══════════════════════════════════════════════════════════════════════════
 // ACADEMIC POPUP, REPORT HISTORY, FEEDBACK, IP ENFORCEMENT
 // ═══════════════════════════════════════════════════════════════════════════
-
 let _academicStarRating = 0;
-
 function setStarRating(val) {
   _academicStarRating = val;
   const stars = document.querySelectorAll('#star-rating span');
   stars.forEach((s, i) => { s.textContent = i < val ? '★' : '☆'; s.style.color = i < val ? '#f59e0b' : '#ccc'; });
 }
-
 async function maybeShowAcademicPopup() {
   if (!auth.token || !auth.user) return;
   try {
@@ -4962,19 +3955,15 @@ async function maybeShowAcademicPopup() {
     }
   } catch(e) { /* silent */ }
 }
-
 function openAcademicModal() {
   $('user-menu')?.classList.remove('show');
   $('academic-overlay')?.classList.add('show');
 }
-
 function closeAcademicModal() {
   $('academic-overlay')?.classList.remove('show');
 }
-
 let _academicProofMethod = 'email';
 let _academicDocPath = '';
-
 function setAcademicProof(method) {
   _academicProofMethod = method;
   const emailBtn = $('acad-proof-email');
@@ -4991,7 +3980,6 @@ function setAcademicProof(method) {
     emailGroup.style.display = 'none'; docGroup.style.display = '';
   }
 }
-
 async function handleAcademicFileUpload(input) {
   const file = input.files?.[0];
   if (!file) return;
@@ -5020,19 +4008,16 @@ async function handleAcademicFileUpload(input) {
     $('acad-upload-status').style.color = 'var(--bad)';
   }
 }
-
 async function submitAcademicClaim() {
   const institution = $('acad-institution')?.value.trim();
   const department = $('acad-department')?.value.trim();
   const emailEdu = $('acad-email')?.value.trim().toLowerCase();
   const useCase = $('acad-usecase')?.value.trim();
   const errEl = $('acad-error');
-
   if (!institution) {
     if (errEl) { errEl.textContent = 'Institution name is required'; errEl.classList.add('show'); }
     return;
   }
-
   if (_academicProofMethod === 'email') {
     if (!emailEdu) {
       if (errEl) { errEl.textContent = 'Institutional email is required'; errEl.classList.add('show'); }
@@ -5059,9 +4044,7 @@ async function submitAcademicClaim() {
       return;
     }
   }
-
   if (!auth.token) { showAuthModal(); closeAcademicModal(); return; }
-
   const btn = $('acad-submit-btn');
   const spinner = $('acad-spinner');
   const btnText = $('acad-btn-text');
@@ -5069,7 +4052,6 @@ async function submitAcademicClaim() {
   if (spinner) spinner.classList.add('show');
   if (btnText) btnText.textContent = 'Submitting…';
   if (errEl) errEl.classList.remove('show');
-
   try {
     const r = await fetch(API + '/api/academic/claim', {
       method: 'POST',
@@ -5107,11 +4089,9 @@ async function submitAcademicClaim() {
     if (btnText) btnText.textContent = 'Claim 10 Free Runs';
   }
 }
-
 async function submitFeedback(context = 'general') {
   const message = $('feedback-msg')?.value.trim();
   if (!message) return;
-
   try {
     const headers = { 'Content-Type': 'application/json' };
     if (auth.token) headers['Authorization'] = 'Bearer ' + auth.token;
@@ -5124,15 +4104,12 @@ async function submitFeedback(context = 'general') {
     $('feedback-thankyou').style.display = '';
   } catch(e) { /* silent */ }
 }
-
 // ── Report History Modal ──────────────────────────────────────────────────
-
 async function openHistoryModal() {
   $('user-menu')?.classList.remove('show');
   $('history-overlay')?.classList.add('show');
   await loadReportHistory();
 }
-
 async function loadReportHistory() {
   const body = $('history-modal-body');
   if (!body) return;
@@ -5141,7 +4118,6 @@ async function loadReportHistory() {
     return;
   }
   body.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted)"><span class="spinner show" style="display:inline-block;border-color:rgba(26,86,255,.3);border-top-color:var(--primary)"></span> Loading…</div>';
-
   try {
     const r = await fetch(API + '/api/reports/history?limit=50', {
       headers: { 'Authorization': 'Bearer ' + auth.token }
@@ -5153,11 +4129,9 @@ async function loadReportHistory() {
     body.innerHTML = `<div class="error-card">Failed to load report history: ${esc(e.message)}</div>`;
   }
 }
-
 function renderHistoryModal(reports, total) {
   const body = $('history-modal-body');
   if (!body) return;
-
   if (!reports.length) {
     body.innerHTML = `
       <div style="text-align:center;padding:60px 20px;color:var(--muted)">
@@ -5167,7 +4141,6 @@ function renderHistoryModal(reports, total) {
       </div>`;
     return;
   }
-
   const rows = reports.map(r => {
     const date = new Date(r.created_at).toLocaleString();
     const score = r.top_score != null ? r.top_score.toFixed(1) + '/100' : '—';
@@ -5205,12 +4178,10 @@ function renderHistoryModal(reports, total) {
         </div>
       </div>`;
   }).join('');
-
   body.innerHTML = `
     <div style="font-size:12px;color:var(--muted);margin-bottom:12px">${total} total reports</div>
     ${rows}`;
 }
-
 async function downloadReport(reportId, format) {
   if (!auth.token) { showAuthModal(); return; }
   try {
@@ -5230,7 +4201,6 @@ async function downloadReport(reportId, format) {
     alert('Download failed: ' + e.message);
   }
 }
-
 async function deleteReport(reportId) {
   if (!confirm('Delete this report? This cannot be undone.')) return;
   if (!auth.token) return;
@@ -5245,7 +4215,6 @@ async function deleteReport(reportId) {
     alert('Delete failed: ' + e.message);
   }
 }
-
 // Auto-save report after a successful pipeline run
 async function autoSaveReport(jobId, pairs, sequenceLength, geneInput) {
   if (!auth.token || !jobId || !pairs || !pairs.length) return;
@@ -5263,7 +4232,6 @@ async function autoSaveReport(jobId, pairs, sequenceLength, geneInput) {
     triggerReferralComplete();
   } catch(e) { /* silent — auto-save failure must not interrupt UI */ }
 }
-
 async function triggerReferralComplete() {
   if (!auth.token) return;
   try {
@@ -5273,15 +4241,12 @@ async function triggerReferralComplete() {
     });
   } catch(e) { /* silent */ }
 }
-
 // ── Referral Panel ─────────────────────────────────────────────────────────
-
 function openReferralPanel() {
   if (!auth.token) { showAuthModal(); return; }
   $('referral-overlay')?.classList.add('show');
   loadReferralPanel();
 }
-
 async function loadReferralPanel() {
   const body = $('referral-panel-body');
   if (!body || !auth.token) return;
@@ -5335,7 +4300,6 @@ async function loadReferralPanel() {
     body.innerHTML = `<div class="error-card">Failed to load referral info: ${esc(e.message)}</div>`;
   }
 }
-
 function copyReferralLink() {
   const input = $('ref-link-input');
   if (!input) return;
@@ -5344,7 +4308,6 @@ function copyReferralLink() {
   const msg = $('ref-copy-msg');
   if (msg) { msg.style.display = ''; setTimeout(() => { msg.style.display = 'none'; }, 2000); }
 }
-
 // Apply referral code from URL on page load
 (function applyRefCodeFromURL() {
   const params = new URLSearchParams(window.location.search);
@@ -5353,7 +4316,6 @@ function copyReferralLink() {
     sessionStorage.setItem('pending_ref_code', refCode.toUpperCase());
   }
 })();
-
 // Called after successful registration to apply pending referral
 async function applyPendingReferral(email) {
   const code = sessionStorage.getItem('pending_ref_code');
@@ -5367,7 +4329,6 @@ async function applyPendingReferral(email) {
     sessionStorage.removeItem('pending_ref_code');
   } catch(e) { /* silent */ }
 }
-
 // ── Expose globals for HTML onclick attributes ──────────────────────────
 window.$ = $;
 window.esc = esc;
@@ -5393,19 +4354,13 @@ window.adminUnban = adminUnban;
 window.downloadReport = downloadReport;
 window.deleteReport = deleteReport;
 window.copyReferralLink = copyReferralLink;
-window.runCheckPrimers = runCheckPrimers;
 window.runBatchAnalysis = runBatchAnalysis;
-window.downloadCheckCSV = downloadCheckCSV;
 window.downloadBatchCSV = downloadBatchCSV;
-window.handleCheckFile = handleCheckFile;
-window.handleCheckDrop = handleCheckDrop;
-window.countSeqsInText = countSeqsInText;
 window.csvEsc = csvEsc;
 window.openBlastViewer = openBlastViewer;
         window.toggleUserMenu = toggleUserMenu;
       })();
     </script>
-
 <div id="ai-widget">
   <button id="ai-widget-toggle" aria-label="AI Assistant" title="AI Assistant">
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
@@ -5426,17 +4381,14 @@ window.openBlastViewer = openBlastViewer;
     </div>
   </div>
 </div>
-
 <script>
 (function(){
   var toggle = document.getElementById('ai-widget-toggle');
   var panel = document.getElementById('ai-widget-panel');
   var closeBtn = document.getElementById('ai-widget-close');
   var optionBtns = document.querySelectorAll('.ai-widget-btn');
-
   function openPanel(){ panel.hidden=false; requestAnimationFrame(function(){ panel.classList.add('visible'); }); }
   function closePanel(){ panel.classList.remove('visible'); setTimeout(function(){ panel.hidden=true; }, 200); }
-
   toggle && toggle.addEventListener('click', function(){
     panel.classList.contains('visible') ? closePanel() : openPanel();
   });
@@ -5452,7 +4404,6 @@ window.openBlastViewer = openBlastViewer;
   });
 })();
 </script>
-
 <script>
 (function(){
   var h=document.getElementById('hamburger'),m=document.getElementById('mobile-menu');
@@ -5461,6 +4412,5 @@ window.openBlastViewer = openBlastViewer;
   document.addEventListener('click',function(e){if(!h.contains(e.target)&&!m.contains(e.target)){h.classList.remove('active');m.classList.remove('open')}});
 })();
 </script>
-
 </body>
 </html>

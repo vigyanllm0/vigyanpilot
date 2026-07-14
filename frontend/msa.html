@@ -8,7 +8,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
 })(window,document,'script','dataLayer','GTM-KRP5LLPR');</script>
 <!-- End Google Tag Manager -->
-
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Multiple Sequence Alignment (MSA) Tool — Clustal Omega Online | VigyanLLM</title>
@@ -40,9 +39,9 @@ a{text-decoration:none;color:inherit}
 .dashboard-wrap{background:transparent;max-width:var(--max-w);margin:0 auto;border-radius:0 0 12px 12px;box-shadow:0 1px 3px rgba(0,0,0,0.04)}
 nav{position:sticky;top:0;background:var(--navy);z-index:100;height:72px}
 .nav-inner{display:flex;justify-content:space-between;align-items:center;height:100%;max-width:1200px;margin:0 auto;padding:0 24px}
-.logo{font-family:var(--font-h);font-size:20px;color:#fff;display:inline-flex;align-items:center;gap:9px;text-decoration:none;font-weight:700}
-.logo-img{width:36px;height:36px;border-radius:6px;background:#0d1117;padding:3px;object-fit:contain;flex-shrink:0}
-.logo-text{font-family:var(--font-h);font-size:20px;color:#fff;line-height:1;font-weight:700}
+.nav-brand{display:flex;align-items:center;gap:10px;color:#fff;font-family:var(--font-h);font-size:20px;font-weight:800}
+.nav-brand img{width:34px;height:34px;border-radius:8px;transition:transform .3s}
+.nav-brand:hover img{transform:rotate(-10deg)}
 .nav-links{display:flex;gap:32px;align-items:center;margin-left:40px}
 .nav-links a{font-size:13px;color:#CBD5E1;transition:color .15s;font-weight:500;letter-spacing:0.02em}
 .nav-links a:hover{color:#fff}
@@ -52,6 +51,12 @@ nav{position:sticky;top:0;background:var(--navy);z-index:100;height:72px}
 .nav-btns{display:flex;flex-direction:column;gap:6px}
 .nav-cta{padding:6px 20px;background:#fff;color:#0F172A;border:none;border-radius:6px;font-family:'Plus Jakarta Sans',sans-serif;font-size:10px;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:.06em;transition:all .2s;line-height:1.3}
 .nav-cta:hover{background:#2563EB;color:#fff;box-shadow:0 4px 16px rgba(37,99,235,.3)}
+.drop-wrap{position:relative;display:inline-block}
+.drop-trigger{font-family:var(--font-b);font-size:13px;color:#CBD5E1;font-weight:500;cursor:pointer;white-space:nowrap}
+.drop-menu{display:none;position:absolute;top:100%;left:0;background:#fff;border:1px solid #E2E5EA;border-radius:12px;min-width:220px;padding:8px;z-index:1001;box-shadow:0 12px 40px rgba(0,0,0,.08);opacity:0;transform:translateY(4px);transition:opacity .2s,transform .2s}
+.drop-menu a{display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px;text-decoration:none}
+.drop-wrap:hover .drop-menu{display:block;opacity:1;transform:translateY(0)}
+.drop-menu a:hover{background:#E0F2F1;color:#009688;padding-left:20px}
 .disclaimer{background:#fffbeb;border-bottom:1px solid #fde68a;padding:10px 24px;text-align:center;font-size:13px;color:#92400e;font-weight:500;display:flex;align-items:center;justify-content:center;gap:8px}
 .disclaimer strong{font-weight:700}
 .page-header{padding:32px 0 24px;border-bottom:1px solid var(--slate-border);background:transparent}
@@ -121,9 +126,8 @@ footer{background:var(--navy);color:#CBD5E1;padding:80px 0 32px}
 .mobile-menu .mm-hdr{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700;padding:8px 0 4px}
 .mobile-menu a{display:block;color:#CBD5E1;font-family:var(--font-b);font-size:14px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04)}
 .mobile-menu .mm-login{display:block;font-family:var(--font-b);font-size:14px;padding:10px 0;font-weight:600;color:var(--accent)}
-@media(max-width:768px){.tool-wrap{grid-template-columns:1fr}.footer-grid{grid-template-columns:1fr 1fr;gap:32px}.nav-links{display:none}.hamburger{display:flex}}
+@media(max-width:768px){.tool-wrap{grid-template-columns:1fr}.footer-grid{grid-template-columns:1fr 1fr;gap:32px}.nav-links{display:flex;gap:32px;align-items:center;margin-left:40px}.hamburger{display:flex}}
 </style>
-
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -145,7 +149,6 @@ footer{background:var(--navy);color:#CBD5E1;padding:80px 0 32px}
   }
 }
 </script>
-
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -202,7 +205,6 @@ footer{background:var(--navy);color:#CBD5E1;padding:80px 0 32px}
   ]
 }
 </script>
-
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -241,82 +243,66 @@ footer{background:var(--navy);color:#CBD5E1;padding:80px 0 32px}
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 </head>
 <body><main>
-
-
 <!-- Google Tag Manager (noscript) -->
 <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-KRP5LLPR"
 height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <!-- End Google Tag Manager (noscript) -->
-
 <nav>
 <div class="nav-inner">
-  <a href="index.html" class="logo">
-    <img src="logo.svg" alt="VigyanLLM multiple sequence alignment tool powered by Clustal Omega with phylogenetic tree generation and position-specific scoring matrices" class="logo-img">
-    <span class="logo-text">VigyanLLM</span>
+  <a href="index.html" class="nav-brand">
+    <img src="logo.svg" alt="VigyanLLM Logo" width="48" height="48" style="border-radius:8px">
+    <span>VigyanLLM</span>
   </a>
   <div class="nav-links">
-    <a href="index.html">Home</a>
-    <div class="drop-wrap" style="position:relative;display:inline-block">
-      <span class="drop-trigger" style="font-family:var(--font-b);font-size:13px;color:#CBD5E1;font-weight:500;cursor:pointer">Platform Architecture ▾</span>
-      <div class="drop-menu" style="display:none;position:absolute;top:100%;left:0;background:#fff;border:1px solid #E2E5EA;border-radius:12px;min-width:200px;padding:8px;z-index:1001;box-shadow:0 12px 40px rgba(0,0,0,.08);opacity:0;transform:translateY(4px);transition:opacity .2s,transform .2s">
-        <a href="platform.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">Platform</a>
-        <a href="architecture.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">Architecture</a>
-        <a href="problem.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">Problem</a>
-        <a href="solution.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">Solution</a>
-        <a href="compare.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">Compare</a>
-        <a href="roadmap.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">Roadmap</a>
+    <div class="drop-wrap">
+      <span class="drop-trigger">Products ▾</span>
+      <div class="drop-menu">
+        <a href="primer.html">VPrime 2.0 — Primer Design</a>
+        <a href="search.html">Sequence Search</a>
+        <a href="blast.html">BLAST</a>
+        <a href="msa.html">MSA</a>
+        <a href="pcr-analysis.html">PCR Analysis</a>
+        <a href="crispr-analysis.html">CRISPR Analysis</a>
+        <a href="tm-calculator.html">Tm Calculator</a>
+        <a href="gc-calculator.html">GC Calculator</a>
+        <a href="protein-docking.html">Protein Docking</a>
+        <a href="dna-to-rna.html" style="display:flex;align-items:center;gap:6px">DNA → RNA Converter <span style="font-size:9px;font-weight:700;color:#fff;background:#16A34A;padding:2px 7px;border-radius:99px;line-height:1.4">Free</span></a>
       </div>
     </div>
-    <div class="drop-wrap" style="position:relative;display:inline-block">
-      <span class="drop-trigger" style="font-family:var(--font-b);font-size:13px;color:#22D3EE;font-weight:600;cursor:pointer">Products &amp; Services ▾</span>
-      <div class="drop-menu" style="display:none;position:absolute;top:100%;left:0;background:#fff;border:1px solid #E2E5EA;border-radius:12px;min-width:220px;padding:8px;z-index:1001;box-shadow:0 12px 40px rgba(0,0,0,.08);opacity:0;transform:translateY(4px);transition:opacity .2s,transform .2s">
-        <a href="primer.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">VPrime 2.0</a>
-        <a href="search.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">Sequence Search</a>
-        <a href="blast.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">BLAST</a>
-        <a href="msa.html" style="display:block;padding:10px 16px;font-size:13px;color:#22D3EE;border-radius:8px;font-weight:600">MSA</a>
-        <a href="pcr-analysis.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">PCR Analysis</a>
-        <a href="crispr-analysis.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">CRISPR</a>
-        <a href="tm-calculator.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">Tm Calc</a>
-        <a href="gc-calculator.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">GC Calc</a>
-        <a href="protein-docking.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">Docking</a>
+    <div class="drop-wrap">
+      <span class="drop-trigger">Platform ▾</span>
+      <div class="drop-menu">
+        <a href="platform.html">Overview</a>
+        <a href="architecture.html">Architecture</a>
+        <a href="problem.html">Problem</a>
+        <a href="solution.html">Solution</a>
+        <a href="compare.html">Compare</a>
+        <a href="roadmap.html">Roadmap</a>
       </div>
     </div>
-    <div class="drop-wrap" style="position:relative;display:inline-block">
-      <span class="drop-trigger" style="font-family:var(--font-b);font-size:13px;color:#CBD5E1;font-weight:500;cursor:pointer">Collab &amp; Partnership ▾</span>
-      <div class="drop-menu" style="display:none;position:absolute;top:100%;left:0;background:#fff;border:1px solid #E2E5EA;border-radius:12px;min-width:200px;padding:8px;z-index:1001;box-shadow:0 12px 40px rgba(0,0,0,.08);opacity:0;transform:translateY(4px);transition:opacity .2s,transform .2s">
-        <a href="academic-partnership.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">Academic Partnership</a>
-        <a href="mailto:contact@vigyanllm.in" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">Enterprise Inquiry</a>
-      </div>
-    </div>
+    <a href="Learning-vigyanllm.html">Learning</a>
+    <a href="academic-partnership.html">Partnership</a>
+    <a href="contact.html">Support</a>
+    <a href="cite.html" style="font-size:11px;opacity:.6">Cite</a>
   </div>
-  <style>.drop-wrap:hover .drop-menu{display:block !important;opacity:1 !important;transform:translateY(0) !important}.drop-menu a:hover{background:#E0F2F1 !important;color:#009688 !important;padding-left:20px !important}</style>
-  <button class="hamburger" id="hamburger" aria-label="Menu" style="flex-direction:column;gap:5px;cursor:pointer;background:none;border:none;padding:4px;margin-left:8px">
-    <span style="width:24px;height:2px;background:rgba(255,255,255,.6);border-radius:2px;display:block"></span>
-    <span style="width:24px;height:2px;background:rgba(255,255,255,.6);border-radius:2px;display:block"></span>
-    <span style="width:24px;height:2px;background:rgba(255,255,255,.6);border-radius:2px;display:block"></span>
-  </button>
   <div class="nav-right">
+    <div class="nav-search-wrap">
+      <input type="text" id="navSearchInput" placeholder="Search tools, learning, blog..." autocomplete="off">
+      <span class="ns-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
+      <div class="nav-search-results" id="navSearchResults"></div>
+    </div>
     <div class="nav-btns">
-      <button class="nav-login" onclick="window.location.href='index.html'">Sign in</button>
-      <button class="nav-cta" onclick="window.location.href='index.html'">Get started</button>
+      <button class="nav-login" onclick="openAuthModal()">Sign in</button>
+      <button class="nav-cta" onclick="openAuthModal()">Get started</button>
     </div>
   </div>
+  <button class="hamburger" id="hamburger" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
 </div>
-</nav>
 <div class="mobile-menu" id="mobile-menu">
-  <div class="mm-group"><div class="mm-hdr">Home</div>
-    <a href="index.html">Home</a>
-  </div>
-  <div class="mm-group"><div class="mm-hdr">Platform Architecture</div>
-    <a href="platform.html">Platform</a>
-    <a href="architecture.html">Architecture</a>
-    <a href="problem.html">Problem</a>
-    <a href="solution.html">Solution</a>
-    <a href="compare.html">Compare</a>
-    <a href="roadmap.html">Roadmap</a>
-  </div>
-  <div class="mm-group"><div class="mm-hdr">Products &amp; Services</div>
-    <a href="primer.html">VPrime 2.0</a>
+  <div class="mm-group"><div class="mm-hdr">Products</div>
+    <a href="primer.html">VPrime 2.0 — Primer Design</a>
     <a href="search.html">Sequence Search</a>
     <a href="blast.html">BLAST</a>
     <a href="msa.html">MSA</a>
@@ -325,30 +311,35 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <a href="tm-calculator.html">Tm Calculator</a>
     <a href="gc-calculator.html">GC Calculator</a>
     <a href="protein-docking.html">Protein Docking</a>
+    <a href="dna-to-rna.html" style="display:flex;align-items:center;gap:6px">DNA → RNA Converter <span style="font-size:9px;font-weight:700;color:#fff;background:#16A34A;padding:2px 7px;border-radius:99px;line-height:1.4">Free</span></a>
   </div>
-  <div class="mm-group"><div class="mm-hdr">Collab &amp; Partnership</div>
+  <div class="mm-group"><div class="mm-hdr">Platform</div>
+    <a href="platform.html">Overview</a>
+    <a href="architecture.html">Architecture</a>
+    <a href="problem.html">Problem</a>
+    <a href="solution.html">Solution</a>
+    <a href="compare.html">Compare</a>
+    <a href="roadmap.html">Roadmap</a>
+  </div>
+  <div class="mm-group">
+    <a href="Learning-vigyanllm.html">Learning</a>
     <a href="academic-partnership.html">Academic Partnership</a>
     <a href="mailto:contact@vigyanllm.in">Enterprise Inquiry</a>
   </div>
-  <div class="mm-group"><a href="login.html" class="mm-login">Log in</a></div>
+  <div class="mm-group"><div class="mm-hdr">Support</div>
+    <a href="contact.html">Help Centre</a>
+    <a href="mailto:contact@vigyanllm.in">Contact Us</a>
+    <a href="cite.html" style="font-size:11px;opacity:.6">Cite Us</a>
+  </div>
+  <a href="javascript:void(0)" onclick="closeMobileMenu();var e=document.getElementById('navSearchInput');if(e){e.focus();e.scrollIntoView({behavior:'smooth',block:'center'})}" class="mm-cta" style="background:transparent;border:1px solid rgba(255,255,255,.25);color:rgba(255,255,255,.8);margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:8px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Search</a>
+  <a href="javascript:void(0)" class="mm-cta" onclick="openAuthModal()">Sign in</a>
 </div>
-
+</nav>
 <div class="dashboard-wrap">
-
 <div class="disclaimer">
   <span style="font-size:16px">⚠️</span>
   <strong>Research Use Only.</strong> Not validated for clinical diagnostic use.
 </div>
-
-<div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:12px 24px;background:var(--slate);border-bottom:1px solid var(--slate-border);font-family:var(--font-b);font-size:13px">
-  <span style="font-weight:700;color:var(--text);margin-right:16px">VigyanLLM</span>
-  <a href="primer.html" style="color:var(--primary);text-decoration:none;font-weight:500">Primer Design</a>
-  <a href="search.html" style="color:var(--primary);text-decoration:none;font-weight:500">Sequence Search</a>
-  <a href="blast.html" style="color:var(--primary);text-decoration:none;font-weight:500">BLAST</a>
-  <a href="msa.html" style="color:var(--primary);text-decoration:none;font-weight:500">MSA</a>
-  <span style="margin-left:auto;font-size:11px;color:var(--muted)">Also available as separate tools →</span>
-</div>
-
 <div class="page-header">
   <div class="container">
     <div>
@@ -357,7 +348,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </div>
   </div>
 </div>
-
 <!-- ══ LLMO: MSA Tool Inputs & Outputs ══ -->
 <section style="max-width:900px;margin:48px auto;padding:0 24px">
   <p>VigyanLLM's <strong>multiple sequence alignment tool</strong> uses <data value="Multiple Sequence Alignment">Clustal Omega</data> for accurate alignment of DNA, RNA, or protein sequences. The <abbr title="Multiple Sequence Alignment">MSA</abbr> engine outputs a consensus sequence, phylogenetic tree, and position-specific scoring matrices for downstream analysis.</p>
@@ -369,9 +359,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <tr><td style="padding:10px 14px"><strong>Guide tree</strong></td><td style="padding:10px 14px"><abbr title="Position-Specific Scoring Matrix">PSSM</abbr> for motif discovery</td></tr>
   </table>
 </section>
-
 <div class="tool-wrap">
-
 <div>
 <div class="panel-card">
   <div class="panel-head">
@@ -413,7 +401,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </div>
   </div>
 </div>
-
 <div class="panel-card" id="msa-downloads" style="display:none">
   <div class="panel-head"><h3>Downloads</h3></div>
   <div class="panel-body">
@@ -422,7 +409,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   </div>
 </div>
 </div>
-
 <div>
 <div class="panel-card" id="msa-stats-card" style="display:none">
   <div class="panel-head"><h3>Alignment Stats</h3></div>
@@ -430,7 +416,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <div class="stats-grid" id="msa-stats"></div>
   </div>
 </div>
-
 <div class="panel-card">
   <div class="panel-head">
     <h3>Alignment</h3>
@@ -456,17 +441,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   </div>
 </div>
 </div>
-
 </div>
 </div>
-
-
-
-
-
-
 <div class="seo-content" style="max-width:var(--max-w);margin:0 auto;padding:48px 24px 24px">
-
 <h2 style="font-family:var(--font-h);font-size:22px;font-weight:800;margin-bottom:8px">Frequently Asked Questions About Multiple Sequence Alignment (MSA) Tool</h2>
 <p style="color:var(--muted);font-size:14px;margin-bottom:32px">Everything you need to know about using this tool</p>
 <div class="faq-item" style="margin-bottom:24px">
@@ -494,7 +471,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <p style="font-size:14px;color:var(--text2);line-height:1.7">You can subscribe through the VPrime 2.0 platform. Subscriptions start at ₹99/day for the Daily Pass with monthly plans from ₹2,499/month.</p>
 </div>
 </div>
-
 </main>
 <footer>
 <div class="footer-grid">
@@ -534,17 +510,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <span>&copy; <script>document.write(new Date().getFullYear())</script> VigyanLLM Pvt. Ltd. · Sovereign Research AI</span>
   <span>WWW.VIGYANLLM.IN</span>
 </div>
-
-
-
-
-
-
-
-
-
 </footer>
-
 <script src="/auth-shared.js"></script>
 <script>
 (function(){
@@ -552,11 +518,9 @@ var API = window.VIGYAN_BACKEND_URL || '';
 var msaJobId = null, msaData = null, msaPage = 0, msaTotalSeqs = 0, msaStats = null;
 var msaPerPage = 50, msaColStart = 0, msaColEnd = 120, msaAlignLen = 0;
 var msaUploadedSeqs = null, msaFileForUpload = null, msaStatus = 'idle';
-
 var $ = function(id){return document.getElementById(id)};
 var esc = function(s){return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')};
 var _on = function(id,ev,fn){var e=$(id);if(e)e.addEventListener(ev,fn)};
-
 // ── Streaming FASTA parser (chunked) ──
 var FastaParser = {
   _buf: '', _name: '', _chunks: [], _seqs: [], _count: 0,
@@ -604,7 +568,6 @@ var FastaParser = {
     return ret;
   }
 };
-
 // ── Tab switching ──
 var tabLinks = document.querySelectorAll('.tab-link');
 for(var ti=0; ti<tabLinks.length; ti++){
@@ -623,7 +586,6 @@ for(var ti=0; ti<tabLinks.length; ti++){
     });
   })(tabLinks[ti]);
 }
-
 // ── File upload / drag-drop with streaming ──
 var dropZone = $('drop-zone'), fileInput = $('msa-upload');
 dropZone.addEventListener('click', function(){fileInput.click()});
@@ -631,9 +593,7 @@ dropZone.addEventListener('dragover', function(e){e.preventDefault();this.style.
 dropZone.addEventListener('dragleave', function(){this.style.borderColor='var(--slate-border)';this.style.background='var(--slate)'});
 dropZone.addEventListener('drop', function(e){e.preventDefault();this.style.borderColor='var(--slate-border)';this.style.background='var(--slate)';if(e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0])});
 fileInput.addEventListener('change', function(){if(this.files.length) handleFile(this.files[0])});
-
 var parseAbort = false;
-
 function handleFile(file){
   if(parseAbort) return;
   if(file.size > 500*1024*1024){ alert('File exceeds 500MB limit.'); return }
@@ -642,13 +602,11 @@ function handleFile(file){
   var info = $('file-info');
   info.style.display = 'block';
   info.innerHTML = '📄 ' + esc(file.name) + ' (' + file.size.toLocaleString() + ' bytes) — <span id="parse-status">parsing…</span>';
-
   // Stream-parse in chunks off the main thread via requestIdleCallback
   FastaParser.reset();
   var CHUNK = 1024 * 512; // 512KB chunks
   var offset = 0, totalParsed = 0, totalBp = 0;
   var reader = new FileReader();
-
   function readChunk(){
     if(parseAbort || offset >= file.size){
       finishParse();
@@ -670,7 +628,6 @@ function handleFile(file){
     reader.onerror = function(){ $('parse-status').textContent = 'read error' };
     reader.readAsText(blob);
   }
-
   function finishParse(){
     var remaining = FastaParser.flush();
     for(var si=0; si<remaining.length; si++){
@@ -685,20 +642,16 @@ function handleFile(file){
     $('parse-status').textContent = totalParsed.toLocaleString() + ' seqs, ' + formatBp(totalBp);
     updateSeqCount();
   }
-
   readChunk();
 }
-
 function formatBp(n){
   if(n > 1e9) return (n/1e9).toFixed(1)+' Gbp';
   if(n > 1e6) return (n/1e6).toFixed(1)+' Mbp';
   if(n > 1e3) return (n/1e3).toFixed(1)+' Kbp';
   return n+' bp';
 }
-
 // ── Async stats (lazy, chunked) ──
 var seqCache = null, seqCacheDirty = false;
-
 function getSeqs(){
   if($('tab-paste').style.display !== 'none'){
     var t = $('msa-input').value.trim();
@@ -711,7 +664,6 @@ function getSeqs(){
   }
   return null;
 }
-
 function parseFastaSync(t){
   var lines = t.split('\n'), seqs = [], cur = null;
   for(var i=0; i<lines.length; i++){
@@ -730,10 +682,8 @@ function parseFastaSync(t){
   for(var i=0; i<seqs.length; i++) out.push({name:seqs[i].name, sequence:seqs[i].seq});
   return out;
 }
-
 var statsTimer = null;
 var statsSeqCount = 0, statsTotalBp = 0;
-
 function updateSeqCount(){
   if(statsTimer){ clearTimeout(statsTimer); statsTimer = null; }
   statsTimer = setTimeout(function(){
@@ -751,19 +701,16 @@ function updateSeqCount(){
     $('msa-total-bp').textContent = seqs.length > 500 ? '…' : seqs.reduce(function(s,x){return s + x.sequence.length}, 0).toLocaleString();
   }, 200);
 }
-
 (function(){
   var v = localStorage.getItem('vp_msa_seq');
   if(v){ $('msa-input').value = v; updateSeqCount(); localStorage.removeItem('vp_msa_seq') }
 })();
-
 _on('msa-input','input', function(){
   msaUploadedSeqs = null;
   msaFileForUpload = null;
   seqCacheDirty = true;
   updateSeqCount();
 });
-
 // ── Progress / loading ──
 function setProgress(pct, text){
   $('msa-progress').style.display = 'block';
@@ -777,7 +724,6 @@ function loading(on){
   $('msa-txt').textContent = on ? (msaStatus==='submitting'?'Uploading…':'Aligning…') : (msaFileForUpload?'Submit File for Alignment':'Run Alignment');
   $('msa-loading').classList.toggle('active',on);
 }
-
 // ── Main alignment ──
 async function doMsa(){
   msaStatus = 'submitting';
@@ -785,7 +731,6 @@ async function doMsa(){
   $('msa-viewer').style.display = 'none';
   $('msa-results').style.display = 'block';
   hideProgress();
-
   try {
     if(msaFileForUpload){
       // ── Direct file upload (large sets) ──
@@ -801,12 +746,10 @@ async function doMsa(){
       await pollJob();
       return;
     }
-
     var seqs = getSeqs();
     if(!seqs || seqs.length < 2){ alert('At least 2 sequences required.'); loading(false); msaStatus='idle'; return }
     var n = seqs.length;
     var estimatedBp = seqs.reduce(function(s,x){return s + x.sequence.length}, 0);
-
     if(n > 500 || estimatedBp > 5000000){
       // ── Async submit (JSON large set) ──
       setProgress(5, 'Submitting ' + n + ' sequences…');
@@ -824,7 +767,6 @@ async function doMsa(){
       await pollJob();
       return;
     }
-
     // ── Small set: direct ──
     setProgress(10, 'Aligning ' + n + ' sequences…');
     var r = await fetch(API + '/api/primer/msa', {
@@ -845,7 +787,6 @@ async function doMsa(){
   }
   finally { msaStatus='idle'; loading(false); hideProgress() }
 }
-
 async function pollJob(){
   for(var i=0; i<180; i++){
     await new Promise(function(r){setTimeout(r, msaTotalSeqs > 10000 ? 3000 : 1500)});
@@ -865,7 +806,6 @@ async function pollJob(){
   }
   throw new Error('Alignment timed out after 5 minutes');
 }
-
 // ── Column range controls ──
 function updateColRange(){
   var start = parseInt($('col-start').value) || 0;
@@ -876,7 +816,6 @@ function updateColRange(){
   msaColEnd = end;
   if(msaJobId) loadPage(msaPage);
 }
-
 // ── Paginated load ──
 async function loadPage(page){
   msaPage = page;
@@ -900,7 +839,6 @@ async function loadPage(page){
   }
   finally { loading(false) }
 }
-
 // ── Render: paginated ──
 function renderPaginated(data){
   renderStats(data.stats || msaStats || {});
@@ -911,13 +849,11 @@ function renderPaginated(data){
   $('btn-prev').disabled = msaPage <= 0;
   $('btn-next').disabled = msaPage >= nPages - 1;
 }
-
 function renderDirect(data){
   renderStats(data.stats||{});
   renderAlignmentView(data.alignment||[], data.conservation||[], data.stats||{});
   $('msa-page-info').textContent = data.alignment ? data.alignment.length+' sequences' : '';
 }
-
 // ── Stats ──
 function renderStats(stats){
   if(!stats || !stats.n_sequences){ $('msa-stats-card').style.display='none'; return }
@@ -930,7 +866,6 @@ function renderStats(stats){
     '<div class="stat-item"><div class="stat-val">'+(stats.identities||0)+'%</div><div class="stat-lbl">Identity</div></div>'+
     '<div class="stat-item"><div class="stat-val">'+(stats.mean_gaps_per_seq||0)+'</div><div class="stat-lbl">Avg Gaps/Seq</div></div>';
 }
-
 // ── Virtual alignment viewer ──
 var renderPending = false;
 function renderAlignmentView(align, cons, stats){
@@ -943,11 +878,9 @@ function renderAlignmentView(align, cons, stats){
     _renderAlign(align, cons, stats);
   });
 }
-
 function _renderAlign(align, cons, stats){
   var rowsEl = $('msa-align-rows'), consBarEl = $('msa-cons-bar');
   if(!align.length){ rowsEl.innerHTML='<div style="padding:20px;color:var(--muted)">No alignment data.</div>'; return }
-
   var nCols = align[0].length || 0;
   var consensusChars = [];
   if(cons && cons.length){
@@ -955,25 +888,20 @@ function _renderAlign(align, cons, stats){
   } else {
     for(var ci=0; ci<nCols; ci++) consensusChars.push('-');
   }
-
   // Build rows using DocumentFragment for batch DOM insert
   var frag = document.createDocumentFragment();
-
   for(var ri=0; ri<align.length; ri++){
     var row = align[ri];
     var name = row.name || 'seq_'+(row.index||0);
     var rowDiv = document.createElement('div');
     rowDiv.className = 'msa-row';
-
     var label = document.createElement('span');
     label.className = 'msa-label';
     label.textContent = name.slice(0,20);
     label.title = name;
     rowDiv.appendChild(label);
-
     var seqDiv = document.createElement('div');
     seqDiv.className = 'msa-seq';
-
     var positions = row.positions || [];
     for(var pi=0; pi<positions.length; pi++){
       var pos = positions[pi];
@@ -991,7 +919,6 @@ function _renderAlign(align, cons, stats){
     rowDiv.appendChild(seqDiv);
     frag.appendChild(rowDiv);
   }
-
   // Consensus row
   var consRow = document.createElement('div');
   consRow.className = 'msa-row';
@@ -1018,10 +945,8 @@ function _renderAlign(align, cons, stats){
   }
   consRow.appendChild(consSeq);
   frag.appendChild(consRow);
-
   rowsEl.innerHTML = '';
   rowsEl.appendChild(frag);
-
   // Conservation bar
   var consFrag = document.createDocumentFragment();
   if(cons && cons.length){
@@ -1040,18 +965,15 @@ function _renderAlign(align, cons, stats){
   }
   consBarEl.innerHTML = '';
   consBarEl.appendChild(consFrag);
-
   // Column range info
   var colInfo = $('msa-col-info');
   if(colInfo){
     colInfo.textContent = 'Columns: '+(msaColStart+1)+'–'+msaColEnd+' of '+(msaAlignLen||nCols);
   }
 }
-
 // ── Navigation ──
 _on('btn-prev','click',function(){ if(msaPage>0 && msaJobId) loadPage(msaPage-1) });
 _on('btn-next','click',function(){ if(msaJobId) loadPage(msaPage+1) });
-
 // ── Run / Download ──
 _on('btn-msa','click',doMsa);
 _on('btn-dl-fa','click',function(){
@@ -1064,7 +986,6 @@ _on('btn-dl-cl','click',function(){
   else if(msaData && msaData.clustal){ var b=new Blob([msaData.clustal],{type:'text/plain'}); var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='alignment.aln';a.click();URL.revokeObjectURL(a.href) }
   else { alert('Run alignment first.') }
 });
-
 // ── Expose column range controls ──
 // Add column range UI to alignment panel head
 var alignHead = document.querySelector('#msa-body').previousElementSibling;
@@ -1079,13 +1000,11 @@ if(alignHead){
     '<button id="btn-col-apply" class="btn-secondary btn-sm" style="padding:2px 6px;font-size:9px">Apply</button>'+
     '<span id="msa-col-info" style="color:var(--muted);margin-left:4px"></span>';
   alignHead.appendChild(colUi);
-
   _on('btn-col-apply','click',updateColRange);
   // Enter key on inputs
   _on('col-start','keydown',function(e){if(e.key==='Enter')updateColRange()});
   _on('col-end','keydown',function(e){if(e.key==='Enter')updateColRange()});
 }
-
 })();
 </script>
 <script>
@@ -1096,10 +1015,5 @@ if(alignHead){
   document.addEventListener('click',function(e){if(!h.contains(e.target)&&!m.contains(e.target)){h.classList.remove('active');m.classList.remove('open')}});
 })();
 </script>
-<div style="max-width:900px;margin:40px auto;padding:20px 24px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:12px;font-size:13px;text-align:center">
-  <strong>Related Tools:</strong>
-  <a href="/blast" style="color:#2563EB;margin:0 8px">BLAST Search →</a> |
-  <a href="/primer-design" style="color:#2563EB;margin:0 8px">Primer Design →</a> |
-  <a href="/search" style="color:#2563EB;margin:0 8px">Sequence Search →</a>
-</div>
 </body>
+</html>

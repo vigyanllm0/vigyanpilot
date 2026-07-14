@@ -1,238 +1,115 @@
 <!DOCTYPE html>
-<html lang="en-IN">
+<html lang="en">
 <head>
-<!-- Google Tag Manager -->
-<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-})(window,document,'script','dataLayer','GTM-KRP5LLPR');</script>
-<!-- End Google Tag Manager -->
-
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>In Silico PCR Analysis Tool — Primer Validation &amp; Simulation | VigyanLLM</title>
-<meta name="twitter:image" content="https://vigyanllm.in/poster.png">
-<meta name="twitter:description" content="Free online PCR analysis tool for in silico PCR simulation, primer pair validation, product size prediction, and melting temperature analysis.">
-<meta name="twitter:title" content="In Silico PCR Analysis Tool — Primer Validation &amp; Simulation | VigyanLLM">
-<meta name="twitter:card" content="summary_large_image">
-<meta property="og:site_name" content="VigyanLLM">
-<meta property="og:image" content="https://vigyanllm.in/poster.png">
-<meta name="keywords" content="PCR analysis tool, in silico PCR, PCR primer analysis, PCR product prediction, digital PCR tool, PCR simulation online, primer pair validation, PCR efficiency calculator" />
-<meta name="author" content="VigyanLLM Private Limited" />
-<meta name="description" content="Free online PCR analysis tool for in silico PCR simulation, primer pair validation, product size prediction, and melting temperature analysis.">
-<link rel="canonical" href="https://vigyanllm.in/pcr-analysis">
-<meta property="og:title" content="In Silico PCR Analysis Tool — Primer Validation &amp; Simulation | VigyanLLM">
-<meta property="og:description" content="Free online PCR analysis tool for in silico PCR simulation, primer pair validation, product size prediction, and melting temperature analysis.">
-<meta property="og:type" content="website">
-<meta property="og:url" content="https://vigyanllm.in/pcr-analysis">
-<meta name="robots" content="index, follow"><!-- Google tag (gtag.js) -->
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=5.0">
+<meta name="theme-color" content="#0B1E33">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="icon" type="image/svg+xml" href="/logo.svg">
+<link rel="apple-touch-icon" href="/logo.svg">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>PCR Analysis Tool — Check Primers Against Template | VigyanLLM</title>
+<meta name="description" content="Free online PCR analysis tool. Check primer pairs against any template sequence with full thermodynamic analysis: Tm, GC%, hairpin ΔG, self-dimer ΔG, cross-dimer ΔG, and ranked recommendations.">
+<meta name="keywords" content="PCR analysis, check primers, primer alignment, primer thermodynamics, Tm calculator, GC clamp, hairpin analysis, self-dimer, cross-dimer, primer ranking">
+<link rel="canonical" href="https://vigyanllm.in/pcr-analysis.html">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "VigyanLLM PCR Analysis Tool",
+  "applicationCategory": "BioinformaticsApplication",
+  "operatingSystem": "Web",
+  "description": "Free online PCR analysis tool to check primer pairs against a template sequence. Provides full thermodynamic analysis including melting temperature, GC content, hairpin formation, self-dimer and cross-dimer formation, and ranked primer pair recommendations.",
+  "url": "https://vigyanllm.in/pcr-analysis.html",
+  "author": {"@type": "Organization", "name": "VigyanLLM Private Limited", "url": "https://vigyanllm.in"},
+  "offers": {"@type": "Offer", "price": "0", "priceCurrency": "INR"}
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "name": "PCR Analysis — Check Primers Against Template",
+  "description": "Analyse primer pairs against a DNA template sequence with full thermodynamic profiling. Supports FASTA, CSV, TSV, and Primer-BLAST report formats.",
+  "url": "https://vigyanllm.in/pcr-analysis.html",
+  "about": {"@type": "SoftwareApplication", "name": "VigyanLLM", "applicationCategory": "BioinformaticsApplication", "operatingSystem": "Web", "description": "Free online PCR primer analysis and thermodynamics tool."}
+}
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="manifest" href="/manifest.json">
 <style>
-:root{--blue:#1565C0;--blue-light:#42A5F5;--blue-bg:#E3F2FD;--navy:#0F172A;--black:#0A0A0F;--surface:#FFFFFF;--surface-alt:#F5F7FA;--outline:#E2E5EA;--text:#0A0A0F;--text2:#4A4A6A;--muted:#7A7A9A;--font-h:'Montserrat',sans-serif;--font-b:'Open Sans',sans-serif;--max-w:1200px}
-*{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth}
-body{background:var(--surface);color:var(--text);font-family:var(--font-b);line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
-a{text-decoration:none;color:inherit}
-img{max-width:100%}
-.container{max-width:1100px;margin:0 auto;padding:0 24px}
-nav{position:sticky;top:0;background:var(--navy);z-index:1000;height:72px;border-bottom:1px solid rgba(255,255,255,.08)}
-.nav-inner{display:flex;justify-content:space-between;align-items:center;height:100%;max-width:var(--max-w);margin:0 auto;padding:0 32px 0 8px}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--navy:#0B1E33;--navy-light:#1A365D;--primary:#009688;--primary-soft:rgba(0,150,136,0.06);--bio:#10B981;--bio-soft:rgba(16,185,129,0.08);--amber:#F59E0B;--amber-soft:rgba(245,158,11,0.08);--red:#EF4444;--text:#1E293B;--text2:#64748B;--muted:#94A3B8;--slate:#F8FAFC;--slate-border:#E2E5EA;--outline:#E2E5EA;--accent:#22D3EE;--shadow:0 1px 3px rgba(0,0,0,0.06);--font-h:'Plus Jakarta Sans',system-ui,sans-serif;--font-b:'Inter',system-ui,sans-serif}
+body{font-family:var(--font-b);background:#fff;color:var(--text);line-height:1.5;min-height:100vh}
+a{color:var(--primary);text-decoration:none}
+.container{max-width:1200px;margin:0 auto;padding:0 24px}
+.page-header{background:linear-gradient(135deg,var(--navy) 0%,var(--navy-light) 100%);padding:60px 0 48px;position:relative;overflow:hidden}
+.page-header::after{content:'';position:absolute;top:0;right:0;width:600px;height:600px;background:radial-gradient(circle,rgba(0,150,136,0.08) 0%,transparent 70%);pointer-events:none}
+.ph-eyebrow{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.12em;color:var(--accent);margin-bottom:8px}
+.ph-title{font-family:var(--font-h);font-size:36px;font-weight:800;color:#fff;line-height:1.15;margin-bottom:12px}
+.ph-desc{font-size:15px;color:#CBD5E1;line-height:1.6;max-width:680px}
+.tool-wrap{display:grid;grid-template-columns:380px 1fr;gap:24px;margin:32px auto;max-width:1200px;padding:0 24px}
+@media(max-width:900px){.tool-wrap{grid-template-columns:1fr}}
+.panel-card{border:1px solid var(--slate-border);border-radius:10px;background:#fff;overflow:hidden;box-shadow:var(--shadow)}
+.panel-head{padding:10px 14px;background:var(--slate);border-bottom:1px solid var(--slate-border)}
+.panel-head h3{font-family:var(--font-h);font-size:13px;font-weight:700;color:var(--text)}
+.panel-body{padding:14px}
+.form-group{margin-bottom:10px}
+.form-label{display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:4px}
+.form-textarea{width:100%;padding:10px 12px;border:1px solid var(--slate-border);border-radius:8px;font-size:13px;font-family:var(--font-b);color:var(--text);background:#fff;resize:vertical;min-height:80px;transition:border-color .15s}
+.form-textarea:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(0,150,136,0.1)}
+.form-textarea.error{border-color:var(--red);box-shadow:0 0 0 3px rgba(239,68,68,0.1)}
+.btn-primary{display:inline-flex;align-items:center;gap:6px;padding:10px 24px;background:var(--primary);color:#fff;border:none;border-radius:8px;font-family:var(--font-b);font-size:13px;font-weight:600;cursor:pointer;transition:opacity .15s,transform .1s}
+.btn-primary:hover{opacity:.9;transform:translateY(-1px)}
+.btn-primary:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.btn-secondary{display:inline-flex;align-items:center;gap:6px;padding:8px 18px;background:transparent;color:var(--text);border:1.5px solid var(--slate-border);border-radius:8px;font-family:var(--font-b);font-size:12px;font-weight:600;cursor:pointer;transition:all .15s}
+.btn-secondary:hover{border-color:var(--primary);color:var(--primary)}
+.spinner{display:none;width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .5s linear infinite}
+.spinner.active{display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+.badge{display:inline-block;padding:3px 10px;border-radius:6px;font-size:11px;font-weight:600;font-family:var(--font-b);border:1.5px solid}
+.badge.pass-b{color:var(--bio);border-color:var(--bio);background:var(--bio-soft)}
+.badge.fail-b{color:var(--red);border-color:var(--red);background:rgba(239,68,68,0.06)}
+.success-card{padding:10px 14px;background:var(--bio-soft);border:1px solid var(--bio);border-radius:8px;font-size:12px;color:var(--text)}
+.warn-list{margin-top:6px}
+.warn-item{padding:6px 10px;font-size:11px;color:var(--text2);background:var(--slate);border-left:3px solid var(--amber);border-radius:4px;margin-bottom:4px}
+.error-card{padding:10px 14px;background:rgba(239,68,68,0.06);border:1px solid var(--red);border-radius:8px;font-size:12px;color:var(--red)}
+nav{background:var(--navy);padding:0 24px;height:72px;display:flex;align-items:center;position:sticky;top:0;z-index:1000}
+.nav-inner{display:flex;align-items:center;gap:32px;width:100%;max-width:1200px;margin:0 auto}
 .nav-brand{display:flex;align-items:center;gap:10px;color:#fff;font-family:var(--font-h);font-size:20px;font-weight:800}
 .nav-brand img{width:34px;height:34px;border-radius:8px;transition:transform .3s}
 .nav-brand:hover img{transform:rotate(-10deg)}
 .nav-links{display:flex;gap:32px;align-items:center;margin-left:40px}
-.nav-links>a,.drop-trigger{font-family:var(--font-b);font-size:13px;color:rgba(255,255,255,.7);font-weight:600;cursor:pointer;padding:6px 0;text-transform:uppercase;letter-spacing:.04em;transition:color .15s}
-.nav-links>a:hover,.drop-trigger:hover{color:#fff}
+.nav-links a{font-family:var(--font-b);font-size:13px;color:#CBD5E1;font-weight:500;text-decoration:none;white-space:nowrap}
 .drop-wrap{position:relative;display:inline-block}
-.drop-menu{display:none;position:absolute;top:100%;left:-16px;background:#fff;border:1px solid var(--outline);border-radius:12px;min-width:240px;padding:8px;z-index:1001;box-shadow:0 12px 40px rgba(0,0,0,.12);opacity:0;transform:translateY(4px);transition:opacity .2s,transform .2s}
+.drop-trigger{font-family:var(--font-b);font-size:13px;color:#CBD5E1;font-weight:500;cursor:pointer;white-space:nowrap}
+.drop-menu{display:none;position:absolute;top:100%;left:0;background:#fff;border:1px solid #E2E5EA;border-radius:12px;min-width:220px;padding:8px;z-index:1001;box-shadow:0 12px 40px rgba(0,0,0,.08);opacity:0;transform:translateY(4px);transition:opacity .2s,transform .2s}
+.drop-menu a{display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px;text-decoration:none}
 .drop-wrap:hover .drop-menu{display:block;opacity:1;transform:translateY(0)}
-.drop-menu a{display:block;padding:10px 16px;font-size:13px;color:var(--text2);border-radius:8px;font-weight:500;transition:all .12s}
-.drop-menu a:hover{background:var(--blue-bg);color:var(--blue);padding-left:20px}
-.nav-right{display:flex;align-items:center;gap:8px;margin-left:auto;padding-right:4px}
-.nav-btns{display:flex;flex-direction:column;gap:6px}
-.nav-search-wrap{position:relative;display:flex;align-items:center}
-.nav-search-wrap input{width:200px;padding:7px 32px 7px 12px;border-radius:8px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:#fff;font-family:var(--font-b);font-size:12px;outline:none;transition:all .2s}
-.nav-search-wrap input::placeholder{color:rgba(255,255,255,.4)}
-.nav-search-wrap input:focus{border-color:rgba(255,255,255,.4);background:rgba(255,255,255,.12);width:260px}
-.nav-search-wrap .ns-icon{position:absolute;right:8px;color:rgba(255,255,255,.4);pointer-events:none;display:flex}
-.nav-search-results{position:absolute;top:calc(100% + 8px);right:0;width:360px;background:#fff;border-radius:12px;box-shadow:0 12px 48px rgba(0,0,0,.25);overflow:hidden;display:none;z-index:1001}
-.nav-search-results.open{display:block}
-.nav-search-results .nsr-group{padding:4px 0 0}
-.nav-search-results .nsr-label{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#94A3B8;font-weight:700;padding:6px 14px 2px}
-.nav-search-results .nsr-item{display:flex;align-items:center;gap:10px;padding:8px 14px;cursor:pointer;text-decoration:none;transition:background .1s}
-.nav-search-results .nsr-item:hover{background:#F1F5F9}
-.nav-search-results .nsr-item .r-icon{font-size:14px;flex-shrink:0}
-.nav-search-results .nsr-item .r-text{flex:1;min-width:0}
-.nav-search-results .nsr-item .r-title{font-size:12px;font-weight:600;color:#0F172A}
-.nav-search-results .nsr-item .r-desc{font-size:10px;color:#64748B;margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.nav-search-no{font-size:12px;color:#94A3B8;padding:20px 14px;text-align:center}
-
-@media(max-width:900px){.nav-search-wrap input{width:120px}.nav-search-wrap input:focus{width:160px}.nav-search-results{width:280px}}
-@media(max-width:768px){.nav-search-wrap{display:none}.nav-right{gap:6px}.nav-login{padding:5px 12px;font-size:10px}.nav-cta{padding:5px 14px;font-size:9px}.nav-btns{gap:3px}}
-@media(max-width:480px){.nav-right{gap:4px}.nav-login{padding:4px 10px;font-size:9px;border-width:1px}.nav-cta{padding:4px 12px;font-size:8px}.nav-btns{gap:2px}}
-.nav-cta{padding:6px 20px;background:#fff;color:var(--navy);border:none;border-radius:6px;font-family:var(--font-h);font-size:10px;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:.06em;transition:all .2s;line-height:1.3}
-.nav-cta:hover{background:var(--blue-light);color:#fff;box-shadow:0 4px 16px rgba(21,101,192,.3)}
-.nav-login{padding:5px 16px;background:transparent;color:rgba(255,255,255,.8);border:1.5px solid rgba(255,255,255,.25);border-radius:6px;font-family:var(--font-b);font-size:11px;font-weight:600;cursor:pointer;transition:all .15s;line-height:1.3}
-.nav-login:hover{border-color:#fff;color:#fff;background:rgba(255,255,255,.06)}
-.hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;background:none;border:none;padding:4px;z-index:1001}
-.hamburger span{width:22px;height:2.5px;background:#fff;border-radius:2px;transition:all .3s}
-.hamburger.active span:nth-child(1){transform:rotate(45deg) translate(5px,5px)}
-.hamburger.active span:nth-child(2){opacity:0}
-.hamburger.active span:nth-child(3){transform:rotate(-45deg) translate(5px,-5px)}
+.drop-menu a:hover{background:#E0F2F1;color:#009688;padding-left:20px}
+.hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;background:none;border:none;padding:4px}
+.nav-right{display:flex;align-items:center;gap:12px;margin-left:auto}
+.nav-btns{display:flex;gap:8px}
+.nav-login{padding:8px 20px;border:1.5px solid rgba(255,255,255,.3);border-radius:4px;font-family:var(--font-b);font-size:13px;font-weight:600;color:#fff;background:transparent;cursor:pointer}
+.nav-cta{padding:8px 20px;background:var(--primary);color:#fff;border:none;border-radius:4px;font-family:var(--font-b);font-size:13px;font-weight:600;cursor:pointer}
+.disclaimer{padding:16px 24px;background:#FEF3C7;border-bottom:1px solid var(--slate-border);font-size:13px;color:#92400E;display:flex;align-items:center;gap:8px;justify-content:center}
+@media(max-width:768px){.nav-links,.nav-right{display:none}.hamburger{display:flex}}
 .mobile-menu{display:none;position:fixed;top:72px;left:0;right:0;background:var(--navy);padding:20px 24px;z-index:999;border-bottom:1px solid rgba(255,255,255,.08);max-height:calc(100vh-72px);overflow-y:auto}
 .mobile-menu.open{display:block}
 .mobile-menu .mm-group{margin-bottom:16px}
 .mobile-menu .mm-hdr{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.4);font-weight:700;padding:8px 0 4px}
 .mobile-menu a{display:block;color:rgba(255,255,255,.7);font-size:14px;padding:10px 0;font-weight:500}
 .mobile-menu .mm-cta{display:block;margin-top:8px;padding:12px;background:#fff;color:var(--navy);border-radius:8px;text-align:center;font-weight:700;font-size:13px}
-@media(max-width:768px){.nav-links{display:none}.hamburger{display:flex}}
-.hero{padding:80px 0 40px;text-align:center}
-.hero h1{font-family:'Plus Jakarta Sans',sans-serif;font-size:clamp(2rem,4vw,2.8rem);font-weight:800;margin-bottom:16px}
-.hero p{font-size:17px;color:#475569;max-width:720px;margin:0 auto 32px}
-.btn{display:inline-block;padding:14px 32px;background:#2563EB;color:#fff;border-radius:8px;font-weight:700;font-size:14px;text-decoration:none}
-.btn:hover{background:#1d4ed8}
-.features{padding:60px 0;border-top:1px solid #E2E8F0}
-.features h2{font-family:'Plus Jakarta Sans',sans-serif;font-size:24px;font-weight:700;margin-bottom:32px;text-align:center}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:24px}
-.card{border:1px solid #E2E8F0;border-radius:12px;padding:24px}
-.card h3{font-size:16px;font-weight:700;margin-bottom:8px}
-.card p{font-size:13px;color:#475569}
-.card ul{list-style:none;padding:0;margin-top:12px}
-.card li{font-size:12px;color:#64748B;padding:4px 0;border-bottom:1px solid #f1f5f9}
-.card li:before{content:"✓ ";color:#059669;font-weight:700}
-.cta-section{background:#F8FAFC;padding:60px 0;text-align:center}
-.cta-section h2{font-family:'Plus Jakarta Sans',sans-serif;font-size:24px;font-weight:700;margin-bottom:12px}
-.cta-section p{color:#475569;margin-bottom:24px}
-footer{background:#0F172A;color:#CBD5E1;padding:48px 0 24px}
-.footer-grid{display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr 1fr;gap:48px;margin-bottom:40px}
-.footer-grid a{display:block;color:#94A3B8;text-decoration:none;font-size:13px;margin-bottom:10px}
-.footer-grid h5{font-size:12px;text-transform:uppercase;letter-spacing:0.1em;color:#fff;margin-bottom:20px;font-weight:700}
-@media(max-width:768px){.grid{grid-template-columns:1fr}.footer-grid{grid-template-columns:1fr 1fr;gap:32px}}
-.auth-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center;padding:24px}
-.auth-overlay.open{display:flex}
-.auth-modal{background:#fff;border-radius:16px;padding:36px;width:100%;max-width:400px;box-shadow:0 24px 64px rgba(0,0,0,.25);position:relative;max-height:90vh;overflow-y:auto}
-.auth-modal .close-btn{position:absolute;top:14px;right:16px;background:none;border:none;font-size:22px;cursor:pointer;color:var(--muted);line-height:1}
-.auth-modal h2{font-family:var(--font-h);font-size:20px;font-weight:800;color:var(--text);margin-bottom:2px}
-.auth-modal .sub{font-size:13px;color:var(--muted);margin-bottom:24px}
-.auth-modal .field{margin-bottom:14px}
-.auth-modal .field label{display:block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text2);margin-bottom:5px}
-.auth-modal .field input{width:100%;padding:11px 13px;border:1px solid var(--outline);border-radius:8px;font-family:var(--font-b);font-size:14px;color:var(--text);transition:border-color .15s}
-.auth-modal .field input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(21,101,192,.1)}
-.auth-modal .auth-btn{width:100%;padding:13px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-family:var(--font-b);font-size:14px;font-weight:700;cursor:pointer;transition:opacity .15s}
-.auth-modal .auth-btn:hover{opacity:.9}
-.auth-modal .toggle-link{text-align:center;font-size:12px;color:var(--muted);margin-top:14px}
-.auth-modal .toggle-link a{color:var(--blue);font-weight:600;cursor:pointer}
-.auth-modal .auth-err{color:#DC2626;font-size:12px;text-align:center;margin-top:8px;display:none}
+footer{background:var(--navy);color:#CBD5E1;padding:80px 0 32px;margin-top:60px}
+.footer-grid{display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr;gap:48px;margin-bottom:60px;max-width:1200px;margin:0 auto 60px;padding:0 24px}
+.footer-bottom{max-width:1200px;margin:0 auto;padding:24px 24px 0;border-top:1px solid rgba(255,255,255,0.1);display:flex;justify-content:space-between;font-size:12px;color:#64748B}
+@media(max-width:768px){.footer-grid{grid-template-columns:1fr 1fr;gap:32px}}
 </style>
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"VigyanLLM PCR Analysis","applicationCategory":"Biotechnology","operatingSystem":"Web","url":"https://vigyanllm.in/primer","description":"AI-powered PCR analysis platform supporting conventional PCR, qPCR, multiplex, and long-range PCR workflows with 24-step primer validation.","offers":[{"@type":"Offer","name":"Free Researcher Tier","price":"0","priceCurrency":"INR"}],"featureList":"Primer design, PCR optimisation, qPCR assay design, TaqMan probe design, multiplex PCR, long-range PCR, BLAST specificity, Tm calculation"}</script>
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"VigyanLLM","item":"https://vigyanllm.in/"},{"@type":"ListItem","position":2,"name":"PCR Analysis","item":"https://vigyanllm.in/pcr-analysis"}]}</script>
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"DefinedTermSet","name":"Molecular Biology Tools","description":"VigyanLLM provides AI-powered tools for primer design, PCR analysis, CRISPR guide design, protein docking, Tm calculation, and GC content analysis for molecular biology research."}</script>
-
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "FAQPage",
-  "mainEntity": [
-    {
-      "@type": "Question",
-      "name": "Is the PCR Analysis tool free?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "The PCR analysis tool offers 5 free analyses per user. Each analysis uses backend compute for thermodynamic simulation and specificity checking. After 5 free uses, a subscription is required."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "What does the PCR analysis tool do?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "It analyzes primer pairs for PCR compatibility, predicting amplification efficiency, product size, Tm matching, cross-dimer formation, and off-target amplification risk."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "What parameters are analyzed?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "The tool checks primer Tm, GC content, self-complementarity, 3\u2032-end stability, primer-dimer potential, amplicon size, and cross-homology with reference genomes."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "Do I need an account?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "No, you can use PCR analysis without an account for your first 5 analyses. An account helps track usage and manage access."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "Can I analyze multiplex primer sets?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "Yes, the tool supports multiplex PCR analysis, checking cross-reactivity between all primer pairs in a multiplex panel."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "How do I get unlimited access?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "Subscribe through VPrime 2.0 starting at \u20b999/day. Enterprise deployments include unlimited analysis for the entire organization."
-      }
-    }
-  ]
-}
-</script>
-
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "WebPage",
-  "name": "VigyanLLM",
-  "speakable": {
-    "@type": "SpeakableSpecification",
-    "cssSelector": [
-      "h1",
-      "h2",
-      ".lead",
-      ".section-tag"
-    ]
-  }
-}
-</script>
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "WebPage",
-  "name": "In Silico PCR Analysis Tool — Primer Validation & Simulation",
-  "description": "Free online PCR analysis tool for in silico PCR simulation, primer pair validation, product size prediction, and melting temperature analysis.",
-  "url": "https://vigyanllm.in/pcr-analysis",
-  "about": {
-    "@type": "SoftwareApplication",
-    "name": "VigyanLLM",
-    "applicationCategory": "BioinformaticsApplication",
-    "operatingSystem": "Web",
-    "description": "Free online PCR analysis tool for in silico PCR simulation, primer pair validation, product size prediction, and melting temperature analysis."
-  }
-}
-</script>
-<link rel="icon" type="image/svg+xml" href="/logo.svg">
-<link rel="apple-touch-icon" href="/logo.svg">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 </head>
-<body><main>
-
-
-<!-- Google Tag Manager (noscript) -->
-<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-KRP5LLPR"
-height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-<!-- End Google Tag Manager (noscript) -->
-
+<body>
 <nav>
 <div class="nav-inner">
   <a href="index.html" class="nav-brand">
@@ -321,114 +198,281 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <a href="javascript:void(0)" class="mm-cta" onclick="openAuthModal()">Sign in</a>
 </div>
 </nav>
-
-<section class="hero"><div class="container">
-<h1>AI-Powered PCR Analysis Software <span style="display:inline-block;vertical-align:middle;margin-left:10px;background:#FEF3C7;color:#92400E;font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;letter-spacing:.04em;text-transform:uppercase">Coming Soon</span></h1>
-<div itemscope itemtype="https://schema.org/Question" style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:12px;padding:24px;margin:24px 0">
-<p style="font-weight:700;font-size:15px;margin-bottom:8px" itemprop="name">What is this tool?</p>
-<div itemprop="acceptedAnswer" itemscope itemtype="https://schema.org/Answer">
-<p itemprop="text" style="color:#475569;font-size:14px">This AI-powered PCR analysis platform supports conventional PCR, qPCR, multiplex, and long-range PCR workflows with 24-step primer validation. It is built for molecular biologists and clinical researchers who need comprehensive PCR assay design and optimization.</p>
-</div></div>
-<p>Design optimised PCR assays — conventional, qPCR, multiplex, and long-range — with VigyanLLM's 24-step validation pipeline. Generate audit-ready primer pairs with thermodynamic profiling, BLAST specificity, and probe design in under 30 seconds.</p>
-<a href="primer.html" class="btn">Try VigyanLLM Primer Free →</a>
-<p style="margin-top:12px;font-size:13px;color:#94A3B8">Free for PhD researchers. No credit card required.</p>
-</div></section>
-<p style="font-size:12px;color:#94A3B8;margin-top:8px">Last updated: July 2026 · Reviewed by VigyanLLM Research Team</p>
-
-<!-- ══ LLMO: PCR Analysis Tool In Silico ══ -->
-<section style="max-width:900px;margin:48px auto;padding:0 24px">
-  <p>VigyanLLM's <strong>in silico PCR analysis tool</strong> simulates <abbr title="Polymerase Chain Reaction">PCR</abbr> amplification virtually, predicting product size, melting temperature, and primer-template compatibility before wet-lab validation. The <data value="In Silico PCR">digital PCR simulation</data> identifies off-target binding and non-specific amplification across reference genomes.</p>
+<div class="disclaimer">
+  <span>⚠️</span>
+  <strong>Research Use Only.</strong> Not validated for clinical diagnostic use.
+</div>
+<div class="page-header">
+  <div class="container">
+    <div>
+      <div class="ph-eyebrow">PCR Analysis Tool</div>
+      <h1 class="ph-title">Check Primers Against Template</h1>
+      <p class="ph-desc">Paste or upload primer pairs (FASTA, CSV, TSV, or Primer-BLAST report). The tool aligns them against your template sequence and provides full thermodynamic analysis — Tm, GC%, hairpin ΔG, self-dimer ΔG, cross-dimer ΔG — with ranked recommendations.</p>
+    </div>
+  </div>
+</div>
+<!-- ══ LLMO: PCR Tool Inputs & Outputs ══ -->
+<section style="max-width:900px;margin:32px auto;padding:0 24px">
+  <p>VigyanLLM is a <strong>free online PCR analysis tool</strong> that checks primer pairs against any <data value="DNA Template">DNA template sequence</data> using the <abbr title="Melting Temperature">Tm</abbr> nearest-neighbor model (SantaLucia 1998) and <abbr title="Primer3">primer3</abbr>-based <abbr title="Gibbs Free Energy">ΔG</abbr> calculations. Unlike standard web primer checkers, it supports Primer-BLAST reports, VigyanLLM auto-design CSV exports, and <abbr title="Comma-Separated Values">CSV</abbr>/<abbr title="Tab-Separated Values">TSV</abbr>/<abbr title="FASTA format">FASTA</abbr> formats with automatic detection.</p>
   <table style="width:100%;border-collapse:collapse;margin-top:20px;font-size:13px">
-    <tr style="background:var(--slate,#F1F5F9)"><th style="padding:10px 14px;text-align:left">Analysis</th><th style="padding:10px 14px;text-align:left">Result</th></tr>
-    <tr style="border-bottom:1px solid var(--outline,#E2E5EA)"><td style="padding:10px 14px"><strong>Product Size</strong></td><td style="padding:10px 14px">Predicted amplicon length (bp)</td></tr>
-    <tr style="border-bottom:1px solid var(--outline,#E2E5EA)"><td style="padding:10px 14px"><strong>Annealing Tm</strong></td><td style="padding:10px 14px">Optimal annealing temperature range</td></tr>
-    <tr style="border-bottom:1px solid var(--outline,#E2E5EA)"><td style="padding:10px 14px"><strong>Off-Target Hits</strong></td><td style="padding:10px 14px">Cross-homology matches in genome</td></tr>
-    <tr><td style="padding:10px 14px"><strong>Primer Pair Score</strong></td><td style="padding:10px 14px">Compatibility rating (0-100)</td></tr>
+    <tr style="background:var(--slate,#F1F5F9)"><th style="padding:10px 14px;text-align:left">Input</th><th style="padding:10px 14px;text-align:left">Output</th></tr>
+    <tr style="border-bottom:1px solid var(--outline,#E2E5EA)"><td style="padding:10px 14px">Template sequence (DNA 5'→3')</td><td style="padding:10px 14px">Alignment identity %, mismatch count, start position on template</td></tr>
+    <tr style="border-bottom:1px solid var(--outline,#E2E5EA)"><td style="padding:10px 14px">Primer pairs (FASTA/CSV/TSV/Primer-BLAST)</td><td style="padding:10px 14px">Forward/reverse Tm (°C), GC%, hairpin ΔG, self-dimer ΔG, 3' GC clamp</td></tr>
+    <tr style="border-bottom:1px solid var(--outline,#E2E5EA)"><td style="padding:10px 14px">Batch primer list (multiple pairs)</td><td style="padding:10px 14px">Cross-dimer ΔG, Tm delta, suggested annealing Ta, ranked score, warnings</td></tr>
+    <tr><td style="padding:10px 14px">Primer-BLAST export report</td><td style="padding:10px 14px">Automatic format detection, parsed forward/reverse sequences, downloadable CSV</td></tr>
   </table>
 </section>
-
-<section class="features"><div class="container">
-<h2>PCR Analysis Workflows Supported</h2>
-<div class="grid">
-<div class="card"><h3>Conventional PCR</h3><p>Design primers for standard end-point PCR with amplicon sizing 60-2000 bp. Includes Tm optimisation, GC content balancing, and specificity validation.</p><ul><li>Amplicon length 60-2000 bp</li><li>Tm 55-65°C with ±1°C uniformity</li><li>GC content 40-60%</li><li>3' end stability check</li></ul></div>
-<div class="card"><h3>Quantitative PCR (qPCR)</h3><p>SYBR Green and TaqMan assay design with exon junction spanning, amplicon sizing 60-150 bp, and probe Tm differential optimisation.</p><ul><li>60-150 bp amplicon</li><li>Exon-exon junction design</li><li>TaqMan probe Tm 5-10°C above primers</li><li>SYBR Green melt curve prediction</li></ul></div>
-<div class="card"><h3>Multiplex PCR</h3><p>Design 2-6 plex assays with amplicon size differentiation, Tm harmonisation, and cross-dimer elimination for simultaneous target detection.</p><ul><li>2 to 6 target multiplexing</li><li>Amplicon size separation ≥20 bp</li><li>Tm harmonisation ±1°C</li><li>Cross-dimer matrix validation</li></ul></div>
-<div class="card"><h3>Long-Range PCR</h3><p>Design primers for 5-50 kb amplicons optimised for Nanopore and PacBio sequencing platforms with specialised polymerase compatibility.</p><ul><li>5-50 kb amplicons</li><li>Nanopore/PacBio optimisation</li><li>Polymerase-specific design</li><li>Amplicon tiling strategies</li></ul></div>
-</div></div></section>
-
-<section class="cta-section"><div class="container">
-<h2>Start Your PCR Analysis</h2>
-<p>Enter your target sequence and let VigyanLLM optimise your PCR assay with full validation metrics.</p>
-<a href="primer.html" class="btn">Open VigyanLLM Primer →</a>
-</div></section>
-
-
-
-
-
-
-<div class="seo-content" style="max-width:var(--max-w);margin:0 auto;padding:48px 24px 24px">
-
-<h2 style="font-family:var(--font-h);font-size:22px;font-weight:800;margin-bottom:8px">Frequently Asked Questions About PCR Analysis Tool</h2>
-<p style="color:var(--muted);font-size:14px;margin-bottom:32px">Everything you need to know about using this tool</p>
-<div class="faq-item" style="margin-bottom:24px">
-  <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">Is the PCR Analysis tool free?</h3>
-  <p style="font-size:14px;color:var(--text2);line-height:1.7">The PCR analysis tool offers 5 free analyses per user. Each analysis uses backend compute for thermodynamic simulation and specificity checking. After 5 free uses, a subscription is required.</p>
+<div class="tool-wrap">
+  <div>
+    <div class="panel-card">
+      <div class="panel-head"><h3>Template Sequence</h3></div>
+      <div class="panel-body">
+        <div class="form-group">
+          <label class="form-label">Template (5'→3')</label>
+          <textarea id="check-template" class="form-textarea" rows="4" style="font-size:12px" placeholder="Paste template sequence here..."></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="panel-card" style="margin-top:14px">
+      <div class="panel-head"><h3>Primers to Check</h3></div>
+      <div class="panel-body">
+        <div class="form-group">
+          <label class="form-label">Paste primers (FASTA / CSV / TSV / Primer-BLAST)</label>
+          <textarea id="check-primers-text" class="form-textarea" rows="5" style="font-size:12px" placeholder=">primer1&#10;ATGCGATCGATCG&#10;/rev CGATCGATCGCAT&#10;&#10;Or CSV:&#10;name,forward,reverse&#10;set1,ATCG...,CGAT..."></textarea>
+        </div>
+        <div style="border:2px dashed var(--slate-border);border-radius:8px;padding:16px;text-align:center;cursor:pointer;margin-bottom:10px" id="check-file-drop-zone">
+          <span style="font-size:12px;color:var(--text2)">📁 Upload primer file (FASTA/CSV)</span>
+          <div id="check-file-info" style="font-size:11px;color:var(--bio);margin-top:6px;display:none"></div>
+          <input type="file" id="check-file-input" accept=".fa,.fasta,.csv,.txt" style="display:none">
+        </div>
+        <button class="btn-primary" id="btn-check-primers">
+          <span class="spinner" id="check-spinner"></span>
+          <span id="btn-check-text">Check &amp; Rank Primers</span>
+        </button>
+      </div>
+    </div>
+  </div>
+  <div id="check-results">
+    <div style="color:var(--muted);font-size:13px;padding:20px">Enter template and primers, then click Check &amp; Rank to see alignment scores and recommendations.</div>
+  </div>
 </div>
-<div class="faq-item" style="margin-bottom:24px">
-  <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">What does the PCR analysis tool do?</h3>
-  <p style="font-size:14px;color:var(--text2);line-height:1.7">It analyzes primer pairs for PCR compatibility, predicting amplification efficiency, product size, Tm matching, cross-dimer formation, and off-target amplification risk.</p>
-</div>
-<div class="faq-item" style="margin-bottom:24px">
-  <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">What parameters are analyzed?</h3>
-  <p style="font-size:14px;color:var(--text2);line-height:1.7">The tool checks primer Tm, GC content, self-complementarity, 3′-end stability, primer-dimer potential, amplicon size, and cross-homology with reference genomes.</p>
-</div>
-<div class="faq-item" style="margin-bottom:24px">
-  <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">Do I need an account?</h3>
-  <p style="font-size:14px;color:var(--text2);line-height:1.7">No, you can use PCR analysis without an account for your first 5 analyses. An account helps track usage and manage access.</p>
-</div>
-<div class="faq-item" style="margin-bottom:24px">
-  <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">Can I analyze multiplex primer sets?</h3>
-  <p style="font-size:14px;color:var(--text2);line-height:1.7">Yes, the tool supports multiplex PCR analysis, checking cross-reactivity between all primer pairs in a multiplex panel.</p>
-</div>
-<div class="faq-item" style="margin-bottom:24px">
-  <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">How do I get unlimited access?</h3>
-  <p style="font-size:14px;color:var(--text2);line-height:1.7">Subscribe through VPrime 2.0 starting at ₹99/day. Enterprise deployments include unlimited analysis for the entire organization.</p>
-</div>
-</div>
-
-<div style="max-width:900px;margin:40px auto;padding:20px 24px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:12px;font-size:13px;text-align:center">
-  <strong>Learn More:</strong>
-  <a href="/primer-3-alternative" style="color:#2563EB;margin:0 8px">VigyanLLM vs Primer3</a> |
-  <a href="/primer-blast-alternative" style="color:#2563EB;margin:0 8px">vs Primer-BLAST</a> |
-  <a href="/blog/qpcr-primer-probe-design" style="color:#2563EB;margin:0 8px">qPCR Primer Guide</a> |
-  <a href="/blog/multiplex-pcr-primer-design" style="color:#2563EB;margin:0 8px">Multiplex PCR Guide</a>
-</div>
-</main>
-<footer><div class="container">
+<footer>
 <div class="footer-grid">
-<div><div style="display:flex;align-items:center;gap:10px;margin-bottom:12px"><span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:20px;font-weight:700;color:#fff">VigyanLLM</span></div><p style="font-size:13px;color:#94A3B8;line-height:1.6">Sovereign Healthcare &amp; Life Sciences AI.<br>Built in India. For the world.</p></div>
-<div><h5>Platform</h5><a href="index.html">Home</a><a href="primer.html">VPrime 1.0</a><a href="blog/index.html">Blog</a><a href="faq.html">FAQ</a><a href="about.html">About</a>
-<a href="academic-partnership.html">Academic Partnership</a>
+  <div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+      <img src="logo.svg" alt="VigyanLLM PCR analysis tool" style="width:48px;height:48px;border-radius:6px">
+      <span style="font-family:var(--font-h);font-size:20px;font-weight:700;color:#fff">VigyanLLM</span>
+    </div>
+    <p style="font-size:13px;color:#94A3B8;margin-bottom:20px;line-height:1.6">Sovereign Healthcare &amp; Life Sciences AI.<br>Built in India. For the world.</p>
+    <a href="mailto:contact@vigyanllm.in" style="font-size:13px;color:var(--accent);display:block;margin-bottom:6px">contact@vigyanllm.in</a>
+  </div>
+  <div>
+    <h5 style="font-family:var(--font-h);font-size:12px;text-transform:uppercase;letter-spacing:0.1em;color:#fff;margin-bottom:24px;font-weight:700">Platform</h5>
+    <a href="primer.html" style="display:block;font-size:13px;color:#94A3B8;margin-bottom:14px">VPrime 2.0</a>
+    <a href="search.html" style="display:block;font-size:13px;color:#94A3B8;margin-bottom:14px">Sequence Search</a>
+    <a href="blast.html" style="display:block;font-size:13px;color:#94A3B8;margin-bottom:14px">BLAST</a>
+    <a href="msa.html" style="display:block;font-size:13px;color:#94A3B8;margin-bottom:14px">MSA</a>
+    <a href="pcr-analysis.html" style="display:block;font-size:13px;color:#94A3B8;margin-bottom:14px">PCR Analysis</a>
+    <a href="crispr-analysis.html" style="display:block;font-size:13px;color:#94A3B8;margin-bottom:14px">CRISPR</a>
+    <a href="protein-docking.html" style="display:block;font-size:13px;color:#94A3B8;margin-bottom:14px">Docking</a>
+  </div>
+  <div>
+    <h5 style="font-family:var(--font-h);font-size:12px;text-transform:uppercase;letter-spacing:0.1em;color:#fff;margin-bottom:24px;font-weight:700">Resources</h5>
+    <a href="blog/index.html" style="display:block;font-size:13px;color:#94A3B8;margin-bottom:14px">Blog</a>
+    <a href="faq.html" style="display:block;font-size:13px;color:#94A3B8;margin-bottom:14px">FAQ</a>
+    <a href="about.html" style="display:block;font-size:13px;color:#94A3B8;margin-bottom:14px">About</a>
+    <a href="academic-partnership.html" style="display:block;font-size:13px;color:#94A3B8;margin-bottom:14px">Academic Partnership</a>
+  </div>
+  <div>
+    <h5 style="font-family:var(--font-h);font-size:12px;text-transform:uppercase;letter-spacing:0.1em;color:#fff;margin-bottom:24px;font-weight:700">Contact</h5>
+    <a href="mailto:contact@vigyanllm.in" style="display:block;font-size:13px;color:#94A3B8;margin-bottom:14px">contact@vigyanllm.in</a>
+    <a href="privacy.html" style="display:block;font-size:13px;color:#94A3B8;margin-bottom:14px">Privacy</a>
+    <a href="cookies.html" style="display:block;font-size:13px;color:#94A3B8;margin-bottom:14px">Cookies</a>
+    <a href="terms.html" style="display:block;font-size:13px;color:#94A3B8;margin-bottom:14px">Terms</a>
+    <a href="refund.html" style="display:block;font-size:13px;color:#94A3B8;margin-bottom:14px">Refund</a>
+    <a href="security.html" style="display:block;font-size:13px;color:#94A3B8;margin-bottom:14px">Security</a>
+  </div>
 </div>
-<div><h5>Tools</h5><a href="primer-design.html">Primer Design</a><a href="pcr-analysis.html">PCR Analysis</a><a href="crispr-analysis.html">CRISPR Analysis</a></div>
-<div><h5>Legal</h5><a href="privacy.html">Privacy Policy</a><a href="terms.html">Terms of Service</a><a href="refund.html">Refund Policy</a><a href="security.html">Security</a></div>
-<div><h5>Contact</h5><a href="mailto:contact@vigyanllm.in">contact@vigyanllm.in</a></div>
+<div class="footer-bottom">
+  <span>&copy; <script>document.write(new Date().getFullYear())</script> VigyanLLM Pvt. Ltd. · Sovereign Research AI</span>
+  <span>WWW.VIGYANLLM.IN</span>
 </div>
-<div style="border-top:1px solid rgba(255,255,255,0.1);padding-top:24px;font-size:12px;color:#64748B">&copy; 2026 VigyanLLM Pvt. Ltd.</div>
-</div>
-
-
-
-
-
-
-
-
 </footer>
-<script src="/auth-shared.js"></script>
 <script>
-(function(){var b=document.createElement('div');b.style.cssText='background:#FEF3C7;color:#92400E;text-align:center;padding:10px 24px;font-size:13px;font-weight:600;border-bottom:1px solid #FDE68A';b.innerHTML='<span style="display:inline-flex;align-items:center;gap:8px"><span style="background:#92400E;color:#FEF3C7;border-radius:20px;padding:2px 10px;font-size:10px;font-weight:700;text-transform:uppercase">Coming Soon</span> This tool is in development. Register your interest for early access.</span>';var n=document.querySelector('nav');if(n)n.parentNode.insertBefore(b,n.nextSibling);})();
+// ── Utility functions ─────────────────────────────────────────────────────
+var API = window.VIGYAN_BACKEND_URL || '';
+function $(id){return document.getElementById(id);}
+function esc(s){return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function csvEsc(s){var v=String(s??'');return v.includes(',')||v.includes('"')||v.includes('\n')?'"'+v.replace(/"/g,'""')+'"':v;}
+function fmtNum(v,d,s){return v!==null&&v!==undefined&&isFinite(v)?Number(v).toFixed(d)+(s||''):'-';}
+function setLoading(spId,txtId,btnId,loading,label){
+  var sp=$(spId),txt=$(txtId),bt=$(btnId);
+  if(sp)sp.classList.toggle('active',loading);
+  if(txt)txt.textContent=label;
+  if(bt)bt.disabled=loading;
+}
+async function apiPost(ep,body){
+  var headers={'Content-Type':'application/json'};
+  var r=await fetch(API+ep,{method:'POST',headers:headers,body:JSON.stringify(body),signal:AbortSignal.timeout(60000)});
+  var text=await r.text();
+  try{var d=JSON.parse(text);if(!r.ok)throw new Error(d.error||d.message||'HTTP '+r.status);return d;}
+  catch(e){if(e instanceof SyntaxError)throw new Error('Server returned: '+text.slice(0,200));throw e;}
+}
+// ── Check Primers ─────────────────────────────────────────────────────────
+var _checkPrimerData = '';
+function countSeqsInText(txt){
+  var lines=txt.split('\n').map(function(l){return l.trim()}).filter(function(l){return l.length>0});
+  var fastaCount=(txt.match(/^>/gm)||[]).length;
+  if(fastaCount>0)return fastaCount;
+  var headerRe=/^(name|forward|fwd|primer|sequence|seq|reverse|rev|template|id|target),/i;
+  var seqLines=lines.filter(function(l){return !headerRe.test(l) && !l.startsWith('/rev') && !l.startsWith('/template') && /[ACGTUacgtu]/g.test(l)});
+  return seqLines.length;
+}
+function handleCheckFile(input){
+  var f=input.files[0];
+  if(!f)return;
+  var r=new FileReader();
+  r.onload=function(e){
+    _checkPrimerData=e.target.result;
+    $('check-primers-text').value=_checkPrimerData;
+    var n=countSeqsInText(_checkPrimerData);
+    var info=n>0?'📄 '+f.name+' ('+n+' sequences detected)':'📄 '+f.name+' loaded';
+    $('check-file-info').textContent=info;
+    $('check-file-info').style.display='block';
+  };
+  r.readAsText(f);
+}
+function handleCheckDrop(e){
+  e.preventDefault();
+  var f=e.dataTransfer.files[0];
+  if(f){
+    var r=new FileReader();
+    r.onload=function(ev){
+      _checkPrimerData=ev.target.result;
+      $('check-primers-text').value=_checkPrimerData;
+      var n=countSeqsInText(_checkPrimerData);
+      $('check-file-info').textContent=n>0?'📄 '+f.name+' ('+n+' sequences)':'📄 '+f.name+' loaded';
+      $('check-file-info').style.display='block';
+    };
+    r.readAsText(f);
+  }
+}
+async function runCheckPrimers(){
+  var tmpl=$('check-template').value.trim();
+  if(!tmpl){$('check-template').classList.add('error');return;}
+  $('check-template').classList.remove('error');
+  var primerText=$('check-primers-text').value.trim();
+  if(!primerText){$('check-primers-text').classList.add('error');return;}
+  setLoading('check-spinner','btn-check-text','btn-check-primers',true,'Checking…');
+  $('check-results').innerHTML='';
+  try{
+    var d=await apiPost('/api/primer/check-primers',{template:tmpl,file_content:primerText});
+    var html='';
+    if(d.parse_info){
+      html+='<div class="success-card" style="margin-bottom:12px">📄 '+esc(d.parse_info)+'</div>';
+    }
+    if(d.suggestions&&d.suggestions.length){
+      html+='<div class="warn-list" style="margin-bottom:12px">'+d.suggestions.map(function(s){return '<div class="warn-item">💡 '+esc(s)+'</div>'}).join('')+'</div>';
+    }
+    html+='<div class="success-card" style="margin-bottom:12px">✓ '+d.total+' primers ranked</div>';
+    // Best pair recommendation
+    var best=d.ranked[0];
+    if(best){
+      var isGood=best.combined_score>=70;
+      html+='<div class="panel-card" style="margin-bottom:14px;border:2px solid '+(isGood?'var(--bio)':'var(--amber)')+';border-radius:10px">'+
+        '<div class="panel-head" style="background:'+(isGood?'var(--bio-soft)':'var(--amber-soft)')+';border-radius:8px 8px 0 0;padding:10px 14px">'+
+        '<h3 style="margin:0;font-size:15px">'+(isGood?'🏆 Best Recommended Pair':'⚠ No Ideal Pair Found')+'</h3></div>'+
+        '<div class="panel-body" style="padding:12px 14px">'+
+        (isGood
+          ? '<div style="font-size:13px;margin-bottom:6px"><strong>'+esc(best.name)+'</strong> — Score: '+best.combined_score+'</div>'+
+            '<div style="font-size:12px;color:var(--text2)"><code>'+best.forward+'</code>'+(best.reverse?' + <code>'+esc(best.reverse)+'</code>':'')+'</div>'+
+            '<div style="font-size:11px;color:var(--bio);margin-top:4px">✓ Passes all quality checks — ready for ordering</div>'
+          : '<div style="font-size:13px;color:var(--text2);margin-bottom:8px">Best score ('+best.combined_score+') is below the quality threshold (70). No primer pair meets all criteria.</div>'+
+            '<button class="btn-primary" onclick="window.location.href=\'primer.html\'" style="font-size:12px">🎯 Design New Primers</button>'
+        )+'</div></div>';
+    }
+    for(var i=0;i<d.ranked.length;i++){
+      var r=d.ranked[i];
+      var aln=r.alignment;
+      var t=r.thermodynamics;
+      var isBest=i===0;
+      html+='<div class="panel-card" style="margin-bottom:10px'+(isBest?';border-top:3px solid var(--bio)':'')+'">'+
+        '<div class="panel-head" style="display:flex;justify-content:space-between;align-items:center">'+
+        '<h3>#'+(i+1)+' '+esc(r.name)+'</h3>'+
+        '<span class="badge '+(r.combined_score>=70?'pass-b':'fail-b')+'" style="font-size:13px">Score: '+r.combined_score+'</span></div>'+
+        '<div class="panel-body">'+
+        '<div style="font-size:12px;margin-bottom:6px"><strong>Forward:</strong> <code style="font-size:11px">'+r.forward+'</code>'+
+        '<span style="color:var(--text2);font-size:10px;margin-left:4px">(len='+t.forward_length+')</span></div>'+
+        (r.reverse?'<div style="font-size:12px;margin-bottom:8px"><strong>Reverse:</strong> <code style="font-size:11px">'+r.reverse+'</code>'+
+        '<span style="color:var(--text2);font-size:10px;margin-left:4px">(len='+t.reverse_length+')</span></div>':'')+
+        '<table style="width:100%;border-collapse:collapse;font-size:11px;margin-bottom:8px">'+
+        '<tr><td colspan="2" style="font-weight:700;padding:4px 0;color:var(--text);border-bottom:1px solid var(--slate-border)">🔬 Alignment</td></tr>'+
+        '<tr><td style="padding:3px 8px 3px 0;color:var(--text2);width:50%">Fwd identity: <strong style="color:'+(aln.forward.identity_pct>=90?'var(--bio)':'var(--red)')+'">'+fmtNum(aln.forward.identity_pct,1,'%')+'</strong></td>'+
+        '<td style="padding:3px 0;color:var(--text2)">Rev identity: <strong style="color:'+(aln.reverse&&aln.reverse.identity_pct>=90?'var(--bio)':'var(--red)')+'">'+(aln.reverse?fmtNum(aln.reverse.identity_pct,1,'%'):'-')+'</strong></td></tr>'+
+        '<tr><td style="padding:3px 8px 3px 0;color:var(--text2)">Fwd mismatches: <strong>'+fmtNum(aln.forward.mismatches,0)+'</strong></td>'+
+        '<td style="padding:3px 0;color:var(--text2)">Rev mismatches: <strong>'+(aln.reverse?fmtNum(aln.reverse.mismatches,0):'-')+'</strong></td></tr>'+
+        '<tr><td style="padding:3px 8px 3px 0;color:var(--text2)">Fwd start: <strong>'+aln.forward.start_pos+'</strong></td>'+
+        '<td style="padding:3px 0;color:var(--text2)">Rev start: <strong>'+(aln.reverse?aln.reverse.start_pos:'-')+'</strong></td></tr>'+
+        '<tr><td colspan="2" style="font-weight:700;padding:6px 0 4px;color:var(--text);border-bottom:1px solid var(--slate-border)">🌡 Thermodynamics</td></tr>'+
+        '<tr><td style="padding:3px 8px 3px 0;color:var(--text2)">Fwd Tm: <strong>'+fmtNum(t.forward_tm,1,'°C')+'</strong></td>'+
+        '<td style="padding:3px 0;color:var(--text2)">Rev Tm: <strong>'+(t.reverse_tm!==null?fmtNum(t.reverse_tm,1,'°C'):'-')+'</strong></td></tr>'+
+        '<tr><td style="padding:3px 8px 3px 0;color:var(--text2)">Fwd GC: <strong>'+fmtNum(t.forward_gc,1,'%')+'</strong></td>'+
+        '<td style="padding:3px 0;color:var(--text2)">Rev GC: <strong>'+(t.reverse_gc!==null?fmtNum(t.reverse_gc,1,'%'):'-')+'</strong></td></tr>'+
+        '<tr><td style="padding:3px 8px 3px 0;color:var(--text2)">Fwd hairpin ΔG: <strong>'+fmtNum(t.forward_hairpin_dg,2)+' kcal/mol</strong></td>'+
+        '<td style="padding:3px 0;color:var(--text2)">Rev hairpin ΔG: <strong>'+(t.reverse_hairpin_dg!==null?fmtNum(t.reverse_hairpin_dg,2)+' kcal/mol':'-')+'</strong></td></tr>'+
+        '<tr><td style="padding:3px 8px 3px 0;color:var(--text2)">Fwd self-dimer ΔG: <strong>'+fmtNum(t.forward_self_dimer_dg,2)+' kcal/mol</strong></td>'+
+        '<td style="padding:3px 0;color:var(--text2)">Rev self-dimer ΔG: <strong>'+(t.reverse_self_dimer_dg!==null?fmtNum(t.reverse_self_dimer_dg,2)+' kcal/mol':'-')+'</strong></td></tr>'+
+        '<tr><td style="padding:3px 8px 3px 0;color:var(--text2)">Fwd 3\' GC clamp: <strong>'+(t.forward_gc_clamp?'YES':'NO')+'</strong></td>'+
+        '<td style="padding:3px 0;color:var(--text2)">Rev 3\' GC clamp: <strong>'+(t.reverse_gc_clamp!==null?(t.reverse_gc_clamp?'YES':'NO'):'-')+'</strong></td></tr>'+
+        (t.tm_delta!==null?'<tr><td colspan="2" style="font-weight:700;padding:6px 0 4px;color:var(--text);border-bottom:1px solid var(--slate-border)">🔗 Pair Parameters</td></tr>'+
+        '<tr><td style="padding:3px 8px 3px 0;color:var(--text2)">Tm delta: <strong>'+fmtNum(t.tm_delta,1,'°C')+'</strong>'+(t.tm_delta>5?' <span style="color:var(--red)">⚠ >5°C — gradient PCR recommended</span>':'')+'</td>'+
+        '<td style="padding:3px 0;color:var(--text2)">Annealing Ta: <strong>'+(t.annealing_temp!==null?fmtNum(t.annealing_temp,1,'°C'):'-')+'</strong></td></tr>'+
+        '<tr><td style="padding:3px 0;color:var(--text2)" colspan="2">Cross-dimer ΔG: <strong>'+(t.cross_dimer_dg!==null?fmtNum(t.cross_dimer_dg,2)+' kcal/mol':'-')+'</strong>'+(t.cross_dimer_dg!==null&&t.cross_dimer_dg<-9?' <span style="color:var(--red)">⚠ Strong interaction</span>':'')+'</td></tr>':'')+
+        '</table>'+
+        (r.warnings&&r.warnings.length?'<div class="warn-list">'+r.warnings.map(function(w){return '<div class="warn-item">⚠ '+esc(w)+'</div>'}).join('')+'</div>':'')+
+        '</div></div>';
+    }
+    if(d.errors&&d.errors.length){
+      html+='<div class="error-card">'+d.errors.map(function(e){return esc(e.name+': '+e.error)}).join('<br>')+'</div>';
+    }
+    html+='<button class="btn-secondary" style="margin-top:10px" onclick="downloadCheckCSV('+JSON.stringify(d.ranked).replace(/"/g,'&quot;')+')">⬇ Download CSV</button>';
+    $('check-results').innerHTML=html;
+  }catch(e){
+    $('check-results').innerHTML='<div class="error-card">❌ '+esc(e.message)+'</div>';
+  }finally{setLoading('check-spinner','btn-check-text','btn-check-primers',false,'Check & Rank Primers');}
+}
+function downloadCheckCSV(ranked){
+  var csv='rank,name,forward,reverse,combined_score,fwd_identity,fwd_mismatches,rev_identity,rev_mismatches,fwd_tm,rev_tm,fwd_gc,rev_gc,warnings\n';
+  for(var i=0;i<ranked.length;i++){
+    var r=ranked[i];
+    csv+=(i+1)+','+csvEsc(r.name)+','+csvEsc(r.forward)+','+csvEsc(r.reverse||'')+','+r.combined_score+','+r.alignment.forward.identity_pct+','+r.alignment.forward.mismatches+','+(r.alignment.reverse?r.alignment.reverse.identity_pct:'')+','+(r.alignment.reverse?r.alignment.reverse.mismatches:'')+','+r.thermodynamics.forward_tm+','+(r.thermodynamics.reverse_tm||'')+','+r.thermodynamics.forward_gc+','+(r.thermodynamics.reverse_gc||'')+','+csvEsc((r.warnings||[]).join('; '))+'\n';
+  }
+  var blob=new Blob([csv],{type:'text/csv'});
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='primer_check_results.csv';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+// ── Wire up events ────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded',function(){
+  // Button click
+  $('btn-check-primers').addEventListener('click',runCheckPrimers);
+  // File input
+  var fi=$('check-file-input'), dz=$('check-file-drop-zone');
+  if(fi) fi.addEventListener('change',function(){handleCheckFile(this);});
+  if(dz){
+    dz.addEventListener('click',function(){if(fi)fi.click();});
+    dz.addEventListener('drop',function(e){handleCheckDrop(e);});
+    dz.addEventListener('dragover',function(e){e.preventDefault();});
+  }
+  // Mobile hamburger
+  var h=$('hamburger'),m=$('mobile-menu');
+  if(h&&m){
+    h.addEventListener('click',function(){h.classList.toggle('active');m.classList.toggle('open');});
+    document.addEventListener('click',function(e){if(!h.contains(e.target)&&!m.contains(e.target)){h.classList.remove('active');m.classList.remove('open');}});
+  }
+});
 </script>
 </body>
 </html>

@@ -8,7 +8,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
 })(window,document,'script','dataLayer','GTM-KRP5LLPR');</script>
 <!-- End Google Tag Manager -->
-
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Biological Sequence Search Tool — DNA, RNA &amp; Protein | VigyanLLM</title>
@@ -40,9 +39,9 @@ a{text-decoration:none;color:inherit}
 .dashboard-wrap{background:transparent;max-width:var(--max-w);margin:0 auto;border-radius:0 0 12px 12px;box-shadow:0 1px 3px rgba(0,0,0,0.04)}
 nav{position:sticky;top:0;background:var(--navy);z-index:100;height:72px}
 .nav-inner{display:flex;justify-content:space-between;align-items:center;height:100%;max-width:1200px;margin:0 auto;padding:0 24px}
-.logo{font-family:var(--font-h);font-size:20px;color:#fff;display:inline-flex;align-items:center;gap:9px;text-decoration:none;font-weight:700}
-.logo-img{width:36px;height:36px;border-radius:6px;background:#0d1117;padding:3px;object-fit:contain;flex-shrink:0}
-.logo-text{font-family:var(--font-h);font-size:20px;color:#fff;line-height:1;font-weight:700}
+.nav-brand{display:flex;align-items:center;gap:10px;color:#fff;font-family:var(--font-h);font-size:20px;font-weight:800}
+.nav-brand img{width:34px;height:34px;border-radius:8px;transition:transform .3s}
+.nav-brand:hover img{transform:rotate(-10deg)}
 .nav-links{display:flex;gap:32px;align-items:center;margin-left:40px}
 .nav-links a{font-size:13px;color:#CBD5E1;transition:color .15s;font-weight:500;letter-spacing:0.02em}
 .nav-links a:hover{color:#fff}
@@ -50,6 +49,12 @@ nav{position:sticky;top:0;background:var(--navy);z-index:100;height:72px}
 .nav-btns{display:flex;flex-direction:column;gap:6px}
 .nav-cta{padding:6px 20px;background:#fff;color:#0F172A;border:none;border-radius:6px;font-family:'Plus Jakarta Sans',sans-serif;font-size:10px;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:.06em;transition:all .2s;line-height:1.3}
 .nav-cta:hover{background:#2563EB;color:#fff;box-shadow:0 4px 16px rgba(37,99,235,.3)}
+.drop-wrap{position:relative;display:inline-block}
+.drop-trigger{font-family:var(--font-b);font-size:13px;color:#CBD5E1;font-weight:500;cursor:pointer;white-space:nowrap}
+.drop-menu{display:none;position:absolute;top:100%;left:0;background:#fff;border:1px solid #E2E5EA;border-radius:12px;min-width:220px;padding:8px;z-index:1001;box-shadow:0 12px 40px rgba(0,0,0,.08);opacity:0;transform:translateY(4px);transition:opacity .2s,transform .2s}
+.drop-menu a{display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px;text-decoration:none}
+.drop-wrap:hover .drop-menu{display:block;opacity:1;transform:translateY(0)}
+.drop-menu a:hover{background:#E0F2F1;color:#009688;padding-left:20px}
 .status-pill{display:inline-flex;align-items:center;gap:6px;border:1px solid rgba(255,255,255,0.2);border-radius:99px;padding:5px 14px;font-family:var(--font-b);font-size:11px;background:rgba(255,255,255,0.08);white-space:nowrap;transition:all .3s}
 .status-pill.online{border-color:rgba(5,150,105,.4);color:var(--bio)}
 .status-pill.offline{border-color:rgba(217,119,6,.4);color:var(--amber)}
@@ -126,9 +131,8 @@ footer{background:var(--navy);color:#CBD5E1;padding:80px 0 32px}
 .mobile-menu .mm-hdr{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700;padding:8px 0 4px}
 .mobile-menu a{display:block;color:#CBD5E1;font-family:var(--font-b);font-size:14px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04)}
 .mobile-menu .mm-login{display:block;font-family:var(--font-b);font-size:14px;padding:10px 0;font-weight:600;color:var(--accent)}
-@media(max-width:768px){.footer-grid{grid-template-columns:1fr 1fr;gap:32px}.nav-links{display:none}.hamburger{display:flex}}
+@media(max-width:768px){.footer-grid{grid-template-columns:1fr 1fr;gap:32px}.nav-links{display:flex;gap:32px;align-items:center;margin-left:40px}.hamburger{display:flex}}
 </style>
-
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -150,7 +154,6 @@ footer{background:var(--navy);color:#CBD5E1;padding:80px 0 32px}
   }
 }
 </script>
-
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -199,7 +202,6 @@ footer{background:var(--navy);color:#CBD5E1;padding:80px 0 32px}
   ]
 }
 </script>
-
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -238,82 +240,66 @@ footer{background:var(--navy);color:#CBD5E1;padding:80px 0 32px}
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 </head>
 <body><main>
-
-
 <!-- Google Tag Manager (noscript) -->
 <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-KRP5LLPR"
 height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <!-- End Google Tag Manager (noscript) -->
-
 <nav>
 <div class="nav-inner">
-  <a href="index.html" class="logo">
-    <img src="logo.svg" alt="VigyanLLM biological sequence search tool querying DNA, RNA, and protein sequences against RefSeq and UniProt databases" class="logo-img">
-    <span class="logo-text">VigyanLLM</span>
+  <a href="index.html" class="nav-brand">
+    <img src="logo.svg" alt="VigyanLLM Logo" width="48" height="48" style="border-radius:8px">
+    <span>VigyanLLM</span>
   </a>
   <div class="nav-links">
-    <a href="index.html">Home</a>
-    <div class="drop-wrap" style="position:relative;display:inline-block">
-      <span class="drop-trigger" style="font-family:var(--font-b);font-size:13px;color:#CBD5E1;font-weight:500;cursor:pointer">Platform Architecture ▾</span>
-      <div class="drop-menu" style="display:none;position:absolute;top:100%;left:0;background:#fff;border:1px solid #E2E5EA;border-radius:12px;min-width:200px;padding:8px;z-index:1001;box-shadow:0 12px 40px rgba(0,0,0,.08);opacity:0;transform:translateY(4px);transition:opacity .2s,transform .2s">
-        <a href="platform.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">Platform</a>
-        <a href="architecture.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">Architecture</a>
-        <a href="problem.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">Problem</a>
-        <a href="solution.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">Solution</a>
-        <a href="compare.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">Compare</a>
-        <a href="roadmap.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">Roadmap</a>
+    <div class="drop-wrap">
+      <span class="drop-trigger">Products ▾</span>
+      <div class="drop-menu">
+        <a href="primer.html">VPrime 2.0 — Primer Design</a>
+        <a href="search.html">Sequence Search</a>
+        <a href="blast.html">BLAST</a>
+        <a href="msa.html">MSA</a>
+        <a href="pcr-analysis.html">PCR Analysis</a>
+        <a href="crispr-analysis.html">CRISPR Analysis</a>
+        <a href="tm-calculator.html">Tm Calculator</a>
+        <a href="gc-calculator.html">GC Calculator</a>
+        <a href="protein-docking.html">Protein Docking</a>
+        <a href="dna-to-rna.html" style="display:flex;align-items:center;gap:6px">DNA → RNA Converter <span style="font-size:9px;font-weight:700;color:#fff;background:#16A34A;padding:2px 7px;border-radius:99px;line-height:1.4">Free</span></a>
       </div>
     </div>
-    <div class="drop-wrap" style="position:relative;display:inline-block">
-      <span class="drop-trigger" style="font-family:var(--font-b);font-size:13px;color:#22D3EE;font-weight:600;cursor:pointer">Products &amp; Services ▾</span>
-      <div class="drop-menu" style="display:none;position:absolute;top:100%;left:0;background:#fff;border:1px solid #E2E5EA;border-radius:12px;min-width:220px;padding:8px;z-index:1001;box-shadow:0 12px 40px rgba(0,0,0,.08);opacity:0;transform:translateY(4px);transition:opacity .2s,transform .2s">
-        <a href="primer.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">VPrime 2.0</a>
-        <a href="search.html" style="display:block;padding:10px 16px;font-size:13px;color:#22D3EE;border-radius:8px;font-weight:600">Sequence Search</a>
-        <a href="blast.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">BLAST</a>
-        <a href="msa.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">MSA</a>
-        <a href="pcr-analysis.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">PCR Analysis</a>
-        <a href="crispr-analysis.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">CRISPR</a>
-        <a href="tm-calculator.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">Tm Calc</a>
-        <a href="gc-calculator.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">GC Calc</a>
-        <a href="protein-docking.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">Docking</a>
+    <div class="drop-wrap">
+      <span class="drop-trigger">Platform ▾</span>
+      <div class="drop-menu">
+        <a href="platform.html">Overview</a>
+        <a href="architecture.html">Architecture</a>
+        <a href="problem.html">Problem</a>
+        <a href="solution.html">Solution</a>
+        <a href="compare.html">Compare</a>
+        <a href="roadmap.html">Roadmap</a>
       </div>
     </div>
-    <div class="drop-wrap" style="position:relative;display:inline-block">
-      <span class="drop-trigger" style="font-family:var(--font-b);font-size:13px;color:#CBD5E1;font-weight:500;cursor:pointer">Collab &amp; Partnership ▾</span>
-      <div class="drop-menu" style="display:none;position:absolute;top:100%;left:0;background:#fff;border:1px solid #E2E5EA;border-radius:12px;min-width:200px;padding:8px;z-index:1001;box-shadow:0 12px 40px rgba(0,0,0,.08);opacity:0;transform:translateY(4px);transition:opacity .2s,transform .2s">
-        <a href="academic-partnership.html" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">Academic Partnership</a>
-        <a href="mailto:contact@vigyanllm.in" style="display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px">Enterprise Inquiry</a>
-      </div>
-    </div>
+    <a href="Learning-vigyanllm.html">Learning</a>
+    <a href="academic-partnership.html">Partnership</a>
+    <a href="contact.html">Support</a>
+    <a href="cite.html" style="font-size:11px;opacity:.6">Cite</a>
   </div>
-  <style>.drop-wrap:hover .drop-menu{display:block !important;opacity:1 !important;transform:translateY(0) !important}.drop-menu a:hover{background:#E0F2F1 !important;color:#009688 !important;padding-left:20px !important}</style>
-  <button class="hamburger" id="hamburger" aria-label="Menu" style="flex-direction:column;gap:5px;cursor:pointer;background:none;border:none;padding:4px;margin-left:8px">
-    <span style="width:24px;height:2px;background:rgba(255,255,255,.6);border-radius:2px;display:block"></span>
-    <span style="width:24px;height:2px;background:rgba(255,255,255,.6);border-radius:2px;display:block"></span>
-    <span style="width:24px;height:2px;background:rgba(255,255,255,.6);border-radius:2px;display:block"></span>
-  </button>
   <div class="nav-right">
+    <div class="nav-search-wrap">
+      <input type="text" id="navSearchInput" placeholder="Search tools, learning, blog..." autocomplete="off">
+      <span class="ns-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
+      <div class="nav-search-results" id="navSearchResults"></div>
+    </div>
     <div class="nav-btns">
-      <button class="nav-login" onclick="window.location.href='index.html'">Sign in</button>
-      <button class="nav-cta" onclick="window.location.href='index.html'">Get started</button>
+      <button class="nav-login" onclick="openAuthModal()">Sign in</button>
+      <button class="nav-cta" onclick="openAuthModal()">Get started</button>
     </div>
   </div>
+  <button class="hamburger" id="hamburger" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
 </div>
-</nav>
 <div class="mobile-menu" id="mobile-menu">
-  <div class="mm-group"><div class="mm-hdr">Home</div>
-    <a href="index.html">Home</a>
-  </div>
-  <div class="mm-group"><div class="mm-hdr">Platform Architecture</div>
-    <a href="platform.html">Platform</a>
-    <a href="architecture.html">Architecture</a>
-    <a href="problem.html">Problem</a>
-    <a href="solution.html">Solution</a>
-    <a href="compare.html">Compare</a>
-    <a href="roadmap.html">Roadmap</a>
-  </div>
-  <div class="mm-group"><div class="mm-hdr">Products &amp; Services</div>
-    <a href="primer.html">VPrime 2.0</a>
+  <div class="mm-group"><div class="mm-hdr">Products</div>
+    <a href="primer.html">VPrime 2.0 — Primer Design</a>
     <a href="search.html">Sequence Search</a>
     <a href="blast.html">BLAST</a>
     <a href="msa.html">MSA</a>
@@ -322,30 +308,35 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <a href="tm-calculator.html">Tm Calculator</a>
     <a href="gc-calculator.html">GC Calculator</a>
     <a href="protein-docking.html">Protein Docking</a>
+    <a href="dna-to-rna.html" style="display:flex;align-items:center;gap:6px">DNA → RNA Converter <span style="font-size:9px;font-weight:700;color:#fff;background:#16A34A;padding:2px 7px;border-radius:99px;line-height:1.4">Free</span></a>
   </div>
-  <div class="mm-group"><div class="mm-hdr">Collab &amp; Partnership</div>
+  <div class="mm-group"><div class="mm-hdr">Platform</div>
+    <a href="platform.html">Overview</a>
+    <a href="architecture.html">Architecture</a>
+    <a href="problem.html">Problem</a>
+    <a href="solution.html">Solution</a>
+    <a href="compare.html">Compare</a>
+    <a href="roadmap.html">Roadmap</a>
+  </div>
+  <div class="mm-group">
+    <a href="Learning-vigyanllm.html">Learning</a>
     <a href="academic-partnership.html">Academic Partnership</a>
     <a href="mailto:contact@vigyanllm.in">Enterprise Inquiry</a>
   </div>
-  <div class="mm-group"><a href="login.html" class="mm-login">Log in</a></div>
+  <div class="mm-group"><div class="mm-hdr">Support</div>
+    <a href="contact.html">Help Centre</a>
+    <a href="mailto:contact@vigyanllm.in">Contact Us</a>
+    <a href="cite.html" style="font-size:11px;opacity:.6">Cite Us</a>
+  </div>
+  <a href="javascript:void(0)" onclick="closeMobileMenu();var e=document.getElementById('navSearchInput');if(e){e.focus();e.scrollIntoView({behavior:'smooth',block:'center'})}" class="mm-cta" style="background:transparent;border:1px solid rgba(255,255,255,.25);color:rgba(255,255,255,.8);margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:8px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Search</a>
+  <a href="javascript:void(0)" class="mm-cta" onclick="openAuthModal()">Sign in</a>
 </div>
-
+</nav>
 <div class="dashboard-wrap">
-
 <div class="disclaimer">
   <span style="font-size:16px">⚠️</span>
   <strong>Research Use Only.</strong> Not validated for clinical diagnostic use.
 </div>
-
-<div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:12px 24px;background:var(--slate);border-bottom:1px solid var(--slate-border);font-family:var(--font-b);font-size:13px">
-  <span style="font-weight:700;color:var(--text);margin-right:16px">VigyanLLM</span>
-  <a href="primer.html" style="color:var(--primary);text-decoration:none;font-weight:500">Primer Design</a>
-  <a href="search.html" style="color:var(--primary);text-decoration:none;font-weight:500">Sequence Search</a>
-  <a href="blast.html" style="color:var(--primary);text-decoration:none;font-weight:500">BLAST</a>
-  <a href="msa.html" style="color:var(--primary);text-decoration:none;font-weight:500">MSA</a>
-  <span style="margin-left:auto;font-size:11px;color:var(--muted)">Also available as separate tools →</span>
-</div>
-
 <div class="page-header">
   <div class="container">
     <div>
@@ -354,7 +345,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </div>
   </div>
 </div>
-
 <!-- ══ LLMO: Biological Sequence Search ══ -->
 <section style="max-width:900px;margin:48px auto;padding:0 24px">
   <p>VigyanLLM's <strong>biological sequence search tool</strong> queries DNA, RNA, and protein sequences against comprehensive reference databases for <data value="Sequence Homology">homology searching</data>. The <abbr title="Basic Local Alignment Search Tool">BLAST</abbr>-powered engine identifies similar sequences, functional domains, and evolutionary relationships across organisms.</p>
@@ -365,9 +355,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <tr><td style="padding:10px 14px"><strong>Transcript</strong></td><td style="padding:10px 14px">RefSeq RNA, Ensembl transcripts</td></tr>
   </table>
 </section>
-
 <div class="tool-wrap">
-
 <div>
 <div class="panel-card">
   <div class="panel-head"><h3>Search</h3></div>
@@ -422,7 +410,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </button>
   </div>
 </div>
-
 <div class="panel-card">
   <div class="panel-head"><h3>Actions</h3></div>
   <div class="panel-body" style="display:flex;flex-direction:column;gap:8px">
@@ -432,7 +419,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   </div>
 </div>
 </div>
-
 <div>
 <div class="panel-card">
   <div class="panel-head">
@@ -446,17 +432,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   </div>
 </div>
 </div>
-
 </div>
 </div>
-
-
-
-
-
-
 <div class="seo-content" style="max-width:var(--max-w);margin:0 auto;padding:48px 24px 24px">
-
 <h2 style="font-family:var(--font-h);font-size:22px;font-weight:800;margin-bottom:8px">Frequently Asked Questions About Sequence Search Tool</h2>
 <p style="color:var(--muted);font-size:14px;margin-bottom:32px">Everything you need to know about using this tool</p>
 <div class="faq-item" style="margin-bottom:24px">
@@ -479,13 +457,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">How do I subscribe?</h3>
   <p style="font-size:14px;color:var(--text2);line-height:1.7">Subscribe through VPrime 2.0 starting at ₹99/day. Monthly plans from ₹2,499/month provide unlimited searches for all members.</p>
 </div>
-</div>
-
-<div style="max-width:900px;margin:40px auto;padding:20px 24px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:12px;font-size:13px;text-align:center">
-  <strong>Related Tools:</strong>
-  <a href="/blast" style="color:#2563EB;margin:0 8px">BLAST Search →</a> |
-  <a href="/msa" style="color:#2563EB;margin:0 8px">Sequence Alignment →</a> |
-  <a href="/primer-design" style="color:#2563EB;margin:0 8px">Primer Design →</a>
 </div>
 </main>
 <footer>
@@ -526,22 +497,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <span>&copy; <script>document.write(new Date().getFullYear())</script> VigyanLLM Pvt. Ltd. · Sovereign Research AI</span>
   <span>WWW.VIGYANLLM.IN</span>
 </div>
-
-
-
-
-
-
-
-
-
 </footer>
-
 <script src="/auth-shared.js"></script>
 <script>
 var API = window.VIGYAN_BACKEND_URL || '';
 var searchData = [];
-
 function $(id){return document.getElementById(id)}
 function esc(s){return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
 function _on(id,ev,fn){var e=$(id);if(e)e.addEventListener(ev,fn)}
@@ -556,15 +516,12 @@ function loading(on){
     },15000);
   }
 }
-
 _on('input-type','change',function(){
   var v=this.value;
   $('search-query').placeholder=v==='name'?'e.g. BRCA1, TP53, ACTB':v==='accession'?'e.g. NM_007294, ENST00000357654':'Paste DNA sequence…';
 });
-
 _on('search-query','input',function(){var t=this.value;var inputType=$('input-type').value;var c=inputType==='sequence'?t.replace(/[^ACGTNacgtn]/g,'').length:t.length;$('sq-len').textContent=c});
 _on('org-select','change',function(){$('custom-org-group').style.display=this.value==='custom'?'block':'none'});
-
 async function doSearch(){
   var q=$('search-query').value.trim();
   if(!q){alert('Enter a search query.');return}
@@ -581,7 +538,6 @@ async function doSearch(){
   }catch(e){$('results-area').innerHTML='<div class="error-card" style="padding:16px;background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;color:#DC2626;font-size:13px">'+esc(e.message)+'</div>';$('result-count').textContent=''}
   finally{loading(false)}
 }
-
 function renderResults(data){
   var area=$('results-area'),count=$('result-count');
   var results=data.results||[];
@@ -614,12 +570,10 @@ function renderResults(data){
   $('btn-send-blast').disabled=false;
   $('btn-send-msa').disabled=false;
 }
-
 function getSelected(){
   var cbs=document.querySelectorAll('.scb:checked');
   return Array.from(cbs).map(function(cb){return searchData[parseInt(cb.dataset.idx)]});
 }
-
 _on('btn-search','click',doSearch);
 _on('btn-send-design','click',function(){
   var s=getSelected();
