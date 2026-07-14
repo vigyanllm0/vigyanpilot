@@ -3106,26 +3106,104 @@ async function runCheckPrimers(){
     for(let i=0;i<d.ranked.length;i++){
       const r=d.ranked[i];
       const aln=r.alignment;
-      html+=`<div class="panel-card" style="margin-bottom:10px;${i===0?'border-top:3px solid var(--bio)':''}">
+      const t=r.thermodynamics;
+      const isBest=i===0;
+      html+=`<div class="panel-card" style="margin-bottom:10px;${isBest?'border-top:3px solid var(--bio)':''}">
         <div class="panel-head" style="display:flex;justify-content:space-between;align-items:center">
           <h3>#${i+1} ${esc(r.name)}</h3>
           <span class="badge ${r.combined_score>=70?'pass-b':'fail-b'}" style="font-size:13px">Score: ${r.combined_score}</span>
         </div>
         <div class="panel-body">
-          <div style="font-size:12px;margin-bottom:6px"><strong>Forward:</strong> <code style="font-size:11px">${r.forward}</code></div>
-          ${r.reverse?`<div style="font-size:12px;margin-bottom:6px"><strong>Reverse:</strong> <code style="font-size:11px">${r.reverse}</code></div>`:''}
-          <div class="pair-meta-row">
-            ${mc('Fwd identity',fmtNum(aln.forward.identity_pct,1,'%'),aln.forward.identity_pct>=90?'ok':'bad')}
-            ${mc('Fwd mismatches',fmtNum(aln.forward.mismatches,0),aln.forward.mismatches<=2?'ok':'bad')}
-            ${r.reverse?mc('Rev identity',fmtNum(aln.reverse.identity_pct,1,'%'),aln.reverse.identity_pct>=90?'ok':'bad'):''}
-            ${r.reverse?mc('Rev mismatches',fmtNum(aln.reverse.mismatches,0),aln.reverse.mismatches<=2?'ok':'bad'):''}
+          <div style="font-size:12px;margin-bottom:6px">
+            <strong>Forward:</strong> <code style="font-size:11px">${r.forward}</code>
+            <span style="color:var(--text2);font-size:10px;margin-left:4px">(len=${t.forward_length})</span>
           </div>
-          <div class="pair-meta-row">
-            ${mc('Fwd Tm',fmtNum(r.thermodynamics.forward_tm,1,'°C'),'warn')}
-            ${mc('Fwd GC',fmtNum(r.thermodynamics.forward_gc,1,'%'),r.thermodynamics.forward_gc>=40&&r.thermodynamics.forward_gc<=60?'ok':'bad')}
-            ${r.thermodynamics.reverse_tm!==null?mc('Rev Tm',fmtNum(r.thermodynamics.reverse_tm,1,'°C'),'warn'):''}
-            ${r.thermodynamics.reverse_gc!==null?mc('Rev GC',fmtNum(r.thermodynamics.reverse_gc,1,'%'),'warn'):''}
-          </div>
+          ${r.reverse?`<div style="font-size:12px;margin-bottom:8px"><strong>Reverse:</strong> <code style="font-size:11px">${r.reverse}</code>
+            <span style="color:var(--text2);font-size:10px;margin-left:4px">(len=${t.reverse_length})</span></div>`:''}
+          <table style="width:100%;border-collapse:collapse;font-size:11px;margin-bottom:8px">
+            <tr><td colspan="2" style="font-weight:700;padding:4px 0;color:var(--text);border-bottom:1px solid var(--slate-border)">🔬 Alignment</td></tr>
+            <tr>
+              <td style="padding:3px 8px 3px 0;color:var(--text2);width:50%">
+                Fwd identity: <strong style="color:${aln.forward.identity_pct>=90?'var(--bio)':'var(--red)'}">${fmtNum(aln.forward.identity_pct,1,'%')}</strong>
+              </td>
+              <td style="padding:3px 0;color:var(--text2)">
+                Rev identity: <strong style="color:${aln.reverse&&aln.reverse.identity_pct>=90?'var(--bio)':'var(--red)'}">${aln.reverse?fmtNum(aln.reverse.identity_pct,1,'%'):'-'}</strong>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:3px 8px 3px 0;color:var(--text2)">
+                Fwd mismatches: <strong>${fmtNum(aln.forward.mismatches,0)}</strong>
+              </td>
+              <td style="padding:3px 0;color:var(--text2)">
+                Rev mismatches: <strong>${aln.reverse?fmtNum(aln.reverse.mismatches,0):'-'}</strong>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:3px 8px 3px 0;color:var(--text2)">
+                Fwd start: <strong>${aln.forward.start_pos}</strong>
+              </td>
+              <td style="padding:3px 0;color:var(--text2)">
+                Rev start: <strong>${aln.reverse?aln.reverse.start_pos:'-'}</strong>
+              </td>
+            </tr>
+            <tr><td colspan="2" style="font-weight:700;padding:6px 0 4px;color:var(--text);border-bottom:1px solid var(--slate-border)">🌡 Thermodynamics</td></tr>
+            <tr>
+              <td style="padding:3px 8px 3px 0;color:var(--text2)">
+                Fwd Tm: <strong>${fmtNum(t.forward_tm,1,'°C')}</strong>
+              </td>
+              <td style="padding:3px 0;color:var(--text2)">
+                Rev Tm: <strong>${t.reverse_tm!==null?fmtNum(t.reverse_tm,1,'°C'):'-'}</strong>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:3px 8px 3px 0;color:var(--text2)">
+                Fwd GC: <strong>${fmtNum(t.forward_gc,1,'%')}</strong>
+              </td>
+              <td style="padding:3px 0;color:var(--text2)">
+                Rev GC: <strong>${t.reverse_gc!==null?fmtNum(t.reverse_gc,1,'%'):'-'}</strong>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:3px 8px 3px 0;color:var(--text2)">
+                Fwd hairpin ΔG: <strong>${fmtNum(t.forward_hairpin_dg,2)} kcal/mol</strong>
+              </td>
+              <td style="padding:3px 0;color:var(--text2)">
+                Rev hairpin ΔG: <strong>${t.reverse_hairpin_dg!==null?fmtNum(t.reverse_hairpin_dg,2)+' kcal/mol':'-'}</strong>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:3px 8px 3px 0;color:var(--text2)">
+                Fwd self-dimer ΔG: <strong>${fmtNum(t.forward_self_dimer_dg,2)} kcal/mol</strong>
+              </td>
+              <td style="padding:3px 0;color:var(--text2)">
+                Rev self-dimer ΔG: <strong>${t.reverse_self_dimer_dg!==null?fmtNum(t.reverse_self_dimer_dg,2)+' kcal/mol':'-'}</strong>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:3px 8px 3px 0;color:var(--text2)">
+                Fwd 3' GC clamp: <strong>${t.forward_gc_clamp?'YES':'NO'}</strong>
+              </td>
+              <td style="padding:3px 0;color:var(--text2)">
+                Rev 3' GC clamp: <strong>${t.reverse_gc_clamp!==null?(t.reverse_gc_clamp?'YES':'NO'):'-'}</strong>
+              </td>
+            </tr>
+            ${t.tm_delta!==null?`<tr><td colspan="2" style="font-weight:700;padding:6px 0 4px;color:var(--text);border-bottom:1px solid var(--slate-border)">🔗 Pair Parameters</td></tr>
+            <tr>
+              <td style="padding:3px 8px 3px 0;color:var(--text2)">
+                Tm delta: <strong>${fmtNum(t.tm_delta,1,'°C')}</strong>
+                ${t.tm_delta>5?'<span style="color:var(--red)">⚠ >5°C — gradient PCR recommended</span>':''}
+              </td>
+              <td style="padding:3px 0;color:var(--text2)">
+                Annealing Ta: <strong>${t.annealing_temp!==null?fmtNum(t.annealing_temp,1,'°C'):'-'}</strong>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:3px 0;color:var(--text2)" colspan="2">
+                Cross-dimer ΔG: <strong>${t.cross_dimer_dg!==null?fmtNum(t.cross_dimer_dg,2)+' kcal/mol':'-'}</strong>
+                ${t.cross_dimer_dg!==null&&t.cross_dimer_dg<-9?'<span style="color:var(--red)">⚠ Strong interaction</span>':''}
+              </td>
+            </tr>`:''}
+          </table>
           ${r.warnings&&r.warnings.length?`<div class="warn-list">${r.warnings.map(w=>`<div class="warn-item">⚠ ${esc(w)}</div>`).join('')}</div>`:''}
         </div>
       </div>`;
