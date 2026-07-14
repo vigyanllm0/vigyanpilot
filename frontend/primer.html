@@ -3084,6 +3084,25 @@ async function runCheckPrimers(){
       html+=`<div class="warn-list" style="margin-bottom:12px">${d.suggestions.map(s=>`<div class="warn-item">💡 ${esc(s)}</div>`).join('')}</div>`;
     }
     html+=`<div class="success-card" style="margin-bottom:12px">✓ ${d.total} primers ranked</div>`;
+    // ── Best pair recommendation ──
+    const best=d.ranked[0];
+    if(best){
+      const isGood=best.combined_score>=70;
+      html+=`<div class="panel-card" style="margin-bottom:14px;border:2px solid ${isGood?'var(--bio)':'var(--amber)'};border-radius:10px">
+        <div class="panel-head" style="background:${isGood?'var(--bio-soft)':'var(--amber-soft)'};border-radius:8px 8px 0 0;padding:10px 14px">
+          <h3 style="margin:0;font-size:15px">${isGood?'🏆 Best Recommended Pair':'⚠ No Ideal Pair Found'}</h3>
+        </div>
+        <div class="panel-body" style="padding:12px 14px">
+          ${isGood
+            ? `<div style="font-size:13px;margin-bottom:6px"><strong>${esc(best.name)}</strong> — Score: ${best.combined_score}</div>
+               <div style="font-size:12px;color:var(--text2)"><code>${best.forward}</code> ${best.reverse?'+ <code>'+esc(best.reverse)+'</code>':''}</div>
+               <div style="font-size:11px;color:var(--bio);margin-top:4px">✓ Passes all quality checks — ready for ordering</div>`
+            : `<div style="font-size:13px;color:var(--text2);margin-bottom:8px">Best score (${best.combined_score}) is below the quality threshold (70). No primer pair meets all criteria.</div>
+               <button class="btn-primary" onclick="document.getElementById('template-seq').focus();switchTab('auto')" style="font-size:12px">🎯 Design New Primers</button>`
+          }
+        </div>
+      </div>`;
+    }
     for(let i=0;i<d.ranked.length;i++){
       const r=d.ranked[i];
       const aln=r.alignment;
@@ -5296,6 +5315,15 @@ window.adminUnban = adminUnban;
 window.downloadReport = downloadReport;
 window.deleteReport = deleteReport;
 window.copyReferralLink = copyReferralLink;
+window.runCheckPrimers = runCheckPrimers;
+window.runBatchAnalysis = runBatchAnalysis;
+window.downloadCheckCSV = downloadCheckCSV;
+window.downloadBatchCSV = downloadBatchCSV;
+window.handleCheckFile = handleCheckFile;
+window.handleCheckDrop = handleCheckDrop;
+window.countSeqsInText = countSeqsInText;
+window.csvEsc = csvEsc;
+window.openBlastViewer = openBlastViewer;
         window.toggleUserMenu = toggleUserMenu;
       })();
     </script>
