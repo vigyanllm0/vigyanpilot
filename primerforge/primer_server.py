@@ -1945,6 +1945,12 @@ def create_app() -> Flask:
                 rev_aln = None
                 if rev:
                     rev_aln = align_primer_to_template(rev, template)
+                    # Auto-design pipelines export reverse primer as 5'→3' oligo.
+                    # Its reverse-complement is what binds the template — try both.
+                    rev_rc = _reverse_complement(rev)
+                    rev_rc_aln = align_primer_to_template(rev_rc, template)
+                    if rev_rc_aln.get("identity_pct", 0) > rev_aln.get("identity_pct", 0):
+                        rev_aln = rev_rc_aln
                 fwd_thermo = analyse_primer_full(fwd)
                 rev_thermo = None
                 pair_data = None

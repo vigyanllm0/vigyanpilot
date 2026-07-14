@@ -142,8 +142,11 @@ def align_primer_to_template(primer: str, template: str,
     mismatches = sum(1 for a, b in zip(aln_seq1, aln_seq2)
                      if a != b and a != "-" and b != "-")
     gaps       = aln_seq1.count("-") + aln_seq2.count("-")
-    matches    = max(0, len(primer) - mismatches - gaps)
-    identity   = round(matches / len(primer) * 100, 1)
+    # Identity over the aligned region only (strip unaligned primer overhangs)
+    aligned_pairs = [(a, b) for a, b in zip(aln_seq1, aln_seq2) if a != "-" and b != "-"]
+    total_aligned = len(aligned_pairs)
+    matches      = sum(1 for a, b in aligned_pairs if a == b)
+    identity     = round(matches / total_aligned * 100, 1) if total_aligned > 0 else 0.0
 
     # Find position on template
     pos = template.find(primer[:min(10, len(primer))])  # rough position
