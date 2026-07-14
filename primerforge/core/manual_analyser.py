@@ -142,7 +142,8 @@ def align_primer_to_template(primer: str, template: str,
     mismatches = sum(1 for a, b in zip(aln_seq1, aln_seq2)
                      if a != b and a != "-" and b != "-")
     gaps       = aln_seq1.count("-") + aln_seq2.count("-")
-    identity   = round((len(primer) - mismatches - gaps) / len(primer) * 100, 1)
+    matches    = max(0, len(primer) - mismatches - gaps)
+    identity   = round(matches / len(primer) * 100, 1)
 
     # Find position on template
     pos = template.find(primer[:min(10, len(primer))])  # rough position
