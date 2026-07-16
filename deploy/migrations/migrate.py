@@ -91,7 +91,7 @@ def apply_file(version, name, sql):
             print(f"\n  ERROR in statement #{i}: [{stmt[:300]}]\n  {e}")
             raise
     cur.execute(
-        "INSERT INTO schema_version (version, name) VALUES (%s, %s)",
+        "INSERT INTO schema_version (version, name) VALUES (%s, %s) ON CONFLICT DO NOTHING",
         (version, name),
     )
     print(f"  ✓ {version:04d}-{name}")
@@ -106,6 +106,7 @@ def main():
     applied = get_applied()
 
     # If tables exist but no migrations tracked, mark infra/initdb as applied
+    detect_ran = False
     if not applied and detect_existing_schema():
         print("  Schema exists (from Docker init) — marking as applied...")
         initdb_files = sorted(glob.glob(str(INITDB_DIR / "*.sql")))
@@ -120,6 +121,11 @@ def main():
                 )
                 print(f"  ✓ {version:03d}-{fname}")
         conn.commit()
+        detect_ran = True
+
+    # Refresh applied set after schema detection (avoids duplicate key on insert)
+    if detect_ran:
+        applied = get_applied()
 
     # Run pending migrations from deploy/migrations/
     migration_files = sorted(glob.glob(str(MIGRATIONS_DIR / "*.sql")))

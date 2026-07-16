@@ -51,13 +51,17 @@ AZURE_DB_URL = os.environ.get("DATABASE_URL")
 
 # Tables to migrate, in dependency order (parents before children).
 TABLES_IN_ORDER = [
+    # No FK dependencies — copy first
     "users",
     "token_balances",
     "subscriptions",
+    # pipeline_jobs must come before user_reports (FK dependency)
+    "pipeline_jobs",
+    "pipeline_results",
     "user_reports",
     "academic_claims",
     "referrals",
-    "feedback",
+    "feedback_submissions",
     "payments",
     "gateway_webhooks",
     "cost_ledger",
@@ -65,21 +69,15 @@ TABLES_IN_ORDER = [
     "fixed_expenses",
     "infra_rate_card",
     "agent_work_logs",
-    "password_resets",
-    "token_blacklist",
-    "usage_log",
     "audit_trail",
     "login_logs",
     "audit_logs",
     "email_verifications",
     "system_events",
-    "docking_jobs",
-    "docking_results",
-    "pipeline_jobs",
-    "pipeline_results",
     "compliance_screening",
     "order_payloads",
     "sequence_cache",
+    "schema_version",
 ]
 
 SCHEMA_ONLY_TABLES = {"schema_version"}  # tracked per-environment, skip data
@@ -129,7 +127,7 @@ def table_exists(conn, table: str) -> bool:
 
 
 def get_user_tables(conn) -> list:
-    """Return list of user table names in the public schema (excluding views)."""
+    """Return list of user table names in the public schema (excluding views, including partitioned)."""
     with conn.cursor() as cur:
         cur.execute(
             "SELECT table_name FROM information_schema.tables "
@@ -267,25 +265,98 @@ def extract_ddl_info_schema(conn) -> str:
     return "\n\n".join(stmts)
 
 
+def _strip_incompatible_set(ddl: str) -> str:
+    """Remove SET commands for GUCs not recognized by Azure PG 16."""
+    import re
+    # These PG 17+ GUCs don't exist on PG 16
+    incompatible = [
+        'transaction_timeout',
+        'debug_row_sampling',
+        'enable_memoize',
+        'hash_mem_multiplier',
+        'enable_async_append',
+        'allow_'  # wildcard: allow_* GUCs (PG18)
+    ]
+    lines = ddl.split('\n')
+    filtered = []
+    for line in lines:
+        stripped = line.strip()
+        # Skip SET lines with incompatible params
+        if stripped.startswith('SET '):
+            skip = False
+            for param in incompatible:
+                # Match "SET param" or "SET param ="
+                pattern = r'^SET\s+' + re.escape(param)
+                if re.match(pattern, stripped, re.IGNORECASE):
+                    skip = True
+                    break
+            if skip:
+                continue
+        filtered.append(line)
+    return '\n'.join(filtered)
+
+
+def _strip_comments(ddl: str) -> str:
+    """Remove single-line SQL comments (-- ...) that may contain semicolons."""
+    lines = ddl.split('\n')
+    filtered = []
+    for line in lines:
+        stripped = line.strip()
+        if stripped.startswith('--') or stripped.startswith('\\'):
+            continue
+        filtered.append(line)
+    return '\n'.join(filtered)
+
+
 def apply_ddl(azure_conn, ddl: str):
     """Execute DDL statements on the Azure target."""
-    with azure_conn.cursor() as cur:
-        statements = split_sql(ddl)
-        total = len(statements)
-        for i, stmt in enumerate(statements):
-            stmt = stmt.strip()
-            if not stmt or stmt.startswith("--"):
-                continue
-            try:
-                cur.execute(stmt)
-            except psycopg2.errors.DuplicateTable:
-                log.debug("  [%d/%d] Table already exists, skipping", i + 1, total)
-            except psycopg2.errors.DuplicateObject:
-                log.debug("  [%d/%d] Object already exists, skipping", i + 1, total)
-            except Exception as e:
-                log.error("  [%d/%d] DDL failed: %.100s ...\n  %s", i + 1, total, stmt[:200], e)
-                raise
-    azure_conn.commit()
+    ddl = _strip_incompatible_set(ddl)
+    ddl = _strip_comments(ddl)
+    # Use autocommit so each DDL statement is its own transaction
+    old_autocommit = azure_conn.autocommit
+    azure_conn.autocommit = True
+    try:
+        with azure_conn.cursor() as cur:
+            statements = split_sql(ddl)
+            total = len(statements)
+            for i, stmt in enumerate(statements):
+                stmt = stmt.strip()
+                if not stmt or stmt.startswith("--"):
+                    continue
+                try:
+                    cur.execute(stmt)
+                except psycopg2.errors.DuplicateTable:
+                    log.debug("  [%d/%d] Table already exists, skipping", i + 1, total)
+                except psycopg2.errors.DuplicateObject:
+                    log.debug("  [%d/%d] Object already exists, skipping", i + 1, total)
+                except psycopg2.errors.DuplicateFunction:
+                    log.debug("  [%d/%d] Function already exists, skipping", i + 1, total)
+                except psycopg2.errors.DuplicateSchema:
+                    log.debug("  [%d/%d] Schema already exists, skipping", i + 1, total)
+                except psycopg2.errors.WrongObjectType as e:
+                    if "already a partition" in str(e):
+                        log.debug("  [%d/%d] Partition already attached, skipping", i + 1, total)
+                    else:
+                        raise
+                except psycopg2.errors.InvalidTableDefinition as e:
+                    if "multiple primary keys" in str(e):
+                        log.debug("  [%d/%d] PK already exists, skipping", i + 1, total)
+                    else:
+                        raise
+                except psycopg2.errors.UndefinedObject as e:
+                    err_str = str(e)
+                    if stmt.strip().startswith("SET ") and "unrecognized configuration parameter" in err_str:
+                        log.debug("  [%d/%d] Skipping unrecognized GUC: %.80s", i + 1, total, stmt[:80])
+                    else:
+                        log.error("  [%d/%d] DDL failed: %.100s ...\n  %s", i + 1, total, stmt[:200], e)
+                        raise
+                except psycopg2.errors.FeatureNotSupported:
+                    log.debug("  [%d/%d] Skipping unsupported feature (extension not allowed on Azure): %.80s", i + 1, total, stmt[:80])
+                except Exception as e:
+                    log.error("  [%d/%d] DDL failed: %.100s ...\n  %s", i + 1, total, stmt[:200], e)
+                    raise
+    finally:
+        azure_conn.autocommit = old_autocommit
 
 
 def split_sql(sql: str) -> list:
@@ -336,6 +407,17 @@ def transfer_table(
     start = time.time()
     result = {"table": table, "rows": 0, "elapsed": 0, "status": "pending"}
 
+    # Check if partitioned table — COPY needs (SELECT *) variant
+    is_partitioned = False
+    with local_conn.cursor() as cur:
+        cur.execute(
+            "SELECT relkind = 'p' AS is_part FROM pg_class WHERE relname = %s "
+            "AND relnamespace = (SELECT oid FROM pg_namespace WHERE nspname = 'public')",
+            (table,),
+        )
+        row = cur.fetchone()
+        is_partitioned = row["is_part"] if row else False
+
     if table in SCHEMA_ONLY_TABLES:
         log.info("  └── schema_version — skipping (per-environment)")
         result["status"] = "skipped"
@@ -377,10 +459,16 @@ def transfer_table(
         # COPY source table to CSV
         with local_conn.cursor() as cur:
             with open(tmp_path, "w") as f:
-                cur.copy_expert(
-                    f"COPY {_qi(table)} TO STDOUT WITH CSV HEADER",
-                    f,
-                )
+                if is_partitioned:
+                    cur.copy_expert(
+                        f"COPY (SELECT * FROM {_qi(table)}) TO STDOUT WITH CSV HEADER",
+                        f,
+                    )
+                else:
+                    cur.copy_expert(
+                        f"COPY {_qi(table)} TO STDOUT WITH CSV HEADER",
+                        f,
+                    )
 
         # COPY CSV into Azure target
         with azure_conn.cursor() as cur:
@@ -571,9 +659,38 @@ def main():
     log.info("PHASE 2: Data Migration")
     log.info("-" * 60)
 
+    # Reset session to clean state after DDL phase
+    azure_conn.rollback()
+    azure_conn.autocommit = True
+    with azure_conn.cursor() as cur:
+        cur.execute("SET search_path TO public")
+
     # Discover tables present in the source
     source_tables = get_user_tables(local_conn)
     resume_mode = args.resume_from is not None
+
+    # Truncate all transfer tables on Azure to ensure clean slate
+    # (handles leftover data from partial previous runs)
+    if not args.dry_run and not resume_mode:
+        tables_to_truncate = [t for t in TABLES_IN_ORDER
+                              if t not in SCHEMA_ONLY_TABLES and t in get_user_tables(azure_conn)]
+        if tables_to_truncate:
+            log.info("Truncating %d tables on Azure for clean data load ...", len(tables_to_truncate))
+            with azure_conn.cursor() as cur:
+                cur.execute(f"TRUNCATE TABLE {', '.join(_qi(t) for t in tables_to_truncate)} CASCADE")
+            log.info("Truncate complete.")
+
+    # Disable triggers globally during data copy to prevent FK violations
+    # and auto-inserts (e.g. audit_trail triggers on other tables)
+    if not args.dry_run:
+        with azure_conn.cursor() as cur:
+            try:
+                cur.execute("SET session_replication_role = replica")
+            except Exception:
+                log.warning("Could not disable triggers (not superuser on Azure PG). "
+                            "Table ordering + truncate must handle FK dependencies.")
+        log.debug("Triggers disabled for data load session (session_replication_role = replica).")
+
     skipped_to_resume = not resume_mode
 
     summary = []
@@ -609,6 +726,15 @@ def main():
         total_rows += result["rows"]
         if result["status"].startswith("failed"):
             failed_tables.append(table)
+
+    # Re-enable triggers after data copy
+    if not args.dry_run:
+        with azure_conn.cursor() as cur:
+            try:
+                cur.execute("SET session_replication_role = DEFAULT")
+            except Exception:
+                pass  # not superuser — triggers remained enabled throughout
+        log.debug("Triggers re-enabled (session_replication_role = DEFAULT).")
 
     # Phase 3: Reset sequences
     log.info("-" * 60)

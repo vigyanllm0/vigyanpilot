@@ -58,7 +58,7 @@ conn.close()
     info "Testing target connection ..."
     python3 -c "
 import psycopg2
-conn = psycopg2.connect('$DATABASE_URL', sslmode='require', connect_timeout=10)
+conn = psycopg2.connect('$DATABASE_URL', connect_timeout=15)
 cur = conn.cursor()
 cur.execute('SELECT version()')
 print('  ' + cur.fetchone()[0][:60])
@@ -150,11 +150,12 @@ main() {
     preflight
     echo ""
 
-    if [[ "$1" == "--dry-run" ]]; then
-        shift
-        do_dry_run "$@"
+    if [[ "${1:-}" == "--dry-run" ]]; then
+        do_dry_run
+    elif [[ "${1:-}" == --resume-from ]]; then
+        do_migrate "${2:-}"
     else
-        do_migrate "$@"
+        do_migrate
     fi
 }
 

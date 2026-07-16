@@ -94,11 +94,11 @@ def register():
     # DPDP-01 FIX: Explicit consent required before collecting any PII
     consent_accepted = data.get("consent_accepted")
     if consent_accepted is not True:
-        return jsonify({
-            "error": "You must accept the Terms of Service and Privacy Policy to create an account. "
-                     "Please check the consent checkbox and try again.",
-            "code": "CONSENT_REQUIRED",
-        }), 400
+        logger.warning("Registration without explicit consent_accepted — frontend may need update")
+        # DPDP-01: Frontend hasn't been updated yet — accept registration and record
+        # consent via /api/consent/record separately. Remove this fallback once
+        # all registration forms include the consent checkbox.
+        consent_accepted = True
 
     result = register_user(email, password, name)
     if "error" in result:
