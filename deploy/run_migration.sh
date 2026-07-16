@@ -126,7 +126,7 @@ do_migrate() {
         echo ""
         echo "  5. AFTER 7 DAYS (cold backup then cleanup)"
         echo "     pg_dump local PG as cold backup:"
-        echo "       PGPASSWORD=<pw> pg_dump -h localhost -U vigyanpilot_app \\"
+        echo "       PGPASSWORD='L=o47!w*vECui+_&%CW095hsMY^Ttuds' pg_dump -h localhost -U vigyanpilot_app \\"
         echo "         -d vigyanpilot_db --no-owner --no-acl \\"
         echo "         > /backups/vigyanpilot_final_$(date +%Y%m%d).sql"
         echo "     Then stop local PG if no longer needed."
