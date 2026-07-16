@@ -37,6 +37,15 @@ if not DATABASE_URL:
         "  postgresql://user:password@host:5432/dbname"
     )
 
+# ── SSL / TLS Configuration ───────────────────────────────────────────────
+# Azure PostgreSQL enforces SSL. Set DB_SSL_MODE=require in the env.
+# If the URL already has ?sslmode=..., this is a no-op.
+# Otherwise ?sslmode=<DB_SSL_MODE> is appended to the DSN.
+DB_SSL_MODE = os.environ.get("DB_SSL_MODE", "").strip().lower()
+if DB_SSL_MODE and "sslmode" not in DATABASE_URL:
+    sep = "&" if "?" in DATABASE_URL else "?"
+    DATABASE_URL = f"{DATABASE_URL}{sep}sslmode={DB_SSL_MODE}"
+
 POOL_MIN = int(os.environ.get("DB_POOL_MIN", "2"))
 POOL_MAX = int(os.environ.get("DB_POOL_MAX", "10"))
 POOL_TIMEOUT = int(os.environ.get("DB_POOL_TIMEOUT", "5"))

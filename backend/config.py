@@ -1,7 +1,26 @@
 import os
+from urllib.parse import urlparse, urlencode, parse_qs, urlunparse
 
 # Use SQLite for local dev, PostgreSQL for production
 DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite:///./cms.db")
+
+# ── SSL / TLS for Azure PostgreSQL ────────────────────────────────────────
+# If DB_SSL_MODE is set and not already in the URL, append it as a query param.
+DB_SSL_MODE = os.environ.get("DB_SSL_MODE", "").strip().lower()
+if DB_SSL_MODE and DATABASE_URL.startswith("postgresql"):
+    parsed = urlparse(DATABASE_URL)
+    qs = parse_qs(parsed.query)
+    if "sslmode" not in qs:
+        qs["sslmode"] = [DB_SSL_MODE]
+        new_query = urlencode(qs, doseq=True)
+        DATABASE_URL = urlunparse(parsed._replace(query=new_query))
+
+DB_CONNECT_ARGS = {}
+if DB_SSL_MODE == "require":
+    ca_path = os.environ.get("DB_SSL_CA_PATH")
+    if ca_path:
+        DB_CONNECT_ARGS["sslrootcert"] = ca_path
+
 _jwt_secret = os.environ.get("JWT_SECRET")
 if not _jwt_secret:
     raise RuntimeError(
