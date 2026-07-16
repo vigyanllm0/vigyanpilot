@@ -48,7 +48,8 @@ if DB_SSL_MODE and "sslmode" not in DATABASE_URL:
 
 POOL_MIN = int(os.environ.get("DB_POOL_MIN", "2"))
 POOL_MAX = int(os.environ.get("DB_POOL_MAX", "10"))
-POOL_TIMEOUT = int(os.environ.get("DB_POOL_TIMEOUT", "5"))
+# Cloud (cross-AWS-to-Azure) needs higher timeout — 15s default.
+POOL_TIMEOUT = int(os.environ.get("DB_POOL_TIMEOUT", "15"))
 
 _pool = None
 _POOL_LOCK = threading.Lock()
