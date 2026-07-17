@@ -20,12 +20,17 @@
         profile.style.display = 'flex';
         var letterEl = profile.querySelector('.nav-avatar-letter');
         if (letterEl) letterEl.textContent = (user.email || user.name || 'U').charAt(0).toUpperCase();
-        var emailEl = profile.querySelector('.user-menu-email');
-        if (emailEl) emailEl.textContent = user.email || '';
       } else {
         profile.style.display = 'none';
       }
     });
+    if (token && user) {
+      var letter = (user.email || user.name || 'U').charAt(0).toUpperCase();
+      var pe = document.getElementById('userPopupAvatar');
+      if (pe) pe.textContent = letter;
+      var ee = document.getElementById('userPopupEmail');
+      if (ee) ee.textContent = user.email || '';
+    }
   }
 
   runAuth();
@@ -35,16 +40,17 @@
     sessionStorage.removeItem('pf_user');
     localStorage.removeItem('pf_token');
     localStorage.removeItem('pf_user');
+    closeUserMenu();
     runAuth();
   };
   window.toggleUserMenu = function() {
-    document.querySelectorAll('.user-menu').forEach(function(m) { m.classList.toggle('show'); });
+    var o = document.getElementById('userPopupOverlay');
+    if (o) o.classList.toggle('open');
   };
-  document.addEventListener('click', function(e) {
-    if (!e.target.closest('.nav-profile')) {
-      document.querySelectorAll('.user-menu').forEach(function(m) { m.classList.remove('show'); });
-    }
-  });
+  window.closeUserMenu = function() {
+    var o = document.getElementById('userPopupOverlay');
+    if (o) o.classList.remove('open');
+  };
   if (sessionStorage.getItem('pf_token') || localStorage.getItem('pf_token')) {
     var u = sessionStorage.getItem('pf_user') || localStorage.getItem('pf_user');
     if (u) {
