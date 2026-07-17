@@ -62,7 +62,20 @@ nav{position:sticky;top:0;background:var(--navy);z-index:1000;height:72px;border
 .nav-search-results .nsr-item .r-desc{font-size:10px;color:#64748B;margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .nav-search-no{font-size:12px;color:#94A3B8;padding:20px 14px;text-align:center}
 @media(max-width:900px){.nav-search-wrap input{width:120px}.nav-search-wrap input:focus{width:160px}.nav-search-results{width:280px}}
-@media(max-width:768px){.nav-search-wrap{display:none}.nav-right{gap:6px}.nav-login{padding:5px 12px;font-size:10px}.nav-cta{padding:5px 14px;font-size:9px}.nav-btns{gap:3px}}
+@media(max-width:768px){.nav-search-wrap{display:none}.nav-right{gap:6px}.nav-login{padding:5px 12px;font-size:10px}
+.nav-profile{display:none;align-items:center;position:relative}
+.nav-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#1565C0,#22D3EE);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .2s;border:2px solid transparent;flex-shrink:0}
+.nav-avatar:hover{transform:scale(1.08);border-color:rgba(255,255,255,.4)}
+.nav-avatar span{color:#fff;font-family:var(--font-h);font-size:13px;font-weight:700;text-transform:uppercase}
+.user-menu{position:absolute;top:calc(100%+10px);right:0;background:#fff;border:1px solid #E2E8F0;border-radius:10px;padding:6px 0;box-shadow:0 8px 30px rgba(0,0,0,.12);min-width:180px;z-index:200;display:none;overflow:hidden}
+.user-menu.show{display:block}
+.user-menu-header{padding:10px 16px 8px;font-size:12px;color:#64748B;border-bottom:1px solid #F1F5F9;margin-bottom:4px;word-break:break-all}
+.user-menu-item{padding:8px 16px;font-size:13px;color:#334155;cursor:pointer;text-decoration:none;display:block;transition:background .15s}
+.user-menu-item:hover{background:#F1F5F9;color:#0F172A}
+.user-menu-logout{color:#EF4444;border-top:1px solid #F1F5F9;margin-top:4px;padding-top:10px}
+.user-menu-logout:hover{background:#FEF2F2;color:#DC2626}
+
+.nav-cta{padding:5px 14px;font-size:9px}.nav-btns{gap:3px}}
 @media(max-width:480px){.nav-right{gap:4px}.nav-login{padding:4px 10px;font-size:9px;border-width:1px}.nav-cta{padding:4px 12px;font-size:8px}.nav-btns{gap:2px}}
 .nav-cta{padding:6px 20px;background:#fff;color:var(--navy);border:none;border-radius:6px;font-family:var(--font-h);font-size:10px;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:.06em;transition:all .2s;line-height:1.3}
 .nav-cta:hover{background:var(--blue-light);color:#fff;box-shadow:0 4px 16px rgba(21,101,192,.3)}
@@ -188,96 +201,7 @@ nav{position:sticky;top:0;background:var(--navy);z-index:1000;height:72px;border
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 </head>
 <body><main>
-
-
-<nav>
-<div class="nav-inner">
-  <a href="index.html" class="nav-brand">
-    <img src="logo.svg" alt="VigyanLLM Logo" width="48" height="48" style="border-radius:8px">
-    <span>VigyanLLM</span>
-  </a>
-  <div class="nav-links">
-    <div class="drop-wrap">
-      <span class="drop-trigger">Products ▾</span>
-      <div class="drop-menu">
-        <a href="primer.html">VPrime 2.0 — Primer Design</a>
-        <a href="search.html">Sequence Search</a>
-        <a href="blast.html">BLAST</a>
-        <a href="msa.html">MSA</a>
-        <a href="pcr-analysis.html">PCR Analysis</a>
-        <a href="crispr-analysis.html">CRISPR Analysis</a>
-        <a href="tm-calculator.html">Tm Calculator</a>
-        <a href="gc-calculator.html">GC Calculator</a>
-        <a href="protein-docking.html">Protein Docking</a>
-        <a href="dna-to-rna.html" style="display:flex;align-items:center;gap:6px">DNA → RNA Converter <span style="font-size:9px;font-weight:700;color:#fff;background:#16A34A;padding:2px 7px;border-radius:99px;line-height:1.4">Free</span></a>
-      </div>
-    </div>
-    <div class="drop-wrap">
-      <span class="drop-trigger">Platform ▾</span>
-      <div class="drop-menu">
-        <a href="platform.html">Overview</a>
-        <a href="architecture.html">Architecture</a>
-        <a href="problem.html">Problem</a>
-        <a href="solution.html">Solution</a>
-        <a href="compare.html">Compare</a>
-        <a href="roadmap.html">Roadmap</a>
-      </div>
-    </div>
-    <a href="Learning-vigyanllm.html">Learning</a>
-    <a href="academic-partnership.html">Partnership</a>
-    <a href="contact.html">Support</a>
-    <a href="cite.html" style="font-size:11px;opacity:.6">Cite</a>
-  </div>
-  <div class="nav-right">
-    <div class="nav-search-wrap">
-      <input type="text" id="navSearchInput" placeholder="Search tools, learning, blog..." autocomplete="off">
-      <span class="ns-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
-      <div class="nav-search-results" id="navSearchResults"></div>
-    </div>
-    <div class="nav-btns">
-      <button class="nav-login" onclick="openAuthModal()">Sign in</button>
-      <button class="nav-cta" onclick="openAuthModal()">Get started</button>
-    </div>
-  </div>
-  <button class="hamburger" id="hamburger" aria-label="Menu">
-    <span></span><span></span><span></span>
-  </button>
-</div>
-<div class="mobile-menu" id="mobile-menu">
-  <div class="mm-group"><div class="mm-hdr">Products</div>
-    <a href="primer.html">VPrime 2.0 — Primer Design</a>
-    <a href="search.html">Sequence Search</a>
-    <a href="blast.html">BLAST</a>
-    <a href="msa.html">MSA</a>
-    <a href="pcr-analysis.html">PCR Analysis</a>
-    <a href="crispr-analysis.html">CRISPR Analysis</a>
-    <a href="tm-calculator.html">Tm Calculator</a>
-    <a href="gc-calculator.html">GC Calculator</a>
-    <a href="protein-docking.html">Protein Docking</a>
-    <a href="dna-to-rna.html" style="display:flex;align-items:center;gap:6px">DNA → RNA Converter <span style="font-size:9px;font-weight:700;color:#fff;background:#16A34A;padding:2px 7px;border-radius:99px;line-height:1.4">Free</span></a>
-  </div>
-  <div class="mm-group"><div class="mm-hdr">Platform</div>
-    <a href="platform.html">Overview</a>
-    <a href="architecture.html">Architecture</a>
-    <a href="problem.html">Problem</a>
-    <a href="solution.html">Solution</a>
-    <a href="compare.html">Compare</a>
-    <a href="roadmap.html">Roadmap</a>
-  </div>
-  <div class="mm-group">
-    <a href="Learning-vigyanllm.html">Learning</a>
-    <a href="academic-partnership.html">Academic Partnership</a>
-    <a href="mailto:contact@vigyanllm.in">Enterprise Inquiry</a>
-  </div>
-  <div class="mm-group"><div class="mm-hdr">Support</div>
-    <a href="contact.html">Help Centre</a>
-    <a href="mailto:contact@vigyanllm.in">Contact Us</a>
-    <a href="cite.html" style="font-size:11px;opacity:.6">Cite Us</a>
-  </div>
-  <a href="javascript:void(0)" onclick="closeMobileMenu();var e=document.getElementById('navSearchInput');if(e){e.focus();e.scrollIntoView({behavior:'smooth',block:'center'})}" class="mm-cta" style="background:transparent;border:1px solid rgba(255,255,255,.25);color:rgba(255,255,255,.8);margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:8px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Search</a>
-  <a href="javascript:void(0)" class="mm-cta" onclick="openAuthModal()">Sign in</a>
-</div>
-</nav>
+<script>(function(){var x=new XMLHttpRequest();x.open("GET","/nav.html",false);try{x.send();if(x.status==200)document.write(x.responseText)}catch(e){}})();</script>
 
 <div class="page">
   <h1>Cite VigyanLLM</h1>
@@ -328,16 +252,6 @@ nav{position:sticky;top:0;background:var(--navy);z-index:1000;height:72px;border
   </div>
 
 </main>
-<footer>&copy; 2026 VigyanLLM Pvt. Ltd. · Sovereign Research AI
-
-
-
-
-
-
-
-
-</footer>
 <script>
 function copyCite(id){var e=document.getElementById(id);if(!e)return;var t=e.innerText||e.textContent;navigator.clipboard.writeText(t).then(function(){var b=e.nextElementSibling;if(b){var o=b.textContent;b.textContent='Copied!';setTimeout(function(){b.textContent=o},2000)}}).catch(function(){var s=window.getSelection(),r=document.createRange();r.selectNode(e);s.removeAllRanges();s.addRange(r);document.execCommand('copy');s.removeAllRanges();var b=e.nextElementSibling;if(b){var o=b.textContent;b.textContent='Copied!';setTimeout(function(){b.textContent=o},2000)}})}
 (function(){var h=document.getElementById('hamburger'),m=document.getElementById('mobile-menu');if(h&&m){h.addEventListener('click',function(){h.classList.toggle('active');m.classList.toggle('open')});document.addEventListener('click',function(e){if(!h.contains(e.target)&&!m.contains(e.target)){m.classList.remove('open');h.classList.remove('active')}})}window.closeMobileMenu=function(){if(m){m.classList.remove('open');if(h)h.classList.remove('active')}};})();
@@ -374,5 +288,7 @@ function closeAuthModal(){document.getElementById('authOverlay').classList.remov
 function toggleAuthMode(){AUTH_MODE=AUTH_MODE==='login'?'register':'login';var t=document.getElementById('authTitle'),s=document.getElementById('authSub'),b=document.getElementById('authSubmit'),n=document.getElementById('nameField'),tg=document.getElementById('authToggle');if(AUTH_MODE==='register'){t.textContent='Create account';s.textContent='Join VigyanLLM — free for Indian academic institutions';b.textContent='Create account';n.style.display='block';tg.innerHTML="Already have an account? <a onclick=\"toggleAuthMode()\">Sign in</a>"}else{t.textContent='Sign in';s.textContent='Access your VigyanLLM account';b.textContent='Sign in';n.style.display='none';tg.innerHTML="Don't have an account? <a onclick=\"toggleAuthMode()\">Register</a>"}document.getElementById('authError').style.display='none'}
 async function handleAuth(e){e.preventDefault();var err=document.getElementById('authError');err.style.display='none';var email=document.getElementById('authEmail').value;var pass=document.getElementById('authPass').value;if(pass.length<8){err.textContent='Password must be at least 8 characters';err.style.display='block';return false}try{var api=window.VIGYAN_BACKEND_URL||'';var ep=AUTH_MODE==='login'?'/api/auth/login':'/api/auth/register';var body={email:email,password:pass};if(AUTH_MODE==='register'){body.name=document.getElementById('authName').value||'User'}var r=await fetch(api+ep,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});var d=await r.json();if(!r.ok){err.textContent=d.error||'Authentication failed';err.style.display='block';return false}closeAuthModal();window.location.reload()}catch(a){err.textContent='Network error. Please try again.';err.style.display='block'}return false}
 </script>
+<script>(function(){var x=new XMLHttpRequest();x.open("GET","/footer.html",false);try{x.send();if(x.status==200)document.write(x.responseText)}catch(e){}})();</script>
+<script src="/auth-shared.js"></script>
 </body>
 </html>

@@ -75,6 +75,19 @@ nav{position:sticky;top:0;background:var(--navy);z-index:100;height:72px}
 .nav-brand{display:flex;align-items:center;gap:10px;color:#fff;font-family:var(--font-h);font-size:20px;font-weight:800}
 .nav-brand img{width:34px;height:34px;border-radius:8px;transition:transform .3s}
 .nav-brand:hover img{transform:rotate(-10deg)}
+
+.nav-profile{display:none;align-items:center;position:relative}
+.nav-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#1565C0,#22D3EE);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .2s;border:2px solid transparent;flex-shrink:0}
+.nav-avatar:hover{transform:scale(1.08);border-color:rgba(255,255,255,.4)}
+.nav-avatar span{color:#fff;font-family:var(--font-h);font-size:13px;font-weight:700;text-transform:uppercase}
+.user-menu{position:absolute;top:calc(100%+10px);right:0;background:#fff;border:1px solid #E2E8F0;border-radius:10px;padding:6px 0;box-shadow:0 8px 30px rgba(0,0,0,.12);min-width:180px;z-index:200;display:none;overflow:hidden}
+.user-menu.show{display:block}
+.user-menu-header{padding:10px 16px 8px;font-size:12px;color:#64748B;border-bottom:1px solid #F1F5F9;margin-bottom:4px;word-break:break-all}
+.user-menu-item{padding:8px 16px;font-size:13px;color:#334155;cursor:pointer;text-decoration:none;display:block;transition:background .15s}
+.user-menu-item:hover{background:#F1F5F9;color:#0F172A}
+.user-menu-logout{color:#EF4444;border-top:1px solid #F1F5F9;margin-top:4px;padding-top:10px}
+.user-menu-logout:hover{background:#FEF2F2;color:#DC2626}
+
 .nav-links{display:flex;gap:32px;align-items:center;margin-left:40px}
 .nav-links a{font-size:13px;color:#CBD5E1;transition:color .15s;font-weight:500;letter-spacing:0.02em}
 .nav-links a:hover{color:#fff}
@@ -323,94 +336,7 @@ footer{padding:32px 0;border-top:1px solid var(--slate-border)}
 <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-KRP5LLPR"
 height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <!-- End Google Tag Manager (noscript) -->
-<nav>
-<div class="nav-inner">
-  <a href="index.html" class="nav-brand">
-    <img src="logo.svg" alt="VigyanLLM Logo" width="48" height="48" style="border-radius:8px">
-    <span>VigyanLLM</span>
-  </a>
-  <div class="nav-links">
-    <div class="drop-wrap">
-      <span class="drop-trigger">Products ▾</span>
-      <div class="drop-menu">
-        <a href="primer.html">VPrime 2.0 — Primer Design</a>
-        <a href="search.html">Sequence Search</a>
-        <a href="blast.html">BLAST</a>
-        <a href="msa.html">MSA</a>
-        <a href="pcr-analysis.html">PCR Analysis</a>
-        <a href="crispr-analysis.html">CRISPR Analysis</a>
-        <a href="tm-calculator.html">Tm Calculator</a>
-        <a href="gc-calculator.html">GC Calculator</a>
-        <a href="protein-docking.html">Protein Docking</a>
-        <a href="dna-to-rna.html" style="display:flex;align-items:center;gap:6px">DNA → RNA Converter <span style="font-size:9px;font-weight:700;color:#fff;background:#16A34A;padding:2px 7px;border-radius:99px;line-height:1.4">Free</span></a>
-      </div>
-    </div>
-    <div class="drop-wrap">
-      <span class="drop-trigger">Platform ▾</span>
-      <div class="drop-menu">
-        <a href="platform.html">Overview</a>
-        <a href="architecture.html">Architecture</a>
-        <a href="problem.html">Problem</a>
-        <a href="solution.html">Solution</a>
-        <a href="compare.html">Compare</a>
-        <a href="roadmap.html">Roadmap</a>
-      </div>
-    </div>
-    <a href="Learning-vigyanllm.html">Learning</a>
-    <a href="academic-partnership.html">Partnership</a>
-    <a href="contact.html">Support</a>
-    <a href="cite.html" style="font-size:11px;opacity:.6">Cite</a>
-  </div>
-  <div class="nav-right">
-    <div class="nav-search-wrap">
-      <input type="text" id="navSearchInput" placeholder="Search tools, learning, blog..." autocomplete="off">
-      <span class="ns-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
-      <div class="nav-search-results" id="navSearchResults"></div>
-    </div>
-    <div class="nav-btns">
-      <button class="nav-login" id="nav-login-btn" onclick="openAuthModal()">Sign in</button>
-      <button class="nav-cta" onclick="openAuthModal()">Get started</button>
-    </div>
-  </div>
-  <button class="hamburger" id="hamburger" aria-label="Menu">
-    <span></span><span></span><span></span>
-  </button>
-</div>
-<div class="mobile-menu" id="mobile-menu">
-  <div class="mm-group"><div class="mm-hdr">Products</div>
-    <a href="primer.html">VPrime 2.0 — Primer Design</a>
-    <a href="search.html">Sequence Search</a>
-    <a href="blast.html">BLAST</a>
-    <a href="msa.html">MSA</a>
-    <a href="pcr-analysis.html">PCR Analysis</a>
-    <a href="crispr-analysis.html">CRISPR Analysis</a>
-    <a href="tm-calculator.html">Tm Calculator</a>
-    <a href="gc-calculator.html">GC Calculator</a>
-    <a href="protein-docking.html">Protein Docking</a>
-    <a href="dna-to-rna.html" style="display:flex;align-items:center;gap:6px">DNA → RNA Converter <span style="font-size:9px;font-weight:700;color:#fff;background:#16A34A;padding:2px 7px;border-radius:99px;line-height:1.4">Free</span></a>
-  </div>
-  <div class="mm-group"><div class="mm-hdr">Platform</div>
-    <a href="platform.html">Overview</a>
-    <a href="architecture.html">Architecture</a>
-    <a href="problem.html">Problem</a>
-    <a href="solution.html">Solution</a>
-    <a href="compare.html">Compare</a>
-    <a href="roadmap.html">Roadmap</a>
-  </div>
-  <div class="mm-group">
-    <a href="Learning-vigyanllm.html">Learning</a>
-    <a href="academic-partnership.html">Academic Partnership</a>
-    <a href="mailto:contact@vigyanllm.in">Enterprise Inquiry</a>
-  </div>
-  <div class="mm-group"><div class="mm-hdr">Support</div>
-    <a href="contact.html">Help Centre</a>
-    <a href="mailto:contact@vigyanllm.in">Contact Us</a>
-    <a href="cite.html" style="font-size:11px;opacity:.6">Cite Us</a>
-  </div>
-  <a href="javascript:void(0)" onclick="closeMobileMenu();var e=document.getElementById('navSearchInput');if(e){e.focus();e.scrollIntoView({behavior:'smooth',block:'center'})}" class="mm-cta" style="background:transparent;border:1px solid rgba(255,255,255,.25);color:rgba(255,255,255,.8);margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:8px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Search</a>
-  <a href="javascript:void(0)" class="mm-cta" onclick="openAuthModal()">Sign in</a>
-</div>
-</nav>
+<script>(function(){var x=new XMLHttpRequest();x.open("GET","/nav.html",false);try{x.send();if(x.status==200)document.write(x.responseText)}catch(e){}})();</script>
 <div class="dashboard-wrap">
 <!-- DISCLAIMER -->
 <div class="disclaimer">
@@ -730,20 +656,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <p class="pricing-footer">All prices in INR. GST extra. 2 free trial runs included on signup. Unified plans cover both primer design and molecular docking.</p>
 </div>
 </div><!-- /dashboard-wrap -->
-<footer>
-  <div class="footer-inner">
-    <div style="display:flex;align-items:center;gap:10px">
-      <span style="font-size:18px;font-weight:700;color:#000">VigyanLLM</span>
-      <span style="color:var(--muted)">&#xA9; 2026 VigyanLLM Pvt. Ltd.</span>
-    </div>
-    <div style="display:flex;gap:16px">
-      <a href="privacy.html" style="color:var(--muted)">Privacy</a>
-      <a href="terms.html" style="color:var(--muted)">Terms</a>
-      <a href="refund.html" style="color:var(--muted)">Refund</a>
-      <a href="mailto:contact@vigyanllm.in" style="color:var(--muted)">Contact</a>
-    </div>
-  </div>
-</footer>
 </main>
 <!-- AUTH MODAL -->
 <div class="auth-overlay" id="auth-overlay">
@@ -1652,7 +1564,6 @@ if (hamburger && mobileMenu) {
   });
 }
 </script>
-<script src="/auth-shared.js"></script>
 <!-- AI Widget -->
 <div id="ai-widget" style="position:fixed;bottom:24px;right:24px;z-index:9999;font-family:Inter,sans-serif">
   <button id="ai-widget-toggle" aria-label="AI Assistant" style="width:56px;height:56px;border-radius:50%;background:#0F172A;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;box-shadow:0 4px 20px rgba(15,23,42,.3);transition:transform .2s,box-shadow .2s"
@@ -1674,5 +1585,7 @@ if (hamburger && mobileMenu) {
     </div>
   </div>
 </div>
+<script>(function(){var x=new XMLHttpRequest();x.open("GET","/footer.html",false);try{x.send();if(x.status==200)document.write(x.responseText)}catch(e){}})();</script>
+<script src="/auth-shared.js"></script>
 </body>
 </html>

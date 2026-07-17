@@ -51,7 +51,7 @@ nav{position:sticky;top:0;background:var(--navy);z-index:1000;height:72px;border
 .nav-brand{display:flex;align-items:center;gap:10px;color:#fff;font-family:var(--font-h);font-size:20px;font-weight:800}
 .nav-brand img{width:34px;height:34px;border-radius:8px;transition:transform .3s}
 .nav-brand:hover img{transform:rotate(-10deg)}
-.nav-links{display:flex;gap:32px;align-items:center;margin-left:40px}
+.nav-links{display:flex;gap:40px;align-items:center;margin-left:40px}
 .nav-links>a,.drop-trigger{font-family:var(--font-b);font-size:13px;color:rgba(255,255,255,.7);font-weight:600;cursor:pointer;padding:6px 0;text-transform:uppercase;letter-spacing:.04em;transition:color .15s}
 .nav-links>a:hover,.drop-trigger:hover{color:#fff}
 .drop-wrap{position:relative;display:inline-block}
@@ -66,7 +66,7 @@ nav{position:sticky;top:0;background:var(--navy);z-index:1000;height:72px;border
 .nav-search-wrap input::placeholder{color:rgba(255,255,255,.4)}
 .nav-search-wrap input:focus{border-color:rgba(255,255,255,.4);background:rgba(255,255,255,.12);width:260px}
 .nav-search-wrap .ns-icon{position:absolute;right:8px;color:rgba(255,255,255,.4);pointer-events:none;display:flex}
-.nav-search-results{position:absolute;top:calc(100% + 8px);right:0;width:360px;background:#fff;border-radius:12px;box-shadow:0 12px 48px rgba(0,0,0,.25);overflow:hidden;display:none;z-index:1001}
+.nav-search-results{position:absolute;top:calc(100% + 8px);right:0;width:360px;max-width:90vw;background:#fff;border-radius:12px;box-shadow:0 12px 48px rgba(0,0,0,.25);overflow:hidden;display:none;z-index:1001}
 .nav-search-results.open{display:block}
 .nav-search-results .nsr-group{padding:4px 0 0}
 .nav-search-results .nsr-label{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#94A3B8;font-weight:700;padding:6px 14px 2px}
@@ -85,6 +85,17 @@ nav{position:sticky;top:0;background:var(--navy);z-index:1000;height:72px;border
 .nav-cta:hover{background:var(--blue-light);color:#fff;box-shadow:0 4px 16px rgba(21,101,192,.3)}
 .nav-login{padding:5px 16px;background:transparent;color:rgba(255,255,255,.8);border:1.5px solid rgba(255,255,255,.25);border-radius:6px;font-family:var(--font-b);font-size:11px;font-weight:600;cursor:pointer;transition:all .15s;line-height:1.3}
 .nav-login:hover{border-color:#fff;color:#fff;background:rgba(255,255,255,.06)}
+.nav-profile{display:flex;align-items:center;position:relative}
+.nav-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#1565C0,#22D3EE);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .2s;border:2px solid transparent}
+.nav-avatar:hover{transform:scale(1.08);border-color:rgba(255,255,255,.4)}
+.nav-avatar span{color:#fff;font-family:var(--font-h);font-size:14px;font-weight:700;text-transform:uppercase}
+.user-menu{position:absolute;top:calc(100%+10px);right:0;background:#fff;border:1px solid #E2E8F0;border-radius:10px;padding:6px 0;box-shadow:0 8px 30px rgba(0,0,0,.12);min-width:190px;z-index:200;display:none;overflow:hidden}
+.user-menu.show{display:block}
+.user-menu-header{padding:10px 16px 8px;font-size:12px;color:#64748B;border-bottom:1px solid #F1F5F9;margin-bottom:4px;word-break:break-all}
+.user-menu-item{padding:8px 16px;font-size:13px;color:#334155;cursor:pointer;text-decoration:none;display:block;transition:background .15s}
+.user-menu-item:hover{background:#F1F5F9;color:#0F172A}
+.user-menu-logout{color:#EF4444;border-top:1px solid #F1F5F9;margin-top:4px;padding-top:10px}
+.user-menu-logout:hover{background:#FEF2F2;color:#DC2626}
 .hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;background:none;border:none;padding:4px;z-index:1001}
 .hamburger span{width:22px;height:2.5px;background:#fff;border-radius:2px;transition:all .3s}
 .hamburger.active span:nth-child(1){transform:rotate(45deg) translate(5px,5px)}
@@ -193,16 +204,18 @@ nav{position:sticky;top:0;background:var(--navy);z-index:1000;height:72px;border
 .insight-card h4{font-family:var(--font-h);font-size:14px;font-weight:700;color:var(--text);margin-bottom:6px;line-height:1.4}
 .insight-card p{font-size:12px;color:var(--text2);line-height:1.6}
 footer{background:var(--black);color:rgba(255,255,255,.8);padding:56px 0 24px}
-.footer-grid{display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr;gap:40px;max-width:var(--max-w);margin:0 auto 32px;padding:0 32px}
+.footer-grid{display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr 1fr;gap:40px;max-width:var(--max-w);margin:0 auto 32px;padding:0 32px}
 .footer-col h5{font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:#fff;margin-bottom:16px;font-weight:700}
 .footer-col a{display:block;font-size:13px;color:rgba(255,255,255,.5);margin-bottom:10px;transition:color .15s}
 .footer-col a:hover{color:#fff}
 .footer-social{display:flex;gap:8px;margin-top:16px}
-.footer-social a{width:36px;height:36px;display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,.12);border-radius:8px;color:rgba(255,255,255,.5);transition:all .2s}
-.footer-social a:hover{color:#fff;border-color:var(--blue);background:rgba(21,101,192,.15);transform:translateY(-2px)}
+.footer-social a{width:36px;height:36px;display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,.12);border-radius:8px;transition:all .3s ease}
+.footer-social a:hover{border-color:rgba(255,255,255,.3);transform:translateY(-2px);background:rgba(255,255,255,.05)}
+.footer-social svg{width:16px;height:16px;filter:grayscale(1);opacity:.5;transition:all .3s ease}
+.footer-social a:hover svg{filter:grayscale(0);opacity:1}
 .footer-bottom{max-width:var(--max-w);margin:0 auto;padding:16px 32px 0;border-top:1px solid rgba(255,255,255,.06);display:flex;justify-content:space-between;font-size:12px;color:rgba(255,255,255,.35)}
 @media(max-width:1024px){.pillars{grid-template-columns:repeat(2,1fr)}.insights-grid{grid-template-columns:1fr 1fr}.collab-grid{grid-template-columns:1fr 1fr}}
-@media(max-width:768px){.hero{flex-direction:column;padding:40px 20px 32px;gap:32px;min-height:auto}.hero-right{display:none}.nav-links{display:flex;gap:32px;align-items:center;margin-left:40px}.hamburger{display:flex}.footer-grid{grid-template-columns:1fr 1fr;gap:24px}.pillars{grid-template-columns:1fr}.products-grid{grid-template-columns:1fr}.insights-grid{grid-template-columns:1fr}.collab-grid{grid-template-columns:1fr}.section{padding:40px 20px}.products{padding:40px 20px}.insights{padding:40px 20px}.stats-bar{gap:24px;padding:32px 20px}}
+@media(max-width:768px){.hero{flex-direction:column;padding:40px 20px 32px;gap:32px;min-height:auto}.hero-right{display:none}.nav-links{display:flex;gap:40px;align-items:center;margin-left:40px}.hamburger{display:flex}.footer-grid{grid-template-columns:1fr 1fr;gap:24px}.pillars{grid-template-columns:1fr}.products-grid{grid-template-columns:1fr}.insights-grid{grid-template-columns:1fr}.collab-grid{grid-template-columns:1fr}.section{padding:40px 20px}.products{padding:40px 20px}.insights{padding:40px 20px}.stats-bar{gap:24px;padding:32px 20px}}
 .auth-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center;padding:24px}
 .auth-overlay.open{display:flex}
 .auth-modal{background:#fff;border-radius:16px;padding:36px;width:100%;max-width:400px;box-shadow:0 24px 64px rgba(0,0,0,.25);position:relative;max-height:90vh;overflow-y:auto}
@@ -219,7 +232,7 @@ footer{background:var(--black);color:rgba(255,255,255,.8);padding:56px 0 24px}
 .auth-modal .toggle-link a{color:var(--blue);font-weight:600;cursor:pointer}
 .auth-modal .auth-err{color:#DC2626;font-size:12px;text-align:center;margin-top:8px;display:none}
 </style>
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"VigyanLLM VPrime 2.0","applicationCategory":"BiotechnologyApplication","operatingSystem":"Linux/Docker (On-Premises)","description":"Sovereign, on-premises biomedical AI platform for autonomous primer design, CRISPR guide RNA analysis, BLAST, MSA, and GPU-accelerated molecular docking. Free for Indian academic institutions.","offers":{"@type":"Offer","price":"0","priceCurrency":"INR","description":"Free for Indian Academic Institutions"},"creator":{"@type":"Organization","name":"VigyanLLM","sameAs":["https://www.linkedin.com/company/vigyanllm","https://x.com/vigyanllm","https://github.com/vigyanllm0/vigyanllm-deployment"]}}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"VigyanLLM VPrime 2.0","applicationCategory":"BiotechnologyApplication","operatingSystem":"Linux/Docker (On-Premises)","description":"Sovereign, on-premises biomedical AI platform for autonomous primer design, CRISPR guide RNA analysis, BLAST, MSA, and GPU-accelerated molecular docking. Free for Indian academic institutions.","offers":{"@type":"Offer","price":"0","priceCurrency":"INR","description":"Free for Indian Academic Institutions"},"creator":{"@type":"Organization","name":"VigyanLLM","sameAs":["https://www.linkedin.com/company/vigyanllm","https://github.com/vigyanllm0/vigyanllm-deployment","https://www.facebook.com/vigyanllm","https://www.instagram.com/vigyanllm/"]}}</script>
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Can VigyanLLM run without an internet connection?","acceptedAnswer":{"@type":"Answer","text":"Yes. VigyanLLM is deployed via Docker on your local hardware. Once deployed, no internet connection is required to run primer design, CRISPR analysis, or molecular docking pipelines."}},{"@type":"Question","name":"Is VigyanLLM free for university research?","acceptedAnswer":{"@type":"Answer","text":"Yes, VigyanLLM offers a 30-day unrestricted Academic Partnership Program for recognized Indian universities and research institutions using .ac.in or .res.in domains."}},{"@type":"Question","name":"What tools does VigyanLLM include?","acceptedAnswer":{"@type":"Answer","text":"VigyanLLM includes VPrime 2.0 primer and probe design pipeline, CRISPR guide RNA analysis, GPU-accelerated molecular docking, BLAST sequence search, MSA viewer, PCR analysis, Tm calculator, and GC content calculator."}},{"@type":"Question","name":"Does VigyanLLM send my data to external servers?","acceptedAnswer":{"@type":"Answer","text":"No. VigyanLLM runs entirely on your infrastructure. Zero data leaves your institution. No external API calls are made during primer design, CRISPR analysis, or molecular docking."}}]}</script>
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebPage","name":"VigyanLLM — Sovereign Biomedical AI Platform","speakable":{"@type":"SpeakableSpecification","cssSelector":[".hero-heading",".platform-definition"]}}</script>
 <script type="application/ld+json">
@@ -311,8 +324,6 @@ footer{background:var(--black);color:rgba(255,255,255,.8);padding:56px 0 24px}
     </div>
     <a href="Learning-vigyanllm.html">Learning</a>
     <a href="academic-partnership.html">Partnership</a>
-    <a href="contact.html">Support</a>
-    <a href="cite.html" style="font-size:11px;opacity:.6">Cite</a>
   </div>
   <div class="nav-right">
     <div class="nav-search-wrap">
@@ -320,9 +331,20 @@ footer{background:var(--black);color:rgba(255,255,255,.8);padding:56px 0 24px}
       <span class="ns-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
       <div class="nav-search-results" id="navSearchResults"></div>
     </div>
-    <div class="nav-btns">
+    <div class="nav-btns" id="navBtns">
       <button class="nav-login" onclick="openAuthModal()">Sign in</button>
       <button class="nav-cta" onclick="openAuthModal()">Get started</button>
+    </div>
+    <div class="nav-profile" id="navProfile" style="display:none">
+      <div class="nav-avatar" id="navAvatar" onclick="toggleUserMenu()">
+        <span class="nav-avatar-letter" id="navAvatarLetter"></span>
+      </div>
+      <div class="user-menu" id="userMenu">
+        <div class="user-menu-header user-menu-email" id="userMenuEmail"></div>
+        <a class="user-menu-item" href="primer.html">Dashboard</a>
+        <a class="user-menu-item" href="contact.html">Support</a>
+        <div class="user-menu-item user-menu-logout" onclick="logout()">Logout</div>
+      </div>
     </div>
   </div>
   <button class="hamburger" id="hamburger" aria-label="Menu">
@@ -354,11 +376,6 @@ footer{background:var(--black);color:rgba(255,255,255,.8);padding:56px 0 24px}
     <a href="Learning-vigyanllm.html">Learning</a>
     <a href="academic-partnership.html">Academic Partnership</a>
     <a href="mailto:contact@vigyanllm.in">Enterprise Inquiry</a>
-  </div>
-  <div class="mm-group"><div class="mm-hdr">Support</div>
-    <a href="contact.html">Help Centre</a>
-    <a href="mailto:contact@vigyanllm.in">Contact Us</a>
-    <a href="cite.html" style="font-size:11px;opacity:.6">Cite Us</a>
   </div>
   <a href="javascript:void(0)" onclick="closeMobileMenu();var e=document.getElementById('navSearchInput');if(e){e.focus();e.scrollIntoView({behavior:'smooth',block:'center'})}" class="mm-cta" style="background:transparent;border:1px solid rgba(255,255,255,.25);color:rgba(255,255,255,.8);margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:8px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Search</a>
   <a href="javascript:void(0)" class="mm-cta" onclick="openAuthModal()">Sign in</a>
@@ -541,10 +558,10 @@ footer{background:var(--black);color:rgba(255,255,255,.8);padding:56px 0 24px}
     <p style="font-size:13px;color:rgba(255,255,255,.45);line-height:1.6">Sovereign Healthcare &amp; Life Sciences AI.<br>Built in India. For the world.</p>
     <a href="mailto:contact@vigyanllm.in" style="color:var(--blue-light);font-size:13px;display:block;margin-top:12px">contact@vigyanllm.in</a>
     <div class="footer-social">
-      <a href="https://github.com/vigyanllm" rel="me" aria-label="GitHub"><svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg></a>
-      <a href="https://x.com/vigyanllm" rel="me" aria-label="X"><svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:currentColor"><path d="M4 4l6.5 8.5L4 20h2l5.5-7 4.5 7h5l-7-9.5L20 4h-2l-5 6.5L9 4H4z"/></svg></a>
-      <a href="https://www.linkedin.com/company/vigyanllm/" rel="me" aria-label="LinkedIn"><svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:currentColor"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg></a>
-      <a href="https://youtube.com/@vigyanllm" rel="me" aria-label="YouTube"><svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:currentColor"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6a3 3 0 0 0-2.1 2.1C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1c.5-1.9.5-5.8.5-5.8s0-3.9-.5-5.8zM9.5 15.5V8.5l6.3 3.5-6.3 3.5z"/></svg></a>
+      <a href="https://github.com/vigyanllm" rel="me" aria-label="GitHub"><svg fill="#fff" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg></a>
+      <a href="https://www.linkedin.com/company/vigyanllm/" rel="me" aria-label="LinkedIn"><svg fill="#0077B5" viewBox="0 0 24 24"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg></a>
+      <a href="https://www.facebook.com/vigyanllm" rel="me" aria-label="Facebook"><svg fill="#1877F2" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></a>
+      <a href="https://www.instagram.com/vigyanllm/" rel="me" aria-label="Instagram"><svg fill="#E1306C" viewBox="0 0 24 24"><path d="M7.8 2h8.4C19.4 2 22 4.6 22 7.8v8.4a5.8 5.8 0 0 1-5.8 5.8H7.8C4.6 22 2 19.4 2 16.2V7.8A5.8 5.8 0 0 1 7.8 2m-.2 2A3.6 3.6 0 0 0 4 7.6v8.8C4 18.39 5.61 20 7.6 20h8.8a3.6 3.6 0 0 0 3.6-3.6V7.6C20 5.61 18.39 4 16.4 4H7.6m9.65 1.5a1.25 1.25 0 0 1 0 2.5 1.25 1.25 0 0 1 0-2.5M12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10m0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/></svg></a>
     </div>
   </div>
   <div class="footer-col">
@@ -604,10 +621,14 @@ footer{background:var(--black);color:rgba(255,255,255,.8);padding:56px 0 24px}
 var API = window.VIGYAN_BACKEND_URL || '';
 
 document.addEventListener('DOMContentLoaded', function(){
+  updateAuthUI();
+
+  // hamburger / mobile menu
   var h=document.getElementById('hamburger'),m=document.getElementById('mobile-menu');
   if(h&&m){h.addEventListener('click',function(){h.classList.toggle('active');m.classList.toggle('open')});m.querySelectorAll('a').forEach(function(l){l.addEventListener('click',function(){m.classList.remove('open');h.classList.remove('active')})})}
   window.closeMobileMenu = function(){if(m){m.classList.remove('open');if(h)h.classList.remove('active')}};
 
+  // reveal animations
   var revealEls=document.querySelectorAll('.reveal');
   var statItems=document.querySelectorAll('.stat-item');
   function checkVis(){
@@ -616,6 +637,84 @@ document.addEventListener('DOMContentLoaded', function(){
   }
   checkVis();
   window.addEventListener('scroll',checkVis);
+
+  // close user menu on outside click
+  document.addEventListener('click',function(e){
+    var menu=document.getElementById('userMenu');
+    if(menu&&!e.target.closest('.nav-profile'))menu.classList.remove('show');
+  });
+
+  // ── Inline Nav Search ──
+  var si = document.getElementById('navSearchInput');
+  var resultsEl = document.getElementById('navSearchResults');
+  if (si && resultsEl) {
+    si.addEventListener('input', function() {
+      var q = this.value.toLowerCase().trim();
+      if (!q) { resultsEl.classList.remove('open'); resultsEl.innerHTML = ''; return; }
+      var results = [];
+      SITE_INDEX.forEach(function(item) {
+        if (item.t.toLowerCase().includes(q) || item.d.toLowerCase().includes(q) || item.c.toLowerCase().includes(q)) {
+          results.push(item);
+        }
+      });
+      resultsEl.classList.add('open');
+      if (results.length === 0) {
+        resultsEl.innerHTML = '<div class="nav-search-no">No results for "' + q + '"</div>';
+        return;
+      }
+      var groups = {};
+      results.forEach(function(r) {
+        if (!groups[r.c]) groups[r.c] = [];
+        groups[r.c].push(r);
+      });
+      var html = '';
+      var catOrder = ['Tools','Platform','Learning','Blog','Company','Reports'];
+      catOrder.forEach(function(cat) {
+        if (!groups[cat]) return;
+        html += '<div class="nsr-group"><div class="nsr-label">' + cat + '</div>';
+        groups[cat].forEach(function(r) {
+          var iconMap = {Tools:'🔧',Platform:'🏗️',Learning:'📚',Blog:'📝',Company:'🏢',Reports:'📋'};
+          html += '<a href="' + r.u + '" class="nsr-item">' +
+            '<span class="r-icon">' + (iconMap[r.c]||'🔗') + '</span>' +
+            '<div class="r-text"><div class="r-title">' + r.t + '</div>' +
+            '<div class="r-desc">' + r.d + '</div></div></a>';
+        });
+        html += '</div>';
+      });
+      resultsEl.innerHTML = html;
+    });
+    si.addEventListener('blur', function() {
+      setTimeout(function() { resultsEl.classList.remove('open'); }, 200);
+    });
+    si.addEventListener('focus', function() {
+      if (this.value.trim()) resultsEl.classList.add('open');
+    });
+  }
+
+  // ── AI Widget Toggle ──
+  var toggle = document.getElementById('ai-widget-toggle');
+  var panel = document.getElementById('ai-widget-panel');
+  var closeBtn = document.getElementById('ai-widget-close');
+  if (toggle && panel) {
+    toggle.addEventListener('click', function() {
+      var hidden = panel.hasAttribute('hidden');
+      panel.toggleAttribute('hidden');
+      panel.classList.toggle('visible');
+    });
+    if (closeBtn) {
+      closeBtn.addEventListener('click', function() {
+        panel.setAttribute('hidden', '');
+        panel.classList.remove('visible');
+      });
+    }
+    document.addEventListener('click', function(e) {
+      var widget = document.getElementById('ai-widget');
+      if (widget && !widget.contains(e.target)) {
+        panel.setAttribute('hidden', '');
+        panel.classList.remove('visible');
+      }
+    });
+  }
 });
 
 (async function(){
@@ -714,87 +813,6 @@ var SITE_INDEX = [
   { t:'Sitemap', d:'Complete site directory', u:'sitemap.html', c:'Company' },
 ];
 
-// ── Inline Nav Search ──
-document.addEventListener('DOMContentLoaded', function() {
-  var si = document.getElementById('navSearchInput');
-  var resultsEl = document.getElementById('navSearchResults');
-  if (!si) return;
-
-  si.addEventListener('input', function() {
-    var q = this.value.toLowerCase().trim();
-    if (!q) { resultsEl.classList.remove('open'); resultsEl.innerHTML = ''; return; }
-
-    var results = [];
-    SITE_INDEX.forEach(function(item) {
-      if (item.t.toLowerCase().includes(q) || item.d.toLowerCase().includes(q) || item.c.toLowerCase().includes(q)) {
-        results.push(item);
-      }
-    });
-
-    resultsEl.classList.add('open');
-
-    if (results.length === 0) {
-      resultsEl.innerHTML = '<div class="nav-search-no">No results for "' + q + '"</div>';
-      return;
-    }
-
-    var groups = {};
-    results.forEach(function(r) {
-      if (!groups[r.c]) groups[r.c] = [];
-      groups[r.c].push(r);
-    });
-
-    var html = '';
-    var catOrder = ['Tools','Platform','Learning','Blog','Company','Reports'];
-    catOrder.forEach(function(cat) {
-      if (!groups[cat]) return;
-      html += '<div class="nsr-group"><div class="nsr-label">' + cat + '</div>';
-      groups[cat].forEach(function(r) {
-        var iconMap = {Tools:'🔧',Platform:'🏗️',Learning:'📚',Blog:'📝',Company:'🏢',Reports:'📋'};
-        html += '<a href="' + r.u + '" class="nsr-item">' +
-          '<span class="r-icon">' + (iconMap[r.c]||'🔗') + '</span>' +
-          '<div class="r-text"><div class="r-title">' + r.t + '</div>' +
-          '<div class="r-desc">' + r.d + '</div></div></a>';
-      });
-      html += '</div>';
-    });
-    resultsEl.innerHTML = html;
-  });
-
-  // Close on blur
-  si.addEventListener('blur', function() {
-    setTimeout(function() { resultsEl.classList.remove('open'); }, 200);
-  });
-  si.addEventListener('focus', function() {
-    if (this.value.trim()) resultsEl.classList.add('open');
-  });
-
-  // ── AI Widget Toggle ──
-  var toggle = document.getElementById('ai-widget-toggle');
-  var panel = document.getElementById('ai-widget-panel');
-  var closeBtn = document.getElementById('ai-widget-close');
-  if (toggle && panel) {
-    toggle.addEventListener('click', function() {
-      var hidden = panel.hasAttribute('hidden');
-      panel.toggleAttribute('hidden');
-      panel.classList.toggle('visible');
-    });
-    if (closeBtn) {
-      closeBtn.addEventListener('click', function() {
-        panel.setAttribute('hidden', '');
-        panel.classList.remove('visible');
-      });
-    }
-    document.addEventListener('click', function(e) {
-      var widget = document.getElementById('ai-widget');
-      if (widget && !widget.contains(e.target)) {
-        panel.setAttribute('hidden', '');
-        panel.classList.remove('visible');
-      }
-    });
-  }
-});
-
 // Auth modal
 function openAuthMode(){isRegister=false;showAuth()}
 function openRegMode(){isRegister=true;showAuth()}
@@ -858,9 +876,51 @@ function submitAuth(){
   var body={email:email,password:pass};
   if(isRegister)body.name=(document.getElementById('auth-name').value||'').trim();
   fetch(API+'/api/auth/'+(isRegister?'register':'login'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
-    .then(function(r){if(r.ok)window.location.href='primer.html';else return r.text()})
-    .then(function(e){if(e){err.style.display='block';err.textContent=e||'Authentication failed.'}})
+    .then(function(r){return r.json().then(function(d){return{ok:r.ok,data:d}})})
+    .then(function(res){
+      if(res.ok&&res.data.token){
+        sessionStorage.setItem('pf_token',res.data.token);
+        sessionStorage.setItem('pf_user',JSON.stringify(res.data.user||{email:email}));
+        closeAuth();
+        updateAuthUI();
+      }else if(res.ok){
+        closeAuth();
+        window.location.href='primer.html';
+      }else{
+        err.style.display='block';err.textContent=res.data.error||res.data||'Authentication failed.';
+      }
+    })
     .catch(function(){err.style.display='block';err.textContent='Server unavailable. Please try again.'});
+}
+function updateAuthUI(){
+  var token=sessionStorage.getItem('pf_token')||localStorage.getItem('pf_token');
+  var userStr=sessionStorage.getItem('pf_user')||localStorage.getItem('pf_user');
+  var user=null;try{if(userStr)user=JSON.parse(userStr)}catch(e){}
+  var btns=document.getElementById('navBtns');
+  var profile=document.getElementById('navProfile');
+  if(token&&user){
+    btns.style.display='none';
+    profile.style.display='flex';
+    var letter=document.querySelector('#navProfile .nav-avatar-letter');
+    if(letter)letter.textContent=(user.email||user.name||'U').charAt(0).toUpperCase();
+    document.querySelector('#navProfile .user-menu-email').textContent=user.email||'';
+  }else{
+    btns.style.display='flex';
+    profile.style.display='none';
+  }
+}
+function toggleUserMenu(){
+  var menu=document.getElementById('userMenu');
+  menu.classList.toggle('show');
+}
+function logout(){
+  sessionStorage.removeItem('pf_token');sessionStorage.removeItem('pf_user');
+  localStorage.removeItem('pf_token');localStorage.removeItem('pf_user');
+  updateAuthUI();
+  document.addEventListener('click',function handler(e){
+    var menu=document.getElementById('userMenu');
+    if(!e.target.closest('.nav-profile')){menu.classList.remove('show');document.removeEventListener('click',handler)}
+  });
 }
 function openAuthModal(){isRegister=false;showAuth()}
 </script>
