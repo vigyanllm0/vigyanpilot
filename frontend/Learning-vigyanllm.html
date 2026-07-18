@@ -1007,6 +1007,365 @@ footer{background:var(--black);color:rgba(255,255,255,.8);padding:56px 0 24px}
 .footer-social a:hover svg{filter:grayscale(0);opacity:1}
 .footer-bottom{max-width:var(--max-w);margin:0 auto;padding:16px 32px 0;border-top:1px solid rgba(255,255,255,.06);display:flex;justify-content:space-between;font-size:12px;color:rgba(255,255,255,.35)}
 
+/* ───────────────────────────────────────────────
+   Learning Hub – Page-specific Styles
+   ─────────────────────────────────────────────── */
+
+/* Layout */
+.lh-main {
+  max-width: var(--max-w);
+  margin: 0 auto;
+  padding: 60px 32px 80px;
+}
+
+/* Hero */
+.lh-hero {
+  text-align: center;
+  margin-bottom: 48px;
+}
+.lh-hero h1 {
+  font-family: var(--font-h);
+  font-size: 40px;
+  font-weight: 900;
+  color: var(--text);
+  margin-bottom: 12px;
+}
+.lh-hero p {
+  font-size: 16px;
+  color: var(--text2);
+  max-width: 640px;
+  margin: 0 auto 28px;
+  line-height: 1.7;
+}
+.lh-hero .lh-stat {
+  color: var(--blue);
+  font-weight: 700;
+}
+
+/* Search */
+.lh-search-wrap {
+  position: relative;
+  max-width: 480px;
+  margin: 0 auto;
+}
+.lh-search-wrap input {
+  width: 100%;
+  padding: 14px 18px 14px 48px;
+  border: 2px solid var(--outline);
+  border-radius: 12px;
+  font-family: var(--font-b);
+  font-size: 15px;
+  color: var(--text);
+  outline: none;
+  transition: border-color .2s;
+  background: var(--surface);
+}
+.lh-search-wrap input:focus {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 4px rgba(21,101,192,.1);
+}
+.lh-search-wrap input::placeholder {
+  color: var(--muted);
+}
+.lh-search-icon {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 18px;
+  color: var(--muted);
+  pointer-events: none;
+}
+.lh-search-count {
+  text-align: center;
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 8px;
+  min-height: 20px;
+}
+
+/* Alpha Nav */
+.lh-alpha-nav {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px;
+  margin-bottom: 32px;
+  padding: 0 4px;
+}
+.lh-alpha-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text2);
+  text-decoration: none;
+  transition: all .15s;
+}
+.lh-alpha-link:hover {
+  background: var(--blue-bg);
+  color: var(--blue);
+}
+.lh-alpha-link.active {
+  background: var(--blue);
+  color: #fff;
+}
+
+/* View Toggle */
+.lh-view-controls {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 40px;
+}
+.lh-view-toggle {
+  display: flex;
+  background: var(--surface-alt);
+  border-radius: 10px;
+  padding: 4px;
+  border: 1px solid var(--outline);
+}
+.lh-view-btn {
+  padding: 10px 24px;
+  border: none;
+  background: transparent;
+  font-family: var(--font-b);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text2);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all .2s;
+}
+.lh-view-btn.active {
+  background: #fff;
+  color: var(--text);
+  box-shadow: 0 2px 8px rgba(0,0,0,.08);
+}
+
+/* Topic Cards Grid */
+.lh-topic-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 16px;
+  margin-bottom: 48px;
+}
+.lh-topic-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 24px 16px;
+  background: var(--surface);
+  border: 1px solid var(--outline);
+  border-radius: 12px;
+  text-decoration: none;
+  transition: all .2s;
+  text-align: center;
+}
+.lh-topic-card:hover {
+  border-color: var(--blue);
+  box-shadow: 0 4px 20px rgba(21,101,192,.1);
+  transform: translateY(-2px);
+}
+.lh-topic-card .lh-tc-icon {
+  font-size: 28px;
+}
+.lh-topic-card .lh-tc-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  font-family: var(--font-h);
+}
+.lh-topic-card .lh-tc-count {
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+/* Category Sections (Accordion) */
+.lh-cat-section {
+  border: 1px solid var(--outline);
+  border-radius: 12px;
+  margin-bottom: 12px;
+  overflow: hidden;
+  transition: box-shadow .2s;
+}
+.lh-cat-section:hover {
+  box-shadow: 0 2px 12px rgba(0,0,0,.04);
+}
+.lh-cat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  cursor: pointer;
+  background: var(--surface);
+  user-select: none;
+  transition: background .15s;
+}
+.lh-cat-header:hover {
+  background: var(--surface-alt);
+}
+.lh-cat-header-title {
+  font-family: var(--font-h);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+}
+.lh-cat-count {
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 600;
+  margin-left: 8px;
+}
+.lh-cat-arrow {
+  font-size: 12px;
+  color: var(--muted);
+  transition: transform .2s;
+}
+.lh-cat-section.open .lh-cat-arrow {
+  transform: rotate(90deg);
+}
+.lh-cat-body {
+  display: none;
+  padding: 8px 20px 16px;
+  border-top: 1px solid var(--outline);
+  background: var(--surface);
+}
+.lh-cat-section.open .lh-cat-body {
+  display: block;
+}
+
+/* Term List */
+.lh-term-list {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 2px;
+}
+.lh-term-list li {
+  margin: 0;
+}
+.lh-term-link {
+  display: block;
+  padding: 6px 10px;
+  font-size: 13px;
+  color: var(--text2);
+  text-decoration: none;
+  border-radius: 6px;
+  transition: all .12s;
+}
+.lh-term-link:hover {
+  background: var(--blue-bg);
+  color: var(--blue);
+  padding-left: 14px;
+}
+
+/* Letter Section (A–Z View) */
+.lh-letter-section {
+  margin-bottom: 32px;
+}
+.lh-letter-title {
+  font-family: var(--font-h);
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--blue);
+  margin-bottom: 8px;
+  padding-bottom: 4px;
+  border-bottom: 2px solid var(--blue-bg);
+}
+
+/* Search Hidden */
+.search-hidden {
+  display: none !important;
+}
+
+/* Hub Section */
+.lh-tools-section {
+  margin-top: 64px;
+  padding-top: 48px;
+  border-top: 1px solid var(--outline);
+}
+.lh-tools-section h2 {
+  font-family: var(--font-h);
+  font-size: 24px;
+  font-weight: 800;
+  text-align: center;
+  margin-bottom: 24px;
+  color: var(--text);
+}
+.lh-tools-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 12px;
+}
+.lh-tools-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  background: var(--surface);
+  border: 1px solid var(--outline);
+  border-radius: 10px;
+  text-decoration: none;
+  transition: all .2s;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+.lh-tools-link:hover {
+  border-color: var(--blue);
+  background: var(--blue-bg);
+  transform: translateY(-1px);
+}
+.lh-tools-link .lh-tools-arrow {
+  color: var(--muted);
+  font-size: 16px;
+  transition: transform .2s;
+}
+.lh-tools-link:hover .lh-tools-arrow {
+  transform: translateX(4px);
+  color: var(--blue);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .lh-main {
+    padding: 32px 16px 60px;
+  }
+  .lh-hero h1 {
+    font-size: 28px;
+  }
+  .lh-hero p {
+    font-size: 14px;
+  }
+  .lh-topic-grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 10px;
+  }
+  .lh-topic-card {
+    padding: 18px 12px;
+  }
+  .lh-term-list {
+    grid-template-columns: 1fr;
+  }
+  .lh-alpha-link {
+    width: 30px;
+    height: 30px;
+    font-size: 12px;
+  }
+  .lh-tools-grid {
+    grid-template-columns: 1fr;
+  }
+  .lh-view-btn {
+    padding: 8px 16px;
+    font-size: 12px;
+  }
+}
 </style>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1104,7 +1463,7 @@ footer{background:var(--black);color:rgba(255,255,255,.8);padding:56px 0 24px}
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
-<body><main>
+<body><main class="lh-main">
 
 <!-- Google Tag Manager (noscript) -->
 <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-KRP5LLPR"
@@ -1210,476 +1569,476 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 </nav>
 
 
-  <header class="hero">
+  <header class="lh-hero">
       <h1>Learning Hub</h1>
-      <p>A comprehensive reference of <span class="stat">140+</span> biology and bioinformatics terms organized by topic. Browse by category, search any term, and connect directly to VigyanLLM tools.</p>
-      <div class="search-box">
-        <span class="search-icon" aria-hidden="true">&#128269;</span>
+      <p>A comprehensive reference of <span class="lh-stat">140+</span> biology and bioinformatics terms organized by topic. Browse by category, search any term, and connect directly to VigyanLLM tools.</p>
+      <div class="lh-search-wrap">
+        <span class="lh-search-icon" aria-hidden="true">&#128269;</span>
         <input type="search" id="searchInput" placeholder="Search terms, definitions, categories..." aria-label="Search glossary terms">
       </div>
-      <div class="search-count" id="searchCount" aria-live="polite"></div>
+      <div class="lh-search-count" id="searchCount" aria-live="polite"></div>
     </header>
 
-    <nav class="alpha-nav" aria-label="Alphabetical navigation">
-    <a href="#letter-A" class="alpha-link">A</a>
-    <a href="#letter-B" class="alpha-link">B</a>
-    <a href="#letter-C" class="alpha-link">C</a>
-    <a href="#letter-D" class="alpha-link">D</a>
-    <a href="#letter-E" class="alpha-link">E</a>
-    <a href="#letter-F" class="alpha-link">F</a>
-    <a href="#letter-G" class="alpha-link">G</a>
-    <a href="#letter-H" class="alpha-link">H</a>
-    <a href="#letter-I" class="alpha-link">I</a>
-    <a href="#letter-L" class="alpha-link">L</a>
-    <a href="#letter-M" class="alpha-link">M</a>
-    <a href="#letter-N" class="alpha-link">N</a>
-    <a href="#letter-O" class="alpha-link">O</a>
-    <a href="#letter-P" class="alpha-link">P</a>
-    <a href="#letter-Q" class="alpha-link">Q</a>
-    <a href="#letter-R" class="alpha-link">R</a>
-    <a href="#letter-S" class="alpha-link">S</a>
-    <a href="#letter-T" class="alpha-link">T</a>
-    <a href="#letter-V" class="alpha-link">V</a>
-    <a href="#letter-W" class="alpha-link">W</a>
+    <nav class="lh-alpha-nav" aria-label="Alphabetical navigation">
+    <a href="#letter-A" class="lh-alpha-link">A</a>
+    <a href="#letter-B" class="lh-alpha-link">B</a>
+    <a href="#letter-C" class="lh-alpha-link">C</a>
+    <a href="#letter-D" class="lh-alpha-link">D</a>
+    <a href="#letter-E" class="lh-alpha-link">E</a>
+    <a href="#letter-F" class="lh-alpha-link">F</a>
+    <a href="#letter-G" class="lh-alpha-link">G</a>
+    <a href="#letter-H" class="lh-alpha-link">H</a>
+    <a href="#letter-I" class="lh-alpha-link">I</a>
+    <a href="#letter-L" class="lh-alpha-link">L</a>
+    <a href="#letter-M" class="lh-alpha-link">M</a>
+    <a href="#letter-N" class="lh-alpha-link">N</a>
+    <a href="#letter-O" class="lh-alpha-link">O</a>
+    <a href="#letter-P" class="lh-alpha-link">P</a>
+    <a href="#letter-Q" class="lh-alpha-link">Q</a>
+    <a href="#letter-R" class="lh-alpha-link">R</a>
+    <a href="#letter-S" class="lh-alpha-link">S</a>
+    <a href="#letter-T" class="lh-alpha-link">T</a>
+    <a href="#letter-V" class="lh-alpha-link">V</a>
+    <a href="#letter-W" class="lh-alpha-link">W</a>
     </nav>
 
-    <div class="view-controls">
-      <div class="view-toggle">
-        <button class="view-btn active" data-view="category" aria-pressed="true">By Category</button>
-        <button class="view-btn" data-view="alpha" aria-pressed="false">A &ndash; Z</button>
+    <div class="lh-view-controls">
+      <div class="lh-view-toggle">
+        <button class="lh-view-btn active" data-view="category" aria-pressed="true">By Category</button>
+        <button class="lh-view-btn" data-view="alpha" aria-pressed="false">A &ndash; Z</button>
       </div>
     </div>
 
     <div id="categoryView">
-      <div class="topic-grid">
-        <a href="#category-primer-design" class="topic-card">
-          <span class="icon">🧬</span>
-          <span class="label">Primer Design</span>
-          <span class="count">13 terms</span>
+      <div class="lh-topic-grid">
+        <a href="#category-primer-design" class="lh-topic-card">
+          <span class="lh-tc-icon">🧬</span>
+          <span class="lh-tc-label">Primer Design</span>
+          <span class="lh-tc-count">13 terms</span>
         </a>
-        <a href="#category-pcr-amplification" class="topic-card">
-          <span class="icon">🔬</span>
-          <span class="label">PCR &amp; Amplification</span>
-          <span class="count">13 terms</span>
+        <a href="#category-pcr-amplification" class="lh-topic-card">
+          <span class="lh-tc-icon">🔬</span>
+          <span class="lh-tc-label">PCR &amp; Amplification</span>
+          <span class="lh-tc-count">13 terms</span>
         </a>
-        <a href="#category-genetics-genomics" class="topic-card">
-          <span class="icon">🧬</span>
-          <span class="label">Genetics &amp; Genomics</span>
-          <span class="count">22 terms</span>
+        <a href="#category-genetics-genomics" class="lh-topic-card">
+          <span class="lh-tc-icon">🧬</span>
+          <span class="lh-tc-label">Genetics &amp; Genomics</span>
+          <span class="lh-tc-count">22 terms</span>
         </a>
-        <a href="#category-molecular-biology" class="topic-card">
-          <span class="icon">🧪</span>
-          <span class="label">Molecular Biology</span>
-          <span class="count">14 terms</span>
+        <a href="#category-molecular-biology" class="lh-topic-card">
+          <span class="lh-tc-icon">🧪</span>
+          <span class="lh-tc-label">Molecular Biology</span>
+          <span class="lh-tc-count">14 terms</span>
         </a>
-        <a href="#category-proteins" class="topic-card">
-          <span class="icon">🔬</span>
-          <span class="label">Proteins</span>
-          <span class="count">11 terms</span>
+        <a href="#category-proteins" class="lh-topic-card">
+          <span class="lh-tc-icon">🔬</span>
+          <span class="lh-tc-label">Proteins</span>
+          <span class="lh-tc-count">11 terms</span>
         </a>
-        <a href="#category-cell-biology" class="topic-card">
-          <span class="icon">🧫</span>
-          <span class="label">Cell Biology</span>
-          <span class="count">8 terms</span>
+        <a href="#category-cell-biology" class="lh-topic-card">
+          <span class="lh-tc-icon">🧫</span>
+          <span class="lh-tc-label">Cell Biology</span>
+          <span class="lh-tc-count">8 terms</span>
         </a>
-        <a href="#category-gene-expression" class="topic-card">
-          <span class="icon">📝</span>
-          <span class="label">Gene Expression</span>
-          <span class="count">12 terms</span>
+        <a href="#category-gene-expression" class="lh-topic-card">
+          <span class="lh-tc-icon">📝</span>
+          <span class="lh-tc-label">Gene Expression</span>
+          <span class="lh-tc-count">12 terms</span>
         </a>
-        <a href="#category-sequencing" class="topic-card">
-          <span class="icon">📊</span>
-          <span class="label">Sequencing</span>
-          <span class="count">7 terms</span>
+        <a href="#category-sequencing" class="lh-topic-card">
+          <span class="lh-tc-icon">📊</span>
+          <span class="lh-tc-label">Sequencing</span>
+          <span class="lh-tc-count">7 terms</span>
         </a>
-        <a href="#category-structural-biology" class="topic-card">
-          <span class="icon">🔬</span>
-          <span class="label">Structural Biology</span>
-          <span class="count">5 terms</span>
+        <a href="#category-structural-biology" class="lh-topic-card">
+          <span class="lh-tc-icon">🔬</span>
+          <span class="lh-tc-label">Structural Biology</span>
+          <span class="lh-tc-count">5 terms</span>
         </a>
-        <a href="#category-bioinformatics-databases" class="topic-card">
-          <span class="icon">💻</span>
-          <span class="label">Bioinformatics</span>
-          <span class="count">7 terms</span>
+        <a href="#category-bioinformatics-databases" class="lh-topic-card">
+          <span class="lh-tc-icon">💻</span>
+          <span class="lh-tc-label">Bioinformatics</span>
+          <span class="lh-tc-count">7 terms</span>
         </a>
-        <a href="#category-clinical-diagnostics" class="topic-card">
-          <span class="icon">🏥</span>
-          <span class="label">Clinical &amp; Diagnostics</span>
-          <span class="count">8 terms</span>
+        <a href="#category-clinical-diagnostics" class="lh-topic-card">
+          <span class="lh-tc-icon">🏥</span>
+          <span class="lh-tc-label">Clinical &amp; Diagnostics</span>
+          <span class="lh-tc-count">8 terms</span>
         </a>
-        <a href="#category-genome-editing" class="topic-card">
-          <span class="icon">✂️</span>
-          <span class="label">Genome Editing</span>
-          <span class="count">4 terms</span>
+        <a href="#category-genome-editing" class="lh-topic-card">
+          <span class="lh-tc-icon">✂️</span>
+          <span class="lh-tc-label">Genome Editing</span>
+          <span class="lh-tc-count">4 terms</span>
         </a>
       </div>
-      <section class="cat-section" id="category-ai-machine-learning">
-        <div class="cat-header" onclick="toggleCat(this)">
-          <span class="cat-header-title">AI &amp; Machine Learning <span class="cat-count">(2)</span></span>
-          <span class="arrow">&#9654;</span>
+      <section class="lh-cat-section" id="category-ai-machine-learning">
+        <div class="lh-cat-header" onclick="toggleCat(this)">
+          <span class="lh-cat-header-title">AI &amp; Machine Learning <span class="lh-cat-count">(2)</span></span>
+          <span class="lh-cat-arrow">&#9654;</span>
         </div>
-        <div class="cat-body">
-          <ul class="term-list">
-          <li><a href="glossary/deep-learning.html" class="term-link" data-term="deep learning" data-slug="deep-learning">deep learning</a></li>
-          <li><a href="glossary/machine-learning.html" class="term-link" data-term="machine learning" data-slug="machine-learning">machine learning</a></li>
+        <div class="lh-cat-body">
+          <ul class="lh-term-list">
+          <li><a href="glossary/deep-learning.html" class="lh-term-link" data-term="deep learning" data-slug="deep-learning">deep learning</a></li>
+          <li><a href="glossary/machine-learning.html" class="lh-term-link" data-term="machine learning" data-slug="machine-learning">machine learning</a></li>
         
           </ul>
         </div>
       </section>
-      <section class="cat-section" id="category-bioinformatics-databases">
-        <div class="cat-header" onclick="toggleCat(this)">
-          <span class="cat-header-title">Bioinformatics &amp; Databases <span class="cat-count">(7)</span></span>
-          <span class="arrow">&#9654;</span>
+      <section class="lh-cat-section" id="category-bioinformatics-databases">
+        <div class="lh-cat-header" onclick="toggleCat(this)">
+          <span class="lh-cat-header-title">Bioinformatics &amp; Databases <span class="lh-cat-count">(7)</span></span>
+          <span class="lh-cat-arrow">&#9654;</span>
         </div>
-        <div class="cat-body">
-          <ul class="term-list">
-          <li><a href="glossary/bioinformatics.html" class="term-link" data-term="bioinformatics" data-slug="bioinformatics">bioinformatics</a></li>
-          <li><a href="glossary/blast.html" class="term-link" data-term="blast" data-slug="blast">BLAST</a></li>
-          <li><a href="glossary/blast-specificity.html" class="term-link" data-term="blast specificity" data-slug="blast-specificity">BLAST specificity</a></li>
-          <li><a href="glossary/clinvar.html" class="term-link" data-term="clinvar" data-slug="clinvar">ClinVar</a></li>
-          <li><a href="glossary/dbsnp.html" class="term-link" data-term="dbsnp" data-slug="dbsnp">dbSNP</a></li>
-          <li><a href="glossary/ensembl.html" class="term-link" data-term="ensembl" data-slug="ensembl">Ensembl</a></li>
-          <li><a href="glossary/ncbi.html" class="term-link" data-term="ncbi" data-slug="ncbi">NCBI</a></li>
+        <div class="lh-cat-body">
+          <ul class="lh-term-list">
+          <li><a href="glossary/bioinformatics.html" class="lh-term-link" data-term="bioinformatics" data-slug="bioinformatics">bioinformatics</a></li>
+          <li><a href="glossary/blast.html" class="lh-term-link" data-term="blast" data-slug="blast">BLAST</a></li>
+          <li><a href="glossary/blast-specificity.html" class="lh-term-link" data-term="blast specificity" data-slug="blast-specificity">BLAST specificity</a></li>
+          <li><a href="glossary/clinvar.html" class="lh-term-link" data-term="clinvar" data-slug="clinvar">ClinVar</a></li>
+          <li><a href="glossary/dbsnp.html" class="lh-term-link" data-term="dbsnp" data-slug="dbsnp">dbSNP</a></li>
+          <li><a href="glossary/ensembl.html" class="lh-term-link" data-term="ensembl" data-slug="ensembl">Ensembl</a></li>
+          <li><a href="glossary/ncbi.html" class="lh-term-link" data-term="ncbi" data-slug="ncbi">NCBI</a></li>
         
           </ul>
         </div>
       </section>
-      <section class="cat-section" id="category-cancer-biology">
-        <div class="cat-header" onclick="toggleCat(this)">
-          <span class="cat-header-title">Cancer Biology <span class="cat-count">(1)</span></span>
-          <span class="arrow">&#9654;</span>
+      <section class="lh-cat-section" id="category-cancer-biology">
+        <div class="lh-cat-header" onclick="toggleCat(this)">
+          <span class="lh-cat-header-title">Cancer Biology <span class="lh-cat-count">(1)</span></span>
+          <span class="lh-cat-arrow">&#9654;</span>
         </div>
-        <div class="cat-body">
-          <ul class="term-list">
-          <li><a href="glossary/tumor-suppressor.html" class="term-link" data-term="tumor suppressor" data-slug="tumor-suppressor">tumor suppressor</a></li>
+        <div class="lh-cat-body">
+          <ul class="lh-term-list">
+          <li><a href="glossary/tumor-suppressor.html" class="lh-term-link" data-term="tumor suppressor" data-slug="tumor-suppressor">tumor suppressor</a></li>
         
           </ul>
         </div>
       </section>
-      <section class="cat-section" id="category-cell-biology">
-        <div class="cat-header" onclick="toggleCat(this)">
-          <span class="cat-header-title">Cell Biology <span class="cat-count">(8)</span></span>
-          <span class="arrow">&#9654;</span>
+      <section class="lh-cat-section" id="category-cell-biology">
+        <div class="lh-cat-header" onclick="toggleCat(this)">
+          <span class="lh-cat-header-title">Cell Biology <span class="lh-cat-count">(8)</span></span>
+          <span class="lh-cat-arrow">&#9654;</span>
         </div>
-        <div class="cat-body">
-          <ul class="term-list">
-          <li><a href="glossary/apoptosis.html" class="term-link" data-term="apoptosis" data-slug="apoptosis">apoptosis</a></li>
-          <li><a href="glossary/atp.html" class="term-link" data-term="atp" data-slug="atp">ATP</a></li>
-          <li><a href="glossary/cell.html" class="term-link" data-term="cell" data-slug="cell">cell</a></li>
-          <li><a href="glossary/confocal-microscopy.html" class="term-link" data-term="confocal microscopy" data-slug="confocal-microscopy">confocal microscopy</a></li>
-          <li><a href="glossary/facs.html" class="term-link" data-term="facs" data-slug="facs">FACS</a></li>
-          <li><a href="glossary/flow-cytometry.html" class="term-link" data-term="flow cytometry" data-slug="flow-cytometry">flow cytometry</a></li>
-          <li><a href="glossary/mitochondria.html" class="term-link" data-term="mitochondria" data-slug="mitochondria">mitochondria</a></li>
-          <li><a href="glossary/ribosome.html" class="term-link" data-term="ribosome" data-slug="ribosome">ribosome</a></li>
+        <div class="lh-cat-body">
+          <ul class="lh-term-list">
+          <li><a href="glossary/apoptosis.html" class="lh-term-link" data-term="apoptosis" data-slug="apoptosis">apoptosis</a></li>
+          <li><a href="glossary/atp.html" class="lh-term-link" data-term="atp" data-slug="atp">ATP</a></li>
+          <li><a href="glossary/cell.html" class="lh-term-link" data-term="cell" data-slug="cell">cell</a></li>
+          <li><a href="glossary/confocal-microscopy.html" class="lh-term-link" data-term="confocal microscopy" data-slug="confocal-microscopy">confocal microscopy</a></li>
+          <li><a href="glossary/facs.html" class="lh-term-link" data-term="facs" data-slug="facs">FACS</a></li>
+          <li><a href="glossary/flow-cytometry.html" class="lh-term-link" data-term="flow cytometry" data-slug="flow-cytometry">flow cytometry</a></li>
+          <li><a href="glossary/mitochondria.html" class="lh-term-link" data-term="mitochondria" data-slug="mitochondria">mitochondria</a></li>
+          <li><a href="glossary/ribosome.html" class="lh-term-link" data-term="ribosome" data-slug="ribosome">ribosome</a></li>
         
           </ul>
         </div>
       </section>
-      <section class="cat-section" id="category-clinical-diagnostics">
-        <div class="cat-header" onclick="toggleCat(this)">
-          <span class="cat-header-title">Clinical &amp; Diagnostics <span class="cat-count">(8)</span></span>
-          <span class="arrow">&#9654;</span>
+      <section class="lh-cat-section" id="category-clinical-diagnostics">
+        <div class="lh-cat-header" onclick="toggleCat(this)">
+          <span class="lh-cat-header-title">Clinical &amp; Diagnostics <span class="lh-cat-count">(8)</span></span>
+          <span class="lh-cat-arrow">&#9654;</span>
         </div>
-        <div class="cat-body">
-          <ul class="term-list">
-          <li><a href="glossary/biomarker.html" class="term-link" data-term="biomarker" data-slug="biomarker">biomarker</a></li>
-          <li><a href="glossary/clinical-diagnostics.html" class="term-link" data-term="clinical diagnostics" data-slug="clinical-diagnostics">clinical diagnostics</a></li>
-          <li><a href="glossary/diagnostic-sensitivity.html" class="term-link" data-term="sensitivity" data-slug="diagnostic-sensitivity">sensitivity</a></li>
-          <li><a href="glossary/diagnostic-specificity.html" class="term-link" data-term="specificity" data-slug="diagnostic-specificity">specificity</a></li>
-          <li><a href="glossary/liquid-biopsy.html" class="term-link" data-term="liquid biopsy" data-slug="liquid-biopsy">liquid biopsy</a></li>
-          <li><a href="glossary/pharmacodynamics.html" class="term-link" data-term="pharmacodynamics" data-slug="pharmacodynamics">pharmacodynamics</a></li>
-          <li><a href="glossary/pharmacogenomics.html" class="term-link" data-term="pharmacogenomics" data-slug="pharmacogenomics">pharmacogenomics</a></li>
-          <li><a href="glossary/pharmacokinetics.html" class="term-link" data-term="pharmacokinetics" data-slug="pharmacokinetics">pharmacokinetics</a></li>
+        <div class="lh-cat-body">
+          <ul class="lh-term-list">
+          <li><a href="glossary/biomarker.html" class="lh-term-link" data-term="biomarker" data-slug="biomarker">biomarker</a></li>
+          <li><a href="glossary/clinical-diagnostics.html" class="lh-term-link" data-term="clinical diagnostics" data-slug="clinical-diagnostics">clinical diagnostics</a></li>
+          <li><a href="glossary/diagnostic-sensitivity.html" class="lh-term-link" data-term="sensitivity" data-slug="diagnostic-sensitivity">sensitivity</a></li>
+          <li><a href="glossary/diagnostic-specificity.html" class="lh-term-link" data-term="specificity" data-slug="diagnostic-specificity">specificity</a></li>
+          <li><a href="glossary/liquid-biopsy.html" class="lh-term-link" data-term="liquid biopsy" data-slug="liquid-biopsy">liquid biopsy</a></li>
+          <li><a href="glossary/pharmacodynamics.html" class="lh-term-link" data-term="pharmacodynamics" data-slug="pharmacodynamics">pharmacodynamics</a></li>
+          <li><a href="glossary/pharmacogenomics.html" class="lh-term-link" data-term="pharmacogenomics" data-slug="pharmacogenomics">pharmacogenomics</a></li>
+          <li><a href="glossary/pharmacokinetics.html" class="lh-term-link" data-term="pharmacokinetics" data-slug="pharmacokinetics">pharmacokinetics</a></li>
         
           </ul>
         </div>
       </section>
-      <section class="cat-section" id="category-drug-discovery">
-        <div class="cat-header" onclick="toggleCat(this)">
-          <span class="cat-header-title">Drug Discovery <span class="cat-count">(3)</span></span>
-          <span class="arrow">&#9654;</span>
+      <section class="lh-cat-section" id="category-drug-discovery">
+        <div class="lh-cat-header" onclick="toggleCat(this)">
+          <span class="lh-cat-header-title">Drug Discovery <span class="lh-cat-count">(3)</span></span>
+          <span class="lh-cat-arrow">&#9654;</span>
         </div>
-        <div class="cat-body">
-          <ul class="term-list">
-          <li><a href="glossary/drug-discovery.html" class="term-link" data-term="drug discovery" data-slug="drug-discovery">drug discovery</a></li>
-          <li><a href="glossary/ic50.html" class="term-link" data-term="ic50" data-slug="ic50">IC50</a></li>
-          <li><a href="glossary/virtual-screening.html" class="term-link" data-term="virtual screening" data-slug="virtual-screening">virtual screening</a></li>
+        <div class="lh-cat-body">
+          <ul class="lh-term-list">
+          <li><a href="glossary/drug-discovery.html" class="lh-term-link" data-term="drug discovery" data-slug="drug-discovery">drug discovery</a></li>
+          <li><a href="glossary/ic50.html" class="lh-term-link" data-term="ic50" data-slug="ic50">IC50</a></li>
+          <li><a href="glossary/virtual-screening.html" class="lh-term-link" data-term="virtual screening" data-slug="virtual-screening">virtual screening</a></li>
         
           </ul>
         </div>
       </section>
-      <section class="cat-section" id="category-gene-expression">
-        <div class="cat-header" onclick="toggleCat(this)">
-          <span class="cat-header-title">Gene Expression <span class="cat-count">(12)</span></span>
-          <span class="arrow">&#9654;</span>
+      <section class="lh-cat-section" id="category-gene-expression">
+        <div class="lh-cat-header" onclick="toggleCat(this)">
+          <span class="lh-cat-header-title">Gene Expression <span class="lh-cat-count">(12)</span></span>
+          <span class="lh-cat-arrow">&#9654;</span>
         </div>
-        <div class="cat-body">
-          <ul class="term-list">
-          <li><a href="glossary/codon.html" class="term-link" data-term="codon" data-slug="codon">codon</a></li>
-          <li><a href="glossary/enhancer.html" class="term-link" data-term="enhancer" data-slug="enhancer">enhancer</a></li>
-          <li><a href="glossary/epigenetics.html" class="term-link" data-term="epigenetics" data-slug="epigenetics">epigenetics</a></li>
-          <li><a href="glossary/exon.html" class="term-link" data-term="exon" data-slug="exon">exon</a></li>
-          <li><a href="glossary/intron.html" class="term-link" data-term="intron" data-slug="intron">intron</a></li>
-          <li><a href="glossary/mirna.html" class="term-link" data-term="mirna" data-slug="mirna">miRNA</a></li>
-          <li><a href="glossary/mrna.html" class="term-link" data-term="mrna" data-slug="mrna">mRNA</a></li>
-          <li><a href="glossary/promoter.html" class="term-link" data-term="promoter" data-slug="promoter">promoter</a></li>
-          <li><a href="glossary/synthetic-biology.html" class="term-link" data-term="synthetic biology" data-slug="synthetic-biology">synthetic biology</a></li>
-          <li><a href="glossary/transcription.html" class="term-link" data-term="transcription" data-slug="transcription">transcription</a></li>
-          <li><a href="glossary/translation.html" class="term-link" data-term="translation" data-slug="translation">translation</a></li>
-          <li><a href="glossary/trna.html" class="term-link" data-term="trna" data-slug="trna">tRNA</a></li>
+        <div class="lh-cat-body">
+          <ul class="lh-term-list">
+          <li><a href="glossary/codon.html" class="lh-term-link" data-term="codon" data-slug="codon">codon</a></li>
+          <li><a href="glossary/enhancer.html" class="lh-term-link" data-term="enhancer" data-slug="enhancer">enhancer</a></li>
+          <li><a href="glossary/epigenetics.html" class="lh-term-link" data-term="epigenetics" data-slug="epigenetics">epigenetics</a></li>
+          <li><a href="glossary/exon.html" class="lh-term-link" data-term="exon" data-slug="exon">exon</a></li>
+          <li><a href="glossary/intron.html" class="lh-term-link" data-term="intron" data-slug="intron">intron</a></li>
+          <li><a href="glossary/mirna.html" class="lh-term-link" data-term="mirna" data-slug="mirna">miRNA</a></li>
+          <li><a href="glossary/mrna.html" class="lh-term-link" data-term="mrna" data-slug="mrna">mRNA</a></li>
+          <li><a href="glossary/promoter.html" class="lh-term-link" data-term="promoter" data-slug="promoter">promoter</a></li>
+          <li><a href="glossary/synthetic-biology.html" class="lh-term-link" data-term="synthetic biology" data-slug="synthetic-biology">synthetic biology</a></li>
+          <li><a href="glossary/transcription.html" class="lh-term-link" data-term="transcription" data-slug="transcription">transcription</a></li>
+          <li><a href="glossary/translation.html" class="lh-term-link" data-term="translation" data-slug="translation">translation</a></li>
+          <li><a href="glossary/trna.html" class="lh-term-link" data-term="trna" data-slug="trna">tRNA</a></li>
         
           </ul>
         </div>
       </section>
-      <section class="cat-section" id="category-genetics-genomics">
-        <div class="cat-header" onclick="toggleCat(this)">
-          <span class="cat-header-title">Genetics &amp; Genomics <span class="cat-count">(22)</span></span>
-          <span class="arrow">&#9654;</span>
+      <section class="lh-cat-section" id="category-genetics-genomics">
+        <div class="lh-cat-header" onclick="toggleCat(this)">
+          <span class="lh-cat-header-title">Genetics &amp; Genomics <span class="lh-cat-count">(22)</span></span>
+          <span class="lh-cat-arrow">&#9654;</span>
         </div>
-        <div class="cat-body">
-          <ul class="term-list">
-          <li><a href="glossary/allele.html" class="term-link" data-term="allele" data-slug="allele">allele</a></li>
-          <li><a href="glossary/chromosome.html" class="term-link" data-term="chromosome" data-slug="chromosome">chromosome</a></li>
-          <li><a href="glossary/dominant.html" class="term-link" data-term="dominant" data-slug="dominant">dominant</a></li>
-          <li><a href="glossary/gene.html" class="term-link" data-term="gene" data-slug="gene">gene</a></li>
-          <li><a href="glossary/gene-expression.html" class="term-link" data-term="gene expression" data-slug="gene-expression">gene expression</a></li>
-          <li><a href="glossary/gene-therapy.html" class="term-link" data-term="gene therapy" data-slug="gene-therapy">gene therapy</a></li>
-          <li><a href="glossary/genetic-variant.html" class="term-link" data-term="genetic variant" data-slug="genetic-variant">genetic variant</a></li>
-          <li><a href="glossary/genome.html" class="term-link" data-term="genome" data-slug="genome">genome</a></li>
-          <li><a href="glossary/genome-assembly.html" class="term-link" data-term="genome assembly" data-slug="genome-assembly">genome assembly</a></li>
-          <li><a href="glossary/genome-editing.html" class="term-link" data-term="genome editing" data-slug="genome-editing">genome editing</a></li>
-          <li><a href="glossary/genomics.html" class="term-link" data-term="genomics" data-slug="genomics">genomics</a></li>
-          <li><a href="glossary/genotype.html" class="term-link" data-term="genotype" data-slug="genotype">genotype</a></li>
-          <li><a href="glossary/gwas.html" class="term-link" data-term="gwas" data-slug="gwas">GWAS</a></li>
-          <li><a href="glossary/mendelian-inheritance.html" class="term-link" data-term="mendelian inheritance" data-slug="mendelian-inheritance">Mendelian inheritance</a></li>
-          <li><a href="glossary/metagenomics.html" class="term-link" data-term="metagenomics" data-slug="metagenomics">metagenomics</a></li>
-          <li><a href="glossary/mutation.html" class="term-link" data-term="mutation" data-slug="mutation">mutation</a></li>
-          <li><a href="glossary/pathogenic-variant.html" class="term-link" data-term="pathogenic variant" data-slug="pathogenic-variant">pathogenic variant</a></li>
-          <li><a href="glossary/phenotype.html" class="term-link" data-term="phenotype" data-slug="phenotype">phenotype</a></li>
-          <li><a href="glossary/recessive.html" class="term-link" data-term="recessive" data-slug="recessive">recessive</a></li>
-          <li><a href="glossary/snp.html" class="term-link" data-term="snp" data-slug="snp">SNP</a></li>
-          <li><a href="glossary/snp-filtering.html" class="term-link" data-term="snp filtering" data-slug="snp-filtering">SNP filtering</a></li>
-          <li><a href="glossary/variant-calling.html" class="term-link" data-term="variant calling" data-slug="variant-calling">variant calling</a></li>
+        <div class="lh-cat-body">
+          <ul class="lh-term-list">
+          <li><a href="glossary/allele.html" class="lh-term-link" data-term="allele" data-slug="allele">allele</a></li>
+          <li><a href="glossary/chromosome.html" class="lh-term-link" data-term="chromosome" data-slug="chromosome">chromosome</a></li>
+          <li><a href="glossary/dominant.html" class="lh-term-link" data-term="dominant" data-slug="dominant">dominant</a></li>
+          <li><a href="glossary/gene.html" class="lh-term-link" data-term="gene" data-slug="gene">gene</a></li>
+          <li><a href="glossary/gene-expression.html" class="lh-term-link" data-term="gene expression" data-slug="gene-expression">gene expression</a></li>
+          <li><a href="glossary/gene-therapy.html" class="lh-term-link" data-term="gene therapy" data-slug="gene-therapy">gene therapy</a></li>
+          <li><a href="glossary/genetic-variant.html" class="lh-term-link" data-term="genetic variant" data-slug="genetic-variant">genetic variant</a></li>
+          <li><a href="glossary/genome.html" class="lh-term-link" data-term="genome" data-slug="genome">genome</a></li>
+          <li><a href="glossary/genome-assembly.html" class="lh-term-link" data-term="genome assembly" data-slug="genome-assembly">genome assembly</a></li>
+          <li><a href="glossary/genome-editing.html" class="lh-term-link" data-term="genome editing" data-slug="genome-editing">genome editing</a></li>
+          <li><a href="glossary/genomics.html" class="lh-term-link" data-term="genomics" data-slug="genomics">genomics</a></li>
+          <li><a href="glossary/genotype.html" class="lh-term-link" data-term="genotype" data-slug="genotype">genotype</a></li>
+          <li><a href="glossary/gwas.html" class="lh-term-link" data-term="gwas" data-slug="gwas">GWAS</a></li>
+          <li><a href="glossary/mendelian-inheritance.html" class="lh-term-link" data-term="mendelian inheritance" data-slug="mendelian-inheritance">Mendelian inheritance</a></li>
+          <li><a href="glossary/metagenomics.html" class="lh-term-link" data-term="metagenomics" data-slug="metagenomics">metagenomics</a></li>
+          <li><a href="glossary/mutation.html" class="lh-term-link" data-term="mutation" data-slug="mutation">mutation</a></li>
+          <li><a href="glossary/pathogenic-variant.html" class="lh-term-link" data-term="pathogenic variant" data-slug="pathogenic-variant">pathogenic variant</a></li>
+          <li><a href="glossary/phenotype.html" class="lh-term-link" data-term="phenotype" data-slug="phenotype">phenotype</a></li>
+          <li><a href="glossary/recessive.html" class="lh-term-link" data-term="recessive" data-slug="recessive">recessive</a></li>
+          <li><a href="glossary/snp.html" class="lh-term-link" data-term="snp" data-slug="snp">SNP</a></li>
+          <li><a href="glossary/snp-filtering.html" class="lh-term-link" data-term="snp filtering" data-slug="snp-filtering">SNP filtering</a></li>
+          <li><a href="glossary/variant-calling.html" class="lh-term-link" data-term="variant calling" data-slug="variant-calling">variant calling</a></li>
         
           </ul>
         </div>
       </section>
-      <section class="cat-section" id="category-genome-analysis">
-        <div class="cat-header" onclick="toggleCat(this)">
-          <span class="cat-header-title">Genome Analysis <span class="cat-count">(1)</span></span>
-          <span class="arrow">&#9654;</span>
+      <section class="lh-cat-section" id="category-genome-analysis">
+        <div class="lh-cat-header" onclick="toggleCat(this)">
+          <span class="lh-cat-header-title">Genome Analysis <span class="lh-cat-count">(1)</span></span>
+          <span class="lh-cat-arrow">&#9654;</span>
         </div>
-        <div class="cat-body">
-          <ul class="term-list">
-          <li><a href="glossary/repeat-masking.html" class="term-link" data-term="repeat masking" data-slug="repeat-masking">repeat masking</a></li>
+        <div class="lh-cat-body">
+          <ul class="lh-term-list">
+          <li><a href="glossary/repeat-masking.html" class="lh-term-link" data-term="repeat masking" data-slug="repeat-masking">repeat masking</a></li>
         
           </ul>
         </div>
       </section>
-      <section class="cat-section" id="category-genome-editing">
-        <div class="cat-header" onclick="toggleCat(this)">
-          <span class="cat-header-title">Genome Editing <span class="cat-count">(3)</span></span>
-          <span class="arrow">&#9654;</span>
+      <section class="lh-cat-section" id="category-genome-editing">
+        <div class="lh-cat-header" onclick="toggleCat(this)">
+          <span class="lh-cat-header-title">Genome Editing <span class="lh-cat-count">(3)</span></span>
+          <span class="lh-cat-arrow">&#9654;</span>
         </div>
-        <div class="cat-body">
-          <ul class="term-list">
-          <li><a href="glossary/cas9.html" class="term-link" data-term="cas9" data-slug="cas9">Cas9</a></li>
-          <li><a href="glossary/crispr.html" class="term-link" data-term="crispr" data-slug="crispr">CRISPR</a></li>
-          <li><a href="glossary/crispr-screen.html" class="term-link" data-term="crispr screening" data-slug="crispr-screen">CRISPR screening</a></li>
+        <div class="lh-cat-body">
+          <ul class="lh-term-list">
+          <li><a href="glossary/cas9.html" class="lh-term-link" data-term="cas9" data-slug="cas9">Cas9</a></li>
+          <li><a href="glossary/crispr.html" class="lh-term-link" data-term="crispr" data-slug="crispr">CRISPR</a></li>
+          <li><a href="glossary/crispr-screen.html" class="lh-term-link" data-term="crispr screening" data-slug="crispr-screen">CRISPR screening</a></li>
         
           </ul>
         </div>
       </section>
-      <section class="cat-section" id="category-lab-techniques">
-        <div class="cat-header" onclick="toggleCat(this)">
-          <span class="cat-header-title">Lab Techniques <span class="cat-count">(4)</span></span>
-          <span class="arrow">&#9654;</span>
+      <section class="lh-cat-section" id="category-lab-techniques">
+        <div class="lh-cat-header" onclick="toggleCat(this)">
+          <span class="lh-cat-header-title">Lab Techniques <span class="lh-cat-count">(4)</span></span>
+          <span class="lh-cat-arrow">&#9654;</span>
         </div>
-        <div class="cat-body">
-          <ul class="term-list">
-          <li><a href="glossary/elisa.html" class="term-link" data-term="elisa" data-slug="elisa">ELISA</a></li>
-          <li><a href="glossary/gel-electrophoresis.html" class="term-link" data-term="gel electrophoresis" data-slug="gel-electrophoresis">gel electrophoresis</a></li>
-          <li><a href="glossary/mass-spectrometry.html" class="term-link" data-term="mass spectrometry" data-slug="mass-spectrometry">mass spectrometry</a></li>
-          <li><a href="glossary/western-blot.html" class="term-link" data-term="western blot" data-slug="western-blot">Western blot</a></li>
+        <div class="lh-cat-body">
+          <ul class="lh-term-list">
+          <li><a href="glossary/elisa.html" class="lh-term-link" data-term="elisa" data-slug="elisa">ELISA</a></li>
+          <li><a href="glossary/gel-electrophoresis.html" class="lh-term-link" data-term="gel electrophoresis" data-slug="gel-electrophoresis">gel electrophoresis</a></li>
+          <li><a href="glossary/mass-spectrometry.html" class="lh-term-link" data-term="mass spectrometry" data-slug="mass-spectrometry">mass spectrometry</a></li>
+          <li><a href="glossary/western-blot.html" class="lh-term-link" data-term="western blot" data-slug="western-blot">Western blot</a></li>
         
           </ul>
         </div>
       </section>
-      <section class="cat-section" id="category-molecular-biology">
-        <div class="cat-header" onclick="toggleCat(this)">
-          <span class="cat-header-title">Molecular Biology <span class="cat-count">(7)</span></span>
-          <span class="arrow">&#9654;</span>
+      <section class="lh-cat-section" id="category-molecular-biology">
+        <div class="lh-cat-header" onclick="toggleCat(this)">
+          <span class="lh-cat-header-title">Molecular Biology <span class="lh-cat-count">(7)</span></span>
+          <span class="lh-cat-arrow">&#9654;</span>
         </div>
-        <div class="cat-body">
-          <ul class="term-list">
-          <li><a href="glossary/base-pair.html" class="term-link" data-term="base pair" data-slug="base-pair">base pair</a></li>
-          <li><a href="glossary/bowtie2-alignment.html" class="term-link" data-term="bowtie2 alignment" data-slug="bowtie2-alignment">Bowtie2 alignment</a></li>
-          <li><a href="glossary/dna.html" class="term-link" data-term="dna" data-slug="dna">DNA</a></li>
-          <li><a href="glossary/dna-repair.html" class="term-link" data-term="dna repair" data-slug="dna-repair">DNA repair</a></li>
-          <li><a href="glossary/molecular-biology.html" class="term-link" data-term="molecular biology" data-slug="molecular-biology">molecular biology</a></li>
-          <li><a href="glossary/molecular-docking.html" class="term-link" data-term="molecular docking" data-slug="molecular-docking">molecular docking</a></li>
-          <li><a href="glossary/nucleotide.html" class="term-link" data-term="nucleotide" data-slug="nucleotide">nucleotide</a></li>
+        <div class="lh-cat-body">
+          <ul class="lh-term-list">
+          <li><a href="glossary/base-pair.html" class="lh-term-link" data-term="base pair" data-slug="base-pair">base pair</a></li>
+          <li><a href="glossary/bowtie2-alignment.html" class="lh-term-link" data-term="bowtie2 alignment" data-slug="bowtie2-alignment">Bowtie2 alignment</a></li>
+          <li><a href="glossary/dna.html" class="lh-term-link" data-term="dna" data-slug="dna">DNA</a></li>
+          <li><a href="glossary/dna-repair.html" class="lh-term-link" data-term="dna repair" data-slug="dna-repair">DNA repair</a></li>
+          <li><a href="glossary/molecular-biology.html" class="lh-term-link" data-term="molecular biology" data-slug="molecular-biology">molecular biology</a></li>
+          <li><a href="glossary/molecular-docking.html" class="lh-term-link" data-term="molecular docking" data-slug="molecular-docking">molecular docking</a></li>
+          <li><a href="glossary/nucleotide.html" class="lh-term-link" data-term="nucleotide" data-slug="nucleotide">nucleotide</a></li>
         
           </ul>
         </div>
       </section>
-      <section class="cat-section" id="category-molecular-docking">
-        <div class="cat-header" onclick="toggleCat(this)">
-          <span class="cat-header-title">Molecular Docking <span class="cat-count">(5)</span></span>
-          <span class="arrow">&#9654;</span>
+      <section class="lh-cat-section" id="category-molecular-docking">
+        <div class="lh-cat-header" onclick="toggleCat(this)">
+          <span class="lh-cat-header-title">Molecular Docking <span class="lh-cat-count">(5)</span></span>
+          <span class="lh-cat-arrow">&#9654;</span>
         </div>
-        <div class="cat-body">
-          <ul class="term-list">
-          <li><a href="glossary/binding-affinity.html" class="term-link" data-term="binding affinity" data-slug="binding-affinity">binding affinity</a></li>
-          <li><a href="glossary/gnina.html" class="term-link" data-term="gnina" data-slug="gnina">Gnina</a></li>
-          <li><a href="glossary/rmsd.html" class="term-link" data-term="rmsd" data-slug="rmsd">RMSD</a></li>
-          <li><a href="glossary/smina.html" class="term-link" data-term="smina" data-slug="smina">Smina</a></li>
-          <li><a href="glossary/vina.html" class="term-link" data-term="vina" data-slug="vina">Vina</a></li>
+        <div class="lh-cat-body">
+          <ul class="lh-term-list">
+          <li><a href="glossary/binding-affinity.html" class="lh-term-link" data-term="binding affinity" data-slug="binding-affinity">binding affinity</a></li>
+          <li><a href="glossary/gnina.html" class="lh-term-link" data-term="gnina" data-slug="gnina">Gnina</a></li>
+          <li><a href="glossary/rmsd.html" class="lh-term-link" data-term="rmsd" data-slug="rmsd">RMSD</a></li>
+          <li><a href="glossary/smina.html" class="lh-term-link" data-term="smina" data-slug="smina">Smina</a></li>
+          <li><a href="glossary/vina.html" class="lh-term-link" data-term="vina" data-slug="vina">Vina</a></li>
         
           </ul>
         </div>
       </section>
-      <section class="cat-section" id="category-pcr-amplification">
-        <div class="cat-header" onclick="toggleCat(this)">
-          <span class="cat-header-title">PCR &amp; Amplification <span class="cat-count">(13)</span></span>
-          <span class="arrow">&#9654;</span>
+      <section class="lh-cat-section" id="category-pcr-amplification">
+        <div class="lh-cat-header" onclick="toggleCat(this)">
+          <span class="lh-cat-header-title">PCR &amp; Amplification <span class="lh-cat-count">(13)</span></span>
+          <span class="lh-cat-arrow">&#9654;</span>
         </div>
-        <div class="cat-body">
-          <ul class="term-list">
-          <li><a href="glossary/amplicon.html" class="term-link" data-term="amplicon" data-slug="amplicon">amplicon</a></li>
-          <li><a href="glossary/amplicon-size.html" class="term-link" data-term="amplicon size" data-slug="amplicon-size">amplicon size</a></li>
-          <li><a href="glossary/bisulfite-pcr.html" class="term-link" data-term="bisulfite pcr" data-slug="bisulfite-pcr">bisulfite PCR</a></li>
-          <li><a href="glossary/digital-pcr.html" class="term-link" data-term="digital pcr" data-slug="digital-pcr">digital PCR</a></li>
-          <li><a href="glossary/hot-start-pcr.html" class="term-link" data-term="hot-start pcr" data-slug="hot-start-pcr">hot-start PCR</a></li>
-          <li><a href="glossary/multiplex-pcr.html" class="term-link" data-term="multiplex pcr" data-slug="multiplex-pcr">multiplex PCR</a></li>
-          <li><a href="glossary/pcr.html" class="term-link" data-term="pcr" data-slug="pcr">PCR</a></li>
-          <li><a href="glossary/qpcr.html" class="term-link" data-term="qpcr" data-slug="qpcr">qPCR</a></li>
-          <li><a href="glossary/rt-pcr.html" class="term-link" data-term="rt-pcr" data-slug="rt-pcr">RT-PCR</a></li>
-          <li><a href="glossary/taq-polymerase.html" class="term-link" data-term="taq polymerase" data-slug="taq-polymerase">Taq polymerase</a></li>
-          <li><a href="glossary/thermal-cycler.html" class="term-link" data-term="thermal cycler" data-slug="thermal-cycler">thermal cycler</a></li>
-          <li><a href="glossary/thermocycling-profile.html" class="term-link" data-term="thermocycling profile" data-slug="thermocycling-profile">thermocycling profile</a></li>
-          <li><a href="glossary/touchdown-pcr.html" class="term-link" data-term="touchdown pcr" data-slug="touchdown-pcr">touchdown PCR</a></li>
+        <div class="lh-cat-body">
+          <ul class="lh-term-list">
+          <li><a href="glossary/amplicon.html" class="lh-term-link" data-term="amplicon" data-slug="amplicon">amplicon</a></li>
+          <li><a href="glossary/amplicon-size.html" class="lh-term-link" data-term="amplicon size" data-slug="amplicon-size">amplicon size</a></li>
+          <li><a href="glossary/bisulfite-pcr.html" class="lh-term-link" data-term="bisulfite pcr" data-slug="bisulfite-pcr">bisulfite PCR</a></li>
+          <li><a href="glossary/digital-pcr.html" class="lh-term-link" data-term="digital pcr" data-slug="digital-pcr">digital PCR</a></li>
+          <li><a href="glossary/hot-start-pcr.html" class="lh-term-link" data-term="hot-start pcr" data-slug="hot-start-pcr">hot-start PCR</a></li>
+          <li><a href="glossary/multiplex-pcr.html" class="lh-term-link" data-term="multiplex pcr" data-slug="multiplex-pcr">multiplex PCR</a></li>
+          <li><a href="glossary/pcr.html" class="lh-term-link" data-term="pcr" data-slug="pcr">PCR</a></li>
+          <li><a href="glossary/qpcr.html" class="lh-term-link" data-term="qpcr" data-slug="qpcr">qPCR</a></li>
+          <li><a href="glossary/rt-pcr.html" class="lh-term-link" data-term="rt-pcr" data-slug="rt-pcr">RT-PCR</a></li>
+          <li><a href="glossary/taq-polymerase.html" class="lh-term-link" data-term="taq polymerase" data-slug="taq-polymerase">Taq polymerase</a></li>
+          <li><a href="glossary/thermal-cycler.html" class="lh-term-link" data-term="thermal cycler" data-slug="thermal-cycler">thermal cycler</a></li>
+          <li><a href="glossary/thermocycling-profile.html" class="lh-term-link" data-term="thermocycling profile" data-slug="thermocycling-profile">thermocycling profile</a></li>
+          <li><a href="glossary/touchdown-pcr.html" class="lh-term-link" data-term="touchdown pcr" data-slug="touchdown-pcr">touchdown PCR</a></li>
         
           </ul>
         </div>
       </section>
-      <section class="cat-section" id="category-primer-design">
-        <div class="cat-header" onclick="toggleCat(this)">
-          <span class="cat-header-title">Primer Design <span class="cat-count">(12)</span></span>
-          <span class="arrow">&#9654;</span>
+      <section class="lh-cat-section" id="category-primer-design">
+        <div class="lh-cat-header" onclick="toggleCat(this)">
+          <span class="lh-cat-header-title">Primer Design <span class="lh-cat-count">(12)</span></span>
+          <span class="lh-cat-arrow">&#9654;</span>
         </div>
-        <div class="cat-body">
-          <ul class="term-list">
-          <li><a href="glossary/degenerate-primer.html" class="term-link" data-term="degenerate primer" data-slug="degenerate-primer">degenerate primer</a></li>
-          <li><a href="glossary/forward-primer.html" class="term-link" data-term="forward primer" data-slug="forward-primer">forward primer</a></li>
-          <li><a href="glossary/iupac-codes.html" class="term-link" data-term="iupac codes" data-slug="iupac-codes">IUPAC codes</a></li>
-          <li><a href="glossary/manufacturing-qc.html" class="term-link" data-term="manufacturing qc" data-slug="manufacturing-qc">manufacturing QC</a></li>
-          <li><a href="glossary/penalty-matrix.html" class="term-link" data-term="penalty matrix" data-slug="penalty-matrix">penalty matrix</a></li>
-          <li><a href="glossary/primer.html" class="term-link" data-term="primer" data-slug="primer">primer</a></li>
-          <li><a href="glossary/primer-design.html" class="term-link" data-term="primer design" data-slug="primer-design">primer design</a></li>
-          <li><a href="glossary/primer-dimer.html" class="term-link" data-term="primer dimer" data-slug="primer-dimer">primer dimer</a></li>
-          <li><a href="glossary/primer-pooler.html" class="term-link" data-term="primerpooler" data-slug="primer-pooler">PrimerPooler</a></li>
-          <li><a href="glossary/primer-specificity.html" class="term-link" data-term="primer specificity" data-slug="primer-specificity">primer specificity</a></li>
-          <li><a href="glossary/primer3.html" class="term-link" data-term="primer3" data-slug="primer3">Primer3</a></li>
-          <li><a href="glossary/reverse-primer.html" class="term-link" data-term="reverse primer" data-slug="reverse-primer">reverse primer</a></li>
+        <div class="lh-cat-body">
+          <ul class="lh-term-list">
+          <li><a href="glossary/degenerate-primer.html" class="lh-term-link" data-term="degenerate primer" data-slug="degenerate-primer">degenerate primer</a></li>
+          <li><a href="glossary/forward-primer.html" class="lh-term-link" data-term="forward primer" data-slug="forward-primer">forward primer</a></li>
+          <li><a href="glossary/iupac-codes.html" class="lh-term-link" data-term="iupac codes" data-slug="iupac-codes">IUPAC codes</a></li>
+          <li><a href="glossary/manufacturing-qc.html" class="lh-term-link" data-term="manufacturing qc" data-slug="manufacturing-qc">manufacturing QC</a></li>
+          <li><a href="glossary/penalty-matrix.html" class="lh-term-link" data-term="penalty matrix" data-slug="penalty-matrix">penalty matrix</a></li>
+          <li><a href="glossary/primer.html" class="lh-term-link" data-term="primer" data-slug="primer">primer</a></li>
+          <li><a href="glossary/primer-design.html" class="lh-term-link" data-term="primer design" data-slug="primer-design">primer design</a></li>
+          <li><a href="glossary/primer-dimer.html" class="lh-term-link" data-term="primer dimer" data-slug="primer-dimer">primer dimer</a></li>
+          <li><a href="glossary/primer-pooler.html" class="lh-term-link" data-term="primerpooler" data-slug="primer-pooler">PrimerPooler</a></li>
+          <li><a href="glossary/primer-specificity.html" class="lh-term-link" data-term="primer specificity" data-slug="primer-specificity">primer specificity</a></li>
+          <li><a href="glossary/primer3.html" class="lh-term-link" data-term="primer3" data-slug="primer3">Primer3</a></li>
+          <li><a href="glossary/reverse-primer.html" class="lh-term-link" data-term="reverse primer" data-slug="reverse-primer">reverse primer</a></li>
         
           </ul>
         </div>
       </section>
-      <section class="cat-section" id="category-proteins">
-        <div class="cat-header" onclick="toggleCat(this)">
-          <span class="cat-header-title">Proteins <span class="cat-count">(6)</span></span>
-          <span class="arrow">&#9654;</span>
+      <section class="lh-cat-section" id="category-proteins">
+        <div class="lh-cat-header" onclick="toggleCat(this)">
+          <span class="lh-cat-header-title">Proteins <span class="lh-cat-count">(6)</span></span>
+          <span class="lh-cat-arrow">&#9654;</span>
         </div>
-        <div class="cat-body">
-          <ul class="term-list">
-          <li><a href="glossary/amino-acid.html" class="term-link" data-term="amino acid" data-slug="amino-acid">amino acid</a></li>
-          <li><a href="glossary/enzyme.html" class="term-link" data-term="enzyme" data-slug="enzyme">enzyme</a></li>
-          <li><a href="glossary/oncoprotein.html" class="term-link" data-term="oncoprotein" data-slug="oncoprotein">oncoprotein</a></li>
-          <li><a href="glossary/protein.html" class="term-link" data-term="protein" data-slug="protein">protein</a></li>
-          <li><a href="glossary/protein-structure-prediction.html" class="term-link" data-term="protein structure prediction" data-slug="protein-structure-prediction">protein structure prediction</a></li>
-          <li><a href="glossary/proteome.html" class="term-link" data-term="proteome" data-slug="proteome">proteome</a></li>
+        <div class="lh-cat-body">
+          <ul class="lh-term-list">
+          <li><a href="glossary/amino-acid.html" class="lh-term-link" data-term="amino acid" data-slug="amino-acid">amino acid</a></li>
+          <li><a href="glossary/enzyme.html" class="lh-term-link" data-term="enzyme" data-slug="enzyme">enzyme</a></li>
+          <li><a href="glossary/oncoprotein.html" class="lh-term-link" data-term="oncoprotein" data-slug="oncoprotein">oncoprotein</a></li>
+          <li><a href="glossary/protein.html" class="lh-term-link" data-term="protein" data-slug="protein">protein</a></li>
+          <li><a href="glossary/protein-structure-prediction.html" class="lh-term-link" data-term="protein structure prediction" data-slug="protein-structure-prediction">protein structure prediction</a></li>
+          <li><a href="glossary/proteome.html" class="lh-term-link" data-term="proteome" data-slug="proteome">proteome</a></li>
         
           </ul>
         </div>
       </section>
-      <section class="cat-section" id="category-secondary-structure">
-        <div class="cat-header" onclick="toggleCat(this)">
-          <span class="cat-header-title">Secondary Structure <span class="cat-count">(2)</span></span>
-          <span class="arrow">&#9654;</span>
+      <section class="lh-cat-section" id="category-secondary-structure">
+        <div class="lh-cat-header" onclick="toggleCat(this)">
+          <span class="lh-cat-header-title">Secondary Structure <span class="lh-cat-count">(2)</span></span>
+          <span class="lh-cat-arrow">&#9654;</span>
         </div>
-        <div class="cat-body">
-          <ul class="term-list">
-          <li><a href="glossary/hairpin.html" class="term-link" data-term="hairpin" data-slug="hairpin">hairpin</a></li>
-          <li><a href="glossary/secondary-structure.html" class="term-link" data-term="secondary structure" data-slug="secondary-structure">secondary structure</a></li>
+        <div class="lh-cat-body">
+          <ul class="lh-term-list">
+          <li><a href="glossary/hairpin.html" class="lh-term-link" data-term="hairpin" data-slug="hairpin">hairpin</a></li>
+          <li><a href="glossary/secondary-structure.html" class="lh-term-link" data-term="secondary structure" data-slug="secondary-structure">secondary structure</a></li>
         
           </ul>
         </div>
       </section>
-      <section class="cat-section" id="category-sequencing">
-        <div class="cat-header" onclick="toggleCat(this)">
-          <span class="cat-header-title">Sequencing <span class="cat-count">(10)</span></span>
-          <span class="arrow">&#9654;</span>
+      <section class="lh-cat-section" id="category-sequencing">
+        <div class="lh-cat-header" onclick="toggleCat(this)">
+          <span class="lh-cat-header-title">Sequencing <span class="lh-cat-count">(10)</span></span>
+          <span class="lh-cat-arrow">&#9654;</span>
         </div>
-        <div class="cat-body">
-          <ul class="term-list">
-          <li><a href="glossary/bam.html" class="term-link" data-term="bam" data-slug="bam">BAM</a></li>
-          <li><a href="glossary/fastq.html" class="term-link" data-term="fastq" data-slug="fastq">FASTQ</a></li>
-          <li><a href="glossary/illumina.html" class="term-link" data-term="illumina" data-slug="illumina">Illumina</a></li>
-          <li><a href="glossary/next-generation-sequencing.html" class="term-link" data-term="next-generation sequencing" data-slug="next-generation-sequencing">next-generation sequencing</a></li>
-          <li><a href="glossary/oxford-nanopore.html" class="term-link" data-term="oxford nanopore" data-slug="oxford-nanopore">Oxford Nanopore</a></li>
-          <li><a href="glossary/rna.html" class="term-link" data-term="rna" data-slug="rna">RNA</a></li>
-          <li><a href="glossary/rna-seq.html" class="term-link" data-term="rna-seq" data-slug="rna-seq">RNA-seq</a></li>
-          <li><a href="glossary/single-cell-rna-seq.html" class="term-link" data-term="single-cell rna-seq" data-slug="single-cell-rna-seq">single-cell RNA-seq</a></li>
-          <li><a href="glossary/transcriptome.html" class="term-link" data-term="transcriptome" data-slug="transcriptome">transcriptome</a></li>
-          <li><a href="glossary/vcf.html" class="term-link" data-term="vcf" data-slug="vcf">VCF</a></li>
+        <div class="lh-cat-body">
+          <ul class="lh-term-list">
+          <li><a href="glossary/bam.html" class="lh-term-link" data-term="bam" data-slug="bam">BAM</a></li>
+          <li><a href="glossary/fastq.html" class="lh-term-link" data-term="fastq" data-slug="fastq">FASTQ</a></li>
+          <li><a href="glossary/illumina.html" class="lh-term-link" data-term="illumina" data-slug="illumina">Illumina</a></li>
+          <li><a href="glossary/next-generation-sequencing.html" class="lh-term-link" data-term="next-generation sequencing" data-slug="next-generation-sequencing">next-generation sequencing</a></li>
+          <li><a href="glossary/oxford-nanopore.html" class="lh-term-link" data-term="oxford nanopore" data-slug="oxford-nanopore">Oxford Nanopore</a></li>
+          <li><a href="glossary/rna.html" class="lh-term-link" data-term="rna" data-slug="rna">RNA</a></li>
+          <li><a href="glossary/rna-seq.html" class="lh-term-link" data-term="rna-seq" data-slug="rna-seq">RNA-seq</a></li>
+          <li><a href="glossary/single-cell-rna-seq.html" class="lh-term-link" data-term="single-cell rna-seq" data-slug="single-cell-rna-seq">single-cell RNA-seq</a></li>
+          <li><a href="glossary/transcriptome.html" class="lh-term-link" data-term="transcriptome" data-slug="transcriptome">transcriptome</a></li>
+          <li><a href="glossary/vcf.html" class="lh-term-link" data-term="vcf" data-slug="vcf">VCF</a></li>
         
           </ul>
         </div>
       </section>
-      <section class="cat-section" id="category-structural-biology">
-        <div class="cat-header" onclick="toggleCat(this)">
-          <span class="cat-header-title">Structural Biology <span class="cat-count">(2)</span></span>
-          <span class="arrow">&#9654;</span>
+      <section class="lh-cat-section" id="category-structural-biology">
+        <div class="lh-cat-header" onclick="toggleCat(this)">
+          <span class="lh-cat-header-title">Structural Biology <span class="lh-cat-count">(2)</span></span>
+          <span class="lh-cat-arrow">&#9654;</span>
         </div>
-        <div class="cat-body">
-          <ul class="term-list">
-          <li><a href="glossary/alphafold.html" class="term-link" data-term="alphafold" data-slug="alphafold">AlphaFold</a></li>
-          <li><a href="glossary/esmfold.html" class="term-link" data-term="esmfold" data-slug="esmfold">ESMFold</a></li>
+        <div class="lh-cat-body">
+          <ul class="lh-term-list">
+          <li><a href="glossary/alphafold.html" class="lh-term-link" data-term="alphafold" data-slug="alphafold">AlphaFold</a></li>
+          <li><a href="glossary/esmfold.html" class="lh-term-link" data-term="esmfold" data-slug="esmfold">ESMFold</a></li>
         
           </ul>
         </div>
       </section>
-      <section class="cat-section" id="category-thermodynamics">
-        <div class="cat-header" onclick="toggleCat(this)">
-          <span class="cat-header-title">Thermodynamics <span class="cat-count">(10)</span></span>
-          <span class="arrow">&#9654;</span>
+      <section class="lh-cat-section" id="category-thermodynamics">
+        <div class="lh-cat-header" onclick="toggleCat(this)">
+          <span class="lh-cat-header-title">Thermodynamics <span class="lh-cat-count">(10)</span></span>
+          <span class="lh-cat-arrow">&#9654;</span>
         </div>
-        <div class="cat-body">
-          <ul class="term-list">
-          <li><a href="glossary/annealing-temperature.html" class="term-link" data-term="annealing temperature" data-slug="annealing-temperature">annealing temperature</a></li>
-          <li><a href="glossary/delta-g.html" class="term-link" data-term="delta-g" data-slug="delta-g">delta-G</a></li>
-          <li><a href="glossary/gc-clamp.html" class="term-link" data-term="gc clamp" data-slug="gc-clamp">GC clamp</a></li>
-          <li><a href="glossary/gc-content.html" class="term-link" data-term="gc content" data-slug="gc-content">GC content</a></li>
-          <li><a href="glossary/melting-temperature.html" class="term-link" data-term="melting temperature" data-slug="melting-temperature">melting temperature</a></li>
-          <li><a href="glossary/mg2-correction.html" class="term-link" data-term="mg2+ correction" data-slug="mg2-correction">Mg2+ correction</a></li>
-          <li><a href="glossary/nearest-neighbor-model.html" class="term-link" data-term="nearest-neighbor model" data-slug="nearest-neighbor-model">nearest-neighbor model</a></li>
-          <li><a href="glossary/rychlik-formula.html" class="term-link" data-term="rychlik formula" data-slug="rychlik-formula">Rychlik formula</a></li>
-          <li><a href="glossary/salt-correction.html" class="term-link" data-term="salt correction" data-slug="salt-correction">salt correction</a></li>
-          <li><a href="glossary/santalucia-1998.html" class="term-link" data-term="santalucia 1998" data-slug="santalucia-1998">SantaLucia 1998</a></li>
+        <div class="lh-cat-body">
+          <ul class="lh-term-list">
+          <li><a href="glossary/annealing-temperature.html" class="lh-term-link" data-term="annealing temperature" data-slug="annealing-temperature">annealing temperature</a></li>
+          <li><a href="glossary/delta-g.html" class="lh-term-link" data-term="delta-g" data-slug="delta-g">delta-G</a></li>
+          <li><a href="glossary/gc-clamp.html" class="lh-term-link" data-term="gc clamp" data-slug="gc-clamp">GC clamp</a></li>
+          <li><a href="glossary/gc-content.html" class="lh-term-link" data-term="gc content" data-slug="gc-content">GC content</a></li>
+          <li><a href="glossary/melting-temperature.html" class="lh-term-link" data-term="melting temperature" data-slug="melting-temperature">melting temperature</a></li>
+          <li><a href="glossary/mg2-correction.html" class="lh-term-link" data-term="mg2+ correction" data-slug="mg2-correction">Mg2+ correction</a></li>
+          <li><a href="glossary/nearest-neighbor-model.html" class="lh-term-link" data-term="nearest-neighbor model" data-slug="nearest-neighbor-model">nearest-neighbor model</a></li>
+          <li><a href="glossary/rychlik-formula.html" class="lh-term-link" data-term="rychlik formula" data-slug="rychlik-formula">Rychlik formula</a></li>
+          <li><a href="glossary/salt-correction.html" class="lh-term-link" data-term="salt correction" data-slug="salt-correction">salt correction</a></li>
+          <li><a href="glossary/santalucia-1998.html" class="lh-term-link" data-term="santalucia 1998" data-slug="santalucia-1998">SantaLucia 1998</a></li>
         
           </ul>
         </div>
       </section>
-      <section class="cat-section" id="category-qpcr-probes">
-        <div class="cat-header" onclick="toggleCat(this)">
-          <span class="cat-header-title">qPCR &amp; Probes <span class="cat-count">(2)</span></span>
-          <span class="arrow">&#9654;</span>
+      <section class="lh-cat-section" id="category-qpcr-probes">
+        <div class="lh-cat-header" onclick="toggleCat(this)">
+          <span class="lh-cat-header-title">qPCR &amp; Probes <span class="lh-cat-count">(2)</span></span>
+          <span class="lh-cat-arrow">&#9654;</span>
         </div>
-        <div class="cat-body">
-          <ul class="term-list">
-          <li><a href="glossary/probe-design.html" class="term-link" data-term="probe design" data-slug="probe-design">probe design</a></li>
-          <li><a href="glossary/taqman-probe.html" class="term-link" data-term="taqman probe" data-slug="taqman-probe">TaqMan probe</a></li>
+        <div class="lh-cat-body">
+          <ul class="lh-term-list">
+          <li><a href="glossary/probe-design.html" class="lh-term-link" data-term="probe design" data-slug="probe-design">probe design</a></li>
+          <li><a href="glossary/taqman-probe.html" class="lh-term-link" data-term="taqman probe" data-slug="taqman-probe">TaqMan probe</a></li>
         
           </ul>
         </div>
@@ -1687,259 +2046,259 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </div>
 
     <div id="alphaView" style="display:none;">
-      <section class="letter-section" id="letter-A">
-        <h3 class="letter-title">A</h3>
-        <ul class="term-list">
-          <li><a href="glossary/allele.html">allele</a></li>
-          <li><a href="glossary/alphafold.html">AlphaFold</a></li>
-          <li><a href="glossary/amino-acid.html">amino acid</a></li>
-          <li><a href="glossary/amplicon.html">amplicon</a></li>
-          <li><a href="glossary/amplicon-size.html">amplicon size</a></li>
-          <li><a href="glossary/annealing-temperature.html">annealing temperature</a></li>
-          <li><a href="glossary/apoptosis.html">apoptosis</a></li>
-          <li><a href="glossary/atp.html">ATP</a></li>
+      <section class="lh-letter-section" id="letter-A">
+        <h3 class="lh-letter-title">A</h3>
+        <ul class="lh-term-list">
+          <li><a class="lh-term-link" href="glossary/allele.html">allele</a></li>
+          <li><a class="lh-term-link" href="glossary/alphafold.html">AlphaFold</a></li>
+          <li><a class="lh-term-link" href="glossary/amino-acid.html">amino acid</a></li>
+          <li><a class="lh-term-link" href="glossary/amplicon.html">amplicon</a></li>
+          <li><a class="lh-term-link" href="glossary/amplicon-size.html">amplicon size</a></li>
+          <li><a class="lh-term-link" href="glossary/annealing-temperature.html">annealing temperature</a></li>
+          <li><a class="lh-term-link" href="glossary/apoptosis.html">apoptosis</a></li>
+          <li><a class="lh-term-link" href="glossary/atp.html">ATP</a></li>
         </ul>
       </section>
-      <section class="letter-section" id="letter-B">
-        <h3 class="letter-title">B</h3>
-        <ul class="term-list">
-          <li><a href="glossary/bam.html">BAM</a></li>
-          <li><a href="glossary/base-pair.html">base pair</a></li>
-          <li><a href="glossary/binding-affinity.html">binding affinity</a></li>
-          <li><a href="glossary/bioinformatics.html">bioinformatics</a></li>
-          <li><a href="glossary/biomarker.html">biomarker</a></li>
-          <li><a href="glossary/bisulfite-pcr.html">bisulfite PCR</a></li>
-          <li><a href="glossary/blast.html">BLAST</a></li>
-          <li><a href="glossary/blast-specificity.html">BLAST specificity</a></li>
-          <li><a href="glossary/bowtie2-alignment.html">Bowtie2 alignment</a></li>
+      <section class="lh-letter-section" id="letter-B">
+        <h3 class="lh-letter-title">B</h3>
+        <ul class="lh-term-list">
+          <li><a class="lh-term-link" href="glossary/bam.html">BAM</a></li>
+          <li><a class="lh-term-link" href="glossary/base-pair.html">base pair</a></li>
+          <li><a class="lh-term-link" href="glossary/binding-affinity.html">binding affinity</a></li>
+          <li><a class="lh-term-link" href="glossary/bioinformatics.html">bioinformatics</a></li>
+          <li><a class="lh-term-link" href="glossary/biomarker.html">biomarker</a></li>
+          <li><a class="lh-term-link" href="glossary/bisulfite-pcr.html">bisulfite PCR</a></li>
+          <li><a class="lh-term-link" href="glossary/blast.html">BLAST</a></li>
+          <li><a class="lh-term-link" href="glossary/blast-specificity.html">BLAST specificity</a></li>
+          <li><a class="lh-term-link" href="glossary/bowtie2-alignment.html">Bowtie2 alignment</a></li>
         </ul>
       </section>
-      <section class="letter-section" id="letter-C">
-        <h3 class="letter-title">C</h3>
-        <ul class="term-list">
-          <li><a href="glossary/cas9.html">Cas9</a></li>
-          <li><a href="glossary/cell.html">cell</a></li>
-          <li><a href="glossary/chromosome.html">chromosome</a></li>
-          <li><a href="glossary/clinical-diagnostics.html">clinical diagnostics</a></li>
-          <li><a href="glossary/clinvar.html">ClinVar</a></li>
-          <li><a href="glossary/codon.html">codon</a></li>
-          <li><a href="glossary/confocal-microscopy.html">confocal microscopy</a></li>
-          <li><a href="glossary/crispr.html">CRISPR</a></li>
-          <li><a href="glossary/crispr-screen.html">CRISPR screening</a></li>
+      <section class="lh-letter-section" id="letter-C">
+        <h3 class="lh-letter-title">C</h3>
+        <ul class="lh-term-list">
+          <li><a class="lh-term-link" href="glossary/cas9.html">Cas9</a></li>
+          <li><a class="lh-term-link" href="glossary/cell.html">cell</a></li>
+          <li><a class="lh-term-link" href="glossary/chromosome.html">chromosome</a></li>
+          <li><a class="lh-term-link" href="glossary/clinical-diagnostics.html">clinical diagnostics</a></li>
+          <li><a class="lh-term-link" href="glossary/clinvar.html">ClinVar</a></li>
+          <li><a class="lh-term-link" href="glossary/codon.html">codon</a></li>
+          <li><a class="lh-term-link" href="glossary/confocal-microscopy.html">confocal microscopy</a></li>
+          <li><a class="lh-term-link" href="glossary/crispr.html">CRISPR</a></li>
+          <li><a class="lh-term-link" href="glossary/crispr-screen.html">CRISPR screening</a></li>
         </ul>
       </section>
-      <section class="letter-section" id="letter-D">
-        <h3 class="letter-title">D</h3>
-        <ul class="term-list">
-          <li><a href="glossary/dbsnp.html">dbSNP</a></li>
-          <li><a href="glossary/deep-learning.html">deep learning</a></li>
-          <li><a href="glossary/degenerate-primer.html">degenerate primer</a></li>
-          <li><a href="glossary/delta-g.html">delta-G</a></li>
-          <li><a href="glossary/digital-pcr.html">digital PCR</a></li>
-          <li><a href="glossary/dna.html">DNA</a></li>
-          <li><a href="glossary/dna-repair.html">DNA repair</a></li>
-          <li><a href="glossary/dominant.html">dominant</a></li>
-          <li><a href="glossary/drug-discovery.html">drug discovery</a></li>
+      <section class="lh-letter-section" id="letter-D">
+        <h3 class="lh-letter-title">D</h3>
+        <ul class="lh-term-list">
+          <li><a class="lh-term-link" href="glossary/dbsnp.html">dbSNP</a></li>
+          <li><a class="lh-term-link" href="glossary/deep-learning.html">deep learning</a></li>
+          <li><a class="lh-term-link" href="glossary/degenerate-primer.html">degenerate primer</a></li>
+          <li><a class="lh-term-link" href="glossary/delta-g.html">delta-G</a></li>
+          <li><a class="lh-term-link" href="glossary/digital-pcr.html">digital PCR</a></li>
+          <li><a class="lh-term-link" href="glossary/dna.html">DNA</a></li>
+          <li><a class="lh-term-link" href="glossary/dna-repair.html">DNA repair</a></li>
+          <li><a class="lh-term-link" href="glossary/dominant.html">dominant</a></li>
+          <li><a class="lh-term-link" href="glossary/drug-discovery.html">drug discovery</a></li>
         </ul>
       </section>
-      <section class="letter-section" id="letter-E">
-        <h3 class="letter-title">E</h3>
-        <ul class="term-list">
-          <li><a href="glossary/elisa.html">ELISA</a></li>
-          <li><a href="glossary/enhancer.html">enhancer</a></li>
-          <li><a href="glossary/ensembl.html">Ensembl</a></li>
-          <li><a href="glossary/enzyme.html">enzyme</a></li>
-          <li><a href="glossary/epigenetics.html">epigenetics</a></li>
-          <li><a href="glossary/esmfold.html">ESMFold</a></li>
-          <li><a href="glossary/exon.html">exon</a></li>
+      <section class="lh-letter-section" id="letter-E">
+        <h3 class="lh-letter-title">E</h3>
+        <ul class="lh-term-list">
+          <li><a class="lh-term-link" href="glossary/elisa.html">ELISA</a></li>
+          <li><a class="lh-term-link" href="glossary/enhancer.html">enhancer</a></li>
+          <li><a class="lh-term-link" href="glossary/ensembl.html">Ensembl</a></li>
+          <li><a class="lh-term-link" href="glossary/enzyme.html">enzyme</a></li>
+          <li><a class="lh-term-link" href="glossary/epigenetics.html">epigenetics</a></li>
+          <li><a class="lh-term-link" href="glossary/esmfold.html">ESMFold</a></li>
+          <li><a class="lh-term-link" href="glossary/exon.html">exon</a></li>
         </ul>
       </section>
-      <section class="letter-section" id="letter-F">
-        <h3 class="letter-title">F</h3>
-        <ul class="term-list">
-          <li><a href="glossary/facs.html">FACS</a></li>
-          <li><a href="glossary/fastq.html">FASTQ</a></li>
-          <li><a href="glossary/flow-cytometry.html">flow cytometry</a></li>
-          <li><a href="glossary/forward-primer.html">forward primer</a></li>
+      <section class="lh-letter-section" id="letter-F">
+        <h3 class="lh-letter-title">F</h3>
+        <ul class="lh-term-list">
+          <li><a class="lh-term-link" href="glossary/facs.html">FACS</a></li>
+          <li><a class="lh-term-link" href="glossary/fastq.html">FASTQ</a></li>
+          <li><a class="lh-term-link" href="glossary/flow-cytometry.html">flow cytometry</a></li>
+          <li><a class="lh-term-link" href="glossary/forward-primer.html">forward primer</a></li>
         </ul>
       </section>
-      <section class="letter-section" id="letter-G">
-        <h3 class="letter-title">G</h3>
-        <ul class="term-list">
-          <li><a href="glossary/gc-clamp.html">GC clamp</a></li>
-          <li><a href="glossary/gc-content.html">GC content</a></li>
-          <li><a href="glossary/gel-electrophoresis.html">gel electrophoresis</a></li>
-          <li><a href="glossary/gene.html">gene</a></li>
-          <li><a href="glossary/gene-expression.html">gene expression</a></li>
-          <li><a href="glossary/gene-therapy.html">gene therapy</a></li>
-          <li><a href="glossary/genetic-variant.html">genetic variant</a></li>
-          <li><a href="glossary/genome.html">genome</a></li>
-          <li><a href="glossary/genome-assembly.html">genome assembly</a></li>
-          <li><a href="glossary/genome-editing.html">genome editing</a></li>
-          <li><a href="glossary/genomics.html">genomics</a></li>
-          <li><a href="glossary/genotype.html">genotype</a></li>
-          <li><a href="glossary/gnina.html">Gnina</a></li>
-          <li><a href="glossary/gwas.html">GWAS</a></li>
+      <section class="lh-letter-section" id="letter-G">
+        <h3 class="lh-letter-title">G</h3>
+        <ul class="lh-term-list">
+          <li><a class="lh-term-link" href="glossary/gc-clamp.html">GC clamp</a></li>
+          <li><a class="lh-term-link" href="glossary/gc-content.html">GC content</a></li>
+          <li><a class="lh-term-link" href="glossary/gel-electrophoresis.html">gel electrophoresis</a></li>
+          <li><a class="lh-term-link" href="glossary/gene.html">gene</a></li>
+          <li><a class="lh-term-link" href="glossary/gene-expression.html">gene expression</a></li>
+          <li><a class="lh-term-link" href="glossary/gene-therapy.html">gene therapy</a></li>
+          <li><a class="lh-term-link" href="glossary/genetic-variant.html">genetic variant</a></li>
+          <li><a class="lh-term-link" href="glossary/genome.html">genome</a></li>
+          <li><a class="lh-term-link" href="glossary/genome-assembly.html">genome assembly</a></li>
+          <li><a class="lh-term-link" href="glossary/genome-editing.html">genome editing</a></li>
+          <li><a class="lh-term-link" href="glossary/genomics.html">genomics</a></li>
+          <li><a class="lh-term-link" href="glossary/genotype.html">genotype</a></li>
+          <li><a class="lh-term-link" href="glossary/gnina.html">Gnina</a></li>
+          <li><a class="lh-term-link" href="glossary/gwas.html">GWAS</a></li>
         </ul>
       </section>
-      <section class="letter-section" id="letter-H">
-        <h3 class="letter-title">H</h3>
-        <ul class="term-list">
-          <li><a href="glossary/hairpin.html">hairpin</a></li>
-          <li><a href="glossary/hot-start-pcr.html">hot-start PCR</a></li>
+      <section class="lh-letter-section" id="letter-H">
+        <h3 class="lh-letter-title">H</h3>
+        <ul class="lh-term-list">
+          <li><a class="lh-term-link" href="glossary/hairpin.html">hairpin</a></li>
+          <li><a class="lh-term-link" href="glossary/hot-start-pcr.html">hot-start PCR</a></li>
         </ul>
       </section>
-      <section class="letter-section" id="letter-I">
-        <h3 class="letter-title">I</h3>
-        <ul class="term-list">
-          <li><a href="glossary/ic50.html">IC50</a></li>
-          <li><a href="glossary/illumina.html">Illumina</a></li>
-          <li><a href="glossary/intron.html">intron</a></li>
-          <li><a href="glossary/iupac-codes.html">IUPAC codes</a></li>
+      <section class="lh-letter-section" id="letter-I">
+        <h3 class="lh-letter-title">I</h3>
+        <ul class="lh-term-list">
+          <li><a class="lh-term-link" href="glossary/ic50.html">IC50</a></li>
+          <li><a class="lh-term-link" href="glossary/illumina.html">Illumina</a></li>
+          <li><a class="lh-term-link" href="glossary/intron.html">intron</a></li>
+          <li><a class="lh-term-link" href="glossary/iupac-codes.html">IUPAC codes</a></li>
         </ul>
       </section>
-      <section class="letter-section" id="letter-L">
-        <h3 class="letter-title">L</h3>
-        <ul class="term-list">
-          <li><a href="glossary/liquid-biopsy.html">liquid biopsy</a></li>
+      <section class="lh-letter-section" id="letter-L">
+        <h3 class="lh-letter-title">L</h3>
+        <ul class="lh-term-list">
+          <li><a class="lh-term-link" href="glossary/liquid-biopsy.html">liquid biopsy</a></li>
         </ul>
       </section>
-      <section class="letter-section" id="letter-M">
-        <h3 class="letter-title">M</h3>
-        <ul class="term-list">
-          <li><a href="glossary/machine-learning.html">machine learning</a></li>
-          <li><a href="glossary/manufacturing-qc.html">manufacturing QC</a></li>
-          <li><a href="glossary/mass-spectrometry.html">mass spectrometry</a></li>
-          <li><a href="glossary/melting-temperature.html">melting temperature</a></li>
-          <li><a href="glossary/mendelian-inheritance.html">Mendelian inheritance</a></li>
-          <li><a href="glossary/metagenomics.html">metagenomics</a></li>
-          <li><a href="glossary/mg2-correction.html">Mg2+ correction</a></li>
-          <li><a href="glossary/mirna.html">miRNA</a></li>
-          <li><a href="glossary/mitochondria.html">mitochondria</a></li>
-          <li><a href="glossary/molecular-biology.html">molecular biology</a></li>
-          <li><a href="glossary/molecular-docking.html">molecular docking</a></li>
-          <li><a href="glossary/mrna.html">mRNA</a></li>
-          <li><a href="glossary/multiplex-pcr.html">multiplex PCR</a></li>
-          <li><a href="glossary/mutation.html">mutation</a></li>
+      <section class="lh-letter-section" id="letter-M">
+        <h3 class="lh-letter-title">M</h3>
+        <ul class="lh-term-list">
+          <li><a class="lh-term-link" href="glossary/machine-learning.html">machine learning</a></li>
+          <li><a class="lh-term-link" href="glossary/manufacturing-qc.html">manufacturing QC</a></li>
+          <li><a class="lh-term-link" href="glossary/mass-spectrometry.html">mass spectrometry</a></li>
+          <li><a class="lh-term-link" href="glossary/melting-temperature.html">melting temperature</a></li>
+          <li><a class="lh-term-link" href="glossary/mendelian-inheritance.html">Mendelian inheritance</a></li>
+          <li><a class="lh-term-link" href="glossary/metagenomics.html">metagenomics</a></li>
+          <li><a class="lh-term-link" href="glossary/mg2-correction.html">Mg2+ correction</a></li>
+          <li><a class="lh-term-link" href="glossary/mirna.html">miRNA</a></li>
+          <li><a class="lh-term-link" href="glossary/mitochondria.html">mitochondria</a></li>
+          <li><a class="lh-term-link" href="glossary/molecular-biology.html">molecular biology</a></li>
+          <li><a class="lh-term-link" href="glossary/molecular-docking.html">molecular docking</a></li>
+          <li><a class="lh-term-link" href="glossary/mrna.html">mRNA</a></li>
+          <li><a class="lh-term-link" href="glossary/multiplex-pcr.html">multiplex PCR</a></li>
+          <li><a class="lh-term-link" href="glossary/mutation.html">mutation</a></li>
         </ul>
       </section>
-      <section class="letter-section" id="letter-N">
-        <h3 class="letter-title">N</h3>
-        <ul class="term-list">
-          <li><a href="glossary/ncbi.html">NCBI</a></li>
-          <li><a href="glossary/nearest-neighbor-model.html">nearest-neighbor model</a></li>
-          <li><a href="glossary/next-generation-sequencing.html">next-generation sequencing</a></li>
-          <li><a href="glossary/nucleotide.html">nucleotide</a></li>
+      <section class="lh-letter-section" id="letter-N">
+        <h3 class="lh-letter-title">N</h3>
+        <ul class="lh-term-list">
+          <li><a class="lh-term-link" href="glossary/ncbi.html">NCBI</a></li>
+          <li><a class="lh-term-link" href="glossary/nearest-neighbor-model.html">nearest-neighbor model</a></li>
+          <li><a class="lh-term-link" href="glossary/next-generation-sequencing.html">next-generation sequencing</a></li>
+          <li><a class="lh-term-link" href="glossary/nucleotide.html">nucleotide</a></li>
         </ul>
       </section>
-      <section class="letter-section" id="letter-O">
-        <h3 class="letter-title">O</h3>
-        <ul class="term-list">
-          <li><a href="glossary/oncoprotein.html">oncoprotein</a></li>
-          <li><a href="glossary/oxford-nanopore.html">Oxford Nanopore</a></li>
+      <section class="lh-letter-section" id="letter-O">
+        <h3 class="lh-letter-title">O</h3>
+        <ul class="lh-term-list">
+          <li><a class="lh-term-link" href="glossary/oncoprotein.html">oncoprotein</a></li>
+          <li><a class="lh-term-link" href="glossary/oxford-nanopore.html">Oxford Nanopore</a></li>
         </ul>
       </section>
-      <section class="letter-section" id="letter-P">
-        <h3 class="letter-title">P</h3>
-        <ul class="term-list">
-          <li><a href="glossary/pathogenic-variant.html">pathogenic variant</a></li>
-          <li><a href="glossary/pcr.html">PCR</a></li>
-          <li><a href="glossary/penalty-matrix.html">penalty matrix</a></li>
-          <li><a href="glossary/pharmacodynamics.html">pharmacodynamics</a></li>
-          <li><a href="glossary/pharmacogenomics.html">pharmacogenomics</a></li>
-          <li><a href="glossary/pharmacokinetics.html">pharmacokinetics</a></li>
-          <li><a href="glossary/phenotype.html">phenotype</a></li>
-          <li><a href="glossary/primer.html">primer</a></li>
-          <li><a href="glossary/primer-design.html">primer design</a></li>
-          <li><a href="glossary/primer-dimer.html">primer dimer</a></li>
-          <li><a href="glossary/primer-specificity.html">primer specificity</a></li>
-          <li><a href="glossary/primer3.html">Primer3</a></li>
-          <li><a href="glossary/primer-pooler.html">PrimerPooler</a></li>
-          <li><a href="glossary/probe-design.html">probe design</a></li>
-          <li><a href="glossary/promoter.html">promoter</a></li>
-          <li><a href="glossary/protein.html">protein</a></li>
-          <li><a href="glossary/protein-structure-prediction.html">protein structure prediction</a></li>
-          <li><a href="glossary/proteome.html">proteome</a></li>
+      <section class="lh-letter-section" id="letter-P">
+        <h3 class="lh-letter-title">P</h3>
+        <ul class="lh-term-list">
+          <li><a class="lh-term-link" href="glossary/pathogenic-variant.html">pathogenic variant</a></li>
+          <li><a class="lh-term-link" href="glossary/pcr.html">PCR</a></li>
+          <li><a class="lh-term-link" href="glossary/penalty-matrix.html">penalty matrix</a></li>
+          <li><a class="lh-term-link" href="glossary/pharmacodynamics.html">pharmacodynamics</a></li>
+          <li><a class="lh-term-link" href="glossary/pharmacogenomics.html">pharmacogenomics</a></li>
+          <li><a class="lh-term-link" href="glossary/pharmacokinetics.html">pharmacokinetics</a></li>
+          <li><a class="lh-term-link" href="glossary/phenotype.html">phenotype</a></li>
+          <li><a class="lh-term-link" href="glossary/primer.html">primer</a></li>
+          <li><a class="lh-term-link" href="glossary/primer-design.html">primer design</a></li>
+          <li><a class="lh-term-link" href="glossary/primer-dimer.html">primer dimer</a></li>
+          <li><a class="lh-term-link" href="glossary/primer-specificity.html">primer specificity</a></li>
+          <li><a class="lh-term-link" href="glossary/primer3.html">Primer3</a></li>
+          <li><a class="lh-term-link" href="glossary/primer-pooler.html">PrimerPooler</a></li>
+          <li><a class="lh-term-link" href="glossary/probe-design.html">probe design</a></li>
+          <li><a class="lh-term-link" href="glossary/promoter.html">promoter</a></li>
+          <li><a class="lh-term-link" href="glossary/protein.html">protein</a></li>
+          <li><a class="lh-term-link" href="glossary/protein-structure-prediction.html">protein structure prediction</a></li>
+          <li><a class="lh-term-link" href="glossary/proteome.html">proteome</a></li>
         </ul>
       </section>
-      <section class="letter-section" id="letter-Q">
-        <h3 class="letter-title">Q</h3>
-        <ul class="term-list">
-          <li><a href="glossary/qpcr.html">qPCR</a></li>
+      <section class="lh-letter-section" id="letter-Q">
+        <h3 class="lh-letter-title">Q</h3>
+        <ul class="lh-term-list">
+          <li><a class="lh-term-link" href="glossary/qpcr.html">qPCR</a></li>
         </ul>
       </section>
-      <section class="letter-section" id="letter-R">
-        <h3 class="letter-title">R</h3>
-        <ul class="term-list">
-          <li><a href="glossary/recessive.html">recessive</a></li>
-          <li><a href="glossary/repeat-masking.html">repeat masking</a></li>
-          <li><a href="glossary/reverse-primer.html">reverse primer</a></li>
-          <li><a href="glossary/ribosome.html">ribosome</a></li>
-          <li><a href="glossary/rmsd.html">RMSD</a></li>
-          <li><a href="glossary/rna.html">RNA</a></li>
-          <li><a href="glossary/rna-seq.html">RNA-seq</a></li>
-          <li><a href="glossary/rt-pcr.html">RT-PCR</a></li>
-          <li><a href="glossary/rychlik-formula.html">Rychlik formula</a></li>
+      <section class="lh-letter-section" id="letter-R">
+        <h3 class="lh-letter-title">R</h3>
+        <ul class="lh-term-list">
+          <li><a class="lh-term-link" href="glossary/recessive.html">recessive</a></li>
+          <li><a class="lh-term-link" href="glossary/repeat-masking.html">repeat masking</a></li>
+          <li><a class="lh-term-link" href="glossary/reverse-primer.html">reverse primer</a></li>
+          <li><a class="lh-term-link" href="glossary/ribosome.html">ribosome</a></li>
+          <li><a class="lh-term-link" href="glossary/rmsd.html">RMSD</a></li>
+          <li><a class="lh-term-link" href="glossary/rna.html">RNA</a></li>
+          <li><a class="lh-term-link" href="glossary/rna-seq.html">RNA-seq</a></li>
+          <li><a class="lh-term-link" href="glossary/rt-pcr.html">RT-PCR</a></li>
+          <li><a class="lh-term-link" href="glossary/rychlik-formula.html">Rychlik formula</a></li>
         </ul>
       </section>
-      <section class="letter-section" id="letter-S">
-        <h3 class="letter-title">S</h3>
-        <ul class="term-list">
-          <li><a href="glossary/salt-correction.html">salt correction</a></li>
-          <li><a href="glossary/santalucia-1998.html">SantaLucia 1998</a></li>
-          <li><a href="glossary/secondary-structure.html">secondary structure</a></li>
-          <li><a href="glossary/diagnostic-sensitivity.html">sensitivity</a></li>
-          <li><a href="glossary/single-cell-rna-seq.html">single-cell RNA-seq</a></li>
-          <li><a href="glossary/smina.html">Smina</a></li>
-          <li><a href="glossary/snp.html">SNP</a></li>
-          <li><a href="glossary/snp-filtering.html">SNP filtering</a></li>
-          <li><a href="glossary/diagnostic-specificity.html">specificity</a></li>
-          <li><a href="glossary/synthetic-biology.html">synthetic biology</a></li>
+      <section class="lh-letter-section" id="letter-S">
+        <h3 class="lh-letter-title">S</h3>
+        <ul class="lh-term-list">
+          <li><a class="lh-term-link" href="glossary/salt-correction.html">salt correction</a></li>
+          <li><a class="lh-term-link" href="glossary/santalucia-1998.html">SantaLucia 1998</a></li>
+          <li><a class="lh-term-link" href="glossary/secondary-structure.html">secondary structure</a></li>
+          <li><a class="lh-term-link" href="glossary/diagnostic-sensitivity.html">sensitivity</a></li>
+          <li><a class="lh-term-link" href="glossary/single-cell-rna-seq.html">single-cell RNA-seq</a></li>
+          <li><a class="lh-term-link" href="glossary/smina.html">Smina</a></li>
+          <li><a class="lh-term-link" href="glossary/snp.html">SNP</a></li>
+          <li><a class="lh-term-link" href="glossary/snp-filtering.html">SNP filtering</a></li>
+          <li><a class="lh-term-link" href="glossary/diagnostic-specificity.html">specificity</a></li>
+          <li><a class="lh-term-link" href="glossary/synthetic-biology.html">synthetic biology</a></li>
         </ul>
       </section>
-      <section class="letter-section" id="letter-T">
-        <h3 class="letter-title">T</h3>
-        <ul class="term-list">
-          <li><a href="glossary/taq-polymerase.html">Taq polymerase</a></li>
-          <li><a href="glossary/taqman-probe.html">TaqMan probe</a></li>
-          <li><a href="glossary/thermal-cycler.html">thermal cycler</a></li>
-          <li><a href="glossary/thermocycling-profile.html">thermocycling profile</a></li>
-          <li><a href="glossary/touchdown-pcr.html">touchdown PCR</a></li>
-          <li><a href="glossary/transcription.html">transcription</a></li>
-          <li><a href="glossary/transcriptome.html">transcriptome</a></li>
-          <li><a href="glossary/translation.html">translation</a></li>
-          <li><a href="glossary/trna.html">tRNA</a></li>
-          <li><a href="glossary/tumor-suppressor.html">tumor suppressor</a></li>
+      <section class="lh-letter-section" id="letter-T">
+        <h3 class="lh-letter-title">T</h3>
+        <ul class="lh-term-list">
+          <li><a class="lh-term-link" href="glossary/taq-polymerase.html">Taq polymerase</a></li>
+          <li><a class="lh-term-link" href="glossary/taqman-probe.html">TaqMan probe</a></li>
+          <li><a class="lh-term-link" href="glossary/thermal-cycler.html">thermal cycler</a></li>
+          <li><a class="lh-term-link" href="glossary/thermocycling-profile.html">thermocycling profile</a></li>
+          <li><a class="lh-term-link" href="glossary/touchdown-pcr.html">touchdown PCR</a></li>
+          <li><a class="lh-term-link" href="glossary/transcription.html">transcription</a></li>
+          <li><a class="lh-term-link" href="glossary/transcriptome.html">transcriptome</a></li>
+          <li><a class="lh-term-link" href="glossary/translation.html">translation</a></li>
+          <li><a class="lh-term-link" href="glossary/trna.html">tRNA</a></li>
+          <li><a class="lh-term-link" href="glossary/tumor-suppressor.html">tumor suppressor</a></li>
         </ul>
       </section>
-      <section class="letter-section" id="letter-V">
-        <h3 class="letter-title">V</h3>
-        <ul class="term-list">
-          <li><a href="glossary/variant-calling.html">variant calling</a></li>
-          <li><a href="glossary/vcf.html">VCF</a></li>
-          <li><a href="glossary/vina.html">Vina</a></li>
-          <li><a href="glossary/virtual-screening.html">virtual screening</a></li>
+      <section class="lh-letter-section" id="letter-V">
+        <h3 class="lh-letter-title">V</h3>
+        <ul class="lh-term-list">
+          <li><a class="lh-term-link" href="glossary/variant-calling.html">variant calling</a></li>
+          <li><a class="lh-term-link" href="glossary/vcf.html">VCF</a></li>
+          <li><a class="lh-term-link" href="glossary/vina.html">Vina</a></li>
+          <li><a class="lh-term-link" href="glossary/virtual-screening.html">virtual screening</a></li>
         </ul>
       </section>
-      <section class="letter-section" id="letter-W">
-        <h3 class="letter-title">W</h3>
-        <ul class="term-list">
-          <li><a href="glossary/western-blot.html">Western blot</a></li>
+      <section class="lh-letter-section" id="letter-W">
+        <h3 class="lh-letter-title">W</h3>
+        <ul class="lh-term-list">
+          <li><a class="lh-term-link" href="glossary/western-blot.html">Western blot</a></li>
         </ul>
       </section>
     </div>
 
-    <section class="hub-section">
+    <section class="lh-tools-section">
       <h2>Explore VigyanLLM Tools</h2>
-      <div class="hub-grid">
-          <a href="primer.html" class="hub-card-link"><span class="hub-card-title">Primer Design Tool</span><span class="hub-card-arrow">&rarr;</span></a>
-          <a href="primer-design-best-practices.html" class="hub-card-link"><span class="hub-card-title">Primer Design Best Practices</span><span class="hub-card-arrow">&rarr;</span></a>
-          <a href="primer-3-alternative.html" class="hub-card-link"><span class="hub-card-title">Primer3 Alternative</span><span class="hub-card-arrow">&rarr;</span></a>
-          <a href="qpcr-primer-design.html" class="hub-card-link"><span class="hub-card-title">qPCR Primer Design</span><span class="hub-card-arrow">&rarr;</span></a>
-          <a href="demo.html" class="hub-card-link"><span class="hub-card-title">Molecular Docking Demo</span><span class="hub-card-arrow">&rarr;</span></a>
-          <a href="biomedical-ai-platform.html" class="hub-card-link"><span class="hub-card-title">Biomedical AI Platform</span><span class="hub-card-arrow">&rarr;</span></a>
-          <a href="blog/index.html" class="hub-card-link"><span class="hub-card-title">Blog</span><span class="hub-card-arrow">&rarr;</span></a>
-          <a href="faq.html" class="hub-card-link"><span class="hub-card-title">FAQ</span><span class="hub-card-arrow">&rarr;</span></a>
+      <div class="lh-tools-grid">
+          <a href="primer.html" class="lh-tools-link">Primer Design Tool<span class="lh-tools-arrow">&rarr;</span></a>
+          <a href="primer-design-best-practices.html" class="lh-tools-link">Primer Design Best Practices<span class="lh-tools-arrow">&rarr;</span></a>
+          <a href="primer-3-alternative.html" class="lh-tools-link">Primer3 Alternative<span class="lh-tools-arrow">&rarr;</span></a>
+          <a href="qpcr-primer-design.html" class="lh-tools-link">qPCR Primer Design<span class="lh-tools-arrow">&rarr;</span></a>
+          <a href="demo.html" class="lh-tools-link">Molecular Docking Demo<span class="lh-tools-arrow">&rarr;</span></a>
+          <a href="biomedical-ai-platform.html" class="lh-tools-link">Biomedical AI Platform<span class="lh-tools-arrow">&rarr;</span></a>
+          <a href="blog/index.html" class="lh-tools-link">Blog<span class="lh-tools-arrow">&rarr;</span></a>
+          <a href="faq.html" class="lh-tools-link">FAQ<span class="lh-tools-arrow">&rarr;</span></a>
       </div>
     </section>
   
@@ -2052,8 +2411,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       clearTimeout(debounceTimer);
       debounceTimer = setTimeout(() => {
         const q = this.value.toLowerCase().trim();
-        const allSections = document.querySelectorAll('.cat-section, .letter-section');
-        const allItems = document.querySelectorAll('.term-list li');
+        const allSections = document.querySelectorAll('.lh-cat-section, .lh-letter-section');
+        const allItems = document.querySelectorAll('.lh-term-list li');
 
         if (!q) {
           allSections.forEach(s => s.classList.remove('search-hidden'));
@@ -2064,7 +2423,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
         let matchCount = 0;
         allItems.forEach(item => {
-          const link = item.querySelector('.term-link');
+          const link = item.querySelector('.lh-term-link');
           if (!link) return;
           const termName = (link.dataset.term || link.textContent).toLowerCase();
           const slug = link.dataset.slug || '';
@@ -2075,11 +2434,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         });
 
         allSections.forEach(section => {
-          const visibleItems = section.querySelectorAll('.term-list li:not(.search-hidden)');
+          const visibleItems = section.querySelectorAll('.lh-term-list li:not(.search-hidden)');
           const hasMatch = visibleItems.length > 0;
           section.classList.toggle('search-hidden', !hasMatch);
           // Expand category when it has matches during search
-          if (hasMatch && section.classList.contains('cat-section')) {
+          if (hasMatch && section.classList.contains('lh-cat-section')) {
             section.classList.add('open');
           }
         });
@@ -2089,9 +2448,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     });
 
     // ── View Toggle ──
-    document.querySelectorAll('.view-btn').forEach(btn => {
+    document.querySelectorAll('.lh-view-btn').forEach(btn => {
       btn.addEventListener('click', function() {
-        document.querySelectorAll('.view-btn').forEach(b => {
+        document.querySelectorAll('.lh-view-btn').forEach(b => {
           b.classList.remove('active');
           b.setAttribute('aria-pressed', 'false');
         });
@@ -2105,15 +2464,15 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     });
 
     // ── Active letter highlight on scroll ──
-    const alphaLinks = document.querySelectorAll('.alpha-link');
-    const letterSections = document.querySelectorAll('.letter-section');
+    const alphaLinks = document.querySelectorAll('.lh-alpha-link');
+    const letterSections = document.querySelectorAll('.lh-letter-section');
     if (letterSections.length > 0) {
       const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
           if (entry.isIntersecting) {
             alphaLinks.forEach(l => l.classList.remove('active'));
             const id = entry.target.id.replace('letter-', '');
-            const active = document.querySelector('.alpha-link[href="#letter-' + id + '"]');
+            const active = document.querySelector('.lh-alpha-link[href="#letter-' + id + '"]');
             if (active) active.classList.add('active');
           }
         });
@@ -2146,12 +2505,5 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <p class="toggle-link" id="authToggle">Don't have an account? <a onclick="toggleAuthMode()">Register</a></p>
   </div>
 </div>
-<script>
-var AUTH_MODE='login';
-function openAuthModal(){document.getElementById('authOverlay').classList.add('open');document.body.style.overflow='hidden'}
-function closeAuthModal(){document.getElementById('authOverlay').classList.remove('open');document.body.style.overflow=''}
-function toggleAuthMode(){AUTH_MODE=AUTH_MODE==='login'?'register':'login';var t=document.getElementById('authTitle'),s=document.getElementById('authSub'),b=document.getElementById('authSubmit'),n=document.getElementById('nameField'),tg=document.getElementById('authToggle');if(AUTH_MODE==='register'){t.textContent='Create account';s.textContent='Join VigyanLLM — free for Indian academic institutions';b.textContent='Create account';n.style.display='block';tg.innerHTML="Already have an account? <a onclick=\"toggleAuthMode()\">Sign in</a>"}else{t.textContent='Sign in';s.textContent='Access your VigyanLLM account';b.textContent='Sign in';n.style.display='none';tg.innerHTML="Don't have an account? <a onclick=\"toggleAuthMode()\">Register</a>"}document.getElementById('authError').style.display='none'}
-async function handleAuth(e){e.preventDefault();var err=document.getElementById('authError');err.style.display='none';var email=document.getElementById('authEmail').value;var pass=document.getElementById('authPass').value;if(pass.length<8){err.textContent='Password must be at least 8 characters';err.style.display='block';return false}try{var api=window.VIGYAN_BACKEND_URL||'';var ep=AUTH_MODE==='login'?'/api/auth/login':'/api/auth/register';var body={email:email,password:pass};if(AUTH_MODE==='register'){body.name=document.getElementById('authName').value||'User'}var r=await fetch(api+ep,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});var d=await r.json();if(!r.ok){err.textContent=d.error||'Authentication failed';err.style.display='block';return false}closeAuthModal();window.location.reload()}catch(a){err.textContent='Network error. Please try again.';err.style.display='block'}return false}
-</script>
 </body>
 </html>
