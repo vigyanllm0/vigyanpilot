@@ -1050,7 +1050,7 @@ footer{background:var(--black);color:rgba(255,255,255,.8);padding:56px 0 24px}
 }
 .lh-search-wrap input {
   width: 100%;
-  padding: 14px 18px 14px 48px;
+  padding: 14px 18px;
   border: 2px solid var(--outline);
   border-radius: 12px;
   font-family: var(--font-b);
@@ -1067,52 +1067,12 @@ footer{background:var(--black);color:rgba(255,255,255,.8);padding:56px 0 24px}
 .lh-search-wrap input::placeholder {
   color: var(--muted);
 }
-.lh-search-icon {
-  position: absolute;
-  left: 16px;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 18px;
-  color: var(--muted);
-  pointer-events: none;
-}
 .lh-search-count {
   text-align: center;
   font-size: 13px;
   color: var(--muted);
   margin-top: 8px;
   min-height: 20px;
-}
-
-/* Alpha Nav */
-.lh-alpha-nav {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 4px;
-  margin-bottom: 32px;
-  padding: 0 4px;
-}
-.lh-alpha-link {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 34px;
-  height: 34px;
-  border-radius: 8px;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text2);
-  text-decoration: none;
-  transition: all .15s;
-}
-.lh-alpha-link:hover {
-  background: var(--blue-bg);
-  color: var(--blue);
-}
-.lh-alpha-link.active {
-  background: var(--blue);
-  color: #fff;
 }
 
 /* View Toggle */
@@ -1353,11 +1313,6 @@ footer{background:var(--black);color:rgba(255,255,255,.8);padding:56px 0 24px}
   .lh-term-list {
     grid-template-columns: 1fr;
   }
-  .lh-alpha-link {
-    width: 30px;
-    height: 30px;
-    font-size: 12px;
-  }
   .lh-tools-grid {
     grid-template-columns: 1fr;
   }
@@ -1366,6 +1321,8 @@ footer{background:var(--black);color:rgba(255,255,255,.8);padding:56px 0 24px}
     font-size: 12px;
   }
 }
+
+@media(max-width:768px){.nav-links{display:none}.nav-inner{padding:0 16px}.hamburger{display:flex}}
 </style>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1573,34 +1530,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <h1>Learning Hub</h1>
       <p>A comprehensive reference of <span class="lh-stat">140+</span> biology and bioinformatics terms organized by topic. Browse by category, search any term, and connect directly to VigyanLLM tools.</p>
       <div class="lh-search-wrap">
-        <span class="lh-search-icon" aria-hidden="true">&#128269;</span>
         <input type="search" id="searchInput" placeholder="Search terms, definitions, categories..." aria-label="Search glossary terms">
       </div>
       <div class="lh-search-count" id="searchCount" aria-live="polite"></div>
     </header>
 
-    <nav class="lh-alpha-nav" aria-label="Alphabetical navigation">
-    <a href="#letter-A" class="lh-alpha-link">A</a>
-    <a href="#letter-B" class="lh-alpha-link">B</a>
-    <a href="#letter-C" class="lh-alpha-link">C</a>
-    <a href="#letter-D" class="lh-alpha-link">D</a>
-    <a href="#letter-E" class="lh-alpha-link">E</a>
-    <a href="#letter-F" class="lh-alpha-link">F</a>
-    <a href="#letter-G" class="lh-alpha-link">G</a>
-    <a href="#letter-H" class="lh-alpha-link">H</a>
-    <a href="#letter-I" class="lh-alpha-link">I</a>
-    <a href="#letter-L" class="lh-alpha-link">L</a>
-    <a href="#letter-M" class="lh-alpha-link">M</a>
-    <a href="#letter-N" class="lh-alpha-link">N</a>
-    <a href="#letter-O" class="lh-alpha-link">O</a>
-    <a href="#letter-P" class="lh-alpha-link">P</a>
-    <a href="#letter-Q" class="lh-alpha-link">Q</a>
-    <a href="#letter-R" class="lh-alpha-link">R</a>
-    <a href="#letter-S" class="lh-alpha-link">S</a>
-    <a href="#letter-T" class="lh-alpha-link">T</a>
-    <a href="#letter-V" class="lh-alpha-link">V</a>
-    <a href="#letter-W" class="lh-alpha-link">W</a>
-    </nav>
+
 
     <div class="lh-view-controls">
       <div class="lh-view-toggle">
@@ -2463,22 +2398,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       });
     });
 
-    // ── Active letter highlight on scroll ──
-    const alphaLinks = document.querySelectorAll('.lh-alpha-link');
-    const letterSections = document.querySelectorAll('.lh-letter-section');
-    if (letterSections.length > 0) {
-      const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            alphaLinks.forEach(l => l.classList.remove('active'));
-            const id = entry.target.id.replace('letter-', '');
-            const active = document.querySelector('.lh-alpha-link[href="#letter-' + id + '"]');
-            if (active) active.classList.add('active');
-          }
-        });
-      }, { rootMargin: '-80px 0px -70% 0px' });
-      letterSections.forEach(s => observer.observe(s));
-    }
+
   </script>
 <!-- Auth Modal -->
 <div class="auth-overlay" id="authOverlay" onclick="if(event.target===this)closeAuthModal()">
