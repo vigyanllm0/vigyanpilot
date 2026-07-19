@@ -293,22 +293,22 @@ footer{background:var(--black);color:rgba(255,255,255,.8);padding:56px 0 24px}
   </div>
 
   <h2>Problem</h2>
-  <p>Manual primer design for PCR and qPCR assays is a time-consuming process. A typical researcher spends 30&ndash;60 minutes per target sequence: checking Tm with nearest-neighbour thermodynamics, verifying BLAST specificity, screening for SNPs and repeat elements, and cross-validating secondary structures. For multiplex panels with 10+ targets, this becomes a multi-day bottleneck.</p>
+  <p>Manual <a href="/glossary/primer-design">primer design</a> for <a href="/glossary/pcr">PCR</a> and <a href="/glossary/qpcr">qPCR</a> assays is a time-consuming process. A typical researcher spends 30&ndash;60 minutes per target sequence: checking Tm with nearest-neighbour thermodynamics, verifying <a href="/glossary/blast-specificity">BLAST specificity</a>, screening for SNPs and repeat elements, and cross-validating secondary structures. For multiplex panels with 10+ targets, this becomes a multi-day bottleneck.</p>
 
-  <p>VigyanLLM's VPrime 1.0 was designed to automate this entire pipeline. This case study reports the results of an internal validation benchmark comparing VPrime 1.0 against manual primer design workflows on a representative genomic target.</p>
+  <p>VigyanLLM's VPrime 1.0 was designed to automate this entire pipeline. This case study reports the results of an internal validation benchmark comparing VPrime 1.0 against manual <a href="/glossary/primer">primer</a> design workflows on a representative genomic target.</p>
 
   <h2>Method</h2>
-  <p>We selected a 4,214 bp region of the human <em>TP53</em> gene (exons 5&ndash;8, a common hotspot for cancer mutation screening) as our test sequence. The goal was to design a set of overlapping PCR primers for Sanger sequencing covering the entire region, with the following constraints:</p>
+  <p>We selected a 4,214 bp region of the human <em>TP53</em> <a href="/glossary/gene">gene</a> (exons 5&ndash;8, a common hotspot for cancer <a href="/glossary/mutation">mutation</a> screening) as our test sequence. The goal was to design a set of overlapping PCR primers for Sanger sequencing covering the entire region, with the following constraints:</p>
   <ul>
-    <li><strong>Amplicon size:</strong> 400&ndash;600 bp</li>
-    <li><strong>Primer Tm:</strong> 58&ndash;62&deg;C (SantaLucia 1998 parameters)</li>
-    <li><strong>GC content:</strong> 40&ndash;60%</li>
+    <li><strong><a href="/glossary/amplicon-size">Amplicon size</a>:</strong> 400&ndash;600 bp</li>
+    <li><strong>Primer Tm:</strong> 58&ndash;62&deg;C (<a href="/glossary/santalucia-1998">SantaLucia 1998</a> parameters)</li>
+    <li><strong><a href="/glossary/gc-content">GC content</a>:</strong> 40&ndash;60%</li>
     <li><strong>3&prime; stability:</strong> Delta-G &ge; &minus;8.5 kcal/mol</li>
     <li><strong>BLAST specificity:</strong> E-value &le; 0.01, unique alignment to target locus</li>
-    <li><strong>No known dbSNP variants</strong> within primer binding regions</li>
+    <li><strong>No known <a href="/glossary/dbsnp">dbSNP</a> variants</strong> within primer binding regions</li>
   </ul>
 
-  <p>VPrime 1.0 was deployed on a single Docker container (4 vCPU, 16 GB RAM, no GPU) running on an Ubuntu 22.04 host. The same target sequence was designed manually by an experienced molecular biologist using Primer3 web interface, NCBI Primer-BLAST, and IDT OligoAnalyzer.</p>
+  <p>VPrime 1.0 was deployed on a single Docker container (4 vCPU, 16 GB RAM, no GPU) running on an Ubuntu 22.04 host. The same target sequence was designed manually by an experienced molecular biologist using <a href="/glossary/primer3">Primer3</a> web interface, <a href="/glossary/ncbi">NCBI</a> Primer-BLAST, and IDT OligoAnalyzer.</p>
 
   <h2>Results</h2>
 
@@ -316,13 +316,13 @@ footer{background:var(--black);color:rgba(255,255,255,.8);padding:56px 0 24px}
     <tr><th>Metric</th><th>VPrime 1.0</th><th>Manual Workflow</th><th>Improvement</th></tr>
     <tr><td>Total Design Time</td><td>12 seconds</td><td>47 minutes</td><td>80% faster</td></tr>
     <tr><td>Candidate Pairs Generated</td><td>24</td><td>8</td><td>3&times; more</td></tr>
-    <tr><td>BLAST Specificity Pass</td><td>24/24 (100%)</td><td>8/8 (100%)</td><td>&mdash;</td></tr>
+    <tr><td>BLAST <a href="/glossary/diagnostic-specificity">Specificity</a> Pass</td><td>24/24 (100%)</td><td>8/8 (100%)</td><td>&mdash;</td></tr>
     <tr><td>Cross-Dimer Failures</td><td>0</td><td>2 pairs rejected</td><td>100% elimination</td></tr>
     <tr><td>SNP/Repeat Flagged</td><td>3 variants flagged</td><td>1 variant missed</td><td>3&times; detection</td></tr>
     <tr><td>Recommended Pairs</td><td>3 (overlapping)</td><td>4 (non-overlapping)</td><td>Better coverage</td></tr>
   </table>
 
-  <p>The three recommended primer pairs from VPrime 1.0 achieved complete coverage of the 4.2 kb TP53 hotspot region with 80&ndash;120 bp overlaps between adjacent amplicons. All three pairs passed secondary structure validation (no hairpins with delta-G &lt; &minus;3.0 kcal/mol, no self-dimers or cross-dimers). The final report was generated as a PDF with pass/fail matrix, primer sequences, Tm values, GC%, delta-G, and BLAST alignment summaries.</p>
+  <p>The three recommended <a href="/primer">primer</a> pairs from VPrime 1.0 achieved complete coverage of the 4.2 kb TP53 hotspot region with 80&ndash;120 bp overlaps between adjacent amplicons. All three pairs passed <a href="/glossary/secondary-structure">secondary structure</a> validation (no hairpins with <a href="/glossary/delta-g">delta-G</a> &lt; &minus;3.0 kcal/mol, no self-dimers or cross-dimers). The final report was generated as a PDF with pass/fail matrix, primer sequences, Tm values, GC%, delta-G, and <a href="/glossary/<a href="/blast">blast</a>">BLAST</a> alignment summaries.</p>
 
   <h2>Key Observations</h2>
   <ul>
@@ -340,7 +340,7 @@ footer{background:var(--black);color:rgba(255,255,255,.8);padding:56px 0 24px}
   <h2>Conclusion</h2>
   <p>VigyanLLM VPrime 1.0 reduced primer design time by 80% compared to manual workflows while improving candidate coverage, variant detection, and cross-dimer validation. The fully automated 24-step pipeline produces deterministic, audit-ready results with zero external API calls and no data leaving the local deployment.</p>
 
-  <p>These results confirm that on-premises autonomous primer design is not only feasible but practically superior to both manual design and cloud-dependent alternatives for institutional genomics workflows.</p>
+  <p>These results confirm that on-premises autonomous primer design is not only feasible but practically superior to both manual design and cloud-dependent alternatives for institutional <a href="/glossary/genomics">genomics</a> workflows.</p>
 
   <div class="cta-box">
     <h3>Try VPrime 2.0 on Your Infrastructure</h3>

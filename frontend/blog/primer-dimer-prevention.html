@@ -331,16 +331,16 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div itemscope itemtype="https://schema.org/Question" style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:12px;padding:24px;margin:24px 0 32px">
         <p style="font-weight:700;font-size:15px;margin-bottom:8px" itemprop="name">What is primer-dimer and how do you prevent it in PCR?</p>
         <div itemprop="acceptedAnswer" itemscope itemtype="https://schema.org/Answer">
-          <p itemprop="text" style="color:#475569;font-size:14px">Primer-dimer is a byproduct of PCR where primers anneal to each other and get extended by DNA polymerase, producing short double-stranded DNA fragments. Prevention requires careful primer design (avoid 3′ complementarity), hot-start polymerases, optimal primer concentrations, and proper annealing temperatures.</p>
+          <p itemprop="text" style="color:#475569;font-size:14px">Primer-dimer is a byproduct of PCR where primers anneal to each other and get extended by <a href="/glossary/dna-polymerase">DNA polymerase</a>, producing short double-stranded DNA fragments. Prevention requires careful <a href="/glossary/primer-design">primer design</a> (avoid 3′ complementarity), hot-start polymerases, optimal <a href="/glossary/primer">primer</a> concentrations, and proper annealing temperatures.</p>
         </div>
       </div>
 <h2>What Is a Primer Dimer?</h2>
-      <p>A <strong>primer dimer</strong> is an artifactual PCR product formed when two primer molecules anneal to each other instead of to the target template. If the 3' ends of the primers are complementary, DNA polymerase can extend the dimer, creating a short double-stranded product (typically 30-100 bp) that competes with the intended amplification.</p>
+      <p>A <strong><a href="/glossary/primer-dimer">primer dimer</a></strong> is an artifactual PCR product formed when two <a href="/primer">primer</a> molecules anneal to each other instead of to the target template. If the 3' ends of the primers are complementary, DNA polymerase can extend the dimer, creating a short double-stranded product (typically 30-100 bp) that competes with the intended amplification.</p>
       <p>Primer dimers are problematic because they:</p>
       <ul>
         <li>Deplete primers and dNTPs from the reaction</li>
         <li>Produce false bands on gels that can be mistaken for real products</li>
-        <li>Cause high background fluorescence in SYBR Green qPCR</li>
+        <li>Cause high background fluorescence in SYBR Green <a href="/glossary/qpcr">qPCR</a></li>
         <li>Reduce amplification efficiency of the true target</li>
         <li>Can cause false-positive results in endpoint detection assays</li>
       </ul>
@@ -354,7 +354,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <p>The most problematic dimers form when the <strong>3' terminal 3-4 nucleotides</strong> are complementary. This allows polymerase to extend from the 3' end, creating a product that is amplified in subsequent cycles just like the true target.</p>
 
       <h2>Thermodynamic Thresholds for Dimer Detection</h2>
-      <p>Primer dimer stability is measured by the Gibbs free energy (delta-G) of the primer-primer interaction:</p>
+      <p>Primer dimer stability is measured by the Gibbs free energy (<a href="/glossary/delta-g">delta-G</a>) of the primer-primer interaction:</p>
       <table>
         <tr><th>delta-G Value</th><th>Risk Level</th><th>Expected PCR Outcome</th></tr>
         <tr><td>&gt; -5.0 kcal/mol</td><td>Low risk</td><td>Clean amplification, no visible dimer</td></tr>
@@ -372,17 +372,17 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <li>Avoid 3-base complementarity at the 3' terminal position</li>
         <li>Total 3' complementarity should not exceed 4 bases across the last 6 nucleotides</li>
       </ul>
-      <p>VigyanLLM's secondary structure analysis (Step 13) checks all possible dimer formations and flags primers with risky 3' complementarity.</p>
+      <p>VigyanLLM's <a href="/glossary/secondary-structure">secondary structure</a> analysis (Step 13) checks all possible dimer formations and flags primers with risky 3' complementarity.</p>
 
       <h3>Strategy 2: Use Hot-Start Polymerase</h3>
       <p>Hot-start polymerases are inactive at room temperature and only activate at the initial denaturation step (94-98°C). This prevents primer dimer formation during reaction setup and the initial heating phase when primers can anneal at suboptimal temperatures.</p>
       <p>Recommended hot-start enzymes: Taq Platinum, AccuStart, KAPA HiFi HotStart.</p>
 
       <h3>Strategy 3: Optimize Annealing Temperature</h3>
-      <p>Primer dimers typically have lower Tm than specific products because they are shorter and may have mismatches. Raising the annealing temperature can suppress dimer formation while preserving specific amplification:</p>
+      <p>Primer dimers typically have lower Tm than specific products because they are shorter and may have mismatches. Raising the <a href="/glossary/annealing-temperature">annealing temperature</a> can suppress dimer formation while preserving specific amplification:</p>
       <ul>
         <li>Run a temperature gradient (55-65°C) to find the highest Ta that still gives efficient amplification</li>
-        <li>Use touchdown PCR: start with a high annealing temperature (65°C) and decrease by 0.5°C per cycle to 55°C</li>
+        <li>Use <a href="/glossary/touchdown-pcr">touchdown PCR</a>: start with a high annealing temperature (65°C) and decrease by 0.5°C per cycle to 55°C</li>
       </ul>
 
       <h3>Strategy 4: Use Primer Design Software with Dimer Checking</h3>
@@ -398,14 +398,14 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <p>If dimers persist despite optimization:</p>
       <ul>
         <li>Shift primer position by 5-10 bp upstream or downstream</li>
-        <li>Change the terminal 3' nucleotide (G/C to A/T or vice versa)</li>
+        <li>Change the terminal 3' <a href="/glossary/nucleotide">nucleotide</a> (G/C to A/T or vice versa)</li>
         <li>Add a deliberate mismatch at the 3' end (only for one primer of the pair)</li>
-        <li>Use modified bases (LNA, PNA) at the 3' end to increase specificity</li>
+        <li>Use modified bases (LNA, PNA) at the 3' end to increase <a href="/glossary/diagnostic-specificity">specificity</a></li>
       </ul>
 
       <h2>How to Detect Primer Dimers</h2>
       <ul>
-        <li><strong>Gel electrophoresis:</strong> Look for a band at ~30-100 bp (below the specific product)</li>
+        <li><strong><a href="/glossary/gel-electrophoresis">Gel electrophoresis</a>:</strong> Look for a band at ~30-100 bp (below the specific product)</li>
         <li><strong>qPCR melt curve:</strong> A second peak at lower temperature (typically 70-75°C for dimers vs 80-85°C for specific products)</li>
         <li><strong>Sequencing:</strong> Mixed peaks or clean short sequence (the dimer sequence itself)</li>
         <li><strong>Capillary electrophoresis:</strong> Extra peak at low molecular weight</li>
@@ -413,7 +413,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
       <div class="callout">
         <div class="callout-title">VigyanLLM Dimer Prevention</div>
-        <p>VigyanLLM checks self-dimer, cross-dimer, and hairpin formation for every primer pair using the SantaLucia nearest-neighbor model at your specified annealing temperature. It flags any interaction with delta-G &lt; -5.0 kcal/mol or 3' end complementarity, letting you fix dimer problems before ordering primers.</p>
+        <p>VigyanLLM checks self-dimer, cross-dimer, and <a href="/glossary/hairpin">hairpin</a> formation for every primer pair using the SantaLucia <a href="/glossary/nearest-neighbor-model">nearest-neighbor model</a> at your specified annealing temperature. It flags any interaction with delta-G &lt; -5.0 kcal/mol or 3' end complementarity, letting you fix dimer problems before ordering primers.</p>
       </div>
 
       <div class="cta-box">

@@ -308,27 +308,27 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <article class="article-body">
       
       <div itemscope itemtype="https://schema.org/Question" style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:12px;padding:24px;margin:24px 0 32px">
-        <p style="font-weight:700;font-size:15px;margin-bottom:8px" itemprop="name">How do you design PCR primers for single-cell RNA-seq validation experiments?</p>
+        <p style="font-weight:700;font-size:15px;margin-bottom:8px" itemprop="name">How do you design PCR primers for <a href="/glossary/single-cell-rna-seq">single-cell RNA-seq</a> validation experiments?</p>
         <div itemprop="acceptedAnswer" itemscope itemtype="https://schema.org/Answer">
-          <p itemprop="text" style="color:#475569;font-size:14px">Single-cell RNA-seq validation requires primers for low-abundance transcripts with high specificity. Primers must target exon-exon junctions, produce short amplicons (80–150 bp) for efficient amplification from picogram-level cDNA, and achieve single-cell sensitivity without non-specific background.</p>
+          <p itemprop="text" style="color:#475569;font-size:14px">Single-cell <a href="/glossary/rna-seq">RNA-seq</a> validation requires primers for low-abundance transcripts with high <a href="/glossary/diagnostic-specificity">specificity</a>. Primers must target exon-exon junctions, produce short amplicons (80–150 bp) for efficient amplification from picogram-level cDNA, and achieve single-cell <a href="/glossary/diagnostic-sensitivity">sensitivity</a> without non-specific background.</p>
         </div>
       </div>
 <h2>The Role of PCR in Single-Cell RNA Sequencing</h2>
-      <p>Single-cell RNA sequencing (scRNA-seq) begins with isolating individual cells, lysing them, and converting their RNA to cDNA. Because a single cell contains only ~10-50 pg of total RNA, the cDNA must be amplified by PCR before library construction. Every major scRNA-seq platform — 10x Genomics Chromium, Smart-seq2, Drop-seq, CEL-seq2 — relies on PCR at multiple stages:</p>
+      <p>Single-cell RNA sequencing (scRNA-seq) begins with isolating individual cells, lysing them, and converting their RNA to cDNA. Because a single <a href="/glossary/cell">cell</a> contains only ~10-50 pg of total RNA, the cDNA must be amplified by PCR before library construction. Every major scRNA-seq platform — 10x <a href="/glossary/genomics">Genomics</a> Chromium, Smart-seq2, Drop-seq, CEL-seq2 — relies on PCR at multiple stages:</p>
       <ul>
-        <li><strong>Reverse transcription:</strong> Template-switching oligos capture full-length transcripts</li>
+        <li><strong>Reverse <a href="/glossary/transcription">transcription</a>:</strong> Template-switching oligos capture full-length transcripts</li>
         <li><strong>cDNA amplification:</strong> 12-18 cycles of PCR amplify the barcoded cDNA</li>
         <li><strong>Library indexing:</strong> A second PCR adds sequencing adapters and sample indices</li>
         <li><strong>Targeted validation:</strong> qPCR or endpoint PCR confirms cell-type-specific markers</li>
       </ul>
 
       <h2>Primer Design Challenges Unique to Single-Cell Workflows</h2>
-      <p>Primer design for scRNA-seq presents challenges not encountered in bulk RNA sequencing:</p>
+      <p><a href="/glossary/primer-design">Primer design</a> for scRNA-seq presents challenges not encountered in bulk RNA sequencing:</p>
       <ul>
         <li><strong>Template-switching oligo design:</strong> The TSO must have high affinity for the 5' cap structure while minimizing self-priming artifacts that produce concatemers.</li>
         <li><strong>UMI-containing primers:</strong> Unique molecular identifiers (UMIs) are built into primers. The primer sequence upstream of the UMI must not form secondary structures that interfere with UMI readout.</li>
         <li><strong>Multiplex compatibility:</strong> scRNA-seq libraries from 96-384 samples are pooled. Index primers must be carefully designed to avoid cross-talk.</li>
-        <li><strong>GC bias amplification:</strong> High GC content in 5' UTRs can cause preferential amplification of certain transcripts. Primer Tm must account for this.</li>
+        <li><strong>GC bias amplification:</strong> High <a href="/glossary/gc-content">GC content</a> in 5' UTRs can cause preferential amplification of certain transcripts. Primer Tm must account for this.</li>
       </ul>
 
       <h2>Validating scRNA-seq Results with Targeted PCR</h2>
@@ -339,7 +339,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <tr><td>Isoform-specific validation</td><td>Exon-junction spanning, unique isoform region</td><td>100-250 bp</td></tr>
         <tr><td>Single-cell CNV validation</td><td>Intron-spanning for gDNA specificity</td><td>90-200 bp</td></tr>
       </table>
-      <p>When designing primers to validate scRNA-seq findings, use the same reference transcriptome annotation (GENCODE/Ensembl) that was used for the scRNA-seq alignment. Mismatched annotations are a common source of validation failure.</p>
+      <p>When designing primers to validate scRNA-seq findings, use the same reference <a href="/glossary/transcriptome">transcriptome</a> annotation (GENCODE/<a href="/glossary/ensembl">Ensembl</a>) that was used for the scRNA-seq alignment. Mismatched annotations are a common source of validation failure.</p>
 
       <h2>PCR Cycle Optimization for Single-Cell cDNA</h2>
       <p>The number of PCR cycles in scRNA-seq library preparation is a critical parameter. Too few cycles yields insufficient material for sequencing; too many cycles introduces PCR duplicates and biases representation:</p>
@@ -350,7 +350,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       </ul>
 
       <h2>Choosing Reference Genes for Single-Cell qPCR</h2>
-      <p>Reference gene stability in single-cell qPCR is different from bulk experiments. Commonly used bulk reference genes (GAPDH, ACTB, B2M) show high cell-to-cell variability in single-cell data. Better choices for scRNA-seq validation include:</p>
+      <p>Reference <a href="/glossary/gene">gene</a> stability in single-cell <a href="/glossary/qpcr">qPCR</a> is different from bulk experiments. Commonly used bulk reference genes (GAPDH, ACTB, B2M) show high cell-to-cell variability in single-cell data. Better choices for scRNA-seq validation include:</p>
       <ul>
         <li><strong>RPLP0, RPS18:</strong> Ribosomal proteins with low dropout rates</li>
         <li><strong>SDHA, TBP:</strong> Stable across cell types in single-cell data</li>
@@ -358,7 +358,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       </ul>
 
       <h2>Future Directions: CRISPR Screening at Single-Cell Resolution</h2>
-      <p>Combining CRISPR perturbations with scRNA-seq readout (Perturb-seq, CROP-seq) requires designing guide RNA expression cassettes with primer binding sites for single-cell capture. Each gRNA must contain a common primer binding site for PCR amplification during library preparation while maintaining a unique guide sequence. Primer design for these pooled screening libraries is an active area of optimization.</p>
+      <p>Combining <a href="/glossary/crispr">CRISPR</a> perturbations with scRNA-seq readout (Perturb-seq, CROP-seq) requires designing guide RNA expression cassettes with <a href="/glossary/primer">primer</a> binding sites for single-cell capture. Each gRNA must contain a common <a href="/primer">primer</a> binding site for PCR amplification during library preparation while maintaining a unique guide sequence. Primer design for these pooled screening libraries is an active area of optimization.</p>
 
       <div class="callout">
         <div class="callout-title">Validate scRNA-seq Findings</div>

@@ -321,21 +321,21 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <article class="article-body">
       
       <div itemscope itemtype="https://schema.org/Question" style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:12px;padding:24px;margin:24px 0 32px">
-        <p style="font-weight:700;font-size:15px;margin-bottom:8px" itemprop="name">How does machine learning improve PCR primer design compared to traditional methods?</p>
+        <p style="font-weight:700;font-size:15px;margin-bottom:8px" itemprop="name">How does <a href="/glossary/machine-learning">machine learning</a> improve PCR <a href="/glossary/primer-design">primer design</a> compared to traditional methods?</p>
         <div itemprop="acceptedAnswer" itemscope itemtype="https://schema.org/Answer">
-          <p itemprop="text" style="color:#475569;font-size:14px">Machine learning models trained on experimental PCR data predict amplification success, melting temperature accuracy, and off-target binding more reliably than rule-based algorithms alone. ML-enhanced primer design achieves 85–92% first-pass success rates.</p>
+          <p itemprop="text" style="color:#475569;font-size:14px">Machine learning models trained on experimental PCR data predict amplification success, <a href="/glossary/melting-temperature">melting temperature</a> accuracy, and off-target binding more reliably than rule-based algorithms alone. ML-enhanced <a href="/glossary/primer">primer</a> design achieves 85–92% first-pass success rates.</p>
         </div>
       </div>
 <h2>The Limits of Rule-Based Primer Design</h2>
-      <p>Traditional primer design tools rely on heuristic rules: Tm between 52-65°C, GC content 40-60%, no 3' complementarity, amplicon size 70-200 bp. These rules work well for straightforward templates but fail in challenging cases — AT-rich genomes, GC-rich regions, repetitive DNA, and multiplex assays where dozens of primers must work together.</p>
+      <p>Traditional <a href="/primer">primer</a> design tools rely on heuristic rules: Tm between 52-65°C, <a href="/glossary/gc-content">GC content</a> 40-60%, no 3' complementarity, <a href="/glossary/amplicon-size">amplicon size</a> 70-200 bp. These rules work well for straightforward templates but fail in challenging cases — AT-rich genomes, GC-rich regions, repetitive DNA, and multiplex assays where dozens of primers must work together.</p>
       <p>The fundamental problem is that these rules are <strong>binary thresholds</strong> derived from general observations. A primer with Tm 51.5°C is flagged as failed, while one at 52.0°C passes. Biology is not that clean. Machine learning models learn the <strong>continuous relationships</strong> between primer features and actual PCR outcomes.</p>
 
       <h2>How ML Models Predict Primer Success</h2>
-      <p>Machine learning models for primer design are trained on datasets of thousands of primer pairs with known experimental outcomes (success/fail, efficiency, specificity). Features used include:</p>
+      <p>Machine learning models for primer design are trained on datasets of thousands of primer pairs with known experimental outcomes (success/fail, efficiency, <a href="/glossary/diagnostic-specificity">specificity</a>). Features used include:</p>
       <ul>
-        <li><strong>Thermodynamic features:</strong> Tm (nearest-neighbor), delta-G for dimers and hairpins, delta-G for primer-template interactions</li>
-        <li><strong>Sequence features:</strong> GC content, length, mononucleotide runs, GC clamp, 3' end stability</li>
-        <li><strong>Structural features:</strong> Secondary structure of amplicon, primer accessibility, template GC distribution</li>
+        <li><strong>Thermodynamic features:</strong> Tm (nearest-neighbor), <a href="/glossary/delta-g">delta-G</a> for dimers and hairpins, delta-G for primer-template interactions</li>
+        <li><strong>Sequence features:</strong> GC content, length, mononucleotide runs, <a href="/glossary/gc-clamp">GC clamp</a>, 3' end stability</li>
+        <li><strong>Structural features:</strong> <a href="/glossary/secondary-structure">Secondary structure</a> of <a href="/glossary/amplicon">amplicon</a>, primer accessibility, template GC distribution</li>
         <li><strong>Context features:</strong> Genomic location, proximity to repeats, CpG islands, GC skew</li>
       </ul>
       <p>Common ML architectures used include random forests, gradient-boosted trees (XGBoost, LightGBM), and deep neural networks. Gradient-boosted trees often perform best for tabular primer features, while CNNs can learn directly from one-hot encoded sequence data.</p>
@@ -350,11 +350,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       </table>
 
       <h2>Deep Learning for Primer Design</h2>
-      <p>Recent advances in deep learning have produced models that design primers <strong>end-to-end</strong> rather than scoring candidates. A convolutional neural network trained on primer-template binding data can predict the full PCR efficiency curve for a candidate pair, not just a binary pass/fail.</p>
+      <p>Recent advances in <a href="/glossary/deep-learning">deep learning</a> have produced models that design primers <strong>end-to-end</strong> rather than scoring candidates. A convolutional neural network trained on primer-template binding data can predict the full PCR efficiency curve for a candidate pair, not just a binary pass/fail.</p>
       <p>Transformer-based models (similar to those used in NLP) have been applied to primer design by treating primer sequences as a language. These models learn sequence motifs associated with successful amplification without being explicitly programmed with thermodynamic rules.</p>
 
       <h2>AI in Multiplex Primer Design</h2>
-      <p>Multiplex PCR — where 5-50 primer pairs amplify multiple targets simultaneously — is where AI provides the most dramatic improvement. The combinatorial complexity of checking every pairwise interaction makes brute-force approaches impractical beyond 10-plex. ML models learn which primer combinations work together and can score a complete multiplex panel in seconds rather than days.</p>
+      <p><a href="/glossary/multiplex-pcr">Multiplex PCR</a> — where 5-50 primer pairs amplify multiple targets simultaneously — is where AI provides the most dramatic improvement. The combinatorial complexity of checking every pairwise interaction makes brute-force approaches impractical beyond 10-plex. ML models learn which primer combinations work together and can score a complete multiplex panel in seconds rather than days.</p>
 
       <h2>How VigyanLLM Uses AI</h2>
       <p>VigyanLLM Primer incorporates an ML-driven scoring model trained on over 50,000 validated primer pairs from published studies and <a href="/blog/vprime-internal-validation">internal validation data</a>. The model considers 47 features per primer pair and outputs a <strong>success probability score</strong> alongside the traditional pass/fail flags. This lets researchers prioritize primer pairs most likely to work on the first attempt.</p>

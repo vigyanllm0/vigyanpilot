@@ -332,11 +332,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div itemscope itemtype="https://schema.org/Question" style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:12px;padding:24px;margin:24px 0 32px">
         <p style="font-weight:700;font-size:15px;margin-bottom:8px" itemprop="name">What are the 7 essential parameters every researcher should check when designing PCR primers?</p>
         <div itemprop="acceptedAnswer" itemscope itemtype="https://schema.org/Answer">
-          <p itemprop="text" style="color:#475569;font-size:14px">The 7 critical parameters are: (1) primer length (18–25 nt), (2) GC content (40–60%), (3) melting temperature Tm (57–63°C with ±1.5°C between pairs), (4) GC clamp at 3′ end, (5) secondary structure avoidance, (6) BLAST specificity, and (7) repeat masking. All seven should be validated before ordering.</p>
+          <p itemprop="text" style="color:#475569;font-size:14px">The 7 critical parameters are: (1) <a href="/glossary/primer">primer</a> length (18–25 nt), (2) <a href="/glossary/gc-content">GC content</a> (40–60%), (3) <a href="/glossary/melting-temperature">melting temperature</a> Tm (57–63°C with ±1.5°C between pairs), (4) <a href="/glossary/gc-clamp">GC clamp</a> at 3′ end, (5) <a href="/glossary/secondary-structure">secondary structure</a> avoidance, (6) <a href="/glossary/blast-specificity">BLAST specificity</a>, and (7) <a href="/glossary/repeat-masking">repeat masking</a>. All seven should be validated before ordering.</p>
         </div>
       </div>
 <h2>Why Primer Design Rules Matter</h2>
-      <p>PCR is remarkably robust, but its success depends critically on primer quality. A single primer with a 3' mismatch, a self-complementary region, or suboptimal Tm can cause failed amplification, spurious bands, or primer dimer artifacts. Following established primer design rules before ordering oligos saves time, money, and frustration.</p>
+      <p>PCR is remarkably robust, but its success depends critically on <a href="/primer">primer</a> quality. A single primer with a 3' mismatch, a self-complementary region, or suboptimal Tm can cause failed amplification, spurious bands, or <a href="/glossary/primer-dimer">primer dimer</a> artifacts. Following established <a href="/glossary/primer-design">primer design</a> rules before ordering oligos saves time, money, and frustration.</p>
 
       <h2>The 7 Essential PCR Primer Design Parameters</h2>
       <table class="param-table">
@@ -351,14 +351,14 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       </table>
 
       <h2>Parameter 1: Melting Temperature (Tm)</h2>
-      <p>The melting temperature is the temperature at which 50% of the primer-template duplex dissociates. For standard PCR, aim for a Tm between 52°C and 65°C, with the forward and reverse primer Tm within 2-5°C of each other.</p>
+      <p>The melting temperature is the temperature at which 50% of the primer-template duplex dissociates. For standard PCR, aim for a Tm between 52°C and 65°C, with the forward and <a href="/glossary/reverse-primer">reverse primer</a> Tm within 2-5°C of each other.</p>
       <p>The simplest method for estimating Tm is the Wallace formula:</p>
       <p style="text-align:center;padding:16px;background:var(--surface);border-radius:8px;font-family:Courier New,monospace;font-size:16px;color:var(--primary);margin:16px 0"><strong>Tm (°C) = 2(A+T) + 4(G+C)</strong></p>
-      <p>This works for primers 15-20 nt in length. For longer primers (20-35 nt), the formula becomes less accurate. The <strong>SantaLucia nearest-neighbor model</strong> is more accurate, accounting for sequence context and salt concentration. VigyanLLM uses the SantaLucia model for all Tm calculations.</p>
+      <p>This works for primers 15-20 nt in length. For longer primers (20-35 nt), the formula becomes less accurate. The <strong>SantaLucia <a href="/glossary/nearest-neighbor-model">nearest-neighbor model</a></strong> is more accurate, accounting for sequence context and salt concentration. VigyanLLM uses the SantaLucia model for all Tm calculations.</p>
 
       <div class="callout">
         <div class="callout-title">Practical Tip: Tm Matching</div>
-        <p>If your forward and reverse primers have a Tm difference greater than 5°C, you will need to use touch-down PCR or redesign the primer with the lower Tm. The annealing temperature is typically set 3-5°C below the lower Tm.</p>
+        <p>If your forward and reverse primers have a Tm difference greater than 5°C, you will need to use touch-down PCR or redesign the primer with the lower Tm. The <a href="/glossary/annealing-temperature">annealing temperature</a> is typically set 3-5°C below the lower Tm.</p>
       </div>
 
       <h2>Parameter 2: GC Content</h2>
@@ -371,14 +371,14 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       </ul>
 
       <h2>Parameter 3: Amplicon Size</h2>
-      <p>For quantitative PCR (qPCR), amplicons should be 70-150 bp (ideal) or up to 200 bp (acceptable). Shorter amplicons amplify more efficiently and are less affected by template secondary structure. For standard endpoint PCR, 200-1000 bp is typical. For long-range PCR, specialized polymerases can amplify up to 20 kb.</p>
+      <p>For quantitative PCR (<a href="/glossary/qpcr">qPCR</a>), amplicons should be 70-150 bp (ideal) or up to 200 bp (acceptable). Shorter amplicons amplify more efficiently and are less affected by template secondary structure. For standard endpoint PCR, 200-1000 bp is typical. For long-range PCR, specialized polymerases can amplify up to 20 kb.</p>
 
       <h2>Parameter 4: Hairpin Avoidance</h2>
-      <p>A hairpin forms when a primer's 3' end folds back and anneals to an internal complementary region. The stability of this structure is measured by delta-G. If delta-G is below -5.0 kcal/mol, the hairpin is stable enough to reduce effective primer concentration and may prevent the 3' end from binding to the template.</p>
+      <p>A <a href="/glossary/hairpin">hairpin</a> forms when a primer's 3' end folds back and anneals to an internal complementary region. The stability of this structure is measured by <a href="/glossary/delta-g">delta-G</a>. If delta-G is below -5.0 kcal/mol, the hairpin is stable enough to reduce effective primer concentration and may prevent the 3' end from binding to the template.</p>
       <p>VigyanLLM's secondary structure analysis (Step 13 of the validation pipeline) checks all possible hairpin configurations and flags any with delta-G below threshold.</p>
 
       <h2>Parameter 5: Primer Dimer Prevention</h2>
-      <p>Cross-dimers (forward primer binding to reverse primer) and self-dimers are the most common PCR artifact. The critical area is the <strong>3' terminal 3-4 bases</strong>. If the 3' ends are complementary, DNA polymerase will extend the dimer, creating a short product that amplifies exponentially.</p>
+      <p>Cross-dimers (<a href="/glossary/forward-primer">forward primer</a> binding to reverse primer) and self-dimers are the most common PCR artifact. The critical area is the <strong>3' terminal 3-4 bases</strong>. If the 3' ends are complementary, <a href="/glossary/dna-polymerase">DNA polymerase</a> will extend the dimer, creating a short product that amplifies exponentially.</p>
       <ul>
         <li>No more than 2 consecutive complementary bases at the 3' ends</li>
         <li>No 3' terminal complementarity (the last base should not pair)</li>
@@ -386,17 +386,17 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       </ul>
 
       <h2>Parameter 6: Specificity (BLAST Check)</h2>
-      <p>Always BLAST your primers against the target genome (and the organism's genome if working with transgenic or infectious agents). A specific primer should have:</p>
+      <p>Always <a href="/glossary/blast">BLAST</a> your primers against the target <a href="/glossary/genome">genome</a> (and the organism's genome if working with transgenic or infectious agents). A specific primer should have:</p>
       <ul>
         <li>At least 2 mismatches at the 3' end to any off-target sequence</li>
         <li>No off-target amplicon within 1,000 bp (for endpoint PCR) or within 500 bp (for qPCR)</li>
-        <li>Primer-BLAST (NCBI) or VigyanLLM's specificity check verifies this automatically</li>
+        <li>Primer-BLAST (<a href="/glossary/ncbi">NCBI</a>) or VigyanLLM's <a href="/glossary/diagnostic-specificity">specificity</a> check verifies this automatically</li>
       </ul>
 
       <h2>Parameter 7: Repeat Masking</h2>
       <p>Avoid mononucleotide runs (e.g., AAAAA, TTTTT) longer than 4 bases. Repeats cause:</p>
       <ul>
-        <li><strong>Polymerase slippage:</strong> The enzyme stutters on repeats, producing a smear of products</li>
+        <li><strong>Polymerase slippage:</strong> The <a href="/glossary/enzyme">enzyme</a> stutters on repeats, producing a smear of products</li>
         <li><strong>Primer mismatch:</strong> A run of Gs on the primer may bind to a run of Cs on the template, but if the run length differs by even one base, the 3' end may not anneal properly</li>
         <li><strong>Secondary structure:</strong> GC-rich repeats (GGGGG) form G-quadruplexes</li>
       </ul>
@@ -408,7 +408,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <li>Enter target sequence and specify PCR type (standard, qPCR, multiplex)</li>
         <li>Software generates candidate primer pairs filtering by GC content and Tm</li>
         <li>Secondary structure analysis checks for hairpins and dimers</li>
-        <li>BLAST check confirms specificity</li>
+        <li><a href="/blast">BLAST</a> check confirms specificity</li>
         <li>Repeat masking flags any problematic runs</li>
         <li>VigyanLLM generates a comprehensive report with pass/fail for each parameter</li>
       </ol>
@@ -417,7 +417,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
       <div class="callout">
         <div class="callout-title">VigyanLLM Primer 24-step Validation</div>
-        <p>VigyanLLM Primer checks all 7 parameters plus 15 additional quality metrics including amplicon secondary structure, cross-homology analysis, SNP avoidance, and multiplex compatibility — generating a comprehensive validation report for every primer pair.</p>
+        <p>VigyanLLM Primer checks all 7 parameters plus 15 additional quality metrics including <a href="/glossary/amplicon">amplicon</a> secondary structure, cross-homology analysis, SNP avoidance, and multiplex compatibility — generating a comprehensive validation report for every primer pair.</p>
       </div>
 
       <div class="cta-box">
