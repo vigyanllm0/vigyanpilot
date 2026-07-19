@@ -30,85 +30,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="twitter:description" content="Master CRISPR guide RNA design with AI. Learn gRNA scoring, off-target prediction, and delivery methods.">
   <meta name="twitter:image" content="https://vigyanllm.in/poster.png">
 
-  <script type="application/ld+json">{
-  "@context": "https://schema.org",
-  "@type": "BreadcrumbList",
-  "itemListElement": [
-    {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://vigyanllm.in"},
-    {"@type": "ListItem", "position": 2, "name": "Learn", "item": "https://vigyanllm.in/index.html"},
-    {"@type": "ListItem", "position": 3, "name": "AI-Powered CRISPR Analysis", "item": "https://vigyanllm.in/ai-crispr-analysis.html"}
-  ]
-}</script>
-
-  <script type="application/ld+json">{
-  "@context": "https://schema.org",
-  "@type": "Article",
-  "headline": "AI-Powered CRISPR Guide RNA Design and Analysis",
-  "description": "Comprehensive guide to CRISPR guide RNA design using artificial intelligence, covering gRNA scoring, off-target prediction, PAM site analysis, Cas9 variants, and delivery considerations.",
-  "author": {"@type": "Organization", "name": "VigyanLLM", "url": "https://vigyanllm.in"},
-  "publisher": {"@type": "Organization", "name": "VigyanLLM", "logo": {"@type": "ImageObject", "url": "https://vigyanllm.in/logo.svg"}},
-  "datePublished": "2025-01-15",
-  "dateModified": "2025-01-15",
-  "mainEntityOfPage": "https://vigyanllm.in/ai-crispr-analysis.html"
-}</script>
-
-  <script type="application/ld+json">{
-  "@context": "https://schema.org",
-  "@type": "FAQPage",
-  "mainEntity": [
-    {
-      "@type": "Question",
-      "name": "What is guide RNA (gRNA) in CRISPR-Cas9?",
-      "acceptedAnswer": {"@type": "Answer", "text": "Guide RNA (gRNA) is a synthetic RNA molecule that directs the Cas9 nuclease to a specific genomic location by base-pairing with the target DNA sequence. The gRNA consists of a 20-nucleotide spacer sequence complementary to the target and a scaffold region that binds Cas9. Together with a PAM sequence in the target DNA, the gRNA determines the specificity of the CRISPR-Cas9 system."}
-    },
-    {
-      "@type": "Question",
-      "name": "How does AI improve CRISPR gRNA design?",
-      "acceptedAnswer": {"@type": "Answer", "text": "AI improves gRNA design by learning complex, non-linear relationships between gRNA sequence features and editing outcomes from large experimental datasets. Machine learning models trained on thousands of measured gRNA activities can predict on-target efficiency and off-target propensity with significantly higher accuracy than rule-based methods. Deep learning models capture positional nucleotide preferences, epigenetic context effects, and DNA accessibility patterns."}
-    },
-    {
-      "@type": "Question",
-      "name": "What is a PAM sequence and why does it matter?",
-      "acceptedAnswer": {"@type": "Answer", "text": "The Protospacer Adjacent Motif (PAM) is a short DNA sequence (typically NGG for SpCas9) immediately downstream of the target site that is required for Cas9 binding and cleavage. The PAM is not part of the gRNA but must be present in the target DNA. Different Cas9 variants recognize different PAM sequences, which affects which genomic sites can be targeted. PAM availability is often the primary constraint in gRNA design."}
-    },
-    {
-      "@type": "Question",
-      "name": "What scoring algorithms are used for gRNA efficiency prediction?",
-      "acceptedAnswer": {"@type": "Answer", "text": "Major gRNA scoring algorithms include: Rule Set 2 (empirical rules from CRISPOR), DeepCRISPR (deep learning on epigenomic features), CRISPRscan (sequence-based regression), Azimuth (gradient boosting on Doench 2016 data), and CRISPRoff (off-target prediction). These models predict on-target editing efficiency on a 0-1 scale and have been validated across hundreds of thousands of experimentally measured gRNAs."}
-    },
-    {
-      "@type": "Question",
-      "name": "How is off-target prediction performed for CRISPR?",
-      "acceptedAnswer": {"@type": "Answer", "text": "Off-target prediction identifies genomic sites similar to the intended target that might be unintentionally cleaved by Cas9. Methods include: mismatch-based searching (allowing 1-5 mismatches), thermodynamic scoring (CFD score considering mismatch position and type), and machine learning models (CRISPRoff, Elevation) trained on experimentally measured off-target profiles. The CFD (Cutting Frequency Determination) score is the most widely used metric."}
-    },
-    {
-      "@type": "Question",
-      "name": "What Cas9 variants offer different PAM specificities?",
-      "acceptedAnswer": {"@type": "Answer", "text": "Key Cas9 variants include: SpCas9 (NGG PAM, standard), SpCas9-NG (NG PAM, relaxed), xCas9 (broad PAM including GA, GAT), SpRY (near-PAMless, NRN/NYN), SaCas9 (NNGRRT PAM, smaller protein for AAV delivery), and Cas12a/Cpf1 (TTTV PAM, staggered cuts). Each variant enables targeting of different genomic regions and has trade-offs in specificity, activity, and delivery feasibility."}
-    },
-    {
-      "@type": "Question",
-      "name": "What delivery methods are used for CRISPR components?",
-      "acceptedAnswer": {"@type": "Answer", "text": "CRISPR delivery methods include: plasmid DNA (high expression but prolonged exposure), mRNA (transient expression, reduced off-targets), ribonucleoprotein (RNP) complexes of Cas9 protein and gRNA (fastest clearance, minimal off-targets), lipid nanoparticles (LNP) for in vivo delivery, adeno-associated virus (AAV) for long-term in vivo expression, and viral-like particles (VLPs). RNP delivery is preferred for clinical applications due to transient exposure and reduced immunogenicity."}
-    }
-  ]
-}</script>
-
-  <script type="application/ld+json">{
-  "@context": "https://schema.org",
-  "@type": "HowTo",
-  "name": "How to Design and Validate a CRISPR Guide RNA Using AI",
-  "description": "Complete workflow for AI-powered gRNA design from target selection to experimental validation.",
-  "totalTime": "PT10M",
-  "step": [
-    {"@type": "HowToStep", "position": 1, "name": "Define the target region and editing goal", "text": "Identify the genomic coordinates of your target gene or region. Determine whether you need a knockout, knockin, base edit, or transcriptional modulation."},
-    {"@type": "HowToStep", "position": 2, "name": "Identify candidate PAM sites", "text": "Scan the target region for PAM sequences compatible with your Cas9 variant. Extract 20-nt spacer sequences upstream of each PAM site."},
-    {"@type": "HowToStep", "position": 3, "name": "Score on-target efficiency with AI models", "text": "Run candidate gRNAs through multiple AI scoring models (Rule Set 2, DeepCRISPR, Azimuth) to predict editing efficiency."},
-    {"@type": "HowToStep", "position": 4, "name": "Predict off-target sites", "text": "Use CFD scoring and machine learning off-target prediction to identify genomic sites with sequence similarity to each candidate gRNA."},
-    {"@type": "HowToStep", "position": 5, "name": "Select and validate the best gRNA", "text": "Choose the gRNA with the highest on-target score and lowest off-target risk. Validate experimentally with T7E1 assay, Sanger sequencing, or NGS-based editing quantification."}
-  ]
-}</script>
-
   <style>
 
 :root{--blue:#1565C0;--blue-light:#42A5F5;--blue-bg:#E3F2FD;--navy:#0F172A;--black:#0A0A0F;--surface:#FFFFFF;--surface-alt:#F5F7FA;--outline:#E2E5EA;--text:#0A0A0F;--text2:#4A4A6A;--muted:#7A7A9A;--font-h:'Montserrat',sans-serif;--font-b:'Open Sans',sans-serif;--max-w:1200px}
@@ -217,49 +138,12 @@ footer{background:var(--black);color:rgba(255,255,255,.8);padding:56px 0 24px}
 </style>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "SoftwareApplication",
-  "name": "VigyanLLM",
-  "applicationCategory": "BioinformaticsApplication",
-  "operatingSystem": "Linux, Web",
-  "description": "Sovereign biomedical AI platform for primer design, BLAST, MSA, and genomic analysis with zero external API dependency.",
-  "url": "https://vigyanllm.in",
-  "author": {
-    "@type": "Organization",
-    "name": "VigyanLLM Private Limited",
-    "url": "https://vigyanllm.in"
-  },
-  "offers": {
-    "@type": "Offer",
-    "price": "0",
-    "priceCurrency": "INR"
-  }
-}
-</script>
-
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "WebPage",
-  "name": "VigyanLLM",
-  "speakable": {
-    "@type": "SpeakableSpecification",
-    "cssSelector": [
-      "h1",
-      "h2",
-      ".lead",
-      ".section-tag"
-    ]
-  }
-}
-</script>
 <link rel="icon" type="image/svg+xml" href="/logo.svg">
 <link rel="apple-touch-icon" href="/logo.svg">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <script src="https://accounts.google.com/gsi/client" async defer></script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.vigyanllm.in"}, {"@type": "ListItem", "position": 2, "name": "AI-Powered CRISPR Guide RNA Design"}]}</script>
 </head>
 <body><main>
 

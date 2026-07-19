@@ -30,85 +30,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="twitter:description" content="Learn how to ensure PCR primer specificity using BLAST, Bowtie2, E-value thresholds, and coverage depth analysis. Master off-target detection for accurate genotyping and diagnostics.">
   <meta name="twitter:image" content="https://vigyanllm.in/poster.png">
 
-  <script type="application/ld+json">{
-  "@context": "https://schema.org",
-  "@type": "BreadcrumbList",
-  "itemListElement": [
-    {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://vigyanllm.in"},
-    {"@type": "ListItem", "position": 2, "name": "Learn", "item": "https://vigyanllm.in/index.html"},
-    {"@type": "ListItem", "position": 3, "name": "Primer BLAST Specificity", "item": "https://vigyanllm.in/primer-blast-specificity.html"}
-  ]
-}</script>
-
-  <script type="application/ld+json">{
-  "@context": "https://schema.org",
-  "@type": "Article",
-  "headline": "Primer BLAST Specificity: Off-Target Detection Methods",
-  "description": "Learn how to ensure PCR primer specificity using BLAST, Bowtie2, E-value thresholds, and coverage depth analysis for accurate genotyping and diagnostics.",
-  "author": {"@type": "Organization", "name": "VigyanLLM", "url": "https://vigyanllm.in"},
-  "publisher": {"@type": "Organization", "name": "VigyanLLM", "logo": {"@type": "ImageObject", "url": "https://vigyanllm.in/logo.svg"}},
-  "datePublished": "2025-01-15",
-  "dateModified": "2025-01-15",
-  "mainEntityOfPage": "https://vigyanllm.in/primer-blast-specificity.html"
-}</script>
-
-  <script type="application/ld+json">{
-  "@context": "https://schema.org",
-  "@type": "FAQPage",
-  "mainEntity": [
-    {
-      "@type": "Question",
-      "name": "What is primer specificity and why does it matter?",
-      "acceptedAnswer": {"@type": "Answer", "text": "Primer specificity refers to a primer's ability to bind exclusively to its intended target sequence without annealing to other genomic locations. Poor specificity leads to off-target amplification, false-positive results in diagnostics, and unreliable genotyping. Specificity testing is a mandatory step in clinical PCR assay validation."}
-    },
-    {
-      "@type": "Question",
-      "name": "How does BLAST differ from Bowtie2 for primer specificity checking?",
-      "acceptedAnswer": {"@type": "Answer", "text": "BLAST uses a seed-and-extend heuristic that allows gaps and mismatches, making it excellent for finding distant homologs but slower for exact matching. Bowtie2 uses the Burrows-Wheeler Transform for fast exact and near-exact alignment, making it ideal for finding all near-matches in large genomes. For primer specificity, Bowtie2 is generally preferred for speed and comprehensive coverage."}
-    },
-    {
-      "@type": "Question",
-      "name": "What E-value threshold should I use for primer specificity BLAST?",
-      "acceptedAnswer": {"@type": "Answer", "text": "For primer specificity checking, use a very stringent E-value threshold of 1000 or less (not the default 10 for general BLAST). Primers are short sequences, so even perfect matches to large databases can produce E-values in the hundreds. An E-value below 1000 indicates a statistically significant match, while values above this suggest random chance."}
-    },
-    {
-      "@type": "Question",
-      "name": "What is coverage depth in primer specificity analysis?",
-      "acceptedAnswer": {"@type": "Answer", "text": "Coverage depth measures how many reads or alignments map to each genomic position when in silico PCR is performed. High coverage at the target locus confirms the primers amplify their intended target. Unexpected coverage peaks at other loci indicate off-target amplification. A coverage ratio of target:off-target greater than 100:1 is typically required for diagnostic-grade assays."}
-    },
-    {
-      "@type": "Question",
-      "name": "How does VigyanLLM use BLAST and Bowtie2 for specificity checking?",
-      "acceptedAnswer": {"@type": "Answer", "text": "VigyanLLM runs both BLAST (Step 10) and Bowtie2 (Step 11) on each primer pair against the reference genome. BLAST identifies distant homologs with gaps, while Bowtie2 finds all near-exact matches for comprehensive coverage. In Step 12, VigyanLLM computes the in silico amplicon map and flags any off-target products exceeding a configurable size threshold."}
-    },
-    {
-      "@type": "Question",
-      "name": "Can a primer pass thermodynamic checks but fail specificity?",
-      "acceptedAnswer": {"@type": "Answer", "text": "Yes, frequently. A primer can have perfect GC content, optimal Tm, no secondary structure, and no self-dimer potential, yet still amplify unintended targets. This is especially common in gene families with high sequence similarity (e.g., cytochrome P450 genes, HLA loci, olfactory receptor genes). Specificity checking against a genome database is the only way to catch these off-target interactions."}
-    },
-    {
-      "@type": "Question",
-      "name": "What role does dbSNP play in primer specificity analysis?",
-      "acceptedAnswer": {"@type": "Answer", "text": "dbSNP databases contain known single nucleotide polymorphisms that may fall within primer binding sites. If a SNP is present at a high population frequency and disrupts primer binding, the assay will have reduced sensitivity for individuals carrying that allele. VigyanLLM cross-references primer positions against dbSNP to identify and flag such polymorphisms before assay deployment."}
-    }
-  ]
-}</script>
-
-  <script type="application/ld+json">{
-  "@context": "https://schema.org",
-  "@type": "HowTo",
-  "name": "How to Check Primer Specificity Using BLAST and Bowtie2",
-  "description": "Step-by-step workflow for comprehensive primer specificity analysis.",
-  "totalTime": "PT10M",
-  "step": [
-    {"@type": "HowToStep", "position": 1, "name": "Prepare your primer sequences", "text": "Export your forward and reverse primer sequences in FASTA format with appropriate headers."},
-    {"@type": "HowToStep", "position": 2, "name": "Run NCBI Primer-BLAST against the reference genome", "text": "Submit your primers to NCBI Primer-BLAST or local BLAST+ with a stringently low E-value threshold (1000 or less)."},
-    {"@type": "HowToStep", "position": 3, "name": "Run Bowtie2 alignment for comprehensive near-match detection", "text": "Build a Bowtie2 index of the target genome and align both primers with sensitive settings (-N 0 -L 15 for exact seed matching)."},
-    {"@type": "HowToStep", "position": 4, "name": "Analyze off-target hits and compute coverage", "text": "Use samtools to extract alignment positions, compute in silico amplicon coverage, and identify any unexpected amplification products."},
-    {"@type": "HowToStep", "position": 5, "name": "Cross-reference with dbSNP and ClinVar databases", "text": "Check primer binding sites against known polymorphisms to identify SNPs that could affect assay performance."}
-  ]
-}</script>
-
   <style>
 
 :root{--blue:#1565C0;--blue-light:#42A5F5;--blue-bg:#E3F2FD;--navy:#0F172A;--black:#0A0A0F;--surface:#FFFFFF;--surface-alt:#F5F7FA;--outline:#E2E5EA;--text:#0A0A0F;--text2:#4A4A6A;--muted:#7A7A9A;--font-h:'Montserrat',sans-serif;--font-b:'Open Sans',sans-serif;--max-w:1200px}
@@ -217,49 +138,12 @@ footer{background:var(--black);color:rgba(255,255,255,.8);padding:56px 0 24px}
 </style>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "SoftwareApplication",
-  "name": "VigyanLLM",
-  "applicationCategory": "BioinformaticsApplication",
-  "operatingSystem": "Linux, Web",
-  "description": "Sovereign biomedical AI platform for primer design, BLAST, MSA, and genomic analysis with zero external API dependency.",
-  "url": "https://vigyanllm.in",
-  "author": {
-    "@type": "Organization",
-    "name": "VigyanLLM Private Limited",
-    "url": "https://vigyanllm.in"
-  },
-  "offers": {
-    "@type": "Offer",
-    "price": "0",
-    "priceCurrency": "INR"
-  }
-}
-</script>
-
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "WebPage",
-  "name": "VigyanLLM",
-  "speakable": {
-    "@type": "SpeakableSpecification",
-    "cssSelector": [
-      "h1",
-      "h2",
-      ".lead",
-      ".section-tag"
-    ]
-  }
-}
-</script>
 <link rel="icon" type="image/svg+xml" href="/logo.svg">
 <link rel="apple-touch-icon" href="/logo.svg">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <script src="https://accounts.google.com/gsi/client" async defer></script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.vigyanllm.in"}, {"@type": "ListItem", "position": 2, "name": "Primer BLAST Specificity Checker"}]}</script>
 </head>
 <body><main>
 

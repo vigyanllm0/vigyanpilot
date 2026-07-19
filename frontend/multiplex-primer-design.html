@@ -30,70 +30,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="twitter:description" content="Master multiplex PCR primer design with compatibility scoring, dimer detection, amplicon size separation, and Tm matching.">
   <meta name="twitter:image" content="https://vigyanllm.in/poster.png">
 
-  <script type="application/ld+json">{
-  "@context": "https://schema.org",
-  "@type": "BreadcrumbList",
-  "itemListElement": [
-    {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://vigyanllm.in"},
-    {"@type": "ListItem", "position": 2, "name": "Learn", "item": "https://vigyanllm.in/index.html"},
-    {"@type": "ListItem", "position": 3, "name": "Multiplex PCR Primer Design", "item": "https://vigyanllm.in/multiplex-primer-design.html"}
-  ]
-}</script>
-
-  <script type="application/ld+json">{
-  "@context": "https://schema.org",
-  "@type": "Article",
-  "headline": "Multiplex PCR Primer Design: Compatibility and Scoring",
-  "description": "Master multiplex PCR primer design with compatibility scoring, dimer detection, amplicon size separation, and Tm matching using algorithmic approaches.",
-  "author": {"@type": "Organization", "name": "VigyanLLM", "url": "https://vigyanllm.in"},
-  "publisher": {"@type": "Organization", "name": "VigyanLLM", "logo": {"@type": "ImageObject", "url": "https://vigyanllm.in/logo.svg"}},
-  "datePublished": "2025-01-15",
-  "dateModified": "2025-01-15",
-  "mainEntityOfPage": "https://vigyanllm.in/multiplex-primer-design.html"
-}</script>
-
-  <script type="application/ld+json">{
-  "@context": "https://schema.org",
-  "@type": "FAQPage",
-  "mainEntity": [
-    {
-      "@type": "Question",
-      "name": "What is multiplex PCR and why is it challenging to design primers for it?",
-      "acceptedAnswer": {"@type": "Answer", "text": "Multiplex PCR amplifies multiple target loci simultaneously in a single reaction tube using multiple primer pairs. The challenge lies in ensuring all primer pairs work optimally under the same reaction conditions, including identical annealing temperatures, buffer composition, and cycling parameters. Cross-primer interactions (dimers between primers from different pairs) and competition for polymerase and dNTPs further complicate optimization."}
-    },
-    {
-      "@type": "Question",
-      "name": "What is the PrimerPooler algorithm?",
-      "acceptedAnswer": {"@type": "Answer", "text": "PrimerPooler is a greedy set-cover algorithm that selects an optimal subset of primer pairs from a larger candidate set for multiplex PCR. It scores each primer pair on individual quality metrics and pairwise compatibility, then iteratively selects the best pair and eliminates incompatible candidates until all targets are covered or no more compatible pairs remain."}
-    },
-    {
-      "@type": "Question",
-      "name": "How do you prevent primer dimers in multiplex PCR?",
-      "acceptedAnswer": {"@type": "Answer", "text": "Preventing primer dimers in multiplex PCR requires checking all pairwise interactions between every primer in the pool (not just within each primer pair). Key strategies include computing cross-dimer delta-G for all primer combinations, avoiding 3' complementarity between any two primers, and using algorithms that penalize pools with high cross-dimer potential. Hot-start polymerases also help by preventing extension during reaction setup."}
-    },
-    {
-      "@type": "Question",
-      "name": "How should amplicon sizes be distributed in multiplex PCR?",
-      "acceptedAnswer": {"@type": "Answer", "text": "In gel-based multiplex PCR, amplicon sizes should be spaced at least 25-50 bp apart for clear resolution. For 8-plex reactions, target a size range of 100-500 bp with even spacing. For capillary electrophoresis or qPCR with probes, size separation is less critical as each target is identified by its fluorescent probe. VigyanLLM automatically optimizes amplicon size distribution for the specified detection method."}
-    },
-    {
-      "@type": "Question",
-      "name": "What Tm matching window is recommended for multiplex PCR?",
-      "acceptedAnswer": {"@type": "Answer", "text": "For multiplex PCR, all primers in the pool should have Tm values within a 2-degree Celsius window (ideally within 1 degree). This narrow range ensures all primer pairs anneal efficiently at the same temperature. A wider window risks differential annealing, where some primer pairs amplify efficiently while others produce weak or no signal."}
-    },
-    {
-      "@type": "Question",
-      "name": "How does VigyanLLM handle multiplex primer design?",
-      "acceptedAnswer": {"@type": "Answer", "text": "VigyanLLM implements the PrimerPooler algorithm with a comprehensive scoring system that evaluates individual primer quality (Tm, GC content, specificity) and pairwise compatibility (cross-dimer delta-G, Tm matching). The tool automatically optimizes amplicon size distribution and performs full specificity checking against the reference genome for every primer in the pool."}
-    },
-    {
-      "@type": "Question",
-      "name": "What is the maximum number of targets recommended for multiplex PCR?",
-      "acceptedAnswer": {"@type": "Answer", "text": "The practical limit depends on the application and detection method. For gel-based multiplex PCR, 8-12 targets is a common upper limit. For qPCR with hydrolysis probes (TaqMan), up to 4-6 targets can be multiplexed depending on instrument channel availability. For targeted NGS panels with unique barcodes, hundreds of targets can be amplified simultaneously. The key constraint is primer cross-interaction, which increases combinatorially with pool size."}
-    }
-  ]
-}</script>
-
   <style>
 
 :root{--blue:#1565C0;--blue-light:#42A5F5;--blue-bg:#E3F2FD;--navy:#0F172A;--black:#0A0A0F;--surface:#FFFFFF;--surface-alt:#F5F7FA;--outline:#E2E5EA;--text:#0A0A0F;--text2:#4A4A6A;--muted:#7A7A9A;--font-h:'Montserrat',sans-serif;--font-b:'Open Sans',sans-serif;--max-w:1200px}
@@ -202,49 +138,12 @@ footer{background:var(--black);color:rgba(255,255,255,.8);padding:56px 0 24px}
 </style>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "SoftwareApplication",
-  "name": "VigyanLLM",
-  "applicationCategory": "BioinformaticsApplication",
-  "operatingSystem": "Linux, Web",
-  "description": "Sovereign biomedical AI platform for primer design, BLAST, MSA, and genomic analysis with zero external API dependency.",
-  "url": "https://vigyanllm.in",
-  "author": {
-    "@type": "Organization",
-    "name": "VigyanLLM Private Limited",
-    "url": "https://vigyanllm.in"
-  },
-  "offers": {
-    "@type": "Offer",
-    "price": "0",
-    "priceCurrency": "INR"
-  }
-}
-</script>
-
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "WebPage",
-  "name": "VigyanLLM",
-  "speakable": {
-    "@type": "SpeakableSpecification",
-    "cssSelector": [
-      "h1",
-      "h2",
-      ".lead",
-      ".section-tag"
-    ]
-  }
-}
-</script>
 <link rel="icon" type="image/svg+xml" href="/logo.svg">
 <link rel="apple-touch-icon" href="/logo.svg">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <script src="https://accounts.google.com/gsi/client" async defer></script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.vigyanllm.in"}, {"@type": "ListItem", "position": 2, "name": "Multiplex PCR Primer Design Tool"}]}</script>
 </head>
 <body><main>
 

@@ -33,161 +33,9 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="twitter:image" content="https://vigyanllm.in/poster.png">
 
   <!-- JSON-LD: BreadcrumbList -->
-  <script type="application/ld+json">{
-  "@context": "https://schema.org",
-  "@type": "BreadcrumbList",
-  "itemListElement": [
-    {
-      "@type": "ListItem",
-      "position": 1,
-      "name": "Home",
-      "item": "https://vigyanllm.in"
-    },
-    {
-      "@type": "ListItem",
-      "position": 2,
-      "name": "Learn",
-      "item": "https://vigyanllm.in/index.html"
-    },
-    {
-      "@type": "ListItem",
-      "position": 3,
-      "name": "Primer Design Thermodynamics",
-      "item": "https://vigyanllm.in/primer-design-thermodynamics.html"
-    }
-  ]
-}</script>
-
   <!-- JSON-LD: Article -->
-  <script type="application/ld+json">{
-  "@context": "https://schema.org",
-  "@type": "Article",
-  "headline": "Primer Design Thermodynamics: SantaLucia Nearest-Neighbor Method",
-  "description": "Master primer design thermodynamics with the SantaLucia 1998 nearest-neighbor model. Learn salt correction, Mg2+ adjustment, and Tm calculation for accurate PCR primer design.",
-  "author": {
-    "@type": "Organization",
-    "name": "VigyanLLM",
-    "url": "https://vigyanllm.in"
-  },
-  "publisher": {
-    "@type": "Organization",
-    "name": "VigyanLLM",
-    "logo": {
-      "@type": "ImageObject",
-      "url": "https://vigyanllm.in/logo.svg"
-    }
-  },
-  "datePublished": "2025-01-15",
-  "dateModified": "2025-01-15",
-  "mainEntityOfPage": "https://vigyanllm.in/primer-design-thermodynamics.html",
-  "image": "https://vigyanllm.in/poster.png"
-}</script>
-
   <!-- JSON-LD: FAQPage -->
-  <script type="application/ld+json">{
-  "@context": "https://schema.org",
-  "@type": "FAQPage",
-  "mainEntity": [
-    {
-      "@type": "Question",
-      "name": "What is the SantaLucia 1998 nearest-neighbor model for primer Tm calculation?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "The SantaLucia 1998 nearest-neighbor model calculates melting temperature by summing thermodynamic contributions of each dinucleotide base-pair step in the duplex, including initiation parameters, rather than relying on simple GC percentage. It provides accuracy within 1-2 degrees Celsius for primers 15-30 nucleotides long."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "Why is the GC-percentage method insufficient for accurate primer Tm?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "The Wallace rule (Tm = 2(A+T) + 4(G+C)) ignores base-pair stacking interactions, sequence context, salt concentration, and primer concentration. For primers longer than 14 nucleotides, errors of 5-15 degrees Celsius are common, making it unreliable for clinical or diagnostic PCR applications."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "How does salt concentration affect primer melting temperature?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "Monovalent cations (Na+, K+) stabilize DNA duplexes by shielding negative phosphate charges. The Owczarzy 2004 salt correction adjusts Tm based on the actual ion concentration in the reaction buffer. Higher salt concentrations increase Tm by approximately 7-16 degrees per molar unit depending on the model."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "What role does Mg2+ play in PCR primer Tm calculation?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "Mg2+ is a divalent cation in PCR buffers that stabilizes DNA duplexes more strongly than monovalent ions. The von Ahsen 2001 correction accounts for free Mg2+ concentration (after accounting for dNTP chelation), which can raise Tm by several degrees compared to monovalent-only corrections."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "How does primer concentration affect melting temperature?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "Primer concentration appears in the entropy term of the Tm equation. Higher primer concentrations shift the duplex-to-single-strand equilibrium toward the duplex state, effectively increasing Tm. The standard calculation uses total primer strand concentration (Ct) in molar units, typically in the 200-500 nM range for PCR."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "How does VigyanLLM apply thermodynamic calculations in its primer design pipeline?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "VigyanLLM implements Steps 7, 8, and 9 of its 24-step validated pipeline to compute Tm using the SantaLucia 1998 nearest-neighbor model with Owczarzy salt correction and von Ahsen Mg2+ correction. This ensures forward and reverse primers have matched Tm values within a 2-degree window for optimal PCR performance."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "What is the difference between delta-H and delta-S in primer thermodynamics?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "Delta-H (enthalpy change) represents the heat released when base pairs form, reflecting hydrogen bonding and stacking interactions. Delta-S (entropy change) represents the loss of conformational freedom when two single strands form a duplex. The ratio delta-H/delta-S determines Tm at a given concentration."
-      }
-    }
-  ]
-}</script>
-
   <!-- JSON-LD: HowTo -->
-  <script type="application/ld+json">{
-  "@context": "https://schema.org",
-  "@type": "HowTo",
-  "name": "How to Calculate Primer Tm Using the SantaLucia Nearest-Neighbor Method",
-  "description": "Step-by-step guide to calculating accurate melting temperature for PCR primers using the SantaLucia 1998 nearest-neighbor thermodynamic model with salt corrections.",
-  "totalTime": "PT5M",
-  "step": [
-    {
-      "@type": "HowToStep",
-      "position": 1,
-      "name": "Write the primer sequence and its complement",
-      "text": "Write down the 5'-to-3' primer sequence and its 3'-to-5' complement to identify all consecutive dinucleotide base-pair steps."
-    },
-    {
-      "@type": "HowToStep",
-      "position": 2,
-      "name": "Sum the delta-H contributions",
-      "text": "Look up the enthalpy (delta-H) value for each dinucleotide step in the SantaLucia 1998 unified parameter table. Add the initiation parameters for the terminal base pairs."
-    },
-    {
-      "@type": "HowToStep",
-      "position": 3,
-      "name": "Sum the delta-S contributions",
-      "text": "Look up the entropy (delta-S) value for each dinucleotide step. Add initiation entropy and apply the symmetry correction if the sequence is self-complementary."
-    },
-    {
-      "@type": "HowToStep",
-      "position": 4,
-      "name": "Apply salt correction",
-      "text": "Adjust delta-S using the Owczarzy 2004 salt correction formula for monovalent cation concentration, or the von Ahsen 2001 method for Mg2+-containing buffers."
-    },
-    {
-      "@type": "HowToStep",
-      "position": 5,
-      "name": "Calculate Tm using the final equation",
-      "text": "Apply Tm = delta-H / (delta-S + R * ln(Ct/4)) - 273.15, where R is the gas constant (1.987 cal/(mol*K)) and Ct is the total strand concentration."
-    }
-  ]
-}</script>
-
   <style>
 
 :root{--blue:#1565C0;--blue-light:#42A5F5;--blue-bg:#E3F2FD;--navy:#0F172A;--black:#0A0A0F;--surface:#FFFFFF;--surface-alt:#F5F7FA;--outline:#E2E5EA;--text:#0A0A0F;--text2:#4A4A6A;--muted:#7A7A9A;--font-h:'Montserrat',sans-serif;--font-b:'Open Sans',sans-serif;--max-w:1200px}
@@ -296,49 +144,12 @@ footer{background:var(--black);color:rgba(255,255,255,.8);padding:56px 0 24px}
 </style>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "SoftwareApplication",
-  "name": "VigyanLLM",
-  "applicationCategory": "BioinformaticsApplication",
-  "operatingSystem": "Linux, Web",
-  "description": "Sovereign biomedical AI platform for primer design, BLAST, MSA, and genomic analysis with zero external API dependency.",
-  "url": "https://vigyanllm.in",
-  "author": {
-    "@type": "Organization",
-    "name": "VigyanLLM Private Limited",
-    "url": "https://vigyanllm.in"
-  },
-  "offers": {
-    "@type": "Offer",
-    "price": "0",
-    "priceCurrency": "INR"
-  }
-}
-</script>
-
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "WebPage",
-  "name": "VigyanLLM",
-  "speakable": {
-    "@type": "SpeakableSpecification",
-    "cssSelector": [
-      "h1",
-      "h2",
-      ".lead",
-      ".section-tag"
-    ]
-  }
-}
-</script>
 <link rel="icon" type="image/svg+xml" href="/logo.svg">
 <link rel="apple-touch-icon" href="/logo.svg">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <script src="https://accounts.google.com/gsi/client" async defer></script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.vigyanllm.in"}, {"@type": "ListItem", "position": 2, "name": "Primer Design Thermodynamics: SantaLucia Nearest-Neighbor"}]}</script>
 </head>
 <body><main>
 

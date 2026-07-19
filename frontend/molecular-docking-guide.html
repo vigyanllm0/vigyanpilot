@@ -30,86 +30,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="twitter:description" content="Complete guide to molecular docking. Learn AutoDock Vina, GNINA, protein preparation, grid box setup, and best practices for accurate protein-ligand docking.">
   <meta name="twitter:image" content="https://vigyanllm.in/poster.png">
 
-  <script type="application/ld+json">{
-  "@context": "https://schema.org",
-  "@type": "BreadcrumbList",
-  "itemListElement": [
-    {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://vigyanllm.in"},
-    {"@type": "ListItem", "position": 2, "name": "Learn", "item": "https://vigyanllm.in/index.html"},
-    {"@type": "ListItem", "position": 3, "name": "Molecular Docking Guide", "item": "https://vigyanllm.in/molecular-docking-guide.html"}
-  ]
-}</script>
-
-  <script type="application/ld+json">{
-  "@context": "https://schema.org",
-  "@type": "Article",
-  "headline": "Molecular Docking Guide: Smina, Vina, Gnina Consensus",
-  "description": "Complete guide to molecular docking with AutoDock Vina, Smina, and Gnina. Learn consensus docking, RMSD calculation, scoring functions, and the VigyanLLM consensus pipeline.",
-  "author": {"@type": "Organization", "name": "VigyanLLM", "url": "https://vigyanllm.in"},
-  "publisher": {"@type": "Organization", "name": "VigyanLLM", "logo": {"@type": "ImageObject", "url": "https://vigyanllm.in/logo.svg"}},
-  "datePublished": "2025-01-15",
-  "dateModified": "2025-01-15",
-  "mainEntityOfPage": "https://vigyanllm.in/molecular-docking-guide.html"
-}</script>
-
-  <script type="application/ld+json">{
-  "@context": "https://schema.org",
-  "@type": "FAQPage",
-  "mainEntity": [
-    {
-      "@type": "Question",
-      "name": "What is molecular docking and how does it work?",
-      "acceptedAnswer": {"@type": "Answer", "text": "Molecular docking is a computational technique that predicts the preferred orientation and binding affinity of a small molecule (ligand) when bound to a macromolecular target (protein). The algorithm samples possible binding poses by rotating and translating the ligand within a defined search space, then scores each pose using an energy function that estimates the binding free energy. The lowest-energy poses represent the most likely binding modes."}
-    },
-    {
-      "@type": "Question",
-      "name": "What is the difference between Vina, Smina, and Gnina?",
-      "acceptedAnswer": {"@type": "Answer", "text": "AutoDock Vina is a widely-used open-source docking engine with a hybrid scoring function combining empirical and knowledge-based terms. Smina is a fork of Vina maintained by the AutoDock Vina community with additional scoring functions and improved minimization. Gnina extends Smina with deep learning-based scoring using convolutional neural networks trained on protein-ligand complexes, providing state-of-the-art pose prediction accuracy."}
-    },
-    {
-      "@type": "Question",
-      "name": "What is consensus docking and why is it better?",
-      "acceptedAnswer": {"@type": "Answer", "text": "Consensus docking runs multiple docking engines on the same protein-ligand pair and combines their results. Poses that are reproduced by multiple engines receive higher confidence scores. This approach reduces the bias inherent in any single scoring function and improves both pose prediction accuracy and virtual screening hit rates by 10-30% compared to any single engine alone."}
-    },
-    {
-      "@type": "Question",
-      "name": "What is RMSD in molecular docking?",
-      "acceptedAnswer": {"@type": "Answer", "text": "Root Mean Square Deviation (RMSD) measures the average distance between corresponding atoms in two molecular structures. In docking, RMSD is used to compare predicted ligand poses to a reference pose (e.g., from a crystal structure). An RMSD of 2.0 angstroms or less is generally considered a correct pose prediction. RMSD is also used in consensus docking to cluster similar poses from different engines."}
-    },
-    {
-      "@type": "Question",
-      "name": "How do I prepare a protein structure for molecular docking?",
-      "acceptedAnswer": {"@type": "Answer", "text": "Protein preparation involves: (1) obtaining the 3D structure from PDB or predicting it with AlphaFold/ESMFold, (2) removing water molecules and co-crystallized ligands, (3) adding hydrogen atoms at the appropriate protonation states, (4) assigning partial charges, (5) optimizing side-chain conformations for unresolved residues, and (6) defining the binding site search box centered on the active site."}
-    },
-    {
-      "@type": "Question",
-      "name": "How does VigyanLLM implement consensus docking?",
-      "acceptedAnswer": {"@type": "Answer", "text": "VigyanLLM's consensus docking pipeline runs Smina, Vina, and Gnina sequentially on each protein-ligand pair, then clusters the resulting poses using RMSD-based hierarchical clustering. Poses reproduced by 2 or more engines receive a consensus score boost. The top-ranked consensus poses are reported with individual engine scores, RMSD between engine predictions, and a combined confidence metric."}
-    },
-    {
-      "@type": "Question",
-      "name": "Can I use AlphaFold-predicted structures for molecular docking?",
-      "acceptedAnswer": {"@type": "Answer", "text": "Yes, AlphaFold-predicted structures can be used for docking, but with caveats. AlphaFold provides high-confidence backbone predictions but lower confidence for side-chain conformations and loop regions. Side-chain optimization before docking is recommended. ESMFold offers an alternative with faster inference. VigyanLLM integrates both structure prediction tools and automatically optimizes predicted structures for docking readiness."}
-    }
-  ]
-}</script>
-
-  <script type="application/ld+json">{
-  "@context": "https://schema.org",
-  "@type": "HowTo",
-  "name": "How to Perform Consensus Molecular Docking",
-  "description": "Step-by-step workflow for running consensus molecular docking with Smina, Vina, and Gnina.",
-  "totalTime": "PT15M",
-  "step": [
-    {"@type": "HowToStep", "position": 1, "name": "Prepare the protein structure", "text": "Download from PDB or predict with AlphaFold/ESMFold. Add hydrogens, remove water, optimize side chains, and define the binding site box."},
-    {"@type": "HowToStep", "position": 2, "name": "Prepare the ligand library", "text": "Obtain ligand structures in SDF or PDBQT format. Minimize 3D conformations and assign proper charges and protonation states."},
-    {"@type": "HowToStep", "position": 3, "name": "Run Vina docking", "text": "Execute AutoDock Vina with appropriate exhaustiveness (8-32) and defined search space. Export top 20 poses per ligand."},
-    {"@type": "HowToStep", "position": 4, "name": "Run Smina docking", "text": "Execute Smina with the same search space and parameters. Export top 20 poses per ligand for comparison."},
-    {"@type": "HowToStep", "position": 5, "name": "Run Gnina docking with CNN scoring", "text": "Execute Gnina with CNN scoring enabled for deep learning-based pose evaluation. Export top 20 poses per ligand."},
-    {"@type": "HowToStep", "position": 6, "name": "Cluster and rank consensus poses", "text": "Combine all poses, cluster by RMSD (2.0A threshold), and rank by consensus score. Poses found by multiple engines receive higher confidence."}
-  ]
-}</script>
-
   <style>
 
 :root{--blue:#1565C0;--blue-light:#42A5F5;--blue-bg:#E3F2FD;--navy:#0F172A;--black:#0A0A0F;--surface:#FFFFFF;--surface-alt:#F5F7FA;--outline:#E2E5EA;--text:#0A0A0F;--text2:#4A4A6A;--muted:#7A7A9A;--font-h:'Montserrat',sans-serif;--font-b:'Open Sans',sans-serif;--max-w:1200px}
@@ -218,63 +138,12 @@ footer{background:var(--black);color:rgba(255,255,255,.8);padding:56px 0 24px}
 </style>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "SoftwareApplication",
-  "name": "VigyanLLM",
-  "applicationCategory": "BioinformaticsApplication",
-  "operatingSystem": "Linux, Web",
-  "description": "Sovereign biomedical AI platform for primer design, BLAST, MSA, and genomic analysis with zero external API dependency.",
-  "url": "https://vigyanllm.in",
-  "author": {
-    "@type": "Organization",
-    "name": "VigyanLLM Private Limited",
-    "url": "https://vigyanllm.in"
-  },
-  "offers": {
-    "@type": "Offer",
-    "price": "0",
-    "priceCurrency": "INR"
-  }
-}
-</script>
-
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "WebPage",
-  "name": "VigyanLLM",
-  "speakable": {
-    "@type": "SpeakableSpecification",
-    "cssSelector": [
-      "h1",
-      "h2",
-      ".lead",
-      ".section-tag"
-    ]
-  }
-}
-</script>
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "WebPage",
-  "name": "Molecular Docking Guide — Complete Tutorial for Beginners | VigyanLLM",
-  "description": "Complete guide to molecular docking. Learn AutoDock Vina, GNINA, protein preparation, grid box setup, and best practices for accurate protein-ligand docking.",
-  "url": "https://vigyanllm.in/molecular-docking-guide",
-  "about": {
-    "@type": "SoftwareApplication",
-    "name": "VigyanLLM",
-    "applicationCategory": "BioinformaticsApplication"
-  }
-}
-</script>
 <link rel="icon" type="image/svg+xml" href="/logo.svg">
 <link rel="apple-touch-icon" href="/logo.svg">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <script src="https://accounts.google.com/gsi/client" async defer></script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.vigyanllm.in"}, {"@type": "ListItem", "position": 2, "name": "Molecular Docking Guide"}]}</script>
 </head>
 <body><main>
 
