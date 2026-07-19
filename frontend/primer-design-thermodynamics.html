@@ -281,19 +281,19 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
     <!-- Glossary Quick Links -->
     <div class="glossary-links">
-      <a href="https://vigyanllm.in/glossary/melting-temperature.html" class="glossary-link">Melting Temperature</a>
-      <a href="https://vigyanllm.in/glossary/nearest-neighbor-model.html" class="glossary-link">Nearest-Neighbor Model</a>
-      <a href="https://vigyanllm.in/glossary/salt-correction.html" class="glossary-link">Salt Correction</a>
-      <a href="https://vigyanllm.in/glossary/mg2-correction.html" class="glossary-link">Mg2+ Correction</a>
-      <a href="https://vigyanllm.in/glossary/delta-g.html" class="glossary-link">Delta-G</a>
-      <a href="https://vigyanllm.in/glossary/gc-content.html" class="glossary-link">GC Content</a>
+      <a href="https://vigyanllm.in/glossary/melting-temperature" class="glossary-link">Melting Temperature</a>
+      <a href="https://vigyanllm.in/glossary/nearest-neighbor-model" class="glossary-link">Nearest-Neighbor Model</a>
+      <a href="https://vigyanllm.in/glossary/salt-correction" class="glossary-link">Salt Correction</a>
+      <a href="https://vigyanllm.in/glossary/mg2-correction" class="glossary-link">Mg2+ Correction</a>
+      <a href="https://vigyanllm.in/glossary/delta-g" class="glossary-link">Delta-G</a>
+      <a href="https://vigyanllm.in/glossary/gc-content" class="glossary-link">GC Content</a>
     </div>
 
     <!-- Section 1: Introduction -->
     <section class="section">
       <h2>Introduction to Thermodynamics in Primer Design</h2>
-      <p>Thermodynamics is the cornerstone of accurate <a href="https://vigyanllm.in/glossary/primer-design.html">primer design</a>. The melting temperature (Tm) of a primer determines whether it will hybridize specifically to its target at a given annealing temperature. An incorrectly calculated Tm can lead to non-specific amplification, primer-dimer formation, or complete failure of the polymerase chain reaction. For clinical diagnostics, pharmacogenomics testing, and sensitive research applications, even a two-degree error in Tm can be the difference between a reliable assay and a failed experiment.</p>
-      <p>The fundamental principle underlying Tm calculation is thermodynamic equilibrium. When a primer anneals to its complementary target, the reaction reaches equilibrium between the double-stranded (duplex) state and the single-stranded (dissociated) state. The <a href="https://vigyanllm.in/glossary/melting-temperature.html">melting temperature</a> is defined as the point where exactly 50% of the primer molecules are in the duplex state. This equilibrium is governed by two thermodynamic parameters: the enthalpy change (delta-H) and the entropy change (delta-S), which together determine the free energy (delta-G) of duplex formation.</p>
+      <p>Thermodynamics is the cornerstone of accurate <a href="https://vigyanllm.in/glossary/primer-design">primer design</a>. The melting temperature (Tm) of a primer determines whether it will hybridize specifically to its target at a given annealing temperature. An incorrectly calculated Tm can lead to non-specific amplification, primer-dimer formation, or complete failure of the polymerase chain reaction. For clinical diagnostics, pharmacogenomics testing, and sensitive research applications, even a two-degree error in Tm can be the difference between a reliable assay and a failed experiment.</p>
+      <p>The fundamental principle underlying Tm calculation is thermodynamic equilibrium. When a primer anneals to its complementary target, the reaction reaches equilibrium between the double-stranded (duplex) state and the single-stranded (dissociated) state. The <a href="https://vigyanllm.in/glossary/melting-temperature">melting temperature</a> is defined as the point where exactly 50% of the primer molecules are in the duplex state. This equilibrium is governed by two thermodynamic parameters: the enthalpy change (delta-H) and the entropy change (delta-S), which together determine the free energy (delta-G) of duplex formation.</p>
       <p>Understanding these parameters at a deep level allows researchers and bioinformaticians to design primers that perform reliably across a range of conditions. In this comprehensive guide, we will walk through every aspect of primer thermodynamics, from the earliest approximation methods to the most rigorous computational approaches used by modern tools like <a href="https://vigyanllm.in/index.html">VigyanLLM</a>.</p>
     </section>
 
@@ -325,7 +325,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <!-- Section 3: SantaLucia 1998 Nearest-Neighbor Model -->
     <section class="section">
       <h2>The SantaLucia 1998 Nearest-Neighbor Model</h2>
-      <p>The <a href="https://vigyanllm.in/glossary/nearest-neighbor-model.html">nearest-neighbor (NN) model</a> represents the gold standard for predicting DNA duplex thermodynamics. First proposed by Breslauer et al. in 1986 and significantly refined by John SantaLucia Jr. in 1998, this model calculates Tm by summing the contributions of each dinucleotide step along the primer sequence. The key insight is that the thermodynamic properties of a base pair depend on the identity of its immediate neighbors.</p>
+      <p>The <a href="https://vigyanllm.in/glossary/nearest-neighbor-model">nearest-neighbor (NN) model</a> represents the gold standard for predicting DNA duplex thermodynamics. First proposed by Breslauer et al. in 1986 and significantly refined by John SantaLucia Jr. in 1998, this model calculates Tm by summing the contributions of each dinucleotide step along the primer sequence. The key insight is that the thermodynamic properties of a base pair depend on the identity of its immediate neighbors.</p>
       <p>In the SantaLucia unified parameter set, the 10 unique Watson-Crick nearest-neighbor pairs (considering strand directionality) have been experimentally measured using high-resolution optical melting experiments on model oligonucleotide duplexes. These measurements provide delta-H (enthalpy) and delta-S (entropy) values for each dinucleotide step at a reference salt concentration of 1 M NaCl.</p>
 
       <h3>Thermodynamic Parameters Table</h3>
@@ -355,13 +355,13 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       </table>
 
       <p>In addition to the stacking parameters, the SantaLucia model includes two initiation parameters that account for the cost of initiating duplex formation from two separate single strands. For duplexes that begin with a terminal G-C base pair, the initiation parameters are delta-H = 0.1 kcal/mol and delta-S = -2.8 cal/(mol&middot;K). For terminal A-T base pairs, they are delta-H = 2.3 kcal/mol and delta-S = 4.1 cal/(mol&middot;K). If the sequence is self-complementary (palindromic), an additional symmetry correction of R&middot;ln(2) = -1.4 cal/(mol&middot;K) is applied to the entropy term.</p>
-      <p>The free energy at 37&deg;C is calculated using the relationship <a href="https://vigyanllm.in/glossary/delta-g.html">delta-G = delta-H - T &times; delta-S</a>, where T is the absolute temperature in Kelvin (310.15 K for 37&deg;C). These values allow researchers to quickly compare the relative stability of different sequence contexts without performing a full Tm calculation.</p>
+      <p>The free energy at 37&deg;C is calculated using the relationship <a href="https://vigyanllm.in/glossary/delta-g">delta-G = delta-H - T &times; delta-S</a>, where T is the absolute temperature in Kelvin (310.15 K for 37&deg;C). These values allow researchers to quickly compare the relative stability of different sequence contexts without performing a full Tm calculation.</p>
     </section>
 
     <!-- Section 4: Salt Correction -->
     <section class="section">
       <h2>Salt Correction: Owczarzy 2004 Monovalent Cation Adjustment</h2>
-      <p>The SantaLucia 1998 parameters were measured at 1 M NaCl, which is far from the typical salt concentrations used in PCR reactions (usually 50 mM KCl). To correct for different monovalent cation concentrations, the Owczarzy 2004 method provides the most widely accepted adjustment. The <a href="https://vigyanllm.in/glossary/salt-correction.html">salt correction</a> modifies the entropy term to account for the electrostatic stabilization provided by cations.</p>
+      <p>The SantaLucia 1998 parameters were measured at 1 M NaCl, which is far from the typical salt concentrations used in PCR reactions (usually 50 mM KCl). To correct for different monovalent cation concentrations, the Owczarzy 2004 method provides the most widely accepted adjustment. The <a href="https://vigyanllm.in/glossary/salt-correction">salt correction</a> modifies the entropy term to account for the electrostatic stabilization provided by cations.</p>
 
       <div class="formula-box">
         delta-S(corrected) = delta-S(1M NaCl) + 0.368 &times; (N-1) &times; ln([Na+])<br>
@@ -383,7 +383,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <!-- Section 5: Mg2+ Correction -->
     <section class="section">
       <h2>Mg2+ Correction: von Ahsen 2001 Divalent Cation Adjustment</h2>
-      <p>Mg2+ is the most important divalent cation in PCR buffer systems. Standard Taq polymerase buffers contain 1.5-3.0 mM MgCl2, which serves both as an essential cofactor for the polymerase enzyme and as a duplex stabilizer. Because Mg2+ carries a +2 charge, it stabilizes DNA duplexes more effectively than monovalent cations on a per-molar basis. The <a href="https://vigyanllm.in/glossary/mg2-correction.html">Mg2+ correction</a> proposed by von Ahsen et al. (2001) accounts for this stronger stabilization effect.</p>
+      <p>Mg2+ is the most important divalent cation in PCR buffer systems. Standard Taq polymerase buffers contain 1.5-3.0 mM MgCl2, which serves both as an essential cofactor for the polymerase enzyme and as a duplex stabilizer. Because Mg2+ carries a +2 charge, it stabilizes DNA duplexes more effectively than monovalent cations on a per-molar basis. The <a href="https://vigyanllm.in/glossary/mg2-correction">Mg2+ correction</a> proposed by von Ahsen et al. (2001) accounts for this stronger stabilization effect.</p>
 
       <div class="formula-box">
         Tm(Mg2+) = Tm(1M NaCl) + 16.6 &times; log10([Mg2+]_free)<br>
@@ -542,7 +542,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <p>The most recent refinements in thermodynamic modeling recognize that the salt correction itself is temperature-dependent. The Owczarzy 2004 parameters are derived from measurements at a range of temperatures, but some implementations apply a single correction factor. For the highest accuracy, particularly near the Tm transition region, temperature-dependent salt corrections provide marginal but measurable improvements. VigyanLLM incorporates these refinements in its highest-accuracy mode.</p>
 
       <h3>Thermodynamics of Degenerate Bases</h3>
-      <p><a href="https://vigyanllm.in/glossary/degenerate-primer.html">Degenerate primers</a> containing mixed-base positions present a special thermodynamic challenge. Each sequence variant within the degenerate pool has its own Tm, and the observed behavior of the pool is an ensemble average. For primers with a single degenerate position, the Tm spread is typically 2-4&deg;C. For primers with multiple degenerate positions, the spread can be 10&deg;C or more, requiring careful optimization of the annealing temperature. VigyanLLM calculates the minimum and maximum Tm across all sequence variants in the degenerate pool and flags cases where the spread exceeds a configurable threshold.</p>
+      <p><a href="https://vigyanllm.in/glossary/degenerate-primer">Degenerate primers</a> containing mixed-base positions present a special thermodynamic challenge. Each sequence variant within the degenerate pool has its own Tm, and the observed behavior of the pool is an ensemble average. For primers with a single degenerate position, the Tm spread is typically 2-4&deg;C. For primers with multiple degenerate positions, the spread can be 10&deg;C or more, requiring careful optimization of the annealing temperature. VigyanLLM calculates the minimum and maximum Tm across all sequence variants in the degenerate pool and flags cases where the spread exceeds a configurable threshold.</p>
     </section>
 
     <!-- Section 11: Practical Recommendations -->

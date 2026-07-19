@@ -90,12 +90,20 @@ Fixing all SEO issues from a comprehensive audit (GSC + SEO + web testing). All 
 | M1 | glossary/ (94), blog/ (37), gene-prefers/ (50), landing-pages/ (27), hub/ (11), root utility pages (5) | **Auto-truncated 327 meta descriptions** to 120-158 chars. Cleaned up broken "Learn how VigyanLLM......" stutter on 85 glossary pages. No tool pages or homepage descriptions touched. |
 | M1 | Full verification | **375 pages** now in perfect 100-160 char range (up from 150). **0 duplicates** (was 0). **0 too short** (was 5). **30 still >160** — all intentionally skipped (tool pages + hand-written root content pages). |
 
-## Not Yet Fixed (Blocked/Deferred)
+## Git Push #2 — C5 + Schema Cleanup ✅
 
-| # | Issue | Reason |
+| # | File | Change |
 |---|---|---|
-| C5 | Glossary broken links (~85+ instances) | Blog posts link to glossary terms without `/glossary/` prefix (e.g., `href="allele.html"` instead of `href="/glossary/allele.html"`). Large batch fix across all blog/*.html files. |
-| M3 | Orphaned pages with no inbound links | `dna-3d.html`, `login.html`, `p.html`, `primer-design-pipeline.html`, `blog/vprime-internal-validation.html`, `landing-pages/drug-discovery-ai-platform.html`, `landing-pages/taqman-probe-design-tool.html`. Need to add internal links from nav or related pages. |
+| C5 (Type B) | 111 files | **Removed `.html` suffix from 942 glossary links** across all pages (glossary, hub, landing-pages, blog, content pages). All `/glossary/term.html` → `/glossary/term`. |
+| C5 (Type A) | 30 files | **Fixed 32 non-existent glossary targets**: 5 inline links in article pages (grna, nhej, off-target, pam-sequence, genomic-data) converted to plain text; 27 landing-page related-topic spans removed. |
+| C5 (Related Topics) | 27 landing pages | **Removed entire broken "Related Topics" sections** — 105/107 links pointed to non-existent glossary pages. Sections deleted from all landing-pages/*.html. |
+| L8b | 50 blog posts + blog/index.html | **Removed duplicate Article schemas** — all blog posts had 3 schemas instead of 2 (BreadcrumbList + Article + duplicate Article). Duplicate removed. |
+| — | Full verification | **1208 glossary links, zero broken** ✅. **Zero duplicate schemas** ✅. **Zero `.html` in glossary URLs** ✅. |
+
+**C5 Result:** 0 broken glossary links across entire site (was 105). All 1208 glossary links point to existing pages.
+
+**Remaining (deferred):**
+- M3 — Orphaned pages (7 pages with zero inbound links). Blog posts are CMS-driven; landing pages need content-level cross-linking decisions.
 
 ---
 

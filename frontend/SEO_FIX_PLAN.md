@@ -55,13 +55,13 @@ The static `sitemap.xml` only lists **43 URLs**. The site has ~400+ pages:
 
 ### C5. Glossary content links pointing to wrong paths
 
-**Problem:** Many blog posts, glossary pages, and content pages link to glossary terms using root-relative paths without the `glossary/` prefix. Example:
-```html
-<a href="allele.html">  <!-- WRONG — should be glossary/allele.html -->
-```
-This affects **~85+ glossary term links** across blog posts, landing pages, and content body.
+**Status:** ✅ Fixed in Git Push #2
 
-**Fix:** Find all instances of `href="allele.html"` etc. (glossary terms at root level) and prefix with `glossary/`. Target files: all `blog/*.html`, content body sections of landing pages.
+**Scope:** Three issues:
+- **Type B:** 942 `.html` suffixes removed from `/glossary/` links across 111 files
+- **Type A:** 32 links to non-existent glossary slugs removed (5 inline links in article pages → plain text; 27 related-topic spans in landing pages → removed)
+- **Related Topics sections:** All 27 landing pages had broken "Related Topics" sections where 105/107 links pointed to non-existent glossary pages → entire sections removed
+- **Result:** 1208 glossary links, all pointing to existing pages. Zero broken glossary links.
 
 ---
 
@@ -290,11 +290,12 @@ Most pages have `initial-scale=1.0` without `maximum-scale` or `user-scalable=ye
 
 ### L8. Duplicate/conflicting schema blocks in index.html
 
-**File:** `index.html`  
-- Two `FAQPage` schemas (one minified inline, one formatted)
-- Two `WebPage` schemas with different `name` values
+**Status:** ✅ Already resolved (schema purge removed all inline schemas; now JS-injected)
 
-**Action:** Deduplicate. Keep one FAQPage and one WebPage schema.
+### L8b. Duplicate Article schemas in all 51 blog posts (found during C5 work)
+
+**Status:** ✅ Fixed in Git Push #2  
+All 51 blog posts had duplicate Article JSON-LD blocks (3 schemas instead of 2). Removed the duplicate from each post.
 
 ---
 
@@ -324,11 +325,12 @@ Sprint 2 (This Week):
   └── L1 — Nav URL consistency (clean vs .html)
 
 Sprint 3 (Next Week):
-  ├── C5 — Fix glossary broken links (~85+ instances)
+  ├── C5 — Fix glossary broken links (~85+ instances → actually 942 Type B + 105 Type A) ✅
   ├── M3 — Add internal links to orphaned pages
-  ├── L3-L5 — Fix 404, vercel, p.html issues
-  ├── L8 — Deduplicate index.html schemas
-  └── L7 — Enable zoom on all pages
+  ├── L3-L5 — Fix 404, vercel, p.html issues (all already done) ✅
+  ├── L8 — Deduplicate index.html schemas (already done) ✅
+  ├── L8b — Remove duplicate Article schemas from 51 blog posts ✅
+  └── L7 — Enable zoom on all pages (already done) ✅
 
 Sprint 2.5 (Emergency):
   ├── — Removed noindex from 141 glossary pages (205 terms now indexable)

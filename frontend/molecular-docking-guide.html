@@ -271,26 +271,26 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </header>
 
     <div class="glossary-links">
-      <a href="https://vigyanllm.in/glossary/molecular-docking.html" class="glossary-link">Molecular Docking</a>
-      <a href="https://vigyanllm.in/glossary/smina.html" class="glossary-link">Smina</a>
-      <a href="https://vigyanllm.in/glossary/vina.html" class="glossary-link">Vina</a>
-      <a href="https://vigyanllm.in/glossary/gnina.html" class="glossary-link">Gnina</a>
-      <a href="https://vigyanllm.in/glossary/rmsd.html" class="glossary-link">RMSD</a>
-      <a href="https://vigyanllm.in/glossary/binding-affinity.html" class="glossary-link">Binding Affinity</a>
-      <a href="https://vigyanllm.in/glossary/alphafold.html" class="glossary-link">AlphaFold</a>
-      <a href="https://vigyanllm.in/glossary/esmfold.html" class="glossary-link">ESMFold</a>
+      <a href="https://vigyanllm.in/glossary/molecular-docking" class="glossary-link">Molecular Docking</a>
+      <a href="https://vigyanllm.in/glossary/smina" class="glossary-link">Smina</a>
+      <a href="https://vigyanllm.in/glossary/vina" class="glossary-link">Vina</a>
+      <a href="https://vigyanllm.in/glossary/gnina" class="glossary-link">Gnina</a>
+      <a href="https://vigyanllm.in/glossary/rmsd" class="glossary-link">RMSD</a>
+      <a href="https://vigyanllm.in/glossary/binding-affinity" class="glossary-link">Binding Affinity</a>
+      <a href="https://vigyanllm.in/glossary/alphafold" class="glossary-link">AlphaFold</a>
+      <a href="https://vigyanllm.in/glossary/esmfold" class="glossary-link">ESMFold</a>
     </div>
 
     <section class="section">
       <h2>Introduction to Molecular Docking</h2>
-      <p><a href="https://vigyanllm.in/glossary/molecular-docking.html">Molecular docking</a> is a computational technique that predicts the three-dimensional orientation (pose) of a small molecule (ligand) when bound to a macromolecular target (typically a protein receptor) and estimates the strength of the resulting interaction as a binding affinity score. Docking is a cornerstone of structure-based drug design, virtual screening, and protein-ligand interaction analysis, enabling researchers to screen millions of compounds in silico before committing to expensive experimental validation.</p>
+      <p><a href="https://vigyanllm.in/glossary/molecular-docking">Molecular docking</a> is a computational technique that predicts the three-dimensional orientation (pose) of a small molecule (ligand) when bound to a macromolecular target (typically a protein receptor) and estimates the strength of the resulting interaction as a binding affinity score. Docking is a cornerstone of structure-based drug design, virtual screening, and protein-ligand interaction analysis, enabling researchers to screen millions of compounds in silico before committing to expensive experimental validation.</p>
       <p>The docking process consists of two fundamental components: a search algorithm that explores the conformational space of the ligand within the binding site, and a scoring function that evaluates each candidate pose by estimating the binding free energy. The quality of both components determines the accuracy and reliability of the docking results. No single scoring function is universally optimal for all protein-ligand systems, which is why consensus approaches that combine multiple engines have become the standard for high-confidence predictions.</p>
-      <p>In this guide, we cover the three most widely used open-source docking engines in the AutoDock ecosystem: AutoDock Vina, Smina, and Gnina. We compare their scoring functions, describe how to combine them into a consensus pipeline, and explain how <a href="https://vigyanllm.in/index.html">VigyanLLM</a> integrates all three engines for optimized docking results. We also cover the role of modern protein structure prediction tools like <a href="https://vigyanllm.in/glossary/alphafold.html">AlphaFold</a> and <a href="https://vigyanllm.in/glossary/esmfold.html">ESMFold</a> in the docking workflow.</p>
+      <p>In this guide, we cover the three most widely used open-source docking engines in the AutoDock ecosystem: AutoDock Vina, Smina, and Gnina. We compare their scoring functions, describe how to combine them into a consensus pipeline, and explain how <a href="https://vigyanllm.in/index.html">VigyanLLM</a> integrates all three engines for optimized docking results. We also cover the role of modern protein structure prediction tools like <a href="https://vigyanllm.in/glossary/alphafold">AlphaFold</a> and <a href="https://vigyanllm.in/glossary/esmfold">ESMFold</a> in the docking workflow.</p>
     </section>
 
     <section class="section">
       <h2>Docking Fundamentals: Search and Score</h2>
-      <p>Every molecular docking engine, regardless of its specific algorithmic implementation, performs two fundamental tasks: searching for plausible binding poses and scoring those poses to rank them by predicted <a href="https://vigyanllm.in/glossary/binding-affinity.html">binding affinity</a>.</p>
+      <p>Every molecular docking engine, regardless of its specific algorithmic implementation, performs two fundamental tasks: searching for plausible binding poses and scoring those poses to rank them by predicted <a href="https://vigyanllm.in/glossary/binding-affinity">binding affinity</a>.</p>
 
       <h3>The Search Problem: Sampling Conformational Space</h3>
       <p>A flexible ligand with N rotatable bonds has an exponentially large number of possible conformations. The search algorithm must efficiently explore this conformational space while simultaneously finding the optimal position and orientation of the ligand within the binding pocket. Modern docking engines use a combination of global optimization (to explore the overall binding site) and local optimization (to refine specific poses) to balance thoroughness with computational speed.</p>
@@ -311,15 +311,15 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <p>The three engines in the AutoDock ecosystem share a common heritage but offer distinct scoring capabilities that make them complementary rather than redundant.</p>
 
       <h3>AutoDock Vina</h3>
-      <p><a href="https://vigyanllm.in/glossary/vina.html">AutoDock Vina</a> is the most widely used open-source docking engine, originally developed by Oleg Trott and Arthur Olson at Scripps Research. Vina uses a hybrid scoring function that combines empirical and knowledge-based terms, including Gaussian steric interactions, hydrophobic terms, hydrogen bonding, and a torsional penalty for frozen rotatable bonds. Vina's scoring function is calibrated against experimental binding affinities from the PDBbind dataset and provides binding affinity predictions in kcal/mol.</p>
+      <p><a href="https://vigyanllm.in/glossary/vina">AutoDock Vina</a> is the most widely used open-source docking engine, originally developed by Oleg Trott and Arthur Olson at Scripps Research. Vina uses a hybrid scoring function that combines empirical and knowledge-based terms, including Gaussian steric interactions, hydrophobic terms, hydrogen bonding, and a torsional penalty for frozen rotatable bonds. Vina's scoring function is calibrated against experimental binding affinities from the PDBbind dataset and provides binding affinity predictions in kcal/mol.</p>
       <p>Vina's key advantages are its speed (approximately 10-100x faster than the original AutoDock 4), reasonable accuracy for a broad range of protein-ligand systems, and a permissive BSD license. It is the default choice for most docking applications and serves as the baseline against which other engines are compared.</p>
 
       <h3>Smina</h3>
-      <p><a href="https://vigyanllm.in/glossary/smina.html">Smina</a> is a fork of AutoDock Vina maintained by the AutoDock Vina community with significant enhancements. While Smina retains Vina's search algorithm, it extends the scoring capabilities with additional scoring functions not available in Vina. These include the Vinardo scoring function (improved Vina scoring with recalibrated parameters), the AutoDock 4 (AD4) scoring function for compatibility with legacy AutoDock 4 workflows, and custom scoring function support that allows users to define their own scoring terms.</p>
+      <p><a href="https://vigyanllm.in/glossary/smina">Smina</a> is a fork of AutoDock Vina maintained by the AutoDock Vina community with significant enhancements. While Smina retains Vina's search algorithm, it extends the scoring capabilities with additional scoring functions not available in Vina. These include the Vinardo scoring function (improved Vina scoring with recalibrated parameters), the AutoDock 4 (AD4) scoring function for compatibility with legacy AutoDock 4 workflows, and custom scoring function support that allows users to define their own scoring terms.</p>
       <p>Smina also includes improved local optimization through a more thorough energy minimization routine and support for flexible receptor side chains. These features make Smina particularly useful when Vina's scoring function produces poor results for a specific target, as users can switch to an alternative scoring function without changing the search algorithm or workflow.</p>
 
       <h3>Gnina</h3>
-      <p><a href="https://vigyanllm.in/glossary/gnina.html">Gnina</a> represents the next generation of docking scoring by integrating deep learning into the docking pipeline. Developed by the McNutt laboratory, Gnina extends Smina with a convolutional neural network (CNN) scoring function trained on over 15,000 protein-ligand complexes from the PDBbind refined set. The CNN takes a 3D grid representation of the protein-ligand complex as input and outputs a binding affinity prediction that captures subtle interaction patterns invisible to traditional scoring functions.</p>
+      <p><a href="https://vigyanllm.in/glossary/gnina">Gnina</a> represents the next generation of docking scoring by integrating deep learning into the docking pipeline. Developed by the McNutt laboratory, Gnina extends Smina with a convolutional neural network (CNN) scoring function trained on over 15,000 protein-ligand complexes from the PDBbind refined set. The CNN takes a 3D grid representation of the protein-ligand complex as input and outputs a binding affinity prediction that captures subtle interaction patterns invisible to traditional scoring functions.</p>
       <p>In benchmark studies, Gnina's CNN scoring significantly outperforms Vina's empirical scoring function for pose prediction accuracy, with improvements of 10-20% in the fraction of correct poses within 2.0 Angstroms RMSD. For virtual screening hit rate, Gnina provides comparable or superior enrichment to Vina, particularly for challenging targets with shallow binding pockets or water-mediated interactions.</p>
 
       <table>
@@ -345,7 +345,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
     <section class="section">
       <h2>RMSD and Consensus Docking</h2>
-      <p><a href="https://vigyanllm.in/glossary/rmsd.html">Root Mean Square Deviation (RMSD)</a> is the standard metric for comparing molecular structures. In the context of molecular docking, RMSD measures the average distance between corresponding atoms in a predicted pose and a reference pose. It is the primary metric for evaluating pose prediction accuracy and the foundation of consensus docking methods.</p>
+      <p><a href="https://vigyanllm.in/glossary/rmsd">Root Mean Square Deviation (RMSD)</a> is the standard metric for comparing molecular structures. In the context of molecular docking, RMSD measures the average distance between corresponding atoms in a predicted pose and a reference pose. It is the primary metric for evaluating pose prediction accuracy and the foundation of consensus docking methods.</p>
 
       <h3>RMSD Calculation for Pose Comparison</h3>
       <p>RMSD is calculated by optimally superimposing two structures (minimizing the distance between corresponding atoms), then computing the square root of the average squared distance. For ligand pose comparison, all heavy atoms are typically used, though some methods use only pharmacophore-relevant atoms to reduce sensitivity to peripheral conformational differences.</p>
@@ -372,7 +372,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
       <h3>Experimental vs Predicted Structures</h3>
       <p>Experimental structures from the Protein Data Bank (PDB) are the gold standard input for docking, as they represent the actual conformation of the protein determined by X-ray crystallography, cryo-EM, or NMR. However, PDB structures often have issues that require correction before docking: missing residues, alternate conformations, crystallographic artifacts, and bound water molecules that may or may not be relevant to ligand binding.</p>
-      <p>For targets without experimental structures, <a href="https://vigyanllm.in/glossary/alphafold.html">AlphaFold</a> and <a href="https://vigyanllm.in/glossary/esmfold.html">ESMFold</a> provide high-quality predicted structures. AlphaFold achieves remarkable accuracy for backbone conformations (median GDT-TS of 92.4 over all target domains) but has lower confidence for side-chain conformations in binding sites. ESMFold provides faster inference with comparable backbone accuracy. Both tools provide per-residue confidence scores (pLDDT) that indicate which regions of the structure are reliable for docking.</p>
+      <p>For targets without experimental structures, <a href="https://vigyanllm.in/glossary/alphafold">AlphaFold</a> and <a href="https://vigyanllm.in/glossary/esmfold">ESMFold</a> provide high-quality predicted structures. AlphaFold achieves remarkable accuracy for backbone conformations (median GDT-TS of 92.4 over all target domains) but has lower confidence for side-chain conformations in binding sites. ESMFold provides faster inference with comparable backbone accuracy. Both tools provide per-residue confidence scores (pLDDT) that indicate which regions of the structure are reliable for docking.</p>
 
       <h3>Preparation Steps</h3>
       <ol>

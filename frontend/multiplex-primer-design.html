@@ -270,17 +270,17 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </header>
 
     <div class="glossary-links">
-      <a href="https://vigyanllm.in/glossary/multiplex-pcr.html" class="glossary-link">Multiplex PCR</a>
-      <a href="https://vigyanllm.in/glossary/primer-dimer.html" class="glossary-link">Primer Dimer</a>
-      <a href="https://vigyanllm.in/glossary/primer-pooler.html" class="glossary-link">PrimerPooler</a>
-      <a href="https://vigyanllm.in/glossary/annealing-temperature.html" class="glossary-link">Annealing Temperature</a>
-      <a href="https://vigyanllm.in/glossary/amplicon-size.html" class="glossary-link">Amplicon Size</a>
-      <a href="https://vigyanllm.in/glossary/delta-g.html" class="glossary-link">Delta-G</a>
+      <a href="https://vigyanllm.in/glossary/multiplex-pcr" class="glossary-link">Multiplex PCR</a>
+      <a href="https://vigyanllm.in/glossary/primer-dimer" class="glossary-link">Primer Dimer</a>
+      <a href="https://vigyanllm.in/glossary/primer-pooler" class="glossary-link">PrimerPooler</a>
+      <a href="https://vigyanllm.in/glossary/annealing-temperature" class="glossary-link">Annealing Temperature</a>
+      <a href="https://vigyanllm.in/glossary/amplicon-size" class="glossary-link">Amplicon Size</a>
+      <a href="https://vigyanllm.in/glossary/delta-g" class="glossary-link">Delta-G</a>
     </div>
 
     <section class="section">
       <h2>Introduction to Multiplex PCR Primer Design</h2>
-      <p><a href="https://vigyanllm.in/glossary/multiplex-pcr.html">Multiplex PCR</a> is a powerful technique that amplifies multiple distinct target loci simultaneously in a single reaction tube using two or more primer pairs. Compared to running separate singleplex reactions for each target, multiplex PCR offers dramatically increased throughput, reduced reagent consumption, and conservation of limited template DNA. These advantages make it indispensable for applications ranging from pathogen detection panels and SNP genotyping to oncology mutation profiling and food safety testing.</p>
+      <p><a href="https://vigyanllm.in/glossary/multiplex-pcr">Multiplex PCR</a> is a powerful technique that amplifies multiple distinct target loci simultaneously in a single reaction tube using two or more primer pairs. Compared to running separate singleplex reactions for each target, multiplex PCR offers dramatically increased throughput, reduced reagent consumption, and conservation of limited template DNA. These advantages make it indispensable for applications ranging from pathogen detection panels and SNP genotyping to oncology mutation profiling and food safety testing.</p>
       <p>However, the design of primers for multiplex PCR is fundamentally more complex than singleplex design. In a singleplex reaction, each primer pair only needs to satisfy its own thermodynamic and specificity requirements. In a multiplex reaction, every primer must be compatible with every other primer in the pool. This means that all N primer pairs in an N-plex reaction share a common annealing temperature, a common buffer composition, and a common set of cycling conditions. More critically, no primer from one pair should form stable dimers with any primer from any other pair, as these cross-pool interactions deplete the effective primer concentration and generate spurious amplification products.</p>
       <p>The combinatorial complexity grows rapidly with pool size. A 4-plex reaction has 8 primers and 28 pairwise interactions to check. An 8-plex has 16 primers and 120 interactions. A 16-plex has 32 primers and 496 interactions. For pools larger than about 6-8 targets, manual design becomes impractical and algorithmic approaches become essential. This guide covers the algorithmic foundations, practical considerations, and tools available for multiplex primer design.</p>
     </section>
@@ -290,13 +290,13 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <p>Designing a successful multiplex PCR assay requires simultaneously satisfying multiple constraints that interact in complex ways. Understanding these constraints is essential before diving into algorithmic solutions.</p>
 
       <h3>Uniform Annealing Temperature</h3>
-      <p>All primers in a multiplex pool must anneal efficiently at the same <a href="https://vigyanllm.in/glossary/annealing-temperature.html">annealing temperature</a>. This requires that all primers have closely matched melting temperatures, typically within a 2&deg;C window. For high-performance multiplex assays, a 1&deg;C window is preferred. This constraint is evaluated using the SantaLucia nearest-neighbor model with appropriate salt corrections, as described in our <a href="https://vigyanllm.in/primer-design-thermodynamics.html">thermodynamics guide</a>.</p>
+      <p>All primers in a multiplex pool must anneal efficiently at the same <a href="https://vigyanllm.in/glossary/annealing-temperature">annealing temperature</a>. This requires that all primers have closely matched melting temperatures, typically within a 2&deg;C window. For high-performance multiplex assays, a 1&deg;C window is preferred. This constraint is evaluated using the SantaLucia nearest-neighbor model with appropriate salt corrections, as described in our <a href="https://vigyanllm.in/primer-design-thermodynamics.html">thermodynamics guide</a>.</p>
 
       <h3>Cross-Pool Dimer Avoidance</h3>
-      <p>In singleplex design, dimer checking is limited to the four interactions within a single primer pair: forward-forward, forward-reverse, reverse-forward, and reverse-reverse. In multiplex design, every possible pairwise interaction between all primers in the pool must be checked. A <a href="https://vigyanllm.in/glossary/primer-dimer.html">primer dimer</a> between the forward primer of Target A and the reverse primer of Target B can be just as detrimental as a within-pair dimer, consuming reagents and generating competitive products.</p>
+      <p>In singleplex design, dimer checking is limited to the four interactions within a single primer pair: forward-forward, forward-reverse, reverse-forward, and reverse-reverse. In multiplex design, every possible pairwise interaction between all primers in the pool must be checked. A <a href="https://vigyanllm.in/glossary/primer-dimer">primer dimer</a> between the forward primer of Target A and the reverse primer of Target B can be just as detrimental as a within-pair dimer, consuming reagents and generating competitive products.</p>
 
       <h3>Amplicon Size Separation</h3>
-      <p>For gel-based detection methods, each amplicon must be distinguishable by size. This requires careful <a href="https://vigyanllm.in/glossary/amplicon-size.html">amplicon size</a> planning to ensure no two products overlap in the size range detectable by agarose or polyacrylamide gel electrophoresis. Even for qPCR-based detection with fluorescent probes, size separation matters for some multiplex chemistries and provides a backup detection dimension.</p>
+      <p>For gel-based detection methods, each amplicon must be distinguishable by size. This requires careful <a href="https://vigyanllm.in/glossary/amplicon-size">amplicon size</a> planning to ensure no two products overlap in the size range detectable by agarose or polyacrylamide gel electrophoresis. Even for qPCR-based detection with fluorescent probes, size separation matters for some multiplex chemistries and provides a backup detection dimension.</p>
 
       <h3>Resource Competition</h3>
       <p>All primer pairs in the pool compete for the same pool of polymerase, dNTPs, and magnesium ions. Primer pairs with high amplification efficiency can outcompete weaker pairs, leading to unbalanced product yields. This is particularly problematic when targets differ in GC content or secondary structure complexity. Balanced primer design ensures all targets amplify with similar efficiency.</p>
@@ -307,7 +307,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
     <section class="section">
       <h2>The PrimerPooler Algorithm</h2>
-      <p>The <a href="https://vigyanllm.in/glossary/primer-pooler.html">PrimerPooler</a> algorithm provides a systematic, algorithmic approach to multiplex primer pool optimization. Originally developed to address the computational complexity of selecting compatible primer subsets from large candidate sets, PrimerPooler uses a greedy set-cover strategy with a sophisticated scoring function that balances individual primer quality against pairwise compatibility.</p>
+      <p>The <a href="https://vigyanllm.in/glossary/primer-pooler">PrimerPooler</a> algorithm provides a systematic, algorithmic approach to multiplex primer pool optimization. Originally developed to address the computational complexity of selecting compatible primer subsets from large candidate sets, PrimerPooler uses a greedy set-cover strategy with a sophisticated scoring function that balances individual primer quality against pairwise compatibility.</p>
 
       <h3>Algorithm Overview</h3>
       <p>PrimerPooler operates in three phases. In the first phase, the algorithm generates a large candidate set of primer pairs for each target locus, typically 20-50 pairs per target using a standard primer design engine. In the second phase, every pair is scored on individual quality metrics including Tm, GC content, specificity, and secondary structure potential. In the third phase, the algorithm iteratively builds the multiplex pool by selecting the highest-scoring compatible pair and then eliminating all remaining pairs that are incompatible with the selected pair.</p>
@@ -316,7 +316,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <p>The PrimerPooler scoring function combines individual primer quality scores with pairwise compatibility penalties. For individual quality, each primer pair receives a composite score based on:</p>
       <ul>
         <li><strong>Tm deviation from pool mean:</strong> Penalizes primers whose Tm deviates significantly from the current pool average, encouraging convergence toward a uniform annealing temperature.</li>
-        <li><strong>Self-dimer and hairpin delta-G:</strong> Penalizes primers with significant secondary structure potential using thermodynamic <a href="https://vigyanllm.in/glossary/delta-g.html">delta-G</a> calculations. More negative delta-G (stronger structure) receives higher penalty.</li>
+        <li><strong>Self-dimer and hairpin delta-G:</strong> Penalizes primers with significant secondary structure potential using thermodynamic <a href="https://vigyanllm.in/glossary/delta-g">delta-G</a> calculations. More negative delta-G (stronger structure) receives higher penalty.</li>
         <li><strong>Specificity score:</strong> Based on the number of off-target hits from BLAST and Bowtie2 analysis, with heavier penalties for off-target hits that would produce amplicons.</li>
         <li><strong>GC content balance:</strong> Penalizes primers with extreme GC content outside the 40-60% optimal range.</li>
         <li><strong>3' stability:</strong> Penalizes primers with a weak 3' end (low delta-G for the terminal 3-5 base pairs) that may fail to initiate extension efficiently.</li>
