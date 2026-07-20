@@ -1,8 +1,14 @@
+import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from database import engine
 from models import Base
 from routes import auth, pages, review, upload, public, notifications, stats
+from pii_mask import install_pii_mask
+
+logging.basicConfig(level=logging.INFO,
+                    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
+install_pii_mask()
 
 app = FastAPI(title="VigyanLLM CMS API", version="1.0.0")
 

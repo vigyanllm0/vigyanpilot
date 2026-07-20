@@ -37,6 +37,7 @@ PRIORITY_MAP = {
     "problem.html": 0.80,
     "compare.html": 0.80,
     "roadmap.html": 0.80,
+    "pricing.html": 0.90,
     "validated-primer-design.html": 0.90,
     "validated-primer-design-report.html": 0.70,
     "security.html": 0.80,

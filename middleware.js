@@ -22,9 +22,13 @@ export default function middleware(request) {
   }
 
   // Admin pages require admin_tk cookie (defense-in-depth alongside backend RBAC)
+  // Parse cookies properly to avoid substring matches
   if (ADMIN_PATHS.includes(pathname)) {
     const cookie = request.headers.get('cookie') || '';
-    if (!cookie.includes('admin_tk=')) {
+    const cookies = Object.fromEntries(
+      cookie.split(';').map(c => c.trim().split('=')).filter(([k]) => k).map(([k, ...v]) => [k, v.join('=')])
+    );
+    if (!cookies['admin_tk']) {
       return new Response('Unauthorized', { status: 401 });
     }
   }

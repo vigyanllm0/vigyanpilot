@@ -39,6 +39,8 @@ from dotenv import load_dotenv
 
 logging.basicConfig(level=logging.INFO,
                     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
+from primerforge.pii_mask import install_pii_mask
+install_pii_mask()
 logger = logging.getLogger("primerforge.server")
 
 # Load .env file from project root (enables changing keys without code edits)

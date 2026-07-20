@@ -22,9 +22,9 @@ jobs:
         with:
           python-version: "3.10"
 
-      - name: Install linting tools
+      - name: Install tools
         run: |
-          pip install ruff mypy --quiet
+          pip install ruff mypy bandit safety pytest --quiet
 
       - name: Run ruff linter
         run: ruff check primerforge/ backend/ --output-format=github || true
@@ -34,6 +34,18 @@ jobs:
           python3 -m py_compile primerforge/primer_server.py
           python3 -m py_compile backend/main.py
           python3 -m py_compile backend/config.py
+
+      - name: Security scan with bandit
+        run: |
+          bandit -r primerforge/ backend/ -ll -q || true
+
+      - name: Check dependency vulnerabilities
+        run: |
+          safety check --full-report || true
+
+      - name: Run pytest
+        run: |
+          python3 -m pytest tests/ -x -q --timeout=30 --ignore=tests/test_frontend.py || true
 
   deploy:
     name: Deploy to EC2

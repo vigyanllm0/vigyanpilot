@@ -16,7 +16,7 @@ import logging
 import os
 import sqlite3
 import time
-from functools import wraps
+from functools import wraps, partial
 from pathlib import Path
 
 import bcrypt
@@ -52,12 +52,40 @@ FREE_DOCK_RUNS = 2     # 2 free docking runs per new user
 UPI_ID = os.environ.get("PRIMERFORGE_UPI_ID", "vigyanllm@upi")  # unused — kept for backwards compat
 
 
+def _init_db_schema():
+    """Initialize database and set WAL mode once at module load."""
+    conn = sqlite3.connect(DB_PATH)
+    conn.execute("PRAGMA journal_mode=WAL")
+    conn.close()
+    logger.info("Database WAL mode initialized at %s", DB_PATH)
+
+# Set WAL mode once on import (not per-request)
+_init_db_schema()
+
+
+def _retry_on_lock(max_attempts=3, delay=0.05):
+    """Decorator: retry a function on sqlite3.OperationalError (database is locked)."""
+    def decorator(fn):
+        @wraps(fn)
+        def wrapper(*args, **kwargs):
+            for attempt in range(max_attempts):
+                try:
+                    return fn(*args, **kwargs)
+                except sqlite3.OperationalError as e:
+                    if "database is locked" in str(e) and attempt < max_attempts - 1:
+                        time.sleep(delay * (2 ** attempt))
+                        continue
+                    raise
+            return fn(*args, **kwargs)
+        return wrapper
+    return decorator
+
+
 def get_db():
     """Get thread-local database connection."""
     if 'db' not in g:
-        g.db = sqlite3.connect(DB_PATH)
+        g.db = sqlite3.connect(DB_PATH, timeout=5)
         g.db.row_factory = sqlite3.Row
-        g.db.execute("PRAGMA journal_mode=WAL")
     return g.db
 
 
@@ -324,6 +352,7 @@ def check_usage(email: str) -> dict:
     }
 
 
+@_retry_on_lock(max_attempts=3)
 def increment_usage(email: str):
     """Increment run count after successful pipeline execution."""
     db = get_db()

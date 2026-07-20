@@ -15,7 +15,7 @@ const CORE = [
   "/primer-blast-specificity","/primer-design-best-practices","/primer-design-thermodynamics",
   "/biomedical-ai-platform","/ai-crispr-analysis","/hipaa-compliant-genomics",
   "/molecular-docking-guide","/multiplex-primer-design","/qpcr-primer-design",
-  "/validated-primer-design-report","/dna-3d",
+  "/validated-primer-design-report","/dna-3d","/pricing",
   "/docs/getting-started","/docs/pipeline-config",
 ];
 

@@ -11,6 +11,7 @@ CONTAINER="vigyanpilot_postgres"
 DB_NAME="vigyanpilot_db"
 DB_USER="vigyanpilot_app"
 RETENTION_DAYS=14
+S3_BUCKET="${S3_BACKUP_BUCKET:-}"
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 BACKUP_FILE="${BACKUP_DIR}/${DB_NAME}_${TIMESTAMP}.sql.gz"
 
@@ -41,12 +42,27 @@ fi
 BACKUP_SIZE=$(du -h "${BACKUP_FILE}" | cut -f1)
 echo "[$(date)] Backup completed: ${BACKUP_FILE} (${BACKUP_SIZE})"
 
-# Rotate: delete backups older than retention period
-echo "[$(date)] Cleaning backups older than ${RETENTION_DAYS} days..."
+# Upload to S3 if bucket is configured
+if [ -n "${S3_BUCKET}" ]; then
+    echo "[$(date)] Uploading to s3://${S3_BUCKET}/db-backups/..."
+    if command -v aws &>/dev/null; then
+        aws s3 cp "${BACKUP_FILE}" "s3://${S3_BUCKET}/db-backups/${DB_NAME}_${TIMESTAMP}.sql.gz" \
+            --only-show-errors && \
+            echo "[$(date)] S3 upload complete" || \
+            echo "[$(date)] WARNING: S3 upload failed"
+    else
+        echo "[$(date)] WARNING: AWS CLI not found, skipping S3 upload"
+    fi
+else
+    echo "[$(date)] S3_BACKUP_BUCKET not set, skipping cloud upload"
+fi
+
+# Rotate: delete local backups older than retention period
+echo "[$(date)] Cleaning local backups older than ${RETENTION_DAYS} days..."
 find "${BACKUP_DIR}" -name "*.sql.gz" -mtime +${RETENTION_DAYS} -delete
 
-# List remaining backups
-echo "[$(date)] Current backups:"
+# List remaining local backups
+echo "[$(date)] Current local backups:"
 ls -lh "${BACKUP_DIR}"/*.sql.gz 2>/dev/null || echo "  (none)"
 
 echo "[$(date)] Backup complete."

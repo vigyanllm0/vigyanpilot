@@ -61,6 +61,20 @@ class StepOutcome:
     penalty: float = 0.0
 
 
+def validate_step_output(step_number: int, step_name: str, output: dict[str, Any]) -> dict[str, Any]:
+    """Validate step output — check for common issues and log warnings.
+    
+    Returns the output unchanged (validation is advisory, not blocking).
+    """
+    if not isinstance(output, dict):
+        logger.warning(
+            "VigyanLLM: Step %d (%s) returned non-dict output (type=%s). Resetting to empty dict.",
+            step_number, step_name, type(output).__name__,
+        )
+        return {}
+    return output
+
+
 class PipelineOrchestrator:
     """
     Sequential orchestrator for the 22-step VigyanLLM pipeline.
@@ -300,7 +314,8 @@ class PipelineOrchestrator:
             )
 
         # Step completed successfully
-        output = result_container[0] if result_container else {}
+        raw_output = result_container[0] if result_container else {}
+        output = validate_step_output(registration.step_number, registration.step_name, raw_output)
         return StepOutcome(
             step_number=registration.step_number,
             step_name=registration.step_name,
@@ -324,7 +339,8 @@ class PipelineOrchestrator:
         start_ns = time.perf_counter_ns()
 
         try:
-            output = registration.step_function(input_data)
+            raw_output = registration.step_function(input_data)
+            output = validate_step_output(registration.step_number, registration.step_name, raw_output)
             duration_ms = (time.perf_counter_ns() - start_ns) // 1_000_000
 
             return StepOutcome(
@@ -332,7 +348,7 @@ class PipelineOrchestrator:
                 step_name=registration.step_name,
                 status="passed",
                 phase=registration.phase,
-                output_data=output if isinstance(output, dict) else {},
+                output_data=output,
                 duration_ms=duration_ms,
             )
 
