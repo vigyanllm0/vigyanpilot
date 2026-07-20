@@ -70,7 +70,7 @@ nav{position:sticky;top:0;background:var(--navy);z-index:1000;height:72px;border
 .user-popup-logout{color:#EF4444;margin-top:8px}
 .user-popup-logout:hover{background:#FEF2F2;color:#DC2626}
 
-.nav-cta{padding:6px 20px;background:#fff;color:var(--navy);border:none;border-radius:6px;font-family:var(--font-h);font-size:10px;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:.06em;transition:all .2s;line-height:1.3}
+.nav-cta{padding:6px 20px;background:#fff;color:var(--navy);border:none;border-radius:6px;font-family:var(--font-h);font-size:12px;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:.06em;transition:all .2s;line-height:1.3}
 .nav-cta:hover{background:#2563EB;color:#fff;box-shadow:0 4px 16px rgba(37,99,235,.3)}
 .drop-wrap{position:relative;display:inline-block}
 .drop-trigger{font-family:var(--font-b);font-size:13px;color:#CBD5E1;font-weight:500;cursor:pointer;white-space:nowrap}
@@ -123,11 +123,11 @@ nav{position:sticky;top:0;background:var(--navy);z-index:1000;height:72px;border
 .msa-char.consensus{background:#2196F3;color:#fff}
 .conservation-bar{margin-top:8px;display:flex;gap:0;height:10px;border-radius:4px;overflow:hidden;width:100%;max-width:100%}
 .conservation-seg{height:100%;transition:width .2s}
-.conservation-label{font-size:9px;color:var(--muted);margin-top:4px;display:flex;gap:8px;flex-wrap:wrap}
+.conservation-label{font-size:12px;color:var(--muted);margin-top:4px;display:flex;gap:8px;flex-wrap:wrap}
 .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
 .stat-item{background:var(--slate);padding:12px;border-radius:8px;text-align:center}
 .stat-val{font-size:20px;font-weight:700;color:var(--primary)}
-.stat-lbl{font-size:10px;color:var(--muted);margin-top:2px}
+.stat-lbl{font-size:12px;color:var(--muted);margin-top:2px}
 .dl-bar{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
 .loading-bar{height:4px;background:var(--slate-border);border-radius:2px;overflow:hidden;margin:12px 0;display:none}
 .loading-bar.active{display:block}
@@ -170,10 +170,10 @@ footer{background:var(--black);color:rgba(255,255,255,.8);padding:56px 0 24px}
 height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <!-- End Google Tag Manager (noscript) -->
 
-<nav>
+<nav aria-label="Main navigation">
 <div class="nav-inner">
   <a href="/index" class="nav-brand">
-    <img src="/logo.svg" alt="VigyanLLM Logo" width="48" height="48" style="border-radius:8px">
+    <img src="/logo.svg" alt="VigyanLLM Logo" width="48" height="48" style="border-radius:8px" loading="lazy">
     <span>VigyanLLM</span>
   </a>
   <div class="nav-links">
@@ -185,7 +185,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <a href="/blast">BLAST</a>
         <a href="/msa">MSA</a>
         <a href="/pcr-analysis">PCR Analysis</a>
-        <a href="/crispr-analysis">CRISPR Analysis <span style="font-size:9px;font-weight:700;color:#fff;background:#F59E0B;padding:2px 6px;border-radius:99px;line-height:1.3">Coming Soon</span></a>
+        <a href="/crispr-analysis">CRISPR Analysis <span style="font-size:12px;font-weight:700;color:#fff;background:#F59E0B;padding:2px 6px;border-radius:99px;line-height:1.3">Coming Soon</span></a>
         <a href="/tm-calculator">Tm Calculator</a>
         <a href="/gc-calculator">GC Calculator</a>
         <a href="/protein-docking">Protein Docking</a>
@@ -216,8 +216,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="nav-search-results" id="navSearchResults"></div>
     </div>
     <div class="nav-btns" id="navBtns">
-      <button class="nav-login" onclick="openAuthModal()">Sign in</button>
-      <button class="nav-cta" onclick="openAuthModal()">Get started</button>
+      <button type="button" class="nav-login" onclick="openAuthModal()">Sign in</button>
+      <button type="button" class="nav-cta" onclick="openAuthModal()">Get started</button>
     </div>
     <div class="nav-profile" id="navProfile" style="display:none">
       <div class="nav-avatar" id="navAvatar" onclick="toggleUserMenu()">
@@ -226,7 +226,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </div>
     <div class="user-popup-overlay" id="userPopupOverlay" onclick="if(event.target===this)closeUserMenu()">
       <div class="user-popup">
-        <button class="user-popup-close" onclick="closeUserMenu()">&times;</button>
+        <button type="button" class="user-popup-close" onclick="closeUserMenu()">&times;</button>
         <div class="user-popup-header">
           <div class="user-popup-avatar" id="userPopupAvatar"></div>
           <div class="user-popup-email" id="userPopupEmail"></div>
@@ -236,7 +236,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       </div>
     </div>
   </div>
-  <button class="hamburger" id="hamburger" aria-label="Menu">
+  <button type="button" class="hamburger" id="hamburger" aria-label="Menu">
     <span></span><span></span><span></span>
   </button>
 </div>
@@ -247,7 +247,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <a href="/blast">BLAST</a>
     <a href="/msa">MSA</a>
     <a href="/pcr-analysis">PCR Analysis</a>
-    <a href="/crispr-analysis">CRISPR Analysis <span style="font-size:9px;font-weight:700;color:#fff;background:#F59E0B;padding:2px 6px;border-radius:99px;line-height:1.3">Coming Soon</span></a>
+    <a href="/crispr-analysis">CRISPR Analysis <span style="font-size:12px;font-weight:700;color:#fff;background:#F59E0B;padding:2px 6px;border-radius:99px;line-height:1.3">Coming Soon</span></a>
     <a href="/tm-calculator">Tm Calculator</a>
     <a href="/gc-calculator">GC Calculator</a>
     <a href="/protein-docking">Protein Docking</a>
@@ -328,7 +328,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       </div>
     </div>
     <div class="char-count" style="padding:0 0 12px"><span id="msa-seq-count">0</span> sequences · <span id="msa-total-bp">0</span> total bp</div>
-    <button class="btn-primary" id="btn-msa" style="width:100%;justify-content:center">
+    <button type="button" class="btn-primary" id="btn-msa" style="width:100%;justify-content:center">
       <span class="spinner" id="msa-sp"></span>
       <span id="msa-txt">Run Alignment</span>
     </button>
@@ -343,8 +343,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <div class="panel-card" id="msa-downloads" style="display:none">
   <div class="panel-head"><h3>Downloads</h3></div>
   <div class="panel-body">
-    <button class="btn-secondary btn-sm" id="btn-dl-fa" style="width:100%;margin-bottom:6px">Download FASTA</button>
-    <button class="btn-secondary btn-sm" id="btn-dl-cl" style="width:100%">Download Clustal</button>
+    <button type="button" class="btn-secondary btn-sm" id="btn-dl-fa" style="width:100%;margin-bottom:6px">Download FASTA</button>
+    <button type="button" class="btn-secondary btn-sm" id="btn-dl-cl" style="width:100%">Download Clustal</button>
   </div>
 </div>
 </div>
@@ -360,8 +360,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <h3>Alignment</h3>
     <div style="display:flex;gap:6px;align-items:center">
       <span id="msa-page-info" style="font-size:11px;color:var(--muted)"></span>
-      <button class="btn-secondary btn-sm" id="btn-prev" style="padding:3px 8px;font-size:10px">◀</button>
-      <button class="btn-secondary btn-sm" id="btn-next" style="padding:3px 8px;font-size:10px">▶</button>
+      <button type="button" class="btn-secondary btn-sm" id="btn-prev" style="padding:3px 8px;font-size:12px">◀</button>
+      <button type="button" class="btn-secondary btn-sm" id="btn-next" style="padding:3px 8px;font-size:12px">▶</button>
     </div>
   </div>
   <div class="panel-body" id="msa-body">
@@ -372,9 +372,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </div>
     <div id="msa-viewer" style="display:none;overflow-x:auto">
       <div class="msa-wrap"><div class="msa-align" id="msa-align-rows"></div></div>
-      <div style="margin-top:8px"><div style="font-size:10px;color:var(--muted);margin-bottom:4px">Conservation</div>
+      <div style="margin-top:8px"><div style="font-size:12px;color:var(--muted);margin-bottom:4px">Conservation</div>
         <div class="conservation-bar" id="msa-cons-bar"></div>
-        <div class="conservation-label" style="display:flex;justify-content:space-between;font-size:9px;color:var(--muted)"><span>0%</span><span>100%</span></div>
+        <div class="conservation-label" style="display:flex;justify-content:space-between;font-size:12px;color:var(--muted)"><span>0%</span><span>100%</span></div>
       </div>
     </div>
   </div>
@@ -424,7 +424,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <div class="footer-grid">
   <div class="footer-col">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
-      <img src="/logo.svg" alt="VigyanLLM Logo" style="width:36px;height:36px;border-radius:8px">
+      <img src="/logo.svg" alt="VigyanLLM Logo" style="width:36px;height:36px;border-radius:8px" loading="lazy">
       <span style="font-family:var(--font-h);font-size:18px;font-weight:800;color:#fff">VigyanLLM</span>
     </div>
     <p style="font-size:13px;color:rgba(255,255,255,.45);line-height:1.6">Sovereign Healthcare &amp; Life Sciences AI.<br>Built in India. For the world.</p>
@@ -443,7 +443,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <a href="/blast">BLAST</a>
     <a href="/msa">MSA</a>
     <a href="/pcr-analysis">PCR Analysis</a>
-    <a href="/crispr-analysis">CRISPR <span style="font-size:9px;font-weight:700;color:#fff;background:#F59E0B;padding:2px 6px;border-radius:99px;line-height:1.3">Coming Soon</span></a>
+    <a href="/crispr-analysis">CRISPR <span style="font-size:12px;font-weight:700;color:#fff;background:#F59E0B;padding:2px 6px;border-radius:99px;line-height:1.3">Coming Soon</span></a>
     <a href="/protein-docking">Docking</a>
   </div>
   <div class="footer-col">
@@ -576,7 +576,7 @@ fileInput.addEventListener('change', function(){if(this.files.length) handleFile
 var parseAbort = false;
 function handleFile(file){
   if(parseAbort) return;
-  if(file.size > 500*1024*1024){ alert('File exceeds 500MB limit.'); return }
+  if(file.size> 500*1024*1024){ alert('File exceeds 500MB limit.'); return }
   msaFileForUpload = file;
   msaUploadedSeqs = null;
   var info = $('file-info');
@@ -588,7 +588,7 @@ function handleFile(file){
   var offset = 0, totalParsed = 0, totalBp = 0;
   var reader = new FileReader();
   function readChunk(){
-    if(parseAbort || offset >= file.size){
+    if(parseAbort || offset>= file.size){
       finishParse();
       return;
     }
@@ -625,9 +625,9 @@ function handleFile(file){
   readChunk();
 }
 function formatBp(n){
-  if(n > 1e9) return (n/1e9).toFixed(1)+' Gbp';
-  if(n > 1e6) return (n/1e6).toFixed(1)+' Mbp';
-  if(n > 1e3) return (n/1e3).toFixed(1)+' Kbp';
+  if(n> 1e9) return (n/1e9).toFixed(1)+' Gbp';
+  if(n> 1e6) return (n/1e6).toFixed(1)+' Mbp';
+  if(n> 1e3) return (n/1e3).toFixed(1)+' Kbp';
   return n+' bp';
 }
 // ── Async stats (lazy, chunked) ──
@@ -678,7 +678,7 @@ function updateSeqCount(){
     var seqs = getSeqs();
     if(!seqs){ $('msa-seq-count').textContent='0'; $('msa-total-bp').textContent='0'; return }
     $('msa-seq-count').textContent = seqs.length;
-    $('msa-total-bp').textContent = seqs.length > 500 ? '…' : seqs.reduce(function(s,x){return s + x.sequence.length}, 0).toLocaleString();
+    $('msa-total-bp').textContent = seqs.length> 500 ? '…' : seqs.reduce(function(s,x){return s + x.sequence.length}, 0).toLocaleString();
   }, 200);
 }
 (function(){
@@ -730,7 +730,7 @@ async function doMsa(){
     if(!seqs || seqs.length < 2){ alert('At least 2 sequences required.'); loading(false); msaStatus='idle'; return }
     var n = seqs.length;
     var estimatedBp = seqs.reduce(function(s,x){return s + x.sequence.length}, 0);
-    if(n > 500 || estimatedBp > 5000000){
+    if(n> 500 || estimatedBp> 5000000){
       // ── Async submit (JSON large set) ──
       setProgress(5, 'Submitting ' + n + ' sequences…');
       var r = await fetch(API + '/api/primer/msa/submit', {
@@ -769,7 +769,7 @@ async function doMsa(){
 }
 async function pollJob(){
   for(var i=0; i<180; i++){
-    await new Promise(function(r){setTimeout(r, msaTotalSeqs > 10000 ? 3000 : 1500)});
+    await new Promise(function(r){setTimeout(r, msaTotalSeqs> 10000 ? 3000 : 1500)});
     var sr = await fetch(API+'/api/primer/msa/status/'+msaJobId);
     if(!sr.ok) throw new Error('Status check failed');
     var st = await sr.json();
@@ -791,7 +791,7 @@ function updateColRange(){
   var start = parseInt($('col-start').value) || 0;
   var end = parseInt($('col-end').value) || Math.min(msaColEnd, msaAlignLen);
   end = Math.min(end, msaAlignLen || end);
-  if(start >= end){ start = Math.max(0, end - 120); if(start<0){start=0;end=Math.min(120,msaAlignLen)} }
+  if(start>= end){ start = Math.max(0, end - 120); if(start<0){start=0;end=Math.min(120,msaAlignLen)} }
   msaColStart = start;
   msaColEnd = end;
   if(msaJobId) loadPage(msaPage);
@@ -827,7 +827,7 @@ function renderPaginated(data){
   var nPages = Math.ceil(total / msaPerPage);
   $('msa-page-info').textContent = 'Page '+(msaPage+1)+'/'+nPages+' ('+total.toLocaleString()+' seqs)';
   $('btn-prev').disabled = msaPage <= 0;
-  $('btn-next').disabled = msaPage >= nPages - 1;
+  $('btn-next').disabled = msaPage>= nPages - 1;
 }
 function renderDirect(data){
   renderStats(data.stats||{});
@@ -971,13 +971,13 @@ _on('btn-dl-cl','click',function(){
 var alignHead = document.querySelector('#msa-body').previousElementSibling;
 if(alignHead){
   var colUi = document.createElement('div');
-  colUi.style.cssText = 'display:flex;gap:4px;align-items:center;font-size:10px';
+  colUi.style.cssText = 'display:flex;gap:4px;align-items:center;font-size:12px';
   colUi.innerHTML =
     '<label style="color:var(--muted)">Col:</label>'+
-    '<input id="col-start" type="number" min="0" value="0" style="width:50px;padding:2px 4px;border:1px solid var(--slate-border);border-radius:3px;font-size:10px">'+
+    '<input id="col-start" type="number" min="0" value="0" style="width:50px;padding:2px 4px;border:1px solid var(--slate-border);border-radius:3px;font-size:12px">'+
     '<span style="color:var(--muted)">–</span>'+
-    '<input id="col-end" type="number" min="1" value="120" style="width:55px;padding:2px 4px;border:1px solid var(--slate-border);border-radius:3px;font-size:10px">'+
-    '<button id="btn-col-apply" class="btn-secondary btn-sm" style="padding:2px 6px;font-size:9px">Apply</button>'+
+    '<input id="col-end" type="number" min="1" value="120" style="width:55px;padding:2px 4px;border:1px solid var(--slate-border);border-radius:3px;font-size:12px">'+
+    '<button type="button" id="btn-col-apply" class="btn-secondary btn-sm" style="padding:2px 6px;font-size:12px">Apply</button>'+
     '<span id="msa-col-info" style="color:var(--muted);margin-left:4px"></span>';
   alignHead.appendChild(colUi);
   _on('btn-col-apply','click',updateColRange);
