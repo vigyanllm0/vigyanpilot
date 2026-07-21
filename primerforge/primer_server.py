@@ -53,7 +53,7 @@ from flask import Flask, Response, jsonify, request
 
 # ── Configuration: .env loaded above, additional env vars override ──
 
-VERSION = "2.0.0"
+VERSION = "2.0.1"
 MAX_SEQ_LEN = 50_000
 SEQ_RE = re.compile(r"^[ACGTacgt\s]+$")
 ACGT_RE = re.compile(r"^[ACGTacgt]+$")
