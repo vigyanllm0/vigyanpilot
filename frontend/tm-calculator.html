@@ -179,7 +179,7 @@ footer{background:var(--black);color:rgba(255,255,255,.8);padding:56px 0 24px}
 height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <!-- End Google Tag Manager (noscript) -->
 
-<nav aria-label="Main navigation">
+<header><nav aria-label="Main navigation">
 <div class="nav-inner">
   <a href="/index" class="nav-brand">
     <img src="/logo.svg" alt="VigyanLLM Logo" width="48" height="48" style="border-radius:8px" loading="lazy">
@@ -281,7 +281,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <a href="#" onclick="closeMobileMenu();var e=document.getElementById('navSearchInput');if(e){e.focus();e.scrollIntoView({behavior:'smooth',block:'center'})};return false" class="mm-cta" style="background:transparent;border:1px solid rgba(255,255,255,.25);color:rgba(255,255,255,.8);margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:8px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Search</a>
   <a href="#" class="mm-cta" onclick="openAuthModal();return false">Sign in</a>
 </div>
-</nav>
+</nav></header>
 
 
 <section class="hero"><div class="container">
@@ -398,6 +398,19 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
 </main>
 <script>
+const NN_PARAMS = {
+  'AA':{dh:-7.9,ds:-22.2},'TT':{dh:-7.9,ds:-22.2},
+  'AT':{dh:-7.2,ds:-20.4},'TA':{dh:-7.2,ds:-21.3},
+  'CA':{dh:-8.5,ds:-22.7},'TG':{dh:-8.5,ds:-22.7},
+  'GT':{dh:-8.4,ds:-22.4},'AC':{dh:-8.4,ds:-22.4},
+  'CT':{dh:-7.8,ds:-21.0},'GA':{dh:-8.2,ds:-22.2},
+  'CG':{dh:-10.6,ds:-27.2},'GC':{dh:-9.8,ds:-24.4},
+  'GG':{dh:-8.0,ds:-19.9},'CC':{dh:-8.0,ds:-19.9},
+  'AG':{dh:-7.8,ds:-21.0},'TC':{dh:-7.8,ds:-21.0}
+};
+const INIT_GCTERM={dh:0.1,ds:-2.8};
+const INIT_ATTERM={dh:2.3,ds:4.1};
+const R=1.987; // cal/(mol*K)
 function calcTm(){
   const seq=document.getElementById('seq-input').value.trim().toUpperCase().replace(/[^ATCG]/g,'');
   const na=parseFloat(document.getElementById('na-conc').value)||50;
@@ -405,27 +418,29 @@ function calcTm(){
   const oligo=parseFloat(document.getElementById('oligo-conc').value)||0.25;
   if(seq.length<4){alert('Enter at least 4 bases (A/T/C/G)');return}
   const gc=(seq.match(/[GC]/g)||[]).length/seq.length*100;
-  const mw=seq.length*324.5+159; // average dNMP + terminal phosphate
-  // SantaLucia NN parameters (kcal/mol at 37C) - simplified dimer-based
-  const nn={
-    'AA':-1.0,'TT':-1.0,'AT':-0.88,'TA':-0.58,'CA':-1.45,'TG':-1.45,
-    'GT':-1.44,'AC':-1.44,'CT':-1.28,'GA':-1.28,'GA2':0,'TC2':0,
-    'GG':-2.17,'CC':-2.17,'GC':-2.24,'CG':-2.24,'AG':-1.84,'TC':-1.84
-  };
-  let dg=-0.98; // initiation
+  const mw=seq.length*324.5+159;
+  // SantaLucia 1998 unified NN parameters
+  let totalDH=0; // kcal/mol
+  let totalDS=0; // cal/(mol*K)
   for(let i=0;i<seq.length-1;i++){
     const duo=seq.substr(i,2);
-    dg+=nn[duo]||0;
+    if(NN_PARAMS[duo]){totalDH+=NN_PARAMS[duo].dh;totalDS+=NN_PARAMS[duo].ds}
   }
-  if(seq.length%2===0)dg+=0.43; // symmetry correction
+  // Initiation
+  const f=seq[0],l=seq[seq.length-1];
+  const i5=f==='A'||f==='T'?INIT_ATTERM:INIT_GCTERM;
+  const i3=l==='A'||l==='T'?INIT_ATTERM:INIT_GCTERM;
+  totalDH+=i5.dh+i3.dh;
+  totalDS+=i5.ds+i3.ds;
   // Salt correction (SantaLucia 1998)
-  const saltCorr=0.114*seq.length*Math.log(na+4*Math.sqrt(mg))/Math.LN10;
-  const tm=(1000*dg)/(-1.9872*Math.log(oligo*1e-6)+(dg/310.15))-273.15+saltCorr;
+  totalDS+=0.368*(seq.length-1)*Math.log(na+4*Math.sqrt(mg))/Math.LN10;
+  // Tm = (ΔH×1000) / (ΔS + R×ln(Ct/4)) - 273.15
+  const tm=(totalDH*1000)/(totalDS+R*Math.log(oligo*1e-6/4))-273.15;
   document.getElementById('r-len').textContent=seq.length+' nt';
   document.getElementById('r-gc').textContent=gc.toFixed(1)+'%';
   document.getElementById('r-tm').textContent=tm.toFixed(1)+' °C';
   document.getElementById('r-oligo').textContent=oligo.toFixed(2)+' μM';
-  document.getElementById('r-dg').textContent=dg.toFixed(2)+' kcal/mol';
+  document.getElementById('r-dg').textContent=totalDH.toFixed(1)+' kcal/mol';
   document.getElementById('r-mw').textContent=mw.toFixed(1)+' g/mol';
   document.getElementById('result-box').classList.add('show');
 }
