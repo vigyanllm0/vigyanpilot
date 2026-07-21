@@ -212,26 +212,40 @@ def logout():
 
 @auth_bp.route('/api/auth/google', methods=['POST'])
 def google_auth():
-    """Verify Google OAuth2 access token and create/login user."""
+    """Verify Google OAuth2 credential or access token and create/login user."""
     import requests as http_requests
     data = request.get_json(silent=True) or {}
+    credential = data.get('credential', '')
     access_token = data.get('access_token', '')
 
-    if not access_token:
-        return jsonify({"error": "Google access token is required."}), 400
-
-    # Verify token with Google's userinfo endpoint
-    try:
-        r = http_requests.get(
-            'https://www.googleapis.com/oauth2/v3/userinfo',
-            headers={'Authorization': f'Bearer {access_token}'},
-            timeout=10
-        )
-        if r.status_code != 200:
-            return jsonify({"error": "Invalid Google token."}), 401
-        ginfo = r.json()
-    except Exception as e:
-        return jsonify({"error": f"Google verification failed: {e!s}"}), 500
+    if credential and isinstance(credential, str):
+        try:
+            r = http_requests.get(
+                'https://oauth2.googleapis.com/tokeninfo',
+                params={'id_token': credential},
+                timeout=10
+            )
+            if r.status_code != 200:
+                return jsonify({"error": "Invalid Google credential."}), 401
+            ginfo = r.json()
+            if not ginfo.get('email'):
+                return jsonify({"error": "Could not retrieve email from Google credential."}), 400
+        except Exception as e:
+            return jsonify({"error": f"Google verification failed: {e!s}"}), 500
+    elif access_token and isinstance(access_token, str):
+        try:
+            r = http_requests.get(
+                'https://www.googleapis.com/oauth2/v3/userinfo',
+                headers={'Authorization': f'Bearer {access_token}'},
+                timeout=10
+            )
+            if r.status_code != 200:
+                return jsonify({"error": "Invalid Google token."}), 401
+            ginfo = r.json()
+        except Exception as e:
+            return jsonify({"error": f"Google verification failed: {e!s}"}), 500
+    else:
+        return jsonify({"error": "Google credential or access token is required."}), 400
 
     email = ginfo.get('email', '').strip().lower()
     name = ginfo.get('name', '')

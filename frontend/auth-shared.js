@@ -81,19 +81,27 @@ function renderGoogleBtn(){
 function handleGoogleCredential(res){
   var err=document.getElementById('auth-err');
   if(!res||!res.credential){if(err){err.style.display='block';err.textContent='Google sign-in was cancelled.'}return}
-  var payload=JSON.parse(atob(res.credential.split('.')[1]));
-  fetch(API+'/api/register',{
+  fetch(API+'/api/auth/google',{
     method:'POST',
     headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({email:payload.email,auth_provider:'google',name:payload.name||''})
-  }).then(function(r){
-    if(r.ok)window.location.href='primer.html';
-    else return r.text();
-  }).then(function(e){
-    if(e&&err){err.style.display='block';err.textContent=e||'Something went wrong.'}
-  }).catch(function(){
-    if(err){err.style.display='block';err.textContent='Server unavailable. Please try again.'}
-  });
+    body:JSON.stringify({credential:res.credential})
+  }).then(function(r){return r.json().then(function(d){return{ok:r.ok,data:d}})})
+    .then(function(res){
+      if(res.ok&&res.data.token){
+        sessionStorage.setItem('pf_token',res.data.token);
+        sessionStorage.setItem('pf_user',JSON.stringify(res.data.user||{}));
+        closeAuth();
+        updateAuthUI();
+      }else if(res.ok){
+        closeAuth();
+        window.location.href='primer.html';
+      }else{
+        err.style.display='block';err.textContent=res.data.error||'Google sign-in failed.';
+      }
+    })
+    .catch(function(){
+      if(err){err.style.display='block';err.textContent='Server unavailable. Please try again.'}
+    });
 }
 
 function submitAuth(){
