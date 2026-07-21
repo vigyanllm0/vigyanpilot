@@ -182,8 +182,25 @@ git mv learning-vigyanllm-temp.html learning-vigyanllm.html
 1. **pricing.html Razorpay integration** — Added full Razorpay checkout flow (create-order API call, Razorpay SDK load, checkout modal, verify-payment handler) enabling direct plan purchases from the pricing page. Buttons for Daily Pass, Individual, and Lab/Institute plans now call `purchasePlan()` which checks auth → creates Razorpay order → opens checkout. Includes loading overlay and error handling
 2. **RAZORPAY_WEBHOOK_SECRET in .env** — Added cryptographically random webhook secret to `.env` (was missing — critical gap for webhook verification)
 
+---
+
+## 2026-07-21 18:30 UTC — Phase 4 Low Priority Fixes
+
+### Fixes Applied
+1. **L-01: Short page titles** — Expanded `/changelog` title from 21→60 chars ("VigyanLLM Product Changelog — Updates, New Features & Bug Fixes")
+2. **L-07: Sitemap link in `<head>`** — Added `<link rel="sitemap" type="application/xml" href="/sitemap.xml" />` to all 397 pages
+3. **L-08: RSS feed link** — Added `<link rel="alternate" type="application/rss+xml" title="VigyanLLM Blog RSS" href="/blog/rss.xml" />` to all 412 pages
+4. **V-FIX-43: Static asset cache headers** — Added `Cache-Control` to vercel.json: fonts (1yr immutable), images (1d + 7d stale-while-revalidate), manifest.json (1hr), rss.xml (1hr)
+5. **V-FIX-38: CSS spacing scale** — Added `--space-1` through `--space-24` CSS custom properties (4px base) to `:root` on all 406 pages
+
+### Items Verified as Already Fixed
+- **L-02: Error pages font** — admin-security.html already has Montserrat/Open Sans fonts loaded; `/api/` returns JSON (not HTML)
+- **L-08: RSS feed** — link added to `<head>`; actual `/blog/rss.xml` endpoint not yet created (requires SSG or static XML)
+- **V-FIX-40: Vercel WAF** — Dashboard config (no code change)
+- **V-FIX-39: Inline style extraction** — Deferred to design system sprint (primer 457, docking 143, msa 109 inline styles)
+
 ### Remaining
-- **H-01, H-02, V-FIX-17, V-FIX-18, V-FIX-19:** Design system sprint
+- **H-01, H-02, V-FIX-17, V-FIX-18, V-FIX-19, V-FIX-39:** Design system sprint
 
 ---
 
