@@ -293,7 +293,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <tr><td style="padding:10px 14px">Protein query + Translated nucleotide DB (FASTA)</td><td style="padding:10px 14px">tBLASTN alignments against translated nucleotide database</td></tr>
   </table>
 </section>
-<div class="tool-wrap">
+<form onsubmit="return false" class="tool-wrap">
 <div>
 <div class="panel-card">
   <div class="panel-head"><h3>Query</h3></div>
@@ -362,7 +362,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 </div>
 </div>
 </div>
-</div>
+</form>
+/div>
 <div class="seo-content" style="max-width:var(--max-w);margin:0 auto;padding:48px 24px 24px">
 <h2 style="font-family:var(--font-h);font-size:22px;font-weight:800;margin-bottom:8px">Frequently Asked Questions About BLAST</h2>
 <p style="color:var(--muted);font-size:14px;margin-bottom:32px">Everything you need to know about BLAST sequence alignment</p>
@@ -406,6 +407,20 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 </main>
 
 <!-- REFERENCES -->
+
+<section id="methodology" style="max-width:var(--max-w);margin:48px auto;padding:0 24px">
+  <h2 class="section-title" style="margin-bottom:24px">Methodology &amp; Algorithm</h2>
+  <div style="font-size:13px;color:var(--text2);line-height:1.8">
+    <p>VigyanLLM BLAST uses <strong>NCBI BLAST+ 2.15.0</strong> for sequence alignment. Searches are performed against the following databases:</p>
+    <ul style="margin:12px 0 0 20px">
+      <li><strong>nt</strong> — Non-redundant nucleotide database (GenBank/EMBL/DDBJ, updated monthly)</li>
+      <li><strong>nr</strong> — Non-redundant protein sequences (updated monthly)</li>
+      <li><strong>RefSeq RNA</strong> — Curated RNA sequence database</li>
+    </ul>
+    <p style="margin-top:12px">Algorithm parameters: <strong>BLASTN</strong> for nucleotide-nucleotide (word size 11, expect threshold 10, match/mismatch 2/-3); <strong>BLASTP</strong> for protein-protein (word size 3, BLOSUM62 matrix); <strong>BLASTX</strong> for translated nucleotide queries. A local exact-match mode using suffix-array indexing is available for quick direct matching without external API calls.</p>
+  </div>
+</section>
+
 <section class="references-section" style="max-width:var(--max-w);margin:48px auto;padding:0 24px">
   <h2 class="section-title" style="margin-bottom:24px">Scientific References</h2>
   <div style="font-size:12px;color:var(--text2);line-height:1.8">

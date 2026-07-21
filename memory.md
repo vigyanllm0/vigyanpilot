@@ -158,9 +158,21 @@ git mv learning-vigyanllm-temp.html learning-vigyanllm.html
 5. **V-FIX-32: Server header removal** — Added empty `Server` and `X-Powered-By` response headers to vercel.json catch-all
 6. **V-FIX-33: SSR form pre-rendering** — Wrapped tool input areas in semantic `<form>` tags on tm-calculator.html, gc-calculator.html, dna-to-rna.html (with `onsubmit="return false"` to prevent submission, button types kept as `type="button"`)
 
-### Deferred (backend/CSS sprint needed)
-- **V-FIX-30:** /api/health exposes version info — requires backend change to strip version field (Vercel proxy can't modify response body)
-- **M-09/M-10:** BLAST/docking method disclosure — requires content addition about algorithmic details
+---
+
+## 2026-07-21 03:15 UTC — Remaining Phase 3 Fixes
+
+### Fixes Applied
+1. **M-02: WebPage JSON-LD on /signup** — Added full WebPage schema.org markup to signup.html
+2. **M-09: BLAST methodology** — Added methodology section with NCBI BLAST+ version 2.15.0, database descriptions (nt, nr, RefSeq RNA), algorithm parameters (word size, expect threshold, match/mismatch scores), and local exact-match mode description
+3. **M-10: Docking methodology** — Added structured pipeline table with ESMFold v0.1, AutoDock Vina 1.2.5, GNINA v1.1, and consensus scoring description with DOI-linked citations
+4. **V-FIX-33 (extended): SSR form wrappers** — Added semantic `<form>` tags to blast.html, docking.html, msa.html, primer.html tool sections
+5. **V-FIX-30: /api/health security** — Stripped version, pipeline_steps, strict_mode from public health endpoint (now returns `{"status": "ok"}` only)
+6. **V-FIX-29: Progressive account lockout (SQLite auth)** — Added `locked_until` and `failed_attempts` columns to users table; implemented `_apply_login_lockout()` with escalating thresholds (3→60s, 5→5min, 10→1hr, 20→24hr); `_clear_lockout()` on successful login
+
+### Remaining (SEO content sprint needed)
+- **M-05 to M-08:** CTR improvement for 10 zero-click blog/glossary pages
+- **V-FIX-36:** Glossary CTR (2,907 impressions, 1 click) — needs internal links + meta rewrites
 - **H-01, H-02, V-FIX-17, V-FIX-18, V-FIX-19:** Design system sprint
 
 ---

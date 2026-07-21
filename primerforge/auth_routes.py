@@ -69,6 +69,63 @@ def register():
     }), 201
 
 
+LOCKOUT_THRESHOLDS = [
+    {"attempts": 3, "lockout_seconds": 60},
+    {"attempts": 5, "lockout_seconds": 300},
+    {"attempts": 10, "lockout_seconds": 3600},
+    {"attempts": 20, "lockout_seconds": 86400},
+]
+
+
+def _apply_login_lockout(db, email):
+    """Check and apply progressive lockout on failed login."""
+    row = db.execute(
+        "SELECT locked_until, failed_attempts FROM users WHERE email=?",
+        (email,)
+    ).fetchone()
+    if not row:
+        return None
+
+    locked_until = row["locked_until"] or 0
+    now = time.time()
+
+    if locked_until > now:
+        remaining = int(locked_until - now)
+        return {"error": f"Account temporarily locked. Try again in {remaining} seconds."}
+
+    failed = (row["failed_attempts"] or 0) + 1
+    lockout_seconds = 0
+    for t in reversed(LOCKOUT_THRESHOLDS):
+        if failed >= t["attempts"]:
+            lockout_seconds = t["lockout_seconds"]
+            break
+
+    if lockout_seconds > 0:
+        locked_until = now + lockout_seconds
+        db.execute(
+            "UPDATE users SET failed_attempts=?, locked_until=? WHERE email=?",
+            (failed, locked_until, email)
+        )
+        db.commit()
+        return {"error": f"Account temporarily locked. Try again in {lockout_seconds} seconds."}
+
+    db.execute(
+        "UPDATE users SET failed_attempts=? WHERE email=?",
+        (failed, email)
+    )
+    db.commit()
+    return None
+
+
+def _clear_lockout(db, email):
+    """Clear lockout state on successful login."""
+    db.execute(
+        "UPDATE users SET failed_attempts=0, locked_until=0 WHERE email=?",
+        (email,)
+    )
+    db.commit()
+
+
 @auth_bp.route('/api/auth/login', methods=['POST'])
 def login():
     data = request.get_json(silent=True) or {}
@@ -83,12 +140,14 @@ def login():
     if not row:
         return jsonify({"error": "Invalid email or password."}), 401
 
+    lock_result = _apply_login_lockout(db, email)
+    if lock_result:
+        return jsonify(lock_result), 429
+
     if not bcrypt.checkpw(password.encode(), row['password_hash'].encode()):
         return jsonify({"error": "Invalid email or password."}), 401
 
-    # Update last login
-    db.execute("UPDATE users SET last_login=? WHERE email=?", (time.time(), email))
-    db.commit()
+    _clear_lockout(db, email)
 
     role = row['role']
     token = create_token(email, role)

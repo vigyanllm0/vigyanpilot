@@ -111,7 +111,9 @@ def init_db():
             dock_run_count INTEGER DEFAULT 0,
             dock_paid_runs INTEGER DEFAULT 0,
             created_at REAL DEFAULT (strftime('%s','now')),
-            last_login REAL DEFAULT 0
+            last_login REAL DEFAULT 0,
+            locked_until REAL DEFAULT 0,
+            failed_attempts INTEGER DEFAULT 0
         );
 
         CREATE TABLE IF NOT EXISTS token_blacklist (

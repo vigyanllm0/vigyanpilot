@@ -506,7 +506,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <tr><td style="padding:10px 14px"><strong>Consensus Scoring</strong></td><td style="padding:10px 14px">Weighted average of Vina + GNINA + CNN scores</td></tr>
   </table>
 </section>
-<div class="tool-wrap">
+<form onsubmit="return false" class="tool-wrap">
   <!-- LEFT SIDEBAR: Pipeline stages -->
   <div class="tool-left">
     <div class="sidebar-section">
@@ -680,7 +680,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       </div>
     </div>
   </div>
-</div><!-- /tool-wrap -->
+</form>
+</div>
 <!-- PROOF SECTION -->
 <div class="proof-section alt">
   <div class="proof-inner">
@@ -1644,6 +1645,21 @@ if (hamburger && mobileMenu) {
 </div>
 
 <!-- REFERENCES -->
+
+<section id="methodology" style="max-width:var(--max-w);margin:48px auto;padding:0 24px">
+  <h2 class="section-title" style="margin-bottom:24px">Pipeline &amp; Methodology</h2>
+  <table style="width:100%;border-collapse:collapse;font-size:13px">
+    <tr style="background:var(--slate,#F1F5F9)"><th style="padding:10px 14px;text-align:left;font-weight:600">Component</th><th style="padding:10px 14px;text-align:left;font-weight:600">Tool</th><th style="padding:10px 14px;text-align:left;font-weight:600">Version</th><th style="padding:10px 14px;text-align:left;font-weight:600">Reference</th></tr>
+    <tr style="border-bottom:1px solid var(--outline,#E2E5EA)"><td style="padding:10px 14px">Structure Prediction</td><td style="padding:10px 14px">ESMFold</td><td style="padding:10px 14px">v0.1</td><td style="padding:10px 14px"><a href="https://doi.org/10.1101/2022.07.21.500902" target="_blank" rel="noopener noreferrer" style="color:#1565C0;text-decoration:underline">Lin et al. (2023) bioRxiv</a></td></tr>
+    <tr style="border-bottom:1px solid var(--outline,#E2E5EA)"><td style="padding:10px 14px">Molecular Docking</td><td style="padding:10px 14px">AutoDock Vina</td><td style="padding:10px 14px">1.2.5</td><td style="padding:10px 14px"><a href="https://doi.org/10.1002/jcc.21334" target="_blank" rel="noopener noreferrer" style="color:#1565C0;text-decoration:underline">Trott &amp; Olson (2010) J. Comput. Chem.</a></td></tr>
+    <tr style="border-bottom:1px solid var(--outline,#E2E5EA)"><td style="padding:10px 14px">Deep Learning Rescoring</td><td style="padding:10px 14px">GNINA</td><td style="padding:10px 14px">v1.1</td><td style="padding:10px 14px"><a href="https://doi.org/10.1186/s13321-021-00515-3" target="_blank" rel="noopener noreferrer" style="color:#1565C0;text-decoration:underline">McNutt et al. (2021) J. Cheminform.</a></td></tr>
+    <tr><td style="padding:10px 14px">Binding Affinity Scoring</td><td style="padding:10px 14px">Vina + CNN Consensus</td><td style="padding:10px 14px">—</td><td style="padding:10px 14px">Weighted average of Vina score and GNINA CNN score</td></tr>
+  </table>
+  <div style="font-size:12px;color:var(--text2);line-height:1.8;margin-top:16px">
+    <p>The consensus pipeline predicts protein 3D structure from amino acid sequence using ESMFold, screens small-molecule ligands with AutoDock Vina (blind docking across the entire protein surface), and re-scores the top hits with GNINA CNN deep learning for improved ranking accuracy. Final rankings use a weighted consensus of Vina and GNINA scores.</p>
+  </div>
+</section>
+
 <section class="references-section" style="max-width:var(--max-w);margin:48px auto;padding:0 24px">
   <h2 class="section-title" style="margin-bottom:24px">Scientific References</h2>
   <div style="font-size:12px;color:var(--text2);line-height:1.8">

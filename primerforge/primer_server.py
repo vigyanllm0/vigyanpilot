@@ -749,8 +749,7 @@ def create_app() -> Flask:
 
     @app.route("/health", methods=["GET"])
     def health():
-        return jsonify({"status": "ok", "version": VERSION, "ready": READY,
-                        "pipeline_steps": 22, "strict_mode": True}), 200
+        return jsonify({"status": "ok"}), 200
 
     @app.route("/api/config/public", methods=["GET"])
     def public_config():
