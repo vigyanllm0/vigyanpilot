@@ -554,7 +554,145 @@ function toggleFaq(el){var p=el.parentElement;p.classList.toggle('open')}
 </div>
 </footer>
 
+<div id="pay-loading" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,.6);z-index:99999;align-items:center;justify-content:center;flex-direction:column;gap:16px">
+  <div style="width:40px;height:40px;border:3px solid rgba(255,255,255,.2);border-top:3px solid #fff;border-radius:50%;animation:spin .8s linear infinite"></div>
+  <div style="color:#fff;font-family:'Montserrat',sans-serif;font-size:14px;font-weight:600">Processing payment...</div>
+</div>
+<style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+
 <script src="/search-index.js"></script>
 <script src="/auth-shared.js"></script>
+
+<script>
+// ── Razorpay Payment Integration ──────────────────────────────────────────
+var API = window.VIGYAN_BACKEND_URL || '';
+
+function getToken() {
+  return sessionStorage.getItem('pf_token') || localStorage.getItem('pf_token');
+}
+
+function showLoading(show) {
+  document.getElementById('pay-loading').style.display = show ? 'flex' : 'none';
+}
+
+function loadRazorpaySdk() {
+  return new Promise(function(resolve, reject) {
+    if (window.Razorpay) return resolve();
+    var s = document.createElement('script');
+    s.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    s.onload = resolve;
+    s.onerror = function() { reject(new Error('Failed to load Razorpay SDK')); };
+    document.body.appendChild(s);
+  });
+}
+
+async function openRazorpayCheckout(order) {
+  try {
+    await loadRazorpaySdk();
+    showLoading(false);
+  } catch (e) {
+    showLoading(false);
+    alert('Payment system unavailable. Please check your network and try again.');
+    return;
+  }
+  var options = {
+    key: order.key_id,
+    amount: order.amount,
+    currency: order.currency || 'INR',
+    name: 'VigyanLLM',
+    description: order.description || 'Plan purchase',
+    order_id: order.order_id,
+    theme: { color: '#1565C0' },
+    config: {
+      display: {
+        blocks: {
+          upi: { name: 'Pay using UPI', instruments: [{method: 'upi'}] },
+          card: { name: 'Pay using Card', instruments: [{method: 'card'}] },
+          netbanking: { name: 'Pay using Netbanking', instruments: [{method: 'netbanking'}] }
+        },
+        sequence: ['block.upi', 'block.card', 'block.netbanking'],
+        preferences: { show_default_blocks: true }
+      }
+    },
+    handler: async function(response) {
+      try {
+        var vr = await fetch(API + '/api/payments/verify-payment', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + getToken() },
+          body: JSON.stringify({
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_order_id: response.razorpay_order_id,
+            razorpay_signature: response.razorpay_signature
+          })
+        });
+        var vd = await vr.json();
+        if (vr.ok && vd.success) {
+          window.location.href = '/payment-success.html?order_id=' + response.razorpay_order_id + '&payment_id=' + response.razorpay_payment_id + '&amount=' + (order.amount / 100) + '&runs=' + (vd.runs_purchased || vd.tokens_credited || 1);
+        } else {
+          window.location.href = '/payment-failed.html?reason=' + encodeURIComponent(vd.error || 'Verification failed');
+        }
+      } catch (e) {
+        window.location.href = '/payment-failed.html?reason=' + encodeURIComponent('Network error: ' + e.message);
+      }
+    },
+    modal: { ondismiss: function() { showLoading(false); } }
+  };
+  var rzp = new window.Razorpay(options);
+  rzp.on('payment.failed', function(response) {
+    var reason = response.error ? response.error.description : 'Payment failed';
+    window.location.href = '/payment-failed.html?reason=' + encodeURIComponent(reason);
+  });
+  rzp.open();
+}
+
+async function purchasePlan(productId, quantity) {
+  var token = getToken();
+  if (!token) {
+    openAuthModal();
+    return;
+  }
+  showLoading(true);
+  try {
+    var r = await fetch(API + '/api/payments/create-order', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ product_id: productId, quantity: quantity || 1 })
+    });
+    var d = await r.json();
+    if (!r.ok) {
+      showLoading(false);
+      alert(d.error || 'Payment service unavailable');
+      return;
+    }
+    await openRazorpayCheckout(d);
+  } catch (e) {
+    showLoading(false);
+    alert('Payment service unavailable. Please try again later.');
+  }
+}
+</script>
+
+<script>
+// Wire plan buttons with payment
+(function() {
+  function wireBtn(selector, productId, qty) {
+    var btn = document.querySelector(selector);
+    if (!btn) return;
+    btn.onclick = function(e) {
+      e.preventDefault();
+      purchasePlan(productId, qty);
+    };
+  }
+  // Daily Pass (one-time)
+  wireBtn('.pricing-card:nth-child(2) .p-btn', 'daily', 1);
+  // Individual / Researcher (monthly subscription)
+  wireBtn('.pricing-card:nth-child(3) .p-btn', 'individual', 1);
+  // Lab / Academic Institute (monthly subscription)
+  wireBtn('.pricing-card:nth-child(4) .p-btn', 'institutional', 1);
+  // Corporate R&D — contact sales (keep original auth modal for inquiry)
+  // Academic Free — keep auth modal (free plan)
+})();
+</script>
+
 </body>
 </html>

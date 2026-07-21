@@ -170,9 +170,19 @@ git mv learning-vigyanllm-temp.html learning-vigyanllm.html
 5. **V-FIX-30: /api/health security** — Stripped version, pipeline_steps, strict_mode from public health endpoint (now returns `{"status": "ok"}` only)
 6. **V-FIX-29: Progressive account lockout (SQLite auth)** — Added `locked_until` and `failed_attempts` columns to users table; implemented `_apply_login_lockout()` with escalating thresholds (3→60s, 5→5min, 10→1hr, 20→24hr); `_clear_lockout()` on successful login
 
-### Remaining (SEO content sprint needed)
-- **M-05 to M-08:** CTR improvement for 10 zero-click blog/glossary pages
-- **V-FIX-36:** Glossary CTR (2,907 impressions, 1 click) — needs internal links + meta rewrites
+### SEO Content Fixes
+7. **M-05 to M-08: CTR improvement** — Rewrote titles/descriptions for 5 high-impression pages (ncbi-primer-blast-guide, rt-pcr-vs-qpcr, digital-pcr-vs-qpcr, primer-design-thermodynamics, tm-calculator). Added FAQPage JSON-LD schema (3 Q&A pairs) to 3 blog posts for rich search results eligibility
+8. **V-FIX-36: Glossary CTR** — Rewrote meta descriptions for 9 glossary pages (rt-pcr, allele, qpcr, gc-content, amplicon, blast, primer-dimer, pcr, primer). Fixed truncated sentences ending with "Learn how VigyanLLM." — replaced with self-contained 150-char descriptions including tool CTAs
+
+---
+
+## 2026-07-21 04:00 UTC — Razorpay Payment Integration on Pricing Page
+
+### Fixes Applied
+1. **pricing.html Razorpay integration** — Added full Razorpay checkout flow (create-order API call, Razorpay SDK load, checkout modal, verify-payment handler) enabling direct plan purchases from the pricing page. Buttons for Daily Pass, Individual, and Lab/Institute plans now call `purchasePlan()` which checks auth → creates Razorpay order → opens checkout. Includes loading overlay and error handling
+2. **RAZORPAY_WEBHOOK_SECRET in .env** — Added cryptographically random webhook secret to `.env` (was missing — critical gap for webhook verification)
+
+### Remaining
 - **H-01, H-02, V-FIX-17, V-FIX-18, V-FIX-19:** Design system sprint
 
 ---
