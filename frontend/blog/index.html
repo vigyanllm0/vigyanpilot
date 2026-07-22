@@ -1102,7 +1102,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   (async function() {
     try {
       const API = window.location.hostname === 'localhost' ? 'http://localhost:8001' : '';
-      const r = await fetch(API + '/api/v1/cms/pages?content_type=blog&limit=100');
+      const ac = new AbortController();
+      setTimeout(() => ac.abort(), 5000);
+      const r = await fetch(API + '/api/v1/cms/pages?content_type=blog&limit=100', { signal: ac.signal });
       if (!r.ok) { console.warn('CMS API returned', r.status); return; }
       const body = await r.json();
       const pages = body && body.data && body.data.pages;
