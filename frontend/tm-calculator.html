@@ -177,6 +177,67 @@ footer{background:var(--black);color:rgba(255,255,255,.8);padding:56px 0 24px}
 <script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.vigyanllm.in"}, {"@type": "ListItem", "position": 2, "name": "Primer Melting Temperature (Tm) Calculator"}]}</script>
 <script type="application/ld+json">{"@context": "https://schema.org", "@type": "SoftwareApplication", "name": "VigyanLLM Melting Temperature Calculator", "url": "https://www.vigyanllm.in/tm-calculator", "description": "Primer melting temperature calculator using nearest-neighbor thermodynamics for PCR optimization.", "applicationCategory": "BiotechnologyApplication", "operatingSystem": "Web Browser", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "creator": {"@type": "Organization", "name": "VigyanLLM Private Limited"}}</script>
 
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "HowTo",
+  "name": "Calculate Primer Melting Temperature",
+  "step": [
+    {"@type": "HowToStep", "position": 1, "name": "Enter primer sequence", "text": "Paste your primer sequence (15-60 nucleotides) in the input field."},
+    {"@type": "HowToStep", "position": 2, "name": "Set salt conditions", "text": "Adjust Na+ and Mg2+ concentrations for your buffer conditions."},
+    {"@type": "HowToStep", "position": 3, "name": "Set primer concentration", "text": "Enter your oligonucleotide concentration (default 0.25 μM)."},
+    {"@type": "HowToStep", "position": 4, "name": "Calculate Tm", "text": "Click Calculate to get Tm, GC%, ΔG, and molecular weight using nearest-neighbor thermodynamics."}
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "How is primer melting temperature (Tm) calculated?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "VigyanLLM uses the SantaLucia 1998 nearest-neighbor thermodynamic model. Tm is calculated from ΔH (enthalpy) and ΔS (entropy) of each neighboring base pair, with salt correction for Na+ and Mg2+ concentrations, and oligonucleotide concentration. The formula is Tm = ΔH/(ΔS + R·ln(Ct/4)) - 273.15."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What is the nearest-neighbor model for Tm calculation?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "The nearest-neighbor model considers each adjacent base pair as a thermodynamic unit. Rather than just counting GC pairs, it uses experimentally determined ΔH and ΔS values for each of the 10 possible nearest-neighbor combinations (e.g., AA/TT, AT/TA, CG/GC), giving more accurate Tm predictions."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How does salt concentration affect Tm?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Higher salt concentrations stabilize DNA duplexes by shielding negative phosphate charges, raising the Tm. VigyanLLM's Tm calculator corrects for both monovalent (Na+) and divalent (Mg2+) cations using the SantaLucia 1998 salt correction formula. Mg2+ has a stronger effect than Na+."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What is the optimal Tm for PCR primers?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Optimal primer Tm is typically 52-65°C, with forward and reverse primer Tms within 2-5°C of each other. The annealing temperature for PCR is usually set 3-5°C below the lowest primer Tm. For qPCR, primers with Tm 58-62°C and amplicons under 200 bp are recommended."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What factors affect Tm accuracy?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Tm accuracy depends on sequence length (nearest-neighbor works best for 15-60 nt), GC content, salt concentration (especially Mg2+), oligonucleotide concentration, and presence of modified bases. The SantaLucia model has an average error of ±0.5-1.0°C for DNA duplexes."
+      }
+    }
+  ]
+}
+</script>
 </head>
 <body>
 <a href="#main-content" class="skip-link">Skip to content</a><main id="main-content">
