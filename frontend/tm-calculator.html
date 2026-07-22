@@ -11,7 +11,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
-<title>Melting Temperature (Tm) Calculator | VigyanLLM</title>
+<title>Melting Temperature (Tm) Calculator</title>
   <link rel="stylesheet" href="/design-tokens.css">
   <link rel="stylesheet" href="/tools.css">
 <link rel="manifest" href="/manifest.json" />
@@ -440,7 +440,7 @@ function calcTm(){
   totalDH+=i5.dh+i3.dh;
   totalDS+=i5.ds+i3.ds;
   // Salt correction (SantaLucia 1998)
-  totalDS+=0.368*(seq.length-1)*Math.log(na+4*Math.sqrt(mg))/Math.LN10;
+  totalDS+=0.368*(seq.length-1)*Math.log((na+4*Math.sqrt(mg))/1000);
   // Tm = (ΔH×1000) / (ΔS + R×ln(Ct/4)) - 273.15
   const tm=(totalDH*1000)/(totalDS+R*Math.log(oligo*1e-6/4))-273.15;
   document.getElementById('r-len').textContent=seq.length+' nt';

@@ -12,7 +12,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
 <meta name="description" content="Interactive 3D B-DNA molecular structure viewer with major and minor groove visualization. Explore DNA helix geometry, base pair stacking, and structural dynamics online | VigyanLLM">
-<title>3D B-DNA Molecular Simulation Tool | VigyanLLM</title>
+<title>3D B-DNA Molecular Simulation Tool</title>
   <link rel="stylesheet" href="/design-tokens.css">
   <link rel="stylesheet" href="/tools.css">
 <link rel="manifest" href="/manifest.json" />
@@ -324,8 +324,12 @@ key.castShadow = true;
 key.shadow.mapSize.set(1024, 1024);
 scene.add(key);
 
-scene.add(new THREE.DirectionalLight(0x4488ff, 0.4).position.set(-3, 1, -4));
-scene.add(new THREE.DirectionalLight(0x88ccff, 0.25).position.set(-2, -4, 3));
+const rim1 = new THREE.DirectionalLight(0x4488ff, 0.4);
+rim1.position.set(-3, 1, -4);
+scene.add(rim1);
+const rim2 = new THREE.DirectionalLight(0x88ccff, 0.25);
+rim2.position.set(-2, -4, 3);
+scene.add(rim2);
 const gl = new THREE.PointLight(0x3366ff, 0.3, 12);
 gl.position.set(0, 0, 0);
 scene.add(gl);
