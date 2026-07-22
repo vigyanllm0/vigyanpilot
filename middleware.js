@@ -29,7 +29,7 @@ export default function middleware(request) {
       cookie.split(';').map(c => c.trim().split('=')).filter(([k]) => k).map(([k, ...v]) => [k, v.join('=')])
     );
     if (!cookies['admin_tk']) {
-      return new Response('Unauthorized', { status: 401 });
+      return new Response('Page Not Found', { status: 404 });
     }
   }
 
