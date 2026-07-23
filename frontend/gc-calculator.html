@@ -375,6 +375,38 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   </table>
 </section>
 
+<section style="max-width:900px;margin:0 auto;padding:0 24px 24px">
+<h2 style="font-family:var(--font-h);font-size:18px;font-weight:700;margin-bottom:12px">Understanding GC Content in Primer Design</h2>
+<p style="color:var(--text2);font-size:14px;line-height:1.7;margin-bottom:16px">GC content is the percentage of guanine (G) and cytosine (C) bases in a DNA sequence. Since G-C base pairs form three hydrogen bonds (compared to two for A-T), GC content directly influences DNA duplex stability, melting temperature, and secondary structure formation. The standard optimal range for PCR primers is <strong>40-60% GC</strong>. Primers below 40% GC may bind weakly and produce diffuse bands, while primers above 60% GC are prone to forming stable hairpins and primer-dimers that compete with template binding.</p>
+<table style="width:100%;border-collapse:collapse;margin:12px 0 16px;font-size:13px">
+<tr style="background:#F1F5F9"><th style="padding:8px 12px;text-align:left">GC Content</th><th style="padding:8px 12px;text-align:left">Tm</th><th style="padding:8px 12px;text-align:left">Stability</th><th style="padding:8px 12px;text-align:left">Specificity</th></tr>
+<tr style="border-bottom:1px solid #E2E5EA"><td style="padding:8px 12px">Low (&lt;40%)</td><td style="padding:8px 12px">Low Tm</td><td style="padding:8px 12px">Weak binding, poor annealing</td><td style="padding:8px 12px">May not bind or produce non-specific products</td></tr>
+<tr style="border-bottom:1px solid #E2E5EA"><td style="padding:8px 12px">Optimal (40-60%)</td><td style="padding:8px 12px">Optimal Tm (52-60°C)</td><td style="padding:8px 12px">Good balance of stability</td><td style="padding:8px 12px">High specificity for target sequence</td></tr>
+<tr><td style="padding:8px 12px">High (&gt;60%)</td><td style="padding:8px 12px">High Tm</td><td style="padding:8px 12px">Strong binding, stable duplex</td><td style="padding:8px 12px">Risk of hairpins, dimers, and secondary structures</td></tr>
+</table>
+
+<h2 style="font-family:var(--font-h);font-size:18px;font-weight:700;margin-bottom:12px;margin-top:28px">How GC Content Affects PCR Success</h2>
+<p style="color:var(--text2);font-size:14px;line-height:1.7;margin-bottom:16px">GC content impacts every stage of PCR. During denaturation, GC-rich templates require higher temperatures (98°C vs 94-95°C) because G-C bonds require more energy to break. During annealing, high-GC primers need higher annealing temperatures to prevent non-specific binding, while low-GC primers anneal at lower temperatures. GC-rich templates often form secondary structures that stall polymerase extension, requiring additives like DMSO (3-10%) or betaine (1-2 M) to disrupt these structures and improve amplification.</p>
+<table style="width:100%;border-collapse:collapse;margin:12px 0 16px;font-size:13px">
+<tr style="background:#F1F5F9"><th style="padding:8px 12px;text-align:left">Template Type</th><th style="padding:8px 12px;text-align:left">GC% Range</th><th style="padding:8px 12px;text-align:left">Special Requirements</th></tr>
+<tr style="border-bottom:1px solid #E2E5EA"><td style="padding:8px 12px">Standard</td><td style="padding:8px 12px">40-60%</td><td style="padding:8px 12px">Standard PCR protocol, 94°C denaturation</td></tr>
+<tr style="border-bottom:1px solid #E2E5EA"><td style="padding:8px 12px">GC-rich</td><td style="padding:8px 12px">60-70%</td><td style="padding:8px 12px">Add 3-5% DMSO, increase denaturation to 98°C, use a GC-rich polymerase</td></tr>
+<tr style="border-bottom:1px solid #E2E5EA"><td style="padding:8px 12px">High-GC</td><td style="padding:8px 12px">&gt;70%</td><td style="padding:8px 12px">Add 5-10% DMSO + 1M betaine, use specialised GC-rich polymerases, touch-down PCR</td></tr>
+<tr><td style="padding:8px 12px">AT-rich</td><td style="padding:8px 12px">&lt;40%</td><td style="padding:8px 12px">Lower annealing temperature, shorter extension time, avoid strong secondary structures</td></tr>
+</table>
+
+<h2 style="font-family:var(--font-h);font-size:18px;font-weight:700;margin-bottom:12px;margin-top:28px">GC Content and Molecular Weight Calculations</h2>
+<p style="color:var(--text2);font-size:14px;line-height:1.7;margin-bottom:16px">The molecular weight of a single-stranded DNA sequence is calculated by summing the individual base molecular weights and subtracting 61.96 g/mol (the mass of water lost during phosphodiester bond formation between each nucleotide). GC content directly affects molecular weight because G and C have different masses than A and T. This relationship makes MW a useful quality-control metric — if the observed MW differs significantly from the calculated value, the sequence may contain errors or modifications.</p>
+<table style="width:100%;border-collapse:collapse;margin:12px 0 16px;font-size:13px">
+<tr style="background:#F1F5F9"><th style="padding:8px 12px;text-align:left">Base</th><th style="padding:8px 12px;text-align:left">Molecular Weight (g/mol)</th></tr>
+<tr style="border-bottom:1px solid #E2E5EA"><td style="padding:8px 12px">Adenine (A)</td><td style="padding:8px 12px">313.21</td></tr>
+<tr style="border-bottom:1px solid #E2E5EA"><td style="padding:8px 12px">Thymine (T)</td><td style="padding:8px 12px">304.20</td></tr>
+<tr style="border-bottom:1px solid #E2E5EA"><td style="padding:8px 12px">Guanine (G)</td><td style="padding:8px 12px">329.21</td></tr>
+<tr><td style="padding:8px 12px">Cytosine (C)</td><td style="padding:8px 12px">289.18</td></tr>
+</table>
+<p style="color:var(--text2);font-size:14px;line-height:1.7;margin-bottom:16px;margin-top:12px"><strong>Formula (single-stranded):</strong> MW = nA × 313.21 + nT × 304.20 + nG × 329.21 + nC × 289.18 − 61.96 where nX is the count of each base and 61.96 g/mol accounts for water loss from phosphodiester bond formation.</p>
+</section>
+
 <section class="tool-section"><div class="container">
 <h2>Enter a DNA Sequence</h2>
 <form class="calc-box" onsubmit="return false">
@@ -398,6 +430,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 </table>
 </div>
 </div></section>
+<p style="font-size:12px;margin-top:12px;color:#94A3B8"><a href="/cite-vigyanllm" style="color:#2563EB">Cite this tool</a> — use the preferred citation format for VigyanLLM tools in your research.</p>
 
 <section class="learn-section"><div class="container">
 <h2>What Is GC Content?</h2>
@@ -547,6 +580,7 @@ document.addEventListener('DOMContentLoaded',()=>{calcGC()});
     <a href="/cookies">Cookies</a>
     <a href="/refund">Refund</a>
     <a href="/security">Security</a>
+    <a href="/cite-vigyanllm">Cite Us</a>
   </div>
 </div>
 <div class="footer-bottom">

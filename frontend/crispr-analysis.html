@@ -303,6 +303,32 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <p style="font-size:13px;color:#64748B;max-width:600px;margin:0 auto">In the meantime, our <a href="/primer" style="color:#2563EB;font-weight:600">primer design tool</a> handles all your PCR and qPCR assay design needs, and our <a href="blog/crispr-grna-design-guide" style="color:#2563EB;font-weight:600">CRISPR gRNA design guide</a> covers the theory behind guide selection, efficiency prediction, and off-target minimisation.</p>
 </div></section>
 
+<section style="max-width:900px;margin:48px auto;padding:0 24px">
+<h2 style="font-family:var(--font-h);font-size:18px;font-weight:700;margin-bottom:12px">How CRISPR-Cas9 Gene Editing Works</h2>
+<p style="color:var(--text2);font-size:14px;line-height:1.7;margin-bottom:16px">CRISPR-Cas9 is a programmable gene editing system adapted from the bacterial adaptive immune system. The Cas9 nuclease is guided to a specific genomic target by a single-guide RNA (sgRNA) that contains a 20-nucleotide spacer complementary to the target DNA sequence. For SpCas9, the target must be immediately upstream of a <strong>PAM sequence (NGG)</strong> — a short protospacer-adjacent motif required for Cas9 recognition and cleavage. Once bound, Cas9 creates a double-strand break (DSB) that the cell repairs through either non-homologous end joining (NHEJ), which creates small insertions or deletions (indels) that disrupt the gene, or homology-directed repair (HDR), which uses a repair template to introduce precise edits. The typical workflow involves: <strong>Target selection</strong> → <strong>gRNA design</strong> → <strong>gRNA synthesis and RNP complex formation</strong> → <strong>Delivery into cells</strong> → <strong>DNA cleavage and repair</strong> → <strong>Screening and validation</strong>.</p>
+
+<h2 style="font-family:var(--font-h);font-size:18px;font-weight:700;margin-bottom:12px;margin-top:28px">gRNA Design Rules for Successful CRISPR Experiments</h2>
+<table style="width:100%;border-collapse:collapse;margin:12px 0 16px;font-size:13px">
+<tr style="background:#F1F5F9"><th style="padding:8px 12px;text-align:left">Parameter</th><th style="padding:8px 12px;text-align:left">Recommendation</th><th style="padding:8px 12px;text-align:left">Why It Matters</th></tr>
+<tr style="border-bottom:1px solid #E2E5EA"><td style="padding:8px 12px">Spacer length</td><td style="padding:8px 12px">20 nt</td><td style="padding:8px 12px">Standard length for SpCas9 recognition and specificity</td></tr>
+<tr style="border-bottom:1px solid #E2E5EA"><td style="padding:8px 12px">GC content</td><td style="padding:8px 12px">40-70%</td><td style="padding:8px 12px">Higher GC improves R-loop stability and cleavage efficiency</td></tr>
+<tr style="border-bottom:1px solid #E2E5EA"><td style="padding:8px 12px">PAM sequence</td><td style="padding:8px 12px">NGG (for SpCas9)</td><td style="padding:8px 12px">Required for Cas9 recognition — no cleavage without PAM</td></tr>
+<tr style="border-bottom:1px solid #E2E5EA"><td style="padding:8px 12px">Off-target matches</td><td style="padding:8px 12px">≤3 mismatches tolerated</td><td style="padding:8px 12px">Partial complementarity can lead to unintended edits at off-target sites</td></tr>
+<tr><td style="padding:8px 12px">Position in gene</td><td style="padding:8px 12px">Early exons (exon 1-3)</td><td style="padding:8px 12px">Frameshift mutations in early exons maximise knockout efficiency</td></tr>
+</table>
+<p style="color:var(--text2);font-size:14px;line-height:1.7;margin-bottom:16px"><strong>Avoid:</strong> Poly-T runs (TTTT) — these act as RNA polymerase III termination signals and truncate gRNA transcription. Also avoid homopolymer runs longer than 4 bases which increase off-target effects.</p>
+
+<h2 style="font-family:var(--font-h);font-size:18px;font-weight:700;margin-bottom:12px;margin-top:28px">Understanding CRISPR Off-Target Effects</h2>
+<p style="color:var(--text2);font-size:14px;line-height:1.7;margin-bottom:16px">Off-target effects occur when a gRNA binds to genomic sites with partial sequence complementarity, leading to unintended DNA cleavage. This is a major concern in therapeutic applications where off-target edits could disrupt essential genes or create oncogenic mutations. Computational scoring tools like the <strong>CFD (Cutting Frequency Determination) score</strong> and <strong>MIT specificity score</strong> predict off-target potential by analysing sequence complementarity, mismatch position, and bulges. The CFD score accounts for mismatches across the entire spacer, while the MIT score focuses on seed region (positions 1-12) complementarity. Both scores range from 0-100, with higher values indicating greater specificity.</p>
+<table style="width:100%;border-collapse:collapse;margin:12px 0 16px;font-size:13px">
+<tr style="background:#F1F5F9"><th style="padding:8px 12px;text-align:left">Mitigation Strategy</th><th style="padding:8px 12px;text-align:left">Effectiveness</th><th style="padding:8px 12px;text-align:left">Trade-off</th></tr>
+<tr style="border-bottom:1px solid #E2E5EA"><td style="padding:8px 12px">High-fidelity Cas9 variants (eSpCas9, SpCas9-HF1)</td><td style="padding:8px 12px">80-95% off-target reduction</td><td style="padding:8px 12px">May reduce on-target efficiency by 10-30%</td></tr>
+<tr style="border-bottom:1px solid #E2E5EA"><td style="padding:8px 12px">Truncated gRNAs (17-18 nt)</td><td style="padding:8px 12px">Moderate reduction</td><td style="padding:8px 12px">Reduced on-target activity at some loci</td></tr>
+<tr style="border-bottom:1px solid #E2E5EA"><td style="padding:8px 12px">Paired nickase approach (Cas9n)</td><td style="padding:8px 12px">High specificity (dual nicks required)</td><td style="padding:8px 12px">Requires two gRNAs per target, increases complexity</td></tr>
+<tr><td style="padding:8px 12px">Algorithmic off-target prediction</td><td style="padding:8px 12px">Essential first pass</td><td style="padding:8px 12px">Requires experimental validation — no algorithm is perfectly predictive</td></tr>
+</table>
+</section>
+
 <section style="background:#F0F7FF;border-top:1px solid #DBEAFE;border-bottom:1px solid #DBEAFE;padding:48px 24px;text-align:center">
 <div style="max-width:500px;margin:0 auto">
   <h2 style="font-family:var(--font-h);font-size:20px;font-weight:800;margin-bottom:6px">Get Early Access</h2>
@@ -430,6 +456,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <a href="/cookies">Cookies</a>
     <a href="/refund">Refund</a>
     <a href="/security">Security</a>
+    <a href="/cite-vigyanllm">Cite Us</a>
   </div>
 </div>
 <div class="footer-bottom">
@@ -449,6 +476,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
 <script defer src="/search-index.js"></script>
 <script defer src="/auth-shared.js"></script>
+
+<p style="font-size:12px;margin-top:12px;color:#94A3B8"><a href="/cite-vigyanllm" style="color:#2563EB">Cite this tool</a> — use the preferred citation format for VigyanLLM tools in your research.</p>
 
 <div style="margin-top:48px;padding-top:32px;border-top:1px solid #E2E8F0;font-size:13px;color:#64748B;">
   <strong>Related resources:</strong>

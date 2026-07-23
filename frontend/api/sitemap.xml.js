@@ -9,7 +9,7 @@ const CORE = [
   "/pcr-analysis","/crispr-analysis","/protein-docking","/tm-calculator","/gc-calculator",
   "/dna-to-rna",
   "/platform","/solution","/architecture","/problem","/compare","/roadmap",
-  "/validated-primer-design","/security","/privacy","/terms","/faq","/about","/contact","/cite",
+  "/validated-primer-design","/security","/privacy","/terms","/faq","/about","/contact","/cite-vigyanllm","/cite",
   "/academic-partnership","/Learning-vigyanllm","/demo","/sitemap","/cookies","/refund","/changelog",
   "/primer-design-india","/primer-3-alternative","/primer3-alternative","/primer-blast-alternative",
   "/primer-blast-specificity","/primer-design-best-practices","/primer-design-thermodynamics",

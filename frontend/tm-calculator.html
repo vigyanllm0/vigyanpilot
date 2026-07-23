@@ -377,6 +377,39 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   </table>
 </section>
 
+<section style="max-width:900px;margin:0 auto;padding:0 24px 24px">
+<h2 style="font-family:var(--font-h);font-size:18px;font-weight:700;margin-bottom:12px">Understanding Melting Temperature (Tm) Parameters</h2>
+<p style="color:var(--text2);font-size:14px;line-height:1.7;margin-bottom:16px">Melting temperature (Tm) is the temperature at which 50% of a DNA duplex dissociates into single strands. The most accurate method for calculating Tm of short oligonucleotides is the <strong>SantaLucia nearest-neighbour model</strong> (1998), which accounts for sequence-dependent base stacking energies, initiation entropy, and symmetry corrections. For primers shorter than 15 nucleotides, the Wallace rule (2°C per A-T, 4°C per G-C) provides a rough estimate, but it becomes increasingly inaccurate for longer primers. Salt concentration significantly affects Tm — monovalent cations (Na⁺) and divalent cations (Mg²⁺) stabilise the duplex by shielding electrostatic repulsion between the two strands. A higher oligo concentration increases Tm because more energy is required to dissociate the duplex at higher strand concentrations.</p>
+<table style="width:100%;border-collapse:collapse;margin:12px 0 16px;font-size:13px">
+<tr style="background:#F1F5F9"><th style="padding:8px 12px;text-align:left">Parameter</th><th style="padding:8px 12px;text-align:left">Effect on Tm</th></tr>
+<tr style="border-bottom:1px solid #E2E5EA"><td style="padding:8px 12px">GC content ↑</td><td style="padding:8px 12px">Tm ↑ (G-C pairs form 3 H-bonds vs 2 for A-T)</td></tr>
+<tr style="border-bottom:1px solid #E2E5EA"><td style="padding:8px 12px">Sequence length ↑</td><td style="padding:8px 12px">Tm ↑ (more base pairs to dissociate)</td></tr>
+<tr style="border-bottom:1px solid #E2E5EA"><td style="padding:8px 12px">Salt concentration ↑</td><td style="padding:8px 12px">Tm ↑ (cations stabilise duplex)</td></tr>
+<tr style="border-bottom:1px solid #E2E5EA"><td style="padding:8px 12px">Formamide / DMSO ↑</td><td style="padding:8px 12px">Tm ↓ (destabilises hydrogen bonding)</td></tr>
+<tr><td style="padding:8px 12px">Oligo concentration ↑</td><td style="padding:8px 12px">Tm ↑ (higher concentration shifts equilibrium towards duplex)</td></tr>
+</table>
+
+<h2 style="font-family:var(--font-h);font-size:18px;font-weight:700;margin-bottom:12px;margin-top:28px">Common Tm Calculation Mistakes</h2>
+<table style="width:100%;border-collapse:collapse;margin:12px 0 16px;font-size:13px">
+<tr style="background:#F1F5F9"><th style="padding:8px 12px;text-align:left">Mistake</th><th style="padding:8px 12px;text-align:left">Consequence</th><th style="padding:8px 12px;text-align:left">Fix</th></tr>
+<tr style="border-bottom:1px solid #E2E5EA"><td style="padding:8px 12px">Using Wallace rule for primers &gt;15 nt</td><td style="padding:8px 12px">Inaccurate Tm by 5-10°C</td><td style="padding:8px 12px">Use nearest-neighbour model for accurate results</td></tr>
+<tr style="border-bottom:1px solid #E2E5EA"><td style="padding:8px 12px">Ignoring salt concentration</td><td style="padding:8px 12px">Tm off by 2-6°C</td><td style="padding:8px 12px">Specify [Na⁺] and [Mg²⁺] in the calculator</td></tr>
+<tr style="border-bottom:1px solid #E2E5EA"><td style="padding:8px 12px">Using Ta = Tm directly</td><td style="padding:8px 12px">Failed PCR — no product or non-specific bands</td><td style="padding:8px 12px">Set annealing temp (Ta) to Tm − 3-5°C</td></tr>
+<tr><td style="padding:8px 12px">Not accounting for oligo concentration</td><td style="padding:8px 12px">Tm shifts with concentration changes</td><td style="padding:8px 12px">Use 0.25 µM default or enter your actual oligo concentration</td></tr>
+</table>
+
+<h2 style="font-family:var(--font-h);font-size:18px;font-weight:700;margin-bottom:12px;margin-top:28px">Optimal Tm for Different PCR Applications</h2>
+<table style="width:100%;border-collapse:collapse;margin:12px 0 16px;font-size:13px">
+<tr style="background:#F1F5F9"><th style="padding:8px 12px;text-align:left">Application</th><th style="padding:8px 12px;text-align:left">Optimal Tm Range</th><th style="padding:8px 12px;text-align:left">Notes</th></tr>
+<tr style="border-bottom:1px solid #E2E5EA"><td style="padding:8px 12px">Standard PCR</td><td style="padding:8px 12px">55-65°C</td><td style="padding:8px 12px">Annealing temp 3-5°C below primer Tm</td></tr>
+<tr style="border-bottom:1px solid #E2E5EA"><td style="padding:8px 12px">qPCR (SYBR Green)</td><td style="padding:8px 12px">58-62°C</td><td style="padding:8px 12px">Both primers within 1°C of each other</td></tr>
+<tr style="border-bottom:1px solid #E2E5EA"><td style="padding:8px 12px">qPCR (TaqMan)</td><td style="padding:8px 12px">68-70°C (probe)</td><td style="padding:8px 12px">Probe Tm 10°C above primer Tm</td></tr>
+<tr style="border-bottom:1px solid #E2E5EA"><td style="padding:8px 12px">Multiplex PCR</td><td style="padding:8px 12px">58-64°C</td><td style="padding:8px 12px">All primer pairs within 1°C of each other</td></tr>
+<tr style="border-bottom:1px solid #E2E5EA"><td style="padding:8px 12px">Degenerate primers</td><td style="padding:8px 12px">52-58°C</td><td style="padding:8px 12px">Account for mixed-base positions lowering effective Tm</td></tr>
+<tr><td style="padding:8px 12px">Nested PCR</td><td style="padding:8px 12px">55-65°C</td><td style="padding:8px 12px">Outer primer pair Tm 2-4°C higher than inner pair</td></tr>
+</table>
+</section>
+
 <section class="tool-section"><div class="container">
 <h2>Enter a Primer Sequence</h2>
 <form class="calc-box" onsubmit="return false">
@@ -403,6 +436,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 </table>
 </div>
 </div></section>
+<p style="font-size:12px;margin-top:12px;color:#94A3B8"><a href="/cite-vigyanllm" style="color:#2563EB">Cite this tool</a> — use the preferred citation format for VigyanLLM tools in your research.</p>
 
 <section class="learn-section"><div class="container">
 <h2>What Is Primer Melting Temperature (Tm)?</h2>
@@ -579,6 +613,7 @@ document.addEventListener('DOMContentLoaded',()=>{calcTm()});
     <a href="/cookies">Cookies</a>
     <a href="/refund">Refund</a>
     <a href="/security">Security</a>
+    <a href="/cite-vigyanllm">Cite Us</a>
   </div>
 </div>
 <div class="footer-bottom">

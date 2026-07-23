@@ -1,19 +1,27 @@
 # robots.txt — VigyanLLM
 # https://vigyanllm.in/robots.txt
-# Generated: 2026-07-06
+# Generated: 2026-07-23
 
-# ── Default rules ────────────────────────────────────────────────────────
-User-agent: *
-Allow: /
-Disallow: /api/
-Disallow: /admin/
-Disallow: /login/
-Disallow: /dashboard/
-Crawl-delay: 2
 Sitemap: https://www.vigyanllm.in/sitemap.xml
-# ── Search engines ───────────────────────────────────────────────────────
+
+# ── SEO analysis tools & Bad bots — block ──────
+User-agent: AhrefsBot
+User-agent: SemrushBot
+User-agent: MJ12bot
+User-agent: Dotbot
+User-agent: Majestic-12
+User-agent: rogerbot
+User-agent: exabot
+User-agent: ia_archiver
+User-agent: Screaming Frog SEO Spider
+User-agent: Bytespider
+User-agent: DataForSeoBot
+User-agent: PetalBot
+User-agent: AspiegelBot
+Disallow: /
+
+# ── Search engines with no crawl delay ──────────────────────────────────
 User-agent: Googlebot
-Crawl-delay: 0
 User-agent: Googlebot-Image
 User-agent: Googlebot-News
 User-agent: Bingbot
@@ -21,6 +29,13 @@ User-agent: Slurp
 User-agent: DuckDuckBot
 User-agent: YandexBot
 User-agent: Baiduspider
+Allow: /sitemap.xml
+Allow: /api/sitemap.xml
+Disallow: /api/
+Disallow: /admin/
+Disallow: /login/
+Disallow: /dashboard/
+
 # ── AI / LLM crawlers (GEO/LLMO strategy — allow for visibility) ────────
 User-agent: GPTBot
 User-agent: Google-Extended
@@ -33,22 +48,23 @@ User-agent: Cohere-AI
 User-agent: Applebot
 User-agent: OAI-SearchBot
 User-agent: ChatGPT-User
-# ── SEO analysis tools — block (no indexing value, bandwidth waste) ──────
-User-agent: AhrefsBot
-Disallow: /
-User-agent: SemrushBot
-User-agent: MJ12bot
-User-agent: Dotbot
-User-agent: Majestic-12
-User-agent: rogerbot
-User-agent: exabot
-User-agent: ia_archiver
-User-agent: Screaming Frog SEO Spider
-# ── Bad bots / scrapers ───────────────────────────────────────────────────
-User-agent: Bytespider
-User-agent: DataForSeoBot
-User-agent: PetalBot
-User-agent: AspiegelBot
+Allow: /sitemap.xml
+Allow: /api/sitemap.xml
+Disallow: /api/
+Disallow: /admin/
+Disallow: /login/
+Disallow: /dashboard/
+
+# ── Default rules for anything else ─────────────────────────────────────
+User-agent: *
+Allow: /sitemap.xml
+Allow: /api/sitemap.xml
+Disallow: /api/
+Disallow: /admin/
+Disallow: /login/
+Disallow: /dashboard/
+Crawl-delay: 2
+
 # ── Sitemap details ──────────────────────────────────────────────────────
 # Total URLs in sitemap: 399
 # Coverage: Core tools, platform pages, blog (51), glossary (205), gene-prefers (52), landing pages (27), hub (12), docs, auth

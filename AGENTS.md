@@ -1,7 +1,7 @@
 # AGENTS.md — Agent Handoff & Tracking
 
 **Session:** PA-08, PA-09, PA-11, PA-15, SEC-01–15, Phase 2 content — Completed Jul 2026  
-**Next Sprint:** qPCR Probe Design blog, glossary page enhancements, EC2 CMS backend
+**Next Sprint:** EC2 CMS backend, Directory submissions, Product Hunt launch
 
 ---
 
@@ -10,6 +10,23 @@
 ### Phase 2: Primer3 comparison page & FAQ schema ✅
 - **blog/primer3-vs-vigyanllm.html**: Expanded from 984→2,055 words, 14-row feature table (was 9), 8 FAQ questions (was 3), JSON-LD FAQPage, decision matrix, pros/cons, workflow comparison, final verdict. Fixed AI claims (PA-09 compliance).
 - **FAQPage JSON-LD on 7 tool pages**: Deployed `FAQPage` structured data with 5 Q&A pairs each to `primer.html`, `blast.html`, `docking.html`, `msa.html`, `dna-to-rna.html`, `tm-calculator.html`, `gc-calculator.html`.
+
+### Phase 2: Glossary enhancements (7 high-link pages) ✅
+- **glossary/molecular-biology.html**: Expanded 378→582w, 6 practice items, improved FAQ (213 inbound links)
+- **glossary/bioinformatics.html**: Expanded 358→586w, 6 practice items, improved FAQ (142 inbound links)
+- **glossary/clinical-diagnostics.html**: Expanded 361→619w, 6 practice items, improved FAQ (130 inbound links)
+- **glossary/diagnostic-specificity.html**: Expanded 359→605w, 6 practice items, improved FAQ (82 inbound links)
+- **glossary/genomics.html**: Expanded 360→612w, 6 practice items, improved FAQ (70 inbound links)
+- **glossary/gene-expression.html**: Expanded 377→647w, 6 practice items, improved FAQ (41 inbound links)
+- **glossary/gene.html**: Expanded 387→566w, 6 practice items, improved FAQ (26 inbound links)
+- Each page: substantive definition (100-120w), 6 specific practice items, FAQ with actual information (not circular template text), glossary cross-links
+
+### Phase 2: Educational H2 sections on 4 tool pages ✅
+- **primer.html**: "Understanding PCR Primer Design Parameters", "Common Primer Design Mistakes" (mistake table), "Primer Design for Different PCR Applications"
+- **blast.html**: "How BLAST Works: E-Values and Alignment Scores", "Which BLAST Program Should You Use?" (selector table), "Tips for Better BLAST Results"
+- **docking.html**: "Understanding Molecular Docking", "Docking Scoring Functions: What the Numbers Mean" (score table), "Preparing Structures for Docking"
+- **msa.html**: "Why Multiple Sequence Alignment Matters", "MSA Algorithms: Choosing the Right Tool" (algorithm table), "How to Prepare Sequences for Meaningful MSA Results"
+- All sections inserted above tool form for maximum visibility
 
 ### PA-08: Method validation/citations ✅
 Added "Scientific References" sections with proper citations to 8 tool pages:
@@ -131,8 +148,31 @@ Added "Scientific References" sections with proper citations to 8 tool pages:
 | `frontend/glossary/genomics.html` | Expanded 360→612w, 6 practice items, improved FAQ |
 | `frontend/glossary/gene-expression.html` | Expanded 377→647w, 6 practice items, improved FAQ |
 | `frontend/glossary/gene.html` | Expanded 387→566w, 6 practice items, improved FAQ |
+| `frontend/primer.html` | Added educational H2s: PCR parameters, common mistakes table, application guide |
+| `frontend/blast.html` | Added educational H2s: how BLAST works, BLAST program selector table, tips table |
+| `frontend/docking.html` | Added educational H2s: docking intro, scoring functions table, structure prep guide |
+| `frontend/msa.html` | Added educational H2s: why MSA matters, algorithm comparison table, prep guide |
 | `TASKS.md` | Updated all task statuses |
 | `AGENTS.md` | This file — session handoff |
+| `frontend/cite-vigyanllm.html` | New citation page: 8 formats, FAQPage JSON-LD, tool-specific citations |
+| `frontend/*.html` (412 files) | Added "Cite Us" link to footer |
+| `frontend/about.html` | Added "For Researchers" section with citation link |
+| `frontend/primer.html` | Added "Cite this tool" link |
+| `frontend/blast.html` | Added "Cite this tool" link |
+| `frontend/docking.html` | Added "Cite this tool" link |
+| `frontend/msa.html` | Added "Cite this tool" link |
+| `frontend/tm-calculator.html` | Added "Cite this tool" link |
+| `frontend/gc-calculator.html` | Added "Cite this tool" link |
+| `frontend/dna-to-rna.html` | Added "Cite this tool" link |
+| `frontend/crispr-analysis.html` | Added "Cite this tool" link |
+| `frontend/protein-docking.html` | Added "Cite this tool" link |
+| `frontend/pcr-analysis.html` | Added "Cite this tool" link |
+| `frontend/index.html` | Added "Cite Us" footer link |
+| `frontend/api/sitemap.xml.js` | Added /cite-vigyanllm to CORE array |
+| `frontend/sitemap.xml` | Added cite-vigyanllm URL entry |
+| `frontend/blog/qpcr-primer-probe-design.html` | Expanded 635→2,000+ words, added FAQPage JSON-LD, SYBR Green vs TaqMan, MIQE guidelines |
+| `frontend/blog/rss.xml` | Updated qPCR blog pubDate |
+| `frontend/blog/index.html` | Updated qPCR blog date to July 2026 |
 
 ## Key Commands
 - Python bulk-replace scripts for 200+ file operations
