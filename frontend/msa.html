@@ -368,6 +368,23 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <tr><td style="padding:10px 14px"><strong>Guide tree</strong></td><td style="padding:10px 14px"><abbr title="Position-Specific Scoring Matrix">PSSM</abbr> for motif discovery</td></tr>
   </table>
 </section>
+<section style="max-width:900px;margin:0 auto;padding:0 24px 24px">
+<h2 style="font-family:var(--font-h);font-size:18px;font-weight:700;margin-bottom:12px">Why Multiple Sequence Alignment Matters</h2>
+<p style="color:var(--text2);font-size:14px;line-height:1.7;margin-bottom:16px">Multiple Sequence Alignment (MSA) is fundamental to comparative genomics, phylogenetics, and protein structure prediction. By aligning three or more sequences, MSA reveals <strong>conserved regions</strong> (evolutionarily important functional domains), <strong>variable regions</strong> (sites under positive selection), and <strong>gap patterns</strong> (insertions/deletions in evolutionary lineages). MSA is the prerequisite step for phylogenetic tree construction, conserved motif discovery, primer design for conserved gene regions, and predicting the functional impact of sequence variants. In protein analysis, positions conserved across diverse species often indicate residues critical for structure or catalytic activity.</p>
+
+<h2 style="font-family:var(--font-h);font-size:18px;font-weight:700;margin-bottom:12px;margin-top:28px">MSA Algorithms: Choosing the Right Tool</h2>
+<table style="width:100%;border-collapse:collapse;margin:12px 0 16px;font-size:13px">
+<tr style="background:#F1F5F9"><th style="padding:8px 12px;text-align:left">Algorithm</th><th style="padding:8px 12px;text-align:left">Best For</th><th style="padding:8px 12px;text-align:left">Speed</th><th style="padding:8px 12px;text-align:left">Accuracy</th></tr>
+<tr style="border-bottom:1px solid #E2E5EA"><td style="padding:8px 12px">Clustal Omega</td><td style="padding:8px 12px">Large datasets (up to 190K seqs), protein alignments</td><td style="padding:8px 12px">Very fast</td><td style="padding:8px 12px">High</td></tr>
+<tr style="border-bottom:1px solid #E2E5EA"><td style="padding:8px 12px">MUSCLE</td><td style="padding:8px 12px">Medium datasets, highest accuracy for small sets</td><td style="padding:8px 12px">Fast</td><td style="padding:8px 12px">Very high</td></tr>
+<tr style="border-bottom:1px solid #E2E5EA"><td style="padding:8px 12px">MAFFT</td><td style="padding:8px 12px">Large genomes, RNA alignments with secondary structure</td><td style="padding:8px 12px">Fast</td><td style="padding:8px 12px">High</td></tr>
+<tr><td style="padding:8px 12px">T-Coffee</td><td style="padding:8px 12px">Small datasets requiring maximum accuracy</td><td style="padding:8px 12px">Slow</td><td style="padding:8px 12px">Highest</td></tr>
+</table>
+<p style="color:var(--text2);font-size:14px;line-height:1.7">VigyanLLM uses <strong>Clustal Omega</strong>, which balances speed and accuracy for most use cases. For large-scale genomic comparisons, MAFFT offers faster performance. For critical structural alignments where maximum accuracy is needed, T-Coffee incorporates structural information into the alignment process.</p>
+
+<h2 style="font-family:var(--font-h);font-size:18px;font-weight:700;margin-bottom:12px;margin-top:28px">How to Prepare Sequences for Meaningful MSA Results</h2>
+<p style="color:var(--text2);font-size:14px;line-height:1.7;margin-bottom:16px">Clean input data produces cleaner alignments: (1) ensure all sequences are oriented in the same direction (5' to 3' for DNA/RNA), (2) trim low-quality bases or vector sequences before alignment, (3) use homologous regions of similar length — including long non-homologous flanks reduces alignment quality, (4) for protein MSAs, verify you are using the correct reading frame, and (5) consider the expected evolutionary distance — highly divergent sequences may require more sensitive alignment parameters. For <a href="/primer">primer design</a> targeting conserved regions, align orthologous sequences from 3-5 related species to identify >95% conserved stretches of 18-24 nucleotides.</p>
+</section>
 <form onsubmit="return false" class="tool-wrap">
 <div>
 <div class="panel-card">

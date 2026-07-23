@@ -361,6 +361,22 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <tr><td style="padding:10px 14px">Protein query + Translated nucleotide DB (FASTA)</td><td style="padding:10px 14px">tBLASTN alignments against translated nucleotide database</td></tr>
   </table>
 </section>
+<section style="max-width:900px;margin:0 auto;padding:0 24px 24px">
+<h2 style="font-family:var(--font-h);font-size:18px;font-weight:700;margin-bottom:12px">How BLAST Works: E-Values and Alignment Scores</h2>
+<p style="color:var(--text2);font-size:14px;line-height:1.7;margin-bottom:16px">BLAST (Basic Local Alignment Search Tool) works by breaking the query sequence into short "words" (typically 11 nucleotides for blastn, 3 amino acids for blastp), finding exact matches in the database, then extending these matches to create full alignments. The <strong>E-value</strong> (Expect value) represents the number of alignments expected by chance at a given score threshold — lower values indicate more significant matches. Bit scores are normalized alignment scores that are independent of database size, making them useful for comparing results across different searches. Generally, an E-value below 0.001 is considered statistically significant, while values above 1 suggest the match could be random.</p>
+
+<h2 style="font-family:var(--font-h);font-size:18px;font-weight:700;margin-bottom:12px;margin-top:28px">Which BLAST Program Should You Use?</h2>
+<table style="width:100%;border-collapse:collapse;margin:12px 0 16px;font-size:13px">
+<tr style="background:#F1F5F9"><th style="padding:8px 12px;text-align:left">Program</th><th style="padding:8px 12px;text-align:left">Query</th><th style="padding:8px 12px;text-align:left">Database</th><th style="padding:8px 12px;text-align:left">Best For</th></tr>
+<tr style="border-bottom:1px solid #E2E5EA"><td style="padding:8px 12px">BLASTN</td><td style="padding:8px 12px">Nucleotide</td><td style="padding:8px 12px">Nucleotide</td><td style="padding:8px 12px">DNA/DNA comparisons, gene identification, primer specificity checking</td></tr>
+<tr style="border-bottom:1px solid #E2E5EA"><td style="padding:8px 12px">BLASTP</td><td style="padding:8px 12px">Protein</td><td style="padding:8px 12px">Protein</td><td style="padding:8px 12px">Protein homology searches, functional inference from sequence similarity</td></tr>
+<tr style="border-bottom:1px solid #E2E5EA"><td style="padding:8px 12px">BLASTX</td><td style="padding:8px 12px">Nucleotide (translated)</td><td style="padding:8px 12px">Protein</td><td style="padding:8px 12px">Identifying protein-coding regions in novel nucleotide sequences</td></tr>
+<tr><td style="padding:8px 12px">tBLASTN</td><td style="padding:8px 12px">Protein</td><td style="padding:8px 12px">Nucleotide (translated)</td><td style="padding:8px 12px">Finding nucleotide sequences that encode similar proteins</td></tr>
+</table>
+
+<h2 style="font-family:var(--font-h);font-size:18px;font-weight:700;margin-bottom:12px;margin-top:28px">Tips for Better BLAST Results</h2>
+<p style="color:var(--text2);font-size:14px;line-height:1.7;margin-bottom:16px">To get meaningful BLAST results: (1) always filter low-complexity regions to avoid spurious matches, (2) use organism-specific databases when searching for homologous genes in a known species, (3) adjust the word size parameter — smaller words increase sensitivity but slow the search, and (4) check alignment coverage, not just E-value. A low E-value with short alignment coverage may indicate a conserved domain match rather than a true ortholog. For <a href="/primer">primer design</a> specificity checking, use BLASTN with the RefSeq RNA database and expect perfect or near-perfect matches only.</p>
+</section>
 <form onsubmit="return false" class="tool-wrap">
 <div>
 <div class="panel-card">

@@ -124,6 +124,13 @@ Added "Scientific References" sections with proper citations to 8 tool pages:
 | `frontend/dna-to-rna.html` | Added FAQPage JSON-LD schema |
 | `frontend/tm-calculator.html` | Added FAQPage JSON-LD schema |
 | `frontend/gc-calculator.html` | Added FAQPage JSON-LD schema |
+| `frontend/glossary/molecular-biology.html` | Expanded 378→582w, 6 practice items, improved FAQ |
+| `frontend/glossary/bioinformatics.html` | Expanded 358→586w, 6 practice items, improved FAQ |
+| `frontend/glossary/clinical-diagnostics.html` | Expanded 361→619w, 6 practice items, improved FAQ |
+| `frontend/glossary/diagnostic-specificity.html` | Expanded 359→605w, 6 practice items, improved FAQ |
+| `frontend/glossary/genomics.html` | Expanded 360→612w, 6 practice items, improved FAQ |
+| `frontend/glossary/gene-expression.html` | Expanded 377→647w, 6 practice items, improved FAQ |
+| `frontend/glossary/gene.html` | Expanded 387→566w, 6 practice items, improved FAQ |
 | `TASKS.md` | Updated all task statuses |
 | `AGENTS.md` | This file — session handoff |
 

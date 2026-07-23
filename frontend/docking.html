@@ -574,6 +574,23 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <tr><td style="padding:10px 14px"><strong>Consensus Scoring</strong></td><td style="padding:10px 14px">Weighted average of Vina + GNINA + CNN scores</td></tr>
   </table>
 </section>
+<section style="max-width:900px;margin:0 auto;padding:0 24px 24px">
+<h2 style="font-family:var(--font-h);font-size:18px;font-weight:700;margin-bottom:12px">Understanding Molecular Docking: From Protein to Binding Pose</h2>
+<p style="color:var(--text2);font-size:14px;line-height:1.7;margin-bottom:16px">Molecular docking predicts how a small molecule (ligand) binds to a target protein (receptor) to form a stable complex. The process involves two key components: <strong>pose sampling</strong> \u2014 exploring different orientations and conformations of the ligand within the protein binding site \u2014 and <strong>scoring</strong> \u2014 evaluating each pose using energy-based functions. Docking is fundamental to structure-based drug discovery, enabling virtual screening of millions of compounds to identify potential drug candidates before experimental testing. The quality of docking predictions depends on the accuracy of the protein structure, the flexibility of both protein and ligand, and the scoring function\'s ability to approximate true binding free energy.</p>
+
+<h2 style="font-family:var(--font-h);font-size:18px;font-weight:700;margin-bottom:12px;margin-top:28px">Docking Scoring Functions: What the Numbers Mean</h2>
+<table style="width:100%;border-collapse:collapse;margin:12px 0 16px;font-size:13px">
+<tr style="background:#F1F5F9"><th style="padding:8px 12px;text-align:left">Method</th><th style="padding:8px 12px;text-align:left">Score Type</th><th style="padding:8px 12px;text-align:left">Typical Range</th><th style="padding:8px 12px;text-align:left">Interpretation</th></tr>
+<tr style="border-bottom:1px solid #E2E5EA"><td style="padding:8px 12px">Vina affinity</td><td style="padding:8px 12px">Empirical free energy</td><td style="padding:8px 12px">-4 to -14 kcal/mol</td><td style="padding:8px 12px">More negative = stronger predicted binding</td></tr>
+<tr style="border-bottom:1px solid #E2E5EA"><td style="padding:8px 12px">GNINA CNN score</td><td style="padding:8px 12px">Deep learning confidence</td><td style="padding:8px 12px">0 to 1</td><td style="padding:8px 12px">Higher = more likely to be correct pose</td></tr>
+<tr style="border-bottom:1px solid #E2E5EA"><td style="padding:8px 12px">SMINA custom</td><td style="padding:8px 12px">Weighted empirical</td><td style="padding:8px 12px">-6 to -16 kcal/mol</td><td style="padding:8px 12px">Adjacent to Vina but with additional terms</td></tr>
+<tr><td style="padding:8px 12px">Consensus</td><td style="padding:8px 12px">Average of all methods</td><td style="padding:8px 12px">Combined</td><td style="padding:8px 12px">Reduces false positives from individual methods</td></tr>
+</table>
+<p style="color:var(--text2);font-size:14px;line-height:1.7">A Vina score of -7 kcal/mol or lower (more negative) generally indicates good binding, while scores above -5 kcal/mol suggest weak or non-specific binding. However, scoring functions are approximations \u2014 always validate top predictions experimentally using techniques like surface plasmon resonance (SPR) or isothermal titration calorimetry (ITC).</p>
+
+<h2 style="font-family:var(--font-h);font-size:18px;font-weight:700;margin-bottom:12px;margin-top:28px">Preparing Structures for Docking</h2>
+<p style="color:var(--text2);font-size:14px;line-height:1.7;margin-bottom:16px">Well-prepared input structures are essential for reliable docking: (1) for proteins, ensure hydrogen atoms are added at the correct protonation state for pH 7.4, (2) remove water molecules and cofactors unless they are critical for binding, (3) assign correct bond orders and formal charges for ligand atoms, (4) generate all possible tautomers and protonation states for the ligand at physiological pH, and (5) define the binding site using known active site residues or co-crystallized ligand coordinates. VigyanLLM\'s <a href="/docking">docking pipeline</a> handles protein preparation automatically using ESMFold for structure prediction and AutoDockTools for PDBQT conversion.</p>
+</section>
 <form onsubmit="return false" class="tool-wrap">
   <!-- LEFT SIDEBAR: Pipeline stages -->
   <div class="tool-left">
