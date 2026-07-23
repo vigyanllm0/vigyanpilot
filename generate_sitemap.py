@@ -9,7 +9,7 @@ import glob
 import datetime
 
 FRONTEND = os.path.join(os.path.dirname(__file__), "frontend")
-BRAND_URL = "https://vigyanllm.in"
+BRAND_URL = "https://www.vigyanllm.in"
 TODAY = datetime.date.today().isoformat()
 
 # ── Page classification for prioritization ──────────────────────────────────

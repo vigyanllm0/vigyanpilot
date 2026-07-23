@@ -55,6 +55,9 @@ var SITE_INDEX = [
   { t:'Primer Design in India', d:'Affordable primer design options in India', u:'blog/primer-design-india-affordable.html', c:'Blog' },
   { t:'VPrime Internal Validation', d:'Case study: 80% faster primer design with VPrime 1.0 — benchmark results', u:'blog/vprime-internal-validation.html', c:'Blog' },
 
+  { t:'Amplicon Sequencing Guide', d:'What amplicon sequencing is, how it works, and when to use it', u:'blog/amplicon-sequencing-guide.html', c:'Blog' },
+  { t:'RT-PCR Complete Guide', d:'Complete guide to RT-PCR principles, protocol, and applications', u:'blog/rt-pcr-complete-guide.html', c:'Blog' },
+
   { t:'Validated Primer Design Report', d:'View validated primer design results', u:'validated-primer-design-report.html', c:'Reports' },
   { t:'Validated Primer Design', d:'Validated primer design output', u:'validated-primer-design.html', c:'Reports' },
   { t:'Sitemap', d:'Complete site directory', u:'sitemap.html', c:'Company' },
