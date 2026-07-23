@@ -1,11 +1,15 @@
 # AGENTS.md — Agent Handoff & Tracking
 
-**Session:** PA-08, PA-09, PA-11, PA-15, SEC-01 through SEC-15 — Completed Jul 2026  
-**Next Sprint:** SEC-05 (CI setup), SEC-06 (cloud backups), SEC-07 (PII log masking)
+**Session:** PA-08, PA-09, PA-11, PA-15, SEC-01–15, Phase 2 content — Completed Jul 2026  
+**Next Sprint:** qPCR Probe Design blog, glossary page enhancements, EC2 CMS backend
 
 ---
 
 ## Completed This Session
+
+### Phase 2: Primer3 comparison page & FAQ schema ✅
+- **blog/primer3-vs-vigyanllm.html**: Expanded from 984→2,055 words, 14-row feature table (was 9), 8 FAQ questions (was 3), JSON-LD FAQPage, decision matrix, pros/cons, workflow comparison, final verdict. Fixed AI claims (PA-09 compliance).
+- **FAQPage JSON-LD on 7 tool pages**: Deployed `FAQPage` structured data with 5 Q&A pairs each to `primer.html`, `blast.html`, `docking.html`, `msa.html`, `dna-to-rna.html`, `tm-calculator.html`, `gc-calculator.html`.
 
 ### PA-08: Method validation/citations ✅
 Added "Scientific References" sections with proper citations to 8 tool pages:
@@ -103,7 +107,7 @@ Added "Scientific References" sections with proper citations to 8 tool pages:
 | `frontend/multiplex-primer-design.html` | Sidebar link fixed |
 | `frontend/primer-blast-specificity.html` | Sidebar link fixed |
 | `frontend/primer-design-thermodynamics.html` | Sidebar link fixed |
-| `frontend/blog/primer3-vs-vigyanllm.html` | Removed AI claims |
+| `frontend/blog/primer3-vs-vigyanllm.html` | Expanded 984→2,055 words, 14-row table, 8 FAQs, FAQPage JSON-LD, decision matrix, pros/cons |
 | `frontend/blog/automated-wet-lab-workflows.html` | Removed AI claims |
 | `frontend/blog/snapgene-vs-vigyanllm.html` | Removed AI claims |
 | `frontend/blog/index.html` | Fixed search index AI claim |
@@ -113,6 +117,13 @@ Added "Scientific References" sections with proper citations to 8 tool pages:
 | `middleware.js` | Fixed cookie parsing (SEC-12) |
 | `primerforge/auth.py` | WAL init, retry decorator, SQLite timeout (SEC-14, SEC-15) |
 | `primerforge/engine/orchestrator.py` | Step output validation (SEC-13) |
+| `frontend/primer.html` | Added FAQPage JSON-LD schema |
+| `frontend/blast.html` | Added FAQPage JSON-LD schema |
+| `frontend/docking.html` | Added FAQPage JSON-LD schema |
+| `frontend/msa.html` | Added FAQPage JSON-LD schema |
+| `frontend/dna-to-rna.html` | Added FAQPage JSON-LD schema |
+| `frontend/tm-calculator.html` | Added FAQPage JSON-LD schema |
+| `frontend/gc-calculator.html` | Added FAQPage JSON-LD schema |
 | `TASKS.md` | Updated all task statuses |
 | `AGENTS.md` | This file — session handoff |
 
