@@ -55,6 +55,10 @@ var SITE_INDEX = [
   { t:'Primer Design in India', d:'Affordable primer design options in India', u:'blog/primer-design-india-affordable.html', c:'Blog' },
   { t:'VPrime Internal Validation', d:'Case study: 80% faster primer design with VPrime 1.0 — benchmark results', u:'blog/vprime-internal-validation.html', c:'Blog' },
 
+  { t:'Top 10 Free Bioinformatics Tools', d:'10 best free bioinformatics tools ranked and reviewed', u:'blog/top-10-free-bioinformatics-tools.html', c:'Blog' },
+  { t:'Primer Design Basics', d:'Complete beginner\'s guide to PCR primer design rules and best practices', u:'blog/primer-design-basics.html', c:'Blog' },
+  { t:'Molecular Docking Tutorial', d:'Step-by-step molecular docking tutorial from PDB files to results', u:'blog/molecular-docking-tutorial.html', c:'Blog' },
+  { t:'Variant Calling in NGS Guide', d:'Practical guide to NGS variant calling with GATK, Mutect2, and FreeBayes', u:'blog/variant-calling-guide.html', c:'Blog' },
   { t:'Amplicon Sequencing Guide', d:'What amplicon sequencing is, how it works, and when to use it', u:'blog/amplicon-sequencing-guide.html', c:'Blog' },
   { t:'RT-PCR Complete Guide', d:'Complete guide to RT-PCR principles, protocol, and applications', u:'blog/rt-pcr-complete-guide.html', c:'Blog' },
 
