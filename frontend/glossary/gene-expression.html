@@ -594,17 +594,13 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
     <section class="section" id="definition">
       <h2>Definition</h2>
-      <p>The process by which information encoded in a gene is converted into a functional product, typically a protein or functional RNA molecule. Gene expression is regulated at multiple levels: transcriptional (promoters, enhancers, epigenetic modifications), post-transcriptional (splicing, miRNA), translational (ribosome availability, uORFs), and post-translational (modifications, degradation).</p>
+      <p><a href="/glossary/gene-expression">Gene expression</a> is the process by which information encoded in a gene is converted into a functional product, typically RNA or protein. It begins with transcription (DNA to RNA by RNA polymerase), followed by RNA processing (splicing, capping, polyadenylation), and translation (RNA to protein by ribosomes). Regulation of gene expression occurs at multiple levels: epigenetic (<a href="/glossary/dna-methylation">DNA methylation</a>, histone modifications), transcriptional (transcription factors, enhancers, promoters), post-transcriptional (RNA splicing, stability, <a href="/glossary/mirna">miRNA</a>-mediated regulation), translational (ribosome recruitment), and post-translational (protein folding, modification, degradation). Dysregulated gene expression underlies many diseases including cancer, autoimmune disorders, and developmental abnormalities. Quantitative measurement methods include <a href="/glossary/qpcr">RT-qPCR</a>, <a href="/glossary/rna-seq">RNA-seq</a>, microarrays, single-cell RNA-seq (<a href="/glossary/single-cell-rna-seq">scRNA-seq</a>), and reporter gene assays.</p>
     </section>
 
     <section class="section" id="in-practice">
       <h2>In Practice</h2>
-      <p style="margin-bottom:1rem;">gene expression is widely used in genetics &amp; genomics and related fields. Key applications include:</p>
-      <ul class="practice-list">
-        <li>Research and experimental design in molecular biology laboratories</li>
-        <li><a href="/glossary/clinical-diagnostics">Clinical diagnostics</a> and thera <a href="/dna-3d" class="tool-inline-link" style="display:inline-block;margin-top:8px;padding:6px 14px;background:#EBF5FF;border-radius:6px;font-size:14px;color:#2563EB;font-weight:500">Try 3D B-DNA Molecular Structure Viewer →</a>peutic development pipelines</li>
-        <li>Automated validation within VigyanLLM's 24-step primer design and analysis framework</li>
-      </ul>
+      <p style="margin-bottom:1rem;">Gene Expression is central to molecular biology research and clinical applications. Key use cases include:</p>
+      <ul class="practice-list"><li>Quantifying mRNA expression levels using reverse transcription quantitative PCR (RT-qPCR) with validated primer pairs and normalization controls</li><li>Performing RNA-seq library preparation and differential expression analysis to identify genes upregulated or downregulated between experimental conditions</li><li>Analyzing single-cell gene expression using scRNA-seq to characterize cell type heterogeneity in tissues and tumors</li><li>Studying transcriptional regulation through chromatin immunoprecipitation (ChIP-seq) of transcription factors and histone modifications</li><li>Validating gene expression changes using western blotting, ELISA, or immunohistochemistry at the protein level to confirm mRNA findings</li><li>Designing and testing siRNA, shRNA, or CRISPR interference (CRISPRi) constructs for targeted gene knockdown experiments</li></ul>
     </section>
 
     <section class="section" id="related-terms">
@@ -620,24 +616,26 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <section class="section" id="faq">
       <h2>Frequently Asked Questions</h2>
       
+      
+      
       <details class="faq-item" open>
-        <summary class="faq-question">What is gene expression?</summary>
+        <summary class="faq-question">What is the difference between gene expression and transcription?</summary>
         <div class="faq-answer">
-          <p>Gene expression converts genetic information into functional products (proteins or RNA), regulated at transcriptional, post-transcriptional, translational, and post-translational levels through multiple molecular mechanisms. Explore the full definition and applications on this page.</p>
+          <p>Transcription is the first step of gene expression — the synthesis of RNA from a DNA template by RNA polymerase. Gene expression is the broader process encompassing transcription, RNA processing, translation, and post-translational modifications. A gene may be transcribed but not translated (due to regulatory mechanisms), meaning transcription alone does not always equal functional gene expression. This is why measuring both mRNA (by RT-qPCR or RNA-seq) and protein (by western blot or mass spectrometry) provides a complete picture.</p>
         </div>
       </details>
 
       <details class="faq-item">
-        <summary class="faq-question">How does gene expression relate to <a href="/glossary/transcription">transcription</a>?</summary>
+        <summary class="faq-question">How is gene expression quantified by RT-qPCR?</summary>
         <div class="faq-answer">
-          <p>gene expression is closely connected to transcription and other Genetics &amp; Genomics concepts. Understanding these relationships is essential for comprehensive knowledge in <a href="/glossary/molecular-biology">molecular biology</a> and <a href="/glossary/bioinformatics">bioinformatics</a>.</p>
+          <p>RT-qPCR quantifies gene expression by reverse-transcribing RNA to cDNA, then amplifying specific targets using fluorescent probes or DNA-binding dyes (SYBR Green). The cycle threshold (Ct) value inversely correlates with starting RNA quantity. Relative expression is calculated using the 2^(-delta-delta-Ct) method, normalizing to stable reference genes (e.g., GAPDH, beta-actin, 18S rRNA). VigyanLLM’s primer design tool helps design RT-qPCR primers that span exon-exon junctions, ensuring cDNA-specific amplification without genomic DNA contamination.</p>
         </div>
       </details>
 
       <details class="faq-item">
-        <summary class="faq-question">How does VigyanLLM use gene expression in its pipeline?</summary>
+        <summary class="faq-question">What are the main methods for measuring gene expression?</summary>
         <div class="faq-answer">
-          <p>VigyanLLM&#x27;s 24-step validated pipeline incorporates gene expression as part of its rigorous quality control framework. The platform automates checks related to gene expression to ensure <a href="/glossary/primer-design">primer design</a> accuracy, specificity, and reliability for research and clinical applications.</p>
+          <p>Major methods include: (1) RT-qPCR — gold standard for targeted quantification of specific genes, (2) RNA-seq — unbiased, genome-wide transcriptome analysis, (3) microarrays — targeted hybridization-based profiling of known transcripts, (4) single-cell RNA-seq — gene expression at individual cell resolution, (5) Northern blotting — size-based RNA detection (less common today), (6) in situ hybridization (ISH) — spatial localization of transcripts in tissues, and (7) NanoString nCounter — digital multiplexed counting without amplification. Each method has trade-offs in throughput, sensitivity, cost, and data complexity.</p>
         </div>
       </details>
     </section>

@@ -594,17 +594,13 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
     <section class="section" id="definition">
       <h2>Definition</h2>
-      <p>In <a href="/glossary/clinical-diagnostics">clinical diagnostics</a>, the proportion of true negatives correctly identified by a test, calculated as TN/(TN+FP). High specificity means the test correctly identifies most individuals who do not have the disease, minimizing false positives. Confirmatory tests require high specificity to avoid misdiagnosis.</p>
+      <p><a href="/glossary/diagnostic-specificity">Diagnostic specificity</a> is the ability of a diagnostic test to correctly identify individuals who do not have a target disease or condition, expressed as the proportion of true negatives among all non-diseased individuals tested. A test with 95% specificity correctly rules out 95% of healthy individuals, with 5% false positives. Specificity is calculated as TN/(TN+FP) where TN = true negatives and FP = false positives. In <a href="/glossary/molecular-diagnostics">molecular diagnostics</a>, specificity depends on primer and probe design, assay conditions (annealing temperature, buffer composition), and the genetic diversity of both target and non-target organisms. High specificity is critical for confirmatory testing, disease surveillance, and antimicrobial resistance profiling to avoid unnecessary treatment.</p>
     </section>
 
     <section class="section" id="in-practice">
       <h2>In Practice</h2>
-      <p style="margin-bottom:1rem;">specificity is widely used in clinical &amp; diagnostics and related fields. Key applications include:</p>
-      <ul class="practice-list">
-        <li>Research and experimental design in molecular biology laboratories</li>
-        <li>Clinical diagnostics and therapeutic development pipelines</li>
-        <li>Automated validation within VigyanLLM's 24-step primer design and analysis framework</li>
-      </ul>
+      <p style="margin-bottom:1rem;">Diagnostic Specificity is central to molecular biology research and clinical applications. Key use cases include:</p>
+      <ul class="practice-list"><li>Validating PCR assay specificity through in silico BLAST analysis against comprehensive nucleotide databases covering all known sequence variants</li><li>Testing primer cross-reactivity against closely related species, commensal organisms, and human genomic DNA to confirm exclusivity</li><li>Optimizing annealing temperature gradients and probe design to discriminate single-nucleotide polymorphisms (SNPs) in allele-specific PCR</li><li>Performing ROC curve analysis on clinical samples to establish diagnostic specificity thresholds with 95% confidence intervals</li><li>Evaluating assay specificity across different specimen types (blood, saliva, tissue) and storage conditions to ensure robustness</li><li>Implementing multiplex PCR specificity controls including internal amplification controls and no-template controls in each run</li></ul>
     </section>
 
     <section class="section" id="related-terms">
@@ -619,24 +615,26 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <section class="section" id="faq">
       <h2>Frequently Asked Questions</h2>
       
+      
+      
       <details class="faq-item" open>
-        <summary class="faq-question">What is specificity?</summary>
+        <summary class="faq-question">Why is diagnostic specificity important in PCR testing?</summary>
         <div class="faq-answer">
-          <p>Diagnostic specificity is the proportion of true negatives correctly identified (TN/(TN+FP)), with high specificity minimizing false positives. Confirmatory tests require very high specificity. Explore the full definition and applications on this page.</p>
+          <p>Specificity is critical because false-positive results can lead to unnecessary treatment, patient anxiety, and incorrect public health decisions. In infectious disease testing, a primer set with poor specificity may amplify DNA from non-pathogenic commensal organisms misidentified as the target pathogen. In cancer testing, it may detect benign variants misattributed as oncogenic. VigyanLLM’s automatic Primer-BLAST specificity checking helps ensure each primer pair amplifies only the intended target sequence.</p>
         </div>
       </details>
 
       <details class="faq-item">
-        <summary class="faq-question">How does specificity relate to clinical diagnostics?</summary>
+        <summary class="faq-question">How is diagnostic specificity calculated?</summary>
         <div class="faq-answer">
-          <p>specificity is closely connected to clinical diagnostics and other Clinical &amp; Diagnostics concepts. Understanding these relationships is essential for comprehensive knowledge in <a href="/glossary/molecular-biology">molecular biology</a> and <a href="/glossary/bioinformatics">bioinformatics</a>.</p>
+          <p>Diagnostic specificity = TN/(TN+FP) where TN = number of true negatives (non-diseased individuals correctly identified as negative) and FP = number of false positives (non-diseased individuals incorrectly identified as positive). For example, a test that correctly identifies 95 out of 100 healthy individuals has 95% specificity. The complementary metric, false positive rate (FPR), equals 1-specificity.</p>
         </div>
       </details>
 
       <details class="faq-item">
-        <summary class="faq-question">How does VigyanLLM use specificity in its pipeline?</summary>
+        <summary class="faq-question">What factors affect diagnostic specificity of molecular tests?</summary>
         <div class="faq-answer">
-          <p>VigyanLLM&#x27;s 24-step validated pipeline incorporates specificity as part of its rigorous quality control framework. The platform automates checks related to specificity to ensure <a href="/glossary/primer-design">primer design</a> accuracy, specificity, and reliability for research and clinical applications.</p>
+          <p>Key factors include: (1) primer/probe design — homology to non-target sequences reduces specificity, (2) annealing temperature — too low allows non-specific binding, (3) genetic diversity — sequence variation in target regions may affect primer binding, (4) sample quality — contamination or degraded DNA produces artifacts, (5) assay chemistry — non-optimal Mg2+ concentration or polymerase choice, and (6) bioinformatics analysis — inappropriate alignment parameters or variant filters. VigyanLLM automates specificity optimization through its 24-parameter validation pipeline.</p>
         </div>
       </details>
     </section>
