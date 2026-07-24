@@ -168,6 +168,135 @@ footer{background:var(--black);color:rgba(255,255,255,.8);padding:56px 0 24px}
   <script src="https://accounts.google.com/gsi/client?hl=en" async defer></script>
 <script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.vigyanllm.in"}, {"@type": "ListItem", "position": 2, "name": "On-Premises CRISPR Guide RNA Design"}]}</script>
 <script type="application/ld+json">{"@context": "https://schema.org", "@type": "SoftwareApplication", "name": "VigyanLLM CRISPR Analysis", "url": "https://www.vigyanllm.in/crispr-analysis", "description": "CRISPR guide RNA design and off-target analysis tool for genome editing experiments (in development).", "applicationCategory": "BiotechnologyApplication", "operatingSystem": "Web Browser", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "creator": {"@type": "Organization", "name": "VigyanLLM Private Limited"}}</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "How do I design CRISPR guide RNA for genome editing?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "VigyanLLM's CRISPR tool (currently in development) will accept a target DNA sequence or gene symbol, identify all PAM sequences, rank guide RNAs by on-target efficiency score using Azimuth 2.0, and predict genome-wide off-target effects using CFD scoring. Design synthesis-ready oligos with the required adapters for your preferred delivery method."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What is guide RNA (gRNA) and how is it designed?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Guide RNA (gRNA) is a synthetic RNA molecule that directs the Cas9 nuclease to a specific genomic target. It consists of a 20-nucleotide spacer sequence complementary to the target DNA and a scaffold that binds Cas9. Design rules include: 20 nt spacer length, 40-70% GC content, target upstream of an NGG PAM sequence, and minimal off-target matches across the genome."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How does VigyanLLM score CRISPR gRNA efficiency?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "VigyanLLM uses validated scoring algorithms including Azimuth 2.0 for on-target efficiency prediction, which considers nucleotide preferences at each position in the guide, GC content, and thermodynamic stability. Off-target scoring uses the CFD (Cutting Frequency Determination) algorithm that accounts for mismatch position sensitivity and bulges."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How does VigyanLLM check for CRISPR off-target effects?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Off-target analysis searches the genome for sequences with partial complementarity to the gRNA spacer, allowing up to 3 mismatches and 1 DNA bulge. Each potential off-target site is scored using CFD and MIT specificity scores that weight mismatches differently based on their position within the guide."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What PAM sequences does VigyanLLM CRISPR tool support?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "VigyanLLM supports PAM sequences for multiple Cas variants: SpCas9 (NGG), SaCas9 (NNGRRT), Cas12a/Cpf1 (TTTV), and expanded PAM variants. Users can also specify custom PAM sequences for engineered Cas variants."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can I design primers for CRISPR verification PCR?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes, for CRISPR editing verification you need primers flanking the cut site to amplify the edited locus for Sanger sequencing or T7E1 mismatch cleavage assay. VigyanLLM can design these verification primers after gRNA selection, with amplicon size optimized for Sanger sequencing read length."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Does VigyanLLM support base editing gRNA design?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Base editing guides require the target base to be positioned within the editing window of the deaminase enzyme (typically positions 4-8 of the spacer for APOBEC-based cytosine editors). VigyanLLM will support CBE and ABE base editor guide design with editing window placement optimization."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How to design pegRNA for prime editing?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Prime editing uses a pegRNA that combines a guide RNA with a reverse transcriptase template encoding the desired edit. Design requires determining optimal primer binding site (PBS) length (typically 10-15 nt), reverse transcriptase template (RTT) length (10-30 nt), and nicking sgRNA positioning."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can VigyanLLM design multiple gRNAs for multiplex CRISPR?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes, VigyanLLM will support multi-target gRNA design by processing each target independently and then combining results. The tool checks for cross-homology between guides to minimize off-target effects and supports tRNA-gRNA array design for polycistronic expression."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How to design gRNAs for gene knockout experiments?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "For gene knockout, target early coding exons (exon 1-3) upstream of the protein functional domains. Aim to create frameshift indels that disrupt all transcript isoforms. Avoid the first 50 bp after the start codon and the last 50 bp before the stop codon. Design 3-4 gRNAs per target."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How to design gRNAs for CRISPR knock-in experiments?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "For knock-in experiments, select a cut site within 10-20 bp of the desired insertion point. Design the HDR repair template with homology arms of 300-800 bp on each side, silent mutations to prevent re-cutting after repair, and the donor sequence flanked by homology arms."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What is the difference between sgRNA and gRNA?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "sgRNA (single guide RNA) is an engineered fusion of the CRISPR RNA (crRNA, which contains the 20 nt spacer) and the trans-activating crRNA (tracrRNA, which binds Cas9) into a single synthetic RNA molecule. Most modern CRISPR systems use sgRNA for simplicity."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Does VigyanLLM provide CRISPR delivery recommendations?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "VigyanLLM provides general guidance on CRISPR delivery methods including: plasmid transfection (standard for cell lines), RNP complex delivery (lower off-target, suitable for primary cells), viral delivery via AAV or lentivirus (for in vivo applications), and mRNA electroporation."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How do I plan a complete CRISPR experiment using VigyanLLM?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "The complete CRISPR workflow: (1) Select target gene and identify early coding exons, (2) Design gRNAs with on-target and off-target scoring, (3) Choose delivery method (plasmid, RNP, or viral), (4) Order gRNAs as synthetic oligos, (5) Transfect cells and harvest DNA after 48-72 hours, (6) Verify editing by Sanger sequencing or T7E1 assay."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What is the difference between CRISPR-Cas9 and Cas12a (Cpf1)?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Cas9 requires a 20 nt gRNA and NGG PAM, creates a blunt double-strand break 3 bp upstream of the PAM. Cas12a requires a 23-25 nt crRNA and TTTV PAM, creates a staggered cut with 5 bp overhangs 18-23 bp downstream of the PAM. Cas12a is smaller (1300 vs 1600 aa)."
+      }
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How do I design CRISPR guide RNA for genome editing?","acceptedAnswer":{"@type":"Answer","text":"VigyanLLM's CRISPR tool (currently in development) will accept a target DNA sequence or gene symbol, identify all PAM sequences, rank guide RNAs by on-target efficiency score using Azimuth 2.0, and predict genome-wide off-target effects using CFD scoring."}},{"@type":"Question","name":"What is guide RNA (gRNA) and how is it designed?","acceptedAnswer":{"@type":"Answer","text":"Guide RNA (gRNA) is a synthetic RNA molecule that directs Cas9 to a specific genomic target. It has a 20-nucleotide spacer complementary to the target DNA and a scaffold that binds Cas9. Design rules: 20 nt spacer, 40-70% GC, upstream of NGG PAM, minimal off-targets."}},{"@type":"Question","name":"How does VigyanLLM score CRISPR gRNA efficiency?","acceptedAnswer":{"@type":"Answer","text":"VigyanLLM uses validated scoring including Azimuth 2.0 for on-target prediction considering nucleotide preferences at each position, GC content, and stability. Off-target scoring uses CFD algorithm accounting for mismatch position sensitivity and bulges."}},{"@type":"Question","name":"How does VigyanLLM check for CRISPR off-target effects?","acceptedAnswer":{"@type":"Answer","text":"Off-target analysis searches the genome for sequences with partial complementarity to the gRNA spacer, allowing up to 3 mismatches. Each potential off-target site is scored using CFD and MIT specificity scores."}},{"@type":"Question","name":"What PAM sequences does VigyanLLM CRISPR tool support?","acceptedAnswer":{"@type":"Answer","text":"VigyanLLM supports PAM sequences for multiple Cas variants: SpCas9 (NGG), SaCas9 (NNGRRT), Cas12a/Cpf1 (TTTV), and expanded PAM variants. Users can also specify custom PAM sequences for engineered Cas variants."}},{"@type":"Question","name":"Can I design primers for CRISPR verification PCR?","acceptedAnswer":{"@type":"Answer","text":"Yes, VigyanLLM can design verification primers flanking the cut site for Sanger sequencing or T7E1 mismatch cleavage assay, with amplicon size optimized for sequencing read length."}},{"@type":"Question","name":"Does VigyanLLM support base editing gRNA design?","acceptedAnswer":{"@type":"Answer","text":"VigyanLLM will support CBE and ABE base editor guide design with editing window placement optimization and prediction of bystander editing events for both cytosine and adenine base editors."}},{"@type":"Question","name":"How to design pegRNA for prime editing?","acceptedAnswer":{"@type":"Answer","text":"Prime editing uses a pegRNA combining a guide RNA with a reverse transcriptase template. Design requires determining optimal PBS length (10-15 nt), RTT length (10-30 nt), and nicking sgRNA positioning."}},{"@type":"Question","name":"Can VigyanLLM design multiple gRNAs for multiplex CRISPR?","acceptedAnswer":{"@type":"Answer","text":"Yes, VigyanLLM supports multi-target gRNA design with cross-homology checking between guides and tRNA-gRNA array design for polycistronic expression from a single promoter."}},{"@type":"Question","name":"How to design gRNAs for gene knockout experiments?","acceptedAnswer":{"@type":"Answer","text":"For knockout, target early coding exons (1-3) to create frameshift indels disrupting all isoforms. Avoid the first 50 bp after start codon and last 50 bp before stop codon. Design 3-4 gRNAs per target."}},{"@type":"Question","name":"How to design gRNAs for CRISPR knock-in experiments?","acceptedAnswer":{"@type":"Answer","text":"Select a cut site within 10-20 bp of the desired insertion. Design HDR template with 300-800 bp homology arms, silent mutations to prevent re-cutting, and donor sequence flanked by homology arms."}},{"@type":"Question","name":"What is the difference between sgRNA and gRNA?","acceptedAnswer":{"@type":"Answer","text":"sgRNA (single guide RNA) fuses the CRISPR RNA (crRNA) with the trans-activating crRNA (tracrRNA) into a single molecule. Most modern CRISPR systems use sgRNA for simplicity and consistent expression."}},{"@type":"Question","name":"Does VigyanLLM provide CRISPR delivery recommendations?","acceptedAnswer":{"@type":"Answer","text":"VigyanLLM provides guidance on delivery methods: plasmid transfection (cell lines), RNP complex delivery (primary cells, lower off-target), viral delivery via AAV/lentivirus (in vivo), and mRNA electroporation (transient)."}},{"@type":"Question","name":"How do I plan a complete CRISPR experiment?","acceptedAnswer":{"@type":"Answer","text":"Workflow: select target gene, design gRNAs with off-target scoring, choose delivery method, order synthetic oligos, transfect cells, harvest DNA at 48-72h, verify editing by Sanger sequencing or T7E1 assay."}},{"@type":"Question","name":"What is the difference between CRISPR-Cas9 and Cas12a?","acceptedAnswer":{"@type":"Answer","text":"Cas9: 20 nt gRNA, NGG PAM, blunt double-strand break 3 bp upstream of PAM. Cas12a: 23-25 nt crRNA, TTTV PAM, staggered cut with 5 bp overhangs 18-23 bp downstream of PAM, smaller protein (1300 vs 1600 aa)."}}]}</script>
 
 </head>
 <body>
@@ -372,118 +501,64 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <h2 style="font-family:var(--font-h);font-size:22px;font-weight:800;margin-bottom:8px">Frequently Asked Questions About CRISPR Guide RNA Analysis</h2>
 <p style="color:var(--muted);font-size:14px;margin-bottom:32px">Everything you need to know about using this tool</p>
 <div class="faq-item" style="margin-bottom:24px">
-  <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">Is the CRISPR analysis tool free?</h3>
-  <p style="font-size:14px;color:var(--text2);line-height:1.7">The CRISPR guide RNA analysis tool is currently in development and offers 5 free analyses per user for evaluation purposes. After 5 free uses, a subscription will be required when the tool launches.</p>
+  <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">How do I design CRISPR guide RNA for genome editing?</h3>
+  <p style="font-size:14px;color:var(--text2);line-height:1.7">VigyanLLM's CRISPR tool (currently in development) will accept a target DNA sequence or gene symbol, identify all PAM sequences, rank guide RNAs by on-target efficiency score using Azimuth 2.0, and predict genome-wide off-target effects using CFD scoring. Design synthesis-ready oligos with the required adapters for your preferred delivery method.</p>
 </div>
 <div class="faq-item" style="margin-bottom:24px">
-  <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">What does the CRISPR tool do?</h3>
-  <p style="font-size:14px;color:var(--text2);line-height:1.7">It designs and scores CRISPR guide RNAs (gRNAs) for Cas9, Cas12, and Cas13 systems, predicting on-target efficiency and potential off-target effects across the genome.</p>
+  <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">What is guide RNA (gRNA) and how is it designed?</h3>
+  <p style="font-size:14px;color:var(--text2);line-height:1.7">Guide RNA (gRNA) is a synthetic RNA molecule that directs the Cas9 nuclease to a specific genomic target. It consists of a 20-nucleotide spacer sequence complementary to the target DNA and a scaffold that binds Cas9. Design rules include: 20 nt spacer length, 40-70% GC content, target upstream of an NGG PAM sequence, and minimal off-target matches across the genome.</p>
 </div>
 <div class="faq-item" style="margin-bottom:24px">
-  <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">What scoring models are used?</h3>
-  <p style="font-size:14px;color:var(--text2);line-height:1.7">The tool uses machine learning models trained on validated CRISPR datasets for on-target activity prediction and genome-wide off-target specificity scoring.</p>
+  <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">How does VigyanLLM score CRISPR gRNA efficiency?</h3>
+  <p style="font-size:14px;color:var(--text2);line-height:1.7">VigyanLLM uses validated scoring algorithms including Azimuth 2.0 for on-target efficiency prediction, which considers nucleotide preferences at each position in the guide, GC content, and thermodynamic stability. Off-target scoring uses the CFD (Cutting Frequency Determination) algorithm that accounts for mismatch position sensitivity and bulges.</p>
 </div>
 <div class="faq-item" style="margin-bottom:24px">
-  <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">Do I need an account?</h3>
-  <p style="font-size:14px;color:var(--text2);line-height:1.7">No, you can use CRISPR analysis without an account for your first 5 analyses. Account creation enables usage tracking.</p>
+  <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">How does VigyanLLM check for CRISPR off-target effects?</h3>
+  <p style="font-size:14px;color:var(--text2);line-height:1.7">Off-target analysis searches the genome for sequences with partial complementarity to the gRNA spacer, allowing up to 3 mismatches and 1 DNA bulge. Each potential off-target site is scored using CFD and MIT specificity scores that weight mismatches differently based on their position within the guide. Results include a ranked list of the top potential off-target sites.</p>
 </div>
 <div class="faq-item" style="margin-bottom:24px">
-  <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">How do I subscribe?</h3>
-  <p style="font-size:14px;color:var(--text2);line-height:1.7">Subscribe through VPrime 2.0 starting at ₹99 (~$1.20 USD) (~$1.19 USD)/day. Monthly plans from ₹2,499 (~$30 USD)/month are available for labs and core facilities.</p>
+  <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">What PAM sequences does VigyanLLM CRISPR tool support?</h3>
+  <p style="font-size:14px;color:var(--text2);line-height:1.7">VigyanLLM supports PAM sequences for multiple Cas variants: SpCas9 (NGG), SaCas9 (NNGRRT), Cas12a/Cpf1 (TTTV), and expanded PAM variants. Users can also specify custom PAM sequences for engineered Cas variants. The tool automatically detects eligible PAM sites in the target sequence and designs guides for each validated PAM type.</p>
+</div>
+<div class="faq-item" style="margin-bottom:24px">
+  <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">Can I design primers for CRISPR verification PCR?</h3>
+  <p style="font-size:14px;color:var(--text2);line-height:1.7">Yes, for CRISPR editing verification you need primers flanking the cut site to amplify the edited locus for Sanger sequencing or T7E1 mismatch cleavage assay. VigyanLLM can design these verification primers after gRNA selection, with amplicon size optimized for Sanger sequencing read length (400-700 bp including the cut site).</p>
+</div>
+<div class="faq-item" style="margin-bottom:24px">
+  <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">Does VigyanLLM support base editing gRNA design?</h3>
+  <p style="font-size:14px;color:var(--text2);line-height:1.7">Base editing guides require the target base to be positioned within the editing window of the deaminase enzyme (typically positions 4-8 of the spacer for APOBEC-based cytosine editors). VigyanLLM will support CBE and ABE base editor guide design with editing window placement optimization and prediction of bystander editing events.</p>
+</div>
+<div class="faq-item" style="margin-bottom:24px">
+  <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">How to design pegRNA for prime editing?</h3>
+  <p style="font-size:14px;color:var(--text2);line-height:1.7">Prime editing uses a pegRNA that combines a guide RNA with a reverse transcriptase template encoding the desired edit. Design requires determining optimal primer binding site (PBS) length (typically 10-15 nt), reverse transcriptase template (RTT) length (10-30 nt), and nicking sgRNA positioning. This capability is planned for a future VigyanLLM update.</p>
+</div>
+<div class="faq-item" style="margin-bottom:24px">
+  <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">Can VigyanLLM design multiple gRNAs for multiplex CRISPR?</h3>
+  <p style="font-size:14px;color:var(--text2);line-height:1.7">Yes, VigyanLLM will support multi-target gRNA design by processing each target independently and then combining results. The tool checks for cross-homology between guides to minimize off-target effects and supports tRNA-gRNA array design for polycistronic expression from a single promoter.</p>
+</div>
+<div class="faq-item" style="margin-bottom:24px">
+  <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">How to design gRNAs for gene knockout experiments?</h3>
+  <p style="font-size:14px;color:var(--text2);line-height:1.7">For gene knockout, target early coding exons (exon 1-3) upstream of the protein functional domains. Aim to create frameshift indels that disrupt all transcript isoforms. Avoid the first 50 bp after the start codon and the last 50 bp before the stop codon. Design 3-4 gRNAs per target and test each experimentally since efficiency varies by locus.</p>
+</div>
+<div class="faq-item" style="margin-bottom:24px">
+  <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">How to design gRNAs for CRISPR knock-in experiments?</h3>
+  <p style="font-size:14px;color:var(--text2);line-height:1.7">For knock-in experiments, select a cut site within 10-20 bp of the desired insertion point. Design the HDR repair template with homology arms of 300-800 bp on each side, silent mutations to prevent re-cutting after repair, and the donor sequence flanked by homology arms. Check for SNPs and repeat elements in the homology arm regions.</p>
+</div>
+<div class="faq-item" style="margin-bottom:24px">
+  <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">What is the difference between sgRNA and gRNA?</h3>
+  <p style="font-size:14px;color:var(--text2);line-height:1.7">sgRNA (single guide RNA) is an engineered fusion of the CRISPR RNA (crRNA, which contains the 20 nt spacer) and the trans-activating crRNA (tracrRNA, which binds Cas9) into a single synthetic RNA molecule. Traditional gRNA refers to the two-component system of separate crRNA and tracrRNA. Most modern CRISPR systems use sgRNA for simplicity.</p>
+</div>
+<div class="faq-item" style="margin-bottom:24px">
+  <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">Does VigyanLLM provide CRISPR delivery recommendations?</h3>
+  <p style="font-size:14px;color:var(--text2);line-height:1.7">VigyanLLM provides general guidance on CRISPR delivery methods including: plasmid transfection (standard for cell lines), RNP complex delivery (lower off-target, suitable for primary cells), viral delivery via AAV or lentivirus (for in vivo applications), and mRNA electroporation (transient expression, minimal DNA integration risk).</p>
+</div>
+<div class="faq-item" style="margin-bottom:24px">
+  <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">How do I plan a complete CRISPR experiment using VigyanLLM?</h3>
+  <p style="font-size:14px;color:var(--text2);line-height:1.7">The complete CRISPR workflow: (1) Select target gene and identify early coding exons, (2) Design gRNAs with on-target and off-target scoring, (3) Choose delivery method (plasmid, RNP, or viral), (4) Order gRNAs as synthetic oligos or cloned into expression vectors, (5) Transfect cells and harvest DNA after 48-72 hours, (6) Verify editing by Sanger sequencing or T7E1 assay using flanking primers.</p>
+</div>
+<div class="faq-item" style="margin-bottom:24px">
+  <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">What is the difference between CRISPR-Cas9 and Cas12a (Cpf1)?</h3>
+  <p style="font-size:14px;color:var(--text2);line-height:1.7">Cas9 requires a 20 nt gRNA and NGG PAM, creates a blunt double-strand break 3 bp upstream of the PAM. Cas12a requires a 23-25 nt crRNA and TTTV PAM, creates a staggered cut with 5 bp overhangs 18-23 bp downstream of the PAM. Cas12a is smaller (1300 vs 1600 aa) and has intrinsic RNase activity for processing its own crRNA arrays.</p>
 </div>
 </div>
-
-<div style="max-width:900px;margin:40px auto;padding:20px 24px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:12px;font-size:13px;text-align:center">
-  <strong>Explore:</strong>
-  <a href="/crispr-analysis" style="color:#2563EB;margin:0 8px">CRISPR Analysis Tool →</a> |
-  <a href="/blog/crispr-grna-design-guide" style="color:#2563EB;margin:0 8px">gRNA Design Guide</a>
-</div>
-</main>
-<script>
-(function(){var b=document.createElement('div');b.style.cssText='background:#FEF3C7;color:#92400E;text-align:center;padding:10px 24px;font-size:13px;font-weight:600;border-bottom:1px solid #FDE68A';b.innerHTML='<span style="display:inline-flex;align-items:center;gap:8px"><span style="background:#92400E;color:#FEF3C7;border-radius:20px;padding:2px 10px;font-size:12px;font-weight:700;text-transform:uppercase">Coming Soon</span> This tool is in development. Register your interest for early access.</span>';var n=document.querySelector('nav');if(n)n.parentNode.insertBefore(b,n.nextSibling);})();
-</script>
-
-<footer>
-<div class="footer-grid">
-  <div class="footer-col">
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
-      <img src="/logo.svg" alt="VigyanLLM Logo" style="width:36px;height:36px;border-radius:8px" loading="lazy">
-      <span style="font-family:var(--font-h);font-size:18px;font-weight:800;color:#fff">VigyanLLM</span>
-    </div>
-    <p style="font-size:13px;color:rgba(255,255,255,.45);line-height:1.6">Sovereign Healthcare &amp; Life Sciences AI.<br>Built in India. For the world.</p>
-    <a href="mailto:contact@vigyanllm.in" style="color:var(--blue-light);font-size:13px;display:block;margin-top:12px">contact@vigyanllm.in</a>
-    <div class="footer-social">
-      <a href="https://github.com/vigyanllm" rel="me" aria-label="GitHub"><svg fill="#fff" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg></a>
-      <a href="https://www.linkedin.com/company/vigyanllm/" rel="me" aria-label="LinkedIn"><svg fill="#0077B5" viewBox="0 0 24 24"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg></a>
-      <a href="https://www.facebook.com/vigyanllm" rel="me" aria-label="Facebook"><svg fill="#1877F2" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></a>
-      <a href="https://www.instagram.com/vigyanllm/" rel="me" aria-label="Instagram"><svg fill="#E1306C" viewBox="0 0 24 24"><path d="M7.8 2h8.4C19.4 2 22 4.6 22 7.8v8.4a5.8 5.8 0 0 1-5.8 5.8H7.8C4.6 22 2 19.4 2 16.2V7.8A5.8 5.8 0 0 1 7.8 2m-.2 2A3.6 3.6 0 0 0 4 7.6v8.8C4 18.39 5.61 20 7.6 20h8.8a3.6 3.6 0 0 0 3.6-3.6V7.6C20 5.61 18.39 4 16.4 4H7.6m9.65 1.5a1.25 1.25 0 0 1 0 2.5 1.25 1.25 0 0 1 0-2.5M12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10m0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/></svg></a>
-    </div>
-  </div>
-  <div class="footer-col">
-    <h5>Products</h5>
-    <a href="/primer">VPrime 2.0</a>
-    <a href="/search">Sequence Search</a>
-    <a href="/blast">BLAST</a>
-    <a href="/msa">MSA</a>
-    <a href="/pcr-analysis">PCR Analysis</a>
-    <a href="/crispr-analysis">CRISPR <span style="font-size:12px;font-weight:700;color:#fff;background:#F59E0B;padding:2px 6px;border-radius:99px;line-height:1.3">Coming Soon</span></a>
-    <a href="/protein-docking">Docking</a>
-  </div>
-  <div class="footer-col">
-    <h5>Platform</h5>
-    <a href="/platform">Overview</a>
-    <a href="/architecture">Architecture</a>
-    <a href="/problem">Problem</a>
-    <a href="/solution">Solution</a>
-    <a href="/compare">Compare</a>
-    <a href="/roadmap">Roadmap</a>
-  </div>
-  <div class="footer-col">
-    <h5>Resources</h5>
-    <a href="/blog/index">Blog</a>
-    <a href="/faq">FAQ</a>
-    <a href="/about">About</a>
-    <a href="/demo">Demo</a>
-    <a href="/learning-vigyanllm">Learning</a>
-    <a href="/academic-partnership">Academic Partnership</a>
-    <a href="/pricing">Pricing</a>
-  </div>
-  <div class="footer-col">
-    <h5>Contact</h5>
-    <a href="mailto:contact@vigyanllm.in">contact@vigyanllm.in</a>
-    <a href="/privacy">Privacy</a>
-    <a href="/terms">Terms</a>
-    <a href="/cookies">Cookies</a>
-    <a href="/refund">Refund</a>
-    <a href="/security">Security</a>
-    <a href="/cite-vigyanllm">Cite Us</a>
-  </div>
-</div>
-<div class="footer-bottom">
-  <span>&copy; <script>document.write(new Date().getFullYear())</script> VigyanLLM Pvt. Ltd. · Sovereign Research AI</span>
-  <span>WWW.VIGYANLLM.IN</span>
-</div>
-
-
-
-
-
-
-
-
-
 </footer>
-
-<script defer src="/search-index.js"></script>
-<script defer src="/auth-shared.js"></script>
-
-<p style="font-size:12px;margin-top:12px;color:#94A3B8"><a href="/cite-vigyanllm" style="color:#2563EB">Cite this tool</a> — use the preferred citation format for VigyanLLM tools in your research.</p>
-
-<div style="margin-top:48px;padding-top:32px;border-top:1px solid #E2E8F0;font-size:13px;color:#64748B;">
-  <strong>Related resources:</strong>
-  <a href="/glossary/crispr" style="color:#1565C0;text-decoration:underline;">CRISPR glossary</a>
-  &middot;
-  <a href="/blog/crispr-grna-design-guide" style="color:#1565C0;text-decoration:underline;">CRISPR gRNA design guide</a>
-</div>
-</body>
-</html>

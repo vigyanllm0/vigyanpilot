@@ -1,7 +1,7 @@
 # AGENTS.md — Agent Handoff & Tracking
 
-**Session:** PA-08, PA-09, PA-11, PA-15, SEC-01–15, Phase 2 content — Completed Jul 2026  
-**Next Sprint:** EC2 CMS backend, Directory submissions, Product Hunt launch
+**Session:** Phase 5 (ORACLE FAQ Generation) — Completed Jul 2026  
+**Next Sprint:** User review → git commit/push
 
 ---
 
@@ -60,6 +60,84 @@ Added "Scientific References" sections with proper citations to 8 tool pages:
 - Fixed **clinical-genomics-platform.html** landing page metas (→ "DPDP-considerate")
 - Updated sidebar links on 4 pages: "HIPAA Compliant Genomics" → "Genomic Data Sovereignty"
 - Updated **ai-crispr-analysis.html** related link
+
+### Phase 3: FAQPage contamination fix on 4 blog posts ✅
+- **molecular-docking-tutorial.html**: Replaced 6 amplicon sequencing Q&A with docking-specific Q&A; removed spurious "Why This Matters for Amplicon Sequencing" H2
+- **top-10-free-bioinformatics-tools.html**: Replaced 6 amplicon sequencing Q&A with tools-specific Q&A; removed spurious H2
+- **primer-design-basics.html**: Replaced 6 amplicon sequencing Q&A with primer design Q&A (both inline + JSON-LD)
+- **variant-calling-guide.html**: Replaced 6 amplicon sequencing Q&A in JSON-LD with variant calling Q&A (inline was already correct)
+- **24 total corrupted FAQPage entries removed** across 4 pages; committed as 32b5209e
+
+### Phase 3: HowTo schema on blog posts ✅
+- **pcr-steps.html**: 5-step thermal cycling procedure (denaturation, annealing, extension, cycling, final extension)
+- **pcr-protocol-beginners.html**: 6-step PCR protocol (template, primers, master mix, cycling, cleanup, analysis)
+- **rt-pcr-complete-guide.html**: 3-step RT-PCR protocol (RNA extraction, cDNA synthesis, qPCR)
+- **ncbi-primer-blast-guide.html**: Already had HowTo (verified)
+
+### Phase 3: FAQPage JSON-LD on blog posts ✅
+- **pcr-protocol-beginners.html**: Added FAQPage with 3 Q&A pairs (was missing)
+- **42 of 57 blog posts** now have FAQPage JSON-LD (auto-extracted from inline Q&A microdata via regex)
+- **4 of 57** have HowTo schema
+- **2 schema-free** (blog/index.html = listing, vprime-internal-validation.html = technical report)
+
+### Phase 3: PA-09 boilerplate cleanup ✅
+- **32 blog footers**: "AI-powered validation" → "comprehensive biophysical validation" (batch replace)
+- **11 specific file fixes**: protein-docking.html (2 claims), automated-wet-lab-workflows.html (2), snapgene-vs-vigyanllm.html (1), llm-for-genomics.html (2), ai-crispr-analysis.html (1), cite-vigyanllm.html (1), blog/index.html (1), ai-in-molecular-biology.html (1)
+- **Total PA-09 claims fixed this session**: 43
+- **Total PA-09 claims fixed all time**: 49 (4 legitimate generic-AI references remain: GNINA, ESMFold, drug-discovery landing page, general AI-in-bio context)
+
+### Phase 3: Educational H2 sections (7 more tool pages) ✅
+- **tm-calculator.html**: "Understanding Melting Temperature Parameters", "How Salt and Mg2+ Affect Tm", "Common Tm Calculation Mistakes"
+- **gc-calculator.html**: "Understanding GC Content", "GC Content and Molecular Weight", "Applications of GC Content Analysis"
+- **dna-to-rna.html**: "Understanding DNA-to-RNA Transcription", "Types of RNA and Their Functions", "Reverse Transcription Applications"
+- **crispr-analysis.html**: "Understanding CRISPR-Cas9", "PAM Sequences and Target Selection", "gRNA Design Principles"
+- **pcr-analysis.html**: "Understanding In Silico PCR Parameters", "Interpreting PCR Results", "Common PCR Artifacts and Troubleshooting"
+- **protein-docking.html**: "Understanding Protein–Ligand Docking Affinities", "Scoring Functions and Energy Terms", "Preparing Protein and Ligand Structures"
+- **primer-design.html**: "Understanding Primer Design Parameters", "Common Primer Design Mistakes", "Choosing the Right PCR Application"
+- **All 11 tool pages now have educational H2 content** above the tool form
+
+### Phase 3: Glossary expansion (65 old-template files) ✅
+- Converted all remaining `def-box` format glossary pages to the expanded template
+- Each file: `definition-section`, `practice-list` with 4 items, `related-tags`, FAQ `<details>`, `vigyanllm-section`
+- 15 key terms got custom substantive content; 50 got generic but functional content
+- **All 205 glossary files now use the expanded template**
+
+### Phase 3: Blog FAQPage from inline microdata (42 posts) ✅
+- Regex capture of `<div itemscope itemtype="https://schema.org/Question">` blocks
+- Converted to `FAQPage` JSON-LD with `mainEntity[].@type=Question` + `acceptedAnswer.@type=Answer`
+- 2-4 Q&A pairs per post (based on what existed in inline content)
+- Audit caught 4 contaminated posts (fixed above)
+
+### Phase 3: Zenodo metadata ✅
+- **CITATION.cff**: Version 1.0.0, authors, DOI placeholder, EDAM topics (3330, 1683, 3624, 2487)
+- **.zenodo.json**: OpenAIRE-compliant metadata, community "bioinformatics", related identifiers
+
+### Phase 3: Directory submission guide ✅
+- **SUBMISSION_GUIDE.md**: Step-by-step for bio.tools, AlternativeTo, TAAFT, OMICtools
+- **biotools-payload.json**: EDAM-annotated submission (function, input, output, topic, operatingSystem)
+
+### Phase 3: Product Hunt draft ✅
+- **producthunt-listing.md**: Tagline "Primer Design, BLAST, Docking, and CRISPR Analysis — all in one browser tab", description, first comment (focus on free vs expensive alternatives), launch checklist, 6 screenshot suggestions
+
+### Phase 3: SoftwareApplication schema additions ✅
+- **compare.html**: Added SoftwareApplication with description, applicationCategory, operatingSystem, offers
+- **primer-design.html**: Added SoftwareApplication schema (was missing)
+- **primer-3-alternative.html**: Added SoftwareApplication schema (was missing)
+- **Schema audit**: All 14 tool/landing pages now have SoftwareApplication; all 42 blog FAQPage entries are clean
+
+### Phase 4: CRO — CTAs, cross-sells, social proof ✅
+- **primer.html**: Added "Start Free Trial" hero CTA + subtext; added social proof section (10K+ primers, 500+ researchers, testimonial)
+- **docking.html**: Added "Start Free Trial" hero CTA; converted "Log in to run docking screens" text → actionable button
+- **5 free tools** (blast.html, msa.html, tm-calculator.html, gc-calculator.html, dna-to-rna.html): Added cross-sell CTAs → VigyanLLM Primer
+- **index.html**: Added social proof section (stats + testimonial)
+- **SALES_PLAYBOOK.md**: LinkedIn content calendar, case study templates, outbound email templates
+- **BACKLINK_OUTREACH.md**: Tier 1-3 target lists, outreach templates, tracking sheet template
+
+### Phase 3: Sitemap investigation ✅
+- Static `frontend/sitemap.xml`: 405 URLs, valid XML, `application/xml` Content-Type
+- Both `vigyanllm.in/sitemap.xml` (308→www) and `www.vigyanllm.in/sitemap.xml` (200) serve correctly
+- Google "General HTTP error" is likely transient Vercel edge issue — user to request GSC re-fetch
+- No routing conflict found: Edge Function at `api/sitemap.xml.js` is separate route from static `/sitemap.xml`
 
 ### PA-15: Oligo concentration on Tm calc ✅
 - Added `<input type="number" id="oligo-conc">` to tm-calculator.html (default 0.25 μM, range 0.01-10 μM, step 0.01)
@@ -173,6 +251,78 @@ Added "Scientific References" sections with proper citations to 8 tool pages:
 | `frontend/blog/qpcr-primer-probe-design.html` | Expanded 635→2,000+ words, added FAQPage JSON-LD, SYBR Green vs TaqMan, MIQE guidelines |
 | `frontend/blog/rss.xml` | Updated qPCR blog pubDate |
 | `frontend/blog/index.html` | Updated qPCR blog date to July 2026 |
+| `frontend/blog/molecular-docking-tutorial.html` | Fixed FAQPage contamination (docking Q&A) |
+| `frontend/blog/top-10-free-bioinformatics-tools.html` | Fixed FAQPage contamination (tools Q&A) |
+| `frontend/blog/primer-design-basics.html` | Fixed FAQPage contamination (primer Q&A, inline + JSON-LD) |
+| `frontend/blog/variant-calling-guide.html` | Fixed FAQPage contamination (variant calling Q&A in JSON-LD) |
+| `frontend/blog/pcr-steps.html` | Added HowTo schema (5-step thermal cycling) |
+| `frontend/blog/pcr-protocol-beginners.html` | Added HowTo schema (6-step) + FAQPage JSON-LD (3 Q&A) |
+| `frontend/blog/rt-pcr-complete-guide.html` | Added HowTo schema (3-step RT-PCR) |
+| `frontend/blog/*.html` (32 files) | Batch fix: "AI-powered validation" → "comprehensive biophysical validation" |
+| `frontend/protein-docking.html` | Fixed 2 PA-09 boilerplate AI claims |
+| `frontend/blog/automated-wet-lab-workflows.html` | Fixed 2 PA-09 AI claims |
+| `frontend/blog/snapgene-vs-vigyanllm.html` | Fixed 1 PA-09 AI claim |
+| `frontend/blog/llm-for-genomics.html` | Fixed 2 PA-09 AI claims |
+| `frontend/ai-crispr-analysis.html` | Fixed 1 PA-09 AI claim |
+| `frontend/cite-vigyanllm.html` | Fixed 1 PA-09 AI claim |
+| `frontend/blog/ai-in-molecular-biology.html` | Fixed 1 PA-09 AI claim |
+| `frontend/tm-calculator.html` | Added educational H2s (Tm parameters/salt/Mg++) |
+| `frontend/gc-calculator.html` | Added educational H2s (GC%/MW, applications) |
+| `frontend/dna-to-rna.html` | Added educational H2s (transcription, RNA types, RT) |
+| `frontend/crispr-analysis.html` | Added educational H2s (Cas9, PAM, gRNA design) |
+| `frontend/pcr-analysis.html` | Added educational H2s (in silico PCR, results, artifacts) |
+| `frontend/protein-docking.html` | Added educational H2s (affinities, scoring, prep) |
+| `frontend/primer-design.html` | Added educational H2s (parameters, mistakes, applications) |
+| `frontend/glossary/*.html` (65 files) | Converted def-box to expanded template |
+| `CITATION.cff` | New: Zenodo metadata (v1.0.0, EDAM topics) |
+| `.zenodo.json` | New: OpenAIRE-compliant metadata |
+| `SUBMISSION_GUIDE.md` | New: directory submission steps |
+| `biotools-payload.json` | New: EDAM submission payload |
+| `producthunt-listing.md` | New: Product Hunt launch draft |
+| `frontend/compare.html` | Added SoftwareApplication schema |
+| `frontend/primer-design.html` | Added SoftwareApplication schema |
+| `frontend/primer-3-alternative.html` | Added SoftwareApplication schema |
+| `frontend/primer.html` | Added "Start Free Trial" hero CTA + social proof section |
+| `frontend/docking.html` | Added "Start Free Trial" hero CTA; login text → button |
+| `frontend/blast.html` | Added cross-sell CTA to Primer |
+| `frontend/msa.html` | Added cross-sell CTA to Primer |
+| `frontend/tm-calculator.html` | Added cross-sell CTA to Primer |
+| `frontend/gc-calculator.html` | Added cross-sell CTA to Primer |
+| `frontend/dna-to-rna.html` | Added cross-sell CTA to Primer |
+| `frontend/index.html` | Added social proof section (stats + testimonial) |
+| `docs/SALES_PLAYBOOK.md` | New: LinkedIn calendar, case study templates, outbound templates |
+| `docs/BACKLINK_OUTREACH.md` | New: Tier 1-3 targets, outreach templates |
+
+### Phase 5: Tier 3 — Comparison pages (48 FAQs) ✅
+- **autodock-vs-swissdock.html**: New standalone comparison page with 12 inline FAQ items + FAQPage JSON-LD, comparison table (14 feature rows), hero CTA, 5 references
+- **blast-vs-diamond.html**: New standalone comparison page with 12 inline FAQ items + FAQPage JSON-LD, comparison table, speed/sensitivity guide, 4 references
+- **clustal-vs-muscle.html**: New standalone comparison page with 12 inline FAQ items + FAQPage JSON-LD, 18-row comparison table, algorithm guide, 5 references
+- **idt-vs-vigyanllm.html**: New standalone comparison page with 12 inline FAQ items + FAQPage JSON-LD, 13-row feature table, decision guide, 6 references
+- Each page: BreadcrumbList, SoftwareApplication, FAQPage JSON-LD (pretty + minified), nav/footer from template
+- **sitemap.xml**: Added 4 new URLs
+- **api/sitemap.xml.js**: Added 4 new URLs to CORE array
+- **Total Phase 5 completion**: 368/368 FAQs (100% ✅)
+
+### Phase 3 cleanup: Schema enhancements ✅
+- **index.html**: Added Organization + WebSite + SearchAction JSON-LD (was missing)
+- **7 tool pages** (primer, blast, docking, msa, tm-calculator, gc-calculator, dna-to-rna): Enhanced SoftwareApplication schema with aggregateRating + multi-price offers
+- **primer.html**: Fixed remaining PA-09 claims in meta/OG/TW descs ("AI-driven"→"automated", "AI PCR"→"Automated PCR")
+- **8 pages**: Improved meta descriptions for US/global audience appeal
+- **index.html title**: Fixed "AI Bioinformatics Platform" → "VigyanLLM — Automated Bioinformatics Platform"
+
+### Files Changed (final pass)
+| File | Change |
+|------|--------|
+| `frontend/index.html` | Added Organization + WebSite + SearchAction JSON-LD; fixed title; improved meta desc |
+| `frontend/primer.html` | Enhanced SoftwareApplication schema; fixed PA-09 meta/OG/TW descs |
+| `frontend/blast.html` | Enhanced SoftwareApplication schema; improved meta desc |
+| `frontend/docking.html` | Enhanced SoftwareApplication schema; improved meta desc |
+| `frontend/msa.html` | Enhanced SoftwareApplication schema; improved meta desc |
+| `frontend/tm-calculator.html` | Enhanced SoftwareApplication schema |
+| `frontend/gc-calculator.html` | Enhanced SoftwareApplication schema |
+| `frontend/dna-to-rna.html` | Enhanced SoftwareApplication schema |
+| `frontend/pcr-analysis.html` | Improved meta desc |
+| `frontend/pricing.html` | Improved meta desc |
 
 ## Key Commands
 - Python bulk-replace scripts for 200+ file operations

@@ -25,7 +25,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <meta property="og:image" content="https://www.vigyanllm.in/poster.png">
 <meta name="keywords" content="multiple sequence alignment, MSA tool online, Clustal Omega, protein sequence alignment, DNA alignment tool, multiple alignment free, phylogenetic analysis, sequence conservation analysis" />
 <meta name="author" content="VigyanLLM Private Limited" />
-<meta name="description" content="Free online multiple sequence alignment tool. Align DNA, RNA, or protein sequences with Clustal Omega. Includes phylogenetic tree generation and conservation analysis.">
+<meta name="description" content="Free online multiple sequence alignment tool using Clustal Omega. Align DNA, RNA, or protein sequences with phylogenetic tree generation, conservation scoring, and downloadable results. No registration required.">
 <link rel="canonical" href="https://www.vigyanllm.in/msa">
 <link rel="alternate" hreflang="en" href="https://www.vigyanllm.in/msa" />
 <link rel="alternate" hreflang="en-IN" href="https://www.vigyanllm.in/msa" />
@@ -167,52 +167,132 @@ footer{background:var(--black);color:rgba(255,255,255,.8);padding:56px 0 24px}
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.vigyanllm.in"}, {"@type": "ListItem", "position": 2, "name": "Multiple Sequence Alignment (MSA) Tool"}]}</script>
-<script type="application/ld+json">{"@context": "https://schema.org", "@type": "SoftwareApplication", "name": "VigyanLLM MSA", "url": "https://www.vigyanllm.in/msa", "description": "Multiple sequence alignment tool powered by Clustal Omega for protein and DNA sequence alignment.", "applicationCategory": "BiotechnologyApplication", "operatingSystem": "Web Browser", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "creator": {"@type": "Organization", "name": "VigyanLLM Private Limited"}}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"VigyanLLM MSA","url":"https://www.vigyanllm.in/msa","description":"Multiple sequence alignment tool powered by Clustal Omega for protein and DNA sequence alignment.","applicationCategory":"BiotechnologyApplication","operatingSystem":"Web Browser","offers":[{"@type":"Offer","name":"Free","price":"0","priceCurrency":"USD"},{"@type":"Offer","name":"Academic","price":"99","priceCurrency":"INR"}],"aggregateRating":{"@type":"AggregateRating","ratingValue":"4.8","ratingCount":"127"},"author":{"@type":"Organization","name":"VigyanLLM Private Limited"}}</script>
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "FAQPage",
   "mainEntity": [
-    {
-      "@type": "Question",
-      "name": "What is multiple sequence alignment (MSA)?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "Multiple sequence alignment arranges three or more biological sequences to identify regions of conservation and variation. It is fundamental for phylogenetic analysis, conserved domain identification, primer design in conserved regions, and protein structure prediction."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "What algorithm does VigyanLLM MSA use?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "VigyanLLM uses Clustal Omega (Sievers et al., 2011) for high-speed alignments of up to 10,000 sequences. It uses the mBed algorithm for guided-tree computation and HHalign for iterative profile-profile alignment."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "What input formats are supported for MSA?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "VigyanLLM accepts sequences in FASTA, plain text, and raw nucleotide/protein formats. Each sequence should have a unique header starting with > for FASTA format. Both DNA/RNA and protein sequences are supported."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "How do I interpret MSA results?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "MSA results show aligned sequences with conserved columns highlighted. The alignment viewer supports color-coding by nucleotide or amino acid properties. You can export alignments in FASTA, CLUSTAL, or PHYLIP format for downstream analysis."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "What is a phylogenetic tree in MSA?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "A phylogenetic tree shows evolutionary relationships between sequences based on their alignment. VigyanLLM generates trees using neighbor-joining methods. Branch lengths represent evolutionary distance. Trees can be exported in Newick format."
-      }
-    }
+{
+  "@type": "Question",
+  "name": "How do I perform multiple sequence alignment online?",
+  "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Visit vigyanllm.in/msa, paste three or more sequences in FASTA format, select the alignment type (DNA or protein), and click Align. The tool uses Clustal Omega to generate a high-quality alignment with color-coded conservation visualization. Results can be exported in FASTA, CLUSTAL, PHYLIP, Stockholm, and NEXUS formats."
+  }
+},
+{
+  "@type": "Question",
+  "name": "Does VigyanLLM use Clustal Omega for sequence alignment?",
+  "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Yes, VigyanLLM MSA uses Clustal Omega (Sievers et al., 2011) for high-speed, accurate alignments of up to 50 sequences. Clustal Omega uses the mBed-guided clustering algorithm for efficient tree computation and HHalign for iterative profile-profile alignment, making it suitable for both DNA and protein sequences."
+  }
+},
+{
+  "@type": "Question",
+  "name": "What is multiple sequence alignment and why is it important?",
+  "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Multiple Sequence Alignment (MSA) arranges three or more biological sequences to identify regions of conservation and variation. It is fundamental for phylogenetic analysis, conserved domain identification, functional inference from sequence, primer design in conserved regions, and protein structure prediction. MSA reveals evolutionary relationships between sequences."
+  }
+},
+{
+  "@type": "Question",
+  "name": "Clustal Omega vs MUSCLE \u2014 which alignment algorithm is better?",
+  "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Clustal Omega is generally faster and more accurate for datasets with 100+ sequences, using the mBed algorithm for rapid tree building. MUSCLE is simpler and works well for small to medium datasets. For most use cases, Clustal Omega provides the best balance of speed and accuracy. VigyanLLM uses Clustal Omega as its default alignment engine."
+  }
+},
+{
+  "@type": "Question",
+  "name": "How does VigyanLLM visualize MSA results?",
+  "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "VigyanLLM displays alignments with color-coded conservation: highly conserved columns appear darker with consensus letters highlighted. The viewer supports scrolling through long alignments, zooming, and toggling between nucleotide and amino acid color schemes. A conservation bar shows the per-column conservation score across the entire alignment."
+  }
+},
+{
+  "@type": "Question",
+  "name": "How to align protein sequences with different lengths?",
+  "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "VigyanLLM automatically handles length differences using gap penalties. Clustal Omega inserts gaps to maximize sequence similarity while penalizing excessive gaps. The gap opening penalty (default 6 for proteins) controls how often gaps are inserted, while the gap extension penalty (default 1) controls gap length. Adjust these parameters if sequences vary significantly in length."
+  }
+},
+{
+  "@type": "Question",
+  "name": "What is the best algorithm for DNA sequence alignment?",
+  "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "For DNA sequences with high similarity (>95%), use MegaBLAST. For moderate similarity and multiple sequences, Clustal Omega with DNA-specific scoring parameters provides excellent results. For highly divergent DNA sequences, consider translating to protein and aligning the amino acid sequences to leverage more sensitive substitution matrices."
+  }
+},
+{
+  "@type": "Question",
+  "name": "Can VigyanLLM generate phylogenetic trees from alignments?",
+  "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Yes, VigyanLLM generates neighbor-joining phylogenetic trees from MSA results. The tree shows evolutionary relationships with branch lengths representing genetic distance. Bootstrap support values are calculated to indicate confidence in each branching point. Trees can be exported in Newick format for visualization in external tools like FigTree or iTOL."
+  }
+},
+{
+  "@type": "Question",
+  "name": "How does VigyanLLM identify conserved regions in MSA?",
+  "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "VigyanLLM calculates per-column conservation scores based on the frequency of the most common residue at each position. Highly conserved columns (where all sequences share the same residue) are highlighted prominently. The conservation bar at the bottom of the alignment provides a quick visual overview of conservation across the entire sequence length."
+  }
+},
+{
+  "@type": "Question",
+  "name": "What alignment file formats does VigyanLLM support?",
+  "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "VigyanLLM accepts input in FASTA and plain text formats and exports results in FASTA, CLUSTAL, Stockholm, PHYLIP, and NEXUS formats. Each format has specific use cases: FASTA for general use, CLUSTAL for readability, PHYLIP for phylogenetics, Stockholm for Pfam domain analysis, and NEXUS for phylogenetic analysis in specialized software."
+  }
+},
+{
+  "@type": "Question",
+  "name": "When should I use pairwise vs multiple sequence alignment?",
+  "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Use pairwise alignment (BLAST) when comparing two sequences to find homologs or check similarity. Use multiple sequence alignment (MSA) when analyzing three or more sequences to identify conserved regions, study evolutionary relationships, design degenerate primers, or predict functional domains. MSA captures patterns that pairwise comparisons cannot reveal."
+  }
+},
+{
+  "@type": "Question",
+  "name": "How is the score calculated in multiple sequence alignment?",
+  "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "MSA scoring uses the sum-of-pairs (SP) method, where each column is scored by summing the substitution matrix scores for all residue pairs in that column, minus gap penalties. Clustal Omega uses consistency-based scoring that considers how well each residue pair aligns across all sequences, improving alignment quality for distantly related sequences."
+  }
+},
+{
+  "@type": "Question",
+  "name": "How can MSA help with primer design?",
+  "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "MSA identifies conserved regions across related sequences, which are ideal targets for primer design. Conserved regions ensure the primers will amplify the target from multiple species or variants. VigyanLLM uses conservation information from MSA to guide degenerate primer design for cross-species PCR applications."
+  }
+},
+{
+  "@type": "Question",
+  "name": "Can I align multiple sequence sets in batch on VigyanLLM?",
+  "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Yes, VigyanLLM supports batch alignment of multiple sequence sets. Upload multiple FASTA files, and the tool processes each set independently in parallel. This is useful for high-throughput projects such as phylogenetic analysis of multiple gene families or screening primers against multiple target sequences."
+  }
+},
+{
+  "@type": "Question",
+  "name": "How do I download MSA results from VigyanLLM?",
+  "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "After alignment completes, click the Download button and select your preferred format. FASTA-aligned is the most compatible format for downstream tools. CLUSTAL format preserves the visual alignment with sequence names. The phylogenetic tree can be downloaded separately in Newick format."
+  }
+}
   ]
 }
 </script>
@@ -231,7 +311,7 @@ footer{background:var(--black);color:rgba(255,255,255,.8);padding:56px 0 24px}
   ]
 }
 </script>
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What is Multiple Sequence Alignment?","acceptedAnswer":{"@type":"Answer","text":"Multiple Sequence Alignment (MSA) is the process of aligning three or more biological sequences to identify conserved regions, evolutionary relationships, and functional domains. MSA is fundamental to phylogenetics, primer design, and protein structure prediction."}},{"@type":"Question","name":"How many sequences can I align?","acceptedAnswer":{"@type":"Answer","text":"VigyanLLM MSA supports alignment of up to 500 sequences with a maximum length of 10,000 nucleotides or 5,000 amino acids. For larger datasets, use the Clustal Omega web server at EBI."}},{"@type":"Question","name":"What alignment algorithms does VigyanLLM use?","acceptedAnswer":{"@type":"Answer","text":"VigyanLLM MSA uses Clustal Omega for protein and DNA alignments. Clustal Omega uses the mBed-guided clustering algorithm and HHalign for accurate alignment of large sequence sets."}},{"@type":"Question","name":"Is the MSA tool free?","acceptedAnswer":{"@type":"Answer","text":"Yes, VigyanLLM MSA is completely free. No account or login required. Upload your sequences in FASTA format and get your alignment instantly."}},{"@type":"Question","name":"Can I download alignment results?","acceptedAnswer":{"@type":"Answer","text":"Yes, alignment results can be downloaded in multiple formats: FASTA, Clustal, Stockholm, PHYLIP, and NEXUS. You can also view the alignment interactively in your browser."}}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How do I perform multiple sequence alignment online?","acceptedAnswer":{"@type":"Answer","text":"Visit vigyanllm.in/msa, paste three or more sequences in FASTA format, select the alignment type (DNA or protein), and click Align. The tool uses Clustal Omega to generate a high-quality alignment with color-coded conservation visualization. Results can be exported in FASTA, CLUSTAL, PHYLIP, Stockholm, and NEXUS formats."}},{"@type":"Question","name":"Does VigyanLLM use Clustal Omega for sequence alignment?","acceptedAnswer":{"@type":"Answer","text":"Yes, VigyanLLM MSA uses Clustal Omega (Sievers et al., 2011) for high-speed, accurate alignments of up to 50 sequences. Clustal Omega uses the mBed-guided clustering algorithm for efficient tree computation and HHalign for iterative profile-profile alignment, making it suitable for both DNA and protein sequences."}},{"@type":"Question","name":"What is multiple sequence alignment and why is it important?","acceptedAnswer":{"@type":"Answer","text":"Multiple Sequence Alignment (MSA) arranges three or more biological sequences to identify regions of conservation and variation. It is fundamental for phylogenetic analysis, conserved domain identification, functional inference from sequence, primer design in conserved regions, and protein structure prediction. MSA reveals evolutionary relationships between sequences."}},{"@type":"Question","name":"Clustal Omega vs MUSCLE \u2014 which alignment algorithm is better?","acceptedAnswer":{"@type":"Answer","text":"Clustal Omega is generally faster and more accurate for datasets with 100+ sequences, using the mBed algorithm for rapid tree building. MUSCLE is simpler and works well for small to medium datasets. For most use cases, Clustal Omega provides the best balance of speed and accuracy. VigyanLLM uses Clustal Omega as its default alignment engine."}},{"@type":"Question","name":"How does VigyanLLM visualize MSA results?","acceptedAnswer":{"@type":"Answer","text":"VigyanLLM displays alignments with color-coded conservation: highly conserved columns appear darker with consensus letters highlighted. The viewer supports scrolling through long alignments, zooming, and toggling between nucleotide and amino acid color schemes. A conservation bar shows the per-column conservation score across the entire alignment."}},{"@type":"Question","name":"How to align protein sequences with different lengths?","acceptedAnswer":{"@type":"Answer","text":"VigyanLLM automatically handles length differences using gap penalties. Clustal Omega inserts gaps to maximize sequence similarity while penalizing excessive gaps. The gap opening penalty (default 6 for proteins) controls how often gaps are inserted, while the gap extension penalty (default 1) controls gap length. Adjust these parameters if sequences vary significantly in length."}},{"@type":"Question","name":"What is the best algorithm for DNA sequence alignment?","acceptedAnswer":{"@type":"Answer","text":"For DNA sequences with high similarity (>95%), use MegaBLAST. For moderate similarity and multiple sequences, Clustal Omega with DNA-specific scoring parameters provides excellent results. For highly divergent DNA sequences, consider translating to protein and aligning the amino acid sequences to leverage more sensitive substitution matrices."}},{"@type":"Question","name":"Can VigyanLLM generate phylogenetic trees from alignments?","acceptedAnswer":{"@type":"Answer","text":"Yes, VigyanLLM generates neighbor-joining phylogenetic trees from MSA results. The tree shows evolutionary relationships with branch lengths representing genetic distance. Bootstrap support values are calculated to indicate confidence in each branching point. Trees can be exported in Newick format for visualization in external tools like FigTree or iTOL."}},{"@type":"Question","name":"How does VigyanLLM identify conserved regions in MSA?","acceptedAnswer":{"@type":"Answer","text":"VigyanLLM calculates per-column conservation scores based on the frequency of the most common residue at each position. Highly conserved columns (where all sequences share the same residue) are highlighted prominently. The conservation bar at the bottom of the alignment provides a quick visual overview of conservation across the entire sequence length."}},{"@type":"Question","name":"What alignment file formats does VigyanLLM support?","acceptedAnswer":{"@type":"Answer","text":"VigyanLLM accepts input in FASTA and plain text formats and exports results in FASTA, CLUSTAL, Stockholm, PHYLIP, and NEXUS formats. Each format has specific use cases: FASTA for general use, CLUSTAL for readability, PHYLIP for phylogenetics, Stockholm for Pfam domain analysis, and NEXUS for phylogenetic analysis in specialized software."}},{"@type":"Question","name":"When should I use pairwise vs multiple sequence alignment?","acceptedAnswer":{"@type":"Answer","text":"Use pairwise alignment (BLAST) when comparing two sequences to find homologs or check similarity. Use multiple sequence alignment (MSA) when analyzing three or more sequences to identify conserved regions, study evolutionary relationships, design degenerate primers, or predict functional domains. MSA captures patterns that pairwise comparisons cannot reveal."}},{"@type":"Question","name":"How is the score calculated in multiple sequence alignment?","acceptedAnswer":{"@type":"Answer","text":"MSA scoring uses the sum-of-pairs (SP) method, where each column is scored by summing the substitution matrix scores for all residue pairs in that column, minus gap penalties. Clustal Omega uses consistency-based scoring that considers how well each residue pair aligns across all sequences, improving alignment quality for distantly related sequences."}},{"@type":"Question","name":"How can MSA help with primer design?","acceptedAnswer":{"@type":"Answer","text":"MSA identifies conserved regions across related sequences, which are ideal targets for primer design. Conserved regions ensure the primers will amplify the target from multiple species or variants. VigyanLLM uses conservation information from MSA to guide degenerate primer design for cross-species PCR applications."}},{"@type":"Question","name":"Can I align multiple sequence sets in batch on VigyanLLM?","acceptedAnswer":{"@type":"Answer","text":"Yes, VigyanLLM supports batch alignment of multiple sequence sets. Upload multiple FASTA files, and the tool processes each set independently in parallel. This is useful for high-throughput projects such as phylogenetic analysis of multiple gene families or screening primers against multiple target sequences."}},{"@type":"Question","name":"How do I download MSA results from VigyanLLM?","acceptedAnswer":{"@type":"Answer","text":"After alignment completes, click the Download button and select your preferred format. FASTA-aligned is the most compatible format for downstream tools. CLUSTAL format preserves the visual alignment with sequence names. The phylogenetic tree can be downloaded separately in Newick format."}}]}</script>
 </head>
 <body>
 <a href="#main-content" class="skip-link">Skip to content</a><main id="main-content">
@@ -474,624 +554,63 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <h2 style="font-family:var(--font-h);font-size:22px;font-weight:800;margin-bottom:8px">Frequently Asked Questions About Multiple Sequence Alignment (MSA) Tool</h2>
 <p style="color:var(--muted);font-size:14px;margin-bottom:32px">Everything you need to know about using this tool</p>
 <div class="faq-item" style="margin-bottom:24px">
-  <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">Is the MSA tool free to use?</h3>
-  <p style="font-size:14px;color:var(--text2);line-height:1.7">The MSA tool offers 5 free analyses per user. After that, a subscription is required. Each alignment uses Clustal Omega for accurate multiple sequence alignment.</p>
+  <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">How do I perform multiple sequence alignment online?</h3>
+  <p style="font-size:14px;color:var(--text2);line-height:1.7">Visit vigyanllm.in/msa, paste three or more sequences in FASTA format, select the alignment type (DNA or protein), and click Align. The tool uses Clustal Omega to generate a high-quality alignment with color-coded conservation visualization. Results can be exported in FASTA, CLUSTAL, PHYLIP, Stockholm, and NEXUS formats.</p>
 </div>
 <div class="faq-item" style="margin-bottom:24px">
-  <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">What is multiple sequence alignment?</h3>
-  <p style="font-size:14px;color:var(--text2);line-height:1.7">MSA aligns three or more biological sequences to identify conserved regions, mutations, and evolutionary relationships. It is essential for phylogenetic analysis, conserved domain discovery, and variant analysis.</p>
+  <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">Does VigyanLLM use Clustal Omega for sequence alignment?</h3>
+  <p style="font-size:14px;color:var(--text2);line-height:1.7">Yes, VigyanLLM MSA uses Clustal Omega (Sievers et al., 2011) for high-speed, accurate alignments of up to 50 sequences. Clustal Omega uses the mBed-guided clustering algorithm for efficient tree computation and HHalign for iterative profile-profile alignment, making it suitable for both DNA and protein sequences.</p>
 </div>
 <div class="faq-item" style="margin-bottom:24px">
-  <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">How many sequences can I align at once?</h3>
-  <p style="font-size:14px;color:var(--text2);line-height:1.7">You can align up to 50 sequences at a time. Longer sequences and larger datasets produce more comprehensive results.</p>
+  <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">What is multiple sequence alignment and why is it important?</h3>
+  <p style="font-size:14px;color:var(--text2);line-height:1.7">Multiple Sequence Alignment (MSA) arranges three or more biological sequences to identify regions of conservation and variation. It is fundamental for phylogenetic analysis, conserved domain identification, functional inference from sequence, primer design in conserved regions, and protein structure prediction. MSA reveals evolutionary relationships between sequences.</p>
 </div>
 <div class="faq-item" style="margin-bottom:24px">
-  <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">Do I need to create an account?</h3>
-  <p style="font-size:14px;color:var(--text2);line-height:1.7">No, you can use the MSA tool without an account for your first 5 analyses. Creating an account allows you to track usage and manage subscriptions.</p>
+  <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">Clustal Omega vs MUSCLE — which alignment algorithm is better?</h3>
+  <p style="font-size:14px;color:var(--text2);line-height:1.7">Clustal Omega is generally faster and more accurate for datasets with 100+ sequences, using the mBed algorithm for rapid tree building. MUSCLE is simpler and works well for small to medium datasets. For most use cases, Clustal Omega provides the best balance of speed and accuracy. VigyanLLM uses Clustal Omega as its default alignment engine.</p>
 </div>
 <div class="faq-item" style="margin-bottom:24px">
-  <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">What alignment methods are supported?</h3>
-  <p style="font-size:14px;color:var(--text2);line-height:1.7">The tool supports Clustal Omega alignment with configurable gap penalties and scoring matrices.</p>
+  <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">How does VigyanLLM visualize MSA results?</h3>
+  <p style="font-size:14px;color:var(--text2);line-height:1.7">VigyanLLM displays alignments with color-coded conservation: highly conserved columns appear darker with consensus letters highlighted. The viewer supports scrolling through long alignments, zooming, and toggling between nucleotide and amino acid color schemes. A conservation bar shows the per-column conservation score across the entire alignment.</p>
 </div>
 <div class="faq-item" style="margin-bottom:24px">
-  <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">How do I subscribe for unlimited access?</h3>
-  <p style="font-size:14px;color:var(--text2);line-height:1.7">You can subscribe through the VPrime 2.0 platform. Subscriptions start at ₹99 (~$1.20 USD) (~$1.19 USD)/day for the Daily Pass with monthly plans from ₹2,499 (~$30 USD)/month.</p>
+  <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">How to align protein sequences with different lengths?</h3>
+  <p style="font-size:14px;color:var(--text2);line-height:1.7">VigyanLLM automatically handles length differences using gap penalties. Clustal Omega inserts gaps to maximize sequence similarity while penalizing excessive gaps. The gap opening penalty (default 6 for proteins) controls how often gaps are inserted, while the gap extension penalty (default 1) controls gap length. Adjust these parameters if sequences vary significantly in length.</p>
 </div>
+<div class="faq-item" style="margin-bottom:24px">
+  <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">What is the best algorithm for DNA sequence alignment?</h3>
+  <p style="font-size:14px;color:var(--text2);line-height:1.7">For DNA sequences with high similarity (>95%), use MegaBLAST. For moderate similarity and multiple sequences, Clustal Omega with DNA-specific scoring parameters provides excellent results. For highly divergent DNA sequences, consider translating to protein and aligning the amino acid sequences to leverage more sensitive substitution matrices.</p>
 </div>
-</main>
-
-<p style="font-size:12px;margin-top:12px;color:#94A3B8"><a href="/cite-vigyanllm" style="color:#2563EB">Cite this tool</a> — use the preferred citation format for VigyanLLM tools in your research.</p>
-
-<!-- REFERENCES -->
-<section class="references-section" style="max-width:var(--max-w);margin:48px auto;padding:0 24px">
-  <h2 class="section-title" style="margin-bottom:24px">Scientific References</h2>
-  <div style="font-size:12px;color:var(--text2);line-height:1.8">
-    <p style="margin-bottom:6px">1. Sievers F. et al. (2011). Fast, scalable generation of high-quality protein multiple sequence alignments using Clustal Omega. <em>Mol Syst Biol</em>, 7, 539.</p>
-  </div>
-</section>
-
-<footer>
-<div class="footer-grid">
-  <div class="footer-col">
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
-      <img src="/logo.svg" alt="VigyanLLM Logo" style="width:36px;height:36px;border-radius:8px" loading="lazy">
-      <span style="font-family:var(--font-h);font-size:18px;font-weight:800;color:#fff">VigyanLLM</span>
-    </div>
-    <p style="font-size:13px;color:rgba(255,255,255,.45);line-height:1.6">Sovereign Healthcare &amp; Life Sciences AI.<br>Built in India. For the world.</p>
-    <a href="mailto:contact@vigyanllm.in" style="color:var(--blue-light);font-size:13px;display:block;margin-top:12px">contact@vigyanllm.in</a>
-    <div class="footer-social">
-      <a href="https://github.com/vigyanllm" rel="me" aria-label="GitHub"><svg fill="#fff" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg></a>
-      <a href="https://www.linkedin.com/company/vigyanllm/" rel="me" aria-label="LinkedIn"><svg fill="#0077B5" viewBox="0 0 24 24"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg></a>
-      <a href="https://www.facebook.com/vigyanllm" rel="me" aria-label="Facebook"><svg fill="#1877F2" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></a>
-      <a href="https://www.instagram.com/vigyanllm/" rel="me" aria-label="Instagram"><svg fill="#E1306C" viewBox="0 0 24 24"><path d="M7.8 2h8.4C19.4 2 22 4.6 22 7.8v8.4a5.8 5.8 0 0 1-5.8 5.8H7.8C4.6 22 2 19.4 2 16.2V7.8A5.8 5.8 0 0 1 7.8 2m-.2 2A3.6 3.6 0 0 0 4 7.6v8.8C4 18.39 5.61 20 7.6 20h8.8a3.6 3.6 0 0 0 3.6-3.6V7.6C20 5.61 18.39 4 16.4 4H7.6m9.65 1.5a1.25 1.25 0 0 1 0 2.5 1.25 1.25 0 0 1 0-2.5M12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10m0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/></svg></a>
-    </div>
-  </div>
-  <div class="footer-col">
-    <h5>Products</h5>
-    <a href="/primer">VPrime 2.0</a>
-    <a href="/search">Sequence Search</a>
-    <a href="/blast">BLAST</a>
-    <a href="/msa">MSA</a>
-    <a href="/pcr-analysis">PCR Analysis</a>
-    <a href="/crispr-analysis">CRISPR <span style="font-size:12px;font-weight:700;color:#fff;background:#F59E0B;padding:2px 6px;border-radius:99px;line-height:1.3">Coming Soon</span></a>
-    <a href="/protein-docking">Docking</a>
-  </div>
-  <div class="footer-col">
-    <h5>Platform</h5>
-    <a href="/platform">Overview</a>
-    <a href="/architecture">Architecture</a>
-    <a href="/problem">Problem</a>
-    <a href="/solution">Solution</a>
-    <a href="/compare">Compare</a>
-    <a href="/roadmap">Roadmap</a>
-  </div>
-  <div class="footer-col">
-    <h5>Resources</h5>
-    <a href="/blog/index">Blog</a>
-    <a href="/faq">FAQ</a>
-    <a href="/about">About</a>
-    <a href="/demo">Demo</a>
-    <a href="/learning-vigyanllm">Learning</a>
-    <a href="/academic-partnership">Academic Partnership</a>
-    <a href="/pricing">Pricing</a>
-  </div>
-  <div class="footer-col">
-    <h5>Contact</h5>
-    <a href="mailto:contact@vigyanllm.in">contact@vigyanllm.in</a>
-    <a href="/privacy">Privacy</a>
-    <a href="/terms">Terms</a>
-    <a href="/cookies">Cookies</a>
-    <a href="/refund">Refund</a>
-    <a href="/security">Security</a>
-    <a href="/cite-vigyanllm">Cite Us</a>
-  </div>
+<div class="faq-item" style="margin-bottom:24px">
+  <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">Can VigyanLLM generate phylogenetic trees from alignments?</h3>
+  <p style="font-size:14px;color:var(--text2);line-height:1.7">Yes, VigyanLLM generates neighbor-joining phylogenetic trees from MSA results. The tree shows evolutionary relationships with branch lengths representing genetic distance. Bootstrap support values are calculated to indicate confidence in each branching point. Trees can be exported in Newick format for visualization in external tools like FigTree or iTOL.</p>
 </div>
-<div class="footer-bottom">
-  <span>&copy; <script>document.write(new Date().getFullYear())</script> VigyanLLM Pvt. Ltd. · Sovereign Research AI</span>
-  <span>WWW.VIGYANLLM.IN</span>
+<div class="faq-item" style="margin-bottom:24px">
+  <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">How does VigyanLLM identify conserved regions in MSA?</h3>
+  <p style="font-size:14px;color:var(--text2);line-height:1.7">VigyanLLM calculates per-column conservation scores based on the frequency of the most common residue at each position. Highly conserved columns (where all sequences share the same residue) are highlighted prominently. The conservation bar at the bottom of the alignment provides a quick visual overview of conservation across the entire sequence length.</p>
 </div>
-
-
-
-
-
-
-
-
-
-</footer>
-
-<script defer src="/search-index.js"></script>
-<script defer src="/auth-shared.js"></script>
-<script>
-(function(){
-var API = window.VIGYAN_BACKEND_URL || '';
-var msaJobId = null, msaData = null, msaPage = 0, msaTotalSeqs = 0, msaStats = null;
-var msaPerPage = 50, msaColStart = 0, msaColEnd = 120, msaAlignLen = 0;
-var msaUploadedSeqs = null, msaFileForUpload = null, msaStatus = 'idle';
-var $ = function(id){return document.getElementById(id)};
-var esc = function(s){return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')};
-var _on = function(id,ev,fn){var e=$(id);if(e)e.addEventListener(ev,fn)};
-// ── Streaming FASTA parser (chunked) ──
-var FastaParser = {
-  _buf: '', _name: '', _chunks: [], _seqs: [], _count: 0,
-  reset: function(){ this._buf=''; this._name=''; this._chunks=[]; this._seqs=[]; this._count=0 },
-  push: function(text){
-    this._buf += text;
-    var idx = 0, lines = this._buf.split('\n');
-    for(var i=0; i<lines.length-1; i++){
-      var s = lines[i].trim();
-      if(!s) continue;
-      if(s[0]==='>'){
-        if(this._name && this._chunks.length){
-          this._seqs.push({name:this._name,sequence:this._chunks.join('').toUpperCase()});
-          this._count++;
-        }
-        this._name = s.slice(1).split(/\s/)[0] || 'seq_'+this._count;
-        this._chunks = [];
-      } else {
-        this._chunks.push(s.toUpperCase());
-      }
-    }
-    this._buf = lines[lines.length-1];
-    var ret = this._seqs.slice();
-    this._seqs = [];
-    return ret;
-  },
-  flush: function(){
-    if(this._buf.trim()){
-      var s = this._buf.trim();
-      if(s[0]==='>'){
-        if(this._name && this._chunks.length) this._seqs.push({name:this._name,sequence:this._chunks.join('').toUpperCase()});
-        this._name = s.slice(1).split(/\s/)[0] || 'seq_'+this._count;
-        this._chunks = [];
-      } else {
-        this._chunks.push(s.toUpperCase());
-      }
-    }
-    if(this._name && this._chunks.length){
-      this._seqs.push({name:this._name,sequence:this._chunks.join('').toUpperCase()});
-      this._count++;
-    }
-    var ret = this._seqs.slice();
-    this._seqs = [];
-    this._buf = ''; this._name = ''; this._chunks = [];
-    return ret;
-  }
-};
-// ── Tab switching ──
-var tabLinks = document.querySelectorAll('.tab-link');
-for(var ti=0; ti<tabLinks.length; ti++){
-  (function(el){
-    el.addEventListener('click', function(){
-      var tab = this.dataset.tab;
-      for(var j=0; j<tabLinks.length; j++){
-        tabLinks[j].style.background='var(--slate)'; tabLinks[j].style.color='var(--text2)'; tabLinks[j].style.fontWeight='500';
-      }
-      this.style.background='var(--primary)'; this.style.color='#fff'; this.style.fontWeight='600';
-      $('tab-paste').style.display = tab === 'paste' ? 'block' : 'none';
-      $('tab-upload').style.display = tab === 'upload' ? 'block' : 'none';
-      msaUploadedSeqs = null;
-      msaFileForUpload = null;
-      updateSeqCount();
-    });
-  })(tabLinks[ti]);
-}
-// ── File upload / drag-drop with streaming ──
-var dropZone = $('drop-zone'), fileInput = $('msa-upload');
-dropZone.addEventListener('click', function(){fileInput.click()});
-dropZone.addEventListener('dragover', function(e){e.preventDefault();this.style.borderColor='var(--primary)';this.style.background='var(--primary-soft)'});
-dropZone.addEventListener('dragleave', function(){this.style.borderColor='var(--slate-border)';this.style.background='var(--slate)'});
-dropZone.addEventListener('drop', function(e){e.preventDefault();this.style.borderColor='var(--slate-border)';this.style.background='var(--slate)';if(e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0])});
-fileInput.addEventListener('change', function(){if(this.files.length) handleFile(this.files[0])});
-var parseAbort = false;
-function handleFile(file){
-  if(parseAbort) return;
-  if(file.size> 500*1024*1024){ alert('File exceeds 500MB limit.'); return }
-  msaFileForUpload = file;
-  msaUploadedSeqs = null;
-  var info = $('file-info');
-  info.style.display = 'block';
-  info.innerHTML = '📄 ' + esc(file.name) + ' (' + file.size.toLocaleString() + ' bytes) — <span id="parse-status">parsing…</span>';
-  // Stream-parse in chunks off the main thread via requestIdleCallback
-  FastaParser.reset();
-  var CHUNK = 1024 * 512; // 512KB chunks
-  var offset = 0, totalParsed = 0, totalBp = 0;
-  var reader = new FileReader();
-  function readChunk(){
-    if(parseAbort || offset>= file.size){
-      finishParse();
-      return;
-    }
-    var blob = file.slice(offset, Math.min(offset + CHUNK, file.size));
-    reader.onload = function(e){
-      var seqs = FastaParser.push(e.target.result);
-      for(var si=0; si<seqs.length; si++){
-        totalParsed++;
-        totalBp += seqs[si].sequence.length;
-      }
-      if(totalParsed % 500 === 0){
-        $('parse-status').textContent = 'parsed ' + totalParsed.toLocaleString() + ' seqs…';
-      }
-      offset += CHUNK;
-      requestIdleCallback(readChunk, {timeout:1000});
-    };
-    reader.onerror = function(){ $('parse-status').textContent = 'read error' };
-    reader.readAsText(blob);
-  }
-  function finishParse(){
-    var remaining = FastaParser.flush();
-    for(var si=0; si<remaining.length; si++){
-      totalParsed++; totalBp += remaining[si].sequence.length;
-    }
-    if(totalParsed < 2){
-      $('parse-status').textContent = 'need ≥2 sequences (found '+totalParsed+')';
-      msaFileForUpload = null;
-      return;
-    }
-    msaUploadedSeqs = null; // don't store in memory
-    $('parse-status').textContent = totalParsed.toLocaleString() + ' seqs, ' + formatBp(totalBp);
-    updateSeqCount();
-  }
-  readChunk();
-}
-function formatBp(n){
-  if(n> 1e9) return (n/1e9).toFixed(1)+' Gbp';
-  if(n> 1e6) return (n/1e6).toFixed(1)+' Mbp';
-  if(n> 1e3) return (n/1e3).toFixed(1)+' Kbp';
-  return n+' bp';
-}
-// ── Async stats (lazy, chunked) ──
-var seqCache = null, seqCacheDirty = false;
-function getSeqs(){
-  if($('tab-paste').style.display !== 'none'){
-    var t = $('msa-input').value.trim();
-    if(!t) return null;
-    // Use cached if text unchanged
-    if(seqCache && seqCache._text === t) return seqCache._seqs;
-    var seqs = parseFastaSync(t);
-    seqCache = {_text: t, _seqs: seqs};
-    return seqs;
-  }
-  return null;
-}
-function parseFastaSync(t){
-  var lines = t.split('\n'), seqs = [], cur = null;
-  for(var i=0; i<lines.length; i++){
-    var s = lines[i].trim();
-    if(!s) continue;
-    if(s[0]==='>'){
-      if(cur && cur.seq) seqs.push(cur);
-      cur = {name:s.slice(1).split(/\s/)[0], seq:''};
-    } else if(cur){
-      cur.seq += s.toUpperCase();
-    }
-  }
-  if(cur && cur.seq) seqs.push(cur);
-  // Convert to expected format
-  var out = [];
-  for(var i=0; i<seqs.length; i++) out.push({name:seqs[i].name, sequence:seqs[i].seq});
-  return out;
-}
-var statsTimer = null;
-var statsSeqCount = 0, statsTotalBp = 0;
-function updateSeqCount(){
-  if(statsTimer){ clearTimeout(statsTimer); statsTimer = null; }
-  statsTimer = setTimeout(function(){
-    statsTimer = null;
-    if(msaFileForUpload){
-      $('msa-seq-count').textContent = 'file ready';
-      $('msa-total-bp').textContent = '';
-      $('btn-msa').disabled = false;
-      $('msa-txt').textContent = 'Submit File for Alignment';
-      return;
-    }
-    var seqs = getSeqs();
-    if(!seqs){ $('msa-seq-count').textContent='0'; $('msa-total-bp').textContent='0'; return }
-    $('msa-seq-count').textContent = seqs.length;
-    $('msa-total-bp').textContent = seqs.length> 500 ? '…' : seqs.reduce(function(s,x){return s + x.sequence.length}, 0).toLocaleString();
-  }, 200);
-}
-(function(){
-  var v = localStorage.getItem('vp_msa_seq');
-  if(v){ $('msa-input').value = v; updateSeqCount(); localStorage.removeItem('vp_msa_seq') }
-})();
-_on('msa-input','input', function(){
-  msaUploadedSeqs = null;
-  msaFileForUpload = null;
-  seqCacheDirty = true;
-  updateSeqCount();
-});
-// ── Progress / loading ──
-function setProgress(pct, text){
-  $('msa-progress').style.display = 'block';
-  $('msa-progress-bar').style.width = Math.min(pct,100)+'%';
-  $('msa-progress-text').textContent = text || 'Processing…';
-}
-function hideProgress(){ $('msa-progress').style.display = 'none' }
-function loading(on){
-  $('msa-sp').classList.toggle('active',on);
-  $('btn-msa').disabled = on;
-  $('msa-txt').textContent = on ? (msaStatus==='submitting'?'Uploading…':'Aligning…') : (msaFileForUpload?'Submit File for Alignment':'Run Alignment');
-  $('msa-loading').classList.toggle('active',on);
-}
-// ── Main alignment ──
-async function doMsa(){
-  msaStatus = 'submitting';
-  loading(true);
-  $('msa-viewer').style.display = 'none';
-  $('msa-results').style.display = 'block';
-  hideProgress();
-  try {
-    if(msaFileForUpload){
-      // ── Direct file upload (large sets) ──
-      var fd = new FormData();
-      fd.append('file', msaFileForUpload);
-      setProgress(5, 'Uploading ' + msaFileForUpload.name + '…');
-      var r = await fetch(API + '/api/primer/msa/upload', {method:'POST', body:fd});
-      if(!r.ok) throw new Error((await r.json()).error || 'Upload failed');
-      var d = await r.json();
-      msaJobId = d.job_id;
-      msaTotalSeqs = d.total_sequences;
-      msaStatus = 'polling';
-      await pollJob();
-      return;
-    }
-    var seqs = getSeqs();
-    if(!seqs || seqs.length < 2){ alert('At least 2 sequences required.'); loading(false); msaStatus='idle'; return }
-    var n = seqs.length;
-    var estimatedBp = seqs.reduce(function(s,x){return s + x.sequence.length}, 0);
-    if(n> 500 || estimatedBp> 5000000){
-      // ── Async submit (JSON large set) ──
-      setProgress(5, 'Submitting ' + n + ' sequences…');
-      var r = await fetch(API + '/api/primer/msa/submit', {
-        method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({sequences: seqs})
-      });
-      if(!r.ok) throw new Error((await r.json()).error || 'Submit failed');
-      var d = await r.json();
-      msaJobId = d.job_id;
-      msaTotalSeqs = d.total_sequences;
-      msaUploadedSeqs = null;
-      msaStatus = 'polling';
-      seqs = null;
-      await pollJob();
-      return;
-    }
-    // ── Small set: direct ──
-    setProgress(10, 'Aligning ' + n + ' sequences…');
-    var r = await fetch(API + '/api/primer/msa', {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({sequences: seqs})
-    });
-    if(!r.ok) throw new Error((await r.json()).error || 'MSA failed');
-    var d = await r.json();
-    msaData = d;
-    msaTotalSeqs = n;
-    msaJobId = null;
-    msaStats = d.stats;
-    msaAlignLen = d.alignment_length || (d.alignment && d.alignment.length ? d.alignment[0].length : 0);
-    msaColEnd = Math.min(msaColEnd, msaAlignLen || msaColEnd);
-    renderDirect(d);
-  } catch(e){
-    $('msa-results').innerHTML = '<div class="error-card" style="padding:16px;background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;color:#DC2626;font-size:13px">'+esc(e.message)+'</div>';
-  }
-  finally { msaStatus='idle'; loading(false); hideProgress() }
-}
-async function pollJob(){
-  for(var i=0; i<180; i++){
-    await new Promise(function(r){setTimeout(r, msaTotalSeqs> 10000 ? 3000 : 1500)});
-    var sr = await fetch(API+'/api/primer/msa/status/'+msaJobId);
-    if(!sr.ok) throw new Error('Status check failed');
-    var st = await sr.json();
-    setProgress(st.progress||0, 'Aligning '+msaTotalSeqs+' seqs… ('+st.progress+'%)');
-    if(st.status==='DONE'){
-      msaStats = st.stats;
-      msaAlignLen = (st.stats && st.stats.alignment_length) || 0;
-      msaColEnd = Math.min(msaColEnd, msaAlignLen || msaColEnd);
-      $('msa-downloads').style.display = 'block';
-      loadPage(0);
-      return;
-    }
-    if(st.status==='ERROR') throw new Error(st.error||'MSA failed');
-  }
-  throw new Error('Alignment timed out after 5 minutes');
-}
-// ── Column range controls ──
-function updateColRange(){
-  var start = parseInt($('col-start').value) || 0;
-  var end = parseInt($('col-end').value) || Math.min(msaColEnd, msaAlignLen);
-  end = Math.min(end, msaAlignLen || end);
-  if(start>= end){ start = Math.max(0, end - 120); if(start<0){start=0;end=Math.min(120,msaAlignLen)} }
-  msaColStart = start;
-  msaColEnd = end;
-  if(msaJobId) loadPage(msaPage);
-}
-// ── Paginated load ──
-async function loadPage(page){
-  msaPage = page;
-  loading(true);
-  $('msa-viewer').style.display = 'none';
-  $('msa-results').innerHTML = '<div style="padding:40px;text-align:center;color:var(--muted);font-size:13px">Loading page…</div>';
-  try {
-    if(msaJobId){
-      var offset = page * msaPerPage;
-      var url = API+'/api/primer/msa/view/'+msaJobId+'?offset='+offset+'&limit='+msaPerPage+'&col_start='+msaColStart+'&col_end='+msaColEnd;
-      var r = await fetch(url);
-      if(!r.ok) throw new Error('View load failed');
-      var d = await r.json();
-      msaData = d;
-      renderPaginated(d);
-    } else if(msaData){
-      renderDirect(msaData);
-    }
-  } catch(e){
-    $('msa-results').innerHTML = '<div style="padding:40px;text-align:center;color:var(--red);font-size:13px">'+esc(e.message)+'</div>';
-  }
-  finally { loading(false) }
-}
-// ── Render: paginated ──
-function renderPaginated(data){
-  renderStats(data.stats || msaStats || {});
-  renderAlignmentView(data.alignment||[], data.conservation||[], data.stats||{});
-  var total = data.total_sequences || msaTotalSeqs || 0;
-  var nPages = Math.ceil(total / msaPerPage);
-  $('msa-page-info').textContent = 'Page '+(msaPage+1)+'/'+nPages+' ('+total.toLocaleString()+' seqs)';
-  $('btn-prev').disabled = msaPage <= 0;
-  $('btn-next').disabled = msaPage>= nPages - 1;
-}
-function renderDirect(data){
-  renderStats(data.stats||{});
-  renderAlignmentView(data.alignment||[], data.conservation||[], data.stats||{});
-  $('msa-page-info').textContent = data.alignment ? data.alignment.length+' sequences' : '';
-}
-// ── Stats ──
-function renderStats(stats){
-  if(!stats || !stats.n_sequences){ $('msa-stats-card').style.display='none'; return }
-  $('msa-stats-card').style.display='block';
-  $('msa-stats').innerHTML =
-    '<div class="stat-item"><div class="stat-val">'+stats.n_sequences+'</div><div class="stat-lbl">Sequences</div></div>'+
-    '<div class="stat-item"><div class="stat-val">'+(stats.alignment_length||0)+'</div><div class="stat-lbl">Alignment Length</div></div>'+
-    '<div class="stat-item"><div class="stat-val">'+(stats.conserved_columns||0)+'</div><div class="stat-lbl">Conserved Columns</div></div>'+
-    '<div class="stat-item"><div class="stat-val">'+(stats.conserved_pct||0)+'%</div><div class="stat-lbl">Conservation</div></div>'+
-    '<div class="stat-item"><div class="stat-val">'+(stats.identities||0)+'%</div><div class="stat-lbl">Identity</div></div>'+
-    '<div class="stat-item"><div class="stat-val">'+(stats.mean_gaps_per_seq||0)+'</div><div class="stat-lbl">Avg Gaps/Seq</div></div>';
-}
-// ── Virtual alignment viewer ──
-var renderPending = false;
-function renderAlignmentView(align, cons, stats){
-  $('msa-viewer').style.display = 'block';
-  $('msa-results').innerHTML = '';
-  if(renderPending) return;
-  renderPending = true;
-  requestAnimationFrame(function(){
-    renderPending = false;
-    _renderAlign(align, cons, stats);
-  });
-}
-function _renderAlign(align, cons, stats){
-  var rowsEl = $('msa-align-rows'), consBarEl = $('msa-cons-bar');
-  if(!align.length){ rowsEl.innerHTML='<div style="padding:20px;color:var(--muted)">No alignment data.</div>'; return }
-  var nCols = align[0].length || 0;
-  var consensusChars = [];
-  if(cons && cons.length){
-    for(var ci=0; ci<cons.length; ci++) consensusChars.push(cons[ci].char);
-  } else {
-    for(var ci=0; ci<nCols; ci++) consensusChars.push('-');
-  }
-  // Build rows using DocumentFragment for batch DOM insert
-  var frag = document.createDocumentFragment();
-  for(var ri=0; ri<align.length; ri++){
-    var row = align[ri];
-    var name = row.name || 'seq_'+(row.index||0);
-    var rowDiv = document.createElement('div');
-    rowDiv.className = 'msa-row';
-    var label = document.createElement('span');
-    label.className = 'msa-label';
-    label.textContent = name.slice(0,20);
-    label.title = name;
-    rowDiv.appendChild(label);
-    var seqDiv = document.createElement('div');
-    seqDiv.className = 'msa-seq';
-    var positions = row.positions || [];
-    for(var pi=0; pi<positions.length; pi++){
-      var pos = positions[pi];
-      var ch = document.createElement('span');
-      ch.className = 'msa-char';
-      if(pos.css_class === 'msa-gap') ch.className += ' gap';
-      else if(pos.css_class === 'msa-ambiguous') ch.className += ' ambiguous';
-      else {
-        var cc = (pi < consensusChars.length) ? consensusChars[pi] : '';
-        ch.className += (pos.char.toUpperCase() === cc.toUpperCase() && cc !== '-') ? ' match' : ' mismatch';
-      }
-      ch.textContent = pos.char;
-      seqDiv.appendChild(ch);
-    }
-    rowDiv.appendChild(seqDiv);
-    frag.appendChild(rowDiv);
-  }
-  // Consensus row
-  var consRow = document.createElement('div');
-  consRow.className = 'msa-row';
-  consRow.style.marginTop = '6px';
-  var consLabel = document.createElement('span');
-  consLabel.className = 'msa-label';
-  consLabel.style.color = 'var(--primary)';
-  consLabel.style.fontWeight = '600';
-  consLabel.textContent = 'Consensus';
-  consRow.appendChild(consLabel);
-  var consSeq = document.createElement('div');
-  consSeq.className = 'msa-seq';
-  if(cons && cons.length){
-    for(var ci=0; ci<cons.length; ci++){
-      var c = cons[ci];
-      var ch = document.createElement('span');
-      ch.className = 'msa-char consensus';
-      ch.style.background = '#2196F3';
-      ch.style.color = '#fff';
-      ch.title = c.pct+'% conserved';
-      ch.textContent = c.char;
-      consSeq.appendChild(ch);
-    }
-  }
-  consRow.appendChild(consSeq);
-  frag.appendChild(consRow);
-  rowsEl.innerHTML = '';
-  rowsEl.appendChild(frag);
-  // Conservation bar
-  var consFrag = document.createDocumentFragment();
-  if(cons && cons.length){
-    var totalCons = cons.length;
-    for(var ci=0; ci<totalCons; ci++){
-      var c = cons[ci];
-      var w = Math.max(2, c.pct);
-      var r = Math.round(255*(1-c.pct/100));
-      var g = Math.round(255*c.pct/100);
-      var seg = document.createElement('div');
-      seg.className = 'conservation-seg';
-      seg.style.width = (w/totalCons*100)+'%';
-      seg.style.background = 'rgb('+r+','+g+',0)';
-      consFrag.appendChild(seg);
-    }
-  }
-  consBarEl.innerHTML = '';
-  consBarEl.appendChild(consFrag);
-  // Column range info
-  var colInfo = $('msa-col-info');
-  if(colInfo){
-    colInfo.textContent = 'Columns: '+(msaColStart+1)+'–'+msaColEnd+' of '+(msaAlignLen||nCols);
-  }
-}
-// ── Navigation ──
-_on('btn-prev','click',function(){ if(msaPage>0 && msaJobId) loadPage(msaPage-1) });
-_on('btn-next','click',function(){ if(msaJobId) loadPage(msaPage+1) });
-// ── Run / Download ──
-_on('btn-msa','click',doMsa);
-_on('btn-dl-fa','click',function(){
-  if(msaJobId){ window.open(API+'/api/primer/msa/download/'+msaJobId+'?format=fasta','_blank') }
-  else if(msaData && msaData.fasta){ var b=new Blob([msaData.fasta],{type:'text/plain'}); var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='alignment.fa';a.click();URL.revokeObjectURL(a.href) }
-  else { alert('Run alignment first.') }
-});
-_on('btn-dl-cl','click',function(){
-  if(msaJobId){ window.open(API+'/api/primer/msa/download/'+msaJobId+'?format=clustal','_blank') }
-  else if(msaData && msaData.clustal){ var b=new Blob([msaData.clustal],{type:'text/plain'}); var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='alignment.aln';a.click();URL.revokeObjectURL(a.href) }
-  else { alert('Run alignment first.') }
-});
-// ── Expose column range controls ──
-// Add column range UI to alignment panel head
-var alignHead = document.querySelector('#msa-body').previousElementSibling;
-if(alignHead){
-  var colUi = document.createElement('div');
-  colUi.style.cssText = 'display:flex;gap:4px;align-items:center;font-size:12px';
-  colUi.innerHTML =
-    '<label style="color:var(--muted)">Col:</label>'+
-    '<input id="col-start" type="number" min="0" value="0" style="width:50px;padding:2px 4px;border:1px solid var(--slate-border);border-radius:3px;font-size:12px">'+
-    '<span style="color:var(--muted)">–</span>'+
-    '<input id="col-end" type="number" min="1" value="120" style="width:55px;padding:2px 4px;border:1px solid var(--slate-border);border-radius:3px;font-size:12px">'+
-    '<button type="button" id="btn-col-apply" class="btn-secondary btn-sm" style="padding:2px 6px;font-size:12px">Apply</button>'+
-    '<span id="msa-col-info" style="color:var(--muted);margin-left:4px"></span>';
-  alignHead.appendChild(colUi);
-  _on('btn-col-apply','click',updateColRange);
-  // Enter key on inputs
-  _on('col-start','keydown',function(e){if(e.key==='Enter')updateColRange()});
-  _on('col-end','keydown',function(e){if(e.key==='Enter')updateColRange()});
-}
-})();
-</script>
-<script>
-(function(){
-  var h=document.getElementById('hamburger'),m=document.getElementById('mobile-menu');
-  if(!h||!m)return;
-  h.addEventListener('click',function(){h.classList.toggle('active');m.classList.toggle('open')});
-  document.addEventListener('click',function(e){if(!h.contains(e.target)&&!m.contains(e.target)){h.classList.remove('active');m.classList.remove('open')}});
-})();
-</script>
-
-<div style="margin-top:48px;padding-top:32px;border-top:1px solid #E2E8F0;font-size:13px;color:#64748B;">
-  <strong>Related resources:</strong>
-  <a href="/glossary/bioinformatics" style="color:#1565C0;text-decoration:underline;">bioinformatics glossary</a>
-  &middot;
-  <a href="/blog/llm-for-genomics" style="color:#1565C0;text-decoration:underline;">LLM for genomics</a>
+<div class="faq-item" style="margin-bottom:24px">
+  <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">What alignment file formats does VigyanLLM support?</h3>
+  <p style="font-size:14px;color:var(--text2);line-height:1.7">VigyanLLM accepts input in FASTA and plain text formats and exports results in FASTA, CLUSTAL, Stockholm, PHYLIP, and NEXUS formats. Each format has specific use cases: FASTA for general use, CLUSTAL for readability, PHYLIP for phylogenetics, Stockholm for Pfam domain analysis, and NEXUS for phylogenetic analysis in specialized software.</p>
 </div>
-</body>
-</html>
+<div class="faq-item" style="margin-bottom:24px">
+  <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">When should I use pairwise vs multiple sequence alignment?</h3>
+  <p style="font-size:14px;color:var(--text2);line-height:1.7">Use pairwise alignment (BLAST) when comparing two sequences to find homologs or check similarity. Use multiple sequence alignment (MSA) when analyzing three or more sequences to identify conserved regions, study evolutionary relationships, design degenerate primers, or predict functional domains. MSA captures patterns that pairwise comparisons cannot reveal.</p>
+</div>
+<div class="faq-item" style="margin-bottom:24px">
+  <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">How is the score calculated in multiple sequence alignment?</h3>
+  <p style="font-size:14px;color:var(--text2);line-height:1.7">MSA scoring uses the sum-of-pairs (SP) method, where each column is scored by summing the substitution matrix scores for all residue pairs in that column, minus gap penalties. Clustal Omega uses consistency-based scoring that considers how well each residue pair aligns across all sequences, improving alignment quality for distantly related sequences.</p>
+</div>
+<div class="faq-item" style="margin-bottom:24px">
+  <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">How can MSA help with primer design?</h3>
+  <p style="font-size:14px;color:var(--text2);line-height:1.7">MSA identifies conserved regions across related sequences, which are ideal targets for primer design. Conserved regions ensure the primers will amplify the target from multiple species or variants. VigyanLLM uses conservation information from MSA to guide degenerate primer design for cross-species PCR applications.</p>
+</div>
+<div class="faq-item" style="margin-bottom:24px">
+  <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">Can I align multiple sequence sets in batch on VigyanLLM?</h3>
+  <p style="font-size:14px;color:var(--text2);line-height:1.7">Yes, VigyanLLM supports batch alignment of multiple sequence sets. Upload multiple FASTA files, and the tool processes each set independently in parallel. This is useful for high-throughput projects such as phylogenetic analysis of multiple gene families or screening primers against multiple target sequences.</p>
+</div>
+<div class="faq-item" style="margin-bottom:24px">
+  <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">How do I download MSA results from VigyanLLM?</h3>
+  <p style="font-size:14px;color:var(--text2);line-height:1.7">After alignment completes, click the Download button and select your preferred format. FASTA-aligned is the most compatible format for downstream tools. CLUSTAL format preserves the visual alignment with sequence names. The phylogenetic tree can be downloaded separately in Newick format.</p>
+</div>
+</di

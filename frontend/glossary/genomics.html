@@ -44,6 +44,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <!-- JSON-LD: BreadcrumbList -->
   <!-- JSON-LD: FAQPage -->
   <!-- JSON-LD: RelatedTopic -->
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What is the difference between genetics and genomics?","acceptedAnswer":{"@type":"Answer","text":"Genetics studies individual genes, their inheritance patterns, mutations, and functions. Genomics takes a holistic approach, studying all genes and non-coding sequences in the genome simultaneously. For example, genetics might investigate a single BRCA1 mutation in breast cancer, while genomics would sequence the entire tumor genome to identify all mutations, copy number changes, and structural variants contributing to cancer development and treatment response."}},{"@type":"Question","name":"What are the main applications of genomics in medicine?","acceptedAnswer":{"@type":"Answer","text":"Medical genomics applications include: (1) diagnosing rare genetic diseases through WES/WGS, (2) oncology — identifying driver mutations for targeted therapy selection, (3) pharmacogenomics — predicting drug response based on genetic variants, (4) prenatal screening through non-invasive prenatal testing (NIPT), (5) carrier screening for recessive disorders, (6) infectious disease genomics — tracking pathogen evolution and drug resistance, and (7) precision public health — population-level genomic surveillance."}},{"@type":"Question","name":"How does genomics relate to primer design?","acceptedAnswer":{"@type":"Answer","text":"Genomic information is essential for primer design because primers must be specific to their target within the context of the entire genome. A human genomic template is 3.2 billion base pairs — primers must uniquely amplify the intended region without off-target binding. VigyanLLM's primer design tool uses BLAST alignment against complete reference genomes (NCBI RefSeq) to verify specificity, checks for SNP overlap using dbSNP and gnomAD databases, and masks repetitive elements identified through genomic annotation."}},{"@type":"Question","name":"What is the difference between genomics and genetics?","acceptedAnswer":{"@type":"Answer","text":"Genetics studies individual genes and their inheritance patterns, focusing on specific traits or diseases caused by single gene variants. Genomics analyzes the entire genome — all genes, regulatory elements, and non-coding DNA — to understand their collective structure, function, and interactions. Genomics uses high-throughput technologies like next-generation sequencing."}},{"@type":"Question","name":"What is next-generation sequencing (NGS)?","acceptedAnswer":{"@type":"Answer","text":"NGS is a high-throughput DNA sequencing technology that parallelly sequences millions of DNA fragments simultaneously. Unlike Sanger sequencing which sequences one fragment at a time, NGS enables whole-genome sequencing, targeted sequencing, RNA-seq, and epigenomic profiling in a single run. Illumina sequencing-by-synthesis is the most widely used NGS technology."}},{"@type":"Question","name":"What is a genome assembly?","acceptedAnswer":{"@type":"Answer","text":"Genome assembly is the process of reconstructing complete chromosome sequences from short DNA sequencing reads. It involves overlapping reads to form longer contiguous sequences (contigs), ordering contigs into scaffolds, and anchoring scaffolds to chromosomes. Reference-quality assemblies require high coverage (30-60x) and a combination of short-read and long-read sequencing technologies."}},{"@type":"Question","name":"What is the human genome reference sequence?","acceptedAnswer":{"@type":"Answer","text":"The human genome reference is a digital representation of the human genome used as a standard for comparison in genomic studies. Current version GRCh38 (hg38) covers approximately 3.1 billion base pairs. It is a composite derived from multiple individuals and continues to be refined with gap-free telomere-to-telomere assemblies from the T2T Consortium."}},{"@type":"Question","name":"How is genomics used in precision medicine?","acceptedAnswer":{"@type":"Answer","text":"Genomics enables precision medicine by identifying genetic variants that influence drug response (pharmacogenomics), predicting disease risk from polygenic risk scores, guiding cancer treatment based on tumor mutational profiles, diagnosing rare genetic diseases through whole-exome or whole-genome sequencing, and monitoring treatment response through liquid biopsies."}},{"@type":"Question","name":"What is a genome-wide association study (GWAS)?","acceptedAnswer":{"@type":"Answer","text":"GWAS scans the genomes of thousands of individuals to identify single nucleotide polymorphisms (SNPs) associated with a particular trait or disease. It compares SNP frequencies between cases and controls, identifying statistically significant associations. GWAS has discovered thousands of genetic variants linked to complex diseases but typically explains only a fraction of heritability."}},{"@type":"Question","name":"What is the difference between structural variants and SNPs?","acceptedAnswer":{"@type":"Answer","text":"Single nucleotide polymorphisms (SNPs) change one DNA base and are the most common type of genetic variation. Structural variants (SVs) are larger changes affecting 50+ base pairs, including deletions, duplications, inversions, insertions, and translocations. SVs affect more total base pairs of the genome than SNPs but are harder to detect with standard short-read sequencing."}}]}</script>
   <style>
     html { overflow-x: hidden; }
 *{box-sizing:border-box;margin:0;padding:0}
@@ -612,29 +613,87 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       </div>
     </section>
 
-    <section class="section" id="faq">
+        <section class="section" id="faq">
       <h2>Frequently Asked Questions</h2>
       
-      
-      
       <details class="faq-item" open>
-        <summary class="faq-question">What is the difference between genetics and genomics?</summary>
-        <div class="faq-answer">
-          <p>Genetics studies individual genes, their inheritance patterns, mutations, and functions. Genomics takes a holistic approach, studying all genes and non-coding sequences in the genome simultaneously. For example, genetics might investigate a single BRCA1 mutation in breast cancer, while genomics would sequence the entire tumor genome to identify all mutations, copy number changes, and structural variants contributing to cancer development and treatment response.</p>
+        <summary class="faq-question" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+          <span itemprop="name">What is the difference between genetics and genomics?</span>
+        </summary>
+        <div class="faq-answer" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+          <p itemprop="text">Genetics studies individual genes, their inheritance patterns, mutations, and functions. Genomics takes a holistic approach, studying all genes and non-coding sequences in the genome simultaneously. For example, genetics might investigate a single BRCA1 mutation in breast cancer, while genomics would sequence the entire tumor genome to identify all mutations, copy number changes, and structural variants contributing to cancer development and treatment response.</p>
         </div>
       </details>
-
       <details class="faq-item">
-        <summary class="faq-question">What are the main applications of genomics in medicine?</summary>
-        <div class="faq-answer">
-          <p>Medical genomics applications include: (1) diagnosing rare genetic diseases through WES/WGS, (2) oncology — identifying driver mutations for targeted therapy selection, (3) pharmacogenomics — predicting drug response based on genetic variants, (4) prenatal screening through non-invasive prenatal testing (NIPT), (5) carrier screening for recessive disorders, (6) infectious disease genomics — tracking pathogen evolution and drug resistance, and (7) precision public health — population-level genomic surveillance.</p>
+        <summary class="faq-question" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+          <span itemprop="name">What are the main applications of genomics in medicine?</span>
+        </summary>
+        <div class="faq-answer" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+          <p itemprop="text">Medical genomics applications include: (1) diagnosing rare genetic diseases through WES/WGS, (2) oncology — identifying driver mutations for targeted therapy selection, (3) pharmacogenomics — predicting drug response based on genetic variants, (4) prenatal screening through non-invasive prenatal testing (NIPT), (5) carrier screening for recessive disorders, (6) infectious disease genomics — tracking pathogen evolution and drug resistance, and (7) precision public health — population-level genomic surveillance.</p>
         </div>
       </details>
-
       <details class="faq-item">
-        <summary class="faq-question">How does genomics relate to primer design?</summary>
-        <div class="faq-answer">
-          <p>Genomic information is essential for primer design because primers must be specific to their target within the context of the entire genome. A human genomic template is 3.2 billion base pairs — primers must uniquely amplify the intended region without off-target binding. VigyanLLM’s primer design tool uses BLAST alignment against complete reference genomes (NCBI RefSeq) to verify specificity, checks for SNP overlap using dbSNP and gnomAD databases, and masks repetitive elements identified through genomic annotation.</p>
+        <summary class="faq-question" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+          <span itemprop="name">How does genomics relate to primer design?</span>
+        </summary>
+        <div class="faq-answer" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+          <p itemprop="text">Genomic information is essential for primer design because primers must be specific to their target within the context of the entire genome. A human genomic template is 3.2 billion base pairs — primers must uniquely amplify the intended region without off-target binding. VigyanLLM's primer design tool uses BLAST alignment against complete reference genomes (NCBI RefSeq) to verify specificity, checks for SNP overlap using dbSNP and gnomAD databases, and masks repetitive elements identified through genomic annotation.</p>
+        </div>
+      </details>
+      <details class="faq-item">
+        <summary class="faq-question" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+          <span itemprop="name">What is the difference between genomics and genetics?</span>
+        </summary>
+        <div class="faq-answer" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+          <p itemprop="text">Genetics studies individual genes and their inheritance patterns, focusing on specific traits or diseases caused by single gene variants. Genomics analyzes the entire genome — all genes, regulatory elements, and non-coding DNA — to understand their collective structure, function, and interactions. Genomics uses high-throughput technologies like next-generation sequencing.</p>
+        </div>
+      </details>
+      <details class="faq-item">
+        <summary class="faq-question" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+          <span itemprop="name">What is next-generation sequencing (NGS)?</span>
+        </summary>
+        <div class="faq-answer" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+          <p itemprop="text">NGS is a high-throughput DNA sequencing technology that parallelly sequences millions of DNA fragments simultaneously. Unlike Sanger sequencing which sequences one fragment at a time, NGS enables whole-genome sequencing, targeted sequencing, RNA-seq, and epigenomic profiling in a single run. Illumina sequencing-by-synthesis is the most widely used NGS technology.</p>
+        </div>
+      </details>
+      <details class="faq-item">
+        <summary class="faq-question" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+          <span itemprop="name">What is a genome assembly?</span>
+        </summary>
+        <div class="faq-answer" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+          <p itemprop="text">Genome assembly is the process of reconstructing complete chromosome sequences from short DNA sequencing reads. It involves overlapping reads to form longer contiguous sequences (contigs), ordering contigs into scaffolds, and anchoring scaffolds to chromosomes. Reference-quality assemblies require high coverage (30-60x) and a combination of short-read and long-read sequencing technologies.</p>
+        </div>
+      </details>
+      <details class="faq-item">
+        <summary class="faq-question" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+          <span itemprop="name">What is the human genome reference sequence?</span>
+        </summary>
+        <div class="faq-answer" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+          <p itemprop="text">The human genome reference is a digital representation of the human genome used as a standard for comparison in genomic studies. Current version GRCh38 (hg38) covers approximately 3.1 billion base pairs. It is a composite derived from multiple individuals and continues to be refined with gap-free telomere-to-telomere assemblies from the T2T Consortium.</p>
+        </div>
+      </details>
+      <details class="faq-item">
+        <summary class="faq-question" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+          <span itemprop="name">How is genomics used in precision medicine?</span>
+        </summary>
+        <div class="faq-answer" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+          <p itemprop="text">Genomics enables precision medicine by identifying genetic variants that influence drug response (pharmacogenomics), predicting disease risk from polygenic risk scores, guiding cancer treatment based on tumor mutational profiles, diagnosing rare genetic diseases through whole-exome or whole-genome sequencing, and monitoring treatment response through liquid biopsies.</p>
+        </div>
+      </details>
+      <details class="faq-item">
+        <summary class="faq-question" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+          <span itemprop="name">What is a genome-wide association study (GWAS)?</span>
+        </summary>
+        <div class="faq-answer" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+          <p itemprop="text">GWAS scans the genomes of thousands of individuals to identify single nucleotide polymorphisms (SNPs) associated with a particular trait or disease. It compares SNP frequencies between cases and controls, identifying statistically significant associations. GWAS has discovered thousands of genetic variants linked to complex diseases but typically explains only a fraction of heritability.</p>
+        </div>
+      </details>
+      <details class="faq-item">
+        <summary class="faq-question" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+          <span itemprop="name">What is the difference between structural variants and SNPs?</span>
+        </summary>
+        <div class="faq-answer" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+          <p itemprop="text">Single nucleotide polymorphisms (SNPs) change one DNA base and are the most common type of genetic variation. Structural variants (SVs) are larger changes affecting 50+ base pairs, including deletions, duplications, inversions, insertions, and translocations. SVs affect more total base pairs of the genome than SNPs but are harder to detect with standard short-read sequencing.</p>
         </div>
       </details>
     </section>

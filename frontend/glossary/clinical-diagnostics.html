@@ -44,6 +44,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <!-- JSON-LD: BreadcrumbList -->
   <!-- JSON-LD: FAQPage -->
   <!-- JSON-LD: RelatedTopic -->
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What is the difference between diagnostic sensitivity and specificity?","acceptedAnswer":{"@type":"Answer","text":"Diagnostic sensitivity measures a test's ability to correctly identify individuals who have the disease (true positive rate). Specificity measures the ability to correctly identify those without the disease (true negative rate). A highly sensitive test minimizes false negatives (good for screening), while a highly specific test minimizes false positives (important for confirmation). The best diagnostic assays balance both, typically aiming for >95% in each metric. VigyanLLM's primer design pipeline helps optimize assay specificity through BLAST-based off-target detection."}},{"@type":"Question","name":"What are the main types of molecular diagnostic tests?","acceptedAnswer":{"@type":"Answer","text":"Major molecular diagnostic test types include: (1) PCR-based tests (conventional PCR, qPCR, digital PCR) for nucleic acid detection and quantification, (2) NGS-based tests (targeted panels, whole-exome, whole-genome) for comprehensive genomic analysis, (3) microarray-based tests for copy number variation and gene expression profiling, (4) isothermal amplification tests (LAMP, RPA) for rapid point-of-care detection, (5) CRISPR-based diagnostics for portable pathogen detection, and (6) mass spectrometry-based tests for protein and metabolite biomarkers."}},{"@type":"Question","name":"How does VigyanLLM support clinical diagnostics workflows?","acceptedAnswer":{"@type":"Answer","text":"VigyanLLM supports clinical diagnostics through its validated primer design platform, which checks 24 parameters per primer pair including BLAST specificity against NCBI databases, SNP overlap detection, repeat masking, and multiplex compatibility. The platform generates audit-ready PDF reports suitable for regulatory documentation, making it valuable for clinical laboratories developing in-house molecular diagnostic assays under ISO 15189 or CAP accreditation."}},{"@type":"Question","name":"What molecular techniques are used in clinical diagnostics?","acceptedAnswer":{"@type":"Answer","text":"Common techniques include PCR and qPCR for pathogen detection and gene expression, next-generation sequencing (NGS) for cancer panels and rare disease diagnosis, Sanger sequencing for single-gene confirmation, fluorescence in situ hybridization (FISH) for chromosomal abnormalities, microarray for copy number variation, and mass spectrometry for protein biomarker analysis."}},{"@type":"Question","name":"What is the difference between diagnostic and screening tests?","acceptedAnswer":{"@type":"Answer","text":"Diagnostic tests confirm or rule out a specific disease in symptomatic individuals and typically have high accuracy (sensitivity and specificity > 99%). Screening tests identify apparently healthy individuals who may have a disease, prioritizing sensitivity over specificity to avoid false negatives. Positive screening results require diagnostic confirmation before clinical action."}},{"@type":"Question","name":"How is PCR used in disease diagnosis?","acceptedAnswer":{"@type":"Answer","text":"PCR detects pathogen DNA or RNA with high sensitivity and specificity. For infectious diseases, PCR can identify bacteria, viruses, and parasites directly from patient samples. Real-time PCR (qPCR) provides quantitative viral load data. Multiplex PCR detects multiple pathogens in a single reaction. PCR-based testing became central to global health during the COVID-19 pandemic as the standard for SARS-CoV-2 detection."}},{"@type":"Question","name":"What is the role of biomarkers in clinical diagnostics?","acceptedAnswer":{"@type":"Answer","text":"Biomarkers are measurable biological indicators of normal or disease states. They are used for screening (PSA for prostate cancer), diagnosis (troponin for heart attack), prognosis (HER2 in breast cancer), treatment selection (EGFR mutations for targeted therapy), and monitoring (HbA1c for diabetes). Valid biomarkers must have analytical validity, clinical validity, and clinical utility."}},{"@type":"Question","name":"What are the regulatory requirements for diagnostic tests?","acceptedAnswer":{"@type":"Answer","text":"Diagnostic tests must meet regulatory standards for safety and effectiveness. In India, the CDSCO regulates in-vitro diagnostics (IVDs). International standards include FDA approval (US), CE marking (EU), and ICMR guidelines. Tests are classified by risk: low-risk (general lab tests) to high-risk (HIV, cancer diagnostics). All require validation studies, quality control, and documentation."}},{"@type":"Question","name":"How does next-generation sequencing (NGS) improve clinical diagnostics?","acceptedAnswer":{"@type":"Answer","text":"NGS enables comprehensive genomic analysis from a single test, replacing multiple single-gene tests. It detects SNVs, indels, copy number variants, and structural variants simultaneously. Clinical applications include hereditary cancer panel testing, pharmacogenomics, non-invasive prenatal testing (NIPT), and liquid biopsy for circulating tumor DNA. NGS reduces time-to-diagnosis for rare genetic diseases."}},{"@type":"Question","name":"What quality control measures are used in diagnostic laboratories?","acceptedAnswer":{"@type":"Answer","text":"Laboratories implement internal quality control (running known positive and negative controls with each batch, monitoring assay performance over time) and external quality assessment (participating in proficiency testing programs). Standard operating procedures, staff training, equipment calibration, and chain-of-custody documentation are mandatory. Accredited labs follow ISO 15189 or CAP standards."}}]}</script>
   <style>
     html { overflow-x: hidden; }
 *{box-sizing:border-box;margin:0;padding:0}
@@ -612,29 +613,87 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       </div>
     </section>
 
-    <section class="section" id="faq">
+        <section class="section" id="faq">
       <h2>Frequently Asked Questions</h2>
       
-      
-      
       <details class="faq-item" open>
-        <summary class="faq-question">What is the difference between diagnostic sensitivity and specificity?</summary>
-        <div class="faq-answer">
-          <p>Diagnostic sensitivity measures a test’s ability to correctly identify individuals who have the disease (true positive rate). Specificity measures the ability to correctly identify those without the disease (true negative rate). A highly sensitive test minimizes false negatives (good for screening), while a highly specific test minimizes false positives (important for confirmation). The best diagnostic assays balance both, typically aiming for >95% in each metric. VigyanLLM’s primer design pipeline helps optimize assay specificity through BLAST-based off-target detection.</p>
+        <summary class="faq-question" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+          <span itemprop="name">What is the difference between diagnostic sensitivity and specificity?</span>
+        </summary>
+        <div class="faq-answer" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+          <p itemprop="text">Diagnostic sensitivity measures a test's ability to correctly identify individuals who have the disease (true positive rate). Specificity measures the ability to correctly identify those without the disease (true negative rate). A highly sensitive test minimizes false negatives (good for screening), while a highly specific test minimizes false positives (important for confirmation). The best diagnostic assays balance both, typically aiming for >95% in each metric. VigyanLLM's primer design pipeline helps optimize assay specificity through BLAST-based off-target detection.</p>
         </div>
       </details>
-
       <details class="faq-item">
-        <summary class="faq-question">What are the main types of molecular diagnostic tests?</summary>
-        <div class="faq-answer">
-          <p>Major molecular diagnostic test types include: (1) PCR-based tests (conventional PCR, qPCR, digital PCR) for nucleic acid detection and quantification, (2) NGS-based tests (targeted panels, whole-exome, whole-genome) for comprehensive genomic analysis, (3) microarray-based tests for copy number variation and gene expression profiling, (4) isothermal amplification tests (LAMP, RPA) for rapid point-of-care detection, (5) CRISPR-based diagnostics for portable pathogen detection, and (6) mass spectrometry-based tests for protein and metabolite biomarkers.</p>
+        <summary class="faq-question" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+          <span itemprop="name">What are the main types of molecular diagnostic tests?</span>
+        </summary>
+        <div class="faq-answer" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+          <p itemprop="text">Major molecular diagnostic test types include: (1) PCR-based tests (conventional PCR, qPCR, digital PCR) for nucleic acid detection and quantification, (2) NGS-based tests (targeted panels, whole-exome, whole-genome) for comprehensive genomic analysis, (3) microarray-based tests for copy number variation and gene expression profiling, (4) isothermal amplification tests (LAMP, RPA) for rapid point-of-care detection, (5) CRISPR-based diagnostics for portable pathogen detection, and (6) mass spectrometry-based tests for protein and metabolite biomarkers.</p>
         </div>
       </details>
-
       <details class="faq-item">
-        <summary class="faq-question">How does VigyanLLM support clinical diagnostics workflows?</summary>
-        <div class="faq-answer">
-          <p>VigyanLLM supports clinical diagnostics through its validated primer design platform, which checks 24 parameters per primer pair including BLAST specificity against NCBI databases, SNP overlap detection, repeat masking, and multiplex compatibility. The platform generates audit-ready PDF reports suitable for regulatory documentation, making it valuable for clinical laboratories developing in-house molecular diagnostic assays under ISO 15189 or CAP accreditation.</p>
+        <summary class="faq-question" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+          <span itemprop="name">How does VigyanLLM support clinical diagnostics workflows?</span>
+        </summary>
+        <div class="faq-answer" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+          <p itemprop="text">VigyanLLM supports clinical diagnostics through its validated primer design platform, which checks 24 parameters per primer pair including BLAST specificity against NCBI databases, SNP overlap detection, repeat masking, and multiplex compatibility. The platform generates audit-ready PDF reports suitable for regulatory documentation, making it valuable for clinical laboratories developing in-house molecular diagnostic assays under ISO 15189 or CAP accreditation.</p>
+        </div>
+      </details>
+      <details class="faq-item">
+        <summary class="faq-question" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+          <span itemprop="name">What molecular techniques are used in clinical diagnostics?</span>
+        </summary>
+        <div class="faq-answer" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+          <p itemprop="text">Common techniques include PCR and qPCR for pathogen detection and gene expression, next-generation sequencing (NGS) for cancer panels and rare disease diagnosis, Sanger sequencing for single-gene confirmation, fluorescence in situ hybridization (FISH) for chromosomal abnormalities, microarray for copy number variation, and mass spectrometry for protein biomarker analysis.</p>
+        </div>
+      </details>
+      <details class="faq-item">
+        <summary class="faq-question" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+          <span itemprop="name">What is the difference between diagnostic and screening tests?</span>
+        </summary>
+        <div class="faq-answer" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+          <p itemprop="text">Diagnostic tests confirm or rule out a specific disease in symptomatic individuals and typically have high accuracy (sensitivity and specificity > 99%). Screening tests identify apparently healthy individuals who may have a disease, prioritizing sensitivity over specificity to avoid false negatives. Positive screening results require diagnostic confirmation before clinical action.</p>
+        </div>
+      </details>
+      <details class="faq-item">
+        <summary class="faq-question" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+          <span itemprop="name">How is PCR used in disease diagnosis?</span>
+        </summary>
+        <div class="faq-answer" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+          <p itemprop="text">PCR detects pathogen DNA or RNA with high sensitivity and specificity. For infectious diseases, PCR can identify bacteria, viruses, and parasites directly from patient samples. Real-time PCR (qPCR) provides quantitative viral load data. Multiplex PCR detects multiple pathogens in a single reaction. PCR-based testing became central to global health during the COVID-19 pandemic as the standard for SARS-CoV-2 detection.</p>
+        </div>
+      </details>
+      <details class="faq-item">
+        <summary class="faq-question" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+          <span itemprop="name">What is the role of biomarkers in clinical diagnostics?</span>
+        </summary>
+        <div class="faq-answer" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+          <p itemprop="text">Biomarkers are measurable biological indicators of normal or disease states. They are used for screening (PSA for prostate cancer), diagnosis (troponin for heart attack), prognosis (HER2 in breast cancer), treatment selection (EGFR mutations for targeted therapy), and monitoring (HbA1c for diabetes). Valid biomarkers must have analytical validity, clinical validity, and clinical utility.</p>
+        </div>
+      </details>
+      <details class="faq-item">
+        <summary class="faq-question" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+          <span itemprop="name">What are the regulatory requirements for diagnostic tests?</span>
+        </summary>
+        <div class="faq-answer" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+          <p itemprop="text">Diagnostic tests must meet regulatory standards for safety and effectiveness. In India, the CDSCO regulates in-vitro diagnostics (IVDs). International standards include FDA approval (US), CE marking (EU), and ICMR guidelines. Tests are classified by risk: low-risk (general lab tests) to high-risk (HIV, cancer diagnostics). All require validation studies, quality control, and documentation.</p>
+        </div>
+      </details>
+      <details class="faq-item">
+        <summary class="faq-question" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+          <span itemprop="name">How does next-generation sequencing (NGS) improve clinical diagnostics?</span>
+        </summary>
+        <div class="faq-answer" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+          <p itemprop="text">NGS enables comprehensive genomic analysis from a single test, replacing multiple single-gene tests. It detects SNVs, indels, copy number variants, and structural variants simultaneously. Clinical applications include hereditary cancer panel testing, pharmacogenomics, non-invasive prenatal testing (NIPT), and liquid biopsy for circulating tumor DNA. NGS reduces time-to-diagnosis for rare genetic diseases.</p>
+        </div>
+      </details>
+      <details class="faq-item">
+        <summary class="faq-question" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+          <span itemprop="name">What quality control measures are used in diagnostic laboratories?</span>
+        </summary>
+        <div class="faq-answer" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+          <p itemprop="text">Laboratories implement internal quality control (running known positive and negative controls with each batch, monitoring assay performance over time) and external quality assessment (participating in proficiency testing programs). Standard operating procedures, staff training, equipment calibration, and chain-of-custody documentation are mandatory. Accredited labs follow ISO 15189 or CAP standards.</p>
         </div>
       </details>
     </section>

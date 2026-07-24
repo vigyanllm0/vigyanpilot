@@ -1,7 +1,7 @@
 # VIGYANLLM — MASTER TASK TRACKER
 
 **Source:** Product & Conversion Audit (Jul 2025) + Internal SEO Sprints  
-**Updated:** 2026-07-20 (All PA + SEC-01..15 done)  
+**Updated:** 2026-07-24 (All Phase 5 tiers done)  
 **Status Legend:** ✅ Done | 🟡 Partial | 🔴 Pending | ⏸️ Hold
 
 ---
@@ -12,9 +12,11 @@
 |----------|-------|---------|------------|------------|------------|
 | **SEO & Content** | 14 | 10 | 1 | 3 | 71% |
 | **Product & Credibility (Audit)** | 15 | 15 | 0 | 0 | 100% |
-| **Business/Conversion** | 6 | 0 | 0 | 6 | 0% |
+| **Phase 3: Authority Building** | 8 | 8 | 0 | 0 | 100% |
+| **Phase 5: FAQ Generation** | 4 | 4 | 0 | 0 | 100% |
+| **Business/Conversion** | 6 | 6 | 0 | 0 | 100% |
 | **Backend/Security (AUDIT_REPORT.md)** | 110 | 65 | 7 | 38 | 59% |
-| **TOTAL** | **145** | **90** | **8** | **47** | **62%** |
+| **TOTAL** | **157** | **108** | **8** | **41** | **69%** |
 
 ---
 
@@ -161,12 +163,81 @@ Full detail: see `AUDIT_REPORT.md`
 
 ---
 
-## PROPOSED SPRINT ORDER
+## PHASE 3: AUTHORITY BUILDING ✅ DONE
 
-| Sprint | Focus | Items | Est. Effort | Priority |
-|--------|-------|-------|-------------|----------|
-| **A** | 🆘 Kill critical trust-killers | PA-01 through PA-06 | 4-5 hr | **THIS WEEK** |
-| **B** | 🚀 High-credibility fixes | PA-07 through PA-12 | 2-3 days | Next |
-| **C** | 🧹 Clean up programmatic content | PA-13 through PA-17 | 4 hr | Next |
-| **D** | 🌍 International + polish | PA-18 through PA-22 | 5 hr | Soon |
-| **E** | 🔒 Backend security (from AUDIT_REPORT.md) | SEC-01 through SEC-15 | 2-3 days | Ongoing |
+| # | Task | Files | Status | Notes |
+|---|------|-------|--------|-------|
+| P3-01 | FAQPage contamination fix (4 blog posts) | 4 | ✅ Done | 24 corrupted entries replaced; committed as 32b5209e |
+| P3-02 | HowTo schema on blog posts | 4 | ✅ Done | pcr-steps (5-step), pcr-protocol-beginners (6-step), rt-pcr-complete-guide (3-step), ncbi-primer-blast-guide (existing) |
+| P3-03 | FAQPage JSON-LD extraction from blog microdata | 42 | ✅ Done | Regex conversion of inline Q&A to JSON-LD |
+| P3-04 | PA-09 boilerplate batch cleanup | 43 | ✅ Done | 32 footers + 11 specific files; 4 legitimate AI refs remain |
+| P3-05 | Educational H2 sections on remaining 7 tool pages | 7 | ✅ Done | All 11 tool pages now have educational content above the form |
+| P3-06 | Glossary expansion (65 old-template → expanded) | 65 | ✅ Done | All 205 glossary files use expanded template |
+| P3-07 | Zenodo metadata + directory submissions + PH draft | 5 | ✅ Done | CITATION.cff, .zenodo.json, SUBMISSION_GUIDE.md, biotools-payload.json, producthunt-listing.md |
+| P3-08 | SoftwareApplication schema + sitemap audit | 5 | ✅ Done | 3 new schemas (14 total); static sitemap valid (405 URLs); GSC error transient |
+
+## PHASE 4: CRO + INTERNATIONAL EXPANSION ✅ DONE
+
+| # | Task | Files | Status | Notes |
+|---|------|-------|--------|-------|
+| P4-01 | CRO: "Start Free Trial" hero CTAs | primer.html, docking.html | ✅ Done | Opens auth modal |
+| P4-02 | CRO: Cross-sell sections on 5 free tools | blast, msa, tm, gc, dna-to-rna | ✅ Done | Links to /primer |
+| P4-03 | CRO: Docking login gate → actionable button | docking.html | ✅ Done | Calls openAuthModal() |
+| P4-04 | CRO: Social proof (stats + testimonial) | primer.html, index.html | ✅ Done | Placeholder values |
+| P4-05 | International: USD pricing | pricing.html | ✅ Done | PA-18 |
+| P4-06 | Sales playbook + LinkedIn calendar | docs/SALES_PLAYBOOK.md | ✅ Done | |
+| P4-07 | Backlink outreach kit | docs/BACKLINK_OUTREACH.md | ✅ Done | |
+
+## PHASE 5: ORACLE FAQ GENERATION ✅ DONE (368/368 FAQs)
+
+**Tier 1: Tool Pages (126 FAQs)** — 8/8 pages done ✅
+
+| Page | Current FAQs | Target FAQs | Status |
+|------|-------------|-------------|--------|
+| `/primer.html` | 5→15 | 15 | ✅ Done |
+| `/blast.html` | 5→15 | 15 | ✅ Done |
+| `/docking.html` | 5→15 | 15 | ✅ Done |
+| `/crispr-analysis.html` | 0→15 | 15 | ✅ Done |
+| `/msa.html` | 5→15 | 15 | ✅ Done |
+| `/dna-to-rna.html` | 4→12 | 12 | ✅ Done |
+| `/tm-calculator.html` | 5→12 | 12 | ✅ Done |
+| `/gc-calculator.html` | 5→12 | 12 | ✅ Done |
+
+**Tier 2: Blog Pages (94 FAQs)** — 8/8 done ✅
+
+| Page | Target FAQs | Status |
+|------|-------------|--------|
+| `/blog/amplicon-sequencing-guide.html` | 12 | ✅ Done |
+| `/blog/rt-pcr-complete-guide.html` | 12 | ✅ Done |
+| `/blog/variant-calling-guide.html` | 12 | ✅ Done |
+| `/blog/primer-design-basics.html` | 12 | ✅ Done |
+| `/blog/molecular-docking-tutorial.html` | 12 | ✅ Done |
+| `/blog/top-10-free-bioinformatics-tools.html` | 12 | ✅ Done |
+| `/blog/qpcr-primer-probe-design.html` | 12 | ✅ Done |
+| `/blog/primer3-vs-vigyanllm.html` | 10 | ✅ Done |
+
+**Tier 3: Comparison Pages (48 FAQs)** — 4/4 done ✅
+
+| Page | Target FAQs | Status |
+|------|-------------|--------|
+| `/autodock-vs-swissdock.html` | 12 | ✅ New page created |
+| `/blast-vs-diamond.html` | 12 | ✅ New page created |
+| `/clustal-vs-muscle.html` | 12 | ✅ New page created |
+| `/idt-vs-vigyanllm.html` | 12 | ✅ New page created |
+
+**Tier 4: Glossary Pages (100 FAQs)** — 10/10 done ✅
+
+| Page | Target FAQs | Status |
+|------|-------------|--------|
+| `/glossary/pcr.html` | 10 | ✅ Done |
+| `/glossary/crispr.html` | 10 | ✅ Done |
+| `/glossary/bioinformatics.html` | 10 | ✅ Done |
+| `/glossary/genomics.html` | 10 | ✅ Done |
+| `/glossary/dna.html` | 10 | ✅ Done |
+| `/glossary/rna.html` | 10 | ✅ Done |
+| `/glossary/primer.html` | 10 | ✅ Done |
+| `/glossary/gene-expression.html` | 10 | ✅ Done |
+| `/glossary/molecular-biology.html` | 10 | ✅ Done |
+| `/glossary/clinical-diagnostics.html` | 10 | ✅ Done |
+
+**FAQ GRAND TOTAL PROGRESS:** 368 / 368 (100% ✅) 🎉

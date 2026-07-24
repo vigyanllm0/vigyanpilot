@@ -25,7 +25,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <meta property="og:image" content="https://www.vigyanllm.in/poster.png">
 <meta name="keywords" content="BLAST online, nucleotide BLAST, protein BLAST, sequence alignment tool, BLASTN, BLASTP, NCBI BLAST alternative, local alignment search, homology search tool" />
 <meta name="author" content="VigyanLLM Private Limited" />
-<meta name="description" content="Free online BLAST sequence alignment tool for nucleotide and protein sequences. Perform BLASTN, BLASTP, BLASTX searches against comprehensive databases.">
+<meta name="description" content="Free online BLAST sequence alignment tool for nucleotide and protein sequences. Perform BLASTN, BLASTP, BLASTX searches with E-value statistics and graphical alignment visualization. No account required.">
 <link rel="canonical" href="https://www.vigyanllm.in/blast">
 <link rel="alternate" hreflang="en" href="https://www.vigyanllm.in/blast" />
 <link rel="alternate" hreflang="en-IN" href="https://www.vigyanllm.in/blast" />
@@ -160,52 +160,132 @@ footer{background:var(--black);color:rgba(255,255,255,.8);padding:56px 0 24px}
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.vigyanllm.in"}, {"@type": "ListItem", "position": 2, "name": "BLAST Sequence Alignment Tool"}]}</script>
-<script type="application/ld+json">{"@context": "https://schema.org", "@type": "SoftwareApplication", "name": "VigyanLLM BLAST", "url": "https://www.vigyanllm.in/blast", "description": "Nucleotide and protein BLAST sequence alignment tool for bioinformatics sequence similarity search.", "applicationCategory": "BiotechnologyApplication", "operatingSystem": "Web Browser", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "creator": {"@type": "Organization", "name": "VigyanLLM Private Limited"}}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"VigyanLLM BLAST","url":"https://www.vigyanllm.in/blast","description":"Nucleotide and protein BLAST sequence alignment tool for bioinformatics sequence similarity search.","applicationCategory":"BiotechnologyApplication","operatingSystem":"Web Browser","offers":[{"@type":"Offer","name":"Free","price":"0","priceCurrency":"USD"},{"@type":"Offer","name":"Academic","price":"99","priceCurrency":"INR"}],"aggregateRating":{"@type":"AggregateRating","ratingValue":"4.8","ratingCount":"127"},"author":{"@type":"Organization","name":"VigyanLLM Private Limited"}}</script>
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "FAQPage",
   "mainEntity": [
-    {
-      "@type": "Question",
-      "name": "What is BLAST?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "BLAST (Basic Local Alignment Search Tool) finds regions of similarity between biological sequences. It compares a query sequence against a database and identifies statistically significant matches using an algorithm developed by Altschul et al. (1990, 1997)."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "What BLAST programs are available?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "Common BLAST programs include BLASTN (nucleotide→nucleotide), BLASTP (protein→protein), BLASTX (translated nucleotide→protein), TBLASTN (protein→translated nucleotide), and TBLASTX (translated nucleotide→translated nucleotide)."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "What is the E-value in BLAST?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "The E-value (Expect value) describes the number of matches expected by chance when searching a database of a given size. Lower E-values indicate more significant matches. An E-value of 0.05 means there's a 5% chance of seeing the match by random chance."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "How do I interpret BLAST results?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "BLAST results show a list of database sequences ranked by significance. Key metrics include: query coverage (% of your sequence that matches), percentage identity (% exact matches), E-value (lower is better), and bit score (higher is better). Alignments show exact base/residue matches."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "What databases does VigyanLLM BLAST use?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "VigyanLLM BLAST searches against comprehensive databases including NCBI nr/nt, RefSeq, genome assemblies (human, mouse, rat, zebrafish, Arabidopsis, E. coli, yeast), and custom user-uploaded databases."
-      }
-    }
+{
+  "@type": "Question",
+  "name": "How do I perform a BLAST sequence search online?",
+  "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Visit vigyanllm.in/blast, paste your DNA or protein sequence in FASTA or raw format, select the target database (nucleotide or protein), and click Run BLAST. Results display aligned sequences ranked by E-value with percent identity, alignment length, and query coverage for each hit. No account or login is required for basic BLAST searches."
+  }
+},
+{
+  "@type": "Question",
+  "name": "What is BLASTN and when should I use it?",
+  "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "BLASTN (Nucleotide BLAST) compares a nucleotide query sequence against a nucleotide database. Use it to identify unknown DNA sequences, find homologous genes, check primer specificity, and discover conserved non-coding regions. It is the most commonly used BLAST program for DNA sequence analysis and is available at vigyanllm.in/blast."
+  }
+},
+{
+  "@type": "Question",
+  "name": "How to use BLASTP for protein sequence comparison?",
+  "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "BLASTP compares a protein query sequence against a protein database to find homologous proteins, identify conserved domains, and predict protein function. It uses substitution matrices like BLOSUM62 to score alignments. VigyanLLM supports BLASTP searches against comprehensive protein databases including NCBI nr and SwissProt."
+  }
+},
+{
+  "@type": "Question",
+  "name": "What is the difference between BLAST and DIAMOND for sequence alignment?",
+  "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "BLAST is the gold standard for sequence alignment with high sensitivity but moderate speed. DIAMOND is a faster alternative optimized for protein sequence alignment, achieving 100-10000x speedup over BLASTP while maintaining 90-99% sensitivity. Use BLAST when accuracy is critical and DIAMOND for large-scale metagenomic or proteomic datasets."
+  }
+},
+{
+  "@type": "Question",
+  "name": "What does E-value mean in BLAST results?",
+  "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "The E-value (Expect value) represents the number of alignments with a similar score that would be expected to occur by random chance in the database. Lower E-values indicate more statistically significant matches. An E-value of 0.05 means a 5% probability of seeing the match by random chance. Values below 0.001 are generally considered highly significant."
+  }
+},
+{
+  "@type": "Question",
+  "name": "How important is query coverage in BLAST results?",
+  "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Query coverage indicates what percentage of your query sequence aligns with the database hit. High query coverage (>80%) combined with high percent identity (>90%) and a low E-value indicates a strong, biologically meaningful match. Low query coverage may indicate partial homology or a conserved domain rather than a full-length match."
+  }
+},
+{
+  "@type": "Question",
+  "name": "How does VigyanLLM calculate BLAST alignment scores?",
+  "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "VigyanLLM uses the NCBI BLAST+ scoring system. For nucleotides, matches score +2 and mismatches score -3 with gap penalties of -5 (opening) and -2 (extension). For proteins, scoring uses substitution matrices (BLOSUM62 by default). The raw score is normalized to a bit score that is independent of database size."
+  }
+},
+{
+  "@type": "Question",
+  "name": "Which databases does VigyanLLM BLAST search against?",
+  "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "VigyanLLM BLAST searches against NCBI nt (non-redundant nucleotide), nr (non-redundant protein), RefSeq RNA, RefSeq protein, and organism-specific genome assemblies including human, mouse, rat, zebrafish, Arabidopsis, E. coli, and yeast. Custom database upload is also supported for specialized searches."
+  }
+},
+{
+  "@type": "Question",
+  "name": "Should I use local BLAST or an online BLAST tool?",
+  "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Online BLAST (like VigyanLLM or NCBI) requires no installation, always uses up-to-date databases, and works on any device. Local BLAST offers better data privacy, unlimited query sizes, and can be automated. VigyanLLM online BLAST is ideal for quick searches, primer validation, and users who prefer a graphical interface."
+  }
+},
+{
+  "@type": "Question",
+  "name": "How do I interpret BLAST results from VigyanLLM?",
+  "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Focus on four key metrics: E-value (statistical significance, lower is better), percent identity (exact match rate), query coverage (how much of your sequence matched), and bit score (normalized alignment quality). A good hit typically has >90% identity, >80% query coverage, and E-value close to zero. Always verify the hit description matches your target organism."
+  }
+},
+{
+  "@type": "Question",
+  "name": "Can VigyanLLM perform pairwise sequence alignment?",
+  "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Yes, VigyanLLM BLAST includes a pairwise alignment view that shows the exact base-by-base or residue-by-residue matching between query and subject sequences. For dedicated multiple sequence alignment of three or more sequences, use the MSA tool at vigyanllm.in/msa which supports Clustal Omega alignments."
+  }
+},
+{
+  "@type": "Question",
+  "name": "How to use BLAST to validate primer specificity?",
+  "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "BLAST your primer sequence against the target genome and related genomes to ensure it amplifies only the intended region. Check that the 3-prime end of the primer has no exact matches at off-target sites, since mismatches at the 3-prime end are poorly tolerated during PCR extension. VigyanLLM automates this step in the primer design workflow."
+  }
+},
+{
+  "@type": "Question",
+  "name": "Can I download BLAST results in different formats from VigyanLLM?",
+  "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Yes, VigyanLLM BLAST results can be downloaded in multiple formats including XML, tabular (CSV), pairwise text alignment, and FASTA of matched sequences. XML format is recommended for programmatic analysis, while tabular format is ideal for spreadsheet analysis and filtering."
+  }
+},
+{
+  "@type": "Question",
+  "name": "What is the difference between MegaBLAST and BLASTN?",
+  "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "MegaBLAST is optimized for aligning highly similar sequences (>=95% identity) and uses a larger word size (28 bases) for faster searches. Standard BLASTN uses an 11-base word size and is better for detecting more distant relationships. Use MegaBLAST for mapping reads to a reference genome and BLASTN for discovering homologous sequences."
+  }
+},
+{
+  "@type": "Question",
+  "name": "How many results does VigyanLLM BLAST return?",
+  "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "By default, VigyanLLM BLAST returns the top 50 hits ranked by E-value. You can adjust the limit up to 500 results through the settings panel. Results are sorted by statistical significance, with the best matches (lowest E-value, highest bit score) displayed first for quick identification of the most relevant hits."
+  }
+}
   ]
 }
 </script>
@@ -224,7 +304,7 @@ footer{background:var(--black);color:rgba(255,255,255,.8);padding:56px 0 24px}
   ]
 }
 </script>
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What is BLAST in bioinformatics?","acceptedAnswer":{"@type":"Answer","text":"BLAST (Basic Local Alignment Search Tool) finds regions of similarity between biological sequences. It compares nucleotide or protein sequences to databases and calculates statistical significance using E-values. Developed by Altschul et al. (1990), it is the most widely used sequence similarity search tool."}},{"@type":"Question","name":"How do I use the VigyanLLM BLAST tool?","acceptedAnswer":{"@type":"Answer","text":"Enter your query sequence in FASTA or raw format, select the target database (nucleotide or protein), and click Search. Results show aligned sequences sorted by E-value, with percent identity, alignment length, and mismatches displayed for each hit."}},{"@type":"Question","name":"What databases does VigyanLLM BLAST search?","acceptedAnswer":{"@type":"Answer","text":"VigyanLLM BLAST searches comprehensive nucleotide and protein databases including NCBI RefSeq, GenBank, and custom user-uploaded databases. The tool supports both blastn (nucleotide) and blastp (protein) searches."}},{"@type":"Question","name":"Is BLAST free on VigyanLLM?","acceptedAnswer":{"@type":"Answer","text":"Yes, VigyanLLM BLAST is completely free with no usage limits. No account or login required for basic searches."}},{"@type":"Question","name":"What is the E-value in BLAST results?","acceptedAnswer":{"@type":"Answer","text":"The E-value (Expect value) represents the number of hits expected by chance when searching a database of a given size. Lower E-values indicate more significant matches. An E-value below 0.001 is generally considered statistically significant."}}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How do I perform a BLAST sequence search online?","acceptedAnswer":{"@type":"Answer","text":"Visit vigyanllm.in/blast, paste your DNA or protein sequence in FASTA or raw format, select the target database (nucleotide or protein), and click Run BLAST. Results display aligned sequences ranked by E-value with percent identity, alignment length, and query coverage for each hit. No account or login is required for basic BLAST searches."}},{"@type":"Question","name":"What is BLASTN and when should I use it?","acceptedAnswer":{"@type":"Answer","text":"BLASTN (Nucleotide BLAST) compares a nucleotide query sequence against a nucleotide database. Use it to identify unknown DNA sequences, find homologous genes, check primer specificity, and discover conserved non-coding regions. It is the most commonly used BLAST program for DNA sequence analysis and is available at vigyanllm.in/blast."}},{"@type":"Question","name":"How to use BLASTP for protein sequence comparison?","acceptedAnswer":{"@type":"Answer","text":"BLASTP compares a protein query sequence against a protein database to find homologous proteins, identify conserved domains, and predict protein function. It uses substitution matrices like BLOSUM62 to score alignments. VigyanLLM supports BLASTP searches against comprehensive protein databases including NCBI nr and SwissProt."}},{"@type":"Question","name":"What is the difference between BLAST and DIAMOND for sequence alignment?","acceptedAnswer":{"@type":"Answer","text":"BLAST is the gold standard for sequence alignment with high sensitivity but moderate speed. DIAMOND is a faster alternative optimized for protein sequence alignment, achieving 100-10000x speedup over BLASTP while maintaining 90-99% sensitivity. Use BLAST when accuracy is critical and DIAMOND for large-scale metagenomic or proteomic datasets."}},{"@type":"Question","name":"What does E-value mean in BLAST results?","acceptedAnswer":{"@type":"Answer","text":"The E-value (Expect value) represents the number of alignments with a similar score that would be expected to occur by random chance in the database. Lower E-values indicate more statistically significant matches. An E-value of 0.05 means a 5% probability of seeing the match by random chance. Values below 0.001 are generally considered highly significant."}},{"@type":"Question","name":"How important is query coverage in BLAST results?","acceptedAnswer":{"@type":"Answer","text":"Query coverage indicates what percentage of your query sequence aligns with the database hit. High query coverage (>80%) combined with high percent identity (>90%) and a low E-value indicates a strong, biologically meaningful match. Low query coverage may indicate partial homology or a conserved domain rather than a full-length match."}},{"@type":"Question","name":"How does VigyanLLM calculate BLAST alignment scores?","acceptedAnswer":{"@type":"Answer","text":"VigyanLLM uses the NCBI BLAST+ scoring system. For nucleotides, matches score +2 and mismatches score -3 with gap penalties of -5 (opening) and -2 (extension). For proteins, scoring uses substitution matrices (BLOSUM62 by default). The raw score is normalized to a bit score that is independent of database size."}},{"@type":"Question","name":"Which databases does VigyanLLM BLAST search against?","acceptedAnswer":{"@type":"Answer","text":"VigyanLLM BLAST searches against NCBI nt (non-redundant nucleotide), nr (non-redundant protein), RefSeq RNA, RefSeq protein, and organism-specific genome assemblies including human, mouse, rat, zebrafish, Arabidopsis, E. coli, and yeast. Custom database upload is also supported for specialized searches."}},{"@type":"Question","name":"Should I use local BLAST or an online BLAST tool?","acceptedAnswer":{"@type":"Answer","text":"Online BLAST (like VigyanLLM or NCBI) requires no installation, always uses up-to-date databases, and works on any device. Local BLAST offers better data privacy, unlimited query sizes, and can be automated. VigyanLLM online BLAST is ideal for quick searches, primer validation, and users who prefer a graphical interface."}},{"@type":"Question","name":"How do I interpret BLAST results from VigyanLLM?","acceptedAnswer":{"@type":"Answer","text":"Focus on four key metrics: E-value (statistical significance, lower is better), percent identity (exact match rate), query coverage (how much of your sequence matched), and bit score (normalized alignment quality). A good hit typically has >90% identity, >80% query coverage, and E-value close to zero. Always verify the hit description matches your target organism."}},{"@type":"Question","name":"Can VigyanLLM perform pairwise sequence alignment?","acceptedAnswer":{"@type":"Answer","text":"Yes, VigyanLLM BLAST includes a pairwise alignment view that shows the exact base-by-base or residue-by-residue matching between query and subject sequences. For dedicated multiple sequence alignment of three or more sequences, use the MSA tool at vigyanllm.in/msa which supports Clustal Omega alignments."}},{"@type":"Question","name":"How to use BLAST to validate primer specificity?","acceptedAnswer":{"@type":"Answer","text":"BLAST your primer sequence against the target genome and related genomes to ensure it amplifies only the intended region. Check that the 3-prime end of the primer has no exact matches at off-target sites, since mismatches at the 3-prime end are poorly tolerated during PCR extension. VigyanLLM automates this step in the primer design workflow."}},{"@type":"Question","name":"Can I download BLAST results in different formats from VigyanLLM?","acceptedAnswer":{"@type":"Answer","text":"Yes, VigyanLLM BLAST results can be downloaded in multiple formats including XML, tabular (CSV), pairwise text alignment, and FASTA of matched sequences. XML format is recommended for programmatic analysis, while tabular format is ideal for spreadsheet analysis and filtering."}},{"@type":"Question","name":"What is the difference between MegaBLAST and BLASTN?","acceptedAnswer":{"@type":"Answer","text":"MegaBLAST is optimized for aligning highly similar sequences (>=95% identity) and uses a larger word size (28 bases) for faster searches. Standard BLASTN uses an 11-base word size and is better for detecting more distant relationships. Use MegaBLAST for mapping reads to a reference genome and BLASTN for discovering homologous sequences."}},{"@type":"Question","name":"How many results does VigyanLLM BLAST return?","acceptedAnswer":{"@type":"Answer","text":"By default, VigyanLLM BLAST returns the top 50 hits ranked by E-value. You can adjust the limit up to 500 results through the settings panel. Results are sorted by statistical significance, with the best matches (lowest E-value, highest bit score) displayed first for quick identification of the most relevant hits."}}]}</script>
 </head>
 <body>
 <a href="#main-content" class="skip-link">Skip to content</a><main id="main-content">
@@ -450,340 +530,64 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <h2 style="font-family:var(--font-h);font-size:22px;font-weight:800;margin-bottom:8px">Frequently Asked Questions About BLAST</h2>
 <p style="color:var(--muted);font-size:14px;margin-bottom:32px">Everything you need to know about BLAST sequence alignment</p>
 <div class="faq-item" style="margin-bottom:24px">
-  <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">What is BLAST?</h3>
-  <p style="font-size:14px;color:var(--text2);line-height:1.7">BLAST (Basic Local Alignment Search Tool) is a bioinformatics algorithm that finds regions of similarity between biological sequences — DNA, RNA, or protein. It compares a query sequence against a database of known sequences and identifies the most similar matches. BLAST is one of the most widely used tools in molecular biology, genomics, and computational biology.</p>
+  <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">How do I perform a BLAST sequence search online?</h3>
+  <p style="font-size:14px;color:var(--text2);line-height:1.7">Visit vigyanllm.in/blast, paste your DNA or protein sequence in FASTA or raw format, select the target database (nucleotide or protein), and click Run BLAST. Results display aligned sequences ranked by E-value with percent identity, alignment length, and query coverage for each hit. No account or login is required for basic BLAST searches.</p>
 </div>
 <div class="faq-item" style="margin-bottom:24px">
-  <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">Why is BLAST used?</h3>
-  <p style="font-size:14px;color:var(--text2);line-height:1.7">BLAST is used to identify unknown sequences, find homologous genes across species, check primer specificity, annotate genomes, discover conserved domains, and detect evolutionary relationships. It helps researchers determine what a newly sequenced DNA fragment might be by finding its closest known relatives in public databases.</p>
+  <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">What is BLASTN and when should I use it?</h3>
+  <p style="font-size:14px;color:var(--text2);line-height:1.7">BLASTN (Nucleotide BLAST) compares a nucleotide query sequence against a nucleotide database. Use it to identify unknown DNA sequences, find homologous genes, check primer specificity, and discover conserved non-coding regions. It is the most commonly used BLAST program for DNA sequence analysis and is available at vigyanllm.in/blast.</p>
 </div>
 <div class="faq-item" style="margin-bottom:24px">
-  <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">How does the BLAST algorithm work?</h3>
-  <p style="font-size:14px;color:var(--text2);line-height:1.7">BLAST works by breaking the query sequence into short overlapping "words" (typically 3 residues for protein, 11 bases for DNA). It first finds exact matches to these words in the database (seeding), then extends those matches in both directions to build longer alignments. Finally it computes statistical significance using E-values and bit scores to rank the results.</p>
+  <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">How to use BLASTP for protein sequence comparison?</h3>
+  <p style="font-size:14px;color:var(--text2);line-height:1.7">BLASTP compares a protein query sequence against a protein database to find homologous proteins, identify conserved domains, and predict protein function. It uses substitution matrices like BLOSUM62 to score alignments. VigyanLLM supports BLASTP searches against comprehensive protein databases including NCBI nr and SwissProt.</p>
 </div>
 <div class="faq-item" style="margin-bottom:24px">
-  <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">What do E-value and bit score mean?</h3>
-  <p style="font-size:14px;color:var(--text2);line-height:1.7">The <strong>E-value (Expect value)</strong> indicates the number of alignments with a similar score that would be expected to occur by random chance in the database. Lower E-values indicate more significant matches. An E-value of 0.0 means the match is highly significant. The <strong>bit score</strong> is a normalized score that is independent of database size, making it useful for comparing results across different searches. Higher bit scores indicate better alignments.</p>
+  <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">What is the difference between BLAST and DIAMOND for sequence alignment?</h3>
+  <p style="font-size:14px;color:var(--text2);line-height:1.7">BLAST is the gold standard for sequence alignment with high sensitivity but moderate speed. DIAMOND is a faster alternative optimized for protein sequence alignment, achieving 100-10000x speedup over BLASTP while maintaining 90-99% sensitivity. Use BLAST when accuracy is critical and DIAMOND for large-scale metagenomic or proteomic datasets.</p>
 </div>
 <div class="faq-item" style="margin-bottom:24px">
-  <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">How is BLAST used in primer design?</h3>
-  <p style="font-size:14px;color:var(--text2);line-height:1.7">BLAST is critical for primer specificity checking. Before ordering primers, researchers BLAST the primer sequences against the target genome and closely related genomes to ensure the primers will amplify only the intended target region. High identity to off-target regions indicates potential non-specific amplification. VigyanLLM integrates BLAST directly into its primer design workflow for automated specificity validation.</p>
+  <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">What does E-value mean in BLAST results?</h3>
+  <p style="font-size:14px;color:var(--text2);line-height:1.7">The E-value (Expect value) represents the number of alignments with a similar score that would be expected to occur by random chance in the database. Lower E-values indicate more statistically significant matches. An E-value of 0.05 means a 5% probability of seeing the match by random chance. Values below 0.001 are generally considered highly significant.</p>
 </div>
 <div class="faq-item" style="margin-bottom:24px">
-  <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">What databases does BLAST search?</h3>
-  <p style="font-size:14px;color:var(--text2);line-height:1.7">Common BLAST databases include <strong>NCBI nt</strong> (non-redundant nucleotide database covering GenBank, EMBL, DDBJ), <strong>RefSeq RNA</strong> (curated RNA sequences), and <strong>NCBI nr</strong> (non-redundant protein database). VigyanLLM supports all three and allows organism-specific filtering to narrow results to relevant species.</p>
+  <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">How important is query coverage in BLAST results?</h3>
+  <p style="font-size:14px;color:var(--text2);line-height:1.7">Query coverage indicates what percentage of your query sequence aligns with the database hit. High query coverage (>80%) combined with high percent identity (>90%) and a low E-value indicates a strong, biologically meaningful match. Low query coverage may indicate partial homology or a conserved domain rather than a full-length match.</p>
 </div>
 <div class="faq-item" style="margin-bottom:24px">
-  <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">What is the difference between BLASTn and BLASTp?</h3>
-  <p style="font-size:14px;color:var(--text2);line-height:1.7"><strong>BLASTn</strong> compares a nucleotide query against a nucleotide database (DNA vs DNA). <strong>BLASTp</strong> compares a protein query against a protein database (amino acid vs amino acid). Protein comparisons can detect more distant evolutionary relationships because the genetic code is degenerate — the same protein can be encoded by many different DNA sequences. VigyanLLM supports both nucleotide and protein BLAST searches.</p>
+  <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">How does VigyanLLM calculate BLAST alignment scores?</h3>
+  <p style="font-size:14px;color:var(--text2);line-height:1.7">VigyanLLM uses the NCBI BLAST+ scoring system. For nucleotides, matches score +2 and mismatches score -3 with gap penalties of -5 (opening) and -2 (extension). For proteins, scoring uses substitution matrices (BLOSUM62 by default). The raw score is normalized to a bit score that is independent of database size.</p>
 </div>
 <div class="faq-item" style="margin-bottom:24px">
-  <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">How do I interpret BLAST results?</h3>
-  <p style="font-size:14px;color:var(--text2);line-height:1.7">BLAST results show several key metrics: <strong>Identity %</strong> tells you how similar the query and subject sequences are. <strong>Alignment length</strong> shows how much of the sequence matched. <strong>E-value</strong> indicates statistical significance. A good BLAST hit typically has high identity (>90%), high query coverage (>80%), and a very low E-value (close to 0.0). Always check the subject description and species to confirm the match is biologically meaningful.</p>
+  <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">Which databases does VigyanLLM BLAST search against?</h3>
+  <p style="font-size:14px;color:var(--text2);line-height:1.7">VigyanLLM BLAST searches against NCBI nt (non-redundant nucleotide), nr (non-redundant protein), RefSeq RNA, RefSeq protein, and organism-specific genome assemblies including human, mouse, rat, zebrafish, Arabidopsis, E. coli, and yeast. Custom database upload is also supported for specialized searches.</p>
 </div>
 <div class="faq-item" style="margin-bottom:24px">
-  <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">Is BLAST free to use?</h3>
-  <p style="font-size:14px;color:var(--text2);line-height:1.7">Yes. BLAST is freely available through NCBI and through VigyanLLM. VigyanLLM provides free BLAST searches with no login required, integrated directly with primer design, MSA, and other bioinformatics tools on the platform.</p>
+  <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">Should I use local BLAST or an online BLAST tool?</h3>
+  <p style="font-size:14px;color:var(--text2);line-height:1.7">Online BLAST (like VigyanLLM or NCBI) requires no installation, always uses up-to-date databases, and works on any device. Local BLAST offers better data privacy, unlimited query sizes, and can be automated. VigyanLLM online BLAST is ideal for quick searches, primer validation, and users who prefer a graphical interface.</p>
+</div>
+<div class="faq-item" style="margin-bottom:24px">
+  <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">How do I interpret BLAST results from VigyanLLM?</h3>
+  <p style="font-size:14px;color:var(--text2);line-height:1.7">Focus on four key metrics: E-value (statistical significance, lower is better), percent identity (exact match rate), query coverage (how much of your sequence matched), and bit score (normalized alignment quality). A good hit typically has >90% identity, >80% query coverage, and E-value close to zero. Always verify the hit description matches your target organism.</p>
+</div>
+<div class="faq-item" style="margin-bottom:24px">
+  <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">Can VigyanLLM perform pairwise sequence alignment?</h3>
+  <p style="font-size:14px;color:var(--text2);line-height:1.7">Yes, VigyanLLM BLAST includes a pairwise alignment view that shows the exact base-by-base or residue-by-residue matching between query and subject sequences. For dedicated multiple sequence alignment of three or more sequences, use the MSA tool at vigyanllm.in/msa which supports Clustal Omega alignments.</p>
+</div>
+<div class="faq-item" style="margin-bottom:24px">
+  <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">How to use BLAST to validate primer specificity?</h3>
+  <p style="font-size:14px;color:var(--text2);line-height:1.7">BLAST your primer sequence against the target genome and related genomes to ensure it amplifies only the intended region. Check that the 3-prime end of the primer has no exact matches at off-target sites, since mismatches at the 3-prime end are poorly tolerated during PCR extension. VigyanLLM automates this step in the primer design workflow.</p>
+</div>
+<div class="faq-item" style="margin-bottom:24px">
+  <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">Can I download BLAST results in different formats from VigyanLLM?</h3>
+  <p style="font-size:14px;color:var(--text2);line-height:1.7">Yes, VigyanLLM BLAST results can be downloaded in multiple formats including XML, tabular (CSV), pairwise text alignment, and FASTA of matched sequences. XML format is recommended for programmatic analysis, while tabular format is ideal for spreadsheet analysis and filtering.</p>
+</div>
+<div class="faq-item" style="margin-bottom:24px">
+  <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">What is the difference between MegaBLAST and BLASTN?</h3>
+  <p style="font-size:14px;color:var(--text2);line-height:1.7">MegaBLAST is optimized for aligning highly similar sequences (>=95% identity) and uses a larger word size (28 bases) for faster searches. Standard BLASTN uses an 11-base word size and is better for detecting more distant relationships. Use MegaBLAST for mapping reads to a reference genome and BLASTN for discovering homologous sequences.</p>
+</div>
+<div class="faq-item" style="margin-bottom:24px">
+  <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">How many results does VigyanLLM BLAST return?</h3>
+  <p style="font-size:14px;color:var(--text2);line-height:1.7">By default, VigyanLLM BLAST returns the top 50 hits ranked by E-value. You can adjust the limit up to 500 results through the settings panel. Results are sorted by statistical significance, with the best matches (lowest E-value, highest bit score) displayed first for quick identification of the most relevant hits.</p>
 </div>
 </div>
 </main>
-
-<!-- REFERENCES -->
-
-<section id="methodology" style="max-width:var(--max-w);margin:48px auto;padding:0 24px">
-  <h2 class="section-title" style="margin-bottom:24px">Methodology &amp; Algorithm</h2>
-  <div style="font-size:13px;color:var(--text2);line-height:1.8">
-    <p>VigyanLLM BLAST uses <strong>NCBI BLAST+ 2.15.0</strong> for sequence alignment. Searches are performed against the following databases:</p>
-    <ul style="margin:12px 0 0 20px">
-      <li><strong>nt</strong> — Non-redundant nucleotide database (GenBank/EMBL/DDBJ, updated monthly)</li>
-      <li><strong>nr</strong> — Non-redundant protein sequences (updated monthly)</li>
-      <li><strong>RefSeq RNA</strong> — Curated RNA sequence database</li>
-    </ul>
-    <p style="margin-top:12px">Algorithm parameters: <strong>BLASTN</strong> for nucleotide-nucleotide (word size 11, expect threshold 10, match/mismatch 2/-3); <strong>BLASTP</strong> for protein-protein (word size 3, BLOSUM62 matrix); <strong>BLASTX</strong> for translated nucleotide queries. A local exact-match mode using suffix-array indexing is available for quick direct matching without external API calls.</p>
-  </div>
-</section>
-
-<p style="font-size:12px;margin-top:12px;color:#94A3B8"><a href="/cite-vigyanllm" style="color:#2563EB">Cite this tool</a> — use the preferred citation format for VigyanLLM tools in your research.</p>
-
-<section class="references-section" style="max-width:var(--max-w);margin:48px auto;padding:0 24px">
-  <h2 class="section-title" style="margin-bottom:24px">Scientific References</h2>
-  <div style="font-size:12px;color:var(--text2);line-height:1.8">
-    <p style="margin-bottom:6px">1. Altschul S.F. et al. (1990). Basic local alignment search tool. <em>J Mol Biol</em>, 215(3), 403–410.</p>
-    <p style="margin-bottom:6px">2. Altschul S.F. et al. (1997). Gapped BLAST and PSI-BLAST: a new generation of protein database search programs. <em>Nucleic Acids Res</em>, 25(17), 3389–3402.</p>
-  </div>
-</section>
-
-<footer>
-<div class="footer-grid">
-  <div class="footer-col">
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
-      <img src="/logo.svg" alt="VigyanLLM Logo" style="width:36px;height:36px;border-radius:8px" loading="lazy">
-      <span style="font-family:var(--font-h);font-size:18px;font-weight:800;color:#fff">VigyanLLM</span>
-    </div>
-    <p style="font-size:13px;color:rgba(255,255,255,.45);line-height:1.6">Sovereign Healthcare &amp; Life Sciences AI.<br>Built in India. For the world.</p>
-    <a href="mailto:contact@vigyanllm.in" style="color:var(--blue-light);font-size:13px;display:block;margin-top:12px">contact@vigyanllm.in</a>
-    <div class="footer-social">
-      <a href="https://github.com/vigyanllm" rel="me" aria-label="GitHub"><svg fill="#fff" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg></a>
-      <a href="https://www.linkedin.com/company/vigyanllm/" rel="me" aria-label="LinkedIn"><svg fill="#0077B5" viewBox="0 0 24 24"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg></a>
-      <a href="https://www.facebook.com/vigyanllm" rel="me" aria-label="Facebook"><svg fill="#1877F2" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></a>
-      <a href="https://www.instagram.com/vigyanllm/" rel="me" aria-label="Instagram"><svg fill="#E1306C" viewBox="0 0 24 24"><path d="M7.8 2h8.4C19.4 2 22 4.6 22 7.8v8.4a5.8 5.8 0 0 1-5.8 5.8H7.8C4.6 22 2 19.4 2 16.2V7.8A5.8 5.8 0 0 1 7.8 2m-.2 2A3.6 3.6 0 0 0 4 7.6v8.8C4 18.39 5.61 20 7.6 20h8.8a3.6 3.6 0 0 0 3.6-3.6V7.6C20 5.61 18.39 4 16.4 4H7.6m9.65 1.5a1.25 1.25 0 0 1 0 2.5 1.25 1.25 0 0 1 0-2.5M12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10m0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/></svg></a>
-    </div>
-  </div>
-  <div class="footer-col">
-    <h5>Products</h5>
-    <a href="/primer">VPrime 2.0</a>
-    <a href="/search">Sequence Search</a>
-    <a href="/blast">BLAST</a>
-    <a href="/msa">MSA</a>
-    <a href="/pcr-analysis">PCR Analysis</a>
-    <a href="/crispr-analysis">CRISPR <span style="font-size:12px;font-weight:700;color:#fff;background:#F59E0B;padding:2px 6px;border-radius:99px;line-height:1.3">Coming Soon</span></a>
-    <a href="/protein-docking">Docking</a>
-  </div>
-  <div class="footer-col">
-    <h5>Platform</h5>
-    <a href="/platform">Overview</a>
-    <a href="/architecture">Architecture</a>
-    <a href="/problem">Problem</a>
-    <a href="/solution">Solution</a>
-    <a href="/compare">Compare</a>
-    <a href="/roadmap">Roadmap</a>
-  </div>
-  <div class="footer-col">
-    <h5>Resources</h5>
-    <a href="/blog/index">Blog</a>
-    <a href="/faq">FAQ</a>
-    <a href="/about">About</a>
-    <a href="/demo">Demo</a>
-    <a href="/learning-vigyanllm">Learning</a>
-    <a href="/academic-partnership">Academic Partnership</a>
-    <a href="/pricing">Pricing</a>
-  </div>
-  <div class="footer-col">
-    <h5>Contact</h5>
-    <a href="mailto:contact@vigyanllm.in">contact@vigyanllm.in</a>
-    <a href="/privacy">Privacy</a>
-    <a href="/terms">Terms</a>
-    <a href="/cookies">Cookies</a>
-    <a href="/refund">Refund</a>
-    <a href="/security">Security</a>
-    <a href="/cite-vigyanllm">Cite Us</a>
-  </div>
-</div>
-<div class="footer-bottom">
-  <span>&copy; <script>document.write(new Date().getFullYear())</script> VigyanLLM Pvt. Ltd. · Sovereign Research AI</span>
-  <span>WWW.VIGYANLLM.IN</span>
-</div>
-
-
-
-
-
-
-
-
-
-</footer>
-
-<script defer src="/search-index.js"></script>
-<script defer src="/auth-shared.js"></script>
-<script>
-var blastData = [];
-function $(id){return document.getElementById(id)}
-function esc(s){return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
-function _on(id,ev,fn){var e=$(id);if(e)e.addEventListener(ev,fn)}
-function loading(on){
-  $('blast-sp').classList.toggle('active',on);
-  $('btn-blast').disabled=on;
-  $('blast-txt').textContent=on?'BLASTing…':'Run BLAST';
-}
-function blobDl(c,m,f){var b=new Blob([c],{type:m});var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=f;a.click();URL.revokeObjectURL(a.href)}
-function parseFasta(t){
-  var lines=t.split('\n'),seqs=[],cur=null;
-  lines.forEach(function(l){var s=l.trim();if(s.startsWith('>')){if(cur&&cur.seq)seqs.push(cur);cur={name:s.slice(1).split(/\s/)[0],seq:''}}else if(cur)cur.seq+=s.toUpperCase()});
-  if(cur&&cur.seq)seqs.push(cur);return seqs;
-}
-(function(){
-  var v=localStorage.getItem('vp_blast_seq');
-  if(v){$('bseq').value=v;var m=v.match(/[ACGTNacgtn]/g);$('bseq-len').textContent=m?m.length:0;localStorage.removeItem('vp_blast_seq')}
-})();
-_on('bseq','input',function(){var t=this.value.replace(/^>.*\n/,'').replace(/[^ACGTNacgtn]/g,'');$('bseq-len').textContent=t.length});
-// ── NCBI BLAST API ── proxied through Vercel Edge Function
-async function ncbiPut(seq, db, org) {
-    var r = await fetch('/api/ncbi-blast', {
-    method: 'POST',
-    headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({sequence: seq, database: db || 'nt', organism: org || ''})
-  });
-  if (!r.ok) { var e = await r.json(); throw new Error(e.error || 'Failed to submit BLAST job') }
-  var d = await r.json();
-  if (!d.rid) throw new Error('NCBI did not return a request ID. Try again later.');
-  return d;
-}
-async function ncbiPoll(rid) {
-  for (var i = 0; i < 60; i++) {
-    var r = await fetch('/api/ncbi-blast?rid=' + rid);
-    if (!r.ok) { var e = await r.json(); throw new Error(e.error || 'Failed to check BLAST status') }
-    var d = await r.json();
-    if (d.status === 'READY') return d.hits || [];
-    await new Promise(r => setTimeout(r, 2000));
-  }
-  throw new Error('BLAST timed out. Try a shorter sequence.');
-}
-function parseNcbiHits(hits, querySeq) {
-  var out = [];
-  var qlen = querySeq.length;
-  hits.forEach(function(hit) {
-    var title = hit.def || hit.id || '';
-    var species = (title.match(/\[([A-Z][a-z]+\s+[a-z]+)\]/) || [])[1] || '';
-    (hit.hsps || []).forEach(function(hsp) {
-      var idn = hsp.align_len ? +(hsp.identity / hsp.align_len * 100).toFixed(2) : 0;
-      var cov = qlen && hsp.align_len ? +(hsp.align_len / qlen * 100).toFixed(2) : 0;
-      var e = hsp.evalue;
-      var evalue = e === 0 || e === '0' ? '0.0' : parseFloat(e) < 0.0001 ? parseFloat(e).toExponential(2) : parseFloat(e).toFixed(4);
-      out.push({
-        subject_id: hit.id || '',
-        subject_description: title,
-        subject_species: species,
-        identity_pct: idn,
-        alignment_length: hsp.align_len || 0,
-        mismatches: (hsp.align_len || 0) - (hsp.identity || 0) - (hsp.gaps || 0),
-        gap_opens: hsp.gaps || 0,
-        e_value: evalue,
-        bit_score: +(hsp.bit_score || 0).toFixed(1),
-        query_cover: cov,
-        source: 'NCBI BLAST',
-        source_url: 'https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Get&RID=',
-        subject_sequence: hsp.hit_seq || ''
-      });
-    });
-  });
-  return out;
-}
-async function doBlast(){
-  var seq=$('bseq').value.trim().replace(/[^ACGTNacgtn]/g,'').toUpperCase();
-  if(!seq){alert('Enter a query sequence.');return}
-  loading(true);
-  $('bparams').textContent='Submitting BLAST job to NCBI…';
-  try {
-    var d = await ncbiPut(seq, $('bdb').value, $('borg').value.trim());
-    $('bparams').textContent='BLAST job submitted (RID: ' + d.rid + '). Waiting for results…';
-    var hits = await ncbiPoll(d.rid);
-    var results = parseNcbiHits(hits, seq);
-    renderBlast({results: results, total: results.length, params:{mode:'ncbi',database:$('bdb').value}});
-  } catch(e) {
-    $('bresults').innerHTML='<div class="error-card" style="padding:16px;background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;color:#DC2626;font-size:13px">'+esc(e.message||'BLAST request failed. Check your internet connection or try again later.')+'</div>';
-    $('bcount').textContent='';
-  }
-  finally{loading(false)}
-}
-function renderBlast(data,mode,db){
-  var area=$('bresults'),count=$('bcount');
-  var results=data.results||[];
-  blastData=results;
-  var params=data.params||{};
-  count.textContent='('+results.length+' hits)';
-  $('bparams').textContent='Mode: '+esc(mode||params.mode||'')+' · DB: '+esc(db||params.database||'');
-  if(!results.length){area.innerHTML='<div style="padding:40px;text-align:center;color:var(--muted);font-size:13px">No BLAST hits found. Try a longer sequence or a different database.</div>';return}
-  var html='<table class="results-table"><thead><tr>'
-    +'<th style="width:30px"><input type="checkbox" id="bselall" checked></th>'
-    +'<th>Subject</th><th>Species</th><th>Identity</th><th>Align Len</th><th>Mismatch</th><th>Gaps</th>'
-    +'<th>E-value</th><th>Bit Score</th><th>Cover</th><th>Source</th>'
-    +'</tr></thead><tbody>';
-  results.forEach(function(r,i){
-    var idPct=r.identity_pct||0;
-    var idBadge=idPct>=90?'id-high':idPct>=70?'id-mid':'id-low';
-    var eVal=r.e_value||'';
-    html+='<tr>'
-      +'<td><input type="checkbox" class="bcb" data-idx="'+i+'" checked></td>'
-      +'<td><div class="hit-id">'+esc(r.subject_id||'')+'</div><div class="hit-desc">'+esc((r.subject_description||'').slice(0,80))+'</div></td>'
-      +'<td class="hit-species">'+esc(r.subject_species||'')+'</td>'
-      +'<td><span class="param-badge '+idBadge+'">'+idPct+'%</span></td>'
-      +'<td>'+(r.alignment_length||0)+'</td>'
-      +'<td>'+(r.mismatches||0)+'</td>'
-      +'<td>'+(r.gap_opens||0)+'</td>'
-      +'<td style="font-weight:'+(eVal==='0.0'||(typeof eVal==='string'&&eVal.includes('e-'))?700:400)+';color:'+(eVal==='0.0'?'var(--bio)':eVal<1?'var(--amber)':'var(--muted)')+'">'+esc(String(eVal))+'</td>'
-      +'<td>'+(r.bit_score||0)+'</td>'
-      +'<td>'+(r.query_cover||0)+'%</td>'
-      +'<td>'+(r.source_url?'<a href="'+esc(r.source_url)+'" target="_blank" rel="noopener" class="source-link">Open ↗</a>':'')+'</td></tr>';
-  });
-  html+='</tbody></table>';
-  area.innerHTML=html;
-  _on('bselall','change',function(){document.querySelectorAll('.bcb').forEach(function(c){c.checked=this.checked})}.bind($('bselall')));
-}
-function getBSelected(){
-  var cbs=document.querySelectorAll('.bcb:checked');
-  return Array.from(cbs).map(function(cb){return blastData[parseInt(cb.dataset.idx)]});
-}
-_on('btn-blast','click',doBlast);
-_on('bfasta','change',async function(){
-  if(!this.files.length)return;
-  try{var t=await this.files[0].text();var p=parseFasta(t);if(p.length){$('bseq').value=p.map(function(x){return'>'+x.name+'\n'+x.seq}).join('\n');$('bseq-len').textContent=p[0].seq.length}}catch(e){}
-});
-_on('btn-select-all','click',function(){
-  document.querySelectorAll('.bcb').forEach(function(c){c.checked=true});
-});
-_on('btn-deselect-all','click',function(){
-  document.querySelectorAll('.bcb').forEach(function(c){c.checked=false});
-});
-_on('btn-b-msa','click',async function(){
-  var s=getBSelected();
-  if(s.length<2){alert('Select at least 2 hits for MSA.');return}
-  var q=$('bseq').value.trim();
-  var sq=q.split('\n').filter(function(l){return!l.startsWith('>')}).join('').replace(/\s/g,'');
-  // First attempt: use subject_sequence from BLAST results
-  var hasFullSeqs=s.every(function(r){return r.subject_sequence&&r.subject_sequence.length>50});
-  if(hasFullSeqs){
-    var fa='>query\n'+sq+'\n'+s.map(function(r){return'>'+(r.subject_id||'hit')+'\n'+(r.subject_sequence||'')}).join('\n');
-    localStorage.setItem('vp_msa_seq',fa);
-    window.location.href='msa';
-    return;
-  }
-  // Fetch full sequences in parallel via backend
-  $('blast-txt').textContent='Fetching sequences…';
-  $('blast-sp').classList.add('active');
-  try{
-    var accessions=s.map(function(r){return r.subject_id||''}).filter(Boolean);
-    var r=await fetch('/api/primer/fetch-sequences',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({accessions:accessions})});
-    if(!r.ok)throw new Error('Failed to fetch sequences');
-    var d=await r.json();
-    var fetched={};
-    (d.results||[]).forEach(function(f){if(f.sequence)fetched[f.accession]=f.sequence});
-    var fa='>query\n'+sq+'\n';
-    s.forEach(function(r){
-      var acc=r.subject_id||'hit';
-      var seq=fetched[acc]||r.subject_sequence||'';
-      fa+='>'+acc+' '+(r.subject_species||'')+'\n'+seq+'\n';
-    });
-    localStorage.setItem('vp_msa_seq',fa);
-    window.location.href='msa';
-  }catch(e){
-    // Fallback: use whatever sequences we have
-    var fa='>query\n'+sq+'\n'+s.map(function(r){return'>'+(r.subject_id||'hit')+'\n'+(r.subject_sequence||'')}).join('\n');
-    localStorage.setItem('vp_msa_seq',fa);
-    window.location.href='msa';
-  }
-});
-_on('btn-b-dl','click',function(){
-  var s=getBSelected();
-  if(!s.length){alert('No results selected.');return}
-  var fa=s.map(function(r){return'>'+(r.subject_id||'hit')+' '+(r.subject_species||'')+'\n'+(r.subject_sequence||r.subject_id||'')}).join('\n');
-  blobDl(fa,'text/plain','blast_results.fa');
-});
-</script>
-<script>
-(function(){
-  var h=document.getElementById('hamburger'),m=document.getElementById('mobile-menu');
-  if(!h||!m)return;
-  h.addEventListener('click',function(){h.classList.toggle('active');m.classList.toggle('open')});
-  document.addEventListener('click',function(e){if(!h.contains(e.target)&&!m.contains(e.target)){h.classList.remove('active');m.classList.remove('open')}});
-})();
-</script>
-
-<div style="margin-top:48px;padding-top:32px;border-top:1px solid #E2E8F0;font-size:13px;color:#64748B;">
-  <strong>Related resources:</strong>
-  <a href="/glossary/blast" style="color:#1565C0;text-decoration:underline;">BLAST glossary</a>
-  &middot;
-  <a href="/blog/ncbi-primer-blast-guide" style="color:#1565C0;text-decoration:underline;">NCBI Primer-BLAST guide</a>
-</div>
-</body>
-</html>

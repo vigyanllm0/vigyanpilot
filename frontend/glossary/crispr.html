@@ -44,6 +44,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <!-- JSON-LD: BreadcrumbList -->
   <!-- JSON-LD: FAQPage -->
   <!-- JSON-LD: RelatedTopic -->
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What is CRISPR?","acceptedAnswer":{"@type":"Answer","text":"CRISPR-Cas9 is a genome editing technology using guide RNA to direct Cas9 nuclease to specific DNA sequences for precise modifications through double-strand break repair by NHEJ or HDR. Explore the full definition and applications on this page."}},{"@type":"Question","name":"How does CRISPR relate to Cas9?","acceptedAnswer":{"@type":"Answer","text":"CRISPR is closely connected to Cas9 and other Genome Editing concepts. Understanding these relationships is essential for comprehensive knowledge in molecular biology and bioinformatics."}},{"@type":"Question","name":"How does VigyanLLM use CRISPR in its pipeline?","acceptedAnswer":{"@type":"Answer","text":"VigyanLLM's 24-step validated pipeline incorporates CRISPR as part of its rigorous quality control framework. The platform automates checks related to CRISPR to ensure primer design accuracy, specificity, and reliability for research and clinical applications."}},{"@type":"Question","name":"What is the difference between CRISPR-Cas9 and CRISPR-Cas12a?","acceptedAnswer":{"@type":"Answer","text":"Cas9 requires a 20 nt gRNA with an NGG PAM sequence and creates a blunt double-strand break 3 bp upstream of the PAM. Cas12a requires a 23-25 nt crRNA with a TTTV PAM and creates staggered cuts with 5-nt overhangs. Cas12a is smaller, processes its own crRNA, and is better suited for multiplex applications."}},{"@type":"Question","name":"What is a PAM sequence and why is it important?","acceptedAnswer":{"@type":"Answer","text":"The protospacer-adjacent motif (PAM) is a short DNA sequence (typically 2-6 bases) adjacent to the target site that is essential for Cas nuclease recognition and cleavage. Different Cas variants recognize different PAM sequences: SpCas9 requires NGG, SaCas9 requires NNGRRT, and Cas12a requires TTTV. Without the correct PAM, Cas nuclease cannot bind or cut."}},{"@type":"Question","name":"How do I design a guide RNA for CRISPR experiments?","acceptedAnswer":{"@type":"Answer","text":"Select a 20-nt sequence immediately upstream of the PAM, check for 40-70% GC content, avoid poly-T runs (acts as RNA pol III terminator), and minimize off-target matches in the genome. Use validated scoring algorithms like Azimuth 2.0 or Doench 2016 for on-target efficiency prediction. Design 3-4 gRNAs per target since efficiency varies by locus."}},{"@type":"Question","name":"What is homology-directed repair (HDR) in CRISPR?","acceptedAnswer":{"@type":"Answer","text":"HDR is a DNA repair pathway that uses a homologous template to repair double-strand breaks precisely. In CRISPR experiments, researchers supply a donor template with homology arms flanking the desired edit. HDR is more efficient in dividing cells and during S/G2 phase. The efficiency ranges from 1-20% depending on cell type, donor design, and delivery method."}},{"@type":"Question","name":"How do I deliver CRISPR components into cells?","acceptedAnswer":{"@type":"Answer","text":"Common delivery methods include: plasmid transfection (expresses Cas9 and gRNA from DNA vectors — standard for cell lines), ribonucleoprotein (RNP) delivery (pre-assembled Cas9 protein + gRNA — lower off-target, suitable for primary cells), viral delivery (AAV or lentivirus — for in vivo), and mRNA electroporation (transient Cas9 expression, minimal DNA integration)."}},{"@type":"Question","name":"What are CRISPR off-target effects and how do I minimize them?","acceptedAnswer":{"@type":"Answer","text":"Off-target effects occur when gRNA binds to similar but non-identical genomic sequences, causing unintended edits. Minimize them by using high-fidelity Cas9 variants (eSpCas9, SpCas9-HF1), truncated gRNAs (17-18 nt), computational off-target prediction tools (CFD, MIT scores), and paired nickase approaches. Always validate editing at predicted off-target sites."}},{"@type":"Question","name":"What is the CRISPR knockout workflow?","acceptedAnswer":{"@type":"Answer","text":"The typical workflow: (1) select target gene and identify early coding exons, (2) design gRNAs targeting exon 1-3, (3) clone or order gRNAs as synthetic oligos, (4) deliver Cas9 and gRNA into cells via transfection or transduction, (5) harvest DNA 48-72 hours post-delivery, (6) verify editing by Sanger sequencing or T7E1 assay, (7) isolate clonal populations if needed."}}]}</script>
   <style>
     html { overflow-x: hidden; }
 *{box-sizing:border-box;margin:0;padding:0}
@@ -635,27 +636,87 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       </div>
     </section>
 
-    <section class="section" id="faq">
+        <section class="section" id="faq">
       <h2>Frequently Asked Questions</h2>
       
       <details class="faq-item" open>
-        <summary class="faq-question">What is CRISPR?</summary>
-        <div class="faq-answer">
-          <p>CRISPR-Cas9 is a genome editing technology using guide RNA to direct Cas9 nuclease to specific DNA sequences for precise modifications through double-strand break repair by NHEJ or HDR. Explore the full definition and applications on this page.</p>
+        <summary class="faq-question" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+          <span itemprop="name">What is CRISPR?</span>
+        </summary>
+        <div class="faq-answer" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+          <p itemprop="text">CRISPR-Cas9 is a genome editing technology using guide RNA to direct Cas9 nuclease to specific DNA sequences for precise modifications through double-strand break repair by NHEJ or HDR. Explore the full definition and applications on this page.</p>
         </div>
       </details>
-
       <details class="faq-item">
-        <summary class="faq-question">How does CRISPR relate to Cas9?</summary>
-        <div class="faq-answer">
-          <p>CRISPR is closely connected to Cas9 and other Genome Editing concepts. Understanding these relationships is essential for comprehensive knowledge in <a href="/glossary/molecular-biology">molecular biology</a> and <a href="/glossary/bioinformatics">bioinformatics</a>.</p>
+        <summary class="faq-question" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+          <span itemprop="name">How does CRISPR relate to Cas9?</span>
+        </summary>
+        <div class="faq-answer" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+          <p itemprop="text">CRISPR is closely connected to Cas9 and other Genome Editing concepts. Understanding these relationships is essential for comprehensive knowledge in molecular biology and bioinformatics.</p>
         </div>
       </details>
-
       <details class="faq-item">
-        <summary class="faq-question">How does VigyanLLM use CRISPR in its pipeline?</summary>
-        <div class="faq-answer">
-          <p>VigyanLLM&#x27;s 24-step validated pipeline incorporates CRISPR as part of its rigorous quality control framework. The platform automates checks related to CRISPR to ensure <a href="/glossary/primer-design">primer design</a> accuracy, specificity, and reliability for research and clinical applications.</p>
+        <summary class="faq-question" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+          <span itemprop="name">How does VigyanLLM use CRISPR in its pipeline?</span>
+        </summary>
+        <div class="faq-answer" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+          <p itemprop="text">VigyanLLM's 24-step validated pipeline incorporates CRISPR as part of its rigorous quality control framework. The platform automates checks related to CRISPR to ensure primer design accuracy, specificity, and reliability for research and clinical applications.</p>
+        </div>
+      </details>
+      <details class="faq-item">
+        <summary class="faq-question" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+          <span itemprop="name">What is the difference between CRISPR-Cas9 and CRISPR-Cas12a?</span>
+        </summary>
+        <div class="faq-answer" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+          <p itemprop="text">Cas9 requires a 20 nt gRNA with an NGG PAM sequence and creates a blunt double-strand break 3 bp upstream of the PAM. Cas12a requires a 23-25 nt crRNA with a TTTV PAM and creates staggered cuts with 5-nt overhangs. Cas12a is smaller, processes its own crRNA, and is better suited for multiplex applications.</p>
+        </div>
+      </details>
+      <details class="faq-item">
+        <summary class="faq-question" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+          <span itemprop="name">What is a PAM sequence and why is it important?</span>
+        </summary>
+        <div class="faq-answer" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+          <p itemprop="text">The protospacer-adjacent motif (PAM) is a short DNA sequence (typically 2-6 bases) adjacent to the target site that is essential for Cas nuclease recognition and cleavage. Different Cas variants recognize different PAM sequences: SpCas9 requires NGG, SaCas9 requires NNGRRT, and Cas12a requires TTTV. Without the correct PAM, Cas nuclease cannot bind or cut.</p>
+        </div>
+      </details>
+      <details class="faq-item">
+        <summary class="faq-question" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+          <span itemprop="name">How do I design a guide RNA for CRISPR experiments?</span>
+        </summary>
+        <div class="faq-answer" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+          <p itemprop="text">Select a 20-nt sequence immediately upstream of the PAM, check for 40-70% GC content, avoid poly-T runs (acts as RNA pol III terminator), and minimize off-target matches in the genome. Use validated scoring algorithms like Azimuth 2.0 or Doench 2016 for on-target efficiency prediction. Design 3-4 gRNAs per target since efficiency varies by locus.</p>
+        </div>
+      </details>
+      <details class="faq-item">
+        <summary class="faq-question" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+          <span itemprop="name">What is homology-directed repair (HDR) in CRISPR?</span>
+        </summary>
+        <div class="faq-answer" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+          <p itemprop="text">HDR is a DNA repair pathway that uses a homologous template to repair double-strand breaks precisely. In CRISPR experiments, researchers supply a donor template with homology arms flanking the desired edit. HDR is more efficient in dividing cells and during S/G2 phase. The efficiency ranges from 1-20% depending on cell type, donor design, and delivery method.</p>
+        </div>
+      </details>
+      <details class="faq-item">
+        <summary class="faq-question" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+          <span itemprop="name">How do I deliver CRISPR components into cells?</span>
+        </summary>
+        <div class="faq-answer" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+          <p itemprop="text">Common delivery methods include: plasmid transfection (expresses Cas9 and gRNA from DNA vectors — standard for cell lines), ribonucleoprotein (RNP) delivery (pre-assembled Cas9 protein + gRNA — lower off-target, suitable for primary cells), viral delivery (AAV or lentivirus — for in vivo), and mRNA electroporation (transient Cas9 expression, minimal DNA integration).</p>
+        </div>
+      </details>
+      <details class="faq-item">
+        <summary class="faq-question" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+          <span itemprop="name">What are CRISPR off-target effects and how do I minimize them?</span>
+        </summary>
+        <div class="faq-answer" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+          <p itemprop="text">Off-target effects occur when gRNA binds to similar but non-identical genomic sequences, causing unintended edits. Minimize them by using high-fidelity Cas9 variants (eSpCas9, SpCas9-HF1), truncated gRNAs (17-18 nt), computational off-target prediction tools (CFD, MIT scores), and paired nickase approaches. Always validate editing at predicted off-target sites.</p>
+        </div>
+      </details>
+      <details class="faq-item">
+        <summary class="faq-question" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+          <span itemprop="name">What is the CRISPR knockout workflow?</span>
+        </summary>
+        <div class="faq-answer" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+          <p itemprop="text">The typical workflow: (1) select target gene and identify early coding exons, (2) design gRNAs targeting exon 1-3, (3) clone or order gRNAs as synthetic oligos, (4) deliver Cas9 and gRNA into cells via transfection or transduction, (5) harvest DNA 48-72 hours post-delivery, (6) verify editing by Sanger sequencing or T7E1 assay, (7) isolate clonal populations if needed.</p>
         </div>
       </details>
     </section>

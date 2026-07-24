@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en-IN">
+<head>
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-KRP5LLPR');</script>
+<!-- End Google Tag Manager -->
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IDT PrimerQuest vs VigyanLLM — Primer Design Tools Comparison</title>
+  <link rel="stylesheet" href="/design-tokens.css">
+<link rel="manifest" href="/manifest.json" />
+<link rel="sitemap" type="application/xml" href="/sitemap.xml" />
+<link rel="alternate" type="application/rss+xml" title="VigyanLLM Blog RSS" href="/blog/rss.xml" />
+<meta name="theme-color" content="#0F172A" />
+<meta name="twitter:image" content="https://www.vigyanllm.in/poster.png">
+<meta name="twitter:description" content="Compare IDT PrimerQuest and VigyanLLM for PCR primer design. Learn about thermodynamics, BLAST integration, batch processing, and which tool fits your lab workflow.">
+<meta name="twitter:title" content="IDT PrimerQuest vs VigyanLLM — Primer Design Tools Comparison">
+<meta name="twitter:card" content="summary_large_image">
+<meta property="og:site_name" content="VigyanLLM">
+<meta property="og:image" content="https://www.vigyanllm.in/poster.png">
+  <meta name="robots" content="index, follow" />
+<meta name="author" content="VigyanLLM Private Limited" />
+<meta name="description" content="Compare IDT PrimerQuest and VigyanLLM for PCR primer design. Learn about thermodynamics, BLAST integration, batch processing, and which tool fits your lab workflow.">
+  <meta name="keywords" content="IDT PrimerQuest vs VigyanLLM, primer design comparison, IDT primerQuest alternative, PCR primer design tool, VigyanLLM vs IDT">
+  <link rel="canonical" href="https://www.vigyanllm.in/idt-vs-vigyanllm">
+<link rel="alternate" hreflang="en" href="https://www.vigyanllm.in/idt-vs-vigyanllm" />
+<link rel="alternate" hreflang="en-IN" href="https://www.vigyanllm.in/idt-vs-vigyanllm" />
+<link rel="alternate" hreflang="x-default" href="https://www.vigyanllm.in/idt-vs-vigyanllm" />
+  <meta property="og:title" content="IDT PrimerQuest vs VigyanLLM — Primer Design Tools Comparison">
+  <meta property="og:description" content="Compare IDT PrimerQuest and VigyanLLM for PCR primer design. Learn about thermodynamics, BLAST integration, batch processing, and which tool fits your lab workflow.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://www.vigyanllm.in/idt-vs-vigyanllm">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+*{box-sizing:border-box;margin:0;padding:0}
+    :root{--blue:#1565C0;--blue-light:#42A5F5;--blue-bg:#E3F2FD;--navy:#0F172A;--navy-light:#1E293B;--black:#0A0A0F;--white:#FFFFFF;--slate:#F8FAFC;--slate-border:#E2E8F0;--surface:#FFFFFF;--surface-alt:#F5F7FA;--outline:#E2E5EA;--text:#0A0A0F;--text2:#4A4A6A;--muted:#7A7A9A;--primary:#2563EB;--bio:#059669;--amber:#D97706;--accent:#22D3EE;--border:#E2E8F0;--bg:#FFFFFF;--font-h:'Montserrat',sans-serif;--font-b:'Open Sans',sans-serif;--space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-5:20px;--space-6:24px;--space-8:32px;--space-10:40px;--space-12:48px;--space-16:64px;--space-20:80px;--space-24:96px;--max-w:1200px;--sec-p:100px}
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; overflow-x: hidden; }
+    body { background: var(--white); color: var(--text); font-family: var(--font-b); line-height: 1.6; -webkit-font-smoothing: antialiased; overflow-x:hidden }
+    a { text-decoration: none; color: inherit; transition: color 0.15s ease; }
+    img{max-width:100%}
+    .container { max-width: var(--max-w); margin: 0 auto; padding: 0 24px; }
+    section { padding: var(--sec-p) 0; }
+    .section-tag { font-family: var(--font-b); font-size:12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--primary); margin-bottom: 20px; display: block; }
+    .section-h2 { font-family: var(--font-b); font-size: clamp(2rem, 4vw, 2.8rem); line-height: 1.1; font-weight: 400; margin-bottom: 24px; }
+    .section-desc { font-size: 15px; color: var(--text2); line-height: 1.8; max-width: 540px; }
+    nav{position:sticky;top:0;background:var(--navy);z-index:1000;height:72px;border-bottom:1px solid rgba(255,255,255,.08)}
+.nav-inner{display:flex;justify-content:space-between;align-items:center;height:100%;max-width:var(--max-w);margin:0 auto;padding:0 32px 0 8px}
+.nav-brand{display:flex;align-items:center;gap:10px;color:#fff;font-family:var(--font-h);font-size:20px;font-weight:800}
+.nav-brand img{width:34px;height:34px;border-radius:8px;transition:transform .3s}
+.nav-brand:hover img{transform:rotate(-10deg)}
+.nav-links{display:flex;gap:40px;align-items:center;margin-left:40px}
+.nav-links>a,.drop-trigger{font-family:var(--font-b);font-size:13px;color:rgba(255,255,255,.7);font-weight:600;cursor:pointer;padding:6px 0;text-transform:uppercase;letter-spacing:.04em;transition:color .15s}
+.nav-links>a:hover,.drop-trigger:hover{color:#fff}
+.drop-wrap{position:relative;display:inline-block}
+.drop-menu{display:none;position:absolute;top:100%;left:-16px;background:#fff;border:1px solid var(--outline);border-radius:12px;min-width:240px;padding:8px;z-index:1001;box-shadow:0 12px 40px rgba(0,0,0,.12);opacity:0;transform:translateY(4px);transition:opacity .2s,transform .2s}
+.drop-wrap:hover .drop-menu{display:block;opacity:1;transform:translateY(0)}
+.drop-menu a{display:block;padding:10px 16px;font-size:13px;color:var(--text2);border-radius:8px;font-weight:500;transition:all .12s}
+.drop-menu a:hover{background:var(--blue-bg);color:var(--blue);padding-left:20px}
+.nav-right{display:flex;align-items:center;gap:8px;margin-left:auto;padding-right:4px}
+.nav-btns{display:flex;flex-direction:column;gap:6px}
+.nav-search-wrap{position:relative;display:flex;align-items:center}
+.nav-search-wrap input{width:200px;padding:7px 32px 7px 12px;border-radius:8px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:#fff;font-family:var(--font-b);font-size:12px;outline:none;transition:all .2s}
+.nav-search-wrap input::placeholder{color:rgba(255,255,255,.4)}
+.nav-search-wrap input:focus{border-color:rgba(255,255,255,.4);background:rgba(255,255,255,.12);width:260px}
+.nav-search-wrap .ns-icon{position:absolute;right:8px;color:rgba(255,255,255,.4);pointer-events:none;display:flex}
+.nav-search-results{position:absolute;top:calc(100% + 8px);right:0;width:360px;background:#fff;border-radius:12px;box-shadow:0 12px 48px rgba(0,0,0,.25);overflow:hidden;display:none;z-index:1001}
+.nav-search-results.open{display:block}
+.nav-search-results .nsr-group{padding:4px 0 0}
+.nav-search-results .nsr-label{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:#94A3B8;font-weight:700;padding:6px 14px 2px}
+.nav-search-results .nsr-item{display:flex;align-items:center;gap:10px;padding:8px 14px;cursor:pointer;text-decoration:none;transition:background .1s}
+.nav-search-results .nsr-item:hover{background:#F1F5F9}
+.nav-search-results .nsr-item .r-icon{font-size:14px;flex-shrink:0}
+.nav-search-results .nsr-item .r-text{flex:1;min-width:0}
+.nav-search-results .nsr-item .r-title{font-size:12px;font-weight:600;color:#0F172A}
+.nav-search-results .nsr-item .r-desc{font-size:12px;color:#64748B;margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nav-search-no{font-size:12px;color:#94A3B8;padding:20px 14px;text-align:center}
+@media(max-width:900px){.nav-search-wrap input{width:120px}.nav-search-wrap input:focus{width:160px}.nav-search-results{width:280px}}
+@media(max-width:768px){.nav-search-wrap{display:none}.nav-right{gap:6px}.nav-login{padding:5px 16px;background:transparent;color:rgba(255,255,255,.8);border:1.5px solid rgba(255,255,255,.25);border-radius:6px;font-family:var(--font-b);font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;line-height:1.3}
+.nav-profile{display:none;align-items:center;position:relative}
+.nav-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#1565C0,#22D3EE);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .2s;border:2px solid transparent;flex-shrink:0}
+.nav-avatar:hover{transform:scale(1.08);border-color:rgba(255,255,255,.4)}
+.nav-avatar span{color:#fff;font-family:var(--font-h);font-size:13px;font-weight:700;text-transform:uppercase}
+.user-popup-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center;padding:24px}
+.user-popup-overlay.open{display:flex}
+.user-popup{background:#fff;border-radius:16px;padding:24px;width:100%;max-width:340px;box-shadow:0 24px 64px rgba(0,0,0,.25);position:relative;text-align:center}
+.user-popup-close{position:absolute;top:12px;right:14px;background:none;border:none;font-size:20px;cursor:pointer;color:#94A3B8;line-height:1;padding:4px}
+.user-popup-close:hover{color:#0F172A}
+.user-popup-header{padding:8px 0 16px}
+.user-popup-avatar{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#1565C0,#22D3EE);display:flex;align-items:center;justify-content:center;margin:0 auto 10px;font-family:var(--font-h);font-size:22px;font-weight:700;color:#fff;text-transform:uppercase}
+.user-popup-email{font-size:13px;color:#64748B;word-break:break-all}
+.user-popup-item{display:block;padding:12px 16px;font-size:14px;color:#334155;cursor:pointer;text-decoration:none;border-radius:8px;transition:background .15s;text-align:center;margin-top:4px}
+.user-popup-item:hover{background:#F1F5F9;color:#0F172A}
+.user-popup-logout{color:#EF4444;margin-top:8px}
+.user-popup-logout:hover{background:#FEF2F2;color:#DC2626}
+
+.nav-cta{padding:6px 20px;background:#fff;color:var(--navy);border:none;border-radius:6px;font-family:var(--font-h);font-size:12px;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:.06em;transition:all .2s;line-height:1.3}.nav-btns{gap:3px}.nav-links{display:flex;gap:40px;align-items:center;margin-left:40px}.hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;background:none;border:none;padding:4px;z-index:1001}}
+@media(max-width:480px){.nav-right{gap:4px}.nav-login{padding:5px 16px;background:transparent;color:rgba(255,255,255,.8);border:1.5px solid rgba(255,255,255,.25);border-radius:6px;font-family:var(--font-b);font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;line-height:1.3}.nav-cta{padding:6px 20px;background:#fff;color:var(--navy);border:none;border-radius:6px;font-family:var(--font-h);font-size:12px;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:.06em;transition:all .2s;line-height:1.3}.nav-btns{gap:2px}}
+.nav-cta{padding:6px 20px;background:#fff;color:var(--navy);border:none;border-radius:6px;font-family:var(--font-h);font-size:12px;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:.06em;transition:all .2s;line-height:1.3}
+.nav-cta:hover{background:var(--blue-light);color:#fff;box-shadow:0 4px 16px rgba(21,101,192,.3)}
+.nav-login{padding:5px 16px;background:transparent;color:rgba(255,255,255,.8);border:1.5px solid rgba(255,255,255,.25);border-radius:6px;font-family:var(--font-b);font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;line-height:1.3}
+.nav-login:hover{border-color:#fff;color:#fff;background:rgba(255,255,255,.06)}
+.hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;background:none;border:none;padding:4px;z-index:1001}
+.hamburger span{width:22px;height:2.5px;background:#fff;border-radius:2px;transition:all .3s}
+.hamburger.active span:nth-child(1){transform:rotate(45deg) translate(5px,5px)}
+.hamburger.active span:nth-child(2){opacity:0}
+.hamburger.active span:nth-child(3){transform:rotate(-45deg) translate(5px,-5px)}
+.mobile-menu{display:none;position:fixed;top:72px;left:0;right:0;background:var(--navy);padding:20px 24px;z-index:999;border-bottom:1px solid rgba(255,255,255,.08);max-height:calc(100vh-72px);overflow-y:auto}
+.mobile-menu.open{display:block}
+.mobile-menu .mm-group{margin-bottom:16px}
+.mobile-menu .mm-hdr{font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.4);font-weight:700;padding:8px 0 4px}
+.mobile-menu a{display:block;color:rgba(255,255,255,.7);font-size:14px;padding:10px 0;font-weight:500}
+.mobile-menu .mm-cta{display:block;margin-top:8px;padding:12px;background:#fff;color:var(--navy);border-radius:8px;text-align:center;font-weight:700;font-size:13px}
+    .hero { padding: 80px 0 60px; text-align: center; }
+    .hero h1 { font-family: var(--font-b); font-size: clamp(2rem, 5vw, 3rem); line-height: 1.1; font-weight: 400; margin-bottom: 16px; }
+    .hero p { font-size: 16px; color: var(--text2); max-width: 700px; margin: 0 auto; line-height: 1.8; }
+    .badge { display: inline-block; background: var(--surface); color: var(--primary); padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: 500; border: 1px solid var(--border); margin-bottom: 24px; }
+    .article-body { padding: 30px 0; }
+    .article-body h2 { font-size: 24px; font-weight: 500; color: var(--text); margin: 48px 0 16px; }
+    .article-body h3 { font-size: 19px; font-weight: 500; color: var(--text); margin: 32px 0 12px; }
+    .article-body p { margin-bottom: 16px; color: var(--text2); font-size: 15px; line-height: 1.8; }
+    .article-body ul { margin-left: 24px; margin-bottom: 16px; color: var(--text2); font-size: 15px; }
+    .article-body li { margin-bottom: 8px; }
+    .article-body strong { color: var(--text); }
+    .article-body a { color: var(--primary); }
+    table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 14px; }
+    th { background: var(--surface); color: var(--text); padding: 12px; text-align: left; border: 1px solid var(--border); font-weight: 500; }
+    td { padding: 12px; border: 1px solid var(--border); color: var(--text2); }
+    tr:nth-child(even) { background: var(--surface); }
+    .callout { background: var(--surface); border-left: 4px solid var(--primary); padding: 20px 24px; border-radius: 0 12px 12px 0; margin: 24px 0; }
+    .callout-title { font-weight: 600; color: var(--primary); margin-bottom: 8px; }
+    .callout p { color: var(--text2); }
+    .cta-box { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 48px; text-align: center; margin: 48px 0; }
+    .cta-box h3 { font-size: 22px; font-weight: 500; color: var(--text); margin-bottom: 12px; }
+    .cta-box p { color: var(--text2); margin-bottom: 24px; font-size: 15px; max-width: 480px; margin-left: auto; margin-right: auto; }
+    .cta-btn { display: inline-block; padding: 12px 28px; background: var(--primary); color: #fff; border-radius: 6px; font-weight: 500; font-size: 14px; }
+    .cta-btn:hover { opacity: 0.9; }
+    .references { padding: 30px 0; border-top: 1px solid var(--border); margin-top: 40px; }
+    .references h2 { font-size: 20px; font-weight: 500; color: var(--text); margin-bottom: 16px; }
+    .references ol { margin-left: 24px; color: var(--text2); font-size: 14px; }
+
+footer{background:var(--black);color:rgba(255,255,255,.8);padding:56px 0 24px}
+.footer-grid{display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr 1fr;gap:40px;max-width:var(--max-w);margin:0 auto 32px;padding:0 32px}
+.footer-col h5{font-size:12px;text-transform:uppercase;letter-spacing:.12em;color:#fff;margin-bottom:16px;font-weight:700}
+.footer-col a{display:block;font-size:13px;color:rgba(255,255,255,.5);margin-bottom:10px;transition:color .15s}
+.footer-col a:hover{color:#fff}
+.footer-social{display:flex;gap:8px;margin-top:16px}
+.footer-social a{width:36px;height:36px;display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,.12);border-radius:8px;transition:all .3s ease}
+.footer-social a:hover{border-color:rgba(255,255,255,.3);transform:translateY(-2px);background:rgba(255,255,255,.05)}
+.footer-social svg{width:16px;height:16px;filter:grayscale(1);opacity:.5;transition:all .3s ease}
+.footer-social a:hover svg{filter:grayscale(0);opacity:1}
+.footer-bottom{max-width:var(--max-w);margin:0 auto;padding:16px 32px 0;border-top:1px solid rgba(255,255,255,.06);display:flex;justify-content:space-between;font-size:12px;color:rgba(255,255,255,.35)}
+
+
+@media(max-width:768px){.nav-links{display:none}.nav-inner{padding:0 16px}.hamburger{display:flex}}
+
+.skip-link{position:absolute;top:-100%;left:50%;transform:translateX(-50%);padding:8px 16px;background:#667eea;color:#fff;z-index:10000;border-radius:0 0 8px 8px;font-weight:600;text-decoration:none;font-size:14px}.skip-link:focus{top:0;outline:none}
+</style>
+  <link rel="icon" type="image/svg+xml" href="/logo.svg">
+<link rel="apple-touch-icon" href="/logo.svg">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <script src="https://accounts.google.com/gsi/client?hl=en" async defer></script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.vigyanllm.in"}, {"@type": "ListItem", "position": 2, "name": "IDT PrimerQuest vs VigyanLLM"}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"VigyanLLM Primer Design Tool","applicationCategory":"ScientificApplication","operatingSystem":"Web","description":"Automated primer design tool with thermodynamic validation, BLAST specificity checking, multiplex scoring, TaqMan probe design, and audit-ready PDF reports.","url":"https://www.vigyanllm.in/primer","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"author":{"@type":"Organization","name":"VigyanLLM Private Limited"},"applicationSubCategory":"Bioinformatics"}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What is the main difference between IDT PrimerQuest and VigyanLLM?","acceptedAnswer":{"@type":"Answer","text":"IDT PrimerQuest is a free web tool from Integrated DNA Technologies designed primarily for ordering primers from IDT. VigyanLLM is a standalone platform that provides thermodynamic validation, BLAST specificity checking, multiplex scoring, TaqMan probe design, and audit-ready PDF reports independent of any vendor."}},{"@type":"Question","name":"Is IDT PrimerQuest free to use?","acceptedAnswer":{"@type":"Answer","text":"Yes, IDT PrimerQuest is free to use. You can design primers without creating an IDT account. However, the tool is designed to facilitate ordering from IDT, and some advanced features like batch processing and API access require an IDT account."}},{"@type":"Question","name":"Does VigyanLLM use the same thermodynamics as IDT?","acceptedAnswer":{"@type":"Answer","text":"Both tools use nearest-neighbor thermodynamic models based on SantaLucia 1998 parameters. IDT uses its own proprietary implementation calibrated to its synthesis quality. VigyanLLM uses the publicly validated SantaLucia parameters with Owczarzy salt corrections, producing Tm values within 1-2 degrees of IDT for standard primers."}},{"@type":"Question","name":"Can VigyanLLM design multiplex PCR primers?","acceptedAnswer":{"@type":"Answer","text":"Yes, VigyanLLM includes automated multiplex compatibility scoring. It evaluates cross-dimer formation, Tm overlap, and amplicon size compatibility across multiple primer pairs simultaneously. IDT PrimerQuest is designed for single-pair primer design and does not pro video automated multiplex analysis."}},{"@type":"Question","name":"Does IDT PrimerQuest include BLAST specificity checking?","acceptedAnswer":{"@type":"Answer","text":"IDT PrimerQuest offers optional BLAST checking through an integrated NCBI BLAST search. You can run a specificity check against selected genomes. VigyanLLM includes BLAST specificity checking with support for custom databases, Bowtie2 alignment, and detailed off-target reporting in PDF format."}},{"@type":"Question","name":"Which tool is better for qPCR primer and probe design?","acceptedAnswer":{"@type":"Answer","text":"IDT PrimerQuest provides excellent qPCR primer and probe design using its PrimerQuest algorithm optimized for IDT's PrimeTime qPCR assays. VigyanLLM supports TaqMan probe design with Tm optimization for hydrolysis probes, MIQE-compliant documentation, and multiplex qPCR assay design."}},{"@type":"Question","name":"Can I export primer designs to order from IDT using VigyanLLM?","acceptedAnswer":{"@type":"Answer","text":"Yes, VigyanLLM supports direct export in IDT-compatible formats including CSV and Excel. You can export primer sequences, Tm values, and GC content in a format that can be directly uploaded to IDT's ordering system or copied into IDT's bulk order portal."}},{"@type":"Question","name":"Does VigyanLLM support batch primer design?","acceptedAnswer":{"@type":"Answer","text":"Yes, VigyanLLM supports batch primer design for multiple target sequences simultaneously. You can upload a CSV or FASTA file with hundreds of targets and receive primer pairs for each. IDT PrimerQuest is primarily designed for single-sequence input, though batch ordering is supported separately."}},{"@type":"Question","name":"Which tool provides better documentation for audit trails?","acceptedAnswer":{"@type":"Answer","text":"VigyanLLM provides comprehensive audit-ready PDF reports including all thermodynamic parameters, BLAST results, SNP screening, secondary structure analysis, and design parameters. IDT PrimerQuest provides basic sequence and Tm information but does not generate detailed validation reports suitable for regulatory audits."}},{"@type":"Question","name":"Is VigyanLLM suitable for high-throughput primer design?","acceptedAnswer":{"@type":"Answer","text":"VigyanLLM is designed for high-throughput workflows with batch processing, API access for automated pipelines, and parallel validation of hundreds of primer pairs. IDT PrimerQuest is optimized for individual primer pair design and is less suited for high-throughput or automated pipeline integration."}},{"@type":"Question","name":"Can I use both IDT PrimerQuest and VigyanLLM together?","acceptedAnswer":{"@type":"Answer","text":"Yes, many researchers use both tools together. A typical workflow is to design initial primer pairs using IDT PrimerQuest for compatibility with IDT synthesis, then validate them through VigyanLLM's 24-step pipeline for thermodynamic accuracy, multiplex compatibility, and audit documentation."}},{"@type":"Question","name":"Is VigyanLLM free for academic researchers?","acceptedAnswer":{"@type":"Answer","text":"Yes, VigyanLLM offers free access for academic researchers with no usage limits on core features including primer design, Tm calculation, BLAST checking, and probe design. Advanced features like API access and batch processing are also available at no cost for academic use."}}]}</script>
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to content</a><main id="main-content">
+
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-KRP5LLPR"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+
+<header><nav aria-label="Main navigation">
+<div class="nav-inner">
+  <a href="/index" class="nav-brand">
+    <img src="/logo.svg" alt="VigyanLLM Logo" width="48" height="48" style="border-radius:8px" loading="lazy">
+    <span>VigyanLLM</span>
+  </a>
+  <div class="nav-links">
+    <div class="drop-wrap">
+      <span class="drop-trigger">Products ▾</span>
+      <div class="drop-menu">
+        <a href="/primer">VPrime 2.0 — Primer Design</a>
+        <a href="/search">Sequence Search</a>
+        <a href="/blast">BLAST</a>
+        <a href="/msa">MSA</a>
+        <a href="/pcr-analysis">PCR Analysis</a>
+        <a href="/crispr-analysis">CRISPR Analysis <span style="font-size:12px;font-weight:700;color:#fff;background:#F59E0B;padding:2px 6px;border-radius:99px;line-height:1.3">Coming Soon</span></a>
+        <a href="/tm-calculator">Tm Calculator</a>
+        <a href="/gc-calculator">GC Calculator</a>
+        <a href="/protein-docking">Protein Docking</a>
+        <a href="/docking">Molecular Docking</a>
+        <a href="/dna-3d">3D DNA Viewer</a>
+        <a href="/dna-to-rna" style="display:flex;align-items:center;gap:6px">DNA → RNA Converter</a>
+      </div>
+    </div>
+    <div class="drop-wrap">
+      <span class="drop-trigger">Platform ▾</span>
+      <div class="drop-menu">
+        <a href="/platform">Overview</a>
+        <a href="/architecture">Architecture</a>
+        <a href="/problem">Problem</a>
+        <a href="/solution">Solution</a>
+        <a href="/compare">Compare</a>
+        <a href="/roadmap">Roadmap</a>
+      </div>
+    </div>
+    <a href="/learning-vigyanllm">Learning</a>
+    <a href="/academic-partnership">Partnership</a>
+    <a href="/pricing">Pricing</a>
+  </div>
+  <div class="nav-right">
+    <div class="nav-search-wrap">
+      <input type="text" id="navSearchInput" placeholder="Search tools, learning, blog..." autocomplete="off">
+      <span class="ns-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
+      <div class="nav-search-results" id="navSearchResults"></div>
+    </div>
+    <div class="nav-btns" id="navBtns">
+      <button type="button" class="nav-login" onclick="openAuthModal()">Sign in</button>
+      <button type="button" class="nav-cta" onclick="openAuthModal()">Get started</button>
+    </div>
+    <div class="nav-profile" id="navProfile" style="display:none">
+      <div class="nav-avatar" id="navAvatar" onclick="toggleUserMenu()">
+        <span class="nav-avatar-letter" id="navAvatarLetter"></span>
+      </div>
+    </div>
+    <div class="user-popup-overlay" id="userPopupOverlay" onclick="if(event.target===this)closeUserMenu()">
+      <div class="user-popup">
+        <button type="button" class="user-popup-close" onclick="closeUserMenu()">&times;</button>
+        <div class="user-popup-header">
+          <div class="user-popup-avatar" id="userPopupAvatar"></div>
+          <div class="user-popup-email" id="userPopupEmail"></div>
+        </div>
+        <a class="user-popup-item" href="/primer">Dashboard</a>
+<div class="user-popup-item user-popup-logout" onclick="logout()">Logout</div>
+      </div>
+    </div>
+  </div>
+  <button type="button" class="hamburger" id="hamburger" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</div>
+<div class="mobile-menu" id="mobile-menu">
+  <div class="mm-group"><div class="mm-hdr">Products</div>
+    <a href="/primer">VPrime 2.0 — Primer Design</a>
+    <a href="/search">Sequence Search</a>
+    <a href="/blast">BLAST</a>
+    <a href="/msa">MSA</a>
+    <a href="/pcr-analysis">PCR Analysis</a>
+    <a href="/crispr-analysis">CRISPR Analysis <span style="font-size:12px;font-weight:700;color:#fff;background:#F59E0B;padding:2px 6px;border-radius:99px;line-height:1.3">Coming Soon</span></a>
+    <a href="/tm-calculator">Tm Calculator</a>
+    <a href="/gc-calculator">GC Calculator</a>
+    <a href="/protein-docking">Protein Docking</a>
+    <a href="/docking">Molecular Docking</a>
+        <a href="/dna-3d">3D DNA Viewer</a>
+        <a href="/dna-to-rna" style="display:flex;align-items:center;gap:6px">DNA → RNA Converter</a>
+  </div>
+  <div class="mm-group"><div class="mm-hdr">Platform</div>
+    <a href="/platform">Overview</a>
+    <a href="/architecture">Architecture</a>
+    <a href="/problem">Problem</a>
+    <a href="/solution">Solution</a>
+    <a href="/compare">Compare</a>
+    <a href="/roadmap">Roadmap</a>
+  </div>
+  <div class="mm-group">
+    <a href="/learning-vigyanllm">Learning</a>
+    <a href="/academic-partnership">Academic Partnership</a>
+    <a href="/pricing">Pricing</a>
+    <a href="mailto:contact@vigyanllm.in">Enterprise Inquiry</a>
+  </div>
+  <a href="#" onclick="closeMobileMenu();var e=document.getElementById('navSearchInput');if(e){e.focus();e.scrollIntoView({behavior:'smooth',block:'center'})};return false" class="mm-cta" style="background:transparent;border:1px solid rgba(255,255,255,.25);color:rgba(255,255,255,.8);margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:8px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Search</a>
+  <a href="#" class="mm-cta" onclick="openAuthModal();return false">Sign in</a>
+</div>
+</nav></header>
+
+
+  <section class="hero">
+    <div class="container">
+      <div class="badge">Primer Design Comparison</div>
+      <h1>IDT PrimerQuest vs VigyanLLM: Which Primer Design Tool is Right for Your Lab?</h1>
+      <p>Both IDT PrimerQuest and VigyanLLM offer free primer design, but they serve different workflows. IDT PrimerQuest is tightly integrated with IDT's synthesis and ordering pipeline. VigyanLLM provides vendor-independent design with full thermodynamic validation, BLAST specificity checking, multiplex scoring, and audit-ready documentation. This comparison helps you choose the right tool for your molecular biology research.</p>
+    </div>
+  </section>
+
+<!-- ══ GEO: IDT PrimerQuest Comparison ══ -->
+<section style="max-width:900px;margin:48px auto;padding:0 24px">
+  <h2>VigyanLLM vs. IDT PrimerQuest</h2>
+  <p>IDT PrimerQuest is a widely used primer design tool from Integrated DNA Technologies. It offers quick primer pair design optimized for IDT's synthesis platform. VigyanLLM provides a comprehensive alternative that adds multiplex scoring, TaqMan probe design, SNP filtering, repeat masking, and detailed audit reports — capabilities PrimerQuest does not offer in its standard interface.</p>
+  <table style="width:100%;border-collapse:collapse;margin-top:16px;font-size:13px">
+    <tr style="background:var(--slate,#F1F5F9)"><th style="padding:10px 14px;text-align:left">Feature</th><th style="padding:10px 14px;text-align:left">IDT PrimerQuest</th><th style="padding:10px 14px;text-align:left">VigyanLLM Primer</th></tr>
+    <tr style="border-bottom:1px solid var(--outline,#E2E5EA)"><td style="padding:10px 14px">Vendor Lock-in</td><td style="padding:10px 14px">Optimized for IDT</td><td style="padding:10px 14px">Vendor-independent</td></tr>
+    <tr style="border-bottom:1px solid var(--outline,#E2E5EA)"><td style="padding:10px 14px">Multiplex PCR</td><td style="padding:10px 14px">Not supported</td><td style="padding:10px 14px">Automated multiplex scoring</td></tr>
+    <tr style="border-bottom:1px solid var(--outline,#E2E5EA)"><td style="padding:10px 14px">TaqMan Probes</td><td style="padding:10px 14px">PrimeTime qPCR only</td><td style="padding:10px 14px">Full TaqMan design</td></tr>
+    <tr><td style="padding:10px 14px">Audit Trail</td><td style="padding:10px 14px">None</td><td style="padding:10px 14px">PDF report with 24-step validation</td></tr>
+  </table>
+</section>
+
+  <div class="container">
+    <article class="article-body">
+      <h2>What IDT PrimerQuest Does Well</h2>
+      <p>IDT PrimerQuest is a reliable primer design tool that has been serving the molecular biology community for years. It uses IDT's proprietary thermodynamic parameters calibrated to their oligonucleotide synthesis quality. PrimerQuest excels at:</p>
+      <ul>
+        <li>Quick single-pair primer design with minimal input — just paste a sequence and select PCR type</li>
+        <li>Seamless integration with IDT's ordering system for direct synthesis requests</li>
+        <li>Support for standard PCR, qPCR, and sequencing primer design modes</li>
+        <li>Optimized primer recommendations based on IDT's synthesis quality metrics</li>
+        <li>Being completely free with no account required for basic design</li>
+      </ul>
+      <p>For researchers who regularly order from IDT, PrimerQuest provides a streamlined workflow from design to synthesis. The interface is clean and well-documented, making it accessible even for researchers new to primer design.</p>
+      <p>IDT's thermodynamic parameters are finely tuned to their synthesis platform, which means primers designed through PrimerQuest tend to perform well when synthesized by IDT. The tool also provides basic Tm and GC content calculations alongside the primer recommendations.</p>
+
+      <h2>What VigyanLLM Primer Adds</h2>
+      <p>VigyanLLM Primer builds on the same nearest-neighbor thermodynamic foundation but adds a comprehensive validation pipeline that goes far beyond basic primer selection. VigyanLLM provides:</p>
+      <ul>
+        <li><strong>Full thermodynamic validation</strong> — hairpin ΔG, self-dimer ΔG, cross-dimer ΔG using SantaLucia 1998 NN parameters</li>
+        <li><strong>BLAST specificity checking</strong> — against NCBI databases or custom genomes with detailed off-target reporting</li>
+        <li><strong>Multiplex compatibility scoring</strong> — automated evaluation of cross-reactivity across multiple primer pairs</li>
+        <li><strong>TaqMan probe design</strong> — hydrolysis probe design with Tm optimization for 5-10°C above primer Tm</li>
+        <li><strong>SNP and repeat screening</strong> — filter primers overlapping common variants or repetitive elements</li>
+        <li><strong>Audit-ready PDF reports</strong> — comprehensive documentation of all design parameters and validation results</li>
+        <li><strong>Batch processing</strong> — design primers for hundreds of targets simultaneously via CSV or FASTA upload</li>
+        <li><strong>Vendor-independent exports</strong> — output compatible with IDT, Twist Bioscience, and custom formats</li>
+      </ul>
+      <p>VigyanLLM also provides API access for automated pipeline integration, making it suitable for labs that need to incorporate primer design into larger bioinformatics workflows.</p>
+
+      <h2>Key Differences</h2>
+      <p>The following table summarizes the major differences between IDT PrimerQuest and VigyanLLM Primer across key evaluation criteria for molecular biology researchers.</p>
+      <table>
+        <tr><th>Feature</th><th>IDT PrimerQuest</th><th>VigyanLLM Primer</th></tr>
+        <tr><td>Thermodynamic Model</td><td>IDT proprietary NN parameters</td><td>SantaLucia 1998 NN + Owczarzy salt correction</td></tr>
+        <tr><td>BLAST Integration</td><td>Optional NCBI BLAST</td><td>NCBI BLAST + Bowtie2 + custom databases</td></tr>
+        <tr><td>Multiplex Support</td><td>No automated scoring</td><td>Full cross-dimer multiplex scoring</td></tr>
+        <tr><td>Probe Design</td><td>PrimeTime qPCR assays</td><td>TaqMan hydrolysis probes</td></tr>
+        <tr><td>Hairpin/Dimer Check</td><td>Basic</td><td>Full ΔG calculations</td></tr>
+        <tr><td>SNP Screening</td><td>No</td><td>dbSNP + ClinVar filtering</td></tr>
+        <tr><td>Repeat Masking</td><td>No</td><td>Dfam repeat element filtering</td></tr>
+        <tr><td>Batch Processing</td><td>Single-pair only</td><td>Hundreds of targets via CSV/FASTA</td></tr>
+        <tr><td>Audit Reports</td><td>None</td><td>PDF with 24-step validation</td></tr>
+        <tr><td>Vendor Exports</td><td>IDT native</td><td>IDT + Twist + custom formats</td></tr>
+        <tr><td>API Access</td><td>No</td><td>REST API for automated pipelines</td></tr>
+        <tr><td>Pricing</td><td>Free (IDT-oriented)</td><td>Free for academics, enterprise plans</td></tr>
+        <tr><td>Data Privacy</td><td>Processed on IDT servers</td><td>100% local processing option</td></tr>
+      </table>
+
+      <h2>Which Tool Should You Choose?</h2>
+      <h3>Choose IDT PrimerQuest if:</h3>
+      <ul>
+        <li>You routinely order primers from IDT and want a one-click design-to-order workflow</li>
+        <li>You design only a few primer pairs at a time and do not need batch processing</li>
+        <li>Your application is standard singleplex PCR without complex multiplex requirements</li>
+        <li>You do not need audit-ready documentation or regulatory compliance reporting</li>
+      </ul>
+      <h3>Choose VigyanLLM Primer if:</h3>
+      <ul>
+        <li>You need batch primer design for hundreds of targets</li>
+        <li>Your project involves multiplex PCR and requires cross-dimer compatibility checking</li>
+        <li>You need comprehensive validation including SNP screening and repeat masking</li>
+        <li>You require audit-ready documentation for regulatory or publication purposes</li>
+        <li>You want vendor independence with export options for multiple synthesis providers</li>
+        <li>You need to integrate primer design into an automated bioinformatics pipeline</li>
+      </ul>
+
+      <div class="callout">
+        <div class="callout-title">Best Practice: Use Both Tools</div>
+        <p>For maximum confidence, design primers using IDT PrimerQuest for compatibility with IDT synthesis, then validate the selected primers through VigyanLLM's 24-step pipeline. This combination gives you IDT's synthesis-optimized design plus VigyanLLM's comprehensive thermodynamic validation, multiplex scoring, and documentation capabilities.</p>
+      </div>
+
+      <div class="cta-box">
+        <h3>Try VigyanLLM Primer Design — Free for Academic Researchers</h3>
+        <p>Design validated, audit-ready primers with full thermodynamic analysis, BLAST specificity checking, and multiplex support — all free for academic use.</p>
+        <a href="/primer" class="cta-btn">Start Designing Primers →</a>
+      </div>
+    </article>
+
+    <section class="references">
+      <h2>References</h2>
+      <ol>
+        <li>SantaLucia J. (1998). A unified view of polymer, dumbbell, and oligonucleotide DNA nearest-neighbor thermodynamics. <em>Proceedings of the National Academy of Sciences</em>, 95(4), 1460-1465.</li>
+        <li>Owczarzy R. et al. (2004). Effects of sodium ions on DNA duplex oligomers: improved predictions of melting temperatures. <em>Biochemistry</em>, 43(12), 3537-3554.</li>
+        <li>Untergasser A. et al. (2012). Primer3 — new capabilities and interfaces. <em>Nucleic Acids Research</em>, 40(15), e115.</li>
+        <li>Bustin S.A. et al. (2009). The MIQE guidelines: minimum information for publication of quantitative real-time PCR experiments. <em>Clinical Chemistry</em>, 55(4), 611-622.</li>
+        <li>Ye J. et al. (2012). Primer-BLAST: A tool to design target-specific primers for polymerase chain reaction. <em>BMC Bioinformatics</em>, 13, 134.</li>
+        <li>von Ahsen N. et al. (2001). Oligonucleotide melting temperature under PCR conditions: nearest-neighbor corrections for Mg2+ and deoxynucleotide triphosphate concentrations. <em>Clinical Chemistry</em>, 47(11), 1956-1961.</li>
+      </ol>
+    </section>
+
+    <div style="max-width:900px;margin:40px auto 0;padding:24px 0">
+      <h2 style="font-family:var(--font-h);font-size:22px;font-weight:800;margin-bottom:8px">Frequently Asked Questions About IDT PrimerQuest vs VigyanLLM</h2>
+      <p style="color:var(--muted);font-size:14px;margin-bottom:32px">Quick answers to common questions about these two primer design tools</p>
+      <div class="faq-item" style="margin-bottom:24px">
+        <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">What is the main difference between IDT PrimerQuest and VigyanLLM?</h3>
+        <p style="font-size:14px;color:var(--text2);line-height:1.7">IDT PrimerQuest is a free web tool from Integrated DNA Technologies designed primarily for ordering primers from IDT. VigyanLLM is a standalone platform that provides thermodynamic validation, BLAST specificity checking, multiplex scoring, TaqMan probe design, and audit-ready PDF reports independent of any vendor.</p>
+      </div>
+      <div class="faq-item" style="margin-bottom:24px">
+        <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">Is IDT PrimerQuest free to use?</h3>
+        <p style="font-size:14px;color:var(--text2);line-height:1.7">Yes, IDT PrimerQuest is free to use. You can design primers without creating an IDT account. However, the tool is designed to facilitate ordering from IDT, and some advanced features like batch processing and API access require an IDT account.</p>
+      </div>
+      <div class="faq-item" style="margin-bottom:24px">
+        <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">Does VigyanLLM use the same thermodynamics as IDT?</h3>
+        <p style="font-size:14px;color:var(--text2);line-height:1.7">Both tools use nearest-neighbor thermodynamic models based on SantaLucia 1998 parameters. IDT uses its own proprietary implementation calibrated to its synthesis quality. VigyanLLM uses the publicly validated SantaLucia parameters with Owczarzy salt corrections, producing Tm values within 1-2 degrees of IDT for standard primers.</p>
+      </div>
+      <div class="faq-item" style="margin-bottom:24px">
+        <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">Can VigyanLLM design multiplex PCR primers?</h3>
+        <p style="font-size:14px;color:var(--text2);line-height:1.7">Yes, VigyanLLM includes automated multiplex compatibility scoring. It evaluates cross-dimer formation, Tm overlap, and amplicon size compatibility across multiple primer pairs simultaneously. IDT PrimerQuest is designed for single-pair primer design and does not provide automated multiplex analysis.</p>
+      </div>
+      <div class="faq-item" style="margin-bottom:24px">
+        <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">Does IDT PrimerQuest include BLAST specificity checking?</h3>
+        <p style="font-size:14px;color:var(--text2);line-height:1.7">IDT PrimerQuest offers optional BLAST checking through an integrated NCBI BLAST search. You can run a specificity check against selected genomes. VigyanLLM includes BLAST specificity checking with support for custom databases, Bowtie2 alignment, and detailed off-target reporting in PDF format.</p>
+      </div>
+      <div class="faq-item" style="margin-bottom:24px">
+        <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">Which tool is better for qPCR primer and probe design?</h3>
+        <p style="font-size:14px;color:var(--text2);line-height:1.7">IDT PrimerQuest provides excellent qPCR primer and probe design using its PrimerQuest algorithm optimized for IDT's PrimeTime qPCR assays. VigyanLLM supports TaqMan probe design with Tm optimization for hydrolysis probes, MIQE-compliant documentation, and multiplex qPCR assay design.</p>
+      </div>
+      <div class="faq-item" style="margin-bottom:24px">
+        <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">Can I export primer designs to order from IDT using VigyanLLM?</h3>
+        <p style="font-size:14px;color:var(--text2);line-height:1.7">Yes, VigyanLLM supports direct export in IDT-compatible formats including CSV and Excel. You can export primer sequences, Tm values, and GC content in a format that can be directly uploaded to IDT's ordering system or copied into IDT's bulk order portal.</p>
+      </div>
+      <div class="faq-item" style="margin-bottom:24px">
+        <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">Does VigyanLLM support batch primer design?</h3>
+        <p style="font-size:14px;color:var(--text2);line-height:1.7">Yes, VigyanLLM supports batch primer design for multiple target sequences simultaneously. You can upload a CSV or FASTA file with hundreds of targets and receive primer pairs for each. IDT PrimerQuest is primarily designed for single-sequence input, though batch ordering is supported separately.</p>
+      </div>
+      <div class="faq-item" style="margin-bottom:24px">
+        <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">Which tool provides better documentation for audit trails?</h3>
+        <p style="font-size:14px;color:var(--text2);line-height:1.7">VigyanLLM provides comprehensive audit-ready PDF reports including all thermodynamic parameters, BLAST results, SNP screening, secondary structure analysis, and design parameters. IDT PrimerQuest provides basic sequence and Tm information but does not generate detailed validation reports suitable for regulatory audits.</p>
+      </div>
+      <div class="faq-item" style="margin-bottom:24px">
+        <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">Is VigyanLLM suitable for high-throughput primer design?</h3>
+        <p style="font-size:14px;color:var(--text2);line-height:1.7">VigyanLLM is designed for high-throughput workflows with batch processing, API access for automated pipelines, and parallel validation of hundreds of primer pairs. IDT PrimerQuest is optimized for individual primer pair design and is less suited for high-throughput or automated pipeline integration.</p>
+      </div>
+      <div class="faq-item" style="margin-bottom:24px">
+        <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">Can I use both IDT PrimerQuest and VigyanLLM together?</h3>
+        <p style="font-size:14px;color:var(--text2);line-height:1.7">Yes, many researchers use both tools together. A typical workflow is to design initial primer pairs using IDT PrimerQuest for compatibility with IDT synthesis, then validate them through VigyanLLM's 24-step pipeline for thermodynamic accuracy, multiplex compatibility, and audit documentation.</p>
+      </div>
+      <div class="faq-item" style="margin-bottom:24px">
+        <h3 style="font-family:var(--font-h);font-size:16px;font-weight:700;margin-bottom:8px">Is VigyanLLM free for academic researchers?</h3>
+        <p style="font-size:14px;color:var(--text2);line-height:1.7">Yes, VigyanLLM offers free access for academic researchers with no usage limits on core features including primer design, Tm calculation, BLAST checking, and probe design. Advanced features like API access and batch processing are also available at no cost for academic use.</p>
+      </div>
+    </div>
+  </div>
+
+        
+
+<div style="max-width:900px;margin:40px auto;padding:24px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:12px;text-align:center">
+  <p style="margin-bottom:12px"><strong>Ready to upgrade your primer design workflow?</strong> Try VigyanLLM's autonomous primer design with 24-step validation, multiplex scoring, and audit reports.</p>
+  <a href="/primer-design" style="display:inline-block;padding:12px 28px;background:#2563EB;color:#fff;border-radius:8px;font-weight:700;text-decoration:none">Launch Primer Design Tool →</a>
+</div>
+</main>
+
+<footer>
+<div class="footer-grid">
+  <div class="footer-col">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+      <img src="/logo.svg" alt="VigyanLLM Logo" style="width:36px;height:36px;border-radius:8px" loading="lazy">
+      <span style="font-family:var(--font-h);font-size:18px;font-weight:800;color:#fff">VigyanLLM</span>
+    </div>
+    <p style="font-size:13px;color:rgba(255,255,255,.45);line-height:1.6">Sovereign Healthcare &amp; Life Sciences AI.<br>Built in India. For the world.</p>
+    <a href="mailto:contact@vigyanllm.in" style="color:var(--blue-light);font-size:13px;display:block;margin-top:12px">contact@vigyanllm.in</a>
+    <div class="footer-social">
+      <a href="https://github.com/vigyanllm" rel="me" aria-label="GitHub"><svg fill="#fff" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg></a>
+      <a href="https://www.linkedin.com/company/vigyanllm/" rel="me" aria-label="LinkedIn"><svg fill="#0077B5" viewBox="0 0 24 24"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg></a>
+      <a href="https://www.facebook.com/vigyanllm" rel="me" aria-label="Facebook"><svg fill="#1877F2" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></a>
+      <a href="https://www.instagram.com/vigyanllm/" rel="me" aria-label="Instagram"><svg fill="#E1306C" viewBox="0 0 24 24"><path d="M7.8 2h8.4C19.4 2 22 4.6 22 7.8v8.4a5.8 5.8 0 0 1-5.8 5.8H7.8C4.6 22 2 19.4 2 16.2V7.8A5.8 5.8 0 0 1 7.8 2m-.2 2A3.6 3.6 0 0 0 4 7.6v8.8C4 18.39 5.61 20 7.6 20h8.8a3.6 3.6 0 0 0 3.6-3.6V7.6C20 5.61 18.39 4 16.4 4H7.6m9.65 1.5a1.25 1.25 0 0 1 0 2.5 1.25 1.25 0 0 1 0-2.5M12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10m0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/></svg></a>
+    </div>
+  </div>
+  <div class="footer-col">
+    <h5>Products</h5>
+    <a href="/primer">VPrime 2.0</a>
+    <a href="/search">Sequence Search</a>
+    <a href="/blast">BLAST</a>
+    <a href="/msa">MSA</a>
+    <a href="/pcr-analysis">PCR Analysis</a>
+    <a href="/crispr-analysis">CRISPR <span style="font-size:12px;font-weight:700;color:#fff;background:#F59E0B;padding:2px 6px;border-radius:99px;line-height:1.3">Coming Soon</span></a>
+    <a href="/protein-docking">Docking</a>
+  </div>
+  <div class="footer-col">
+    <h5>Platform</h5>
+    <a href="/platform">Overview</a>
+    <a href="/architecture">Architecture</a>
+    <a href="/problem">Problem</a>
+    <a href="/solution">Solution</a>
+    <a href="/compare">Compare</a>
+    <a href="/roadmap">Roadmap</a>
+  </div>
+  <div class="footer-col">
+    <h5>Resources</h5>
+    <a href="/blog/index">Blog</a>
+    <a href="/faq">FAQ</a>
+    <a href="/about">About</a>
+    <a href="/demo">Demo</a>
+    <a href="/learning-vigyanllm">Learning</a>
+    <a href="/academic-partnership">Academic Partnership</a>
+    <a href="/pricing">Pricing</a>
+  </div>
+  <div class="footer-col">
+    <h5>Contact</h5>
+    <a href="mailto:contact@vigyanllm.in">contact@vigyanllm.in</a>
+    <a href="/privacy">Privacy</a>
+    <a href="/terms">Terms</a>
+    <a href="/cookies">Cookies</a>
+    <a href="/refund">Refund</a>
+    <a href="/security">Security</a>
+    <a href="/cite-vigyanllm">Cite Us</a>
+  </div>
+</div>
+<div class="footer-bottom">
+  <span>&copy; <script>document.write(new Date().getFullYear())</script> VigyanLLM Pvt. Ltd. · Sovereign Research AI</span>
+  <span>WWW.VIGYANLLM.IN</span>
+</div>
+
+
+
+
+
+
+
+
+</footer>
+
+<script defer src="/search-index.js"></script>
+<script defer src="/auth-shared.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded',function(){var h=document.getElementById('hamburger'),m=document.getElementById('mobile-menu');if(h&&m){h.addEventListener('click',function(){h.classList.toggle('active');m.classList.toggle('open')});m.querySelectorAll('a').forEach(function(l){l.addEventListener('click',function(){m.classList.remove('open');h.classList.remove('active')})})}window.closeMobileMenu=function(){if(m){m.classList.remove('open');if(h)h.classList.remove('active')}}});
+</script>
+</body>
+</html>
