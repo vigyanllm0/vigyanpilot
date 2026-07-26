@@ -218,6 +218,18 @@ def init_db():
             result TEXT DEFAULT 'success',
             created_at REAL DEFAULT (strftime('%s','now'))
         );
+
+        CREATE TABLE IF NOT EXISTS saved_results (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_email TEXT NOT NULL,
+            tool TEXT NOT NULL,
+            title TEXT DEFAULT '',
+            inputs TEXT DEFAULT '{}',
+            outputs TEXT DEFAULT '{}',
+            sequences_count INTEGER DEFAULT 0,
+            job_id TEXT DEFAULT '',
+            created_at REAL DEFAULT (strftime('%s','now'))
+        );
     """)
 
     # Backfill plan columns for existing users (if missing in older schema)

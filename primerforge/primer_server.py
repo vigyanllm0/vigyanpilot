@@ -694,10 +694,12 @@ def create_app() -> Flask:
             check_usage,
             close_db,
             get_current_user,
+            get_db,
             increment_docking_usage,
             increment_usage,
             init_db,
             log_action,
+            require_auth,
         )
         from primerforge.auth_routes import auth_bp
         init_db()
@@ -2484,6 +2486,139 @@ def create_app() -> Flask:
             "job_id": job_id,
             "status": status,
         }), 200
+
+    # ══════════════════════════════════════════════════════════════════════
+    # RESULTS API (save, list, delete)
+    # ══════════════════════════════════════════════════════════════════════
+
+    @app.route("/api/results/save", methods=["POST"])
+    @require_auth
+    def save_result():
+        import json as _json
+        data = request.get_json(silent=True) or {}
+        user = g.user
+        tool = (data.get("tool") or "").strip()
+        if not tool:
+            return jsonify({"error": "Tool name required"}), 400
+        db = get_db()
+        db.execute(
+            "INSERT INTO saved_results (user_email, tool, title, inputs, outputs, sequences_count, job_id) VALUES (?, ?, ?, ?, ?, ?, ?)",
+            (user['email'], tool, (data.get("title") or ""), _json.dumps(data.get("inputs", {})), _json.dumps(data.get("outputs", {})), int(data.get("sequences_count", 0)), (data.get("job_id") or ""))
+        )
+        db.commit()
+        rid = db.execute("SELECT last_insert_rowid()").fetchone()[0]
+        return jsonify({"success": True, "id": rid}), 200
+
+    @app.route("/api/results/list", methods=["GET"])
+    @require_auth
+    def list_results():
+        user = g.user
+        limit = min(int(request.args.get("limit", 20)), 100)
+        offset = int(request.args.get("offset", 0))
+        tool_filter = (request.args.get("tool") or "").strip()
+        db = get_db()
+        if tool_filter:
+            rows = db.execute("SELECT * FROM saved_results WHERE user_email=? AND tool=? ORDER BY created_at DESC LIMIT ? OFFSET ?",
+                            (user['email'], tool_filter, limit, offset)).fetchall()
+            total = db.execute("SELECT COUNT(*) FROM saved_results WHERE user_email=? AND tool=?",
+                             (user['email'], tool_filter)).fetchone()[0]
+        else:
+            rows = db.execute("SELECT * FROM saved_results WHERE user_email=? ORDER BY created_at DESC LIMIT ? OFFSET ?",
+                            (user['email'], limit, offset)).fetchall()
+            total = db.execute("SELECT COUNT(*) FROM saved_results WHERE user_email=?", (user['email'],)).fetchone()[0]
+        return jsonify({"results": [dict(r) for r in rows], "total": total}), 200
+
+    @app.route("/api/results/delete", methods=["POST"])
+    @require_auth
+    def delete_result():
+        data = request.get_json(silent=True) or {}
+        user = g.user
+        rid = data.get("id")
+        if not rid:
+            return jsonify({"error": "Result ID required"}), 400
+        db = get_db()
+        row = db.execute("SELECT user_email FROM saved_results WHERE id=?", (rid,)).fetchone()
+        if not row:
+            return jsonify({"error": "Result not found"}), 404
+        if row['user_email'] != user['email']:
+            return jsonify({"error": "Not authorized"}), 403
+        db.execute("DELETE FROM saved_results WHERE id=?", (rid,))
+        db.commit()
+        return jsonify({"success": True}), 200
+
+    @app.route("/api/export/pdf", methods=["POST"])
+    @require_auth
+    def export_pdf():
+        import json as _json
+        data = request.get_json(silent=True) or {}
+        tool = (data.get("tool") or "analysis").strip()
+        inputs = data.get("inputs", {})
+        outputs = data.get("outputs", {})
+        from fpdf import FPDF
+        pdf = FPDF()
+        pdf.add_page()
+        pdf.set_font("Helvetica", "B", 16)
+        pdf.cell(0, 10, f"VigyanLLM - {tool.capitalize()} Report", new_x="LMARGIN", new_y="NEXT", align="C")
+        pdf.set_font("Helvetica", "", 10)
+        pdf.cell(0, 8, f"Generated: {time.strftime('%Y-%m-%d %H:%M')}", new_x="LMARGIN", new_y="NEXT", align="C")
+        pdf.ln(10)
+        if inputs:
+            pdf.set_font("Helvetica", "B", 12)
+            pdf.cell(0, 10, "Input Parameters", new_x="LMARGIN", new_y="NEXT")
+            pdf.set_font("Helvetica", "", 9)
+            for k, v in inputs.items():
+                if isinstance(v, (dict, list)):
+                    v = _json.dumps(v)[:200]
+                pdf.multi_cell(0, 5, f"{k}: {v}")
+            pdf.ln(5)
+        if outputs:
+            pdf.set_font("Helvetica", "B", 12)
+            pdf.cell(0, 10, "Results Summary", new_x="LMARGIN", new_y="NEXT")
+            pdf.set_font("Helvetica", "", 9)
+            if isinstance(outputs, str):
+                pdf.multi_cell(0, 5, outputs[:2000])
+            elif isinstance(outputs, dict):
+                summary = outputs.get("summary", _json.dumps(outputs)[:500])
+                if isinstance(summary, str):
+                    pdf.multi_cell(0, 5, summary[:2000])
+                else:
+                    for k, v in (summary.items() if isinstance(summary, dict) else [(k, v) for k, v in outputs.items()]):
+                        if isinstance(v, (dict, list)):
+                            v = _json.dumps(v)[:200]
+                        pdf.multi_cell(0, 5, f"{k}: {v}")
+        import io
+        return Response(pdf.output(), mimetype="application/pdf", headers={"Content-Disposition": f"attachment; filename={tool}_report.pdf"}), 200
+
+    @app.route("/api/export/pptx", methods=["POST"])
+    @require_auth
+    def export_pptx():
+        import json as _json
+        data = request.get_json(silent=True) or {}
+        tool = (data.get("tool") or "analysis").strip()
+        outputs = data.get("outputs", {})
+        from pptx import Presentation
+        from pptx.util import Inches, Pt
+        prs = Presentation()
+        slide = prs.slides.add_slide(prs.slide_layouts[6])
+        txBox = slide.shapes.add_textbox(Inches(0.5), Inches(0.5), Inches(9), Inches(0.8))
+        tf = txBox.text_frame
+        p = tf.paragraphs[0]
+        p.text = f"VigyanLLM - {tool.capitalize()} Report"
+        p.font.size = Pt(24)
+        if outputs:
+            slide2 = prs.slides.add_slide(prs.slide_layouts[6])
+            txBox2 = slide2.shapes.add_textbox(Inches(0.5), Inches(0.5), Inches(9), Inches(5))
+            tf2 = txBox2.text_frame
+            summary = outputs.get("summary", str(outputs)[:500]) if isinstance(outputs, dict) else str(outputs)[:500]
+            p2 = tf2.paragraphs[0]
+            p2.text = str(summary)[:1000]
+            p2.font.size = Pt(14)
+        import io
+        buf = io.BytesIO()
+        prs.save(buf)
+        buf.seek(0)
+        return Response(buf.read(), mimetype="application/vnd.openxmlformats-officedocument.presentationml.presentation",
+                       headers={"Content-Disposition": f"attachment; filename={tool}_report.pptx"}), 200
 
     # Start local docking worker if READY
     if READY:

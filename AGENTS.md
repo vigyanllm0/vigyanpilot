@@ -341,22 +341,29 @@ Added "Scientific References" sections with proper citations to 8 tool pages:
 - **msa.html** (continued): Added full MSA JS handler (FASTA parser, large_msa gating at 10+ seqs, daily usage check + API call + stats/alignment viewer), gated Download FASTA/Clustal (export_pdf)
 - **auth-shared.js**: Added `loadPlanUI()` — fetches plan status, injects plan badge into user popup header, adds 3 gated nav items (Team Collaboration/Lab, API Access/Pro, Admin Panel/Lab) with lock icons, shows Upgrade CTA for free (→Pro) and pro (→Lab) users
 
-### Files Changed (monetization session)
+### Phase 3: Dashboard, Saved Results, Export PDF/PPT ✅
+- **auth.py**: Added `saved_results` table (id, user_email, tool, title, inputs/outputs JSON, sequences_count, job_id, created_at)
+- **primer_server.py**: Added 5 new routes — POST /api/results/save, GET /api/results/list, POST /api/results/delete, POST /api/export/pdf (fpdf2), POST /api/export/pptx (python-pptx)
+- **dashboard.html**: New full dashboard page — Plan Overview card (plan pill, renewal), Quick Stats grid (daily/monthly usage bar), Saved Results table (paginated, filterable, deletable), Team/Api tabs (placeholder, gated), Upgrade banner for free users
+- **results-ui.js**: New shared module — injects Save to Dashboard/Export PDF/Export PPT buttons into tool result containers via MutationObserver, gated via requireFeature
+- **Tool pages (primer/blast/msa/docking)**: Linked results-ui.js to add save/export buttons to result areas
+- **auth-shared.js**: Dashboard link now points to /dashboard instead of /primer
+- **sitemap.xml + api/sitemap.xml.js**: Added /dashboard URL
+
+### Files Changed (Phase 3)
 | File | Change |
 |------|--------|
-| `primerforge/price_registry.py` | Rewritten: 4-tier PlanConfig, PLAN_REGISTRY, academic discount |
-| `primerforge/payment_routes.py` | Rewritten: subscription create/verify/status/usage/webhook endpoints |
-| `primerforge/auth.py` | Updated: daily_usage + monthly_usage tables, plan-aware functions |
-| `frontend/pricing.html` | Rewritten: 4-tier cards, billing toggle, 18-row comparison, FAQ, Razorpay |
-| `frontend/payment-success.html` | Updated: subscription-aware (plan/billing, Manage Plan CTA) |
-| `frontend/payment-failed.html` | Updated: subscription-error context, /pricing retry link |
-| `frontend/checkout.html` | New: order summary with plan details + Razorpay checkout |
-| `frontend/feature-gate.js` | New: shared module with requireFeature() + upgrade modals |
-| `frontend/primer.html` | Gate modal CSS/HTML, feature-gate.js, gated batch/export, usage check |
-| `frontend/docking.html` | Gate modal CSS/HTML, feature-gate.js, gated downloadResults |
-| `frontend/blast.html` | Fixed truncated page: auth modal, gate modal, footer, scripts, proper HTML; added BLAST JS handler + gated export/msa buttons |
-| `frontend/msa.html` | Fixed truncated page (was `</di`): full auth + gate + footer + scripts; added MSA JS handler + gated downloads |
-| `frontend/auth-shared.js` | Added nav gating: plan badge injection, locked gated items, upgrade CTA |
+| `primerforge/auth.py` | Added saved_results table to init_db() |
+| `primerforge/primer_server.py` | Added 5 results/export API routes with @require_auth |
+| `frontend/dashboard.html` | New: full dashboard page with plan/stats/results/upgrade |
+| `frontend/results-ui.js` | New: shared save/export buttons injection on tool pages |
+| `frontend/auth-shared.js` | Wire Dashboard link → /dashboard |
+| `frontend/primer.html` | Added results-ui.js include |
+| `frontend/blast.html` | Added results-ui.js include |
+| `frontend/msa.html` | Added results-ui.js include |
+| `frontend/docking.html` | Added results-ui.js include |
+| `frontend/sitemap.xml` | Added /dashboard URL |
+| `frontend/api/sitemap.xml.js` | Added /dashboard to CORE array |
 
 ## Key Commands
 - Python bulk-replace scripts for 200+ file operations

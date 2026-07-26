@@ -172,6 +172,10 @@ function openAuthModal(){isRegister=false;showAuth()}
       document.querySelectorAll('[data-auth-show]').forEach(function(el) { el.style.display = ''; });
     }
   }
+  // Wire Dashboard link to /dashboard
+  document.querySelectorAll('.user-popup-item[href="/primer"]').forEach(function(el) {
+    if (el.textContent.trim() === 'Dashboard') el.href = '/dashboard';
+  });
   loadPlanUI();
 })();
 
