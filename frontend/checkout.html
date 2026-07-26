@@ -58,6 +58,16 @@ body{background:var(--surface-alt);color:var(--text);font-family:var(--font-b);-
         <div class="summary-row"><span class="summary-label">Batch max</span><span class="summary-value" id="display-batch">—</span></div>
         <div class="summary-row"><span class="summary-label">API calls / month</span><span class="summary-value" id="display-api">—</span></div>
       </div>
+      <div id="academic-verify-section" style="margin-bottom:16px;display:none">
+        <div style="background:var(--surface-alt);border-radius:12px;padding:16px;text-align:center">
+          <div style="font-size:24px;margin-bottom:6px">&#127891;</div>
+          <p style="font-size:13px;color:var(--text2);margin-bottom:10px">Academic or research institution? You may be eligible for a <strong>30% discount</strong>.</p>
+          <button type="button" class="btn-secondary btn-sm" id="btn-verify-academic" onclick="verifyAcademic()" style="width:100%;justify-content:center">
+            <span id="verify-acad-txt">Verify my email</span>
+          </button>
+          <div id="verify-acad-result" style="font-size:12px;margin-top:8px"></div>
+        </div>
+      </div>
       <button type="button" class="btn-proceed" id="btn-proceed" onclick="proceedCheckout()">Proceed to Payment</button>
       <div class="security-note">&#128274; Secured by Razorpay &middot; PCI-DSS compliant</div>
       <a href="/pricing" class="back-link">&larr; Back to pricing</a>
@@ -99,6 +109,7 @@ async function loadPlanDetails(planId) {
     if (!r.ok) throw new Error(data.error || 'Failed to load pricing');
     var plan = data.plans.find(function(p) { return p.plan_id === planId; });
     if (!plan) { document.getElementById('display-plan').textContent = 'Plan not found'; return; }
+    plan._pricing = data;
     CHECKOUT_DATA = plan;
     renderOrder(plan, data);
   } catch (e) {
@@ -116,6 +127,17 @@ function renderOrder(plan, pricing) {
 
   var amount = plan.price_inr;
   var period = plan.billing === 'yearly' ? '/year' : '/month';
+
+  // Show academic verify section for non-academic users
+  if (token) {
+    fetch(API + '/api/payments/status', { headers: { 'Authorization': 'Bearer ' + token } })
+      .then(function(r) { return r.json(); })
+      .then(function(s) {
+        if (!s.is_academic) {
+          document.getElementById('academic-verify-section').style.display = 'block';
+        }
+      }).catch(function(){});
+  }
 
   // Check for academic discount
   if (token) {
@@ -139,6 +161,33 @@ function renderOrder(plan, pricing) {
   } else {
     document.getElementById('price-amount').textContent = amount;
     document.getElementById('price-period').textContent = period;
+  }
+}
+
+async function verifyAcademic() {
+  var token = getToken();
+  if (!token) { if (typeof openAuthModal === 'function') openAuthModal(); return; }
+  var btn = document.getElementById('btn-verify-academic');
+  var txt = document.getElementById('verify-acad-txt');
+  var res = document.getElementById('verify-acad-result');
+  btn.disabled = true; txt.textContent = 'Verifying...';
+  try {
+    var r = await fetch(API + '/api/auth/verify-academic', {
+      method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }
+    });
+    var d = await r.json();
+    if (d.is_academic) {
+      res.innerHTML = '<span style="color:#16A34A;font-weight:600">&#10003; Academic email verified! 30% discount applied.</span>';
+      document.getElementById('academic-verify-section').style.display = 'none';
+      // Re-render with discount
+      if (CHECKOUT_DATA) renderOrder(CHECKOUT_DATA, CHECKOUT_DATA._pricing);
+    } else {
+      res.innerHTML = '<span style="color:var(--text2);font-size:12px">' + (d.message || 'Not recognized as academic. Contact support if you believe this is an error.') + '</span>';
+      btn.disabled = false; txt.textContent = 'Try again';
+    }
+  } catch(e) {
+    res.innerHTML = '<span style="color:var(--error)">Network error. Try again.</span>';
+    btn.disabled = false; txt.textContent = 'Verify my email';
   }
 }
 

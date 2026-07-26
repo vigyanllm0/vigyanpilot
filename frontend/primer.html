@@ -1578,6 +1578,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <script defer src="/search-index.js"></script>
 <script defer src="/auth-shared.js"></script>
 <script defer src="/feature-gate.js"></script>
+<script defer src="/batch-ui.js"></script>
 <script defer src="/results-ui.js"></script>
 <!-- AUTH MODAL -->
 <div class="auth-overlay" id="auth-overlay">
@@ -2591,9 +2592,12 @@ async function runBatchAnalysis(){
   if(!_batchData){return;}
   if(!(await requireFeature('batch'))){setLoading('batch-spinner','btn-batch-text','btn-batch-analyze',false,'Analyse All');return;}
   setLoading('batch-spinner','btn-batch-text','btn-batch-analyze',true,'Analysing…');
-  $('manual-results').innerHTML='';
+  $('manual-results').innerHTML=BUI.progressHTML(0,1);
   try{
     const d=await apiPost('/api/primer/batch-analysis',{file_content:_batchData});
+    var tkn=sessionStorage.getItem('pf_token')||localStorage.getItem('pf_token');
+    if(tkn){fetch((window.VIGYAN_BACKEND_URL||'')+'/api/usage/record',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+tkn},body:JSON.stringify({tool:'primer',sequences_count:d.total||1})}).catch(function(){});}
+    $('manual-results').innerHTML='';
     let html='';
     if(d.parse_info){
       html+=`<div class="success-card" style="margin-bottom:12px">📄 ${esc(d.parse_info)}</div>`;

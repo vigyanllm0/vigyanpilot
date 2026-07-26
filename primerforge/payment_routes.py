@@ -292,6 +292,19 @@ def payment_status():
     if not row:
         return jsonify({"error": "User not found"}), 404
 
+    # Auto-detect academic status if not yet set
+    is_academic = bool(row["is_academic"])
+    if not is_academic:
+        try:
+            domain = email.split('@')[1].lower()
+            import re
+            if re.search(r'\.(edu|ac\.in|edu\.in|ac\.uk|edu\.au|ac\.nz|ac\.jp|edu\.cn|ac\.cn|ac\.kr|edu\.kr|ac\.th|edu\.tw|ac\.za|edu\.mx|ac\.cl|edu\.ar|edu\.sg|edu\.my|edu\.hk|ac\.id|edu\.eg|ac\.ma|edu\.vn|edu\.pk|ac\.ir|edu\.tr|edu\.jo|edu\.lb|ac\.il)(\.[a-z]{2})?$', domain, re.I) or '.edu.' in domain or '.ac.' in domain:
+                db.execute("UPDATE users SET is_academic=1 WHERE email=?", (email,))
+                db.commit()
+                is_academic = True
+        except:
+            pass
+
     from .auth import check_daily_usage, check_monthly_api_usage
     daily = check_daily_usage(email)
     monthly_api = check_monthly_api_usage(email)
@@ -301,7 +314,7 @@ def payment_status():
         "billing_cycle": row["billing_cycle"] or "monthly",
         "plan_activated_at": row["plan_activated_at"] or 0,
         "plan_expires_at": row["plan_expires_at"] or 0,
-        "is_academic": bool(row["is_academic"]),
+        "is_academic": is_academic,
         "academic_discount": row["academic_discount"] or 0,
         "daily": daily,
         "api": monthly_api,

@@ -470,9 +470,23 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="char-count"><span id="bseq-len">0</span> bp</div>
     </div>
     <div class="form-group">
-      <label class="form-label">FASTA Upload</label>
-      <input type="file" id="bfasta" accept=".fa,.fasta,.txt,.fna" class="form-input" style="padding:6px;font-size:12px">
-      <div class="form-hint">Multi-FASTA: first entry is query, rest are subject sequences</div>
+      <label class="form-label" style="display:flex;align-items:center;gap:8px;cursor:pointer">
+        <input type="checkbox" id="blast-batch-toggle" style="width:16px;height:16px;accent-color:var(--blue,#1565C0)"> Batch Mode
+        <span style="font-size:11px;color:var(--muted);font-weight:400">(require Pro)</span>
+      </label>
+      <div id="blast-batch-section" style="display:none;margin-top:8px">
+        <textarea id="blast-batch-seqs" class="form-textarea" rows="5" placeholder="Paste multiple sequences in FASTA format&#10;&#10;>seq1&#10;ATCGATCGATCGATCG&#10;>seq2&#10;GCTAGCTAGCTAGCTA&#10;>seq3&#10;CGATCGATCGATCGA"></textarea>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <input type="file" id="blast-batch-file" accept=".fa,.fasta,.txt,.fna" class="form-input" style="flex:1;padding:6px;font-size:12px">
+          <button type="button" class="btn-secondary btn-sm" id="blast-batch-clear" style="white-space:nowrap">Clear</button>
+        </div>
+        <div id="blast-batch-info" style="font-size:12px;color:var(--muted);margin-top:6px"></div>
+        <button type="button" class="btn-primary" id="btn-blast-batch" style="width:100%;justify-content:center;margin-top:8px;display:none">
+          <span class="spinner" id="blast-batch-sp"></span>
+          <span id="blast-batch-txt">Run Batch BLAST</span>
+        </button>
+        <div id="blast-batch-progress"></div>
+      </div>
     </div>
     <div class="form-group">
       <label class="form-label">Mode</label>
@@ -526,6 +540,14 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </div>
   </div>
 </div>
+</div>
+<div class="panel-card" id="blast-batch-results-panel" style="display:none">
+  <div class="panel-head">
+    <h3>Batch Results <span id="blast-batch-count" class="results-count"></span></h3>
+  </div>
+  <div class="panel-body scroll-wrap" id="blast-batch-results">
+    <div style="padding:60px 20px;text-align:center;color:var(--muted);font-size:13px">Run a batch to see results.</div>
+  </div>
 </div>
 </form>
 <div class="seo-content" style="max-width:var(--max-w);margin:0 auto;padding:48px 24px 24px">
@@ -689,6 +711,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <script defer src="/search-index.js"></script>
 <script defer src="/auth-shared.js"></script>
 <script defer src="/feature-gate.js"></script>
+<script defer src="/batch-ui.js"></script>
 <script defer src="/results-ui.js"></script>
 <script>
 var AUTH_MODE='login';
@@ -724,7 +747,84 @@ var p=data.params||{};document.getElementById('bparams').textContent='Program: '
 });
 var bm=document.getElementById('btn-b-msa');if(bm)bm.addEventListener('click',async function(){if(!await requireFeature('export_pdf'))return});
 var bd=document.getElementById('btn-b-dl');if(bd)bd.addEventListener('click',async function(){if(!await requireFeature('export_pdf'))return});
+
+// ── Batch BLAST ──────────────────────────────────────────────────────────
+var bt=document.getElementById('blast-batch-toggle'),bs=document.getElementById('blast-batch-section');
+if(bt&&bs)bt.addEventListener('change',function(){
+  bs.style.display=bt.checked?'block':'none';
+  if(!bt.checked){document.getElementById('blast-batch-results-panel').style.display='none';}
 });
+
+var bf=document.getElementById('blast-batch-file');
+if(bf)BUI.fileHandler('blast-batch-file','blast-batch-seqs','blast-batch-info','btn-blast-batch');
+
+var bc=document.getElementById('blast-batch-clear');
+if(bc)bc.addEventListener('click',function(){
+  document.getElementById('blast-batch-seqs').value='';
+  document.getElementById('blast-batch-info').textContent='';
+  document.getElementById('btn-blast-batch').style.display='none';
+  document.getElementById('blast-batch-progress').innerHTML='';
+});
+
+var bseqs=document.getElementById('blast-batch-seqs');
+if(bseqs)bseqs.addEventListener('input',function(){
+  var c=BUI.count(this.value);
+  var info=document.getElementById('blast-batch-info');
+  if(c){info.textContent=c+' sequences detected';document.getElementById('btn-blast-batch').style.display='inline-flex';}
+  else{info.textContent='';document.getElementById('btn-blast-batch').style.display='none';}
+});
+
+var bbb=document.getElementById('btn-blast-batch');
+if(bbb)bbb.addEventListener('click',async function(){
+  if(!await requireFeature('batch'))return;
+  var text=document.getElementById('blast-batch-seqs').value;
+  var seqs=BUI.parse(text);
+  if(!seqs.length)return;
+  var usageCheck=await BUI.checkSize(seqs.length);
+  if(!usageCheck)return;
+  var sp=document.getElementById('blast-batch-sp'),txt=document.getElementById('blast-batch-txt');
+  var pp=document.getElementById('blast-batch-progress');
+  sp.style.display='inline-block';txt.textContent='Analysing…';
+  var tkn=BUI.token(),api=BUI.API;
+  var allResults=[],allErrors=[];
+  for(var i=0;i<seqs.length;i++){
+    BUI.progress(pp,i+1,seqs.length);
+    try{
+      var db=document.getElementById('bdb').value,org=document.getElementById('borg').value.trim(),mode=(document.getElementById('bmode')||{}).value||'auto';
+      var res=await fetch(api+'/api/primer/blast',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sequence:seqs[i].sequence,sequences:[seqs[i].sequence],database:db,organism:org||undefined,mode:mode})});
+      var data=await res.json();
+      if(res.ok){
+        allResults.push({name:seqs[i].name,sequence:seqs[i].sequence,blast:data});
+      }else{
+        allErrors.push({name:seqs[i].name,error:data.error||'Error'});
+      }
+    }catch(e){allErrors.push({name:seqs[i].name,error:e.message});}
+  }
+  BUI.progress(pp,seqs.length,seqs.length);
+  sp.style.display='none';txt.textContent='Run Batch BLAST';
+  // Record usage
+  if(tkn&&allResults.length){fetch(api+'/api/usage/record',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+tkn},body:JSON.stringify({tool:'blast',sequences_count:allResults.length})}).catch(function(){});}
+  // Render results
+  var panel=document.getElementById('blast-batch-results-panel');
+  panel.style.display='block';
+  var rp=document.getElementById('blast-batch-results');
+  var h='';
+  if(allErrors.length)h+='<div class="error-card" style="margin-bottom:12px">'+allErrors.length+' failed</div>';
+  for(var ri=0;ri<allResults.length;ri++){
+    var r=allResults[ri],hits=r.blast.results||[],total=r.blast.total||0;
+    h+='<div class="panel-card" style="margin-bottom:12px"><div class="panel-head"><h3>'+r.name+'</h3><span class="results-count">('+total+' hits)</span></div><div class="panel-body scroll-wrap" style="max-height:200px;overflow-y:auto;font-size:11px">';
+    if(!total){h+='<div style="padding:20px;text-align:center;color:var(--muted)">No matches.</div>';}
+    else{
+      h+='<table style="width:100%;border-collapse:collapse"><thead><tr style="background:var(--slate);font-weight:700"><th style="padding:6px 8px;text-align:left">Accession</th><th style="padding:6px 8px;text-align:left">Description</th><th style="padding:6px 8px;text-align:right">Score</th><th style="padding:6px 8px;text-align:right">E-value</th><th style="padding:6px 8px;text-align:right">Identity</th></tr></thead><tbody>';
+      hits.forEach(function(hh){var a=hh.accession||hh.id||'\u2014',d=_pa(hh.description||hh.title||'\u2014'),s=hh.bit_score||hh.score||0,e=hh.e_value||hh.expect||0,i=hh.identity||hh.percent_identity||0;h+='<tr style="border-bottom:1px solid var(--slate-border)"><td style="padding:6px 8px;font-family:monospace;font-weight:600">'+a+'</td><td style="padding:6px 8px;max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+d+'</td><td style="padding:6px 8px;text-align:right;font-family:monospace">'+(typeof s==='number'?s.toFixed(1):s)+'</td><td style="padding:6px 8px;text-align:right;font-family:monospace">'+(typeof e==='number'&&e<1e-4?e.toExponential(2):(typeof e==='number'?e.toFixed(4):e))+'</td><td style="padding:6px 8px;text-align:right;font-family:monospace">'+(typeof i==='number'?i.toFixed(1)+'%':i)+'</td></tr>'});
+      h+='</tbody></table>';
+    }
+    h+='</div></div>';
+  }
+  if(allResults.length)h+='<button type="button" class="btn-secondary btn-sm" onclick="BUI.downloadCSV('+JSON.stringify(allResults.map(function(r){return{name:r.name,total_hits:(r.blast.results||[]).length}}))+',[\'name\',\'total_hits\'],\'blast_batch.csv\')">⬇ Download CSV</button>';
+  rp.innerHTML=h||'<div style="padding:60px 20px;text-align:center;color:var(--muted)">All sequences failed.</div>';
+});
+
 </script>
 </body>
 </html>

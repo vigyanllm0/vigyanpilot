@@ -1319,6 +1319,30 @@ async function runDocking() {
   $('seq-error').classList.remove('show');
   $('smiles-error').classList.remove('show');
   $('protein-seq').classList.remove('error');
+  // Gate: batch docking (multiple SMILES) needs Pro
+  if (smilesList.length > 1 && !(await requireFeature('batch'))) {
+    $('run-btn').disabled = false;
+    $('run-spinner').classList.remove('show');
+    $('run-btn-text').textContent = 'Run Docking';
+    return;
+  }
+  // Gate: daily usage check
+  var tkn = sessionStorage.getItem('pf_token') || localStorage.getItem('pf_token');
+  if (tkn) {
+    try {
+      var _ur = await fetch(API + '/api/usage/check?tool=docking', { headers: { 'Authorization': 'Bearer ' + tkn } });
+      if (_ur.ok) {
+        var _ud = await _ur.json();
+        if (!_ud.can_analyze) {
+          $('run-btn').disabled = false;
+          $('run-spinner').classList.remove('show');
+          $('run-btn-text').textContent = 'Run Docking';
+          showUpgradeGate({ tier: 'pro', label: 'Pro', desc: 'You\'ve used all ' + _ud.daily_limit + ' daily analyses. Upgrade to Pro for more.' });
+          return;
+        }
+      }
+    } catch (_ue) {}
+  }
   // Reset pipeline UI
   resetPipeline();
   $('empty-state').style.display = 'none';
@@ -1355,6 +1379,14 @@ async function runDocking() {
       return;
     }
     var jobId = submitResult.job_id;
+    // Record usage
+    if (authToken) {
+      fetch(API + '/api/usage/record', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken },
+        body: JSON.stringify({ tool: 'docking', sequences_count: smilesList.length })
+      }).catch(function(){});
+    }
     setStage(1, 'running', 'Job ' + jobId + ' queued — awaiting Azure worker...');
     setStage(2, 'stub', 'Waiting for stage 1');
     setStage(3, 'stub', 'Waiting for stage 2');
@@ -1991,6 +2023,7 @@ if (hamburger && mobileMenu) {
 <script defer src="/search-index.js"></script>
 <script defer src="/auth-shared.js"></script>
 <script defer src="/feature-gate.js"></script>
+<script defer src="/batch-ui.js"></script>
 <script defer src="/results-ui.js"></script>
 
 <p style="font-size:12px;color:#94A3B8"><a href="/cite-vigyanllm" style="color:#2563EB">Cite this tool</a> — use the preferred citation format for VigyanLLM tools in your research.</p>

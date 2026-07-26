@@ -716,6 +716,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <script defer src="/search-index.js"></script>
 <script defer src="/auth-shared.js"></script>
 <script defer src="/feature-gate.js"></script>
+<script defer src="/batch-ui.js"></script>
 <script defer src="/results-ui.js"></script>
 <script>
 var AUTH_MODE='login';
@@ -734,6 +735,8 @@ var ba=document.getElementById('btn-msa');
 if(ba)ba.addEventListener('click',async function(){
 var seqs=_parseFasta(mi.value);if(seqs.length<2)return;
 if(seqs.length>10){var ok=await requireFeature('large_msa');if(!ok)return}
+// Check batch size limit against plan
+var bChk=await BUI.checkSize(seqs.length);if(bChk&&bChk.batch_max_seq!==undefined&&seqs.length>bChk.batch_max_seq){showUpgradeGate({tier:'pro',label:'Pro',desc:'Your plan allows '+bChk.batch_max_seq+' sequences per MSA. You have '+seqs.length+'. Upgrade to Pro for up to 50 sequences.'});return}
 var sp=document.getElementById('msa-sp'),txt=document.getElementById('msa-txt');
 sp.style.display='inline-block';txt.textContent='Aligning…';
 var tkn=sessionStorage.getItem('pf_token')||localStorage.getItem('pf_token'),api=window.VIGYAN_BACKEND_URL||'';
@@ -742,6 +745,8 @@ try{
 var res=await fetch(api+'/api/primer/msa',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sequences:seqs})});
 var data=await res.json();sp.style.display='none';txt.textContent='Run Alignment';
 if(!res.ok){document.getElementById('msa-body').innerHTML='<div style="padding:40px;text-align:center;color:var(--error)">MSA failed: '+(data.error||'Error')+'</div>';return}
+// Record usage
+if(tkn){fetch(api+'/api/usage/record',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+tkn},body:JSON.stringify({tool:'msa',sequences_count:seqs.length})}).catch(function(){});}
 _lastMsa=data;
 document.getElementById('msa-loading').style.display='none';
 document.getElementById('msa-results').style.display='none';
@@ -758,6 +763,19 @@ aln.forEach(function(r){var rid=r.id||r.name||'?',rseq=r.aligned||r.sequence||''
 });
 var df=document.getElementById('btn-dl-fa');if(df)df.addEventListener('click',async function(){if(!await requireFeature('export_pdf'))return;if(!_lastMsa){alert('Run alignment first');return};var fa=_lastMsa.fasta||'';if(!fa){alert('No alignment data');return};var b=new Blob([fa],{type:'text/plain'});var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='alignment.fa';a.click();URL.revokeObjectURL(a.href)});
 var dc=document.getElementById('btn-dl-cl');if(dc)dc.addEventListener('click',async function(){if(!await requireFeature('export_pdf'))return;if(!_lastMsa){alert('Run alignment first');return};var cl=_lastMsa.clustal||'';if(!cl){alert('No clustal data');return};var b=new Blob([cl],{type:'text/plain'});var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='alignment.aln';a.click();URL.revokeObjectURL(a.href)});
+// Wire file upload
+var mu=document.getElementById('msa-upload');
+if(mu)mu.addEventListener('change',function(){
+  var f=mu.files&&mu.files[0];if(!f)return;
+  var r=new FileReader();
+  r.onload=function(e){
+    mi.value=e.target.result;
+    var s=_parseFasta(mi.value);
+    sc.textContent=s.length;
+    tb.textContent=s.reduce(function(a,b){return a+b.sequence.length},0);
+  };
+  r.readAsText(f);
+});
 });
 </script>
 </body>

@@ -699,6 +699,7 @@ def create_app() -> Flask:
             increment_usage,
             init_db,
             log_action,
+            record_daily_usage,
             require_auth,
         )
         from primerforge.auth_routes import auth_bp
@@ -913,6 +914,8 @@ def create_app() -> Flask:
 
                 if status == "completed" and user.get("role") != "admin":
                     increment_usage(user["email"])
+                    try: record_daily_usage(user["email"], "primer", 1)
+                    except: pass
                     log_action(user["email"], "pipeline_run", f"22-step dev pipeline, {duration_ms}ms")
 
                 return jsonify({
@@ -1300,6 +1303,8 @@ def create_app() -> Flask:
                 log_action(user['email'], "pipeline_run", f"{len(normalised)} pairs, {elapsed_ms}ms")
             else:
                 increment_usage(user['email'])
+                try: record_daily_usage(user['email'], "primer", 1)
+                except: pass
                 log_action(user['email'], "pipeline_run", f"{len(normalised)} pairs, {elapsed_ms}ms")
 
         return jsonify({
@@ -1577,26 +1582,88 @@ def create_app() -> Flask:
             return err("Core not available.", "DESIGN_FAILED", 503)
         data = request.get_json(silent=True) or {}
         query_sequence = (data.get("sequence") or "").strip()
+        sequences = data.get("sequences")  # batch: list of sequences
         mode = (data.get("mode") or "auto").strip()
         database = (data.get("database") or "nt").strip()
         organism = (data.get("organism") or "").strip()
         subject_sequences = data.get("subject_sequences", [])
 
-        if not query_sequence:
-            return err("Query sequence is required.", "VALIDATION_ERROR", 400)
-        # Auto-detect: if subject_sequences provided, use local mode
+        if not query_sequence and not sequences:
+            return err("Query 'sequence' or 'sequences' (batch) is required.", "VALIDATION_ERROR", 400)
+
         import re
+
+        def _daily_check(user, tool_key):
+            if USE_POSTGRES: return {}
+            from .auth import check_daily_usage
+            usage = check_daily_usage(user["email"], tool_key)
+            if not usage["can_analyze"] and user.get("role") != "admin":
+                return {"error": "Daily limit reached.", "code": "DAILY_LIMIT", "usage": usage}
+            return {}
+
+        def _record_usage(user, tool_key, seq_count):
+            if USE_POSTGRES: return
+            try:
+                from .auth import record_daily_usage
+                record_daily_usage(user["email"], tool_key, seq_count)
+            except:
+                pass
+
+        def _auth_user():
+            u = get_current_user()
+            if not u:
+                return None, (jsonify({"error": "Authentication required.", "code": "AUTH_REQUIRED", "action": "show_auth"}), 401)
+            return u, None
+
+        def _blast_one(seq_str):
+            clean = seq_str.strip().upper().replace(" ", "").replace("\n", "")
+            if not re.match(r"^[ACGTNRYSWKMBDHV]+$", clean):
+                return None, "Invalid characters"
+            try:
+                if subject_sequences or mode == "local":
+                    from primerforge.engine.blast_viewer import run_local_blast
+                    return run_local_blast(clean, subject_sequences), None
+                else:
+                    from primerforge.engine.blast_viewer import run_remote_blast
+                    return run_remote_blast(clean, database=database, organism=organism), None
+            except Exception as exc:
+                return None, str(exc)[:200]
+
+        user, auth_err = _auth_user()
+        if auth_err: return auth_err
+
+        if sequences:
+            # Batch mode
+            n_seqs = len(sequences)
+            chk = _daily_check(user, "blast")
+            if chk.get("code") == "DAILY_LIMIT": return jsonify(chk), 402
+            if not USE_POSTGRES:
+                from .auth import check_daily_usage
+                usage = check_daily_usage(user["email"], "blast")
+                max_batch = usage.get("batch_max_seq", 1)
+                if n_seqs > max_batch:
+                    return jsonify({"error": f"Batch limit is {max_batch} sequences for your plan.", "code": "BATCH_LIMIT", "batch_max_seq": max_batch}), 402
+            results = []
+            errors = []
+            for seq in sequences:
+                r, e = _blast_one(seq)
+                if e: errors.append({"sequence": seq[:50], "error": e})
+                else: results.append(r)
+            _record_usage(user, "blast", n_seqs)
+            return jsonify({"results": results, "errors": errors, "total": len(results), "failed": len(errors)}), 200
+
         clean = query_sequence.upper().replace(" ", "").replace("\n", "")
         if not re.match(r"^[ACGTNRYSWKMBDHV]+$", clean):
             return err("Invalid sequence. Only DNA/RNA letters allowed.", "VALIDATION_ERROR", 400)
 
+        # Single sequence
+        chk = _daily_check(user, "blast")
+        if chk.get("code") == "DAILY_LIMIT": return jsonify(chk), 402
+
         try:
-            if subject_sequences or mode == "local":
-                from primerforge.engine.blast_viewer import run_local_blast
-                result = run_local_blast(query_sequence, subject_sequences)
-            else:
-                from primerforge.engine.blast_viewer import run_remote_blast
-                result = run_remote_blast(query_sequence, database=database, organism=organism)
+            result, blast_err = _blast_one(query_sequence)
+            if blast_err: return err(f"BLAST failed: {blast_err}", "BLAST_FAILED", 500)
+            _record_usage(user, "blast", 1)
             return jsonify(result), 200
         except Exception as exc:
             logger.error("BLAST error: %s", exc, exc_info=True)
@@ -2023,6 +2090,19 @@ def create_app() -> Flask:
         if not sequences or len(sequences) < 2:
             return err("At least 2 sequences are required for MSA.", "VALIDATION_ERROR", 400)
 
+        user = get_current_user()
+        if not user:
+            return jsonify({"error": "Authentication required.", "code": "AUTH_REQUIRED", "action": "show_auth"}), 401
+        n = len(sequences)
+        if not USE_POSTGRES:
+            from .auth import check_daily_usage, record_daily_usage
+            usage = check_daily_usage(user["email"], "msa")
+            if not usage["can_analyze"] and user.get("role") != "admin":
+                return jsonify({"error": "Daily limit reached.", "code": "DAILY_LIMIT", "usage": usage}), 402
+            max_batch = usage.get("batch_max_seq", 50)
+            if n > max_batch:
+                return jsonify({"error": f"Batch limit is {max_batch} sequences for your plan.", "code": "BATCH_LIMIT", "batch_max_seq": max_batch}), 402
+
         try:
             from primerforge.engine.msa_viewer import (
                 build_msa_view,
@@ -2034,12 +2114,14 @@ def create_app() -> Flask:
                 get_msa_summary,
                 process_job,
             )
-            n = len(sequences)
             if n > 500:
                 job_id = create_job(sequences, reference_id)
                 process_job(job_id)
                 job = get_job(job_id)
                 if job["status"] == "DONE":
+                    if not USE_POSTGRES:
+                        try: record_daily_usage(user["email"], "msa", n)
+                        except: pass
                     return jsonify({
                         "job_id": job_id,
                         "total_sequences": n,
@@ -2054,6 +2136,9 @@ def create_app() -> Flask:
             viewer["fasta"] = format_fasta(sequences)
             viewer["clustal"] = format_clustal(viewer.get("alignment", []))
             viewer["summary"] = get_msa_summary(viewer)
+            if not USE_POSTGRES:
+                try: record_daily_usage(user["email"], "msa", n)
+                except: pass
             return jsonify(viewer), 200
         except Exception as exc:
             logger.error("MSA error: %s", exc, exc_info=True)
@@ -2068,11 +2153,28 @@ def create_app() -> Flask:
         reference_id = data.get("reference_id")
         if not sequences or len(sequences) < 2:
             return err("At least 2 sequences required.", "VALIDATION_ERROR", 400)
+        user = get_current_user()
+        if not user:
+            return jsonify({"error": "Authentication required.", "code": "AUTH_REQUIRED", "action": "show_auth"}), 401
+        n = len(sequences)
+        if not USE_POSTGRES:
+            from .auth import check_daily_usage, record_daily_usage
+            usage = check_daily_usage(user["email"], "msa")
+            if not usage["can_analyze"] and user.get("role") != "admin":
+                return jsonify({"error": "Daily limit reached.", "code": "DAILY_LIMIT", "usage": usage}), 402
+            max_batch = usage.get("batch_max_seq", 50)
+            if n > max_batch:
+                return jsonify({"error": f"Batch limit is {max_batch} sequences for your plan.", "code": "BATCH_LIMIT", "batch_max_seq": max_batch}), 402
         from primerforge.engine.msa_viewer import create_job, process_job
         job_id = create_job(sequences, reference_id)
         import threading
         threading.Thread(target=process_job, args=(job_id,), daemon=True).start()
-        n = len(sequences)
+        if not USE_POSTGRES:
+            try:
+                from .auth import record_daily_usage
+                record_daily_usage(user["email"], "msa", n)
+            except:
+                pass
         return jsonify({
             "job_id": job_id,
             "total_sequences": n,

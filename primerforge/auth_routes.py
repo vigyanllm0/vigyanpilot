@@ -30,6 +30,36 @@ from .auth import (
 
 auth_bp = Blueprint('auth', __name__)
 
+import re as _re
+
+ACADEMIC_RE = _re.compile(
+    r'\.(edu|ac\.in|edu\.in|ac\.uk|edu\.au|ac\.nz|ac\.jp|edu\.cn|ac\.cn|'
+    r'ac\.kr|edu\.kr|ac\.th|edu\.tw|ac\.za|edu\.mx|ac\.cl|edu\.ar|'
+    r'ac\.in|edu\.sg|edu\.my|edu\.hk|ac\.id|edu\.eg|ac\.ma|edu\.vn|'
+    r'edu\.pk|ac\.ir|edu\.tr|edu\.jo|edu\.lb|ac\.il|ac\.at|ac\.be|'
+    r'ac\.bg|ac\.cy|ac\.cz|ac\.dk|ac\.ee|ac\.fi|ac\.fr|ac\.gr|'
+    r'ac\.hr|ac\.hu|ac\.ie|ac\.is|ac\.it|ac\.lu|ac\.lv|ac\.mt|'
+    r'ac\.nl|ac\.no|ac\.pl|ac\.pt|ac\.ro|ac\.se|ac\.si|ac\.sk|'
+    r'ac\.ch|ac\.uk|edu\.co|edu\.do|edu\.ec|edu\.gt|edu\.pa|'
+    r'edu\.pe|edu\.py|edu\.sv|edu\.uy|edu\.ve)'
+    r'(\.[a-z]{2})?$', _re.I
+)
+
+
+def _is_academic_email(email: str) -> bool:
+    """Check if email domain is a recognized academic institution."""
+    parts = email.strip().lower().split('@')
+    if len(parts) != 2:
+        return False
+    domain = parts[1]
+    # Direct match on common academic TLDs
+    if ACADEMIC_RE.search(domain):
+        return True
+    # Subdomain pattern: *.uni-*.edu, *.university.*
+    if '.edu.' in domain or '.ac.' in domain:
+        return True
+    return False
+
 
 @auth_bp.route('/api/auth/register', methods=['POST'])
 def register():
@@ -53,14 +83,15 @@ def register():
         return jsonify({"error": "Email already registered. Please login."}), 409
 
     pw_hash = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
+    is_acad = 1 if _is_academic_email(email) else 0
     db.execute(
-        "INSERT INTO users (email, password_hash, name, role) VALUES (?, ?, ?, ?)",
-        (email, pw_hash, name, "user")
+        "INSERT INTO users (email, password_hash, name, role, is_academic) VALUES (?, ?, ?, ?, ?)",
+        (email, pw_hash, name, "user", is_acad)
     )
     db.commit()
 
     token = create_token(email, "user")
-    log_action(email, "register", "New account created")
+    log_action(email, "register", f"New account created{' (academic)' if is_acad else ''}")
 
     return jsonify({
         "token": token,
@@ -167,6 +198,23 @@ def login():
         max_age=86400 * 7, path='/'
     )
     return resp, 200
+
+
+@auth_bp.route('/api/auth/verify-academic', methods=['POST'])
+@require_auth
+def verify_academic():
+    """Check if the user's email is from an academic institution and set the flag."""
+    email = g.user['email']
+    is_acad = 1 if _is_academic_email(email) else 0
+    db = get_db()
+    db.execute("UPDATE users SET is_academic=? WHERE email=?", (is_acad, email))
+    db.commit()
+    log_action(email, "verify_academic", f"Academic email: {bool(is_acad)}")
+    return jsonify({
+        "is_academic": bool(is_acad),
+        "email": email,
+        "message": "Academic status verified." if is_acad else "This email does not appear to be from an academic institution."
+    }), 200
 
 
 @auth_bp.route('/api/auth/me', methods=['GET'])
