@@ -1,7 +1,7 @@
 # AGENTS.md — Agent Handoff & Tracking
 
-**Session:** Phase 5 (Monetization — Pricing + Gating Phase 1+2) — Completed Jul 2026  
-**Next Sprint:** Phase 3 (Dashboard, saved results, exports) + review → git commit/push
+**Session:** Phases 1–3 (Monetization — Pricing, Gating, Dashboard) — Completed Jul 2026  
+**Next Sprint:** Phase 4 (Batch Processing + Academic Email Verification) + review → git commit/push
 
 ---
 
@@ -364,6 +364,17 @@ Added "Scientific References" sections with proper citations to 8 tool pages:
 | `frontend/docking.html` | Added results-ui.js include |
 | `frontend/sitemap.xml` | Added /dashboard URL |
 | `frontend/api/sitemap.xml.js` | Added /dashboard to CORE array |
+
+## Scoreboard
+| Phase | Status | Items |
+|-------|--------|-------|
+| **Phase 1** — Pricing & Razorpay | ✅ Complete | 7/7 |
+| **Phase 2** — Usage & Gating | ✅ Complete | 7/7 |
+| **Phase 3** — Dashboard & Exports | ✅ Complete | 6/6 |
+| **Phase 4** — Batch & Academic | ⬜ Not started | ~4 |
+| **Phase 5** — Team & Admin | ⬜ Not started | ~4 |
+| **Phase 6** — API & Landing | ⬜ Not started | ~4 |
+| **Phase 7** — SEO Comparisons | ⬜ Not started | ~4 |
 
 ## Key Commands
 - Python bulk-replace scripts for 200+ file operations
