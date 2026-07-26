@@ -72,10 +72,19 @@ function renderAuth(){
 function renderGoogleBtn(){
   var w=document.getElementById('gbtn-wrap');
   if(!w)return;
-  if(typeof google==='undefined'||!google.accounts||!google.accounts.id){w.style.display='none';return}
-  w.style.display='';
-  google.accounts.id.initialize({client_id:'598272150916-57hl3s7jijaamh3er18alk93gj2op6jt.apps.googleusercontent.com',callback:handleGoogleCredential,cancel_on_tap_outside:false});
-  google.accounts.id.renderButton(w,{type:'standard',shape:'pill',theme:'outline',size:'large',text:isRegister?'signup_with':'signin_with',width:328});
+  if(typeof google!=='undefined'&&google.accounts&&google.accounts.id){
+    w.style.display='';
+    google.accounts.id.initialize({client_id:'598272150916-57hl3s7jijaamh3er18alk93gj2op6jt.apps.googleusercontent.com',callback:handleGoogleCredential,cancel_on_tap_outside:false});
+    google.accounts.id.renderButton(w,{type:'standard',shape:'pill',theme:'outline',size:'large',text:isRegister?'signup_with':'signin_with',width:328});
+    return;
+  }
+  // Google SDK not loaded yet — load dynamically
+  w.style.display='none';
+  var s=document.createElement('script');
+  s.src='https://accounts.google.com/gsi/client?hl=en';
+  s.async=true;
+  s.onload=function(){renderGoogleBtn()};
+  document.head.appendChild(s);
 }
 
 function handleGoogleCredential(res){

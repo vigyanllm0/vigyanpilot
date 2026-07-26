@@ -251,7 +251,7 @@ def get_token_balance():
 def create_order():
     """Create a Razorpay order. Server-authoritative pricing — never trusts client amounts."""
     data = request.get_json(silent=True) or {}
-    product_id = data.get("product_id", "")
+    product_id = data.get("product_id") or data.get("plan_id", "")
     raw_quantity = data.get("quantity", 1)
 
     # Type safety: reject non-string product_id
