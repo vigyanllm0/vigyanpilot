@@ -93,6 +93,20 @@ nav{position:sticky;top:0;background:var(--navy);z-index:1000;height:72px;border
 .user-popup-item:hover{background:#F1F5F9;color:#0F172A}
 .user-popup-logout{color:#EF4444;margin-top:8px}
 .user-popup-logout:hover{background:#FEF2F2;color:#DC2626}
+.auth-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center;padding:24px}
+.auth-overlay.open{display:flex}
+.auth-overlay .auth-card{background:#fff;border-radius:16px;padding:36px;width:100%;max-width:400px;box-shadow:0 24px 64px rgba(0,0,0,.25);position:relative;max-height:90vh;overflow-y:auto}
+.auth-overlay .auth-card h2{font-family:var(--font-h);font-size:20px;font-weight:800;color:var(--text);margin-bottom:2px}
+.auth-overlay .auth-card .sub{font-size:13px;color:var(--muted);margin-bottom:24px}
+.auth-overlay .auth-card .field{margin-bottom:14px}
+.auth-overlay .auth-card .field label{display:block;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text2);margin-bottom:5px}
+.auth-overlay .auth-card .field input{width:100%;padding:11px 13px;border:1px solid var(--outline);border-radius:8px;font-family:var(--font-b);font-size:14px;color:var(--text);transition:border-color .15s}
+.auth-overlay .auth-card .field input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(21,101,192,.1)}
+.auth-overlay .auth-card .auth-btn{width:100%;padding:13px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-family:var(--font-b);font-size:14px;font-weight:700;cursor:pointer;transition:opacity .15s}
+.auth-overlay .auth-card .auth-btn:hover{opacity:.9}
+.auth-overlay .auth-card .toggle-link{text-align:center;font-size:12px;color:var(--muted);margin-top:14px}
+.auth-overlay .auth-card .toggle-link a{color:var(--blue);font-weight:600;cursor:pointer}
+.auth-overlay .auth-card .auth-err{color:#DC2626;font-size:12px;text-align:center;margin-top:8px;display:none}
 
 .nav-cta{padding:6px 20px;background:#fff;color:var(--navy);border:none;border-radius:6px;font-family:var(--font-h);font-size:12px;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:.06em;transition:all .2s;line-height:1.3}.nav-btns{gap:3px}}
 @media(max-width:480px){.nav-right{gap:4px}.nav-login{padding:5px 16px;background:transparent;color:rgba(255,255,255,.8);border:1.5px solid rgba(255,255,255,.25);border-radius:6px;font-family:var(--font-b);font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;line-height:1.3}.nav-cta{padding:6px 20px;background:#fff;color:var(--navy);border:none;border-radius:6px;font-family:var(--font-h);font-size:12px;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:.06em;transition:all .2s;line-height:1.3}.nav-btns{gap:2px}}
@@ -733,6 +747,13 @@ async function openRazorpayCheckout(order) {
   rzp.open();
 }
 </script>
+
+<!-- Auth modal (rendered by auth-shared.js) -->
+<div class="auth-overlay" id="auth-overlay">
+  <div class="auth-card">
+    <div id="auth-content"></div>
+  </div>
+</div>
 
 </body>
 </html>
