@@ -1,7 +1,7 @@
 # AGENTS.md — Agent Handoff & Tracking
 
-**Session:** Phase 5 (ORACLE FAQ Generation) — Completed Jul 2026  
-**Next Sprint:** User review → git commit/push
+**Session:** Phase 5 (Monetization — Pricing + Gating Phase 1+2) — Completed Jul 2026  
+**Next Sprint:** Phase 3 (Dashboard, saved results, exports) + review → git commit/push
 
 ---
 
@@ -324,7 +324,42 @@ Added "Scientific References" sections with proper citations to 8 tool pages:
 | `frontend/pcr-analysis.html` | Improved meta desc |
 | `frontend/pricing.html` | Improved meta desc |
 
+### Phase 5: Monetization — Pricing + Gating (Phase 1+2) ✅
+- **price_registry.py**: Rewritten with 4-tier PlanConfig dataclass (Free/Pro/Lab/Enterprise), PLAN_REGISTRY, academic discount (30%), TIER_LIMITS dict
+- **payment_routes.py**: Rewritten with subscription-aware create-order, verify-payment, webhook, /api/usage/check, /api/usage/record, /api/payments/status, /api/payments/pricing endpoints
+- **auth.py**: Updated with daily_usage/monthly_usage tables, plan fields on users, plan-aware usage checking functions
+- **pricing.html**: Rewritten with 4-tier cards, monthly/yearly billing toggle (~28% savings callout), 18-row comparison table, 8 FAQ items, Razorpay JS for subscription flow
+- **payment-success.html**: Updated from token-based to subscription-aware (plan name, billing cycle, Manage Plan + Start Using Tools CTAs)
+- **payment-failed.html**: Updated to subscription-context (Try Again → /pricing, subscription error messaging)
+- **checkout.html**: New standalone order summary page with plan details, academic discount display, Razorpay integration
+- **feature-gate.js**: New shared module — 11 feature-to-tier mappings, `requireFeature()`, `showUpgradeGate()`, `showAuthGate()`
+- **primer.html**: Added gate modal CSS/HTML, feature-gate.js include; gated runBatchAnalysis(batch), downloadPDFReport(export_pdf), downloadVendorReport(export_pdf); wired daily usage check into runAutoDesign
+- **docking.html**: Added gate modal CSS/HTML, feature-gate.js include; gated downloadResults(export_pdf)
+- **blast.html**: Fixed truncated page — added auth modal HTML/CSS, gate modal, footer, search-index.js, auth-shared.js, feature-gate.js includes, proper closing tags
+- **msa.html**: Fixed truncated page — same fixes as blast.html (was ending mid-tag with `</di`)
+- **blast.html** (continued): Added full BLAST JS handler (daily usage check + API call + results table), gated View MSA (export_pdf) and Download FASTA (export_pdf)
+- **msa.html** (continued): Added full MSA JS handler (FASTA parser, large_msa gating at 10+ seqs, daily usage check + API call + stats/alignment viewer), gated Download FASTA/Clustal (export_pdf)
+- **auth-shared.js**: Added `loadPlanUI()` — fetches plan status, injects plan badge into user popup header, adds 3 gated nav items (Team Collaboration/Lab, API Access/Pro, Admin Panel/Lab) with lock icons, shows Upgrade CTA for free (→Pro) and pro (→Lab) users
+
+### Files Changed (monetization session)
+| File | Change |
+|------|--------|
+| `primerforge/price_registry.py` | Rewritten: 4-tier PlanConfig, PLAN_REGISTRY, academic discount |
+| `primerforge/payment_routes.py` | Rewritten: subscription create/verify/status/usage/webhook endpoints |
+| `primerforge/auth.py` | Updated: daily_usage + monthly_usage tables, plan-aware functions |
+| `frontend/pricing.html` | Rewritten: 4-tier cards, billing toggle, 18-row comparison, FAQ, Razorpay |
+| `frontend/payment-success.html` | Updated: subscription-aware (plan/billing, Manage Plan CTA) |
+| `frontend/payment-failed.html` | Updated: subscription-error context, /pricing retry link |
+| `frontend/checkout.html` | New: order summary with plan details + Razorpay checkout |
+| `frontend/feature-gate.js` | New: shared module with requireFeature() + upgrade modals |
+| `frontend/primer.html` | Gate modal CSS/HTML, feature-gate.js, gated batch/export, usage check |
+| `frontend/docking.html` | Gate modal CSS/HTML, feature-gate.js, gated downloadResults |
+| `frontend/blast.html` | Fixed truncated page: auth modal, gate modal, footer, scripts, proper HTML; added BLAST JS handler + gated export/msa buttons |
+| `frontend/msa.html` | Fixed truncated page (was `</di`): full auth + gate + footer + scripts; added MSA JS handler + gated downloads |
+| `frontend/auth-shared.js` | Added nav gating: plan badge injection, locked gated items, upgrade CTA |
+
 ## Key Commands
 - Python bulk-replace scripts for 200+ file operations
 - `import os, glob` loop with `string.replace()` for safe batch editing
+- `grep -n` for finding exact line numbers in large HTML files
 - No git push until user approval

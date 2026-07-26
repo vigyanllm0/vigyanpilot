@@ -110,6 +110,12 @@ def init_db():
             paid_runs INTEGER DEFAULT 0,
             dock_run_count INTEGER DEFAULT 0,
             dock_paid_runs INTEGER DEFAULT 0,
+            plan TEXT DEFAULT 'free',
+            billing_cycle TEXT DEFAULT 'monthly',
+            plan_activated_at REAL DEFAULT 0,
+            plan_expires_at REAL DEFAULT 0,
+            is_academic INTEGER DEFAULT 0,
+            academic_discount REAL DEFAULT 0,
             created_at REAL DEFAULT (strftime('%s','now')),
             last_login REAL DEFAULT 0,
             locked_until REAL DEFAULT 0,
@@ -129,6 +135,23 @@ def init_db():
             created_at REAL DEFAULT (strftime('%s','now'))
         );
 
+        CREATE TABLE IF NOT EXISTS daily_usage (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_email TEXT NOT NULL,
+            date TEXT NOT NULL,
+            tool TEXT DEFAULT '',
+            sequences_count INTEGER DEFAULT 0,
+            created_at REAL DEFAULT (strftime('%s','now'))
+        );
+
+        CREATE TABLE IF NOT EXISTS monthly_usage (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_email TEXT NOT NULL,
+            year_month TEXT NOT NULL,
+            api_calls INTEGER DEFAULT 0,
+            created_at REAL DEFAULT (strftime('%s','now'))
+        );
+
         CREATE TABLE IF NOT EXISTS payments (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             user_email TEXT NOT NULL,
@@ -137,6 +160,8 @@ def init_db():
             status TEXT DEFAULT 'pending',
             runs_purchased INTEGER DEFAULT 1,
             product_type TEXT DEFAULT 'top_up',
+            plan_id TEXT DEFAULT '',
+            billing_cycle TEXT DEFAULT 'monthly',
             created_at REAL DEFAULT (strftime('%s','now')),
             verified_at REAL DEFAULT 0
         );
@@ -194,6 +219,33 @@ def init_db():
             created_at REAL DEFAULT (strftime('%s','now'))
         );
     """)
+
+    # Backfill plan columns for existing users (if missing in older schema)
+    try:
+        db.execute("ALTER TABLE users ADD COLUMN plan TEXT DEFAULT 'free'")
+    except sqlite3.OperationalError:
+        pass  # column already exists
+    try:
+        db.execute("ALTER TABLE users ADD COLUMN billing_cycle TEXT DEFAULT 'monthly'")
+    except sqlite3.OperationalError:
+        pass
+    try:
+        db.execute("ALTER TABLE users ADD COLUMN plan_activated_at REAL DEFAULT 0")
+    except sqlite3.OperationalError:
+        pass
+    try:
+        db.execute("ALTER TABLE users ADD COLUMN plan_expires_at REAL DEFAULT 0")
+    except sqlite3.OperationalError:
+        pass
+    try:
+        db.execute("ALTER TABLE users ADD COLUMN is_academic INTEGER DEFAULT 0")
+    except sqlite3.OperationalError:
+        pass
+    try:
+        db.execute("ALTER TABLE users ADD COLUMN academic_discount REAL DEFAULT 0")
+    except sqlite3.OperationalError:
+        pass
+    db.commit()
 
     # Ensure admin exists (only if ADMIN_PASSWORD is configured)
     if ADMIN_PASSWORD:
@@ -400,4 +452,115 @@ def log_action(email: str, action: str, details: str = ""):
     db = get_db()
     db.execute("INSERT INTO usage_log (user_email, action, details) VALUES (?, ?, ?)",
                (email, action, details))
+    db.commit()
+
+
+# ── Plan-Aware Usage System ────────────────────────────────────────────────
+# Used by the new subscription-based 4-tier model (Free/Pro/Lab/Enterprise)
+
+def get_user_plan(email: str) -> str:
+    """Get the user's current plan tier. Returns 'free' as default."""
+    db = get_db()
+    row = db.execute("SELECT plan, plan_expires_at FROM users WHERE email=?", (email,)).fetchone()
+    if not row:
+        return "free"
+    plan = row["plan"] or "free"
+    expires_at = row["plan_expires_at"] or 0
+    # If plan has expired, fall back to free
+    now = time.time()
+    if plan != "free" and expires_at > 0 and expires_at < now:
+        return "free"
+    return plan
+
+
+def _today_str() -> str:
+    return time.strftime("%Y-%m-%d")
+
+
+def _this_month_str() -> str:
+    return time.strftime("%Y-%m")
+
+
+def check_daily_usage(email: str, tool: str = "") -> dict:
+    """Check how many analyses the user has done today."""
+    db = get_db()
+    today = _today_str()
+    row = db.execute(
+        "SELECT COALESCE(SUM(sequences_count), 0) as total FROM daily_usage WHERE user_email=? AND date=?",
+        (email, today)
+    ).fetchone()
+    daily_used = row["total"] if row else 0
+
+    plan = get_user_plan(email)
+    from .price_registry import get_tier_limits
+    limits = get_tier_limits(plan)
+    daily_limit = limits["daily_analyses"]
+    batch_limit = limits["batch_max_seq"]
+
+    return {
+        "plan": plan,
+        "daily_limit": daily_limit,
+        "daily_used": daily_used,
+        "daily_remaining": max(0, daily_limit - daily_used),
+        "batch_max_seq": batch_limit,
+        "can_analyze": daily_used < daily_limit,
+    }
+
+
+def check_monthly_api_usage(email: str) -> dict:
+    """Check API call usage for the current month."""
+    db = get_db()
+    year_month = _this_month_str()
+    row = db.execute(
+        "SELECT api_calls FROM monthly_usage WHERE user_email=? AND year_month=?",
+        (email, year_month)
+    ).fetchone()
+    api_used = row["api_calls"] if row else 0
+
+    plan = get_user_plan(email)
+    from .price_registry import get_tier_limits
+    limits = get_tier_limits(plan)
+    api_limit = limits["api_calls_per_month"]
+
+    return {
+        "api_used": api_used,
+        "api_limit": api_limit,
+        "api_remaining": max(0, api_limit - api_used),
+    }
+
+
+@_retry_on_lock(max_attempts=3)
+def record_daily_usage(email: str, tool: str = "", sequences_count: int = 1):
+    """Record a usage event for daily/monthly tracking."""
+    db = get_db()
+    today = _today_str()
+    now = time.time()
+    db.execute(
+        "INSERT INTO daily_usage (user_email, date, tool, sequences_count, created_at) VALUES (?, ?, ?, ?, ?)",
+        (email, today, tool, sequences_count, now)
+    )
+    # Also increment the legacy run_count for backward compatibility
+    db.execute("UPDATE users SET run_count = run_count + 1 WHERE email=?", (email,))
+    db.commit()
+
+
+@_retry_on_lock(max_attempts=3)
+def record_api_usage(email: str, calls: int = 1):
+    """Record API call usage for the current month."""
+    db = get_db()
+    year_month = _this_month_str()
+    existing = db.execute(
+        "SELECT id, api_calls FROM monthly_usage WHERE user_email=? AND year_month=?",
+        (email, year_month)
+    ).fetchone()
+    if existing:
+        db.execute(
+            "UPDATE monthly_usage SET api_calls = api_calls + ? WHERE id=?",
+            (calls, existing["id"])
+        )
+    else:
+        db.execute(
+            "INSERT INTO monthly_usage (user_email, year_month, api_calls) VALUES (?, ?, ?)",
+            (email, year_month, calls)
+        )
     db.commit()

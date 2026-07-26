@@ -1,37 +1,63 @@
 #!/usr/bin/env python3
 """
-VigyanLLM Price Registry — Disrupted Pricing Model
-======================================================
-Unified subscription model — each plan includes primer design + docking credits.
+VigyanLLM Price Registry — 4-Tier Subscription Model
+=====================================================
+Free | Pro (₹699/mo or ₹5,999/yr) | Lab (₹3,999/mo or ₹32,999/yr) | Enterprise (custom)
 
 Tiers:
-  - Free Trial: 2 free runs (primer) + 2 free docking runs per new user
-  - Daily:        ₹99/d → 5 designs + 2 docking
-  - Individual: ₹2,499/mo → 250 designs + 50 docking
-  - Institutional: ₹14,999/mo → 2,000 designs + 500 docking, 5 seats
-  - Corporate: ₹49,999/mo → 7,500 designs + 2,000 docking, unlimited seats
-  - Top-Up: ₹99/run (covers both primer design and molecular docking)
+  - Free:        ₹0     → 5 analyses/day, 1 seq/analysis, no batch, no API, no export
+  - Pro Monthly:  ₹699  → 100 analyses/day, 50 seq/batch, API 1000 calls/mo, PDF/PPT export
+  - Pro Yearly:  ₹5,999 → same as Pro Monthly (2 months free equivalent)
+  - Lab Monthly:  ₹3,999 → 500 analyses/day, 200 seq/batch, team collab (5 seats), admin
+  - Lab Yearly:  ₹32,999 → same as Lab Monthly
+  - Enterprise:  custom → unlimited everything, SSO, SLA, on-premise, dedicated support
 """
 
 from dataclasses import dataclass
 from enum import Enum
 
 
-class ProductType(Enum):
-    SUBSCRIPTION = "subscription"
-    TOP_UP = "top_up"
+class BillingCycle(Enum):
+    MONTHLY = "monthly"
+    YEARLY = "yearly"
+    ONETIME = "one_time"
+    CUSTOM = "custom"
+
+
+class PlanTier(Enum):
+    FREE = "free"
+    PRO = "pro"
+    LAB = "lab"
+    ENTERPRISE = "enterprise"
 
 
 @dataclass(frozen=True)
-class ProductConfig:
-    product_id: str
+class PlanConfig:
+    plan_id: str
+    tier: PlanTier
     display_name: str
-    product_type: ProductType
-    price_inr: int              # Exact INR (integer, no decimals)
-    designs_included: int       # Monthly design quota (0 for top-up)
-    dock_runs_included: int     # Monthly docking quota (0 for top-up)
-    period: str                 # 'daily', 'monthly', 'one_time'
-    max_seats: int              # Multi-user seats
+    billing: BillingCycle
+    price_inr: int
+    daily_analyses: int
+    batch_max_seq: int
+    api_calls_per_month: int
+    max_seats: int
+    has_export_pdf: bool
+    has_export_ppt: bool
+    has_saved_results: bool
+    has_advanced_docking: bool
+    has_msa_large: bool
+    has_crispr_offtarget: bool
+    has_collaboration: bool
+    has_admin_panel: bool
+    has_lims_hooks: bool
+    has_custom_branding: bool
+    has_sso: bool
+    has_on_premise: bool
+    has_dedicated_support: bool
+    has_sla: bool
+    has_custom_tool_dev: bool
+    period: str
     description: str
     is_active: bool = True
 
@@ -40,111 +66,254 @@ class ProductConfig:
 # CANONICAL PRICING — Single source of truth
 # ═══════════════════════════════════════════════════════════════════════════
 
-PRICE_REGISTRY: dict[str, ProductConfig] = {
-    "daily": ProductConfig(
-        product_id="daily",
-        display_name="Daily Pass",
-        product_type=ProductType.SUBSCRIPTION,
-        price_inr=99,
-        designs_included=5,
-        dock_runs_included=2,
-        period="daily",
+PLAN_REGISTRY: dict[str, PlanConfig] = {
+    # ── Free Tier ──────────────────────────────────────────────────────────
+    "free": PlanConfig(
+        plan_id="free",
+        tier=PlanTier.FREE,
+        display_name="Free",
+        billing=BillingCycle.ONETIME,
+        price_inr=0,
+        daily_analyses=5,
+        batch_max_seq=1,
+        api_calls_per_month=0,
         max_seats=1,
-        description="5 primer designs + 2 docking runs — valid for 24 hours"
+        has_export_pdf=False,
+        has_export_ppt=False,
+        has_saved_results=False,
+        has_advanced_docking=False,
+        has_msa_large=False,
+        has_crispr_offtarget=False,
+        has_collaboration=False,
+        has_admin_panel=False,
+        has_lims_hooks=False,
+        has_custom_branding=False,
+        has_sso=False,
+        has_on_premise=False,
+        has_dedicated_support=False,
+        has_sla=False,
+        has_custom_tool_dev=False,
+        period="lifetime",
+        description="All 10 tools, basic limits, community support"
     ),
-    "individual": ProductConfig(
-        product_id="individual",
-        display_name="Individual / Researcher",
-        product_type=ProductType.SUBSCRIPTION,
-        price_inr=2499,
-        designs_included=250,
-        dock_runs_included=50,
-        period="monthly",
+    # ── Pro Monthly ────────────────────────────────────────────────────────
+    "pro-monthly": PlanConfig(
+        plan_id="pro-monthly",
+        tier=PlanTier.PRO,
+        display_name="Pro",
+        billing=BillingCycle.MONTHLY,
+        price_inr=699,
+        daily_analyses=100,
+        batch_max_seq=50,
+        api_calls_per_month=1000,
         max_seats=1,
-        description="250 primer designs + 50 docking runs/month — ~₹8.33/design"
-    ),
-    "institutional": ProductConfig(
-        product_id="institutional",
-        display_name="Lab / Academic Institute",
-        product_type=ProductType.SUBSCRIPTION,
-        price_inr=14999,
-        designs_included=2000,
-        dock_runs_included=500,
+        has_export_pdf=True,
+        has_export_ppt=True,
+        has_saved_results=True,
+        has_advanced_docking=True,
+        has_msa_large=True,
+        has_crispr_offtarget=True,
+        has_collaboration=False,
+        has_admin_panel=False,
+        has_lims_hooks=False,
+        has_custom_branding=False,
+        has_sso=False,
+        has_on_premise=False,
+        has_dedicated_support=False,
+        has_sla=False,
+        has_custom_tool_dev=False,
         period="monthly",
+        description="100 analyses/day, batch processing, API access, PDF/PPT export"
+    ),
+    # ── Pro Yearly ─────────────────────────────────────────────────────────
+    "pro-yearly": PlanConfig(
+        plan_id="pro-yearly",
+        tier=PlanTier.PRO,
+        display_name="Pro",
+        billing=BillingCycle.YEARLY,
+        price_inr=5999,
+        daily_analyses=100,
+        batch_max_seq=50,
+        api_calls_per_month=1000,
+        max_seats=1,
+        has_export_pdf=True,
+        has_export_ppt=True,
+        has_saved_results=True,
+        has_advanced_docking=True,
+        has_msa_large=True,
+        has_crispr_offtarget=True,
+        has_collaboration=False,
+        has_admin_panel=False,
+        has_lims_hooks=False,
+        has_custom_branding=False,
+        has_sso=False,
+        has_on_premise=False,
+        has_dedicated_support=False,
+        has_sla=False,
+        has_custom_tool_dev=False,
+        period="yearly",
+        description="Same as Pro monthly — save 28% with annual billing"
+    ),
+    # ── Lab Monthly ────────────────────────────────────────────────────────
+    "lab-monthly": PlanConfig(
+        plan_id="lab-monthly",
+        tier=PlanTier.LAB,
+        display_name="Lab",
+        billing=BillingCycle.MONTHLY,
+        price_inr=3999,
+        daily_analyses=500,
+        batch_max_seq=200,
+        api_calls_per_month=10000,
         max_seats=5,
-        description="2,000 primer designs + 500 docking runs/month, 5 seats — ~₹6/design"
-    ),
-    "corporate": ProductConfig(
-        product_id="corporate",
-        display_name="Corporate R&D",
-        product_type=ProductType.SUBSCRIPTION,
-        price_inr=49999,
-        designs_included=7500,
-        dock_runs_included=2000,
+        has_export_pdf=True,
+        has_export_ppt=True,
+        has_saved_results=True,
+        has_advanced_docking=True,
+        has_msa_large=True,
+        has_crispr_offtarget=True,
+        has_collaboration=True,
+        has_admin_panel=True,
+        has_lims_hooks=True,
+        has_custom_branding=True,
+        has_sso=False,
+        has_on_premise=False,
+        has_dedicated_support=False,
+        has_sla=False,
+        has_custom_tool_dev=False,
         period="monthly",
-        max_seats=999,
-        description="7,500 primer designs + 2,000 docking runs/month, unlimited seats, API — ~₹5/design"
+        description="Team collaboration, admin panel, LIMS webhooks, 5 seats"
+    ),
+    # ── Lab Yearly ─────────────────────────────────────────────────────────
+    "lab-yearly": PlanConfig(
+        plan_id="lab-yearly",
+        tier=PlanTier.LAB,
+        display_name="Lab",
+        billing=BillingCycle.YEARLY,
+        price_inr=32999,
+        daily_analyses=500,
+        batch_max_seq=200,
+        api_calls_per_month=10000,
+        max_seats=5,
+        has_export_pdf=True,
+        has_export_ppt=True,
+        has_saved_results=True,
+        has_advanced_docking=True,
+        has_msa_large=True,
+        has_crispr_offtarget=True,
+        has_collaboration=True,
+        has_admin_panel=True,
+        has_lims_hooks=True,
+        has_custom_branding=True,
+        has_sso=False,
+        has_on_premise=False,
+        has_dedicated_support=False,
+        has_sla=False,
+        has_custom_tool_dev=False,
+        period="yearly",
+        description="Same as Lab monthly — save 31% with annual billing"
+    ),
+    # ── Enterprise ─────────────────────────────────────────────────────────
+    "enterprise": PlanConfig(
+        plan_id="enterprise",
+        tier=PlanTier.ENTERPRISE,
+        display_name="Enterprise",
+        billing=BillingCycle.CUSTOM,
+        price_inr=0,  # Custom pricing
+        daily_analyses=999999,
+        batch_max_seq=999999,
+        api_calls_per_month=999999,
+        max_seats=999999,
+        has_export_pdf=True,
+        has_export_ppt=True,
+        has_saved_results=True,
+        has_advanced_docking=True,
+        has_msa_large=True,
+        has_crispr_offtarget=True,
+        has_collaboration=True,
+        has_admin_panel=True,
+        has_lims_hooks=True,
+        has_custom_branding=True,
+        has_sso=True,
+        has_on_premise=True,
+        has_dedicated_support=True,
+        has_sla=True,
+        has_custom_tool_dev=True,
+        period="custom",
+        description="Unlimited everything, SSO, SLA, on-premise, dedicated support"
     ),
 }
 
-# Single unified top-up pricing — ₹99 covers ONE run (primer design OR docking)
-TOPUP_PRICE_INR: int = 99
 
-# Free trial allocation
-FREE_TRIAL_RUNS: int = 2
-FREE_DOCK_RUNS: int = 2
+# ═══════════════════════════════════════════════════════════════════════════
+# ACADEMIC DISCOUNT
+# ═══════════════════════════════════════════════════════════════════════════
+
+ACADEMIC_DISCOUNT_PCT: int = 30  # 30% off for .edu / .ac.in emails
+
+
+def get_academic_price(price_inr: int) -> int:
+    """Apply 30% academic discount, rounded to nearest rupee."""
+    return int(price_inr * (100 - ACADEMIC_DISCOUNT_PCT) / 100)
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# LIMITS BY TIER (for usage checking)
+# ═══════════════════════════════════════════════════════════════════════════
+
+TIER_LIMITS: dict[str, dict] = {
+    "free": {
+        "daily_analyses": 5,
+        "batch_max_seq": 1,
+        "api_calls_per_month": 0,
+    },
+    "pro": {
+        "daily_analyses": 100,
+        "batch_max_seq": 50,
+        "api_calls_per_month": 1000,
+    },
+    "lab": {
+        "daily_analyses": 500,
+        "batch_max_seq": 200,
+        "api_calls_per_month": 10000,
+    },
+    "enterprise": {
+        "daily_analyses": 999999,
+        "batch_max_seq": 999999,
+        "api_calls_per_month": 999999,
+    },
+}
+
+
+def get_tier_limits(tier: str) -> dict:
+    """Get usage limits for a given tier. Defaults to free."""
+    return TIER_LIMITS.get(tier, TIER_LIMITS["free"])
 
 
 # ═══════════════════════════════════════════════════════════════════════════
 # UTILITY FUNCTIONS
 # ═══════════════════════════════════════════════════════════════════════════
 
-def get_amount_paise(product_id: str, quantity: int = 1) -> int:
-    """
-    Calculate exact payment amount in paise.
-    Integer arithmetic only — no floating point.
-    """
-    if product_id in ("top_up", "dock_top_up"):
-        return quantity * TOPUP_PRICE_INR * 100
-    product = PRICE_REGISTRY.get(product_id)
-    if not product:
-        raise ValueError(f"Unknown product_id: {product_id}")
-    return product.price_inr * 100
+def get_amount_paise(plan_id: str) -> int:
+    """Calculate exact payment amount in paise. Integer arithmetic only."""
+    plan = PLAN_REGISTRY.get(plan_id)
+    if not plan:
+        raise ValueError(f"Unknown plan_id: {plan_id}")
+    return plan.price_inr * 100
 
 
-def validate_order_request(product_id: str, quantity: int) -> str | None:
-    """
-    Validate an order creation request.
-    Returns error message string or None if valid.
-    """
-    if product_id in ("top_up", "dock_top_up"):
-        if quantity < 1:
-            return "Minimum 1 design required."
-        if quantity > 100:
-            return "Maximum 100 top-up designs per order."
-        return None
-
-    if product_id not in PRICE_REGISTRY:
-        return f"Unknown plan: {product_id}"
-
-    product = PRICE_REGISTRY[product_id]
-    if not product.is_active:
-        return f"Plan {product_id} is no longer available."
-
+def validate_plan(plan_id: str) -> str | None:
+    """Validate a plan ID. Returns error message or None if valid."""
+    if plan_id not in PLAN_REGISTRY:
+        return f"Unknown plan: {plan_id}"
+    plan = PLAN_REGISTRY[plan_id]
+    if not plan.is_active:
+        return f"Plan {plan_id} is no longer available."
     return None
 
 
-def get_designs_for_product(product_id: str, quantity: int = 1) -> int:
-    """Get number of design credits for a product purchase."""
-    if product_id in ("top_up", "dock_top_up"):
-        return quantity
-    product = PRICE_REGISTRY.get(product_id)
-    return product.designs_included if product else 0
-
-
-def get_dock_runs_for_product(product_id: str, quantity: int = 1) -> int:
-    """Get number of docking credits for a product purchase."""
-    if product_id in ("dock_top_up", "top_up"):
-        return quantity
-    product = PRICE_REGISTRY.get(product_id)
-    return product.dock_runs_included if product else 0
+def get_tier_from_plan(plan_id: str) -> str:
+    """Get the tier name from a plan ID."""
+    plan = PLAN_REGISTRY.get(plan_id)
+    if not plan:
+        return "free"
+    return plan.tier.value

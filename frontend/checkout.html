@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Checkout — VigyanLLM</title>
+<link rel="stylesheet" href="/design-tokens.css">
+<link rel="manifest" href="/manifest.json" />
+<link rel="sitemap" type="application/xml" href="/sitemap.xml" />
+<meta name="theme-color" content="#0F172A" />
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--blue:#1565C0;--blue-light:#42A5F5;--navy:#0F172A;--surface:#fff;--surface-alt:#F5F7FA;--outline:#E2E5EA;--text:#0A0A0F;--text2:#4A4A6A;--muted:#7A7A9A;--font-h:'Montserrat',sans-serif;--font-b:'Open Sans',sans-serif;--max-w:1200px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--surface-alt);color:var(--text);font-family:var(--font-b);-webkit-font-smoothing:antialiased}
+.page{max-width:520px;margin:0 auto;padding:60px 20px}
+.checkout-card{background:var(--surface);border-radius:16px;box-shadow:0 4px 24px rgba(0,0,0,.06);overflow:hidden}
+.checkout-header{background:linear-gradient(135deg,#1565C0,#1E40AF);color:#fff;padding:32px 32px 28px;text-align:center}
+.checkout-header h1{font-family:var(--font-h);font-size:22px;font-weight:800;margin-bottom:4px}
+.checkout-header .sub{font-size:13px;opacity:.8}
+.checkout-body{padding:28px 32px 32px}
+.order-summary{background:var(--surface-alt);border-radius:12px;padding:20px;margin-bottom:24px}
+.summary-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--outline)}
+.summary-row:last-child{border-bottom:none}
+.summary-label{font-size:13px;color:var(--text2)}
+.summary-value{font-size:14px;font-weight:600;color:var(--text)}
+.price-big{font-family:var(--font-h);font-size:28px;font-weight:900;color:var(--text);text-align:center;padding:16px 0 4px}
+.price-big .curr{font-size:16px;font-weight:700;color:var(--text2)}
+.price-big .period{font-size:13px;font-weight:500;color:var(--muted)}
+.academic-badge{display:inline-flex;align-items:center;gap:6px;background:#DCFCE7;color:#16A34A;font-size:12px;font-weight:700;padding:4px 12px;border-radius:99px;margin:8px 0 16px}
+.feature-list{list-style:none;padding:0;margin:16px 0 24px}
+.feature-list li{font-size:13px;color:var(--text2);padding:6px 0;display:flex;align-items:center;gap:8px}
+.feature-list li .check{color:#16A34A;font-weight:700}
+.btn-proceed{display:block;width:100%;padding:14px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-family:var(--font-b);font-size:15px;font-weight:700;cursor:pointer;transition:opacity .15s;text-align:center}
+.btn-proceed:hover{opacity:.9}
+.btn-proceed:disabled{opacity:.5;cursor:not-allowed}
+.security-note{text-align:center;font-size:11px;color:var(--muted);margin-top:16px;display:flex;align-items:center;justify-content:center;gap:6px}
+.back-link{display:block;text-align:center;margin-top:20px;font-size:13px;color:var(--muted);text-decoration:none}
+.back-link:hover{color:var(--blue)}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="checkout-card">
+    <div class="checkout-header">
+      <div style="font-size:24px;margin-bottom:8px">&#128722;</div>
+      <h1>Complete Your Order</h1>
+      <p class="sub">Secure checkout powered by Razorpay</p>
+    </div>
+    <div class="checkout-body">
+      <div class="order-summary" id="orderSummary">
+        <div class="price-big" id="display-price"><span class="curr">&#8377;</span><span id="price-amount">0</span><span class="period" id="price-period"></span></div>
+        <div id="academic-discount-info" style="display:none" class="academic-badge">&#127891; 30% academic discount applied</div>
+        <div class="summary-row"><span class="summary-label">Plan</span><span class="summary-value" id="display-plan">—</span></div>
+        <div class="summary-row"><span class="summary-label">Billing</span><span class="summary-value" id="display-billing">—</span></div>
+        <div class="summary-row"><span class="summary-label">Daily analyses</span><span class="summary-value" id="display-analyses">—</span></div>
+        <div class="summary-row"><span class="summary-label">Batch max</span><span class="summary-value" id="display-batch">—</span></div>
+        <div class="summary-row"><span class="summary-label">API calls / month</span><span class="summary-value" id="display-api">—</span></div>
+      </div>
+      <button type="button" class="btn-proceed" id="btn-proceed" onclick="proceedCheckout()">Proceed to Payment</button>
+      <div class="security-note">&#128274; Secured by Razorpay &middot; PCI-DSS compliant</div>
+      <a href="/pricing" class="back-link">&larr; Back to pricing</a>
+    </div>
+  </div>
+</div>
+<div id="pay-loading" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,.6);z-index:99999;align-items:center;justify-content:center;flex-direction:column;gap:16px">
+  <div style="width:40px;height:40px;border:3px solid rgba(255,255,255,.2);border-top:3px solid #fff;border-radius:50%;animation:spin .8s linear infinite"></div>
+  <div style="color:#fff;font-family:'Montserrat',sans-serif;font-size:14px;font-weight:600">Processing payment...</div>
+</div>
+<style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+<script defer src="/search-index.js"></script>
+<script defer src="/auth-shared.js"></script>
+<script>
+var API = window.VIGYAN_BACKEND_URL || '';
+var CHECKOUT_PLAN = null;
+var CHECKOUT_DATA = null;
+
+function getToken() { return sessionStorage.getItem('pf_token') || localStorage.getItem('pf_token'); }
+
+function showLoading(show) { var el = document.getElementById('pay-loading'); if (el) el.style.display = show ? 'flex' : 'none'; }
+
+(function() {
+  var params = new URLSearchParams(window.location.search);
+  var planId = params.get('plan');
+  if (!planId) {
+    document.getElementById('display-plan').textContent = 'No plan selected';
+    document.getElementById('btn-proceed').disabled = true;
+    return;
+  }
+  CHECKOUT_PLAN = planId;
+  loadPlanDetails(planId);
+})();
+
+async function loadPlanDetails(planId) {
+  try {
+    var r = await fetch(API + '/api/payments/pricing');
+    var data = await r.json();
+    if (!r.ok) throw new Error(data.error || 'Failed to load pricing');
+    var plan = data.plans.find(function(p) { return p.plan_id === planId; });
+    if (!plan) { document.getElementById('display-plan').textContent = 'Plan not found'; return; }
+    CHECKOUT_DATA = plan;
+    renderOrder(plan, data);
+  } catch (e) {
+    document.getElementById('display-plan').textContent = 'Error loading plan details';
+  }
+}
+
+function renderOrder(plan, pricing) {
+  var token = getToken();
+  document.getElementById('display-plan').textContent = plan.display_name + ' (' + plan.tier + ')';
+  document.getElementById('display-billing').textContent = plan.billing.charAt(0).toUpperCase() + plan.billing.slice(1);
+  document.getElementById('display-analyses').textContent = plan.daily_analyses + ' / day';
+  document.getElementById('display-batch').textContent = plan.batch_max_seq > 1 ? plan.batch_max_seq + ' sequences' : '1 sequence';
+  document.getElementById('display-api').textContent = plan.api_calls_per_month > 0 ? plan.api_calls_per_month.toLocaleString() + ' / month' : 'Not included';
+
+  var amount = plan.price_inr;
+  var period = plan.billing === 'yearly' ? '/year' : '/month';
+
+  // Check for academic discount
+  if (token) {
+    fetch(API + '/api/payments/status', { headers: { 'Authorization': 'Bearer ' + token } })
+      .then(function(r) { return r.json(); })
+      .then(function(status) {
+        if (status.is_academic && plan.price_inr > 0) {
+          var discounted = Math.round(plan.price_inr * 0.7);
+          document.getElementById('price-amount').innerHTML = '<span style="text-decoration:line-through;color:var(--muted);font-size:18px">&#8377;' + plan.price_inr + '</span> &#8377;' + discounted;
+          document.getElementById('price-period').textContent = period;
+          document.getElementById('academic-discount-info').style.display = 'inline-flex';
+        } else {
+          document.getElementById('price-amount').textContent = amount;
+          document.getElementById('price-period').textContent = period;
+        }
+      })
+      .catch(function() {
+        document.getElementById('price-amount').textContent = amount;
+        document.getElementById('price-period').textContent = period;
+      });
+  } else {
+    document.getElementById('price-amount').textContent = amount;
+    document.getElementById('price-period').textContent = period;
+  }
+}
+
+function loadRazorpaySdk() {
+  return new Promise(function(resolve, reject) {
+    if (window.Razorpay) return resolve();
+    var s = document.createElement('script');
+    s.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    s.onload = resolve;
+    s.onerror = function() { reject(new Error('Failed to load Razorpay SDK')); };
+    document.body.appendChild(s);
+  });
+}
+
+async function proceedCheckout() {
+  var token = getToken();
+  if (!token) {
+    if (typeof openAuthModal === 'function') openAuthModal();
+    return;
+  }
+  if (!CHECKOUT_PLAN) return;
+  showLoading(true);
+  try {
+    var r = await fetch(API + '/api/payments/create-order', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ plan_id: CHECKOUT_PLAN })
+    });
+    var d = await r.json();
+    if (!r.ok) { showLoading(false); alert(d.error || 'Payment service unavailable'); return; }
+    await openRazorpayCheckout(d);
+  } catch (e) {
+    showLoading(false);
+    alert('Payment service unavailable. Please try again later.');
+  }
+}
+
+async function openRazorpayCheckout(order) {
+  try { await loadRazorpaySdk(); showLoading(false); }
+  catch (e) { showLoading(false); alert('Payment system unavailable.'); return; }
+  var options = {
+    key: order.key_id,
+    amount: order.amount,
+    currency: order.currency || 'INR',
+    name: 'VigyanLLM',
+    description: order.description || 'Plan purchase',
+    order_id: order.order_id,
+    theme: { color: '#1565C0' },
+    config: { display: { blocks: { upi: { name: 'Pay using UPI', instruments: [{method: 'upi'}] }, card: { name: 'Pay using Card', instruments: [{method: 'card'}] }, netbanking: { name: 'Pay using Netbanking', instruments: [{method: 'netbanking'}] } }, sequence: ['block.upi', 'block.card', 'block.netbanking'], preferences: { show_default_blocks: true } } },
+    handler: async function(response) {
+      try {
+        var vr = await fetch(API + '/api/payments/verify-payment', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + getToken() },
+          body: JSON.stringify({ razorpay_payment_id: response.razorpay_payment_id, razorpay_order_id: response.razorpay_order_id, razorpay_signature: response.razorpay_signature })
+        });
+        var vd = await vr.json();
+        if (vr.ok && vd.success) {
+          window.location.href = '/payment-success.html?order_id=' + response.razorpay_order_id + '&payment_id=' + response.razorpay_payment_id + '&plan=' + encodeURIComponent(vd.plan || order.plan_id) + '&amount=' + (order.amount / 100) + '&billing=' + encodeURIComponent(order.billing || 'monthly');
+        } else {
+          window.location.href = '/payment-failed.html?reason=' + encodeURIComponent(vd.error || 'Verification failed');
+        }
+      } catch (e) { window.location.href = '/payment-failed.html?reason=' + encodeURIComponent('Network error'); }
+    },
+    modal: { ondismiss: function() { showLoading(false); } }
+  };
+  var rzp = new window.Razorpay(options);
+  rzp.on('payment.failed', function(response) {
+    var reason = response.error ? response.error.description : 'Payment failed';
+    window.location.href = '/payment-failed.html?reason=' + encodeURIComponent(reason);
+  });
+  rzp.open();
+}
+</script>
+</body>
+</html>

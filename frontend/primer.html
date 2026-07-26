@@ -432,6 +432,7 @@ footer{background:var(--black);color:rgba(255,255,255,.8);padding:56px 0 24px}
 
 .skip-link{position:absolute;top:-100%;left:50%;transform:translateX(-50%);padding:8px 16px;background:#667eea;color:#fff;z-index:10000;border-radius:0 0 8px 8px;font-weight:600;text-decoration:none;font-size:14px}.skip-link:focus{top:0;outline:none}
 @media(max-width:768px){.adv-collapse .adv-content{max-height:0;overflow:hidden;transition:max-height .3s ease}.adv-collapse[open] .adv-content{max-height:800px}.adv-summary{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;margin-top:8px;background:var(--slate);border-radius:8px;cursor:pointer;font-weight:600;font-size:13px;color:var(--primary);user-select:none;list-style:none}.adv-summary::-webkit-details-marker{display:none}.adv-chevron{transition:transform .2s}.adv-collapse[open] .adv-chevron{transform:rotate(180deg)}}@media(min-width:769px){.adv-summary{display:none}.adv-collapse .adv-content{display:block!important;max-height:none!important;overflow:visible!important}}
+.gate-overlay{display:none;position:fixed;inset:0;background:rgba(15,23,42,.6);z-index:99999;align-items:center;justify-content:center;padding:24px}.gate-overlay.open{display:flex}.gate-modal{background:#fff;border-radius:16px;padding:36px;width:100%;max-width:400px;box-shadow:0 24px 64px rgba(0,0,0,.25);position:relative;text-align:center;animation:gateIn .25s ease}@keyframes gateIn{from{opacity:0;transform:scale(.95) translateY(10px)}to{opacity:1;transform:scale(1) translateY(0)}}.gate-lock{font-size:40px;margin-bottom:12px}.gate-cancel{padding:10px 24px;border:1.5px solid var(--outline);background:transparent;border-radius:8px;font-size:13px;font-weight:600;color:var(--text2);cursor:pointer;font-family:var(--font-b)}.gate-cancel:hover{background:var(--surface-alt)}
 </style>
 <link rel="manifest" href="/manifest.json">
 <script>if('serviceWorker'in navigator)navigator.serviceWorker.register('/sw.js')</script>
@@ -1442,6 +1443,18 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 </section>
 <!-- /DASHBOARD WRAPPER -->
 </div>
+<!-- GATE MODAL -->
+<div class="gate-overlay" id="gate-overlay" onclick="if(event.target===this)closeGateModal()">
+  <div class="gate-modal">
+    <div class="gate-lock">&#128274;</div>
+    <h3 style="margin:0 0 6px;font-family:var(--font-h);font-size:18px;font-weight:800">Upgrade to <span id="gate-tier-label">Pro</span></h3>
+    <p style="margin:0 0 20px;font-size:13px;color:var(--text2);line-height:1.6" id="gate-tier-desc">This feature requires a higher-tier subscription.</p>
+    <div style="display:flex;gap:10px;justify-content:center">
+      <button type="button" class="gate-cancel" onclick="closeGateModal()">Cancel</button>
+      <a id="gate-upgrade-link" href="/pricing" style="display:inline-flex;align-items:center;gap:6px;padding:10px 24px;background:var(--blue,#1565C0);color:#fff;border-radius:8px;font-size:13px;font-weight:700;text-decoration:none">Upgrade &rarr;</a>
+    </div>
+  </div>
+</div>
 <!-- FOOTER -->
 </main>
 
@@ -1564,6 +1577,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
 <script defer src="/search-index.js"></script>
 <script defer src="/auth-shared.js"></script>
+<script defer src="/feature-gate.js"></script>
 <!-- AUTH MODAL -->
 <div class="auth-overlay" id="auth-overlay">
   <div class="auth-card">
@@ -2334,6 +2348,20 @@ async function runAutoDesign() {
     showAuthModal();
     return;
   }
+  // Gate: daily usage check
+  try {
+    var _ur = await fetch(API + '/api/usage/check?tool=primer', {
+      headers: { 'Authorization': 'Bearer ' + auth.token }
+    });
+    if (_ur.ok) {
+      var _ud = await _ur.json();
+      if (!_ud.can_analyze) {
+        setLoading('run-spinner','btn-run-text','btn-run',false,'▶ Run Pipeline');
+        showUpgradeGate({tier:'pro',label:'Pro',desc:'You\'ve used all ' + _ud.limit + ' daily analyses on the Free plan. Upgrade to Pro for 100 analyses/day or wait until midnight IST when your limit resets.'});
+        return;
+      }
+    }
+  } catch(_ue) {}
   const _ae = $('auto-empty'); if (_ae) _ae.style.display = 'none';
   $('auto-results').innerHTML = '';
   resetPipeline();
@@ -2560,6 +2588,7 @@ function handleBatchDrop(e){
 }
 async function runBatchAnalysis(){
   if(!_batchData){return;}
+  if(!(await requireFeature('batch'))){setLoading('batch-spinner','btn-batch-text','btn-batch-analyze',false,'Analyse All');return;}
   setLoading('batch-spinner','btn-batch-text','btn-batch-analyze',true,'Analysing…');
   $('manual-results').innerHTML='';
   try{
@@ -2985,8 +3014,9 @@ function makeSimplePdf(text){
 function pdfEsc(s){
   return String(s ?? '').replace(/[\\()]/g,m=>'\\'+m).replace(/[^\x09\x0A\x0D\x20-\x7E]/g,'?');
 }
-function downloadPDFReport(){
+async function downloadPDFReport(){
   if(!state.results.length)return;
+  if(!(await requireFeature('export_pdf')))return;
   const pdf=makeSimplePdf(buildRunReportText());
   blobDl(pdf,'application/pdf',`VigyanLLM_Report_${state.lastJobId||new Date().toISOString().slice(0,10)}.pdf`);
 }
@@ -3042,8 +3072,9 @@ function vendorCsv(vendor,payload){
     return s.includes(',')||s.includes('"')?`"${s.replace(/"/g,'""')}"`:s;
   }).join(',')).join('\n');
 }
-function downloadVendorReport(vendor){
+async function downloadVendorReport(vendor){
   if(!state.results.length)return;
+  if(!(await requireFeature('export_pdf')))return;
   const payload=buildVendorPayload(vendor);
   const stamp=state.lastJobId||new Date().toISOString().slice(0,10);
   blobDl(vendorCsv(vendor,payload),'text/csv;charset=utf-8',`VigyanLLM_${vendor.toUpperCase()}_Order_${stamp}.csv`);

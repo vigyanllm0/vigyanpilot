@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
 """
-VigyanLLM Razorpay Payment Integration
-==========================================
-POST /api/create-order   — Create Razorpay order (₹49 per design)
-POST /api/verify-payment — Verify Razorpay payment signature & credit runs
+VigyanLLM Razorpay Payment Integration — 4-Tier Subscription
+==============================================================
+POST /api/payments/create-order  — Create Razorpay order for a plan
+POST /api/payments/verify-payment — Verify & activate plan
+POST /api/payments/webhook       — Razorpay server-to-server webhook
+GET  /api/payments/pricing       — Public pricing endpoint
+GET  /api/payments/status        — Get user's current plan status
 """
 
 import hashlib
@@ -18,32 +21,28 @@ from flask import Blueprint, g, jsonify, request
 
 from .auth import (
     DB_PATH,
-    FREE_DOCK_RUNS,
-    check_docking_usage,
-    check_usage,
     get_db,
+    get_user_plan,
     log_action,
     require_auth,
 )
 from .price_registry import (
-    FREE_TRIAL_RUNS,
-    PRICE_REGISTRY,
-    TOPUP_PRICE_INR,
+    PLAN_REGISTRY,
+    ACADEMIC_DISCOUNT_PCT,
+    get_academic_price,
     get_amount_paise,
-    get_designs_for_product,
-    validate_order_request,
+    validate_plan,
+    get_tier_from_plan,
 )
 
 logger = logging.getLogger("primerforge.payment")
 
 payment_bp = Blueprint('payment', __name__)
 
-# ── Razorpay Configuration (from environment) ────────────────────────────
+# ── Razorpay Configuration ────────────────────────────────────────────────
 RAZORPAY_KEY_ID = os.environ.get("RAZORPAY_KEY_ID", "")
 RAZORPAY_KEY_SECRET = os.environ.get("RAZORPAY_KEY_SECRET", "")
-PRICE_PER_DESIGN_PAISE = 4900  # ₹49 = 4900 paise
 
-# Initialize Razorpay client
 rz_client = (
     razorpay.Client(auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET))
     if RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET
@@ -51,107 +50,100 @@ rz_client = (
 )
 
 if not RAZORPAY_KEY_ID or not RAZORPAY_KEY_SECRET:
-    logger.warning("RAZORPAY_KEY_ID or RAZORPAY_KEY_SECRET not set — payment endpoints will return 503")
+    logger.warning("RAZORPAY_KEY_ID/RAZORPAY_KEY_SECRET not set — payment endpoints return 503")
 
 
-def _parse_positive_int(value, default: int = 1, maximum: int = 100):
-    try:
-        parsed = int(value)
-    except (TypeError, ValueError):
-        return None, "Quantity must be a whole number."
-    if parsed < 1:
-        return None, "Quantity must be at least 1."
-    if parsed > maximum:
-        return None, f"Quantity must be at most {maximum}."
-    return parsed, None
-
-
-def _resolve_order_request(data):
-    """Support both legacy runs checkout and product_id checkout."""
-    product_id = data.get("product_id")
-    if product_id:
-        if not isinstance(product_id, str):
-            return None, "Invalid product_id."
-        quantity, err = _parse_positive_int(data.get("quantity", 1), maximum=100)
-        if err:
-            return None, err
-        validation_error = validate_order_request(product_id, quantity)
-        if validation_error:
-            return None, validation_error
-        amount = get_amount_paise(product_id, quantity)
-        runs = get_designs_for_product(product_id, quantity)
-        product = PRICE_REGISTRY.get(product_id)
-        if product_id == "dock_top_up":
-            description = f"VigyanLLM: {runs} docking run(s)"
-        elif product_id == "top_up":
-            description = f"VigyanLLM: {runs} primer design run(s)"
-        else:
-            description = f"VigyanLLM: {product.display_name} ({runs} design credits)"
-        return {
-            "amount": amount,
-            "runs": runs,
-            "quantity": quantity,
-            "product_id": product_id,
-            "description": description,
-        }, None
-
-    runs, err = _parse_positive_int(data.get("runs", 1), maximum=100)
-    if err:
-        return None, err.replace("Quantity", "Runs")
-    amount = PRICE_PER_DESIGN_PAISE * runs
-    return {
-        "amount": amount,
-        "runs": runs,
-        "quantity": runs,
-        "product_id": "top_up",
-        "description": f"VigyanLLM: {runs} primer design run(s)",
-    }, None
-
-
-def _current_razorpay_client():
+def _current_client():
     return rz_client
 
 
-@payment_bp.route('/api/create-order', methods=['POST'])
+def _sanitize_name(raw_name: str) -> str:
+    """Sanitize name for Razorpay (letters/spaces only, min 3 chars)."""
+    import re
+    name = re.sub(r'[^a-zA-Z\s]', ' ', raw_name).strip()
+    if len(name) < 3:
+        name = "VigyanLLM User"
+    return name
+
+
+def _compute_plan_expiry(plan_id: str) -> int:
+    """Compute plan expiry timestamp based on billing cycle."""
+    plan = PLAN_REGISTRY.get(plan_id)
+    if not plan:
+        return 0
+    now = time.time()
+    if plan.billing.value == "monthly":
+        return int(now + 30 * 86400)
+    elif plan.billing.value == "yearly":
+        return int(now + 365 * 86400)
+    elif plan.billing.value == "custom":
+        return int(now + 365 * 86400)  # Default 1 year for enterprise
+    return int(now + 30 * 86400)
+
+
+# ══════════════════════════════════════════════════════════════════════════
+# CREATE ORDER
+# ══════════════════════════════════════════════════════════════════════════
+
 @payment_bp.route('/api/payments/create-order', methods=['POST'])
+@payment_bp.route('/api/create-order', methods=['POST'])
 @require_auth
 def create_order():
-    """Create a Razorpay order for primer design runs."""
+    """Create a Razorpay order for a subscription plan.
+
+    Request body: { plan_id: 'pro-monthly' }
+    Optional: { plan_id: 'pro-monthly', discount: 30, email: 'user@edu.in' }
+    """
     data = request.get_json(silent=True) or {}
-    resolved, err = _resolve_order_request(data)
+    plan_id = data.get("plan_id", "")
+
+    if not plan_id:
+        return jsonify({"error": "Missing plan_id. Options: pro-monthly, pro-yearly, lab-monthly, lab-yearly, enterprise"}), 400
+
+    err = validate_plan(plan_id)
     if err:
         return jsonify({"error": err}), 400
 
-    amount = resolved["amount"]  # in paise
-    if amount < 100:
+    plan = PLAN_REGISTRY[plan_id]
+
+    # Calculate amount
+    amount = get_amount_paise(plan_id)
+
+    # Apply academic discount if applicable
+    discount = data.get("discount", 0)
+    if discount:
+        # Verify discount is reasonable (max 30%)
+        discount = min(int(discount), ACADEMIC_DISCOUNT_PCT)
+        amount = int(amount * (100 - discount) / 100)
+
+    if amount < 100 and amount > 0:
         return jsonify({"error": "Minimum amount is ₹1 (100 paise)."}), 400
-    if not _current_razorpay_client():
+
+    if not _current_client():
         return jsonify({
             "error": "Payment service not configured. Set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET."
         }), 503
 
-    # Get user name from DB for prefill — sanitize for Razorpay (letters/spaces only, min 3 chars)
+    # Get user info for prefill
     db = get_db()
-    user_row = db.execute("SELECT name, email FROM users WHERE email=?", (g.user['email'],)).fetchone()
+    user_row = db.execute("SELECT name, email, is_academic FROM users WHERE email=?",
+                          (g.user['email'],)).fetchone()
     raw_name = (user_row['name'] if user_row and user_row['name'] else
                 g.user['email'].split('@')[0])
-    # Razorpay requires: alphabets and spaces only, min 3 chars
-    import re as _re
-    user_name = _re.sub(r'[^a-zA-Z\s]', ' ', raw_name).strip()
-    if len(user_name) < 3:
-        user_name = "VigyanLLM User"
+    user_name = _sanitize_name(raw_name)
+    user_email = g.user['email']
 
     try:
-        order = _current_razorpay_client().order.create({
+        order = _current_client().order.create({
             "amount": amount,
             "currency": "INR",
-            "receipt": f"pf_{int(time.time())}_{resolved['product_id']}_{resolved['quantity']}",
+            "receipt": f"pf_{int(time.time())}_{plan_id}",
             "notes": {
-                "email": g.user['email'],
-                "runs": str(resolved["runs"]),
-                "product_id": resolved["product_id"],
-                "quantity": str(resolved["quantity"]),
-                "product": "VigyanLLM Design Runs"
+                "email": user_email,
+                "plan_id": plan_id,
+                "plan_name": plan.display_name,
+                "tier": plan.tier.value,
+                "product": "VigyanLLM Subscription"
             }
         })
     except razorpay.errors.BadRequestError as e:
@@ -161,42 +153,46 @@ def create_order():
         logger.error("Razorpay error: %s", e)
         return jsonify({"error": "Payment service unavailable."}), 500
 
-    # Store order in DB for tracking
-    db = get_db()
+    # Store order in DB
     db.execute(
-        "INSERT INTO payments (user_email, amount, upi_ref, status, runs_purchased, product_type) VALUES (?, ?, ?, ?, ?, ?)",
-        (g.user['email'], amount // 100, order['id'], "created", resolved["runs"], resolved["product_id"])
+        """INSERT INTO payments (user_email, amount, upi_ref, status, runs_purchased, product_type, plan_id, billing_cycle)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+        (user_email, amount // 100, order['id'], "created", 0, "subscription", plan_id, plan.billing.value)
     )
     db.commit()
 
-    log_action(
-        g.user['email'],
-        "order_created",
-        f"Order {order['id']} for {resolved['runs']} run(s), ₹{amount//100}",
-    )
+    log_action(user_email, "order_created",
+               f"Order {order['id']} for plan {plan_id}, ₹{amount // 100}")
 
     return jsonify({
         "order_id": order['id'],
         "amount": amount,
         "currency": "INR",
         "key_id": RAZORPAY_KEY_ID,
-        "runs": resolved["runs"],
-        "tokens": resolved["runs"],
-        "product_id": resolved["product_id"],
-        "description": resolved["description"],
-        "verify_endpoint": "/api/verify-payment",
+        "plan_id": plan_id,
+        "plan_name": plan.display_name,
+        "tier": plan.tier.value,
+        "billing": plan.billing.value,
+        "description": f"VigyanLLM {plan.display_name} ({plan.billing.value})",
         "prefill": {
             "name": user_name,
-            "email": g.user['email'],
+            "email": user_email,
         }
     }), 200
 
 
-@payment_bp.route('/api/verify-payment', methods=['POST'])
+# ══════════════════════════════════════════════════════════════════════════
+# VERIFY PAYMENT & ACTIVATE PLAN
+# ══════════════════════════════════════════════════════════════════════════
+
 @payment_bp.route('/api/payments/verify-payment', methods=['POST'])
+@payment_bp.route('/api/verify-payment', methods=['POST'])
 @require_auth
-def verify_razorpay_payment():
-    """Verify Razorpay payment signature and credit runs to user."""
+def verify_payment():
+    """Verify Razorpay payment signature and activate the subscription plan.
+
+    Request body: { razorpay_payment_id, razorpay_order_id, razorpay_signature }
+    """
     data = request.get_json(silent=True) or {}
     razorpay_payment_id = data.get('razorpay_payment_id', '')
     razorpay_order_id = data.get('razorpay_order_id', '')
@@ -205,50 +201,38 @@ def verify_razorpay_payment():
     if not razorpay_payment_id or not razorpay_order_id or not razorpay_signature:
         return jsonify({"error": "Missing payment verification fields."}), 400
     if not RAZORPAY_KEY_SECRET:
-        return jsonify({
-            "error": "Payment service not configured. Set RAZORPAY_KEY_SECRET."
-        }), 503
+        return jsonify({"error": "Payment service not configured."}), 503
 
-    # Verify signature: HMAC-SHA256(order_id + "|" + payment_id, KEY_SECRET)
+    # Verify signature
     message = f"{razorpay_order_id}|{razorpay_payment_id}"
-    expected_signature = hmac.new(
-        RAZORPAY_KEY_SECRET.encode(),
-        message.encode(),
-        hashlib.sha256
+    expected_sig = hmac.new(
+        RAZORPAY_KEY_SECRET.encode(), message.encode(), hashlib.sha256
     ).hexdigest()
 
-    if not hmac.compare_digest(expected_signature, razorpay_signature):
+    if not hmac.compare_digest(expected_sig, razorpay_signature):
         logger.warning("Signature mismatch for order %s", razorpay_order_id)
         return jsonify({"error": "Payment verification failed. Signature mismatch."}), 400
 
-    # Signature valid — credit runs to user
     email = g.user['email']
     db = get_db()
 
-    # Find the order to get runs_purchased
+    # Find the order
     order_row = db.execute(
-        """SELECT id, runs_purchased, product_type, status FROM payments
-           WHERE user_email=? AND (upi_ref=? OR upi_ref LIKE ?)
+        """SELECT id, amount, plan_id, billing_cycle, status FROM payments
+           WHERE user_email=? AND upi_ref=?
            ORDER BY id DESC LIMIT 1""",
-        (email, razorpay_order_id, f"{razorpay_order_id}|%")
+        (email, razorpay_order_id)
     ).fetchone()
 
     if not order_row:
         return jsonify({"error": "Order not found."}), 404
 
-    runs = order_row['runs_purchased']
-    product_type = order_row['product_type'] or 'top_up'
     if order_row["status"] == "verified":
-        if product_type == "dock_top_up":
-            usage = check_docking_usage(email)
-        else:
-            usage = check_usage(email)
+        plan = get_user_plan(email)
         return jsonify({
             "success": True,
             "message": "Payment already verified.",
-            "runs_purchased": 0,
-            "tokens_credited": 0,
-            "usage": usage,
+            "plan": plan,
         }), 200
 
     # Update payment status
@@ -259,90 +243,138 @@ def verify_razorpay_payment():
     )
     if cur.rowcount == 0:
         db.commit()
-        if product_type == "dock_top_up":
-            usage = check_docking_usage(email)
-        else:
-            usage = check_usage(email)
-        return jsonify({
-            "success": True,
-            "message": "Payment already verified.",
-            "runs_purchased": 0,
-            "tokens_credited": 0,
-            "usage": usage,
-        }), 200
+        return jsonify({"success": True, "message": "Payment already verified."}), 200
 
-    # Credit runs to user
-    if product_type == "dock_top_up":
-        db.execute("UPDATE users SET dock_paid_runs = dock_paid_runs + ? WHERE email=?", (runs, email))
-        log_action(email, "payment_verified",
-                   f"Razorpay: order={razorpay_order_id} payment={razorpay_payment_id} dock_runs={runs}")
-        usage = check_docking_usage(email)
-    else:
-        db.execute("UPDATE users SET paid_runs = paid_runs + ? WHERE email=?", (runs, email))
-        log_action(email, "payment_verified",
-                   f"Razorpay: order={razorpay_order_id} payment={razorpay_payment_id} runs={runs}")
-        usage = check_usage(email)
+    # Activate plan for user
+    plan_id = order_row["plan_id"]
+    billing_cycle = order_row["billing_cycle"] or "monthly"
+    tier = get_tier_from_plan(plan_id)
+    expires_at = _compute_plan_expiry(plan_id)
+
+    db.execute(
+        """UPDATE users SET
+           plan=?, billing_cycle=?, plan_activated_at=?, plan_expires_at=?
+           WHERE email=?""",
+        (tier, billing_cycle, time.time(), expires_at, email)
+    )
     db.commit()
+
+    log_action(email, "plan_activated",
+               f"Plan {tier} ({billing_cycle}) activated via Razorpay order {razorpay_order_id}")
+
     return jsonify({
         "success": True,
-        "message": f"Payment verified! {runs} run(s) unlocked.",
-        "runs_purchased": runs,
-        "tokens_credited": runs,
-        "usage": usage,
+        "message": f"Payment verified! {tier.capitalize()} plan activated.",
+        "plan": tier,
+        "billing": billing_cycle,
+        "expires_at": expires_at,
     }), 200
 
 
+# ══════════════════════════════════════════════════════════════════════════
+# PLAN STATUS
+# ══════════════════════════════════════════════════════════════════════════
+
+@payment_bp.route('/api/payments/status', methods=['GET'])
 @payment_bp.route('/api/payment/status', methods=['GET'])
-@payment_bp.route('/api/payments/token-balance', methods=['GET'])
 @require_auth
 def payment_status():
-    """Get payment/usage status for current user."""
-    usage = check_usage(g.user['email'])
+    """Get current user's plan and usage status."""
+    email = g.user['email']
+    db = get_db()
+    row = db.execute(
+        """SELECT plan, billing_cycle, plan_activated_at, plan_expires_at,
+                  is_academic, academic_discount
+           FROM users WHERE email=?""",
+        (email,)
+    ).fetchone()
+
+    if not row:
+        return jsonify({"error": "User not found"}), 404
+
+    from .auth import check_daily_usage, check_monthly_api_usage
+    daily = check_daily_usage(email)
+    monthly_api = check_monthly_api_usage(email)
+
     return jsonify({
-        "usage": usage,
+        "plan": row["plan"] or "free",
+        "billing_cycle": row["billing_cycle"] or "monthly",
+        "plan_activated_at": row["plan_activated_at"] or 0,
+        "plan_expires_at": row["plan_expires_at"] or 0,
+        "is_academic": bool(row["is_academic"]),
+        "academic_discount": row["academic_discount"] or 0,
+        "daily": daily,
+        "api": monthly_api,
         "razorpay_key_id": RAZORPAY_KEY_ID,
-        "price_per_design_inr": PRICE_PER_DESIGN_PAISE // 100,
     }), 200
 
+
+# ══════════════════════════════════════════════════════════════════════════
+# PRICING ENDPOINT
+# ══════════════════════════════════════════════════════════════════════════
 
 @payment_bp.route('/api/payments/pricing', methods=['GET'])
 def pricing():
-    """Public pricing endpoint matching the PostgreSQL payment API shape."""
+    """Public pricing endpoint."""
+    plans = []
+    for cfg in PLAN_REGISTRY.values():
+        if not cfg.is_active:
+            continue
+        plans.append({
+            "plan_id": cfg.plan_id,
+            "display_name": cfg.display_name,
+            "tier": cfg.tier.value,
+            "billing": cfg.billing.value,
+            "price_inr": cfg.price_inr,
+            "academic_price_inr": get_academic_price(cfg.price_inr) if cfg.price_inr > 0 else 0,
+            "daily_analyses": cfg.daily_analyses,
+            "batch_max_seq": cfg.batch_max_seq,
+            "api_calls_per_month": cfg.api_calls_per_month,
+            "max_seats": cfg.max_seats,
+            "period": cfg.period,
+            "description": cfg.description,
+        })
+
     return jsonify({
-        "products": [
-            {
-                "product_id": cfg.product_id,
-                "display_name": cfg.display_name,
-                "product_type": cfg.product_type.value,
-                "price_inr": cfg.price_inr,
-                "designs_included": cfg.designs_included,
-                "period": cfg.period,
-                "max_seats": cfg.max_seats,
-                "description": cfg.description,
-            }
-            for cfg in PRICE_REGISTRY.values()
-            if cfg.is_active
-        ],
-        "top_up_price_inr": TOPUP_PRICE_INR,
-        "free_trial_runs": FREE_TRIAL_RUNS,
-        "free_dock_runs": FREE_DOCK_RUNS,
+        "plans": plans,
+        "academic_discount_pct": ACADEMIC_DISCOUNT_PCT,
         "currency": "INR",
     }), 200
 
 
-# ═══════════════════════════════════════════════════════════════════════════
-# RAZORPAY WEBHOOK (server-to-server callback)
-# ═══════════════════════════════════════════════════════════════════════════
+# ══════════════════════════════════════════════════════════════════════════
+# USAGE CHECK & RECORD (for Phase 2)
+# ══════════════════════════════════════════════════════════════════════════
+
+@payment_bp.route('/api/usage/check', methods=['GET'])
+@require_auth
+def usage_check():
+    """Check if user can run an analysis (daily limit)."""
+    from .auth import check_daily_usage
+    tool = request.args.get("tool", "")
+    usage = check_daily_usage(g.user['email'], tool)
+    return jsonify(usage), 200
+
+
+@payment_bp.route('/api/usage/record', methods=['POST'])
+@require_auth
+def usage_record():
+    """Record a completed analysis."""
+    data = request.get_json(silent=True) or {}
+    tool = data.get("tool", "")
+    sequences_count = int(data.get("sequences_count", 1))
+    from .auth import record_daily_usage
+    record_daily_usage(g.user['email'], tool, sequences_count)
+    return jsonify({"success": True}), 200
+
+
+# ══════════════════════════════════════════════════════════════════════════
+# WEBHOOK
+# ══════════════════════════════════════════════════════════════════════════
 
 @payment_bp.route('/api/payment/webhook', methods=['POST'])
 def razorpay_webhook():
-    """
-    Razorpay server-to-server webhook for payment events.
-    Verifies webhook signature and processes payment.captured events.
-    Configure this URL in Razorpay Dashboard > Webhooks:
-      https://yourdomain.com/api/payment/webhook
-    """
-    # Get raw body for signature verification
+    """Razorpay server-to-server webhook for subscription events."""
     raw_body = request.get_data(as_text=True)
     webhook_signature = request.headers.get('X-Razorpay-Signature', '')
     webhook_secret = os.environ.get('RAZORPAY_WEBHOOK_SECRET', RAZORPAY_KEY_SECRET)
@@ -350,18 +382,14 @@ def razorpay_webhook():
     if not webhook_signature:
         return jsonify({"error": "Missing webhook signature"}), 400
 
-    # Verify webhook signature
     expected_sig = hmac.new(
-        webhook_secret.encode(),
-        raw_body.encode(),
-        hashlib.sha256
+        webhook_secret.encode(), raw_body.encode(), hashlib.sha256
     ).hexdigest()
 
     if not hmac.compare_digest(expected_sig, webhook_signature):
         logger.warning("Webhook signature verification failed")
         return jsonify({"error": "Invalid signature"}), 400
 
-    # Parse event
     try:
         event = json.loads(raw_body)
     except Exception:
@@ -373,64 +401,55 @@ def razorpay_webhook():
     if event_type == 'payment.captured':
         payload = event.get('payload', {}).get('payment', {}).get('entity', {})
         order_id = payload.get('order_id', '')
-        payment_id = payload.get('id', '')
-        amount = payload.get('amount', 0)
         email = payload.get('email', '') or payload.get('notes', {}).get('email', '')
 
         if order_id and email:
             import sqlite3
-            db = sqlite3.connect(DB_PATH)
-            db.row_factory = sqlite3.Row
+            conn = sqlite3.connect(DB_PATH)
+            conn.row_factory = sqlite3.Row
 
-            # Find order and credit runs
-            order_row = db.execute(
-                "SELECT runs_purchased, status FROM payments WHERE upi_ref LIKE ? AND user_email=?",
+            order = conn.execute(
+                "SELECT plan_id, billing_cycle, status FROM payments WHERE upi_ref LIKE ? AND user_email=?",
                 (f"{order_id}%", email)
             ).fetchone()
 
-            if order_row and order_row['status'] != 'verified':
-                runs = order_row['runs_purchased']
-                product_type = order_row['product_type'] or 'top_up'
-                cur = db.execute(
-                    "UPDATE payments SET status='verified', verified_at=? WHERE upi_ref LIKE ? AND user_email=? AND status != 'verified'",
+            if order and order['status'] != 'verified':
+                plan_id = order['plan_id']
+                billing_cycle = order['billing_cycle'] or 'monthly'
+                tier = get_tier_from_plan(plan_id)
+                expires_at = _compute_plan_expiry(plan_id)
+
+                conn.execute(
+                    "UPDATE payments SET status='verified', verified_at=? WHERE upi_ref LIKE ? AND user_email=? AND status!='verified'",
                     (time.time(), f"{order_id}%", email)
                 )
-                if cur.rowcount > 0:
-                    if product_type == "dock_top_up":
-                        db.execute("UPDATE users SET dock_paid_runs = dock_paid_runs + ? WHERE email=?", (runs, email))
-                        logger.info("Webhook: credited %s dock run(s) to %s for order %s", runs, email, order_id)
-                    else:
-                        db.execute("UPDATE users SET paid_runs = paid_runs + ? WHERE email=?", (runs, email))
-                        logger.info("Webhook: credited %s run(s) to %s for order %s", runs, email, order_id)
-                    db.commit()
-                else:
-                    db.commit()
+                conn.execute(
+                    "UPDATE users SET plan=?, billing_cycle=?, plan_activated_at=?, plan_expires_at=? WHERE email=?",
+                    (tier, billing_cycle, time.time(), expires_at, email)
+                )
+                conn.commit()
+                logger.info("Webhook: activated %s for %s (order %s)", tier, email, order_id)
 
-            db.close()
+            conn.close()
 
     elif event_type == 'payment.failed':
         payload = event.get('payload', {}).get('payment', {}).get('entity', {})
         order_id = payload.get('order_id', '')
         logger.warning("Payment failed for order %s", order_id)
 
-    # Always return 200 to acknowledge webhook
     return jsonify({"status": "ok"}), 200
 
 
 @payment_bp.route('/api/payment/callback', methods=['GET'])
 def payment_callback():
-    """
-    Redirect callback after Razorpay checkout (if using redirect mode).
-    Checks payment status and redirects to success/failed page.
-    """
+    """Redirect callback after Razorpay checkout."""
     order_id = request.args.get('razorpay_order_id', '')
     payment_id = request.args.get('razorpay_payment_id', '')
     signature = request.args.get('razorpay_signature', '')
 
     if not order_id or not payment_id or not signature:
-        return '<script>window.location.href="payment-failed.html?reason=Missing+payment+parameters"</script>'
+        return '<script>window.location.href="payment-failed.html?reason=Missing+parameters"</script>'
 
-    # Verify signature
     message = f"{order_id}|{payment_id}"
     expected = hmac.new(RAZORPAY_KEY_SECRET.encode(), message.encode(), hashlib.sha256).hexdigest()
 

@@ -268,26 +268,33 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
 <div class="card">
   <div class="icon">✅</div>
-  <h1>Payment Successful!</h1>
-  <p class="sub">Your primer design credits have been unlocked. You can now run the pipeline.</p>
+  <h1>Subscription Active!</h1>
+  <p class="sub" id="success-sub">Your plan has been activated. You now have access to all included features.</p>
   <div class="details" id="payment-details">
+    <div class="detail-row"><span class="label">Plan:</span><span class="value" id="d-plan">Pro</span></div>
+    <div class="detail-row"><span class="label">Billing:</span><span class="value" id="d-billing">Monthly</span></div>
     <div class="detail-row"><span class="label">Order ID:</span><span class="value" id="d-order">—</span></div>
     <div class="detail-row"><span class="label">Payment ID:</span><span class="value" id="d-payment">—</span></div>
-    <div class="detail-row"><span class="label">Amount:</span><span class="value" id="d-amount">₹99 (~$1.20 USD)</span></div>
-    <div class="detail-row"><span class="label">Runs Unlocked:</span><span class="value" id="d-runs">1</span></div>
+    <div class="detail-row"><span class="label">Amount:</span><span class="value" id="d-amount">—</span></div>
     <div class="detail-row"><span class="label">Status:</span><span class="value" style="color:#059669">VERIFIED</span></div>
   </div>
-  <a href="primer" class="btn">← Continue to VigyanLLM</a>
-  <p class="note">Your transaction receipt has been saved to your account. Contact us at contact@vigyanllm.in for support.</p>
+  <a href="/pricing" class="btn" style="margin-right:8px">Manage Plan</a>
+  <a href="/primer" class="btn">← Start Using Tools</a>
+  <p class="note">Your subscription receipt has been saved to your account. Contact us at contact@vigyanllm.in for support.</p>
 </div>
 <script>
-  // Read payment details from URL params or sessionStorage
   const params = new URLSearchParams(window.location.search);
   const stored = JSON.parse(sessionStorage.getItem('pf_last_payment') || '{}');
+  var plan = params.get('plan') || stored.plan || 'pro';
+  var billing = params.get('billing') || stored.billing || 'monthly';
+  document.getElementById('d-plan').textContent = plan.charAt(0).toUpperCase() + plan.slice(1);
+  document.getElementById('d-billing').textContent = billing.charAt(0).toUpperCase() + billing.slice(1);
   document.getElementById('d-order').textContent = params.get('order_id') || stored.order_id || '—';
   document.getElementById('d-payment').textContent = params.get('payment_id') || stored.payment_id || '—';
-  document.getElementById('d-amount').textContent = '₹' + (params.get('amount') || stored.amount || '49');
-  document.getElementById('d-runs').textContent = params.get('runs') || stored.runs || '1';
+  document.getElementById('d-amount').textContent = '₹' + (params.get('amount') || stored.amount || '0');
+  if (plan) {
+    document.getElementById('success-sub').textContent = 'Your ' + plan.charAt(0).toUpperCase() + plan.slice(1) + ' plan is now active. You have access to all included features.';
+  }
 </script>
 <!-- Auth Modal -->
 <div class="auth-overlay" id="authOverlay" onclick="if(event.target===this)closeAuthModal()">

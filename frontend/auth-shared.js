@@ -172,4 +172,79 @@ function openAuthModal(){isRegister=false;showAuth()}
       document.querySelectorAll('[data-auth-show]').forEach(function(el) { el.style.display = ''; });
     }
   }
+  loadPlanUI();
 })();
+
+function loadPlanUI() {
+  var token = sessionStorage.getItem('pf_token') || localStorage.getItem('pf_token');
+  if (!token) return;
+  var api = window.VIGYAN_BACKEND_URL || '';
+  fetch(api + '/api/payments/status', {headers: {'Authorization': 'Bearer ' + token}})
+  .then(function(r){ return r.json(); })
+  .then(function(st){
+    if (!st || !st.plan) return;
+    var plan = st.plan;
+    var labels = {free:'Free',pro:'Pro',lab:'Lab',enterprise:'Enterprise'};
+    var tierOrder = ['free','pro','lab','enterprise'];
+    var userIdx = tierOrder.indexOf(plan);
+
+    // Plan badge in user popup header
+    var hdr = document.querySelector('.user-popup-header');
+    if (hdr) {
+      var badge = document.createElement('div');
+      badge.textContent = labels[plan] || 'Free';
+      badge.style.cssText = 'font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;display:inline-block;margin-top:4px;text-align:center';
+      if (plan==='free') { badge.style.background='#F1F5F9'; badge.style.color='#64748B'; }
+      else if (plan==='pro') { badge.style.background='#DBEAFE'; badge.style.color='#1D4ED8'; }
+      else if (plan==='lab') { badge.style.background='#EDE9FE'; badge.style.color='#6D28D9'; }
+      else { badge.style.background='#FEF3C7'; badge.style.color='#92400E'; }
+      hdr.appendChild(badge);
+    }
+
+    // Gated nav items injected after Dashboard link, before Logout
+    var gated = [
+      {l:'Team Collaboration', t:'lab', h:'/team'},
+      {l:'API Access', t:'pro', h:'/api-keys'},
+      {l:'Admin Panel', t:'lab', h:'/admin'}
+    ];
+    var popup = document.querySelector('.user-popup');
+    if (!popup) return;
+    var logoutEl = popup.querySelector('.user-popup-logout');
+    if (!logoutEl) return;
+
+    gated.forEach(function(g){
+      var unlocked = tierOrder.indexOf(g.t) <= userIdx;
+      var el = unlocked ? document.createElement('a') : document.createElement('div');
+      el.className = 'user-popup-item';
+      el.style.cssText = 'display:flex;align-items:center;gap:6px;justify-content:center;padding:12px 16px;font-size:14px;border-radius:8px;margin-top:4px;text-decoration:none';
+      if (unlocked) {
+        el.href = g.h;
+        el.style.color = '#334155';
+        el.style.cursor = 'pointer';
+        el.innerHTML = g.l + ' <span style="font-size:10px;padding:1px 5px;border-radius:99px;background:#DBEAFE;color:#1D4ED8;font-weight:600">' + g.t.charAt(0).toUpperCase() + g.t.slice(1) + '</span>';
+      } else {
+        el.style.color = '#94A3B8';
+        el.style.cursor = 'default';
+        el.innerHTML = '\uD83D\uDD12 ' + g.l + ' <span style="font-size:10px;padding:1px 5px;border-radius:99px;background:#E2E8F0;color:#94A3B8;font-weight:600">' + g.t.charAt(0).toUpperCase() + g.t.slice(1) + '</span>';
+      }
+      popup.insertBefore(el, logoutEl);
+    });
+
+    // Upgrade CTA
+    var up = document.createElement('a');
+    up.href = '/pricing';
+    up.className = 'user-popup-item';
+    up.style.cssText = 'display:flex;align-items:center;gap:6px;justify-content:center;padding:10px 16px;font-size:13px;font-weight:700;border-radius:8px;text-decoration:none;margin-top:8px';
+    if (plan === 'free') {
+      up.style.color = '#fff';
+      up.style.background = 'var(--blue,#1565C0)';
+      up.textContent = 'Upgrade to Pro \u2192';
+    } else if (plan === 'pro') {
+      up.style.color = '#6D28D9';
+      up.style.background = '#EDE9FE';
+      up.textContent = 'Upgrade to Lab \u2192';
+    }
+    popup.insertBefore(up, logoutEl);
+  })
+  .catch(function(){});
+}
