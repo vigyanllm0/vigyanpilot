@@ -16,6 +16,18 @@
 
 **Test order for Phase 4:** Free → blocked → upgrade modal FIRST. If that breaks, nothing else matters. Then batch, then academic, then export. That order.
 
+```
+TEST ORDER (do these first, in this order):
+1. Open /primer as logged-out Free user → click "Design Primers" → should see upgrade modal
+2. Open /primer as logged-in Free user → run 6th analysis of the day → should see "daily limit" modal
+3. Open /primer as logged-in Pro user → batch toggle → paste 3 FASTA sequences → should process all 3
+4. Open /checkout?plan=pro with academic email → should show 30% discount banner + ₹489 price
+5. Complete a Pro checkout with academic discount → /payment-success should show discount line
+6. Open /dashboard → saved results from step 3 should appear → Export PDF → should download
+
+If test 1 fails, stop and fix. Nothing else matters until the Free→upgrade flow works.
+```
+
 ---
 
 ## Completed This Session
