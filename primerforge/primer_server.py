@@ -661,6 +661,7 @@ def create_app() -> Flask:
             get_current_user,
             log_action,
             record_operation_cost,
+            require_auth,
         )
         from primerforge.pg_auth_routes import auth_bp
         from primerforge.pg_payment_routes import payment_bp

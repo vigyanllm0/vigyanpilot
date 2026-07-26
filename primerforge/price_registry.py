@@ -293,12 +293,12 @@ def get_tier_limits(tier: str) -> dict:
 # UTILITY FUNCTIONS
 # ═══════════════════════════════════════════════════════════════════════════
 
-def get_amount_paise(plan_id: str) -> int:
+def get_amount_paise(plan_id: str, quantity: int = 1) -> int:
     """Calculate exact payment amount in paise. Integer arithmetic only."""
     plan = PLAN_REGISTRY.get(plan_id)
     if not plan:
         raise ValueError(f"Unknown plan_id: {plan_id}")
-    return plan.price_inr * 100
+    return plan.price_inr * 100 * quantity
 
 
 def validate_plan(plan_id: str) -> str | None:
@@ -317,3 +317,49 @@ def get_tier_from_plan(plan_id: str) -> str:
     if not plan:
         return "free"
     return plan.tier.value
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# BACKWARD COMPATIBILITY — Old pg_payment_routes.py / price_registry API
+# ═══════════════════════════════════════════════════════════════════════════
+
+FREE_TRIAL_RUNS = 5
+TOPUP_PRICE_INR = 0
+
+
+class _LegacyPlanWrap:
+    """Wraps PlanConfig to look like old ProductConfig for pg_payment_routes.py."""
+    def __init__(self, plan: PlanConfig):
+        self.product_id = plan.plan_id
+        self.display_name = plan.display_name
+        self.product_type = plan.tier
+        self.designs_included = plan.daily_analyses
+        self.price_inr = plan.price_inr
+        self.period = plan.period
+        self.max_seats = plan.max_seats
+        self.description = plan.description
+        self.is_active = plan.is_active
+
+
+PRICE_REGISTRY: dict = {k: _LegacyPlanWrap(v) for k, v in PLAN_REGISTRY.items()}
+
+
+def get_designs_for_product(product_id: str, quantity: int = 1) -> int:
+    """Backward compatibility: return daily_analyses from the plan."""
+    plan = PLAN_REGISTRY.get(product_id)
+    return plan.daily_analyses if plan else 0
+
+
+def get_dock_runs_for_product(product_id: str, quantity: int = 1) -> int:
+    """Backward compatibility: docking not gated by token packs in new model."""
+    return 0
+
+
+def validate_order_request(product_id: str, quantity: int) -> str | None:
+    """Backward compatibility: validate plan exists and is active."""
+    if product_id not in PLAN_REGISTRY:
+        return f"Unknown product: {product_id}"
+    plan = PLAN_REGISTRY[product_id]
+    if not plan.is_active:
+        return f"Product {product_id} is no longer available."
+    return None
