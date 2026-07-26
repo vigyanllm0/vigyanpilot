@@ -14,6 +14,8 @@
 6. Usage pre-check on all 4 tools
 7. Test full flow: Free blocked → Pro batch → Academic discount → Export
 
+**Test order for Phase 4:** Free → blocked → upgrade modal FIRST. If that breaks, nothing else matters. Then batch, then academic, then export. That order.
+
 ---
 
 ## Completed This Session
