@@ -5,6 +5,15 @@
 
 **⚠️ Phase 4 critical note:** `/api/usage/check` must fire **before** batch processing starts — client-side gate (feature-gate.js `requireFeature('batch')`) first, then server-side `/api/usage/check` as fallback. Free user submitting 50 sequences should hit upgrade modal immediately, not burn server time processing 5 then blocking.
 
+**Phase 4 implementation order:**
+1. Backend: usage/record endpoint + batch support in tool APIs
+2. Frontend: batch-ui.js + wire into primer.html first
+3. Wire batch into blast, msa, docking
+4. Backend: academic verification endpoint + payment discount
+5. Frontend: checkout academic UI + success page
+6. Usage pre-check on all 4 tools
+7. Test full flow: Free blocked → Pro batch → Academic discount → Export
+
 ---
 
 ## Completed This Session
