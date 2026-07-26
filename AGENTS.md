@@ -3,6 +3,8 @@
 **Session:** Phases 1–3 (Monetization — Pricing, Gating, Dashboard) — Completed Jul 2026  
 **Next Sprint:** Phase 4 (Batch Processing + Academic Email Verification) + review → git commit/push
 
+**⚠️ Phase 4 critical note:** `/api/usage/check` must fire **before** batch processing starts — client-side gate (feature-gate.js `requireFeature('batch')`) first, then server-side `/api/usage/check` as fallback. Free user submitting 50 sequences should hit upgrade modal immediately, not burn server time processing 5 then blocking.
+
 ---
 
 ## Completed This Session
