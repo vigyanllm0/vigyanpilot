@@ -546,3 +546,107 @@ footer{background:var(--black);color:rgba(255,255,255,.8);padding:56px 0 24px}
 </div>
 </div>
 </main>
+
+<footer>
+<div class="footer-grid">
+  <div class="footer-col">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+      <img src="/logo.svg" alt="VigyanLLM Logo" style="width:36px;height:36px;border-radius:8px" loading="lazy">
+      <span style="font-family:var(--font-h);font-size:18px;font-weight:800;color:#fff">VigyanLLM</span>
+    </div>
+    <p style="font-size:13px;color:rgba(255,255,255,.45);line-height:1.6">Sovereign Healthcare &amp; Life Sciences AI.<br>Built in India. For the world.</p>
+    <a href="mailto:contact@vigyanllm.in" style="color:var(--blue-light);font-size:13px;display:block;margin-top:12px">contact@vigyanllm.in</a>
+  </div>
+  <div class="footer-col">
+    <h5>Products</h5>
+    <a href="/primer">VPrime 2.0</a>
+    <a href="/search">Sequence Search</a>
+    <a href="/blast">BLAST</a>
+    <a href="/msa">MSA</a>
+    <a href="/pcr-analysis">PCR Analysis</a>
+    <a href="/crispr-analysis">CRISPR <span style="font-size:12px;font-weight:700;color:#fff;background:#F59E0B;padding:2px 6px;border-radius:99px;line-height:1.3">Coming Soon</span></a>
+    <a href="/protein-docking">Docking</a>
+  </div>
+  <div class="footer-col">
+    <h5>Platform</h5>
+    <a href="/platform">Overview</a>
+    <a href="/architecture">Architecture</a>
+    <a href="/problem">Problem</a>
+    <a href="/solution">Solution</a>
+    <a href="/compare">Compare</a>
+    <a href="/roadmap">Roadmap</a>
+  </div>
+  <div class="footer-col">
+    <h5>Resources</h5>
+    <a href="/blog/index">Blog</a>
+    <a href="/faq">FAQ</a>
+    <a href="/about">About</a>
+    <a href="/demo">Demo</a>
+    <a href="/learning-vigyanllm">Learning</a>
+    <a href="/academic-partnership">Academic Partnership</a>
+    <a href="/pricing">Pricing</a>
+  </div>
+  <div class="footer-col">
+    <h5>Contact</h5>
+    <a href="mailto:contact@vigyanllm.in">contact@vigyanllm.in</a>
+    <a href="/privacy">Privacy</a>
+    <a href="/terms">Terms</a>
+    <a href="/cookies">Cookies</a>
+    <a href="/refund">Refund</a>
+    <a href="/security">Security</a>
+    <a href="/cite-vigyanllm">Cite Us</a>
+  </div>
+</div>
+<div class="footer-bottom">
+  <span>&copy; <script>document.write(new Date().getFullYear())</script> VigyanLLM Pvt. Ltd. &middot; Sovereign Research AI</span>
+  <span>WWW.VIGYANLLM.IN</span>
+</div>
+</footer>
+<script defer src="/search-index.js"></script>
+<script defer src="/auth-shared.js"></script>
+<script>
+function transcribe(){
+  var s=document.getElementById('dna-input').value.replace(/[\s\d]/g,'').toUpperCase();
+  if(!s){alert('Please enter a DNA sequence.');return}
+  if(/[^ATGC]/g.test(s)){alert('Invalid characters. Only A, T, G, C allowed.');return}
+  var rna=s.replace(/T/g,'U');
+  var revComp=s.split('').reverse().map(function(b){return{A:'T',T:'A',G:'C',C:'G'}[b]||b}).join('');
+  var html='<div style="font-family:monospace;font-size:14px;padding:16px;background:#F8FAFC;border-radius:8px;border:1px solid #E2E8F0;word-break:break-all;line-height:1.8">';
+  html+='<strong style="color:#059669">RNA Transcript (5\'\u21923\')</strong><br>'+rna+'</div>';
+  html+='<div style="font-family:monospace;font-size:14px;margin-top:16px;padding:16px;background:#EFF6FF;border-radius:8px;border:1px solid #DBEAFE;word-break:break-all;line-height:1.8">';
+  html+='<strong style="color:#2563EB">Reverse Complement (5\'\u21923\')</strong><br>'+revComp+'</div>';
+  html+='<div style="margin-top:12px;display:flex;gap:8px">';
+  html+='<span style="font-size:12px;color:#64748B">Length: '+s.length+' bp \u00b7 RNA: '+rna.length+' nt</span>';
+  html+='<span style="font-size:12px;color:#64748B;margin-left:12px">GC: '+(s.match(/[GC]/g)||[]).length+'/'+s.length+' ('+((s.match(/[GC]/g)||[]).length/s.length*100).toFixed(1)+'%)</span>';
+  html+='</div>';
+  document.getElementById('rna-output').innerHTML=html;
+  document.getElementById('rna-count').textContent=rna.length+' nt RNA';
+}
+function clearAll(){document.getElementById('dna-input').value='';document.getElementById('rna-output').innerHTML='<span class="ph">RNA sequence will appear here</span>';document.getElementById('rna-count').textContent='';document.getElementById('char-count').textContent='0 bp'}
+function copyRna(){var t=document.getElementById('rna-output').textContent;if(!t||t==='RNA sequence will appear here'){alert('No RNA transcript to copy.');return}navigator.clipboard.writeText(t.replace(/^.*RNA.*\n/,'').split('\n')[0]).then(function(){alert('RNA sequence copied to clipboard.')}).catch(function(){alert('Copy failed. Select and copy manually.')})}
+document.addEventListener('DOMContentLoaded',function(){var e=document.getElementById('dna-input');if(e)e.addEventListener('input',function(){var c=e.value.replace(/[\s]/g,'').length;document.getElementById('char-count').textContent=c+' bp'})});
+</script>
+<div class="auth-overlay" id="authOverlay" onclick="if(event.target===this)closeAuthModal()">
+  <div class="auth-modal">
+    <button type="button" class="close-btn" onclick="closeAuthModal()">&times;</button>
+    <h2 id="authTitle">Sign in</h2>
+    <p class="sub" id="authSub">Access your VigyanLLM account</p>
+    <form onsubmit="return handleAuth(event)">
+      <div class="field" id="nameField" style="display:none"><label>Full Name</label><input type="text" id="authName" placeholder="Your name"></div>
+      <div class="field"><label>Email</label><input type="email" id="authEmail" placeholder="you@example.edu" required></div>
+      <div class="field"><label>Password</label><input type="password" id="authPass" placeholder="Min 8 characters" required></div>
+      <div class="auth-err" id="authError"></div>
+      <button type="submit" class="auth-btn" id="authSubmit">Sign in</button>
+    </form>
+    <div class="toggle-link" id="authToggle">Don't have an account? <a onclick="toggleAuthMode()">Register</a></div>
+  </div>
+</div>
+<script>
+var AUTH_MODE='login';
+function openAuthModal(){document.getElementById('authOverlay').classList.add('open');document.body.style.overflow='hidden'}
+function closeAuthModal(){document.getElementById('authOverlay').classList.remove('open');document.body.style.overflow=''}
+function toggleAuthMode(){AUTH_MODE=AUTH_MODE==='login'?'register':'login';var t=document.getElementById('authTitle'),s=document.getElementById('authSub'),b=document.getElementById('authSubmit'),n=document.getElementById('nameField'),tg=document.getElementById('authToggle');if(AUTH_MODE==='register'){t.textContent='Create account';s.textContent='Join VigyanLLM \u2014 free for Indian academic institutions';b.textContent='Create account';n.style.display='block';tg.innerHTML="Already have an account? <a onclick=\"toggleAuthMode()\">Sign in</a>"}else{t.textContent='Sign in';s.textContent='Access your VigyanLLM account';b.textContent='Sign in';n.style.display='none';tg.innerHTML="Don't have an account? <a onclick=\"toggleAuthMode()\">Register</a>"}document.getElementById('authError').style.display='none'}
+async function handleAuth(e){e.preventDefault();var err=document.getElementById('authError');err.style.display='none';var email=document.getElementById('authEmail').value;var pass=document.getElementById('authPass').value;if(pass.length<8){err.textContent='Password must be at least 8 characters';err.style.display='block';return false}try{var api=window.VIGYAN_BACKEND_URL||'';var ep=AUTH_MODE==='login'?'/api/auth/login':'/api/auth/register';var body={email:email,password:pass};if(AUTH_MODE==='register'){body.name=document.getElementById('authName').value||'User'}var r=await fetch(api+ep,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});var d=await r.json();if(!r.ok){err.textContent=d.error||'Authentication failed';err.style.display='block';return false}closeAuthModal();window.location.reload()}catch(a){err.textContent='Network error. Please try again.';err.style.display='block'}return false}
+</script>
+</body>
+</html>

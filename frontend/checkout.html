@@ -8,6 +8,7 @@
 <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
 <meta name="theme-color" content="#0F172A" />
 <meta name="robots" content="noindex, nofollow">
+<link rel="canonical" href="https://www.vigyanllm.in/checkout">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -85,6 +86,7 @@ body{background:var(--surface-alt);color:var(--text);font-family:var(--font-b);-
 var API = window.VIGYAN_BACKEND_URL || '';
 var CHECKOUT_PLAN = null;
 var CHECKOUT_DATA = null;
+var CHECKOUT_ACADEMIC = false;
 
 function getToken() { return sessionStorage.getItem('pf_token') || localStorage.getItem('pf_token'); }
 
@@ -145,6 +147,7 @@ function renderOrder(plan, pricing) {
       .then(function(r) { return r.json(); })
       .then(function(status) {
         if (status.is_academic && plan.price_inr > 0) {
+          CHECKOUT_ACADEMIC = true;
           var discounted = Math.round(plan.price_inr * 0.7);
           document.getElementById('price-amount').innerHTML = '<span style="text-decoration:line-through;color:var(--muted);font-size:18px">&#8377;' + plan.price_inr + '</span> &#8377;' + discounted;
           document.getElementById('price-period').textContent = period;
@@ -211,10 +214,12 @@ async function proceedCheckout() {
   if (!CHECKOUT_PLAN) return;
   showLoading(true);
   try {
+    var orderBody = { plan_id: CHECKOUT_PLAN };
+    if (CHECKOUT_ACADEMIC) orderBody.discount = 30;
     var r = await fetch(API + '/api/payments/create-order', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-      body: JSON.stringify({ plan_id: CHECKOUT_PLAN })
+      body: JSON.stringify(orderBody)
     });
     var d = await r.json();
     if (!r.ok) { showLoading(false); alert(d.error || 'Payment service unavailable'); return; }

@@ -1,17 +1,19 @@
 # Product Hunt Listing — VigyanLLM
 
 ## Tagline
-Sovereign biomedical AI platform for primer design, BLAST, molecular docking & more — free for researchers worldwide.
+Sovereign bioinformatics platform for primer design, BLAST, molecular docking & more — from ₹0 (free tier) to ₹699/mo Pro.
 
 ## Description
 
-VigyanLLM is a comprehensive bioinformatics platform built from the ground up for molecular biology researchers. We offer 12+ integrated tools covering the full research workflow — from primer design and BLAST searches to molecular docking and PCR analysis — all free for academic use.
+VigyanLLM is a comprehensive bioinformatics platform built from the ground up for molecular biology researchers. We offer 12+ integrated tools covering the full research workflow — from primer design and BLAST searches to molecular docking and PCR analysis.
 
 ### What makes VigyanLLM different?
 
 **Honest, validated science.** Unlike platforms that overhype "AI-powered" features, VigyanLLM uses established biophysical models: SantaLucia nearest-neighbour thermodynamics for Tm calculations, Primer3 core for primer design, and AutoDock Vina for molecular docking. Our 22-step validation pipeline checks GC content, Tm, hairpins, self-dimers, cross-dimers, and specificity — all before you order primers.
 
 **One platform, entire workflow.** Design primers with VPrime 2.0, check specificity with integrated BLAST, analyse PCR products, predict protein-ligand interactions with GPU-accelerated docking, align sequences with Clustal Omega-powered MSA, and calculate Tm/GC parameters — all without leaving your browser.
+
+**Generous free tier, affordable Pro.** Start with 5 primer designs/day and all 12 tools free. Upgrade to Pro (₹699/mo) for unlimited runs, batch processing, PDF exports, and team collaboration. Academic researchers get 30% off Pro (₹489/mo).
 
 **Built in India. For the world.** VigyanLLM runs on sovereign Indian infrastructure with DPDP/GDPR compliance. No data leaves Indian jurisdiction unless you choose to. This matters for researchers working with sensitive genomic data.
 
@@ -26,30 +28,38 @@ VigyanLLM is a comprehensive bioinformatics platform built from the ground up fo
 - **Tm Calculator** — SantaLucia nearest-neighbour thermodynamics
 - **GC Calculator** — GC content, melting temperature, molecular weight
 
+### Pricing
+| Tier | Price | Best for |
+|------|-------|----------|
+| **Free** | ₹0 | Casual use, academics evaluating the platform |
+| **Pro** | ₹699/mo (₹489/mo academic) | Active researchers, daily primer design |
+| **Lab** | ₹3,999/mo | Research groups, batch processing, team seats |
+| **Enterprise** | Custom | Institutions, on-premise deployment, SLA |
+
 ### Who is it for?
-- Molecular biology researchers
-- Clinical diagnostics laboratories
-- Biotechnology companies
-- Academic institutions (free for all)
+- Molecular biology researchers (Free tier + Pro)
+- Clinical diagnostics laboratories (Lab tier)
+- Biotechnology companies (Lab + Enterprise)
+- Academic institutions (30% Pro discount)
 - Indian researchers who need data sovereignty
 
 ## First Comment
 
 Hi Product Hunt! 👋
 
-I'm the team behind VigyanLLM — a sovereign biomedical AI platform we built because we were frustrated with how fragmented bioinformatics tools are.
+I'm the team behind VigyanLLM — a sovereign bioinformatics platform we built because we were frustrated with how fragmented bioinformatics tools are.
 
 As researchers, we found ourselves juggling 5-6 different websites: Primer3 for primer design, NCBI BLAST for specificity checking, AutoDock for docking, Clustal for alignments... each with different interfaces, different login systems, and none of them designed for the Indian research context.
 
 So we built our own.
 
-VigyanLLM brings together 12+ bioinformatics tools in one integrated platform. Design primers with VPrime 2.0's 22-step validation pipeline, BLAST against NCBI databases, dock proteins with GPU acceleration, align sequences, analyse PCR products — all in one place. Free for academic researchers.
+VigyanLLM brings together 12+ bioinformatics tools in one integrated platform. Design primers with VPrime 2.0's 22-step validation pipeline, BLAST against NCBI databases, dock proteins with GPU acceleration, align sequences, analyse PCR products — all in one place. Start free, upgrade when you need more.
 
 Key things we're proud of:
 - **Honest science**: No AI hype. Our Tm calculations use SantaLucia nearest-neighbour thermodynamics, our primer design uses Primer3 — the gold standard.
 - **Data sovereignty**: Built on Indian infrastructure. DPDP/GDPR compliant. Your genomic data stays under your control.
 - **22-step validation**: Every primer pair goes through comprehensive biophysical validation before you order.
-- **Free for academics**: No paywalls, no usage limits for research use.
+- **Pricing that works for India**: Pro at ₹699/mo — less than the cost of a single failed primer order. Academic discount brings it to ₹489/mo. Free tier to evaluate with zero risk.
 
 We'd love your feedback! What tools would you like to see next? What would make your research workflow easier?
 

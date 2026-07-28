@@ -2690,7 +2690,7 @@ def create_app() -> Flask:
                             v = _json.dumps(v)[:200]
                         pdf.multi_cell(0, 5, f"{k}: {v}")
         import io
-        return Response(pdf.output(), mimetype="application/pdf", headers={"Content-Disposition": f"attachment; filename={tool}_report.pdf"}), 200
+        return Response(bytes(pdf.output()), mimetype="application/pdf", headers={"Content-Disposition": f"attachment; filename={tool}_report.pdf"}), 200
 
     @app.route("/api/export/pptx", methods=["POST"])
     @require_auth

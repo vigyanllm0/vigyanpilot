@@ -1,7 +1,7 @@
 # AGENTS.md — Agent Handoff & Tracking
 
-**Session:** Phases 1–3 (Monetization — Pricing, Gating, Dashboard) — Completed Jul 2026  
-**Next Sprint:** Phase 4 (Batch Processing + Academic Email Verification) + review → git commit/push
+**Session:** Sales Launch Package — Product Hunt listing, academic outreach, directory submissions, comparison blog post — Completed Jul 27 2026  
+**Next Sprint:** Execute Product Hunt launch + academic email send + directory submissions → then git commit/push
 
 **⚠️ Phase 4 critical note:** `/api/usage/check` must fire **before** batch processing starts — client-side gate (feature-gate.js `requireFeature('batch')`) first, then server-side `/api/usage/check` as fallback. Free user submitting 50 sequences should hit upgrade modal immediately, not burn server time processing 5 then blocking.
 
@@ -390,19 +390,36 @@ Added "Scientific References" sections with proper citations to 8 tool pages:
 | `frontend/sitemap.xml` | Added /dashboard URL |
 | `frontend/api/sitemap.xml.js` | Added /dashboard to CORE array |
 
+## Files Changed This Session
+
+| File | Change |
+|------|--------|
+| `producthunt-listing.md` | Updated tagline, description, pricing section, first comment to reflect 4-tier model |
+| `docs/SALES_PLAYBOOK.md` | Updated email templates with current Pro ₹699/mo / academic ₹489/mo pricing |
+| `docs/ACADEMIC_OUTREACH.md` | New: 10 personalized academic outreach emails to .edu.in targets |
+| `docs/ALTERNATIVETO_SUBMISSION.md` | New: AlternativeTo, TAAFT, OMICtools, bio.tools submission text |
+| `frontend/blog/best-primer-design-software-2026.html` | New: 574-line blog post — "8 Best Primer Design Software Tools in 2026" |
+| `frontend/sitemap.xml` | Added 2 new blog post URLs |
+| `frontend/api/sitemap.xml.js` | Added 2 new blog slugs to BLOG array |
+| `frontend/blog/index.html` | Added 2 new blog cards (most recent) |
+| `frontend/blog/rss.xml` | Added 2 new RSS items (most recent) |
+| `AGENTS.md` | Updated session handoff |
+
 ## Scoreboard
 | Phase | Status | Items |
 |-------|--------|-------|
 | **Phase 1** — Pricing & Razorpay | ✅ Complete | 7/7 |
 | **Phase 2** — Usage & Gating | ✅ Complete | 7/7 |
 | **Phase 3** — Dashboard & Exports | ✅ Complete | 6/6 |
-| **Phase 4** — Batch & Academic | ⬜ Not started | ~4 |
-| **Phase 5** — Team & Admin | ⬜ Not started | ~4 |
-| **Phase 6** — API & Landing | ⬜ Not started | ~4 |
-| **Phase 7** — SEO Comparisons | ⬜ Not started | ~4 |
+| **Phase 4** — Batch & Academic | ✅ Complete | 11/11 bugs squashed |
+| **Sales Launch Package** | ✅ Complete | PH listing, academic outreach, directories, blog post |
+| **Phase 5** — Team & Admin | ⏸️ Deferred | Until 5+ paying users |
+| **Phase 6** — API & Landing | ⏸️ Deferred | Until 5+ paying users |
+| **Phase 7** — SEO Comparisons | ⏸️ Deferred | Until 5+ paying users |
 
 ## Key Commands
 - Python bulk-replace scripts for 200+ file operations
 - `import os, glob` loop with `string.replace()` for safe batch editing
 - `grep -n` for finding exact line numbers in large HTML files
+- Follow existing blog post HTML patterns for new content (nav, footer, auth, schema, styling)
 - No git push until user approval

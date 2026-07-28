@@ -941,3 +941,39 @@ def update_profile():
             "role": updated["role"],
         },
     }), 200
+
+
+# ══════════════════════════════════════════════════════════════════════════
+# ACADEMIC VERIFICATION (for checkout.html frontend)
+# ══════════════════════════════════════════════════════════════════════════
+
+@auth_bp.route("/api/auth/verify-academic", methods=["POST"])
+@require_auth
+def verify_academic():
+    """Verify user's email as academic (auto-detect from domain)."""
+    import re
+    email = g.user["email"]
+    try:
+        domain = email.split("@")[1].lower()
+    except Exception:
+        return jsonify({"is_academic": False, "message": "Invalid email address"}), 400
+
+    is_academic = bool(re.search(
+        r'(^|\.)(edu|ac\.in|edu\.in|ac\.uk|edu\.au|ac\.nz|ac\.jp|edu\.cn|ac\.cn|ac\.kr|edu\.kr|ac\.th|edu\.tw|ac\.za|edu\.mx|ac\.cl|edu\.ar|edu\.sg|edu\.my|edu\.hk|ac\.id|edu\.eg|ac\.ma|edu\.vn|edu\.pk|ac\.ir|edu\.tr|edu\.jo|edu\.lb|ac\.il)(\.[a-z]{2})?$',
+        domain, re.I
+    )) or ".edu." in domain or ".ac." in domain
+
+    if is_academic:
+        uid = fetch_one("SELECT id FROM users WHERE email = %s", (email,))
+        if uid:
+            try:
+                execute("""
+                    INSERT INTO academic_claims (user_id, email_edu, status, created_at)
+                    VALUES (%s, %s, 'approved', NOW())
+                    ON CONFLICT (user_id) DO UPDATE SET status = 'approved'
+                """, (uid["id"], email))
+            except Exception:
+                pass
+        return jsonify({"is_academic": True, "message": "Academic email verified!"}), 200
+    else:
+        return jsonify({"is_academic": False, "message": "Not recognized as academic. Contact support if you believe this is an error."}), 200

@@ -29,7 +29,7 @@ import os
 import time
 
 import razorpay
-from flask import Blueprint, g, jsonify, request
+from flask import Blueprint, Response, g, jsonify, request
 
 from .database import (
     execute,
@@ -44,6 +44,9 @@ from .price_registry import (
     FREE_TRIAL_RUNS,
     PRICE_REGISTRY,
     TOPUP_PRICE_INR,
+    ACADEMIC_DISCOUNT_PCT,
+    PLAN_REGISTRY,
+    get_academic_price,
     get_amount_paise,
     get_designs_for_product,
     get_dock_runs_for_product,
@@ -215,25 +218,29 @@ def _credit_tokens_atomic(user_id: int, order_id: str, product_id: str,
 
 @payment_bp.route("/api/payments/pricing", methods=["GET"])
 def get_pricing():
-    """Public endpoint: return all product pricing from registry."""
-    products = []
-    for pid, cfg in PRICE_REGISTRY.items():
-        if cfg.is_active:
-            products.append({
-                "product_id": cfg.product_id,
-                "display_name": cfg.display_name,
-                "product_type": cfg.product_type.value,
-                "price_inr": cfg.price_inr,
-                "designs_included": cfg.designs_included,
-                "period": cfg.period,
-                "max_seats": cfg.max_seats,
-                "description": cfg.description,
-            })
+    """Public endpoint: return all plan pricing from registry."""
+    plans = []
+    for cfg in PLAN_REGISTRY.values():
+        if not cfg.is_active:
+            continue
+        plans.append({
+            "plan_id": cfg.plan_id,
+            "display_name": cfg.display_name,
+            "tier": cfg.tier.value,
+            "billing": cfg.billing.value,
+            "price_inr": cfg.price_inr,
+            "academic_price_inr": get_academic_price(cfg.price_inr) if cfg.price_inr > 0 else 0,
+            "daily_analyses": cfg.daily_analyses,
+            "batch_max_seq": cfg.batch_max_seq,
+            "api_calls_per_month": cfg.api_calls_per_month,
+            "max_seats": cfg.max_seats,
+            "period": cfg.period,
+            "description": cfg.description,
+        })
 
     return jsonify({
-        "products": products,
-        "top_up_price_inr": TOPUP_PRICE_INR,
-        "free_trial_runs": FREE_TRIAL_RUNS,
+        "plans": plans,
+        "academic_discount_pct": ACADEMIC_DISCOUNT_PCT,
         "currency": "INR",
     }), 200
 
@@ -270,6 +277,12 @@ def create_order():
 
     # Calculate amount from server-side registry (NEVER from client)
     amount_paise = get_amount_paise(product_id, quantity)
+
+    # Apply academic discount if applicable
+    discount = data.get("discount", 0)
+    if discount:
+        discount = min(int(discount), ACADEMIC_DISCOUNT_PCT)
+        amount_paise = int(amount_paise * (100 - discount) / 100)
 
     # Determine designs to credit for display
     designs = get_designs_for_product(product_id, quantity)
@@ -698,3 +711,405 @@ def user_profitability(user_id: int):
     if not summary:
         return jsonify({"error": "User not found."}), 404
     return jsonify(summary), 200
+
+
+# ══════════════════════════════════════════════════════════════════════════
+# PLAN STATUS (for checkout.html frontend)
+# ══════════════════════════════════════════════════════════════════════════
+
+@payment_bp.route("/api/payments/status", methods=["GET"])
+@payment_bp.route("/api/payment/status", methods=["GET"])
+@require_auth
+def payment_status():
+    """Get current user's plan and usage status (PostgreSQL)."""
+    import re
+    email = g.user["email"]
+
+    # Get subscription info
+    sub = fetch_one(
+        """SELECT s.is_active, s.plan_id, s.monthly_quota, s.quota_used,
+                  s.quota_reset_at, s.expires_at
+           FROM subscriptions s
+           JOIN users u ON u.id = s.user_id
+           WHERE u.email = %s AND s.is_active = true""",
+        (email,)
+    )
+
+    # Get academic status
+    acad = fetch_one(
+        """SELECT status FROM academic_claims WHERE user_id = (SELECT id FROM users WHERE email = %s)""",
+        (email,)
+    )
+    is_academic = bool(acad and acad["status"] == "approved")
+
+    # Auto-detect academic status if not yet set
+    if not is_academic:
+        try:
+            domain = email.split("@")[1].lower()
+            _edu_re = r'(^|\.)(edu|ac\.in|edu\.in|ac\.uk|edu\.au|ac\.nz|ac\.jp|edu\.cn|ac\.cn|ac\.kr|edu\.kr|ac\.th|edu\.tw|ac\.za|edu\.mx|ac\.cl|edu\.ar|edu\.sg|edu\.my|edu\.hk|ac\.id|edu\.eg|ac\.ma|edu\.vn|edu\.pk|ac\.ir|edu\.tr|edu\.jo|edu\.lb|ac\.il)(\.[a-z]{2})?$'
+            if re.search(_edu_re, domain, re.I) or ".edu." in domain or ".ac." in domain:
+                is_academic = True
+                try:
+                    uid = fetch_one("SELECT id FROM users WHERE email = %s", (email,))
+                    if uid:
+                        execute("""
+                            INSERT INTO academic_claims (user_id, email_edu, status, created_at)
+                            VALUES (%s, %s, 'approved', NOW())
+                            ON CONFLICT (user_id) DO UPDATE SET status = 'approved'
+                        """, (uid["id"], email))
+                except Exception:
+                    pass
+        except Exception:
+            pass
+
+    # Get usage info from check_usage
+    usage = check_usage(email)
+
+    FREE_DAILY_LIMIT = 5
+    plan = "free"
+    billing_cycle = "monthly"
+    plan_expires_at = 0
+
+    uid_row = fetch_one("SELECT id FROM users WHERE email = %s", (email,))
+    user_id = uid_row["id"] if uid_row else None
+
+    if sub:
+        plan = sub["plan_id"] or "free"
+        if plan:
+            plan = plan.split("-")[0] if "-" in plan else plan
+        if sub.get("expires_at"):
+            try:
+                plan_expires_at = int(sub["expires_at"].timestamp())
+            except Exception:
+                plan_expires_at = 0
+        billing_cycle = "monthly"
+        if sub["plan_id"] and "-" in (sub["plan_id"] or ""):
+            billing_cycle = sub["plan_id"].split("-")[1] if len(sub["plan_id"].split("-")) > 1 else "monthly"
+
+    # Count today's usage from agent_work_logs (works for all tiers)
+    today_start = time.time() - (time.time() % 86400)
+    today_usage = 0
+    if user_id:
+        try:
+            row = fetch_one(
+                """SELECT COUNT(*) AS cnt FROM agent_work_logs
+                   WHERE user_id = %s AND completed_at >= to_timestamp(%s)""",
+                (user_id, today_start)
+            )
+            if row:
+                today_usage = row["cnt"] or 0
+        except Exception:
+            pass
+
+    if sub and sub.get("is_active") and plan != "free":
+        daily_quota = sub["monthly_quota"] or FREE_DAILY_LIMIT
+        daily_used = sub["quota_used"] or 0
+        can_analyze = daily_used < daily_quota
+        remaining = max(0, daily_quota - daily_used)
+    else:
+        daily_quota = FREE_DAILY_LIMIT
+        daily_used = today_usage
+        can_analyze = today_usage < FREE_DAILY_LIMIT
+        remaining = max(0, FREE_DAILY_LIMIT - today_usage)
+
+    return jsonify({
+        "plan": plan,
+        "billing_cycle": billing_cycle,
+        "plan_activated_at": 0,
+        "plan_expires_at": plan_expires_at,
+        "is_academic": is_academic,
+        "academic_discount": 30 if is_academic else 0,
+        "daily": {
+            "can_analyze": can_analyze,
+            "used": daily_used,
+            "limit": daily_quota,
+            "remaining": remaining,
+            "tool_used": 0,
+            "tool_limit": daily_quota,
+        },
+        "api": {"can_call": True, "used": 0, "limit": 0},
+        "razorpay_key_id": RAZORPAY_KEY_ID,
+    }), 200
+
+
+# ══════════════════════════════════════════════════════════════════════════
+# USAGE CHECK & RECORD (for frontend gates)
+# ══════════════════════════════════════════════════════════════════════════
+
+@payment_bp.route("/api/usage/check", methods=["GET"])
+@require_auth
+def usage_check():
+    """Check if user can run an analysis (daily limit for free, monthly for paid)."""
+    email = g.user["email"]
+    today_start = time.time() - (time.time() % 86400)
+    uid_row = fetch_one("SELECT id FROM users WHERE email = %s", (email,))
+    user_id = uid_row["id"] if uid_row else None
+
+    # Get subscription info
+    sub = fetch_one(
+        """SELECT s.is_active, s.plan_id, s.monthly_quota, s.quota_used
+           FROM subscriptions s JOIN users u ON u.id = s.user_id
+           WHERE u.email = %s AND s.is_active = true""",
+        (email,)
+    )
+
+    FREE_DAILY = 5
+    if sub and sub.get("is_active"):
+        limit = sub["monthly_quota"] or FREE_DAILY
+        used = sub["quota_used"] or 0
+        remaining = max(0, limit - used)
+        can_analyze = remaining > 0
+    else:
+        # Free tier: count today's agent_work_logs
+        used = 0
+        if user_id:
+            try:
+                row = fetch_one(
+                    """SELECT COUNT(*) AS cnt FROM agent_work_logs
+                       WHERE user_id = %s AND completed_at >= to_timestamp(%s)""",
+                    (user_id, today_start)
+                )
+                if row:
+                    used = row["cnt"] or 0
+            except Exception:
+                pass
+        limit = FREE_DAILY
+        remaining = max(0, limit - used)
+        can_analyze = used < limit
+
+    return jsonify({
+        "can_analyze": can_analyze,
+        "used": used,
+        "limit": limit,
+        "remaining": remaining,
+    }), 200
+
+
+@payment_bp.route("/api/usage/record", methods=["POST"])
+@require_auth
+def usage_record():
+    """Record a completed analysis in agent_work_logs."""
+    data = request.get_json(silent=True) or {}
+    email = g.user["email"]
+    sequences_count = int(data.get("sequences_count", 1))
+    uid_row = fetch_one("SELECT id FROM users WHERE email = %s", (email,))
+    if not uid_row:
+        return jsonify({"error": "User not found"}), 404
+    user_id = uid_row["id"]
+
+    try:
+        execute(
+            """INSERT INTO agent_work_logs (user_id, agent_name, status, completed_at)
+               VALUES (%s, 'primer_analysis', 'completed', NOW())""",
+            (user_id,)
+        )
+    except Exception as e:
+        logger.error("Failed to record usage: %s", e)
+        return jsonify({"error": "Internal server error"}), 500
+
+    return jsonify({"success": True}), 200
+
+
+# ══════════════════════════════════════════════════════════════════════════
+# RESULTS & EXPORT (for dashboard frontend)
+# ══════════════════════════════════════════════════════════════════════════
+
+@payment_bp.route("/api/results/save", methods=["POST"])
+@require_auth
+def save_result():
+    """Save a user's analysis result."""
+    import json as _json
+    data = request.get_json(silent=True) or {}
+    email = g.user["email"]
+    tool = (data.get("tool") or "").strip()
+    if not tool:
+        return jsonify({"error": "Tool name required"}), 400
+    uid_row = fetch_one("SELECT id FROM users WHERE email = %s", (email,))
+    if not uid_row:
+        return jsonify({"error": "User not found"}), 404
+    user_id = uid_row["id"]
+    title = data.get("title") or ""
+    job_id = data.get("job_id") or ""
+    inputs = _json.dumps(data.get("inputs", {}))
+    outputs = _json.dumps(data.get("outputs", {}))
+    seq_count = int(data.get("sequences_count", 0))
+    try:
+        rid = execute(
+            """INSERT INTO user_reports (user_id, title, full_result)
+               VALUES (%s, %s, %s) RETURNING id""",
+            (user_id, title, _json.dumps({"tool": tool, "inputs": inputs, "outputs": outputs, "job_id": job_id, "seq_count": seq_count}))
+        )
+        if isinstance(rid, (list, tuple)):
+            rid = rid[0]
+        return jsonify({"success": True, "id": rid}), 200
+    except Exception as e:
+        logger.error("Failed to save result: %s", e)
+        return jsonify({"error": "Internal server error"}), 500
+
+
+@payment_bp.route("/api/results/list", methods=["GET"])
+@require_auth
+def list_results():
+    """List saved results for the current user."""
+    email = g.user["email"]
+    limit = min(int(request.args.get("limit", 20)), 100)
+    offset = int(request.args.get("offset", 0))
+    tool_filter = (request.args.get("tool") or "").strip()
+    uid_row = fetch_one("SELECT id FROM users WHERE email = %s", (email,))
+    if not uid_row:
+        return jsonify({"results": [], "total": 0}), 200
+    user_id = uid_row["id"]
+    try:
+        if tool_filter:
+            rows = fetch_all(
+                """SELECT id, title, full_result, created_at
+                   FROM user_reports WHERE user_id = %s
+                   ORDER BY created_at DESC LIMIT %s OFFSET %s""",
+                (user_id, limit, offset)
+            )
+            total = fetch_one(
+                "SELECT COUNT(*) AS cnt FROM user_reports WHERE user_id = %s",
+                (user_id,)
+            )
+        else:
+            rows = fetch_all(
+                """SELECT id, title, full_result, created_at
+                   FROM user_reports WHERE user_id = %s
+                   ORDER BY created_at DESC LIMIT %s OFFSET %s""",
+                (user_id, limit, offset)
+            )
+            total = fetch_one(
+                "SELECT COUNT(*) AS cnt FROM user_reports WHERE user_id = %s",
+                (user_id,)
+            )
+    except Exception as e:
+        logger.error("Failed to list results: %s", e)
+        return jsonify({"error": "Internal server error"}), 500
+    results = []
+    for r in rows:
+        import json as _json
+        try:
+            fr = r.get("full_result")
+            if isinstance(fr, str):
+                full = _json.loads(fr)
+            elif isinstance(fr, dict):
+                full = fr
+            else:
+                full = {}
+        except Exception:
+            full = {}
+        results.append({
+            "id": r["id"],
+            "tool": full.get("tool", ""),
+            "title": r.get("title", ""),
+            "inputs": full.get("inputs", {}),
+            "outputs": full.get("outputs", {}),
+            "sequences_count": full.get("seq_count", 0),
+            "job_id": full.get("job_id", ""),
+            "created_at": str(r["created_at"]) if r.get("created_at") else "",
+        })
+    return jsonify({"results": results, "total": total["cnt"] if total else 0}), 200
+
+
+@payment_bp.route("/api/results/delete", methods=["POST"])
+@require_auth
+def delete_result():
+    """Delete a saved result."""
+    data = request.get_json(silent=True) or {}
+    rid = data.get("id")
+    if not rid:
+        return jsonify({"error": "Result ID required"}), 400
+    email = g.user["email"]
+    uid_row = fetch_one("SELECT id FROM users WHERE email = %s", (email,))
+    if not uid_row:
+        return jsonify({"error": "User not found"}), 404
+    user_id = uid_row["id"]
+    try:
+        row = fetch_one(
+            "SELECT id FROM user_reports WHERE id = %s AND user_id = %s",
+            (rid, user_id)
+        )
+        if not row:
+            return jsonify({"error": "Result not found"}), 404
+        execute("DELETE FROM user_reports WHERE id = %s AND user_id = %s", (rid, user_id))
+        return jsonify({"success": True}), 200
+    except Exception as e:
+        logger.error("Failed to delete result: %s", e)
+        return jsonify({"error": "Internal server error"}), 500
+
+
+@payment_bp.route("/api/export/pdf", methods=["POST"])
+@require_auth
+def export_pdf():
+    """Export analysis results as PDF."""
+    import json as _json
+    import io
+    data = request.get_json(silent=True) or {}
+    tool = (data.get("tool") or "analysis").strip()
+    inputs = data.get("inputs", {})
+    outputs = data.get("outputs", {})
+    from fpdf import FPDF
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Helvetica", "B", 16)
+    pdf.cell(0, 10, f"VigyanLLM - {tool.capitalize()} Report", new_x="LMARGIN", new_y="NEXT", align="C")
+    pdf.set_font("Helvetica", "", 10)
+    pdf.cell(0, 8, f"Generated: {time.strftime('%Y-%m-%d %H:%M')}", new_x="LMARGIN", new_y="NEXT", align="C")
+    pdf.ln(10)
+    if inputs:
+        pdf.set_font("Helvetica", "B", 12)
+        pdf.cell(0, 10, "Input Parameters", new_x="LMARGIN", new_y="NEXT")
+        pdf.set_font("Helvetica", "", 9)
+        for k, v in inputs.items():
+            if isinstance(v, (dict, list)):
+                v = _json.dumps(v)[:200]
+            pdf.multi_cell(0, 5, f"{k}: {v}")
+        pdf.ln(5)
+    if outputs:
+        pdf.set_font("Helvetica", "B", 12)
+        pdf.cell(0, 10, "Results Summary", new_x="LMARGIN", new_y="NEXT")
+        pdf.set_font("Helvetica", "", 9)
+        if isinstance(outputs, str):
+            pdf.multi_cell(0, 5, outputs[:2000])
+        elif isinstance(outputs, dict):
+            summary = outputs.get("summary", _json.dumps(outputs)[:500])
+            if isinstance(summary, str):
+                pdf.multi_cell(0, 5, summary[:2000])
+            else:
+                for k, v in (summary.items() if isinstance(summary, dict) else [(k, v) for k, v in outputs.items()]):
+                    if isinstance(v, (dict, list)):
+                        v = _json.dumps(v)[:200]
+                    pdf.multi_cell(0, 5, f"{k}: {v}")
+    return Response(bytes(pdf.output()), mimetype="application/pdf", headers={"Content-Disposition": f"attachment; filename={tool}_report.pdf"}), 200
+
+
+@payment_bp.route("/api/export/pptx", methods=["POST"])
+@require_auth
+def export_pptx():
+    """Export analysis results as PPTX."""
+    import json as _json
+    import io
+    data = request.get_json(silent=True) or {}
+    tool = (data.get("tool") or "analysis").strip()
+    outputs = data.get("outputs", {})
+    from pptx import Presentation
+    from pptx.util import Inches, Pt
+    prs = Presentation()
+    slide = prs.slides.add_slide(prs.slide_layouts[6])
+    txBox = slide.shapes.add_textbox(Inches(0.5), Inches(0.5), Inches(9), Inches(0.8))
+    tf = txBox.text_frame
+    p = tf.paragraphs[0]
+    p.text = f"VigyanLLM - {tool.capitalize()} Report"
+    p.font.size = Pt(24)
+    if outputs:
+        slide2 = prs.slides.add_slide(prs.slide_layouts[6])
+        txBox2 = slide2.shapes.add_textbox(Inches(0.5), Inches(0.5), Inches(9), Inches(5))
+        tf2 = txBox2.text_frame
+        summary = outputs.get("summary", str(outputs)[:500]) if isinstance(outputs, dict) else str(outputs)[:500]
+        p2 = tf2.paragraphs[0]
+        p2.text = str(summary)[:1000]
+        p2.font.size = Pt(14)
+    buf = io.BytesIO()
+    prs.save(buf)
+    buf.seek(0)
+    return Response(buf.read(), mimetype="application/vnd.openxmlformats-officedocument.presentationml.presentation", headers={"Content-Disposition": f"attachment; filename={tool}_report.pptx"}), 200

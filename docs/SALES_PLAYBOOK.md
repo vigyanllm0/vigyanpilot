@@ -80,17 +80,17 @@ Ready to achieve similar results? [Start free trial →](/primer) or [Contact us
 
 ### Cold Outreach — Academic Lab
 
-**Subject:** Free primer design tools for [Lab Name] research
+**Subject:** Discounted primer design tools for [Lab Name] research
 
 Hi [Name],
 
-I noticed your lab's work on [specific research topic]. We built VigyanLLM Primer — a 24-step validated primer design pipeline that runs entirely on-premise.
+I noticed your lab's work on [specific research topic]. We built VigyanLLM Primer — a 22-step validated primer design pipeline that runs entirely in-browser.
 
-Many academic labs tell us they spend hours manually validating primers across Primer3 and BLAST. Our pipeline does all 24 checks in one run and generates an audit-ready PDF.
+Many academic labs tell us they spend hours manually validating primers across Primer3 and BLAST. Our pipeline does all 22 checks in one run and generates an audit-ready PDF.
 
-We offer free access for qualifying academic institutions — no credit card, no feature gates.
+We offer a free tier (5 designs/day) and a 30% academic discount on Pro — bringing it to ₹489/month (~$6 USD) for unlimited designs, batch processing, and PDF/PPTX exports. No credit card needed to start.
 
-Would you be interested in a 30-day free evaluation?
+Would your lab be interested in trying the free tier?
 
 Best,
 [Name]
@@ -102,15 +102,15 @@ VigyanLLM
 
 Hi [Name],
 
-I'm reaching out because [Company Name]'s work in [area] may benefit from on-premise primer design infrastructure.
+I'm reaching out because [Company Name]'s work in [area] may benefit from VigyanLLM's primer design infrastructure.
 
 VigyanLLM provides:
-- On-premise Docker deployment (no data leaves your network)
-- 24-step biophysical validation per primer pair
+- 22-step biophysical validation per primer pair (GC, Tm, hairpins, dimers, specificity)
 - Batch processing for high-throughput panels
-- Audit-ready PDF reports for GxP workflows
+- Audit-ready PDF/PPTX reports for GxP workflows
+- Free tier to evaluate with zero risk
 
-Plans start at ₹2,499/month (~$30 USD). We also offer enterprise on-premise deployments with SLA support.
+Pro plan at ₹699/month (~$8.50 USD). Lab plan at ₹3,999/month for teams. Enterprise on-premise deployments with SLA support also available.
 
 Would you have 15 min for a quick demo this week?
 
@@ -125,7 +125,7 @@ Hi [Name],
 
 Just circling back on my previous email. Happy to hop on a 15-min call to show you how VigyanLLM works for your specific use case.
 
-No obligation — just a quick walkthrough.
+No obligation — just a quick walkthrough of the free tier.
 
 Best,
 [Name]
