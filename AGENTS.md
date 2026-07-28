@@ -405,6 +405,12 @@ Added "Scientific References" sections with proper citations to 8 tool pages:
 | `frontend/blog/rss.xml` | Added 2 new RSS items (most recent) |
 | `AGENTS.md` | Updated session handoff |
 
+## Files Changed This Session
+
+| File | Change |
+|------|--------|
+| `primerforge/primer_server.py` | Fixed BLAST+MSA endpoints to allow anonymous access — removed hard `_auth_user()` gate on BLAST, made `get_current_user()` optional on MSA, guarded daily checks/recording with `if user` so unauthenticated requests are processed without limits |
+
 ## Scoreboard
 | Phase | Status | Items |
 |-------|--------|-------|

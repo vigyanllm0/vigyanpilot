@@ -1631,26 +1631,29 @@ def create_app() -> Flask:
                 return None, str(exc)[:200]
 
         user, auth_err = _auth_user()
-        if auth_err: return auth_err
+        # Allow anonymous BLAST — no auth required for basic searches
+        is_anon = bool(auth_err)
 
         if sequences:
             # Batch mode
             n_seqs = len(sequences)
-            chk = _daily_check(user, "blast")
-            if chk.get("code") == "DAILY_LIMIT": return jsonify(chk), 402
-            if not USE_POSTGRES:
-                from .auth import check_daily_usage
-                usage = check_daily_usage(user["email"], "blast")
-                max_batch = usage.get("batch_max_seq", 1)
-                if n_seqs > max_batch:
-                    return jsonify({"error": f"Batch limit is {max_batch} sequences for your plan.", "code": "BATCH_LIMIT", "batch_max_seq": max_batch}), 402
+            if not is_anon:
+                chk = _daily_check(user, "blast")
+                if chk.get("code") == "DAILY_LIMIT": return jsonify(chk), 402
+                if not USE_POSTGRES:
+                    from .auth import check_daily_usage
+                    usage = check_daily_usage(user["email"], "blast")
+                    max_batch = usage.get("batch_max_seq", 1)
+                    if n_seqs > max_batch:
+                        return jsonify({"error": f"Batch limit is {max_batch} sequences for your plan.", "code": "BATCH_LIMIT", "batch_max_seq": max_batch}), 402
             results = []
             errors = []
             for seq in sequences:
                 r, e = _blast_one(seq)
                 if e: errors.append({"sequence": seq[:50], "error": e})
                 else: results.append(r)
-            _record_usage(user, "blast", n_seqs)
+            if not is_anon:
+                _record_usage(user, "blast", n_seqs)
             return jsonify({"results": results, "errors": errors, "total": len(results), "failed": len(errors)}), 200
 
         clean = query_sequence.upper().replace(" ", "").replace("\n", "")
@@ -1658,13 +1661,15 @@ def create_app() -> Flask:
             return err("Invalid sequence. Only DNA/RNA letters allowed.", "VALIDATION_ERROR", 400)
 
         # Single sequence
-        chk = _daily_check(user, "blast")
-        if chk.get("code") == "DAILY_LIMIT": return jsonify(chk), 402
+        if not is_anon:
+            chk = _daily_check(user, "blast")
+            if chk.get("code") == "DAILY_LIMIT": return jsonify(chk), 402
 
         try:
             result, blast_err = _blast_one(query_sequence)
             if blast_err: return err(f"BLAST failed: {blast_err}", "BLAST_FAILED", 500)
-            _record_usage(user, "blast", 1)
+            if not is_anon:
+                _record_usage(user, "blast", 1)
             return jsonify(result), 200
         except Exception as exc:
             logger.error("BLAST error: %s", exc, exc_info=True)
@@ -2092,17 +2097,16 @@ def create_app() -> Flask:
             return err("At least 2 sequences are required for MSA.", "VALIDATION_ERROR", 400)
 
         user = get_current_user()
-        if not user:
-            return jsonify({"error": "Authentication required.", "code": "AUTH_REQUIRED", "action": "show_auth"}), 401
         n = len(sequences)
-        if not USE_POSTGRES:
-            from .auth import check_daily_usage, record_daily_usage
-            usage = check_daily_usage(user["email"], "msa")
-            if not usage["can_analyze"] and user.get("role") != "admin":
-                return jsonify({"error": "Daily limit reached.", "code": "DAILY_LIMIT", "usage": usage}), 402
-            max_batch = usage.get("batch_max_seq", 50)
-            if n > max_batch:
-                return jsonify({"error": f"Batch limit is {max_batch} sequences for your plan.", "code": "BATCH_LIMIT", "batch_max_seq": max_batch}), 402
+        if user:
+            if not USE_POSTGRES:
+                from .auth import check_daily_usage, record_daily_usage
+                usage = check_daily_usage(user["email"], "msa")
+                if not usage["can_analyze"] and user.get("role") != "admin":
+                    return jsonify({"error": "Daily limit reached.", "code": "DAILY_LIMIT", "usage": usage}), 402
+                max_batch = usage.get("batch_max_seq", 50)
+                if n > max_batch:
+                    return jsonify({"error": f"Batch limit is {max_batch} sequences for your plan.", "code": "BATCH_LIMIT", "batch_max_seq": max_batch}), 402
 
         try:
             from primerforge.engine.msa_viewer import (
@@ -2120,7 +2124,7 @@ def create_app() -> Flask:
                 process_job(job_id)
                 job = get_job(job_id)
                 if job["status"] == "DONE":
-                    if not USE_POSTGRES:
+                    if user and not USE_POSTGRES:
                         try: record_daily_usage(user["email"], "msa", n)
                         except: pass
                     return jsonify({
@@ -2137,7 +2141,7 @@ def create_app() -> Flask:
             viewer["fasta"] = format_fasta(sequences)
             viewer["clustal"] = format_clustal(viewer.get("alignment", []))
             viewer["summary"] = get_msa_summary(viewer)
-            if not USE_POSTGRES:
+            if user and not USE_POSTGRES:
                 try: record_daily_usage(user["email"], "msa", n)
                 except: pass
             return jsonify(viewer), 200
@@ -2155,10 +2159,8 @@ def create_app() -> Flask:
         if not sequences or len(sequences) < 2:
             return err("At least 2 sequences required.", "VALIDATION_ERROR", 400)
         user = get_current_user()
-        if not user:
-            return jsonify({"error": "Authentication required.", "code": "AUTH_REQUIRED", "action": "show_auth"}), 401
         n = len(sequences)
-        if not USE_POSTGRES:
+        if user and not USE_POSTGRES:
             from .auth import check_daily_usage, record_daily_usage
             usage = check_daily_usage(user["email"], "msa")
             if not usage["can_analyze"] and user.get("role") != "admin":
@@ -2170,7 +2172,7 @@ def create_app() -> Flask:
         job_id = create_job(sequences, reference_id)
         import threading
         threading.Thread(target=process_job, args=(job_id,), daemon=True).start()
-        if not USE_POSTGRES:
+        if user and not USE_POSTGRES:
             try:
                 from .auth import record_daily_usage
                 record_daily_usage(user["email"], "msa", n)
