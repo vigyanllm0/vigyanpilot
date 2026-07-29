@@ -35,13 +35,12 @@ class ProbeDesignStep(PipelineStep):
         """
         Design TaqMan probes for each ranked primer pair.
 
-        Always runs — probes are designed even when the frontend probe-mode
-        checkbox is off.  The checkbox only controls whether the advanced
-        probe-config panel is visible, not whether probes are generated.
+        Only runs when probe_mode is True (user checked the probe design
+        checkbox).  When skipped, primers are returned without probes.
 
         Tm relaxation: if no probe passes the configured Tm offset range,
-        the target is lowered by 1°C increments (offset -1 each step) until
-        a valid candidate is found or a minimum offset of +3°C is reached.
+        falls back to candidates passing all non-Tm constraints, sorted
+        by proximity to target Tm.
 
         Input keys:
             ranked_pairs: list of primer pair dicts
@@ -52,6 +51,7 @@ class ProbeDesignStep(PipelineStep):
                 type, reporter, quencher, tm_offset_min, tm_offset_max,
                 len_min, len_max, gc_min, gc_max, hairpin_limit,
                 mod5, mod3
+            probe_mode: bool — when false, probe design is skipped
 
         Output keys:
             probe_results: list of dicts per pair with:
@@ -60,6 +60,10 @@ class ProbeDesignStep(PipelineStep):
                 - probes: list of top 3 probe candidate dicts (empty if incompatible)
                 - reason: str (only if incompatible)
         """
+
+        probe_mode = input_data.get("probe_mode", False)
+        if not probe_mode:
+            return {"probe_results": [], "probe_note": "Probe design skipped (probe_mode=False)"}
 
         ranked_pairs = input_data.get("ranked_pairs", [])
         amplicon_sequences = input_data.get("amplicon_sequences", [])
