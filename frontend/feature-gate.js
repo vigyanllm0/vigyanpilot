@@ -40,6 +40,8 @@ async function requireFeature(featureName) {
   if (!info) return true;
   var status = await fgFetchStatus();
   if (!status) return true;
+  // Admin bypass — admins see everything without gating
+  if (status.role === 'admin') return true;
   var userTier = status.plan || 'free';
   var userIdx = TIER_ORDER.indexOf(userTier);
   var reqIdx = TIER_ORDER.indexOf(info.tier);

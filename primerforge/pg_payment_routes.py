@@ -812,6 +812,8 @@ def payment_status():
         can_analyze = today_usage < FREE_DAILY_LIMIT
         remaining = max(0, FREE_DAILY_LIMIT - today_usage)
 
+    role = g.user.get("role", "user") if hasattr(g, 'user') else "user"
+
     return jsonify({
         "plan": plan,
         "billing_cycle": billing_cycle,
@@ -819,6 +821,7 @@ def payment_status():
         "plan_expires_at": plan_expires_at,
         "is_academic": is_academic,
         "academic_discount": 30 if is_academic else 0,
+        "role": role,
         "daily": {
             "can_analyze": can_analyze,
             "used": daily_used,

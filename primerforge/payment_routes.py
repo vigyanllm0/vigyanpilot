@@ -309,6 +309,8 @@ def payment_status():
     daily = check_daily_usage(email)
     monthly_api = check_monthly_api_usage(email)
 
+    role = g.user.get("role", "user") if hasattr(g, 'user') else "user"
+
     return jsonify({
         "plan": row["plan"] or "free",
         "billing_cycle": row["billing_cycle"] or "monthly",
@@ -316,6 +318,7 @@ def payment_status():
         "plan_expires_at": row["plan_expires_at"] or 0,
         "is_academic": is_academic,
         "academic_discount": row["academic_discount"] or 0,
+        "role": role,
         "daily": daily,
         "api": monthly_api,
         "razorpay_key_id": RAZORPAY_KEY_ID,

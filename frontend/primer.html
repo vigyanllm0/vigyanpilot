@@ -433,6 +433,12 @@ footer{background:var(--black);color:rgba(255,255,255,.8);padding:56px 0 24px}
 .skip-link{position:absolute;top:-100%;left:50%;transform:translateX(-50%);padding:8px 16px;background:#667eea;color:#fff;z-index:10000;border-radius:0 0 8px 8px;font-weight:600;text-decoration:none;font-size:14px}.skip-link:focus{top:0;outline:none}
 @media(max-width:768px){.adv-collapse .adv-content{max-height:0;overflow:hidden;transition:max-height .3s ease}.adv-collapse[open] .adv-content{max-height:800px}.adv-summary{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;margin-top:8px;background:var(--slate);border-radius:8px;cursor:pointer;font-weight:600;font-size:13px;color:var(--primary);user-select:none;list-style:none}.adv-summary::-webkit-details-marker{display:none}.adv-chevron{transition:transform .2s}.adv-collapse[open] .adv-chevron{transform:rotate(180deg)}}@media(min-width:769px){.adv-summary{display:none}.adv-collapse .adv-content{display:block!important;max-height:none!important;overflow:visible!important}}
 .gate-overlay{display:none;position:fixed;inset:0;background:rgba(15,23,42,.6);z-index:99999;align-items:center;justify-content:center;padding:24px}.gate-overlay.open{display:flex}.gate-modal{background:#fff;border-radius:16px;padding:36px;width:100%;max-width:400px;box-shadow:0 24px 64px rgba(0,0,0,.25);position:relative;text-align:center;animation:gateIn .25s ease}@keyframes gateIn{from{opacity:0;transform:scale(.95) translateY(10px)}to{opacity:1;transform:scale(1) translateY(0)}}.gate-lock{font-size:40px;margin-bottom:12px}.gate-cancel{padding:10px 24px;border:1.5px solid var(--outline);background:transparent;border-radius:8px;font-size:13px;font-weight:600;color:var(--text2);cursor:pointer;font-family:var(--font-b)}.gate-cancel:hover{background:var(--surface-alt)}
+/* ── Probe Config Section ── */
+.probe-config{border:1px solid var(--slate-border);border-radius:8px;padding:12px;margin-top:8px;background:var(--slate)}.probe-config .form-label{font-size:11px}.probe-config .form-input{font-size:12px;padding:7px 10px}.probe-config .config-hint{font-size:11px;color:var(--muted);margin-top:2px}
+/* ── Order Panel ── */
+.order-overlay{display:none;position:fixed;inset:0;background:rgba(15,23,42,.5);z-index:99998;align-items:center;justify-content:flex-end;padding:0}.order-overlay.open{display:flex}.order-panel{background:#fff;width:520px;max-width:100%;height:100%;overflow-y:auto;box-shadow:-8px 0 40px rgba(0,0,0,.12);display:flex;flex-direction:column;animation:slideIn .25s ease}@keyframes slideIn{from{transform:translateX(100%)}to{transform:translateX(0)}}.order-panel-head{display:flex;justify-content:space-between;align-items:center;padding:20px 24px;border-bottom:1px solid var(--slate-border);flex-shrink:0}.order-panel-head h2{font-family:var(--font-h);font-size:18px;font-weight:700}.order-panel-close{background:none;border:none;font-size:22px;cursor:pointer;color:var(--muted);padding:4px}.order-panel-close:hover{color:var(--text)}.order-panel-body{flex:1;padding:20px 24px;overflow-y:auto}.order-panel-footer{padding:16px 24px;border-top:1px solid var(--slate-border);background:var(--slate);flex-shrink:0;display:flex;gap:8px;justify-content:flex-end}.order-oligo-card{border:1px solid var(--slate-border);border-radius:8px;padding:12px;margin-bottom:10px;background:transparent}.order-oligo-card:hover{border-color:var(--primary)}.order-oligo-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}.order-oligo-name{font-weight:600;font-size:13px;color:var(--text)}.order-oligo-seq{font-family:monospace;font-size:12px;color:var(--text2);word-break:break-all;margin-bottom:8px;padding:6px 8px;background:var(--slate);border-radius:4px}.order-oligo-opts{display:grid;grid-template-columns:1fr 1fr;gap:6px}.order-oligo-opts .form-label{font-size:11px;text-transform:none;letter-spacing:0;color:var(--text2);font-weight:600}.order-oligo-opts select,.order-oligo-opts input{width:100%;border:1px solid var(--outline);border-radius:4px;padding:5px 7px;font-size:12px;font-family:var(--font-b);background:transparent;color:var(--text)}.order-summary{display:flex;gap:16px;padding:12px 0;border-top:1px solid var(--slate-border);margin-top:12px;flex-wrap:wrap}.order-summary-item{text-align:center;min-width:80px}.order-summary-value{font-weight:700;font-size:18px;color:var(--text)}.order-summary-label{font-size:11px;color:var(--muted);text-transform:uppercase}
+/* ── Biochemistry in result card ── */
+.biochem-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;padding:6px 8px;background:var(--slate);border-radius:6px;font-size:11px;color:var(--text2)}.biochem-row .bc-item{display:flex;align-items:center;gap:3px}.biochem-row .bc-label{color:var(--muted)}.biochem-row .bc-value{font-weight:600;font-family:monospace;color:var(--text)}
 </style>
 <link rel="manifest" href="/manifest.json">
 <script>if('serviceWorker'in navigator)navigator.serviceWorker.register('/sw.js')</script>
@@ -905,13 +911,209 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             </div>
             <input type="checkbox" id="specificity-check" style="width:15px;height:15px;accent-color:var(--primary);cursor:pointer">
           </div>
-          <details id="advanced-options" class="adv-collapse">
-            <summary class="adv-summary">
-              <span>Advanced Options</span>
-              <svg class="adv-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
-            </summary>
-            <div class="adv-content">
+          <!-- ── Reaction Conditions ── -->
           <div class="toggle-row">
+            <div>
+              <div class="toggle-label">Reaction Conditions</div>
+              <div class="toggle-sub">Salt, primer &amp; dNTP concentrations</div>
+            </div>
+            <input type="checkbox" id="toggle-reaction-params" style="width:15px;height:15px;accent-color:var(--primary);cursor:pointer" onchange="document.getElementById('reaction-params').style.display=this.checked?'block':'none'">
+          </div>
+          <div id="reaction-params" style="display:none;padding:8px 0">
+            <div class="form-row2">
+              <div class="form-group">
+                <label class="form-label">Na⁺ (mM)</label>
+                <input type="number" id="rxn-na" class="form-input" value="50" min="0" max="500" step="5">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Mg²⁺ (mM)</label>
+                <input type="number" id="rxn-mg" class="form-input" value="1.5" min="0" max="10" step="0.5">
+              </div>
+            </div>
+            <div class="form-row2">
+              <div class="form-group">
+                <label class="form-label">dNTPs (mM)</label>
+                <input type="number" id="rxn-dntp" class="form-input" value="0.8" min="0" max="5" step="0.2">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Primer Conc. (µM)</label>
+                <input type="number" id="rxn-primer-conc" class="form-input" value="0.25" min="0.05" max="10" step="0.05">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Polymerase</label>
+              <select id="rxn-polymerase" class="form-input">
+                <option value="taq">Taq Polymerase</option>
+                <option value="phusion">Phusion / High-fidelity</option>
+                <option value="pfu">Pfu Polymerase</option>
+                <option value="kapa">KAPA HiFi</option>
+                <option value="q5">Q5 High-Fidelity</option>
+                <option value="vent">Vent / Deep Vent</option>
+                <option value="tth">Tth Polymerase</option>
+              </select>
+            </div>
+          </div>
+          <!-- ── Primer Modifications ── -->
+          <div class="toggle-row">
+            <div>
+              <div class="toggle-label">Primer Modifications</div>
+              <div class="toggle-sub">5' and 3' tails, tags, linkers</div>
+            </div>
+            <input type="checkbox" id="toggle-primer-mods" style="width:15px;height:15px;accent-color:var(--primary);cursor:pointer" onchange="document.getElementById('primer-mods').style.display=this.checked?'block':'none'">
+          </div>
+          <div id="primer-mods" style="display:none;padding:8px 0">
+            <div class="form-group">
+              <label class="form-label">Forward 5' Tail</label>
+              <input type="text" id="fwd-tail" class="form-input" placeholder="e.g., ACGCTAGC (no spaces)">
+              <div class="config-hint">Added to 5' end of forward primer</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Reverse 5' Tail</label>
+              <input type="text" id="rev-tail" class="form-input" placeholder="e.g., GCTAGCAC (no spaces)">
+              <div class="config-hint">Added to 5' end of reverse primer</div>
+            </div>
+            <div class="form-row2">
+              <div class="form-group">
+                <label class="form-label">Forward 5' Modification</label>
+                <input type="text" id="fwd-mod5" class="form-input" placeholder="e.g., /5AmMC6/">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Reverse 5' Modification</label>
+                <input type="text" id="rev-mod5" class="form-input" placeholder="e.g., /5Biosg/">
+              </div>
+            </div>
+          </div>
+          <!-- ── Primer Length & GC Clamp ── -->
+          <div class="toggle-row">
+            <div>
+              <div class="toggle-label">Primer Length &amp; GC Clamp</div>
+              <div class="toggle-sub">Override defaults</div>
+            </div>
+            <input type="checkbox" id="toggle-length-params" style="width:15px;height:15px;accent-color:var(--primary);cursor:pointer" onchange="document.getElementById('length-params').style.display=this.checked?'block':'none'">
+          </div>
+          <div id="length-params" style="display:none;padding:8px 0">
+            <div class="form-row2">
+              <div class="form-group">
+                <label class="form-label">Primer Length Min</label>
+                <input type="number" id="primer-len-min" class="form-input" value="18" min="15" max="30" step="1">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Primer Length Max</label>
+                <input type="number" id="primer-len-max" class="form-input" value="25" min="18" max="40" step="1">
+              </div>
+            </div>
+            <div class="form-row2">
+              <div class="form-group">
+                <label class="form-label">GC% Min</label>
+                <input type="number" id="primer-gc-min" class="form-input" value="40" min="20" max="60" step="1">
+              </div>
+              <div class="form-group">
+                <label class="form-label">GC% Max</label>
+                <input type="number" id="primer-gc-max" class="form-input" value="60" min="40" max="80" step="1">
+              </div>
+            </div>
+            <div class="toggle-row" style="border-top:none;padding:4px 0">
+              <div>
+                <div class="toggle-label">Require 3' GC Clamp</div>
+                <div class="toggle-sub">Last 5 bases must contain G or C</div>
+              </div>
+              <input type="checkbox" id="require-gc-clamp" style="width:15px;height:15px;accent-color:var(--primary);cursor:pointer" checked>
+            </div>
+          </div>
+          <!-- ── Probe Design ── -->
+          <div class="toggle-row">
+            <div>
+              <div class="toggle-label">Probe Design</div>
+              <div class="toggle-sub">TaqMan, Molecular Beacon, Scorpion</div>
+            </div>
+            <input type="checkbox" id="probe-mode" style="width:15px;height:15px;accent-color:var(--primary);cursor:pointer" onchange="toggleProbeConfig()">
+          </div>
+          <div id="probe-config-section" class="probe-config" style="display:none">
+            <div class="form-group">
+              <label class="form-label">Probe Type</label>
+              <select id="probe-type" class="form-input">
+                <option value="taqman">TaqMan (Dual-labeled hydrolysis)</option>
+                <option value="molecular_beacon">Molecular Beacon</option>
+                <option value="scorpion">Scorpion</option>
+                <option value="fret">FRET Hybridization Probe</option>
+              </select>
+            </div>
+            <div class="form-row2">
+              <div class="form-group">
+                <label class="form-label">5' Reporter / Dye</label>
+                <select id="probe-reporter" class="form-input">
+                  <option value="FAM">FAM (6-Carboxyfluorescein)</option>
+                  <option value="HEX">HEX (Hexachlorofluorescein)</option>
+                  <option value="TET">TET (Tetrachlorofluorescein)</option>
+                  <option value="JOE">JOE</option>
+                  <option value="ROX">ROX</option>
+                  <option value="Cy3">Cy3</option>
+                  <option value="Cy5">Cy5</option>
+                  <option value="TAMRA">TAMRA</option>
+                  <option value="Texas_Red">Texas Red</option>
+                  <option value="ATTO_425">ATTO 425</option>
+                  <option value="ATTO_488">ATTO 488</option>
+                  <option value="ATTO_550">ATTO 550</option>
+                  <option value="ATTO_647N">ATTO 647N</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">3' Quencher</label>
+                <select id="probe-quencher" class="form-input">
+                  <option value="BHQ-1">BHQ-1 (Black Hole 1)</option>
+                  <option value="BHQ-2">BHQ-2 (Black Hole 2)</option>
+                  <option value="BHQ-3">BHQ-3 (Black Hole 3)</option>
+                  <option value="TAMRA">TAMRA</option>
+                  <option value="DABCYL">DABCYL</option>
+                  <option value="Iowa_Black_FQ">Iowa Black FQ</option>
+                  <option value="Iowa_Black_RQ">Iowa Black RQ</option>
+                  <option value="Eclipse">Eclipse Dark Quencher</option>
+                  <option value="NFQ_MGB">NFQ-MGB (Non-Fluorescent + MGB)</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-row2">
+              <div class="form-group">
+                <label class="form-label">Probe Tm Offset (°C above primer Tm)</label>
+                <div class="form-row2">
+                  <input type="number" id="probe-tm-offset-min" class="form-input" value="8" min="5" max="15" step="1">
+                  <input type="number" id="probe-tm-offset-max" class="form-input" value="10" min="5" max="15" step="1">
+                </div>
+                <div class="config-hint">Target probe Tm = mean primer Tm + offset</div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Probe Length (nt)</label>
+                <div class="form-row2">
+                  <input type="number" id="probe-len-min" class="form-input" value="18" min="12" max="30" step="1">
+                  <input type="number" id="probe-len-max" class="form-input" value="30" min="18" max="40" step="1">
+                </div>
+              </div>
+            </div>
+            <div class="form-row2">
+              <div class="form-group">
+                <label class="form-label">Probe GC% Range</label>
+                <div class="form-row2">
+                  <input type="number" id="probe-gc-min" class="form-input" value="30" min="20" max="60" step="1">
+                  <input type="number" id="probe-gc-max" class="form-input" value="80" min="50" max="85" step="1">
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Max Hairpin dG (kcal/mol)</label>
+                <input type="number" id="probe-hairpin-limit" class="form-input" value="-2.0" min="-5" max="0" step="0.5">
+              </div>
+            </div>
+            <div class="form-group" style="margin-bottom:0">
+              <label class="form-label">5' Modifications</label>
+              <input type="text" id="probe-mod5" class="form-input" placeholder="e.g., /56-FAM/, /5Cy5/, /5AmMC6/">
+              <div class="config-hint">IDT-style 5' modification code (overrides reporter selection if set)</div>
+            </div>
+            <div class="form-group" style="margin-bottom:0;margin-top:6px">
+              <label class="form-label">3' Modifications</label>
+              <input type="text" id="probe-mod3" class="form-input" placeholder="e.g., /36-TAMSp/, /3BHQ_1/, /3AmMO/">
+              <div class="config-hint">IDT-style 3' modification code (overrides quencher selection if set)</div>
+            </div>
+          </div>
+          <div class="toggle-row" style="margin-top:8px">
             <div>
               <div class="toggle-label">Pipeline Mode</div>
               <div class="toggle-sub">Express = 6 key steps only</div>
@@ -932,26 +1134,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
               <option value="multiplex">Multiplex</option>
             </select>
           </div>
-          <div class="toggle-row">
-            <div>
-              <div class="toggle-label">Probe Design (TaqMan)</div>
-              <div class="toggle-sub">Dual-labeled qPCR probe</div>
-            </div>
-            <input type="checkbox" id="probe-mode" style="width:15px;height:15px;accent-color:var(--primary);cursor:pointer">
-          </div>
-          <div class="toggle-row">
-            <div>
-              <div class="toggle-label">NGS Adapter Platform</div>
-              <div class="toggle-sub">5' overhang for library prep</div>
-            </div>
-            <select id="adapter-platform" style="border:1px solid var(--slate-border);border-radius:5px;padding:4px 8px;font-size:12px;font-family:var(--font-b)">
-              <option value="">None</option>
-              <option value="illumina_nextera">Illumina Nextera</option>
-              <option value="illumina_truseq">Illumina TruSeq</option>
-              <option value="ion_torrent">Ion Torrent</option>
-            </select>
-          </div>
-        </details>
         </div>
       </div>
       <button type="button" class="btn-primary" id="btn-run" style="margin-bottom:10px">
@@ -1045,6 +1227,39 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   </form>
 </div>
 </div><!-- /tab-auto -->
+<!-- ══ ORDER PANEL ═══════════════════════════════════════════════════════════ -->
+<div class="order-overlay" id="order-overlay">
+  <div class="order-panel">
+    <div class="order-panel-head">
+      <h2>🛒 Order Customization</h2>
+      <button type="button" class="order-panel-close" onclick="closeOrderPanel()">✕</button>
+    </div>
+    <div class="order-panel-body" id="order-panel-body">
+      <div style="font-size:13px;color:var(--text2);margin-bottom:16px;padding:10px 12px;background:var(--slate);border-radius:8px;border:1px solid var(--slate-border)">
+        Customize each oligo below with your preferred synthesis scale, purification, and modifications. Ready-to-order IDT/Twist files can be exported at the bottom.
+      </div>
+      <div id="order-oligos-list"></div>
+      <div class="order-summary" id="order-summary">
+        <div class="order-summary-item">
+          <div class="order-summary-value" id="order-count">0</div>
+          <div class="order-summary-label">Oligos</div>
+        </div>
+        <div class="order-summary-item">
+          <div class="order-summary-value" id="order-primer-count">0</div>
+          <div class="order-summary-label">Primers</div>
+        </div>
+        <div class="order-summary-item">
+          <div class="order-summary-value" id="order-probe-count">0</div>
+          <div class="order-summary-label">Probes</div>
+        </div>
+      </div>
+    </div>
+    <div class="order-panel-footer">
+      <button type="button" class="btn-secondary" onclick="exportOrder('idt')">⬇ Export IDT Order</button>
+      <button type="button" class="btn-primary" onclick="exportOrder('twist')" style="width:auto;padding:10px 20px">⬇ Export Twist Order</button>
+    </div>
+  </div>
+</div>
 <!-- ══ MANUAL ANALYSIS TAB ══════════════════════════════════════════════════ -->
 <div id="tab-manual" class="tab-panel" style="display:none">
   <div style="margin-bottom:20px;padding:16px 20px;background:var(--slate);border-radius:10px;border:1px solid var(--slate-border)">
@@ -1932,6 +2147,253 @@ function qsLabel(score){
   if(score>=40)return 'Marginal';
   return 'Poor';
 }
+// ── Probe config toggle ─────────────────────────────────────────────────────
+window.toggleProbeConfig=function(){
+  const cb=document.getElementById('probe-mode');
+  const section=document.getElementById('probe-config-section');
+  if(section)section.style.display=cb&&cb.checked?'block':'none';
+};
+// ── Biochemistry calculations (in-silico values for display) ─────────────────
+function calcExtinctionCoeff(seq){
+  // Individual nucleotide ε at 260nm (M⁻¹cm⁻¹) for ssDNA
+  // A=15400, C=7400, G=12500, T=8700
+  // Formula: ε = 0.9 × Σ(n_base × ε_base)
+  // 0.9 = hypochromicity correction for nearest-neighbor stacking
+  // Reference: Cavaluzzi & Borer (2004) Nucleic Acids Res 32:e13
+  const baseE={'A':15400,'C':7400,'G':12500,'T':8700};
+  let sum=0;
+  for(let c of seq.toUpperCase())sum+=baseE[c]||0;
+  return Math.round(sum*0.9);
+}
+function calcMolWeight(seq,isProbe){
+  // ssDNA molecular weight via IDT standard formula
+  // MW = Σ(n_base×MW_base) + (n-1)×61.96 + 18.02
+  // Base MWs (deoxyribose nucleoside, no phosphate):
+  // A=249.23, C=225.20, G=265.24, T=240.21
+  // 61.96 = phosphodiester group, 18.02 = terminal 3′ OH
+  const baseMW={'A':249.23,'C':225.20,'G':265.24,'T':240.21};
+  let sum=0;
+  for(let c of seq.toUpperCase())sum+=baseMW[c]||240.21;
+  let mw=sum+(seq.length-1)*61.96+18.02;
+  if(isProbe)mw+=800; // avg reporter+quencher MW contribution
+  return Math.round(mw);
+}
+function calcNmolPerOD(seq,isProbe){
+  // Beer’s law: A=ε×c×l; at A=1,l=1cm: c=1/ε M
+  // nmol/OD = 1,000,000 / ε (in 1mL at 1cm path)
+  const ec=calcExtinctionCoeff(seq);
+  return ec>0?+(1000000/ec).toFixed(2):0;
+}
+// ── Order panel state ───────────────────────────────────────────────────────
+window._orderOligos=[];
+
+window.openOrderPanel=function(){
+  const overlay=document.getElementById('order-overlay');
+  if(!overlay)return;
+  // Collect all oligos from result cards if not already added
+  if(!window._orderOligos.length&&window.state&&window.state.results){
+    window.state.results.forEach((p,idx)=>{
+      const fwd=p.forward_primer||p.forward||{};
+      const rev=p.reverse_primer||p.reverse||{};
+      const pairId=p.pair_id||p.rank||idx+1;
+      if(fwd.sequence)addOligo({name:'Primer_'+pairId+'_FWD',seq:fwd.sequence,type:'primer'});
+      if(rev.sequence)addOligo({name:'Primer_'+pairId+'_REV',seq:rev.sequence,type:'primer'});
+      (p.probes||[]).forEach((probe,pidx)=>{
+        if(probe.sequence)addOligo({name:'Probe_'+pairId+'_'+pidx,seq:probe.sequence,type:'probe'});
+      });
+    });
+  }
+  overlay.classList.add('open');
+  refreshOrderPanel();
+};
+window.closeOrderPanel=function(){
+  const overlay=document.getElementById('order-overlay');
+  if(overlay)overlay.classList.remove('open');
+};
+window.toggleCust=function(id){
+  const el=document.getElementById(id);
+  if(el)el.style.display=el.style.display==='none'?'block':'none';
+};
+window.addPrimerToPair=function(pairId){
+  const seq=prompt('Enter primer sequence (5\'→3\'):');
+  if(!seq||seq.length<8)return;
+  addOligo({name:'PRIMER_EXTRA_'+pairId,seq:seq.toUpperCase(),type:'primer'});
+  openOrderPanel();
+};
+window.addProbeToPair=function(pairId){
+  const seq=prompt('Enter probe sequence (5\'→3\'):');
+  if(!seq||seq.length<10)return;
+  addOligo({name:'PROBE_EXTRA_'+pairId,seq:seq.toUpperCase(),type:'probe'});
+  openOrderPanel();
+};
+window.addOligoToOrder=function(btn){
+  const name=btn.getAttribute('data-name')||'Oligo';
+  const seq=btn.getAttribute('data-seq')||'';
+  const type=name.startsWith('PROBE')?'probe':'primer';
+  const uniqueName=name+'_'+(btn.getAttribute('data-uid')||Date.now());
+  // Capture customization values from inline cust-panel if present
+  const card=btn.closest('.primer-block')||btn.closest('.probe-block');
+  let mod5='',mod3='',scale='25nmol',purif='Desalted',buffer='IDTE',conc='100\u00b5M';
+  if(card){
+    const panel=card.querySelector('.cust-panel');
+    if(panel){
+      const inputs=panel.querySelectorAll('.cust-input');
+      const selects=panel.querySelectorAll('.cust-select');
+      inputs.forEach(inp=>{
+        const f=inp.getAttribute('data-field');
+        if(f==='mod5')mod5=inp.value;
+        else if(f==='mod3')mod3=inp.value;
+      });
+      selects.forEach(sel=>{
+        const f=sel.getAttribute('data-field');
+        if(f==='scale')scale=sel.value;
+        else if(f==='purif')purif=sel.value;
+        else if(f==='buffer')buffer=sel.value;
+        else if(f==='conc')conc=sel.value;
+      });
+    }
+  }
+  addOligo({name:uniqueName,seq,type,mod5,mod3,scale,purification:purif,buffer,conc});
+  // Visual feedback
+  const orig=btn.textContent;
+  btn.textContent='\u2713 Added';
+  btn.style.borderColor='var(--bio)';
+  btn.style.color='var(--bio)';
+  setTimeout(()=>{btn.textContent=orig;btn.style.borderColor='';btn.style.color='';},2000);
+};
+function addOligo(oligo){
+  if(!oligo||!oligo.seq)return;
+  window._orderOligos=window._orderOligos||[];
+  // Avoid exact duplicates
+  if(window._orderOligos.some(o=>o.seq===oligo.seq))return;
+  window._orderOligos.push({
+    name:oligo.name||'Oligo_'+(window._orderOligos.length+1),
+    seq:oligo.seq.toUpperCase(),
+    type:oligo.type||'primer',
+    scale:oligo.scale||'25nmol',
+    purification:oligo.purification||(oligo.type==='probe'?'HPLC':'Desalted'),
+    buffer:oligo.buffer||'IDTE',
+    mod5:oligo.mod5||'',
+    mod3:oligo.mod3||'',
+    conc:oligo.conc||'100µM',
+    quantity:'1',
+  });
+  refreshOrderPanel();
+}
+function refreshOrderPanel(){
+  const list=document.getElementById('order-oligos-list');
+  const count=document.getElementById('order-count');
+  const pcount=document.getElementById('order-primer-count');
+  const prcount=document.getElementById('order-probe-count');
+  const oligos=window._orderOligos||[];
+  if(!list)return;
+  if(count)count.textContent=oligos.length;
+  if(pcount)pcount.textContent=oligos.filter(o=>o.type==='primer').length;
+  if(prcount)prcount.textContent=oligos.filter(o=>o.type==='probe').length;
+  if(!oligos.length){
+    list.innerHTML='<div style="padding:40px;text-align:center;color:var(--muted)">No oligos added yet. Click "+ Order" on a primer or probe card.</div>';
+    return;
+  }
+  list.innerHTML=oligos.map((o,i)=>`
+    <div class="order-oligo-card">
+      <div class="order-oligo-header">
+        <span class="order-oligo-name">${esc(o.name)} <span style="font-size:11px;color:var(--muted);font-weight:400">(${o.type})</span></span>
+        <button style="background:none;border:none;color:var(--red);cursor:pointer;font-size:14px;padding:2px;line-height:1" onclick="removeOligo(${i})" title="Remove">✕</button>
+      </div>
+      <div class="order-oligo-seq">${esc(o.seq)}</div>
+      <div class="order-oligo-opts">
+        <div>
+          <label class="form-label">Scale</label>
+          <select onchange="updateOligo(${i},'scale',this.value)">
+            <option value="25nmol" ${o.scale==='25nmol'?'selected':''}>25 nmol</option>
+            <option value="100nmol" ${o.scale==='100nmol'?'selected':''}>100 nmol</option>
+            <option value="250nmol" ${o.scale==='250nmol'?'selected':''}>250 nmol</option>
+            <option value="1µmol" ${o.scale==='1µmol'?'selected':''}>1 µmol</option>
+          </select>
+        </div>
+        <div>
+          <label class="form-label">Purification</label>
+          <select onchange="updateOligo(${i},'purification',this.value)">
+            <option value="STD" ${o.purification==='STD'?'selected':''}>Desalted (STD)</option>
+            <option value="PAGE" ${o.purification==='PAGE'?'selected':''}>PAGE</option>
+            <option value="HPLC" ${o.purification==='HPLC'?'selected':''}>HPLC</option>
+            <option value="RP_HPLC" ${o.purification==='RP_HPLC'?'selected':''}>RP-HPLC</option>
+            <option value="IE_HPLC" ${o.purification==='IE_HPLC'?'selected':''}>IE-HPLC</option>
+          </select>
+        </div>
+        <div>
+          <label class="form-label">Buffer</label>
+          <select onchange="updateOligo(${i},'buffer',this.value)">
+            <option value="IDTE" ${o.buffer==='IDTE'?'selected':''}>IDTE (pH 8.0)</option>
+            <option value="NFW" ${o.buffer==='NFW'?'selected':''}>Nuclease-free Water</option>
+            <option value="TE" ${o.buffer==='TE'?'selected':''}>TE (pH 8.0)</option>
+          </select>
+        </div>
+        <div>
+          <label class="form-label">Final Conc.</label>
+          <select onchange="updateOligo(${i},'conc',this.value)">
+            <option value="100µM" ${o.conc==='100µM'?'selected':''}>100 µM</option>
+            <option value="50µM" ${o.conc==='50µM'?'selected':''}>50 µM</option>
+            <option value="25µM" ${o.conc==='25µM'?'selected':''}>25 µM</option>
+            <option value="10µM" ${o.conc==='10µM'?'selected':''}>10 µM</option>
+          </select>
+        </div>
+      </div>
+      <div style="margin-top:6px;display:grid;grid-template-columns:1fr 1fr;gap:6px">
+        <div>
+          <label class="form-label" style="display:block;font-size:11px;color:var(--text2);font-weight:600;margin-bottom:2px">5' Modification</label>
+          <input type="text" value="${esc(o.mod5)}" placeholder="/5AmMC6/" style="width:100%;border:1px solid var(--outline);border-radius:4px;padding:5px 7px;font-size:12px;font-family:var(--font-b)" onchange="updateOligo(${i},'mod5',this.value)">
+        </div>
+        <div>
+          <label class="form-label" style="display:block;font-size:11px;color:var(--text2);font-weight:600;margin-bottom:2px">3' Modification</label>
+          <input type="text" value="${esc(o.mod3)}" placeholder="/3AmMO/" style="width:100%;border:1px solid var(--outline);border-radius:4px;padding:5px 7px;font-size:12px;font-family:var(--font-b)" onchange="updateOligo(${i},'mod3',this.value)">
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+window.updateOligo=function(idx,field,val){
+  const oligos=window._orderOligos;
+  if(oligos&&oligos[idx])oligos[idx][field]=val;
+};
+window.removeOligo=function(idx){
+  const oligos=window._orderOligos;
+  if(oligos)oligos.splice(idx,1);
+  refreshOrderPanel();
+};
+window.clearOrderPanel=function(){
+  window._orderOligos=[];
+  refreshOrderPanel();
+};
+window.exportOrder=async function(vendor){
+  if(!(await requireFeature('export_pdf')))return;
+  const oligos=window._orderOligos||[];
+  if(!oligos.length){alert('No oligos in order. Add primers or probes first.');return;}
+  const header=vendor==='idt'
+    ?['Name','Sequence','Scale','Purification','Buffer','Conc','5_Mod','3_Mod']
+    :['name','sequence','scale','purification_type','buffer','concentration','modification_5p','modification_3p'];
+  const rows=oligos.map(o=>{
+    const seq=o.seq;
+    if(vendor==='idt'){
+      return[o.name,seq,o.scale||'25nmol',o.purification||'STD',o.buffer||'IDTE',o.conc||'100µM',o.mod5||'',o.mod3||''];
+    }
+    return[o.name,seq,o.scale||'25nmol',o.purification||'STANDARD',o.buffer||'IDTE',o.conc||'100µM',o.mod5||'',o.mod3||''];
+  });
+  const csv=[header,...rows].map(r=>r.map(v=>{
+    const s=String(v??'');
+    return s.includes(',')||s.includes('"')||s.includes('\n')?`"${s.replace(/"/g,'""')}"`:s;
+  }).join(',')).join('\n');
+  const stamp=new Date().toISOString().slice(0,10);
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download=`VigyanLLM_${vendor.toUpperCase()}_Order_${stamp}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+};
 function asNum(value){
   if(value === null || value === undefined || value === '') return null;
   const n = Number(value);
@@ -1966,24 +2428,37 @@ function primerBlock(p,dir){
   const qs = asNum(p.quality_score);
   const color=qs === null ? 'var(--muted)' : qsColor(qs);
   const qsWidth=qs === null ? 0 : Math.min(100,Math.max(0,qs));
+  // Biochemistry values (in-silico)
+  const seq=String(p.sequence||'');
+  const ec=calcExtinctionCoeff(seq);
+  const mw=calcMolWeight(seq);
+  const nmolOd=calcNmolPerOD(seq);
   return `<div class="primer-block ${cls}">
     <div class="primer-block-head">
       <span class="primer-dir ${cls}">${dir==='fwd'?'Forward 5\'→3\'':'Reverse 5\'→3\''}</span>
       <span class="${clampOk?'gc-clamp-ok':'gc-clamp-fail'}">${clampOk?'✓ GC clamp':'✗ No clamp'}</span>
     </div>
-    <div class="primer-seq" title="Click to select">${esc(p.sequence)}</div>
+    <div class="primer-seq" title="Click to select">${esc(seq)}</div>
     <div class="metrics-row">
       ${mc('Primer Tm',fmtNum(tm,1,'°C'),tm === null?'':(tmOk?'ok':'bad'))}
       ${mc('GC',fmtNum(gc,1,'%'),gc === null?'':(gcOk?'ok':'warn'))}
+      ${mc('Length',asNum(p.length) === null ? seq.length+'nt' : asNum(p.length)+'nt','')}
       ${mc('Hairpin dG',fmtNum(hdg,2),hdg === null?'':(hOk?'ok':'bad'))}
       ${mc('Self-dimer dG',fmtNum(ddg,2),ddg === null?'':(dOk?'ok':'bad'))}
-      ${mc('Length',asNum(p.length) === null ? 'N/A' : asNum(p.length)+'nt','')}
+    </div>
+    <div class="biochem-row">
+      <span class="bc-item"><span class="bc-label">ε:</span><span class="bc-value">${ec.toLocaleString()} L·mol⁻¹·cm⁻¹</span></span>
+      <span class="bc-item"><span class="bc-label">MW:</span><span class="bc-value">${mw} g/mol</span></span>
+      <span class="bc-item"><span class="bc-label">nmol/OD:</span><span class="bc-value">${nmolOd}</span></span>
     </div>
     <div class="qs-bar" style="background:var(--slate-border)">
       <div style="height:4px;border-radius:2px;background:${color};width:${qsWidth}%"></div>
     </div>
-    <div style="font-size:12px;margin-top:3px;color:${color};font-family:var(--font-b)">
-      Primer quality ${fmtScore(qs,0)} — ${qsLabel(qs)}
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:3px">
+      <div style="font-size:12px;color:${color};font-family:var(--font-b)">
+        Primer quality ${fmtScore(qs,0)} — ${qsLabel(qs)}
+      </div>
+      <button type="button" class="btn-secondary btn-sm order-oligo-btn" style="padding:3px 8px;font-size:11px" data-seq="${esc(seq)}" data-name="PRIMER_${cls.toUpperCase()}" onclick="addOligoToOrder(this)">+ Order</button>
     </div>
     ${(p.warnings||[]).length?`<div class="warn-list">${p.warnings.map(w=>`<div class="warn-item">⚠ ${esc(w)}</div>`).join('')}</div>`:''}
   </div>`;
@@ -2001,9 +2476,14 @@ function probeBlock(probes,fTm,rTm){
   const targetHigh=meanPrimerTm!==null?meanPrimerTm+10:null;
   const tmOk=tm!==null&&targetLow!==null&&targetHigh!==null?tm>=targetLow&&tm<=targetHigh:null;
   const extra=probes.length>1?`<span style="font-size:12px;color:#6b7280">+${probes.length-1} more</span>`:'';
+  const ec=calcExtinctionCoeff(seq);
+  const mw=calcMolWeight(seq,true);
+  const nmolOd=calcNmolPerOD(seq,true);
+  const reporter=pb.reporter_5prime||document.getElementById('probe-reporter')?.value||'FAM';
+  const quencher=pb.quencher_3prime||document.getElementById('probe-quencher')?.value||'BHQ-1';
   return `<div class="probe-block">
     <div class="probe-block-head">
-      <span style="font-family:var(--font-b);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#8b5cf6">TaqMan Probe</span>
+      <span style="font-family:var(--font-b);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#8b5cf6">Probe</span>
       ${extra}
     </div>
     <div class="primer-seq" title="Click to select">${esc(seq)}</div>
@@ -2015,7 +2495,15 @@ function probeBlock(probes,fTm,rTm){
       ${mc('Hairpin dG',fmtNum(hdg,2),hdg===null?'':(hdg>-2?'ok':'bad'))}
       ${mc('Score',fmtNum(asNum(pb.score),2),'')}
     </div>
-    <div style="font-size:12px;margin-top:6px;color:#6b7280">Reporter: ${esc(pb.reporter_5prime||'FAM')} / Quencher: ${esc(pb.quencher_3prime||'BHQ-1')} &mdash; HPLC purification recommended</div>
+    <div class="biochem-row">
+      <span class="bc-item"><span class="bc-label">ε:</span><span class="bc-value">${ec.toLocaleString()} L·mol⁻¹·cm⁻¹</span></span>
+      <span class="bc-item"><span class="bc-label">MW:</span><span class="bc-value">${mw} g/mol</span></span>
+      <span class="bc-item"><span class="bc-label">nmol/OD:</span><span class="bc-value">${nmolOd}</span></span>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px">
+      <div style="font-size:12px;color:#6b7280">Reporter: ${esc(reporter)} / Quencher: ${esc(quencher)}</div>
+      <button type="button" class="btn-secondary btn-sm order-oligo-btn" style="padding:3px 8px;font-size:11px" data-seq="${esc(seq)}" data-name="PROBE" onclick="addOligoToOrder(this)">+ Order</button>
+    </div>
   </div>`;
 }
 // ── Render pass/fail matrix ───────────────────────────────────────────────
@@ -2063,7 +2551,10 @@ function renderPairs(pairs,elapsedMs){
       <div class="results-title">${pairs.length} Pair${pairs.length>1?'s':''} — Sorted by Pair Score (higher = better)</div>
       <div style="font-size:12px;color:var(--muted);margin-top:2px">Core thermodynamics checked · External validation status shown in matrix · SantaLucia 1998 NN Tm</div>
     </div>
-    <div class="elapsed-chip">${elapsedMs?((elapsedMs/1000).toFixed(1)+'s'):'—'}</div>
+    <div style="display:flex;gap:6px;align-items:center">
+      <button type="button" class="btn-secondary btn-sm" onclick="openOrderPanel()" style="padding:5px 12px;font-size:11px;font-weight:600">🛒 Prepare Order</button>
+      <div class="elapsed-chip">${elapsedMs?((elapsedMs/1000).toFixed(1)+'s'):'—'}</div>
+    </div>
   </div>`;
   const cards=pairs.map((p,idx)=>{
     // Use canonical schema fields, fall back to legacy aliases
@@ -2208,7 +2699,11 @@ function renderPairs(pairs,elapsedMs){
                 <span style="font-family:var(--font-b);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#8b5cf6">Probe Design — ${p.probes?p.probes.length+' Candidate(s)':'N/A'}</span>
               </div>
             </div>`:
-          ''}
+           ''}
+        <div style="display:flex;gap:6px;margin-top:8px">
+          <button type="button" class="btn-secondary btn-xs" style="padding:4px 12px;font-size:11px" onclick="addPrimerToPair('${p.pair_id||p.rank||idx}')">+ Add Primer</button>
+          <button type="button" class="btn-secondary btn-xs" style="padding:4px 12px;font-size:11px" onclick="addProbeToPair('${p.pair_id||p.rank||idx}')">+ Add Probe</button>
+        </div>
         <div class="pair-meta-row">
           ${mc('ΔTm', dtm === null ? 'N/A' : (dtm < 0.01 ? '<0.01°C' : dtm.toFixed(2)+'°C'), dtm === null?'':(dtm<=1.5?'ok':'bad'))}
           ${mc('Cross-dimer dG',fmtNum(xdg,2),xdg === null?'':(xdg>-5?'ok':'bad'))}
@@ -2379,10 +2874,22 @@ async function runAutoDesign() {
       mode: $('pipeline-mode')?.value || 'full',
       design_mode: $('design-mode')?.value || 'standard',
       probe_mode: $('probe-mode')?.checked ? 'taqman' : null,
+      probe_type: $('probe-type')?.value || 'taqman',
+      probe_reporter: $('probe-reporter')?.value || 'FAM',
+      probe_quencher: $('probe-quencher')?.value || 'BHQ-1',
+      probe_tm_offset_min: parseFloat($('probe-tm-offset-min')?.value) || 8,
+      probe_tm_offset_max: parseFloat($('probe-tm-offset-max')?.value) || 10,
+      probe_len_min: parseInt($('probe-len-min')?.value) || 18,
+      probe_len_max: parseInt($('probe-len-max')?.value) || 30,
+      probe_gc_min: parseInt($('probe-gc-min')?.value) || 30,
+      probe_gc_max: parseInt($('probe-gc-max')?.value) || 80,
+      probe_hairpin_limit: parseFloat($('probe-hairpin-limit')?.value) || -2.0,
+      probe_mod5: $('probe-mod5')?.value || '',
+      probe_mod3: $('probe-mod3')?.value || '',
       adapter_platform: $('adapter-platform')?.value || null,
       organism: $('pipeline-organism')?.value || 'human',
       targeting_mode: 'common_exon',
-      polymerase_type: 'taq',
+      polymerase_type: ($('rxn-polymerase')?.value) || 'taq',
       template_ng: 100,
       multiplex: ($('design-mode')?.value === 'multiplex'),
       specificity_check: !!$('specificity-check')?.checked,
@@ -2390,6 +2897,19 @@ async function runAutoDesign() {
       product_max: productMax,
       min_tm: (parseFloat($('opt-tm').value) || 62) - 4,
       max_tm: (parseFloat($('opt-tm').value) || 62) + 3,
+      na_mm: parseFloat($('rxn-na')?.value) || 50,
+      mg_mm: parseFloat($('rxn-mg')?.value) || 1.5,
+      dntp_mm: parseFloat($('rxn-dntp')?.value) || 0.8,
+      primer_conc_um: parseFloat($('rxn-primer-conc')?.value) || 0.25,
+      primer_len_min: parseInt($('primer-len-min')?.value) || 18,
+      primer_len_max: parseInt($('primer-len-max')?.value) || 25,
+      primer_gc_min: parseInt($('primer-gc-min')?.value) || 40,
+      primer_gc_max: parseInt($('primer-gc-max')?.value) || 60,
+      require_gc_clamp: !!$('require-gc-clamp')?.checked,
+      fwd_tail: $('fwd-tail')?.value || '',
+      rev_tail: $('rev-tail')?.value || '',
+      fwd_mod5: $('fwd-mod5')?.value || '',
+      rev_mod5: $('rev-mod5')?.value || '',
     };
     const submitResp = await apiPost('/api/pipeline/submit', submitData);
     const jobId = submitResp.job_id;

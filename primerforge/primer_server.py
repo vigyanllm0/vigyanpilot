@@ -852,10 +852,10 @@ def create_app() -> Flask:
                 min_tm = float(data.get("min_tm", 58.0))
                 max_tm = float(data.get("max_tm", 65.0))
                 buffer_conditions = data.get("buffer_conditions") or {
-                    "monovalent_mm": 50.0,
-                    "divalent_mm": 1.5,
-                    "dntp_mm": 0.2,
-                    "oligo_conc_nm": 250.0,
+                    "monovalent_mm": float(data.get("na_mm", 50.0)),
+                    "divalent_mm": float(data.get("mg_mm", 1.5)),
+                    "dntp_mm": float(data.get("dntp_mm", 0.2)),
+                    "oligo_conc_nm": float(data.get("primer_conc_um", 0.25)) * 1000.0,
                 }
                 input_params = dict(data)
                 input_params.update({
@@ -870,6 +870,31 @@ def create_app() -> Flask:
                     "product_max": product_max,
                     "min_tm": min_tm,
                     "max_tm": max_tm,
+                    "na_mm": float(data.get("na_mm", 50.0)),
+                    "mg_mm": float(data.get("mg_mm", 1.5)),
+                    "dntp_mm": float(data.get("dntp_mm", 0.8)),
+                    "primer_conc_um": float(data.get("primer_conc_um", 0.25)),
+                    "primer_len_min": int(data.get("primer_len_min", 18)),
+                    "primer_len_max": int(data.get("primer_len_max", 25)),
+                    "primer_gc_min": int(data.get("primer_gc_min", 40)),
+                    "primer_gc_max": int(data.get("primer_gc_max", 60)),
+                    "require_gc_clamp": data.get("require_gc_clamp", True),
+                    "fwd_tail": data.get("fwd_tail", ""),
+                    "rev_tail": data.get("rev_tail", ""),
+                    "fwd_mod5": data.get("fwd_mod5", ""),
+                    "rev_mod5": data.get("rev_mod5", ""),
+                    "probe_type": data.get("probe_type", "taqman"),
+                    "probe_reporter": data.get("probe_reporter", "FAM"),
+                    "probe_quencher": data.get("probe_quencher", "BHQ-1"),
+                    "probe_tm_offset_min": float(data.get("probe_tm_offset_min", 8)),
+                    "probe_tm_offset_max": float(data.get("probe_tm_offset_max", 10)),
+                    "probe_len_min": int(data.get("probe_len_min", 18)),
+                    "probe_len_max": int(data.get("probe_len_max", 30)),
+                    "probe_gc_min": int(data.get("probe_gc_min", 30)),
+                    "probe_gc_max": int(data.get("probe_gc_max", 80)),
+                    "probe_hairpin_limit": float(data.get("probe_hairpin_limit", -2.0)),
+                    "probe_mod5": data.get("probe_mod5", ""),
+                    "probe_mod3": data.get("probe_mod3", ""),
                     "buffer_conditions": buffer_conditions,
                     "buffer": buffer_conditions,
                     "design_params": {
@@ -877,6 +902,25 @@ def create_app() -> Flask:
                         "tm_max": max_tm,
                         "product_size_min": product_min,
                         "product_size_max": product_max,
+                        "primer_len_min": int(data.get("primer_len_min", 18)),
+                        "primer_len_max": int(data.get("primer_len_max", 25)),
+                        "primer_gc_min": int(data.get("primer_gc_min", 40)),
+                        "primer_gc_max": int(data.get("primer_gc_max", 60)),
+                        "require_gc_clamp": data.get("require_gc_clamp", True),
+                    },
+                    "probe_params": {
+                        "type": data.get("probe_type", "taqman"),
+                        "reporter": data.get("probe_reporter", "FAM"),
+                        "quencher": data.get("probe_quencher", "BHQ-1"),
+                        "tm_offset_min": float(data.get("probe_tm_offset_min", 8)),
+                        "tm_offset_max": float(data.get("probe_tm_offset_max", 10)),
+                        "len_min": int(data.get("probe_len_min", 18)),
+                        "len_max": int(data.get("probe_len_max", 30)),
+                        "gc_min": int(data.get("probe_gc_min", 30)),
+                        "gc_max": int(data.get("probe_gc_max", 80)),
+                        "hairpin_limit": float(data.get("probe_hairpin_limit", -2.0)),
+                        "mod5": data.get("probe_mod5", ""),
+                        "mod3": data.get("probe_mod3", ""),
                     },
                 })
 
@@ -1031,6 +1075,10 @@ def create_app() -> Flask:
     @app.route("/admin")
     def serve_admin():
         return send_from_directory(STATIC_DIR, "admin-security.html")
+
+    @app.route("/pricing")
+    def serve_pricing():
+        return send_from_directory(STATIC_DIR, "pricing.html")
 
     @app.route("/<path:filename>")
     def serve_static(filename):

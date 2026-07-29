@@ -422,6 +422,37 @@ Added "Scientific References" sections with proper citations to 8 tool pages:
 | **Phase 5** — Team & Admin | ⏸️ Deferred | Until 5+ paying users |
 | **Phase 6** — API & Landing | ⏸️ Deferred | Until 5+ paying users |
 | **Phase 7** — SEO Comparisons | ⏸️ Deferred | Until 5+ paying users |
+| **VPrime Redesign** | ✅ Complete | 8/8 tasks |
+
+## VPrime Redesign (Jul 29 2026)
+
+### What Was Done
+- **Reverted sidebar form**: Removed all 24-step checkboxes; restored clean form with: Optimal Tm, Amplicon Size (min/max), Specificity toggle, Probe Design toggle + expandable config (type, reporter, quencher, Tm offset, length range, GC%, hairpin ΔG, 5'/3' mods), Reaction Conditions (Na⁺/Mg²⁺/dNTPs/primer conc/polymerase), Primer Modifications (5' tails fwd/rev, 5' mods fwd/rev), Primer Length & GC Clamp (len min/max, GC% min/max, 3' GC clamp), Pipeline Mode + Design Mode dropdowns
+- **Fixed biochemistry calc functions** — three validated formulas:
+  - `calcExtinctionCoeff(seq)`: ε = 0.9 × Σ(n_base × ε_base) per Cavaluzzi & Borer 2004
+  - `calcMolWeight(seq, isProbe)`: MW = Σ(n_base × MW_base) + (n-1)×61.96 + 18.02, +800 if probe
+  - `calcNmolPerOD(seq)`: nmol/OD = 1,000,000 / ε (Beer's law at A=1)
+- **Redesigned result cards**: Each oligo card shows sequence, ⚙ Customize ▾ inline panel, metrics row (Tm, GC%, Length, Hairpin ΔG, Self-dimer ΔG), biochemistry row (ε in mM⁻¹cm⁻¹, MW in kDa, nmol/OD), quality score bar, action buttons
+- **Per-oligo customization panels**: `.cust-panel` with 2×4 grid — 5′ Tail, 3′ Tail, 5′ Mod, 3′ Mod (text), Scale, Purification, Buffer, Conc (selects)
+- **Order slide-out panel**: 520px right panel listing all oligos with per-item customization; Export IDT / Export Twist CSV with all customised values
+- **+Add Primer / +Add Probe buttons**: Per-pair post-hoc buttons to manually add oligos to order
+- **Step22 backend: Always-on probe design + Tm relaxation**:
+  - Removed `probe_mode=False` guard — probes always generated regardless of checkbox
+  - Two-pass strategy: Pass 1 = target Tm range (e.g., primer_Tm + 8–10°C); Pass 2 = relax to all candidates passing non-Tm constraints, sorted by Tm proximity
+  - Probe region guaranteed between primers via `_find_probe_region` (start after fwd+1 gap, end before rev-1 gap)
+  - Tested with human beta-globin: 5 candidates found at Tm 66.6–68.2°C
+
+### Files Changed
+| File | Change |
+|------|--------|
+| `frontend/primer.html` | Sidebar form cleanup, biochemistry calc functions (calcExtinctionCoeff/calcMolWeight/calcNmolPerOD), redesigned primerBlock/probeBlock templates, per-oligo .cust-panel, order-overlay/order-panel, IDT/Twist CSV export, +Add Primer/+Add Probe handlers |
+| `primerforge/engine/steps/step22_probe_design.py` | Removed probe_mode gate; added two-pass probe generation (strict Tm → relaxed Tm); `_validate_probe` accepts optional tm_offset_min/max overrides; updated docstring |
+| `pyproject.toml` | Added `version="1.0.0"` and `[tool.setuptools.packages.find]` so `pip install -e .` works |
+
+### Next Steps
+1. User to review VPrime redesign at http://localhost:11436/primer
+2. On approval: `git add` + `git commit` + `git push` all modified files
+3. **No Vercel deployment needed** — back to local dev for now
 
 ## Key Commands
 - Python bulk-replace scripts for 200+ file operations
