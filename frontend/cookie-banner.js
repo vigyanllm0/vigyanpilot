@@ -4,6 +4,20 @@
 
   var STORAGE_KEY = 'vigyanllm_cookie_consent';
 
+  var GRANTED = { ad_storage: 'granted', ad_user_data: 'granted', ad_personalization: 'granted', analytics_storage: 'granted' };
+  var DENIED = { ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied', analytics_storage: 'denied' };
+
+  function updateConsent(state) {
+    try {
+      if (window.gtag) {
+        gtag('consent', 'update', state);
+      } else {
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push(['consent', 'update', state]);
+      }
+    } catch (e) {}
+  }
+
   function getCookieVal(name) {
     var m = document.cookie.match(new RegExp('(?:^|; )' + name + '=([^;]*)'));
     return m ? decodeURIComponent(m[1]) : null;
@@ -74,12 +88,14 @@
       recordConsent('accepted');
       setCookie('vigyanllm_consent', 'accepted', 365);
       try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ consent: 'accepted', ts: Date.now() })); } catch (e) {}
+      updateConsent(GRANTED);
       hideBanner(banner);
     });
     banner.querySelector('[data-action="decline"]').addEventListener('click', function () {
       recordConsent('declined');
       setCookie('vigyanllm_consent', 'declined', 30);
       try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ consent: 'declined', ts: Date.now() })); } catch (e) {}
+      updateConsent(DENIED);
       hideBanner(banner);
     });
   }
@@ -98,7 +114,18 @@
   }
 
   function init() {
-    if (alreadyDecided()) return;
+    if (alreadyDecided()) {
+      var state = 'declined';
+      try {
+        var s = JSON.parse(localStorage.getItem(STORAGE_KEY));
+        if (s && s.consent === 'accepted') state = 'accepted';
+        else if (getCookieVal('vigyanllm_consent') === 'accepted') state = 'accepted';
+      } catch (e) {
+        if (getCookieVal('vigyanllm_consent') === 'accepted') state = 'accepted';
+      }
+      updateConsent(state === 'accepted' ? GRANTED : DENIED);
+      return;
+    }
     // only inject once DOM body is available
     if (document.body) {
       inject();

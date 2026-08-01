@@ -2,12 +2,34 @@
 <html lang="en">
 <head>
 <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-PB0XMF4GEH"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
+  gtag('consent', 'default', {
+    'ad_storage': 'denied',
+    'ad_user_data': 'denied',
+    'ad_personalization': 'denied',
+    'analytics_storage': 'denied',
+    'region': ['AT','BE','BG','HR','CY','CZ','DK','EE','FI','FR','DE','GR','HU','IE','IT','LV','LT','LU','MT','NL','PL','PT','RO','SK','SI','ES','SE','IS','LI','NO','GB','CH']
+  });
+  gtag('consent', 'default', {
+    'ad_storage': 'granted',
+    'ad_user_data': 'granted',
+    'ad_personalization': 'granted',
+    'analytics_storage': 'granted'
+  });
+  try {
+    var vlcs = JSON.parse(localStorage.getItem('vigyanllm_cookie_consent') || 'null');
+    if (vlcs && vlcs.consent === 'accepted') {
+      gtag('consent', 'update', { 'ad_storage': 'granted', 'ad_user_data': 'granted', 'ad_personalization': 'granted', 'analytics_storage': 'granted' });
+    } else if (vlcs && vlcs.consent === 'declined') {
+      gtag('consent', 'update', { 'ad_storage': 'denied', 'ad_user_data': 'denied', 'ad_personalization': 'denied', 'analytics_storage': 'denied' });
+    }
+  } catch (e) {}
+</script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PB0XMF4GEH"></script>
+<script>
   gtag('js', new Date());
-
   gtag('config', 'G-PB0XMF4GEH');
 </script>
 
@@ -283,11 +305,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
 <a href="primer">&larr; Back to VigyanLLM Primer</a>
 <h1>Cookie Policy</h1>
-<p>Last updated: 2026-06-30</p>
-<p>VigyanLLM is a sovereign biomedical AI platform. We minimise data collection and do not use third-party tracking cookies for advertising or analytics personalisation. This policy explains the storage mechanisms used by our platform and your choices.</p>
+<p>Last updated: 2026-08-01</p>
+<p>VigyanLLM is a sovereign biomedical AI platform. We minimise data collection and use analytics only with your consent. This policy explains the storage mechanisms used by our platform, how Google Analytics behaves, and your choices.</p>
 
 <h2>What We Use and Why</h2>
-<p>The VigyanLLM Primer tool uses browser <strong>localStorage</strong> and <strong>sessionStorage</strong> for essential application functions. We do not set persistent third-party cookies for tracking.</p>
+<p>The VigyanLLM Primer tool uses browser <strong>localStorage</strong> and <strong>sessionStorage</strong> for essential application functions. Analytics via Google Analytics 4 is enabled only after you click <strong>Accept all</strong> on the consent banner; it remains disabled if you decline.</p>
 
 <table>
 <thead><tr><th>Storage Key</th><th>Type</th><th>Purpose</th></tr></thead>
@@ -298,12 +320,15 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <tr><td><code>pf_payment_error</code></td><td>sessionStorage</td><td>Temporary payment error details for user feedback</td></tr>
 <tr><td><code>pending_ref_code</code></td><td>sessionStorage</td><td>Referral code carried through sign-up flow</td></tr>
 <tr><td><code>acad_popup_shown</code></td><td>sessionStorage</td><td>Prevents repeated display of the academic discount prompt</td></tr>
+<tr><td><code>vigyanllm_cookie_consent</code></td><td>localStorage</td><td>Records your Accept/Decline choice for analytics; gates Google Analytics loading</td></tr>
+<tr><td><code>vigyanllm_consent</code></td><td>Cookie</td><td>Short-lived consent marker mirroring your banner choice</td></tr>
 </tbody>
 </table>
 
 <h2>Third-Party Services</h2>
 <p>The following third-party services may set their own cookies or storage when you interact with their components:</p>
 <ul>
+<li><strong>Google Analytics 4 (G-PB0XMF4GEH)</strong> — loads only after you click <strong>Accept all</strong>. We use Google Consent Mode v2; for visitors in the EEA/UK/Switzerland analytics stays disabled until explicit consent, while it is enabled by default for other regions until you decline. It measures aggregate page usage and does not feed personalised advertising.</li>
 <li><strong>Google OAuth 2.0</strong> — when you sign in with Google, Google sets authentication cookies governed by Google's privacy policy</li>
 <li><strong>Razorpay</strong> — when you complete a payment, Razorpay's hosted checkout may set session cookies necessary for payment processing</li>
 <li><strong>Google Fonts</strong> — our pages load typefaces from Google Fonts; Google may log requests per its privacy policy</li>
@@ -311,11 +336,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <p>We do not control these third-party cookies. Please refer to the respective service's privacy policy for details.</p>
 
 <h2>Your Choices</h2>
+<p>When the consent banner appears, choose <strong>Accept all</strong> to enable Google Analytics or <strong>Decline optional</strong> to keep it disabled. In the EEA/UK/Switzerland analytics is off by default until you accept; in all other regions it is on by default until you decline. You can change your choice by clearing the <code>vigyanllm_cookie_consent</code> item in your browser's site data, which will show the banner again on your next visit.</p>
 <p>You can clear localStorage and sessionStorage at any time through your browser settings (typically Settings &rarr; Privacy & Security &rarr; Clear Site Data). Clearing this data will sign you out and remove your locally stored design history but will not affect your account on our servers.</p>
 <p>Most browsers also provide private or incognito modes that clear sessionStorage automatically when you close the window.</p>
 
 <h2>Do Not Track</h2>
-<p>Our platform does not respond to Do Not Track (DNT) signals because we do not engage in cross-site tracking. All data stored locally is associated only with your session on this domain.</p>
+<p>Our platform does not respond to Do Not Track (DNT) signals. Analytics behaviour is instead governed by your explicit Accept/Decline choice on the consent banner.</p>
 
 <h2>Updates</h2>
 <p>We may update this Cookie Policy from time to time. Changes will be posted on this page with an updated revision date.</p>
