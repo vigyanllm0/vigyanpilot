@@ -165,6 +165,8 @@ def init_security(app):
             "https://lumberjack.razorpay.com",
             "https://accounts.google.com",
             "https://www.googleapis.com",
+            "https://www.google-analytics.com",
+            "https://www.google.com",
             "https://cdn.jsdelivr.net",
             "http://localhost:8001",
             "http://127.0.0.1:8001",
