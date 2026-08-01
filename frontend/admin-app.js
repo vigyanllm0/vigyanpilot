@@ -139,13 +139,13 @@ async function loadBlogPosts(){
     if(!r.ok){el.innerHTML='<div style="color:var(--muted);padding:1rem;text-align:center">Could not load blog posts.</div>';return}
     const d=await r.json();
     const pages=d.data?.pages||[];
-    if(!pages.length){el.innerHTML='<div style="color:var(--muted);padding:1rem;text-align:center">No blog posts yet. <a href="/admin/cms/editor.html?type=blog" style="color:var(--primary)">Create one →</a></div>';return}
+    if(!pages.length){el.innerHTML='<div style="color:var(--muted);padding:1rem;text-align:center">No blog posts yet. <a href="/cms-editor?type=blog" style="color:var(--primary)">Create one →</a></div>';return}
     let html='<div class="tbl-wrap"><table><thead><tr><th>Title</th><th>Status</th><th>Date</th><th>Action</th></tr></thead><tbody>';
     for(const p of pages){
       const statusClass=p.status==='published'?'pill-green':p.status==='pending_review'?'pill-orange':p.status==='rejected'?'pill-red':'pill-blue';
       const date=p.published_at||p.created_at||'';
       const fmtDate=date?new Date(date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'—';
-      html+='<tr><td style="font-weight:500">'+p.title+'</td><td><span class="pill '+statusClass+'">'+p.status+'</span></td><td style="font-size:.7rem;color:var(--muted)">'+fmtDate+'</td><td><a href="/admin/cms/editor.html?slug='+p.slug+'" class="btn btn-sm" style="background:var(--surface2);color:var(--text);text-decoration:none;display:inline-block;border:1px solid var(--border)">Edit</a></td></tr>';
+      html+='<tr><td style="font-weight:500">'+p.title+'</td><td><span class="pill '+statusClass+'">'+p.status+'</span></td><td style="font-size:.7rem;color:var(--muted)">'+fmtDate+'</td><td><a href="/cms-editor?slug='+p.slug+'" class="btn btn-sm" style="background:var(--surface2);color:var(--text);text-decoration:none;display:inline-block;border:1px solid var(--border)">Edit</a></td></tr>';
     }
     html+='</tbody></table></div>';
     el.innerHTML=html;

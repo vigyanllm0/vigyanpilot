@@ -159,6 +159,7 @@
       <button class="filter-btn" data-filter="published">Published</button>
       <button class="filter-btn" data-filter="draft">Draft</button>
       <button class="filter-btn" data-filter="pending_review">Review</button>
+      <button class="filter-btn" data-filter="rejected">Rejected</button>
       <button class="filter-btn" data-filter="archived">Archived</button>
     </div>
     <input type="text" class="search-input" id="pageSearch" placeholder="Search by title or slug…">
@@ -305,6 +306,7 @@ const API_BASE = '';
 let currentTab = 'dashboard';
 let allPages = [], allMedia = [], allBlocks = [], allUsers = [];
 let pageFilter = '', pageSearch = '', pagePage = 0;
+let pageTypeFilter = '';
 let mediaPage = 0;
 const PER_PAGE = 20;
 const MEDIA_PER_PAGE = 24;
@@ -346,7 +348,7 @@ function closeModal(id){ document.getElementById(id).classList.remove('show') }
 function openModal(id){ document.getElementById(id).classList.add('show') }
 
 function renderStatusBadge(status){
-  const map = { draft:'Draft', pending_review:'Review', published:'Published', archived:'Archived' };
+  const map = { draft:'Draft', pending_review:'Review', published:'Published', archived:'Archived', rejected:'Rejected' };
   return '<span class="badge badge-' + status + '">' + (map[status]||status) + '</span>';
 }
 
@@ -578,6 +580,9 @@ document.addEventListener('mousemove', function(e){
 function loadPages(){
   const el = document.getElementById('pageList');
   el.innerHTML = skeletonRows(4);
+  const params = new URLSearchParams(window.location.search);
+  const typeParam = params.get('type');
+  if (typeParam) pageTypeFilter = typeParam;
   fetchAllPages().then(pages => {
     allPages = pages;
     renderPageList();
@@ -591,7 +596,9 @@ async function fetchAllPages(){
   const all = [];
   let offset = 0;
   while (true) {
-    const res = await authFetch(API_BASE + '/api/v1/cms/pages?limit=100&offset=' + offset).then(r => r.json());
+    const params = new URLSearchParams({ limit: 100, offset: offset });
+    if (pageTypeFilter) params.set('content_type', pageTypeFilter);
+    const res = await authFetch(API_BASE + '/api/v1/cms/pages?' + params.toString()).then(r => r.json());
     const batch = res?.data?.pages || [];
     all.push(...batch);
     const total = res?.data?.total || all.length;
@@ -626,6 +633,8 @@ function renderPageList(){
     '<span>' + (p.updated_at ? new Date(p.updated_at).toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' }) : '') + '</span></div></div>' +
     '<div class="page-actions"><button class="edit-btn btn-ghost btn-sm" onclick="openEditor(\'' + p.slug + '\')">Edit</button>' +
     '<button class="btn-ghost btn-sm" onclick="viewPage(\'' + p.slug + '\')">View</button>' +
+    (p.status === 'pending_review' && isAdmin() ? '<button class="btn-success btn-sm" onclick="approvePage(\'' + p.slug + '\')">Approve</button>' : '') +
+    (p.status === 'pending_review' && isAdmin() ? '<button class="btn-danger btn-sm" onclick="rejectPage(\'' + p.slug + '\')">Reject</button>' : '') +
     '<button class="btn-danger btn-sm" onclick="deletePage(\'' + p.slug + '\')">Archive</button></div>' +
   '</div>').join('');
   let phtml = '<button ' + (pagePage === 0 ? 'disabled' : '') + ' onclick="pagePage=' + (pagePage-1) + ';renderPageList()">&lsaquo;</button>';
@@ -654,6 +663,33 @@ document.getElementById('pageSearch').addEventListener('input', () => {
 
 function openEditor(slug) {
   window.location.href = slug ? '/cms-editor?slug=' + slug : '/cms-editor';
+}
+
+function isAdmin(){
+  const u = getUser();
+  return !!(u && u.role === 'admin');
+}
+
+function approvePage(slug) {
+  if (!confirm('Approve and publish "/' + slug + '"?')) return;
+  authFetch(API_BASE + '/api/v1/cms/pages/' + slug + '/approve', { method:'POST', body: JSON.stringify({}) }).then(r => {
+    if (!r.ok) return r.json().then(d => { throw new Error(d.detail||'Approve failed') });
+    showToast('Page approved and published');
+    loadPages();
+    loadDashboard();
+  }).catch(e => showToast('Error: ' + (e?.message||'Unknown'), 'error'));
+}
+
+function rejectPage(slug) {
+  const reason = prompt('Reason for rejection:');
+  if (reason === null) return;
+  if (!reason.trim() || reason.trim().length < 10) { showToast('A rejection reason (min 10 characters) is required', 'error'); return }
+  authFetch(API_BASE + '/api/v1/cms/pages/' + slug + '/reject', { method:'POST', body: JSON.stringify({ reason: reason.trim() }) }).then(r => {
+    if (!r.ok) return r.json().then(d => { throw new Error(d.detail||'Reject failed') });
+    showToast('Page rejected');
+    loadPages();
+    loadDashboard();
+  }).catch(e => showToast('Error: ' + (e?.message||'Unknown'), 'error'));
 }
 
 function viewPage(slug) {
@@ -1027,7 +1063,12 @@ document.addEventListener('DOMContentLoaded', () => {
   if (!user || !getToken()) { window.location.href = '/cms-login'; return }
   document.getElementById('sidebarUserName').textContent = user.display_name || user.email;
   document.getElementById('sidebarUserEmail').textContent = user.email || '';
-  loadDashboard();
+  const initParams = new URLSearchParams(window.location.search);
+  if (initParams.get('type')) {
+    switchTab('pages');
+  } else {
+    loadDashboard();
+  }
 });
 </script>
 </body>

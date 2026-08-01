@@ -276,8 +276,8 @@ Vercel serves `404.html` implicitly, but an explicit route would be more reliabl
 
 ### L6. CMS admin pages missing SEO meta
 
-`admin/cms/*.html` (5 files) are missing canonical, JSON-LD, OG, Twitter, H1 tags.  
-**Action:** Acceptable for internal pages, but consider adding at least a meta description and robots `noindex` tag.
+~~`admin/cms/*.html` (5 files) are missing canonical, JSON-LD, OG, Twitter, H1 tags.~~  
+**Resolved Aug 1 2026:** Old CMS (`frontend/admin/cms/*`) removed — replaced by optimized CMS at `/cms-login`, `/cms-admin`, `/cms-editor`. These internal admin pages are not indexed (auth-gated) and need no SEO meta.
 
 ---
 

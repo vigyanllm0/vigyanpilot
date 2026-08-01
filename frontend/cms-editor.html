@@ -396,6 +396,11 @@ function initEditor(){
     editor.on('transaction',function(){updateToolbar();updateImageToolbar()});
     var params=new URLSearchParams(window.location.search);
     var slug=params.get('slug');
+    var type=params.get('type');
+    if(type&&['page','blog','glossary'].includes(type)){
+      document.getElementById('pageType').value=type;
+      document.getElementById('editorTitle').textContent=type==='blog'?'New Blog Post':type==='glossary'?'New Glossary Entry':'New Page';
+    }
     if(slug)loadPage(slug);
   }catch(e){
     console.error('Editor init failed:',e);
