@@ -25,6 +25,8 @@ GTAG_SNIPPET = """<!-- Google tag (gtag.js) -->
       gtag('consent', 'update', { 'ad_storage': 'denied', 'ad_user_data': 'denied', 'ad_personalization': 'denied', 'analytics_storage': 'denied' });
     }
   } catch (e) {}
+
+  gtag('set', 'ads_data_redaction', true);
 </script>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-PB0XMF4GEH"></script>
 <script>
