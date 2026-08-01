@@ -62,6 +62,7 @@ function renderAuth(){
     (isRegister?'<div class="field"><label>Full name</label><input type="text" id="auth-name" class="auth-input" placeholder="Dr. Anjali Sharma"></div>':'')+
     '<div class="field"><label>Email</label><input type="email" id="auth-email" class="auth-input" placeholder="researcher@lab.edu"></div>'+
     '<div class="field"><label>Password</label><input type="password" id="auth-pass" class="auth-input" placeholder="Min 6 characters"></div>'+
+    '<div class="field tc-field"><label class="tc-label"><input type="checkbox" id="auth-tc" class="auth-tc-input"> I agree to the <a href="/terms" target="_blank" rel="noopener">Terms &amp; Conditions</a> and <a href="/privacy" target="_blank" rel="noopener">Privacy Policy</a></label></div>'+
     '<button class="auth-btn" id="auth-submit">'+(isRegister?'Create account':'Sign in')+'</button>'+
     '<div class="auth-err" id="auth-err"></div>'+
     '<div class="toggle-link">'+(isRegister?'Already have an account? <a onclick="openAuthMode()">Sign in</a>':"Don't have an account? <a onclick='openRegMode()'>Create one</a>")+'</div>';
@@ -89,7 +90,9 @@ function renderGoogleBtn(){
 
 function handleGoogleCredential(res){
   var err=document.getElementById('auth-err');
+  var tc=document.getElementById('auth-tc');
   if(!res||!res.credential){if(err){err.style.display='block';err.textContent='Google sign-in was cancelled.'}return}
+  if(tc&&!tc.checked){if(err){err.style.display='block';err.textContent='Please accept the Terms & Conditions to continue.'}return}
   fetch(API+'/api/auth/google',{
     method:'POST',
     headers:{'Content-Type':'application/json'},
@@ -117,8 +120,10 @@ function submitAuth(){
   var email=document.getElementById('auth-email').value.trim();
   var pass=document.getElementById('auth-pass').value.trim();
   var err=document.getElementById('auth-err');
+  var tc=document.getElementById('auth-tc');
   if(!email||!pass){err.style.display='block';err.textContent='Please fill all fields.';return}
   if(pass.length<6){err.style.display='block';err.textContent='Password must be 6+ characters.';return}
+  if(tc&&!tc.checked){err.style.display='block';err.textContent='Please accept the Terms & Conditions to continue.';return}
   err.style.display='none';
   var body={email:email,password:pass};
   if(isRegister)body.name=(document.getElementById('auth-name').value||'').trim();

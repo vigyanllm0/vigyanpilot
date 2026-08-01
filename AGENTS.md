@@ -1,7 +1,7 @@
 # AGENTS.md — Agent Handoff & Tracking
 
-**Session:** Sales Launch Package — Product Hunt listing, academic outreach, directory submissions, comparison blog post — Completed Jul 27 2026  
-**Next Sprint:** Execute Product Hunt launch + academic email send + directory submissions → then git commit/push
+**Session:** CMS Image Editing — alignment, caption, alt/title/link/width/loading with insert/edit round-trip + sanitization-safe public rendering — Completed Aug 1 2026
+**Next Sprint:** Re-verify decline-cookie path → final sweep → git commit/push (commit scope pending user decision: all ~458 modified files vs CMS-only vs image-feature-only)
 
 **⚠️ Phase 4 critical note:** `/api/usage/check` must fire **before** batch processing starts — client-side gate (feature-gate.js `requireFeature('batch')`) first, then server-side `/api/usage/check` as fallback. Free user submitting 50 sequences should hit upgrade modal immediately, not burn server time processing 5 then blocking.
 
@@ -410,6 +410,20 @@ Added "Scientific References" sections with proper citations to 8 tool pages:
 | File | Change |
 |------|--------|
 | `primerforge/primer_server.py` | Fixed BLAST+MSA endpoints to allow anonymous access — removed hard `_auth_user()` gate on BLAST, made `get_current_user()` optional on MSA, guarded daily checks/recording with `if user` so unauthenticated requests are processed without limits |
+
+## Files Changed This Session (CMS Image Editing)
+
+| File | Change |
+|------|--------|
+| `frontend/cms-editor.html` | Enhanced `ResizableImage` node: parse/render `style`, `align`, `caption` (`data-caption`), `loading`; figure+figcaption wrapper in `renderHTML`; expanded floating toolbar (align buttons + ⚙ settings); new `#imageSettingsOverlay` modal (URL/alt/title/caption/link/align/width); insert flow routes through settings modal; `alignSelectedImage()`; expanded preview CSS |
+| `frontend/cms-design.css` | `.ift-settings`, figure/figcaption, `figure.vl-align-*`, `img[align=*]`, `.img-align-picker`, `.img-align-opt`/`.img-width-opt` (+ is-active), `.editor-content .vl-figure` styles |
+| `frontend/cms-content.js` | `injectImageCss()` (id `vl-img-css`) injecting `.vl-figure`/`figcaption`/`img[align=*]` public CSS |
+| `backend/routes/public.py` | Bleach whitelist: `img` attrs now include `align`, `data-caption`, `style`; `CSSSanitizer` with `_SAFE_CSS_PROPERTIES` (width/float/margin/etc., strips `position:fixed`) |
+| `backend/routes/pages.py` | `_render_node` image branch → `<figure class="vl-figure vl-align-X">` + `<figcaption>` when caption present; emits src/alt/title/style/align/loading (default lazy) |
+| `primerforge/primer_server.py` | Explicit `/blast` + `/msa` routes; clean-URL no-extension fallback (`.html`) so `/dashboard`, `/terms`, `/privacy`, `/cookies`, `/blog/*` return 200 |
+| `frontend/docking.html` | `nav-login-btn` null-ref fix — `updateAuthUI` falls back to `.nav-login` |
+| `frontend/primer.html`, `blast.html`, `msa.html`, `login.html`, `signup.html` | T&C checkbox + `handleAuth`/`handleGoogleSignIn` gating on all 6 auth entry points |
+| `AGENTS.md` | Session handoff + Files Changed table |
 
 ## Scoreboard
 | Phase | Status | Items |

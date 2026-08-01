@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="en-IN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CMS Admin — VigyanLLM</title>
+<link rel="stylesheet" href="/cms-design.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PB0XMF4GEH"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)};gtag('js',new Date());gtag('config','G-PB0XMF4GEH');</script>
+<style>
+/* Page-specific styles only — design tokens live in /cms-design.css */
+.quickstart{background:linear-gradient(135deg,var(--blue-50),var(--blue-100));border:1px solid var(--blue-200);border-radius:var(--radius-lg);padding:20px 24px;margin-bottom:24px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.quickstart h2{font-size:var(--text-md);font-weight:700;color:var(--text);margin-bottom:4px}
+.quickstart p{font-size:var(--text-sm);color:var(--text-secondary);line-height:1.5}
+.quickstart .qs-actions{display:flex;gap:8px;flex-shrink:0}
+@media(max-width:600px){.quickstart .qs-actions{width:100%;flex-direction:column}.quickstart .qs-actions .btn{width:100%}}
+</style>
+<script src="/cookie-banner.js" defer></script>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <a href="/index">
+      <img src="/logo.svg" alt="VigyanLLM">
+      <span>VigyanLLM</span>
+    </a>
+  </div>
+  <nav class="sidebar-nav" id="sidebarNav">
+    <a class="active" data-tab="dashboard">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Dashboard
+    </a>
+    <a data-tab="pages">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      Pages
+    </a>
+    <a data-tab="media">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+      Media
+    </a>
+    <a data-tab="blocks">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Blocks
+    </a>
+    <a data-tab="settings">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+      Settings
+    </a>
+    <a data-tab="users">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Users
+    </a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="sidebar-user">
+      <strong id="sidebarUserName">—</strong>
+      <span id="sidebarUserEmail">—</span>
+      <a href="#" class="sidebar-logout" onclick="handleLogout()">Log out</a>
+    </div>
+  </div>
+</aside>
+
+<div class="main">
+
+<!-- ===== DASHBOARD TAB ===== -->
+<div class="tab-content active" id="tab-dashboard">
+  <div class="header">
+    <h1>Dashboard</h1>
+    <div class="header-actions">
+      <button class="btn btn-outline btn-sm" onclick="loadDashboard()">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" width="14" height="14"><path d="M1 4v6h6M23 20v-6h-6"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>
+        Refresh
+      </button>
+    </div>
+  </div>
+  <div class="quickstart">
+    <div style="flex:1;min-width:200px">
+      <h2>Welcome! Here's how to get started</h2>
+      <p>Click <strong>"Create New Page"</strong> to write content in the visual editor — no coding needed. Add images, videos, tables, and more. Save as draft, preview how it looks, then submit for review and publish.</p>
+    </div>
+    <div class="qs-actions">
+      <button class="btn btn-primary" onclick="openEditor()">Create New Page</button>
+      <button class="btn btn-outline" onclick="switchTab('media')">Upload Images</button>
+      <button class="btn btn-outline" onclick="switchTab('settings')">Site Settings</button>
+    </div>
+  </div>
+  <div class="stats-grid" id="dashStats">
+    <div class="stat-card">
+      <div class="icon" style="background:#EFF6FF"><svg fill="none" stroke="#2563EB" viewBox="0 0 24 24" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+      <div class="num" id="statTotal">—</div>
+      <div class="label">Total Pages</div>
+    </div>
+    <div class="stat-card">
+      <div class="icon" style="background:#D1FAE5"><svg fill="none" stroke="#059669" viewBox="0 0 24 24" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
+      <div class="num" id="statPublished">—</div>
+      <div class="label">Published</div>
+    </div>
+    <div class="stat-card">
+      <div class="icon" style="background:#FEF3C7"><svg fill="none" stroke="#D97706" viewBox="0 0 24 24" stroke-width="2"><path d="M12 20h9M16.37 4.37a2.83 2.83 0 1 1 4 4L7.5 21H3v-4.5L16.37 4.37z"/></svg></div>
+      <div class="num" id="statDraft">—</div>
+      <div class="label">Drafts</div>
+    </div>
+    <div class="stat-card">
+      <div class="icon" style="background:#F3E8FF"><svg fill="none" stroke="#9333EA" viewBox="0 0 24 24" stroke-width="2"><path d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/></svg></div>
+      <div class="num" id="statViews">—</div>
+      <div class="label">Total Views</div>
+    </div>
+  </div>
+
+  <!-- ===== ADVANCED ANALYTICS ===== -->
+  <div class="analytics-header" style="margin-top:32px">
+    <div class="section-title" style="margin-bottom:0">Traffic Analytics</div>
+    <div class="analytics-range" id="analyticsRange">
+      <button class="btn btn-outline btn-sm" data-days="7" onclick="loadAnalytics(7)">7D</button>
+      <button class="btn btn-outline btn-sm active" data-days="30" onclick="loadAnalytics(30)">30D</button>
+      <button class="btn btn-outline btn-sm" data-days="90" onclick="loadAnalytics(90)">90D</button>
+    </div>
+  </div>
+
+  <div id="analyticsRoot">
+    <div class="analytics-grid">
+      <div class="analytics-card stat-card"><div class="skeleton" style="height:34px;width:70px"></div><div class="skeleton" style="height:12px;width:90px;margin-top:10px"></div></div>
+      <div class="analytics-card stat-card"><div class="skeleton" style="height:34px;width:70px"></div><div class="skeleton" style="height:12px;width:90px;margin-top:10px"></div></div>
+      <div class="analytics-card stat-card"><div class="skeleton" style="height:34px;width:70px"></div><div class="skeleton" style="height:12px;width:90px;margin-top:10px"></div></div>
+      <div class="analytics-card stat-card"><div class="skeleton" style="height:34px;width:70px"></div><div class="skeleton" style="height:12px;width:90px;margin-top:10px"></div></div>
+      <div class="analytics-card stat-card"><div class="skeleton" style="height:34px;width:70px"></div><div class="skeleton" style="height:12px;width:90px;margin-top:10px"></div></div>
+    </div>
+    <div class="chart-card">
+      <div class="skeleton" style="height:180px"></div>
+    </div>
+    <div class="analytics-cols two-thirds">
+      <div class="chart-card" style="margin-bottom:0"><div class="skeleton" style="height:220px"></div></div>
+      <div class="chart-card" style="margin-bottom:0"><div class="skeleton" style="height:220px"></div></div>
+    </div>
+  </div>
+
+  <div class="section-title" style="margin-top:32px">Recent Pages</div>
+  <div id="dashRecent"><div class="skeleton-row"><div class="skeleton skeleton-card"></div><div class="skeleton skeleton-card"></div><div class="skeleton skeleton-card"></div></div></div>
+</div>
+
+<!-- ===== PAGES TAB ===== -->
+<div class="tab-content" id="tab-pages">
+  <div class="header">
+    <h1>Pages</h1>
+    <div class="header-actions">
+      <button class="btn btn-primary" onclick="openEditor()">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" width="16" height="16"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        New Page
+      </button>
+    </div>
+  </div>
+  <div class="toolbar">
+    <div class="filter-group" id="pageFilterGroup">
+      <button class="filter-btn active" data-filter="">All</button>
+      <button class="filter-btn" data-filter="published">Published</button>
+      <button class="filter-btn" data-filter="draft">Draft</button>
+      <button class="filter-btn" data-filter="pending_review">Review</button>
+      <button class="filter-btn" data-filter="archived">Archived</button>
+    </div>
+    <input type="text" class="search-input" id="pageSearch" placeholder="Search by title or slug…">
+  </div>
+  <div id="pageList"><div class="skeleton-row"><div class="skeleton skeleton-card"></div><div class="skeleton skeleton-card"></div><div class="skeleton skeleton-card"></div></div></div>
+  <div class="pagination" id="pagePagination"></div>
+</div>
+
+<!-- ===== MEDIA TAB ===== -->
+<div class="tab-content" id="tab-media">
+  <div class="header">
+    <h1>Media Library</h1>
+    <div class="header-actions">
+      <button class="btn btn-primary" onclick="document.getElementById('mediaFileInput').click()">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" width="16" height="16"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        Upload
+      </button>
+    </div>
+  </div>
+  <div class="upload-zone" id="uploadZone">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+    <p>Drag &amp; drop files here, or click to browse</p>
+    <div class="hint">Supports PNG, JPG, GIF, SVG, MP4 — max 10 MB</div>
+    <input type="file" id="mediaFileInput" accept="image/*,video/*" multiple style="display:none">
+  </div>
+  <div id="mediaGrid"><div class="skeleton-row"><div class="skeleton skeleton-card"></div><div class="skeleton skeleton-card"></div><div class="skeleton skeleton-card"></div></div></div>
+  <div class="pagination" id="mediaPagination"></div>
+</div>
+
+<!-- ===== BLOCKS TAB ===== -->
+<div class="tab-content" id="tab-blocks">
+  <div class="header">
+    <h1>Content Blocks</h1>
+    <div class="header-actions">
+      <button class="btn btn-primary" onclick="openBlockModal()">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" width="16" height="16"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        New Block
+      </button>
+    </div>
+  </div>
+  <div id="blockList"><div class="skeleton-row"><div class="skeleton skeleton-card"></div><div class="skeleton skeleton-card"></div></div></div>
+</div>
+
+<!-- ===== SETTINGS TAB ===== -->
+<div class="tab-content" id="tab-settings">
+  <div class="header">
+    <h1>Settings</h1>
+    <div class="header-actions">
+      <button class="btn btn-outline btn-sm" onclick="loadSettings()">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" width="14" height="14"><path d="M1 4v6h6M23 20v-6h-6"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>
+        Reload
+      </button>
+      <button class="btn btn-outline btn-sm" onclick="seedSettings()">Seed Defaults</button>
+      <button class="btn btn-primary" onclick="saveAllSettings()">Save Settings</button>
+    </div>
+  </div>
+  <div id="settingsForm"><div class="skeleton-row"><div class="skeleton skeleton-card"></div><div class="skeleton skeleton-card"></div></div></div>
+</div>
+
+<!-- ===== USERS TAB ===== -->
+<div class="tab-content" id="tab-users">
+  <div class="header">
+    <h1>Users</h1>
+    <div class="header-actions">
+      <button class="btn btn-primary" onclick="openUserModal()">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" width="16" height="16"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+        Invite User
+      </button>
+    </div>
+  </div>
+  <div id="userList"><div class="skeleton-row"><div class="skeleton skeleton-card"></div><div class="skeleton skeleton-card"></div></div></div>
+</div>
+
+</div><!-- /main -->
+
+<!-- Toast container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- Block Modal -->
+<div class="modal-overlay" id="blockModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('blockModal')">&times;</button>
+    <h2 id="blockModalTitle">New Content Block</h2>
+    <div class="form-group">
+      <label>Block Name</label>
+      <input type="text" id="blockName" placeholder="e.g. Hero Banner">
+    </div>
+    <div class="form-group">
+      <label>Slug</label>
+      <input type="text" id="blockSlug" placeholder="e.g. hero-banner">
+    </div>
+    <div class="form-group">
+      <label>Description</label>
+      <input type="text" id="blockDesc" placeholder="Brief description">
+    </div>
+    <div class="form-group">
+      <label>Category</label>
+      <input type="text" id="blockCat" placeholder="e.g. layout, content, widget">
+    </div>
+    <div class="form-group">
+      <label>Content JSON</label>
+      <textarea id="blockContent" rows="6" placeholder='{"heading":"...","body":"..."}'></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('blockModal')">Cancel</button>
+      <button class="btn btn-primary" id="blockSaveBtn" onclick="saveBlock()">Create Block</button>
+    </div>
+  </div>
+</div>
+
+<!-- User Modal -->
+<div class="modal-overlay" id="userModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('userModal')">&times;</button>
+    <h2>Invite User</h2>
+    <div class="form-group">
+      <label>Email</label>
+      <input type="email" id="userEmail" placeholder="user@example.com">
+    </div>
+    <div class="form-group">
+      <label>Display Name</label>
+      <input type="text" id="userDisplayName" placeholder="John Doe">
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" id="userPassword" placeholder="Min 8 characters">
+    </div>
+    <div class="form-group">
+      <label>Role</label>
+      <select id="userRole">
+        <option value="editor">Editor</option>
+        <option value="admin">Admin</option>
+      </select>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('userModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="inviteUser()">Send Invite</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const API_BASE = '';
+let currentTab = 'dashboard';
+let allPages = [], allMedia = [], allBlocks = [], allUsers = [];
+let pageFilter = '', pageSearch = '', pagePage = 0;
+let mediaPage = 0;
+const PER_PAGE = 20;
+const MEDIA_PER_PAGE = 24;
+let settingsData = {};
+
+/* ===== HELPERS ===== */
+function getToken(){return localStorage.getItem('cms_token')}
+function getUser(){try{return JSON.parse(localStorage.getItem('cms_user'))}catch(e){return null}}
+
+function authFetch(url, opts){
+  const t = getToken();
+  if (!t) { window.location.href = '/cms-login'; return Promise.reject('No token') }
+  const headers = { ...(opts?.headers||{}) };
+  if (!(opts?.body instanceof FormData)) headers['Content-Type'] = 'application/json';
+  headers['Authorization'] = 'Bearer ' + t;
+  return fetch(url, { ...opts, headers }).then(r => {
+    if (r.status === 401) {
+      localStorage.removeItem('cms_token'); localStorage.removeItem('cms_user');
+      window.location.href = '/cms-login';
+      return Promise.reject('Unauthorized');
+    }
+    return r;
+  });
+}
+
+function esc(s) { if (!s) return ''; const d = document.createElement('div'); d.textContent = s; return d.innerHTML }
+
+function showToast(msg, type){
+  const c = document.getElementById('toastContainer');
+  const t = document.createElement('div');
+  t.className = 'toast' + (type ? ' ' + type : '');
+  t.textContent = msg;
+  c.appendChild(t);
+  requestAnimationFrame(() => t.classList.add('show'));
+  setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 300) }, 3000);
+}
+
+function closeModal(id){ document.getElementById(id).classList.remove('show') }
+function openModal(id){ document.getElementById(id).classList.add('show') }
+
+function renderStatusBadge(status){
+  const map = { draft:'Draft', pending_review:'Review', published:'Published', archived:'Archived' };
+  return '<span class="badge badge-' + status + '">' + (map[status]||status) + '</span>';
+}
+
+function renderRoleBadge(role){
+  return '<span class="badge badge-' + role + '">' + esc(role) + '</span>';
+}
+
+function skeletonRows(n){
+  let out = '<div class="skeleton-row">';
+  for (let i = 0; i < n; i++) {
+    out += '<div class="skeleton skeleton-card"></div>';
+  }
+  return out + '</div>';
+}
+
+function skeletonStats(){
+  return '<div class="stats-grid" style="margin-bottom:28px">' +
+    Array.from({length:4}, () => '<div class="skeleton skeleton-stat"></div>').join('') +
+    '</div>';
+}
+
+/* ===== TAB SWITCHING ===== */
+function switchTab(name){
+  currentTab = name;
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  const tab = document.getElementById('tab-' + name);
+  if (tab) tab.classList.add('active');
+  document.querySelectorAll('.sidebar-nav a').forEach(a => a.classList.remove('active'));
+  const navItem = document.querySelector('.sidebar-nav a[data-tab="' + name + '"]');
+  if (navItem) navItem.classList.add('active');
+  if (name === 'dashboard') loadDashboard();
+  else if (name === 'pages') loadPages();
+  else if (name === 'media') loadMedia();
+  else if (name === 'blocks') loadBlocks();
+  else if (name === 'settings') loadSettings();
+  else if (name === 'users') loadUsers();
+}
+
+document.getElementById('sidebarNav').addEventListener('click', e => {
+  const a = e.target.closest('a[data-tab]');
+  if (a) switchTab(a.dataset.tab);
+});
+
+/* ===== DASHBOARD ===== */
+function loadDashboard(){
+  const statsEl = document.getElementById('dashStats');
+  const recentEl = document.getElementById('dashRecent');
+  authFetch(API_BASE + '/api/v1/cms/pages?limit=100').then(r => r.json()).then(res => {
+    const pages = res?.data?.pages || [];
+    const totalCount = res?.data?.total ?? pages.length;
+    const published = pages.filter(p => p.status === 'published').length;
+    const drafts = pages.filter(p => p.status === 'draft').length;
+    document.getElementById('statTotal').textContent = fmtNum(totalCount);
+    document.getElementById('statPublished').textContent = published;
+    document.getElementById('statDraft').textContent = drafts;
+    authFetch(API_BASE + '/api/v1/cms/stats/dashboard').then(r => r.json()).then(s => {
+      document.getElementById('statViews').textContent = s.total_views || '0';
+    }).catch(() => {});
+    const recent = pages.sort((a,b) => new Date(b.updated_at||'') - new Date(a.updated_at||'')).slice(0, 10);
+    if (!recent.length) {
+      recentEl.innerHTML = '<div class="empty-state"><p>No pages yet</p></div>';
+      return;
+    }
+    recentEl.innerHTML = recent.map(p => '<div class="recent-item">' +
+      '<div><div class="ri-title">' + esc(p.title) + ' ' + renderStatusBadge(p.status) + '</div>' +
+      '<div class="ri-meta"><span>/' + esc(p.slug) + '</span><span>' + (p.updated_at ? new Date(p.updated_at).toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' }) : '') + '</span></div></div>' +
+      '<div class="page-actions"><button class="btn-ghost btn-sm" onclick="openEditor(\'' + p.slug + '\')">Edit</button></div>' +
+    '</div>').join('');
+    loadAnalytics(30);
+  }).catch(e => {
+    statsEl.innerHTML = '<div class="empty-state"><p>Failed to load dashboard</p><div class="sub">Check that the CMS API is running, then try refreshing.</div></div>';
+    showToast('Failed to load dashboard', 'error');
+  });
+}
+
+/* ===== ADVANCED ANALYTICS ===== */
+var analyticsDays = 30;
+
+function loadAnalytics(days){
+  analyticsDays = days;
+  document.querySelectorAll('#analyticsRange .btn').forEach(b => {
+    b.classList.toggle('active', parseInt(b.dataset.days) === days);
+  });
+  authFetch(API_BASE + '/api/v1/cms/stats/analytics?days=' + days).then(r => r.json()).then(data => {
+    renderAnalytics(data);
+  }).catch(e => {
+    document.getElementById('analyticsRoot').innerHTML = '<div class="analytics-empty"><p>Failed to load analytics</p><div class="sub">Check that the CMS API is running, then try refreshing.</div></div>';
+  });
+}
+
+function renderAnalytics(data){
+  const t = data.totals || {};
+  const maxViews = Math.max(1, t.views_30d, t.views_7d, t.views_today, t.total_views);
+  const root = document.getElementById('analyticsRoot');
+
+  const cards = [
+    { label:'Total Views', val:fmtNum(t.total_views), icon:'#2563EB', bg:'#EFF6FF', sub: t.views_30d > 0 ? 'All time' : '' },
+    { label:'Views Today', val:fmtNum(t.views_today), icon:'#059669', bg:'#D1FAE5', sub: pctOf(t.views_today, maxViews) },
+    { label:'Last 7 Days', val:fmtNum(t.views_7d), icon:'#D97706', bg:'#FEF3C7', sub: t.views_7d > 0 ? '7-day window' : '' },
+    { label:'Last 30 Days', val:fmtNum(t.views_30d), icon:'#9333EA', bg:'#F3E8FF', sub: t.views_30d > 0 ? '30-day window' : '' },
+    { label:'Pages Viewed', val:fmtNum(t.unique_pages_viewed), icon:'#0EA5E9', bg:'#E0F2FE', sub: data.days + 'd range' },
+  ];
+  const icons = {
+    '#2563EB':'<path d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/>',
+    '#059669':'<polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/>',
+    '#D97706':'<polyline points="3 3 21 21"/><path d="M19 17v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h2"/>',
+    '#9333EA':'<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>',
+    '#0EA5E9':'<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>',
+  };
+  root.innerHTML =
+    '<div class="analytics-grid">' + cards.map(c => '<div class="analytics-card stat-card">' +
+      '<div class="icon" style="background:' + c.bg + '"><svg fill="none" stroke="' + c.icon + '" viewBox="0 0 24 24" stroke-width="2">' + icons[c.icon] + '</svg></div>' +
+      '<div class="num">' + c.val + '</div>' +
+      '<div class="label">' + c.label + '</div>' +
+      (c.sub ? '<div class="trend up">' + c.sub + '</div>' : '') +
+    '</div>').join('') + '</div>' +
+
+    '<div class="chart-card"><div class="chart-title">Views Over Time</div><div class="chart-wrap" id="lineChart">' + renderLineChart(data.timeline || []) + '</div></div>' +
+
+    '<div class="analytics-cols two-thirds">' +
+      '<div class="chart-card" style="margin-bottom:0"><div class="chart-title">Top Pages by Traffic</div>' + renderTopPages(data.top_pages || []) + '</div>' +
+      '<div class="chart-card" style="margin-bottom:0"><div class="chart-title">Recent Views</div>' + renderRecentViews(data.recent_views || []) + '</div>' +
+    '</div>';
+}
+
+function pctOf(val, max){
+  if (!max) return '';
+  return Math.round(val / max * 100) + '%';
+}
+
+function fmtNum(n){
+  if (n === null || n === undefined) return '0';
+  n = Number(n);
+  if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
+  if (n >= 1000) return (n / 1000).toFixed(1) + 'k';
+  return String(n);
+}
+
+/* ── SVG line chart (no external libs) ── */
+function renderLineChart(timeline){
+  if (!timeline || !timeline.length) return '<div class="analytics-empty"><p>No view data yet</p><div class="sub">Views will appear here once pages are visited.</div></div>';
+  const W = 900, H = 200, P = { top: 16, right: 16, bottom: 30, left: 44 };
+  const iw = W - P.left - P.right, ih = H - P.top - P.bottom;
+  const values = timeline.map(p => p.views);
+  const max = Math.max.apply(null, values.concat([1]));
+  const step = iw / Math.max(1, timeline.length - 1);
+  const pts = values.map((v, i) => [P.left + i * step, P.top + ih - (v / max) * ih]);
+
+  // downsample for wide ranges
+  const labelEvery = Math.ceil(timeline.length / 10);
+  let area = 'M' + pts[0][0] + ',' + (H - P.bottom);
+  pts.forEach(p => { area += ' L' + p[0].toFixed(1) + ',' + p[1].toFixed(1); });
+  area += ' L' + pts[pts.length-1][0] + ',' + (H - P.bottom) + ' Z';
+
+  const line = pts.map(p => p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ');
+  const gridlines = [0.25, 0.5, 0.75, 1].map(f => {
+    const y = P.top + ih - f * ih;
+    return '<line x1="' + P.left + '" y1="' + y + '" x2="' + (W - P.right) + '" y2="' + y + '" stroke="var(--border, #E2E8F0)" stroke-width="1"/>' +
+      '<text x="' + (P.left - 6) + '" y="' + (y + 3) + '" text-anchor="end" class="chart-axis-label">' + Math.round(f * max) + '</text>';
+  }).join('');
+
+  const labels = timeline.map((p, i) => i % labelEvery === 0
+    ? '<text x="' + (P.left + i * step) + '" y="' + (H - 8) + '" text-anchor="middle" class="chart-axis-label">' + fmtDate(p.date) + '</text>'
+    : '').join('');
+
+  const dots = pts.map((p, i) => values[i] > 0
+    ? '<circle cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="2.5" fill="var(--primary)" data-tip="' + timeline[i].date + ': ' + values[i] + ' views" data-tx="' + p[0].toFixed(1) + '" data-ty="' + p[1].toFixed(1) + '"/>'
+    : '').join('');
+
+  return '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none" style="height:220px">' +
+    '<defs><linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="var(--primary, #2563EB)" stop-opacity="0.22"/><stop offset="100%" stop-color="var(--primary, #2563EB)" stop-opacity="0"/></linearGradient></defs>' +
+    gridlines +
+    '<path d="' + area + '" fill="url(#areaGrad)"/>' +
+    '<polyline points="' + line + '" fill="none" stroke="var(--primary, #2563EB)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>' +
+    dots + labels +
+    '</svg>' +
+    '<div class="chart-tooltip" id="lineTooltip"></div>';
+}
+
+function renderTopPages(pages){
+  if (!pages || !pages.length) return '<div class="analytics-empty"><p>No traffic yet</p><div class="sub">Visit pages to see per-page view counts.</div></div>';
+  const maxViews = Math.max.apply(null, pages.map(p => p.views));
+  const rows = pages.map(p => {
+    const pct = Math.round(p.views / maxViews * 100);
+    const last = p.last_viewed_at ? new Date(p.last_viewed_at).toLocaleString('en-IN', { day:'numeric', month:'short', hour:'numeric', minute:'2-digit' }) : '—';
+    const type = p.content_type === 'blog' ? 'Blog' : p.content_type === 'glossary' ? 'Glossary' : 'Page';
+    return '<tr><td><div style="font-weight:600">' + esc(p.title) + '</div>' +
+      '<div class="ri-meta" style="font-size:11px;color:var(--text-secondary)"><span>/' + esc(p.slug) + '</span><span>' + type + '</span></div></td>' +
+      '<td><div class="views-pill"><span class="bar"><span style="width:' + pct + '%"></span></span>' + fmtNum(p.views) + '</div></td>' +
+      '<td style="white-space:nowrap;font-size:12px;color:var(--text-secondary)">' + last + '</td></tr>';
+  }).join('');
+  return '<table class="analytics-table"><thead><tr><th>Page</th><th>Views</th><th>Last Viewed</th></tr></thead><tbody>' + rows + '</tbody></table>';
+}
+
+function renderRecentViews(views){
+  if (!views || !views.length) return '<div class="analytics-empty"><p>No recent activity</p><div class="sub">Page views with timestamps will appear here.</div></div>';
+  const items = views.map(v => {
+    const time = v.viewed_at ? new Date(v.viewed_at).toLocaleString('en-IN', { day:'numeric', month:'short', hour:'numeric', minute:'2-digit', second:'2-digit' }) : '—';
+    return '<div class="recent-view"><div class="rv-dot"></div>' +
+      '<div><div class="rv-title">' + esc(v.title || v.slug) + '</div>' +
+      '<div class="rv-meta"><span>/' + esc(v.slug) + '</span>' + (v.ip ? '<span>' + esc(v.ip) + '</span>' : '') + '</div></div>' +
+      '<div class="rv-time">' + time + '</div></div>';
+  }).join('');
+  return '<div class="recent-views-list">' + items + '</div>';
+}
+
+function fmtDate(iso){
+  try {
+    const d = new Date(iso + 'T00:00:00');
+    return d.toLocaleDateString('en-IN', { day:'numeric', month:'short' });
+  } catch(e) { return iso; }
+}
+
+document.addEventListener('mousemove', function(e){
+  const el = e.target.closest ? e.target.closest('circle[data-tip]') : null;
+  const tip = document.getElementById('lineTooltip');
+  if (!tip) return;
+  if (el) {
+    tip.textContent = el.getAttribute('data-tip');
+    tip.style.left = (parseFloat(el.getAttribute('data-tx')) - 40) + 'px';
+    tip.style.top = (parseFloat(el.getAttribute('data-ty')) - 30) + 'px';
+    tip.classList.add('visible');
+  } else {
+    tip.classList.remove('visible');
+  }
+});
+
+/* ===== PAGES ===== */
+function loadPages(){
+  const el = document.getElementById('pageList');
+  el.innerHTML = skeletonRows(4);
+  fetchAllPages().then(pages => {
+    allPages = pages;
+    renderPageList();
+  }).catch(e => {
+    el.innerHTML = '<div class="empty-state"><p>Failed to load pages</p></div>';
+    showToast('Failed to load pages', 'error');
+  });
+}
+
+async function fetchAllPages(){
+  const all = [];
+  let offset = 0;
+  while (true) {
+    const res = await authFetch(API_BASE + '/api/v1/cms/pages?limit=100&offset=' + offset).then(r => r.json());
+    const batch = res?.data?.pages || [];
+    all.push(...batch);
+    const total = res?.data?.total || all.length;
+    if (all.length >= total || batch.length === 0) break;
+    offset += batch.length;
+  }
+  return all;
+}
+
+function renderPageList(){
+  const el = document.getElementById('pageList');
+  let filtered = allPages;
+  if (pageFilter) filtered = filtered.filter(p => p.status === pageFilter);
+  if (pageSearch) {
+    const q = pageSearch.toLowerCase();
+    filtered = filtered.filter(p => (p.title||'').toLowerCase().includes(q) || (p.slug||'').includes(q));
+  }
+  const totalPages = Math.ceil(filtered.length / PER_PAGE) || 1;
+  if (pagePage >= totalPages) pagePage = 0;
+  const page = filtered.slice(pagePage * PER_PAGE, (pagePage + 1) * PER_PAGE);
+  if (!page.length) {
+    el.innerHTML = '<div class="empty-state"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path d="M9 12h6m-3-3v6m-7 4h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg><p>No pages found</p><div class="sub">Try adjusting your filters or create a new page</div></div>';
+    document.getElementById('pagePagination').innerHTML = '';
+    return;
+  }
+  el.innerHTML = page.map(p => '<div class="page-card">' +
+    '<div class="page-info"><div class="title">' + esc(p.title) + ' ' + renderStatusBadge(p.status) + '</div>' +
+    '<div class="slug">/' + esc(p.slug) + '</div>' +
+    '<div class="meta"><span>' + (p.content_type||'page') + '</span>' +
+    '<span>by ' + esc(p.author?.display_name||p.author?.email||'unknown') + '</span>' +
+    (p.tags ? '<span class="tags">' + esc(p.tags).split(',').map(t => '#' + t.trim()).join(' ') + '</span>' : '') +
+    '<span>' + (p.updated_at ? new Date(p.updated_at).toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' }) : '') + '</span></div></div>' +
+    '<div class="page-actions"><button class="edit-btn btn-ghost btn-sm" onclick="openEditor(\'' + p.slug + '\')">Edit</button>' +
+    '<button class="btn-ghost btn-sm" onclick="viewPage(\'' + p.slug + '\')">View</button>' +
+    '<button class="btn-danger btn-sm" onclick="deletePage(\'' + p.slug + '\')">Archive</button></div>' +
+  '</div>').join('');
+  let phtml = '<button ' + (pagePage === 0 ? 'disabled' : '') + ' onclick="pagePage=' + (pagePage-1) + ';renderPageList()">&lsaquo;</button>';
+  for (let i = 0; i < totalPages; i++) {
+    phtml += '<button ' + (i === pagePage ? 'class="active"' : '') + ' onclick="pagePage=' + i + ';renderPageList()">' + (i+1) + '</button>';
+  }
+  phtml += '<button ' + (pagePage >= totalPages - 1 ? 'disabled' : '') + ' onclick="pagePage=' + (pagePage+1) + ';renderPageList()">&rsaquo;</button>';
+  document.getElementById('pagePagination').innerHTML = phtml;
+}
+
+document.getElementById('pageFilterGroup').addEventListener('click', e => {
+  const btn = e.target.closest('.filter-btn');
+  if (!btn) return;
+  document.querySelectorAll('#pageFilterGroup .filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  pageFilter = btn.dataset.filter;
+  pagePage = 0;
+  renderPageList();
+});
+
+document.getElementById('pageSearch').addEventListener('input', () => {
+  pageSearch = document.getElementById('pageSearch').value;
+  pagePage = 0;
+  renderPageList();
+});
+
+function openEditor(slug) {
+  window.location.href = slug ? '/cms-editor?slug=' + slug : '/cms-editor';
+}
+
+function viewPage(slug) {
+  window.open('/api/v1/pages/' + slug, '_blank');
+}
+
+function deletePage(slug) {
+  if (!confirm('Archive page "/' + slug + '"?')) return;
+  authFetch(API_BASE + '/api/v1/cms/pages/' + slug, { method:'DELETE' }).then(r => {
+    if (!r.ok) return r.json().then(d => { throw new Error(d.detail||'Delete failed') });
+    showToast('Page archived');
+    loadPages();
+    loadDashboard();
+  }).catch(e => showToast('Error: ' + (e?.message||'Unknown'), 'error'));
+}
+
+/* ===== MEDIA LIBRARY ===== */
+function loadMedia(){
+  const el = document.getElementById('mediaGrid');
+  el.innerHTML = skeletonRows(4);
+  authFetch(API_BASE + '/api/v1/cms/media').then(r => r.json()).then(res => {
+    allMedia = res?.items || res?.data?.items || res?.data?.media || res?.media || res?.data || [];
+    renderMedia();
+  }).catch(e => {
+    el.innerHTML = '<div class="empty-state"><p>Failed to load media</p></div>';
+    showToast('Failed to load media', 'error');
+  });
+}
+
+function renderMedia(){
+  const el = document.getElementById('mediaGrid');
+  const totalPages = Math.ceil(allMedia.length / MEDIA_PER_PAGE) || 1;
+  if (mediaPage >= totalPages) mediaPage = 0;
+  const page = allMedia.slice(mediaPage * MEDIA_PER_PAGE, (mediaPage + 1) * MEDIA_PER_PAGE);
+  if (!page.length) {
+    el.innerHTML = '<div class="empty-state"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg><p>No media files</p><div class="sub">Upload images or videos using the zone above</div></div>';
+    document.getElementById('mediaPagination').innerHTML = '';
+    return;
+  }
+  el.innerHTML = page.map(m => {
+    const isVideo = (m.mime_type||'').startsWith('video/') || (m.filename||'').match(/\.(mp4|webm|mov)$/i);
+    return '<div class="media-item" data-id="' + m.id + '">' +
+      '<div class="media-thumb">' + (isVideo
+        ? '<div class="video-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" width="20" height="20"><polygon points="5 3 19 12 5 21 5 3"/></svg></div>'
+        : '<img src="' + esc(m.url||'') + '" alt="' + esc(m.alt||m.filename||'') + '" loading="lazy">') +
+      '</div>' +
+      '<div class="media-info"><div class="mi-name" title="' + esc(m.filename||'') + '">' + esc(m.filename||'') + '</div>' +
+      '<div class="mi-detail">' + (m.size_bytes ? formatSize(m.size_bytes) : '') + (m.width ? ' &middot; ' + m.width + 'x' + m.height : '') + '</div></div>' +
+      '<div class="media-actions">' +
+      '<button class="btn-ghost btn-sm" onclick="editMediaInline(this,\'' + m.id + '\')">Edit</button>' +
+      '<button class="btn-danger btn-sm" onclick="deleteMedia(\'' + m.id + '\')">Delete</button></div>' +
+    '</div>';
+  }).join('');
+  let phtml = '<button ' + (mediaPage === 0 ? 'disabled' : '') + ' onclick="mediaPage=' + (mediaPage-1) + ';renderMedia()">&lsaquo;</button>';
+  for (let i = 0; i < totalPages; i++) {
+    phtml += '<button ' + (i === mediaPage ? 'class="active"' : '') + ' onclick="mediaPage=' + i + ';renderMedia()">' + (i+1) + '</button>';
+  }
+  phtml += '<button ' + (mediaPage >= totalPages - 1 ? 'disabled' : '') + ' onclick="mediaPage=' + (mediaPage+1) + ';renderMedia()">&rsaquo;</button>';
+  document.getElementById('mediaPagination').innerHTML = phtml;
+}
+
+function formatSize(bytes) {
+  if (!bytes) return '';
+  const u = ['B','KB','MB','GB'];
+  let i = 0;
+  let s = bytes;
+  while (s >= 1024 && i < u.length - 1) { s /= 1024; i++ }
+  return s.toFixed(i > 0 ? 1 : 0) + ' ' + u[i];
+}
+
+function editMediaInline(btn, id) {
+  const item = btn.closest('.media-item');
+  const info = item.querySelector('.media-info');
+  const currentAlt = item.querySelector('.mi-name').textContent;
+  const div = document.createElement('div');
+  div.className = 'inline-edit';
+  div.innerHTML = '<input type="text" id="inlineAlt" value="' + esc(currentAlt) + '" placeholder="Alt text">' +
+    '<div style="margin-top:4px;display:flex;gap:4px">' +
+    '<button class="btn btn-primary btn-sm" onclick="saveInlineEdit(\'' + id + '\',this)">Save</button>' +
+    '<button class="btn btn-outline btn-sm" onclick="this.closest(\'div\').remove()">Cancel</button></div>';
+  info.replaceWith(div);
+  div.querySelector('input').focus();
+}
+
+function saveInlineEdit(id, btn) {
+  const val = document.getElementById('inlineAlt').value;
+  authFetch(API_BASE + '/api/v1/cms/media/' + id, {
+    method:'PUT',
+    body: JSON.stringify({ alt: val, caption: val })
+  }).then(r => {
+    if (!r.ok) return r.json().then(d => { throw new Error(d.detail||'Update failed') });
+    showToast('Media updated');
+    loadMedia();
+  }).catch(e => showToast('Error: ' + (e?.message||'Unknown'), 'error'));
+}
+
+function deleteMedia(id) {
+  if (!confirm('Delete this media file?')) return;
+  authFetch(API_BASE + '/api/v1/cms/media/' + id, { method:'DELETE' }).then(r => {
+    if (!r.ok) return r.json().then(d => { throw new Error(d.detail||'Delete failed') });
+    showToast('Media deleted');
+    loadMedia();
+  }).catch(e => showToast('Error: ' + (e?.message||'Unknown'), 'error'));
+}
+
+/* Upload zone */
+const uploadZone = document.getElementById('uploadZone');
+const fileInput = document.getElementById('mediaFileInput');
+
+uploadZone.addEventListener('click', () => fileInput.click());
+
+uploadZone.addEventListener('dragover', e => {
+  e.preventDefault();
+  uploadZone.classList.add('dragover');
+});
+uploadZone.addEventListener('dragleave', () => {
+  uploadZone.classList.remove('dragover');
+});
+uploadZone.addEventListener('drop', e => {
+  e.preventDefault();
+  uploadZone.classList.remove('dragover');
+  if (e.dataTransfer.files.length) handleUpload(e.dataTransfer.files);
+});
+fileInput.addEventListener('change', () => {
+  if (fileInput.files.length) handleUpload(fileInput.files);
+});
+
+function handleUpload(files) {
+  Array.from(files).forEach(file => {
+    if (file.size > 10 * 1024 * 1024) {
+      showToast(file.name + ' exceeds 10 MB limit', 'error');
+      return;
+    }
+    const fd = new FormData();
+    fd.append('file', file);
+    authFetch(API_BASE + '/api/v1/cms/upload', { method:'POST', body:fd }).then(r => {
+      if (!r.ok) return r.json().then(d => { throw new Error(d.detail||'Upload failed') });
+      showToast(file.name + ' uploaded');
+      loadMedia();
+    }).catch(e => showToast(file.name + ': ' + (e?.message||'Error'), 'error'));
+  });
+  fileInput.value = '';
+}
+
+/* ===== BLOCKS ===== */
+function loadBlocks(){
+  const el = document.getElementById('blockList');
+  el.innerHTML = skeletonRows(4);
+  authFetch(API_BASE + '/api/v1/cms/blocks').then(r => r.json()).then(res => {
+    allBlocks = res?.data?.blocks || res?.data || res?.blocks || [];
+    if (!allBlocks.length) {
+      el.innerHTML = '<div class="empty-state"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><p>No blocks yet</p><div class="sub">Create reusable content blocks to use across pages</div></div>';
+      return;
+    }
+    el.innerHTML = allBlocks.map(b => '<div class="block-card">' +
+      '<div class="block-info"><div class="bi-name">' + esc(b.name||b.slug) + '</div>' +
+      '<div class="bi-slug">' + esc(b.slug) + '</div>' +
+      (b.description ? '<div class="bi-desc">' + esc(b.description) + '</div>' : '') +
+      (b.category ? '<span class="bi-cat">' + esc(b.category) + '</span>' : '') + '</div>' +
+      '<div class="block-actions">' +
+      '<button class="btn-ghost btn-sm" onclick="editBlock(\'' + b.slug + '\')">Edit</button>' +
+      '<button class="btn-danger btn-sm" onclick="deleteBlock(\'' + b.slug + '\')">Delete</button></div>' +
+    '</div>').join('');
+  }).catch(e => {
+    el.innerHTML = '<div class="empty-state"><p>Failed to load blocks</p></div>';
+    showToast('Failed to load blocks', 'error');
+  });
+}
+
+function openBlockModal(){
+  document.getElementById('blockModalTitle').textContent = 'New Content Block';
+  document.getElementById('blockName').value = '';
+  document.getElementById('blockSlug').value = '';
+  document.getElementById('blockDesc').value = '';
+  document.getElementById('blockCat').value = '';
+  document.getElementById('blockContent').value = '';
+  document.getElementById('blockSaveBtn').textContent = 'Create Block';
+  document.getElementById('blockSaveBtn').onclick = saveBlock;
+  openModal('blockModal');
+}
+
+function saveBlock(){
+  const data = {
+    name: document.getElementById('blockName').value.trim(),
+    slug: document.getElementById('blockSlug').value.trim(),
+    description: document.getElementById('blockDesc').value.trim(),
+    category: document.getElementById('blockCat').value.trim(),
+    content_json: document.getElementById('blockContent').value.trim()
+  };
+  if (!data.name || !data.slug) { showToast('Name and slug are required', 'error'); return }
+  authFetch(API_BASE + '/api/v1/cms/blocks', { method:'POST', body:JSON.stringify(data) }).then(r => {
+    if (!r.ok) return r.json().then(d => { throw new Error(d.detail||'Create failed') });
+    showToast('Block created');
+    closeModal('blockModal');
+    loadBlocks();
+  }).catch(e => showToast('Error: ' + (e?.message||'Unknown'), 'error'));
+}
+
+function editBlock(slug){
+  const block = allBlocks.find(b => b.slug === slug);
+  if (!block) return;
+  document.getElementById('blockModalTitle').textContent = 'Edit Block';
+  document.getElementById('blockName').value = block.name||'';
+  document.getElementById('blockSlug').value = block.slug;
+  document.getElementById('blockDesc').value = block.description||'';
+  document.getElementById('blockCat').value = block.category||'';
+  document.getElementById('blockContent').value = typeof block.content_json === 'object' ? JSON.stringify(block.content_json, null, 2) : (block.content_json||'');
+  document.getElementById('blockSaveBtn').textContent = 'Update Block';
+  document.getElementById('blockSaveBtn').onclick = function(){
+    const data = {
+      name: document.getElementById('blockName').value.trim(),
+      slug: document.getElementById('blockSlug').value.trim(),
+      description: document.getElementById('blockDesc').value.trim(),
+      category: document.getElementById('blockCat').value.trim(),
+      content_json: document.getElementById('blockContent').value.trim()
+    };
+    if (!data.name) { showToast('Name is required', 'error'); return }
+    authFetch(API_BASE + '/api/v1/cms/blocks/' + slug, { method:'PUT', body:JSON.stringify(data) }).then(r => {
+      if (!r.ok) return r.json().then(d => { throw new Error(d.detail||'Update failed') });
+      showToast('Block updated');
+      closeModal('blockModal');
+      loadBlocks();
+    }).catch(e => showToast('Error: ' + (e?.message||'Unknown'), 'error'));
+  };
+  openModal('blockModal');
+}
+
+function deleteBlock(slug){
+  if (!confirm('Delete block "' + slug + '"?')) return;
+  authFetch(API_BASE + '/api/v1/cms/blocks/' + slug, { method:'DELETE' }).then(r => {
+    if (!r.ok) return r.json().then(d => { throw new Error(d.detail||'Delete failed') });
+    showToast('Block deleted');
+    loadBlocks();
+  }).catch(e => showToast('Error: ' + (e?.message||'Unknown'), 'error'));
+}
+
+/* ===== SETTINGS ===== */
+function loadSettings(){
+  const el = document.getElementById('settingsForm');
+  el.innerHTML = skeletonRows(4);
+  authFetch(API_BASE + '/api/v1/cms/settings').then(r => r.json()).then(res => {
+    const items = res?.settings || res?.data?.settings || res?.data || [];
+    settingsData = {};
+    items.forEach(s => { settingsData[s.key] = s.value });
+    renderSettings();
+  }).catch(e => {
+    el.innerHTML = '<div class="empty-state"><p>Failed to load settings</p></div>';
+    showToast('Failed to load settings', 'error');
+  });
+}
+
+function renderSettings(){
+  const el = document.getElementById('settingsForm');
+  const val = (key) => settingsData[key] !== undefined ? settingsData[key] : '';
+  el.innerHTML =
+    '<div class="settings-section"><h3>General</h3>' +
+    '<div class="form-group"><label>Site Name</label><input type="text" id="set-site_name" value="' + esc(val('site_name')) + '" placeholder="VigyanLLM"></div>' +
+    '<div class="form-group"><label>Site Logo URL</label><input type="text" id="set-site_logo" value="' + esc(val('site_logo')) + '" placeholder="/logo.svg">' +
+    (val('site_logo') ? '<img src="' + esc(val('site_logo')) + '" class="preview-thumb" alt="logo preview" onerror="this.style.display=\'none\'">' : '') +
+    '</div>' +
+    '<div class="form-group"><label>GA4 ID</label><input type="text" id="set-ga4_id" value="' + esc(val('ga4_id')) + '" placeholder="G-PB0XMF4GEH"><div class="hint">Google Analytics 4 measurement ID</div></div>' +
+    '</div>' +
+    '<div class="settings-section"><h3>Social &amp; Footer</h3>' +
+    '<div class="form-group"><label>Social Links</label><textarea id="set-social_links" rows="3" placeholder=\'{"twitter":"...","github":"..."}\'>' + esc(val('social_links')) + '</textarea><div class="hint">JSON object of platform:URL pairs</div></div>' +
+    '<div class="form-group"><label>Footer Text</label><textarea id="set-footer_text" rows="3" placeholder="© 2026 VigyanLLM. All rights reserved.">' + esc(val('footer_text')) + '</textarea></div>' +
+    '</div>' +
+    '<div class="settings-section"><h3>Custom Code</h3>' +
+    '<div class="form-group code-textarea"><label>Custom CSS</label><textarea id="set-custom_css" rows="5" placeholder="/* Custom styles */">' + esc(val('custom_css')) + '</textarea></div>' +
+    '<div class="form-group code-textarea"><label>Custom JS</label><textarea id="set-custom_js" rows="5" placeholder="// Custom scripts">' + esc(val('custom_js')) + '</textarea></div>' +
+    '</div>';
+}
+
+function saveAllSettings(){
+  const keys = ['site_name','site_logo','ga4_id','social_links','footer_text','custom_css','custom_js'];
+  const promises = [];
+  keys.forEach(key => {
+    const el = document.getElementById('set-' + key);
+    if (!el) return;
+    const value = el.value;
+    if (value !== (settingsData[key]||'')) {
+      promises.push(
+        authFetch(API_BASE + '/api/v1/cms/settings/' + key, {
+          method:'PUT',
+          body: JSON.stringify({ value: value })
+        }).then(r => {
+          if (!r.ok) return r.json().then(d => { throw new Error(d.detail||'Save failed for ' + key) });
+          settingsData[key] = value;
+        })
+      );
+    }
+  });
+  if (!promises.length) { showToast('No changes to save'); return }
+  Promise.all(promises).then(() => {
+    showToast('Settings saved');
+    loadSettings();
+  }).catch(e => showToast('Error: ' + (e?.message||'Unknown'), 'error'));
+}
+
+function seedSettings(){
+  if (!confirm('Reset all settings to defaults?')) return;
+  authFetch(API_BASE + '/api/v1/cms/settings/seed', { method:'POST' }).then(r => {
+    if (!r.ok) return r.json().then(d => { throw new Error(d.detail||'Seed failed') });
+    showToast('Defaults seeded');
+    loadSettings();
+  }).catch(e => showToast('Error: ' + (e?.message||'Unknown'), 'error'));
+}
+
+/* ===== USERS ===== */
+function loadUsers(){
+  const el = document.getElementById('userList');
+  el.innerHTML = skeletonRows(4);
+  authFetch(API_BASE + '/api/v1/cms/users').then(r => r.json()).then(res => {
+    allUsers = res?.data?.users || res?.users || res?.data || [];
+    if (!allUsers.length) {
+      el.innerHTML = '<div class="empty-state"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><p>No users found</p></div>';
+      return;
+    }
+    el.innerHTML = '<table class="users-table"><thead><tr><th>Email</th><th>Display Name</th><th>Role</th><th>Last Login</th><th>Created</th><th></th></tr></thead><tbody>' +
+      allUsers.map(u => '<tr><td>' + esc(u.email) + '</td><td>' + esc(u.display_name||'—') + '</td><td>' + renderRoleBadge(u.role||'editor') + '</td><td>' + (u.last_login ? new Date(u.last_login).toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' }) : '—') + '</td><td>' + (u.created_at ? new Date(u.created_at).toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' }) : '—') + '</td><td><button class="btn-danger btn-sm" onclick="deleteUser(\'' + u.id + '\',\'' + esc(u.email) + '\')">Remove</button></td></tr>').join('') +
+      '</tbody></table>';
+  }).catch(e => {
+    el.innerHTML = '<div class="empty-state"><p>Failed to load users</p></div>';
+    showToast('Failed to load users', 'error');
+  });
+}
+
+function openUserModal(){
+  document.getElementById('userEmail').value = '';
+  document.getElementById('userDisplayName').value = '';
+  document.getElementById('userPassword').value = '';
+  document.getElementById('userRole').value = 'editor';
+  openModal('userModal');
+}
+
+function inviteUser(){
+  const email = document.getElementById('userEmail').value.trim();
+  const display_name = document.getElementById('userDisplayName').value.trim();
+  const password = document.getElementById('userPassword').value;
+  const role = document.getElementById('userRole').value;
+  if (!email || !password) { showToast('Email and password are required', 'error'); return }
+  if (password.length < 8) { showToast('Password must be at least 8 characters', 'error'); return }
+  authFetch(API_BASE + '/api/v1/cms/users', {
+    method:'POST',
+    body: JSON.stringify({ email, display_name, password, role })
+  }).then(r => {
+    if (!r.ok) return r.json().then(d => { throw new Error(d.detail||'Invite failed') });
+    showToast('User invited');
+    closeModal('userModal');
+    loadUsers();
+  }).catch(e => showToast('Error: ' + (e?.message||'Unknown'), 'error'));
+}
+
+function deleteUser(id, email) {
+  if (!confirm('Remove user "' + email + '"?')) return;
+  authFetch(API_BASE + '/api/v1/cms/users/' + id, { method:'DELETE' }).then(r => {
+    if (!r.ok) return r.json().then(d => { throw new Error(d.detail||'Delete failed') });
+    showToast('User removed');
+    loadUsers();
+  }).catch(e => showToast('Error: ' + (e?.message||'Unknown'), 'error'));
+}
+
+function handleLogout(){
+  localStorage.removeItem('cms_token');
+  localStorage.removeItem('cms_user');
+  window.location.href = '/cms-login';
+}
+
+/* ===== INIT ===== */
+document.addEventListener('DOMContentLoaded', () => {
+  const user = getUser();
+  if (!user || !getToken()) { window.location.href = '/cms-login'; return }
+  document.getElementById('sidebarUserName').textContent = user.display_name || user.email;
+  document.getElementById('sidebarUserEmail').textContent = user.email || '';
+  loadDashboard();
+});
+</script>
+</body>
+</html>

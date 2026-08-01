@@ -1,6 +1,16 @@
 <!DOCTYPE html>
 <html lang="en-IN">
 <head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PB0XMF4GEH"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-PB0XMF4GEH');
+</script>
+
 <!-- Google Tag Manager -->
 <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
 new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
@@ -124,6 +134,7 @@ footer{background:var(--black);color:rgba(255,255,255,.8);padding:56px 0 24px}
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.vigyanllm.in"}, {"@type": "ListItem", "position": 2, "name": "Login"}]}</script>
+<script src="/cookie-banner.js" defer></script>
 </head>
 <body>
 <a href="#main-content" class="skip-link">Skip to content</a><main id="main-content">
@@ -250,6 +261,9 @@ footer{background:var(--black);color:rgba(255,255,255,.8);padding:56px 0 24px}
         <label class="form-label">Password</label>
         <input type="password" id="auth-password" class="form-input" placeholder="Min 6 characters">
       </div>
+      <div class="form-group">
+        <label class="tc-checkbox"><input type="checkbox" id="auth-tc"> I agree to the <a href="/terms" target="_blank" rel="noopener">Terms &amp; Conditions</a> and <a href="/privacy" target="_blank" rel="noopener">Privacy Policy</a></label>
+      </div>
       <button type="button" class="btn-primary" id="auth-submit-btn">Log in</button>
       <div class="auth-error" id="auth-error"></div>
       <div class="divider"><hr><span>or</span><hr></div>
@@ -276,6 +290,8 @@ $('auth-toggle-link').addEventListener('click',function(){
 $('auth-submit-btn').addEventListener('click',async function(){
   var email=$('auth-email').value.trim(),pass=$('auth-password').value.trim();
   if(!email||!pass){$('auth-error').style.display='block';$('auth-error').textContent='Please fill all fields.';return}
+  var tc=$('auth-tc');
+  if(tc&&!tc.checked){$('auth-error').style.display='block';$('auth-error').textContent='Please accept the Terms & Conditions to continue.';return}
   $('auth-error').style.display='none';
   try{
     var r=await fetch(API+'/api/auth/'+(isRegister?'register':'login'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
@@ -287,6 +303,8 @@ $('auth-submit-btn').addEventListener('click',async function(){
   }catch(e){$('auth-error').style.display='block';$('auth-error').textContent='Server unavailable. Please try again.';}
 });
 function handleGoogleSignIn(){
+  var tc=$('auth-tc');
+  if(tc&&!tc.checked){$('auth-error').style.display='block';$('auth-error').textContent='Please accept the Terms & Conditions to continue.';return}
   if(typeof google !== 'undefined' && google.accounts && google.accounts.id){
     google.accounts.id.prompt();
   } else {alert('Google Sign-In is loading. Please try again.');}
@@ -354,7 +372,7 @@ document.addEventListener('DOMContentLoaded',function(){
     <a href="/cite-vigyanllm">Cite Us</a>
   </div>
 </div>
-<div class="footer-bottom">
+<div class="footer-bottom"><a href="/cms-admin" style="color:rgba(255,255,255,.45);font-size:12px">CMS</a> · 
   <span>&copy; <script>document.write(new Date().getFullYear())</script> VigyanLLM Pvt. Ltd. · Sovereign Research AI</span>
   <span>WWW.VIGYANLLM.IN</span>
 </div>

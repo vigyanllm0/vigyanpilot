@@ -1,0 +1,1180 @@
+<!DOCTYPE html>
+<html lang="en-IN">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PB0XMF4GEH"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-PB0XMF4GEH');
+</script>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CMS Editor — VigyanLLM</title>
+<link rel="stylesheet" href="/cms-design.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="/cms-editor-vendor.js"></script>
+<style>
+/* Page-specific styles only — design tokens live in /cms-design.css */
+.editor-body .modal:has(.modal-header) { max-width: 720px; width: 90vw; }
+.editor-body .modal.modal-sm { max-width: 480px; }
+</style>
+<script src="/cookie-banner.js" defer></script>
+</head>
+<body class="editor-body">
+
+<div class="topbar">
+  <div class="topbar-left">
+    <a href="/cms-admin" class="topbar-back">&larr; Dashboard</a>
+    <span class="topbar-title" id="editorTitle">New Page</span>
+  </div>
+  <div class="topbar-actions">
+    <button class="btn btn-outline-light btn-sm" onclick="togglePreview()" id="previewToggleBtn">&#128065; Preview</button>
+    <button class="btn btn-outline-light btn-sm" onclick="saveDraft()">Save Draft</button>
+    <button class="btn btn-white btn-sm" onclick="submitReview()">Submit for Review</button>
+  </div>
+</div>
+
+<div class="two-col">
+  <div class="editor-col" id="editorCol">
+    <div class="status-bar" id="statusBar" style="display:none"></div>
+
+    <div class="meta-section">
+      <details>
+        <summary class="meta-summary">&#9881; Page Settings</summary>
+        <div class="meta-body">
+          <div class="meta-grid">
+            <div class="form-group">
+              <label class="form-label">Page Title <span style="color:#DC2626">*</span></label>
+              <input type="text" id="pageTitle" class="form-input" placeholder="e.g. About VigyanLLM">
+            </div>
+            <div class="form-group">
+              <label class="form-label">URL Slug</label>
+              <input type="text" id="pageSlug" class="form-input" placeholder="e.g. about-vigyanllm">
+            </div>
+            <div class="form-group" style="grid-column:1/-1">
+              <label class="form-label">Description (meta)</label>
+              <textarea id="pageDesc" class="form-textarea" placeholder="Brief description for search results" rows="2"></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Page Title in Search Results</label>
+              <input type="text" id="pageMetaTitle" class="form-input" placeholder="Leave blank to use page title (recommended)">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Tags</label>
+              <input type="text" id="pageTags" class="form-input" placeholder="e.g. bioinformatics, primer design, tutorial">
+              <div style="font-size:10px;color:var(--muted);margin-top:2px">Use commas to separate multiple tags</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Content Type</label>
+              <select id="pageType" class="form-select">
+                <option value="page">Page</option>
+                <option value="blog">Blog Post</option>
+                <option value="glossary">Glossary</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Publish Date &amp; Time (optional)</label>
+              <input type="datetime-local" id="pageSchedule" class="form-input">
+              <div style="font-size:10px;color:var(--muted);margin-top:2px">Leave empty to publish immediately when approved</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Large Image at Top of Page (optional)</label>
+              <div style="display:flex;gap:6px">
+                <input type="url" id="pageHero" class="form-input" placeholder="https://example.com/image.jpg" style="flex:1">
+                <button class="btn btn-outline btn-sm" onclick="openMediaPicker('hero')">Browse</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </details>
+    </div>
+
+    <div class="editor-card">
+      <div class="editor-toolbar" id="editorToolbar">
+        <div class="btn-icon-group">
+          <button class="btn-icon" data-cmd="heading" data-level="2" title="Heading 2"><b>H2</b></button>
+          <button class="btn-icon" data-cmd="heading" data-level="3" title="Heading 3"><b>H3</b></button>
+        </div>
+        <div class="toolbar-divider"></div>
+        <div class="btn-icon-group">
+          <button class="btn-icon" data-cmd="bold" title="Bold"><b>B</b></button>
+          <button class="btn-icon" data-cmd="italic" title="Italic"><i>I</i></button>
+          <button class="btn-icon" data-cmd="underline" title="Underline"><u>U</u></button>
+          <button class="btn-icon" data-cmd="strike" title="Strikethrough"><s>S</s></button>
+        </div>
+        <div class="toolbar-divider"></div>
+        <div class="btn-icon-group">
+          <button class="btn-icon" data-cmd="bulletList" title="Bullet List">&#8226;</button>
+          <button class="btn-icon" data-cmd="orderedList" title="Ordered List">1.</button>
+        </div>
+        <div class="toolbar-divider"></div>
+        <div class="btn-icon-group">
+          <button class="btn-icon" data-cmd="blockquote" title="Blockquote">&ldquo;</button>
+          <button class="btn-icon" data-cmd="codeBlock" title="Code Block">&lt;/&gt;</button>
+          <button class="btn-icon" data-cmd="horizontalRule" title="Horizontal Rule">&mdash;</button>
+        </div>
+        <div class="toolbar-divider"></div>
+        <div class="btn-icon-group">
+          <button class="btn-icon" data-cmd="link" title="Link">&#128279;</button>
+          <button class="btn-icon" data-cmd="image" title="Image">&#128247;</button>
+          <button class="btn-icon" data-cmd="video" title="Video">&#9654;</button>
+        </div>
+        <div class="toolbar-divider"></div>
+        <div class="btn-icon-group">
+          <button class="btn-icon" data-cmd="table" title="Table">&#8862;</button>
+          <button class="btn-icon" data-cmd="alignLeft" title="Align Left">&larr;</button>
+          <button class="btn-icon" data-cmd="alignCenter" title="Align Center">&#8596;</button>
+          <button class="btn-icon" data-cmd="alignRight" title="Align Right">&rarr;</button>
+          <button class="btn-icon" data-cmd="undo" title="Undo">&#8630;</button>
+          <button class="btn-icon" data-cmd="redo" title="Redo">&#8631;</button>
+        </div>
+        <div class="toolbar-divider"></div>
+        <div class="insert-block-dropdown">
+          <button class="btn btn-outline btn-sm" id="insertBlockBtn">Insert Block &#9660;</button>
+          <div class="dropdown-menu" id="blockDropdown">
+            <div class="dropdown-item" data-block="callout"><span class="dropdown-item-icon">&#128161;</span> Callout</div>
+            <div class="dropdown-item" data-block="cta"><span class="dropdown-item-icon">&#128640;</span> CTA</div>
+            <div class="dropdown-item" data-block="faq"><span class="dropdown-item-icon">&#128172;</span> FAQ Accordion</div>
+            <div class="dropdown-item" data-block="testimonial"><span class="dropdown-item-icon">&#128101;</span> Testimonial</div>
+          </div>
+        </div>
+      </div>
+      <div class="editor-content" id="editorContent"></div>
+    </div>
+  </div>
+
+  <div class="preview-col" id="previewCol">
+    <div class="preview-toolbar">
+      <span>Preview</span>
+      <div class="preview-viewport">
+        <button class="is-active" data-vp="100%" title="Desktop">&#128187;</button>
+        <button data-vp="768px" title="Tablet">&#128241;</button>
+        <button data-vp="375px" title="Mobile">&#128241;</button>
+      </div>
+      <button class="btn-icon" onclick="togglePreview()" title="Close Preview" style="border:none;color:var(--muted)">&#10005;</button>
+    </div>
+    <div class="preview-iframe-wrap" id="previewIframeWrap">
+      <iframe id="previewIframe" sandbox="allow-scripts"></iframe>
+    </div>
+    <div class="preview-meta" id="previewMeta">
+      <div class="preview-meta-card" id="seoPreviewCard">
+        <span class="preview-serp-link" id="seoUrl">vigyanllm.in › page-slug</span>
+        <span class="preview-serp-title" id="seoTitle">Page Title</span>
+        <span class="preview-serp-desc" id="seoDesc">Meta description goes here and will be truncated at about one hundred and sixty characters for the search result snippet.</span>
+      </div>
+      <div class="preview-meta-card">
+        <div class="preview-stat"><span class="preview-stat-label">Word Count</span><span class="preview-stat-value" id="wordCount">0</span></div>
+        <div class="preview-stat"><span class="preview-stat-label">Characters</span><span class="preview-stat-value" id="charCount">0</span></div>
+        <div class="preview-stat"><span class="preview-stat-label">Readability</span><span class="preview-stat-value" id="readabilityScore">—</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="image-float-toolbar" id="imageFloatToolbar" style="display:none">
+  <span class="ift-label">Image</span>
+  <span class="ift-divider"></span>
+  <button type="button" class="ift-btn ift-align" data-align="left" title="Align left (float)">&#8676;</button>
+  <button type="button" class="ift-btn ift-align" data-align="center" title="Center">&#8596;</button>
+  <button type="button" class="ift-btn ift-align" data-align="right" title="Align right (float)">&#8677;</button>
+  <button type="button" class="ift-btn ift-align is-active" data-align="none" title="No alignment (default)">&#8853;</button>
+  <span class="ift-divider"></span>
+  <button type="button" class="ift-btn" data-width="25%" title="25% width">25%</button>
+  <button type="button" class="ift-btn" data-width="50%" title="50% width">50%</button>
+  <button type="button" class="ift-btn" data-width="75%" title="75% width">75%</button>
+  <button type="button" class="ift-btn is-active" data-width="100%" title="100% width">100%</button>
+  <span class="ift-divider"></span>
+  <button type="button" class="ift-btn ift-settings" id="iftEditImg" title="Image settings (alt, caption, title)">&#9881;</button>
+  <button type="button" class="ift-btn ift-danger" id="iftDeleteImg" title="Delete image">&#10005;</button>
+</div>
+
+<div class="modal-overlay" id="mediaPickerOverlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Media Library</h3>
+      <button class="modal-close" onclick="closeMediaPicker()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="drop-zone" id="dropZone">
+        <div class="drop-zone-icon">&#128247;</div>
+        <div class="drop-zone-text"><b>Click to upload</b> or drag and drop</div>
+        <div class="drop-zone-hint">PNG, JPG, GIF, WebP, MP4 — max 10MB each</div>
+        <input type="file" id="mediaFileInput" accept="image/*,video/mp4" style="display:none">
+      </div>
+      <div id="mediaGrid" class="media-grid"></div>
+      <div class="media-pagination" id="mediaPagination" style="display:none">
+        <button class="btn btn-outline btn-sm" id="mediaPrevBtn">&larr; Prev</button>
+        <span id="mediaPageInfo"></span>
+        <button class="btn btn-outline btn-sm" id="mediaNextBtn">Next &rarr;</button>
+      </div>
+      <div id="mediaSpinner" class="spinner"></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="imageSettingsOverlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Image Settings</h3>
+      <button class="modal-close" onclick="closeImageSettings()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Image URL</label>
+        <input type="url" id="imgSrc" class="form-input" placeholder="https://...">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Alt text (accessibility &amp; SEO)</label>
+        <input type="text" id="imgAlt" class="form-input" placeholder="Describe the image content">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Title (tooltip)</label>
+        <input type="text" id="imgTitle" class="form-input" placeholder="Optional tooltip text">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Caption</label>
+        <input type="text" id="imgCaption" class="form-input" placeholder="Optional caption shown under the image">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Link URL</label>
+        <input type="url" id="imgHref" class="form-input" placeholder="https://... (optional)">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Alignment</label>
+        <div class="img-align-picker">
+          <button type="button" class="img-align-opt" data-align="none" title="Default">&#8853;</button>
+          <button type="button" class="img-align-opt" data-align="left" title="Float left">&#8676;</button>
+          <button type="button" class="img-align-opt" data-align="center" title="Center">&#8596;</button>
+          <button type="button" class="img-align-opt" data-align="right" title="Float right">&#8677;</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Width</label>
+        <div class="img-width-row">
+          <button type="button" class="img-width-opt" data-width="25%">25%</button>
+          <button type="button" class="img-width-opt" data-width="50%">50%</button>
+          <button type="button" class="img-width-opt" data-width="75%">75%</button>
+          <button type="button" class="img-width-opt is-active" data-width="100%">100%</button>
+          <button type="button" class="img-width-opt" data-width="0" title="Use natural size">Auto</button>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:18px">
+        <button class="btn btn-outline" onclick="closeImageSettings()">Cancel</button>
+        <button class="btn btn-primary" onclick="applyImageSettings()">Apply</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="videoModalOverlay">
+  <div class="modal modal-sm">
+    <div class="modal-header">
+      <h3>Insert Video</h3>
+      <button class="modal-close" onclick="closeVideoModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="tab-bar">
+        <div class="tab active" data-vtab="youtube" onclick="switchVideoTab('youtube')">YouTube URL</div>
+        <div class="tab" data-vtab="upload" onclick="switchVideoTab('upload')">Upload MP4</div>
+      </div>
+      <div id="vtab-youtube">
+        <div class="form-group">
+          <label class="form-label">YouTube URL</label>
+          <input type="url" id="youtubeUrl" class="form-input" placeholder="https://youtube.com/watch?v=...">
+        </div>
+        <button class="btn btn-primary" onclick="embedYouTube()" style="margin-top:10px">Embed</button>
+      </div>
+      <div id="vtab-upload" style="display:none">
+        <div class="drop-zone" id="videoDropZone">
+          <div class="drop-zone-icon">&#127916;</div>
+          <div class="drop-zone-text"><b>Click to select</b> or drag an MP4 file</div>
+          <input type="file" id="videoFileInput" accept="video/mp4" style="display:none">
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API_BASE = '';
+let editor = null;
+let currentSlug = null;
+let previewVisible = false;
+let currentMediaPage = 1;
+let mediaPickerTarget = 'editor';
+let mediaTotalPages = 1;
+
+function getToken(){return localStorage.getItem('cms_token')}
+
+function esc(s){if(!s)return '';const d=document.createElement('div');d.textContent=s;return d.innerHTML}
+
+function showToast(msg,type){
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.className='toast';
+  if(type==='error')t.classList.add('error');
+  if(type==='success')t.classList.add('success');
+  t.classList.add('show');
+  clearTimeout(t._hide);
+  t._hide=setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+function authFetch(url,opts={}){
+  const t=getToken();
+  if(!t){window.location.href='/cms-login';return Promise.reject('No token')}
+  const headers={...opts.headers,'Authorization':'Bearer '+t};
+  if(opts.body && typeof opts.body==='string' && !opts.isFormData){
+    headers['Content-Type']='application/json';
+  }
+  return fetch(url,{...opts,headers}).then(r=>{
+    if(r.status===401){localStorage.removeItem('cms_token');localStorage.removeItem('cms_user');window.location.href='/cms-login';return Promise.reject('Unauthorized')}
+    return r
+  })
+}
+
+function initEditor(){
+  if(typeof VigyanEditor==='undefined'){
+    document.getElementById('editorContent').innerHTML='<div style="padding:40px;text-align:center;color:var(--muted)">Loading editor...</div>';
+    setTimeout(initEditor,300);
+    return;
+  }
+  try{
+    var E=VigyanEditor;
+    var ResizableImage=E.Image.extend({
+      addAttributes(){return Object.assign({},this.parent?this.parent():{},{
+        style:{default:null,renderHTML:function(a){return a.style?{style:a.style}:{}},parseHTML:function(el){return el.getAttribute('style')}},
+        align:{default:null,renderHTML:function(a){return a.align?{align:a.align}:{}},parseHTML:function(el){return el.getAttribute('align')||null}},
+        caption:{default:null,renderHTML:function(a){return a.caption?{'data-caption':a.caption}:{}},parseHTML:function(el){return el.getAttribute('data-caption')||null}},
+        loading:{default:'lazy',renderHTML:function(a){return a.loading?{loading:a.loading}:{}},parseHTML:function(el){return el.getAttribute('loading')||null}}
+      })},
+      parseHTML(){return [
+        {tag:'img[src]:not([src^="data:"])',getAttrs:function(el){
+          var c=el.closest&&el.closest('figure');
+          var cap=c?c.querySelector('figcaption'):null;
+          return {src:el.getAttribute('src')||null,alt:el.getAttribute('alt')||null,title:el.getAttribute('title')||null,style:el.getAttribute('style')||null,align:el.getAttribute('align')||null,loading:el.getAttribute('loading')||null,caption:cap?cap.textContent.trim():null};
+        }}
+      ]},
+      renderHTML({HTMLAttributes}){
+        var a=HTMLAttributes||{};
+        var cap=a['data-caption']||a.caption||'';
+        var img=['img',{src:a.src||'',alt:a.alt||'',title:a.title||'',style:a.style||null,align:a.align||null,loading:a.loading||'lazy'}];
+        if(cap){
+          var figClass='vl-figure'+(a.align?' vl-align-'+a.align:'');
+          return ['figure',{class:figClass},img,['figcaption',{},cap]];
+        }
+        return img;
+      }
+    });
+    editor=new E.Editor({
+      element:document.getElementById('editorContent'),
+      extensions:[
+        E.StarterKit.configure({heading:{levels:[2,3]},code:{HTMLAttributes:{class:'code-inline'}}}),
+        E.Underline,
+        E.Link.configure({openOnClick:false,HTMLAttributes:{rel:'noopener noreferrer',target:'_blank'}}),
+        ResizableImage,
+        E.Table.configure({resizable:true}),
+        E.TableRow,
+        E.TableCell,
+        E.TableHeader,
+        E.TextAlign.configure({types:['heading','paragraph']}),
+        E.Placeholder.configure({placeholder:'Start writing your content here...'}),
+      ],
+      editorProps:{attributes:{class:'editor-content'}},
+      onUpdate:function(){updatePreview();updateSEOPreview();updateWordCount()},
+    });
+    bindToolbar();
+    bindImageToolbar();
+    editor.on('selectionUpdate',function(){updateToolbar();updateImageToolbar()});
+    editor.on('transaction',function(){updateToolbar();updateImageToolbar()});
+    var params=new URLSearchParams(window.location.search);
+    var slug=params.get('slug');
+    if(slug)loadPage(slug);
+  }catch(e){
+    console.error('Editor init failed:',e);
+    document.getElementById('editorContent').innerHTML='<div style="padding:40px;text-align:center;color:#DC2626">Failed to load editor: '+esc(e.message)+'</div>';
+    showToast('Failed to load editor','error');
+  }
+}
+
+function bindToolbar(){
+  document.querySelectorAll('#editorToolbar button[data-cmd]').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const cmd=btn.dataset.cmd;
+      if(cmd==='heading'){editor.chain().focus().toggleHeading({level:parseInt(btn.dataset.level)}).run()}
+      else if(cmd==='bold'){editor.chain().focus().toggleBold().run()}
+      else if(cmd==='italic'){editor.chain().focus().toggleItalic().run()}
+      else if(cmd==='underline'){editor.chain().focus().toggleUnderline().run()}
+      else if(cmd==='strike'){editor.chain().focus().toggleStrike().run()}
+      else if(cmd==='bulletList'){editor.chain().focus().toggleBulletList().run()}
+      else if(cmd==='orderedList'){editor.chain().focus().toggleOrderedList().run()}
+      else if(cmd==='blockquote'){editor.chain().focus().toggleBlockquote().run()}
+      else if(cmd==='codeBlock'){editor.chain().focus().toggleCodeBlock().run()}
+      else if(cmd==='horizontalRule'){editor.chain().focus().setHorizontalRule().run()}
+      else if(cmd==='link'){handleLink()}
+      else if(cmd==='image'){openMediaPicker('editor')}
+      else if(cmd==='video'){openVideoModal()}
+      else if(cmd==='table'){editor.chain().focus().insertTable({rows:3,cols:3,withHeaderRow:true}).run()}
+      else if(cmd==='alignLeft'){editor.chain().focus().setTextAlign('left').run()}
+      else if(cmd==='alignCenter'){editor.chain().focus().setTextAlign('center').run()}
+      else if(cmd==='alignRight'){editor.chain().focus().setTextAlign('right').run()}
+      else if(cmd==='undo'){editor.chain().focus().undo().run()}
+      else if(cmd==='redo'){editor.chain().focus().redo().run()}
+    });
+  });
+}
+
+function bindImageToolbar(){
+  const bar=document.getElementById('imageFloatToolbar');
+  if(!bar)return;
+  bar.querySelectorAll('.ift-btn[data-width]').forEach(btn=>{
+    btn.addEventListener('click',()=>resizeSelectedImage(btn.dataset.width));
+  });
+  bar.querySelectorAll('.ift-btn[data-align]').forEach(btn=>{
+    btn.addEventListener('click',()=>alignSelectedImage(btn.dataset.align));
+  });
+  document.getElementById('iftEditImg').addEventListener('click',openImageSettings);
+  document.getElementById('iftDeleteImg').addEventListener('click',deleteSelectedImage);
+}
+
+function updateToolbar(){
+  document.querySelectorAll('#editorToolbar button[data-cmd]').forEach(btn=>{
+    const cmd=btn.dataset.cmd;
+    let active=false;
+    if(cmd==='heading'){active=editor.isActive('heading',{level:parseInt(btn.dataset.level)})}
+    else if(cmd==='bold'){active=editor.isActive('bold')}
+    else if(cmd==='italic'){active=editor.isActive('italic')}
+    else if(cmd==='underline'){active=editor.isActive('underline')}
+    else if(cmd==='strike'){active=editor.isActive('strike')}
+    else if(cmd==='bulletList'){active=editor.isActive('bulletList')}
+    else if(cmd==='orderedList'){active=editor.isActive('orderedList')}
+    else if(cmd==='blockquote'){active=editor.isActive('blockquote')}
+    else if(cmd==='codeBlock'){active=editor.isActive('codeBlock')}
+    else if(cmd==='alignLeft'){active=editor.isActive({textAlign:'left'})}
+    else if(cmd==='alignCenter'){active=editor.isActive({textAlign:'center'})}
+    else if(cmd==='alignRight'){active=editor.isActive({textAlign:'right'})}
+    btn.classList.toggle('is-active',active);
+  });
+}
+
+function updateImageToolbar(){
+  const bar=document.getElementById('imageFloatToolbar');
+  if(!bar)return;
+  const sel=editor.state.selection;
+  const node=sel.node;
+  const isImg=node&&node.type.name==='image';
+  if(!isImg){
+    bar.style.display='none';
+    return;
+  }
+  bar.style.display='flex';
+  const styleAttr=node.attrs.style||'';
+  const m=styleAttr.match(/width:\s*([0-9]+)%/);
+  const cur=m?m[1]+'%':'100%';
+  bar.querySelectorAll('.ift-btn[data-width]').forEach(function(b){
+    b.classList.toggle('is-active',b.dataset.width===cur);
+  });
+  const align=node.attrs.align||'none';
+  bar.querySelectorAll('.ift-btn[data-align]').forEach(function(b){
+    b.classList.toggle('is-active',b.dataset.align===align);
+  });
+  const coords=editor.view.coordsAtPos(sel.from);
+  const wrap=document.querySelector('.editor-wrap')||document.querySelector('.editor-col')||document.body;
+  const wrapRect=wrap.getBoundingClientRect();
+  bar.style.left=Math.max(8,coords.left-wrapRect.left)+'px';
+  bar.style.top=Math.max(8,coords.top-wrapRect.top-44)+'px';
+}
+
+function alignSelectedImage(align){
+  editor.chain().focus().updateAttributes('image',{align:align==='none'?null:align}).run();
+  showToast(align==='none'?'Alignment removed':('Aligned '+align),'success');
+}
+
+var imageSettingsMode='edit';
+var imageSettingsTempSrc=null;
+var imageSettingsLink='';
+
+function openImageSettings(){
+  const sel=editor.state.selection;
+  const node=sel.node;
+  if(!(node&&node.type.name==='image')){showToast('Select an image first','error');return}
+  imageSettingsMode='edit';
+  const a=node.attrs||{};
+  document.getElementById('imgSrc').value=a.src||'';
+  document.getElementById('imgAlt').value=a.alt||'';
+  document.getElementById('imgTitle').value=a.title||'';
+  document.getElementById('imgCaption').value=a.caption||'';
+  document.getElementById('imgHref').value=imageSettingsLink;
+  const style=(a.style||'');
+  const wm=style.match(/width:\s*([0-9]+)%/);
+  const width=wm?wm[1]+'%':'100%';
+  document.querySelectorAll('#imageSettingsOverlay .img-width-opt').forEach(b=>{
+    const w=b.dataset.width;
+    b.classList.toggle('is-active',w==='0'?!(/width:/.test(style)):w===width);
+  });
+  const align=a.align||'none';
+  document.querySelectorAll('#imageSettingsOverlay .img-align-opt').forEach(b=>{
+    b.classList.toggle('is-active',b.dataset.align===align);
+  });
+  document.getElementById('imageSettingsOverlay').classList.add('open');
+}
+
+function openImageInsert(src){
+  imageSettingsMode='insert';
+  imageSettingsTempSrc=src;
+  imageSettingsLink='';
+  document.getElementById('imgSrc').value=src||'';
+  document.getElementById('imgAlt').value='';
+  document.getElementById('imgTitle').value='';
+  document.getElementById('imgCaption').value='';
+  document.getElementById('imgHref').value='';
+  document.querySelectorAll('#imageSettingsOverlay .img-width-opt').forEach(b=>{
+    b.classList.toggle('is-active',b.dataset.width==='100%');
+  });
+  document.querySelectorAll('#imageSettingsOverlay .img-align-opt').forEach(b=>{
+    b.classList.toggle('is-active',b.dataset.align==='none');
+  });
+  document.getElementById('imageSettingsOverlay').classList.add('open');
+  document.getElementById('imgAlt').focus();
+}
+
+function closeImageSettings(){
+  document.getElementById('imageSettingsOverlay').classList.remove('open');
+}
+
+function currentImageAlign(){
+  const b=document.querySelector('#imageSettingsOverlay .img-align-opt.is-active');
+  return b?b.dataset.align:'none';
+}
+
+function currentImageWidth(){
+  const b=document.querySelector('#imageSettingsOverlay .img-width-opt.is-active');
+  const w=b?b.dataset.width:'100%';
+  if(w==='0')return null;
+  return w;
+}
+
+function applyImageSettings(){
+  const src=document.getElementById('imgSrc').value.trim();
+  if(!src){showToast('Image URL is required','error');return}
+  const alt=document.getElementById('imgAlt').value.trim();
+  const title=document.getElementById('imgTitle').value.trim();
+  const caption=document.getElementById('imgCaption').value.trim();
+  const href=document.getElementById('imgHref').value.trim();
+  const align=currentImageAlign();
+  const width=currentImageWidth();
+  const style=width?('width:'+width):null;
+  const attrs={src:src,alt:alt,title:title,caption:caption,align:align==='none'?null:align,style:style};
+  if(imageSettingsMode==='insert'){
+    if(href){
+      editor.chain().focus().insertContent({type:'image',attrs:attrs}).run();
+    }else{
+      editor.chain().focus().insertContent({type:'image',attrs:attrs}).run();
+    }
+    showToast('Image inserted','success');
+  }else{
+    editor.chain().focus().updateAttributes('image',attrs).run();
+    showToast('Image updated','success');
+  }
+  imageSettingsLink=href;
+  closeImageSettings();
+}
+
+document.getElementById('imageSettingsOverlay').addEventListener('click',function(e){
+  const t=e.target.closest('.img-align-opt');
+  if(t){
+    document.querySelectorAll('#imageSettingsOverlay .img-align-opt').forEach(b=>b.classList.remove('is-active'));
+    t.classList.add('is-active');
+  }
+});
+document.getElementById('imageSettingsOverlay').addEventListener('click',function(e){
+  const t=e.target.closest('.img-width-opt');
+  if(t){
+    document.querySelectorAll('#imageSettingsOverlay .img-width-opt').forEach(b=>b.classList.remove('is-active'));
+    t.classList.add('is-active');
+  }
+});
+
+function resizeSelectedImage(width){
+  editor.chain().focus().updateAttributes('image',{style:'width:'+width}).run();
+  showToast('Image width set to '+width,'success');
+}
+
+function deleteSelectedImage(){
+  const sel=editor.state.selection;
+  if(sel.node&&sel.node.type.name==='image'){
+    editor.chain().focus().deleteSelection().run();
+    showToast('Image removed','success');
+  }else{
+    showToast('No image selected','error');
+  }
+}
+
+function handleLink(){
+  const prev=editor.getAttributes('link').href||'';
+  const url=prompt('Enter URL:',prev);
+  if(url===null)return;
+  if(!url){editor.chain().focus().unsetLink().run();return}
+  const text=prompt('Link text (optional, leave blank to use URL):');
+  if(text){editor.chain().focus().insertContent(`<a href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(text)}</a>`).run()}
+  else{editor.chain().focus().setLink({href:url}).run()}
+  showToast('Link added','success');
+}
+
+function openMediaPicker(target){
+  mediaPickerTarget=target||'editor';
+  document.getElementById('mediaPickerOverlay').classList.add('open');
+  currentMediaPage=1;
+  loadMedia();
+}
+
+function closeMediaPicker(){
+  document.getElementById('mediaPickerOverlay').classList.remove('open');
+}
+
+function loadMedia(){
+  const grid=document.getElementById('mediaGrid');
+  const spinner=document.getElementById('mediaSpinner');
+  grid.innerHTML='';
+  spinner.style.display='flex';
+  document.getElementById('mediaPagination').style.display='none';
+  var mediaLimit=24;
+  var mediaOffset=(currentMediaPage-1)*mediaLimit;
+  authFetch(API_BASE+'/api/v1/cms/media?limit='+mediaLimit+'&offset='+mediaOffset).then(function(r){
+    if(!r.ok)throw new Error('Failed to load media');
+    return r.json();
+  }).then(function(res){
+    spinner.style.display='none';
+    var items=res?.items||res?.data?.items||[];
+    var total=res?.total||res?.data?.total||items.length;
+    mediaTotalPages=Math.max(1,Math.ceil(total/mediaLimit));
+    if(items.length===0){
+      grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--muted);font-size:13px">No media yet. Upload something!</div>';
+      return;
+    }
+    items.forEach(item=>{
+      const div=document.createElement('div');
+      div.className='media-item';
+      const src=item.url||item.path||'';
+      const name=item.filename||item.name||'file';
+      const isVideo=src.match(/\.(mp4|webm)(\?|$)/i)||item.type==='video';
+      div.innerHTML=(isVideo?`<video src="${esc(src)}" muted></video>`:`<img src="${esc(src)}" alt="${esc(name)}" loading="lazy">`)+`<div class="media-item-info">${esc(name)}</div>`+
+        '<button type="button" class="media-item-del" title="Delete media" aria-label="Delete '+esc(name)+'">&#10005;</button>';
+      div.addEventListener('click',()=>{
+        if(mediaPickerTarget==='hero'){
+          document.getElementById('pageHero').value=src;
+          closeMediaPicker();
+          showToast('Hero image set','success');
+        }else{
+          closeMediaPicker();
+          openImageInsert(src);
+        }
+      });
+      div.querySelector('.media-item-del').addEventListener('click',(ev)=>{
+        ev.stopPropagation();
+        ev.preventDefault();
+        deleteMediaItem(item);
+      });
+      grid.appendChild(div);
+    });
+    const pg=document.getElementById('mediaPagination');
+    pg.style.display='flex';
+    document.getElementById('mediaPageInfo').textContent='Page '+currentMediaPage+' of '+mediaTotalPages;
+    document.getElementById('mediaPrevBtn').disabled=currentMediaPage<=1;
+    document.getElementById('mediaNextBtn').disabled=currentMediaPage>=mediaTotalPages;
+  }).catch(e=>{
+    spinner.style.display='none';
+    grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:20px;color:#DC2626;font-size:13px">Error loading media: '+esc(e.message)+'</div>';
+  });
+}
+
+document.getElementById('mediaPrevBtn')?.addEventListener('click',()=>{if(currentMediaPage>1){currentMediaPage--;loadMedia()}});
+document.getElementById('mediaNextBtn')?.addEventListener('click',()=>{if(currentMediaPage<mediaTotalPages){currentMediaPage++;loadMedia()}});
+
+const dropZone=document.getElementById('dropZone');
+const mediaInput=document.getElementById('mediaFileInput');
+dropZone.addEventListener('click',()=>mediaInput.click());
+dropZone.addEventListener('dragover',(e)=>{e.preventDefault();dropZone.classList.add('dragover')});
+dropZone.addEventListener('dragleave',()=>dropZone.classList.remove('dragover'));
+dropZone.addEventListener('drop',(e)=>{e.preventDefault();dropZone.classList.remove('dragover');if(e.dataTransfer.files.length)handleMediaUpload(e.dataTransfer.files[0])});
+mediaInput.addEventListener('change',()=>{if(mediaInput.files.length)handleMediaUpload(mediaInput.files[0])});
+
+async function handleMediaUpload(file){
+  var maxSize=file.type.startsWith('video/')?20*1024*1024:10*1024*1024;
+  if(file.size>maxSize){showToast('File too large (max '+(maxSize/1024/1024)+'MB)','error');return}
+  var formData=new FormData();
+  formData.append('file',file);
+  formData.append('alt_text','');
+  formData.append('caption','');
+  try{
+    var r=await authFetch(API_BASE+'/api/v1/cms/upload',{method:'POST',body:formData,isFormData:true});
+    if(!r.ok)throw new Error('Upload failed');
+    var res=await r.json();
+    showToast('Uploaded successfully','success');
+    loadMedia();
+  }catch(e){showToast('Upload error: '+e.message,'error')}
+}
+
+function deleteMediaItem(item){
+  const id=item.id||item.media_id;
+  if(!id){showToast('Cannot delete: missing media id','error');return}
+  if(!confirm('Delete "'+(item.filename||item.name||'this file')+'" permanently? This cannot be undone.'))return;
+  authFetch(API_BASE+'/api/v1/cms/media/'+id,{method:'DELETE'}).then(r=>{
+    if(!r.ok)return r.json().then(d=>{throw new Error(d.detail||'Delete failed')});
+    showToast('Media deleted','success');
+    loadMedia();
+  }).catch(e=>showToast('Delete error: '+e.message,'error'));
+}
+
+function openVideoModal(){
+  document.getElementById('videoModalOverlay').classList.add('open');
+  switchVideoTab('youtube');
+}
+
+function closeVideoModal(){
+  document.getElementById('videoModalOverlay').classList.remove('open');
+  document.getElementById('youtubeUrl').value='';
+  document.getElementById('videoFileInput').value='';
+}
+
+function switchVideoTab(tab){
+  document.querySelectorAll('[data-vtab]').forEach(t=>t.classList.toggle('active',t.dataset.vtab===tab));
+  document.getElementById('vtab-youtube').style.display=tab==='youtube'?'block':'none';
+  document.getElementById('vtab-upload').style.display=tab==='upload'?'block':'none';
+}
+
+function embedYouTube(){
+  const url=document.getElementById('youtubeUrl').value.trim();
+  if(!url){showToast('Enter a YouTube URL','error');return}
+  let id='';
+  const match=url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|v\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+  if(match)id=match[1];
+  if(!id){showToast('Invalid YouTube URL','error');return}
+  const html=`<div style="position:relative;padding-bottom:56.25%;height:0;margin:14px 0"><iframe src="https://www.youtube.com/embed/${id}" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none;border-radius:8px" allowfullscreen></iframe></div>`;
+  editor.chain().focus().insertContent(html).run();
+  closeVideoModal();
+  showToast('YouTube video embedded','success');
+}
+
+const videoDropZone=document.getElementById('videoDropZone');
+const videoInput=document.getElementById('videoFileInput');
+videoDropZone.addEventListener('click',()=>videoInput.click());
+videoDropZone.addEventListener('dragover',(e)=>{e.preventDefault();videoDropZone.classList.add('dragover')});
+videoDropZone.addEventListener('dragleave',()=>videoDropZone.classList.remove('dragover'));
+videoDropZone.addEventListener('drop',(e)=>{e.preventDefault();videoDropZone.classList.remove('dragover');if(e.dataTransfer.files.length)handleVideoUpload(e.dataTransfer.files[0])});
+videoInput.addEventListener('change',()=>{if(videoInput.files.length)handleVideoUpload(videoInput.files[0])});
+
+async function handleVideoUpload(file){
+  if(!file.type.startsWith('video/')){showToast('Please upload a video file','error');return}
+  if(file.size>10*1024*1024){showToast('File too large (max 10MB)','error');return}
+  const formData=new FormData();
+  formData.append('file',file);
+  try{
+    const r=await authFetch(API_BASE+'/api/v1/cms/upload',{method:'POST',body:formData,isFormData:true});
+    if(!r.ok)throw new Error('Upload failed');
+    const res=await r.json();
+    const url=res.url||res.path;
+    const html=`<video controls style="max-width:100%;border-radius:8px;margin:14px 0" src="${esc(url)}"></video>`;
+    editor.chain().focus().insertContent(html).run();
+    closeVideoModal();
+    showToast('Video inserted','success');
+  }catch(e){showToast('Upload error: '+e.message,'error')}
+}
+
+document.getElementById('insertBlockBtn')?.addEventListener('click',function(e){
+  e.stopPropagation();
+  document.getElementById('blockDropdown').classList.toggle('open');
+});
+
+document.querySelectorAll('[data-block]').forEach(item=>{
+  item.addEventListener('click',function(){
+    document.getElementById('blockDropdown').classList.remove('open');
+    insertBlock(this.dataset.block);
+  });
+});
+
+document.addEventListener('click',()=>{
+  const dd=document.getElementById('blockDropdown');
+  if(dd)dd.classList.remove('open');
+});
+
+function insertBlock(type){
+  if(type==='callout'){
+    editor.chain().focus().insertContent('<blockquote><p>💡 <strong>Callout:</strong> Key information worth highlighting to your readers.</p></blockquote>').run();
+  }else if(type==='cta'){
+    editor.chain().focus().insertContent('<h2>Get Started Today</h2><p>Ready to streamline your bioinformatics workflow? <a href="/primer">Try VigyanLLM free</a> and see the difference.</p>').run();
+  }else if(type==='faq'){
+    const count=parseInt(prompt('How many FAQ items? (2-3 recommended):','2'))||2;
+    let html='';
+    for(let i=0;i<Math.min(count,5);i++){
+      const q=prompt('Question '+(i+1)+':');
+      if(!q)continue;
+      const a=prompt('Answer '+(i+1)+':');
+      if(!a)continue;
+      html+=`<h3>${esc(q)}</h3><p>${esc(a)}</p>`;
+    }
+    if(html)editor.chain().focus().insertContent(html).run();
+  }else if(type==='testimonial'){
+    const text=prompt('Testimonial text:');
+    if(!text)return;
+    const author=prompt('Author name:')||'Anonymous';
+    const role=prompt('Title/affiliation (optional):');
+    const attribution=role?`— ${esc(author)}, ${esc(role)}`:`— ${esc(author)}`;
+    editor.chain().focus().insertContent(`<blockquote><p>${esc(text)}</p><p style="margin-top:8px;font-size:13px;color:var(--muted)">${attribution}</p></blockquote>`).run();
+  }
+  showToast('Block inserted','success');
+}
+
+function togglePreview(){
+  previewVisible=!previewVisible;
+  const col=document.getElementById('previewCol');
+  const btn=document.getElementById('previewToggleBtn');
+  const editorCol=document.getElementById('editorCol');
+  if(previewVisible){
+    col.classList.add('open');
+    editorCol.classList.add('preview-open');
+    btn.textContent='\u2716 Close Preview';
+    setTimeout(updatePreview,100);
+  }else{
+    col.classList.remove('open');
+    editorCol.classList.remove('preview-open');
+    btn.textContent='\u{1F441} Preview';
+  }
+}
+
+function getEditorText(){
+  return editor?editor.state.doc.textContent:'';
+}
+
+function updateWordCount(){
+  const text=getEditorText();
+  const words=text.trim()?text.trim().split(/\s+/).length:0;
+  const chars=text.length;
+  document.getElementById('wordCount').textContent=words.toLocaleString()+' words';
+  document.getElementById('charCount').textContent=chars.toLocaleString()+' characters';
+  if(text.trim()){
+    document.getElementById('readabilityScore').textContent=calcReadability(text);
+  }else{
+    document.getElementById('readabilityScore').textContent='—';
+  }
+}
+
+function updatePreview(){
+  if(!previewVisible||!editor)return;
+  const html=generatePreviewHTML();
+  const viewport=document.querySelector('.preview-viewport .is-active');
+  const vpWidth=viewport?viewport.dataset.vp:'100%';
+  const iframe=document.getElementById('previewIframe');
+  const pageTitle=document.getElementById('pageTitle').value.trim()||'Page Title';
+  const desc=document.getElementById('pageDesc').value.trim()||'';
+  const slug=document.getElementById('pageSlug').value.trim()||'page';
+  const previewCSS=`
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#1a1a2e;padding:32px 40px;line-height:1.7;font-size:16px;max-width:760px;margin:0 auto}
+    h1{font-size:30px;margin:24px 0 10px;font-weight:700;line-height:1.3}
+    h2{font-size:24px;margin:20px 0 8px;font-weight:700}
+    h3{font-size:20px;margin:16px 0 6px;font-weight:600}
+    p{margin-bottom:16px;color:#374151}
+    ul,ol{padding-left:26px;margin-bottom:16px}
+    li{margin-bottom:4px}
+    blockquote{border-left:4px solid #2563eb;padding:12px 20px;margin:16px 0;background:#f8fafc;border-radius:0 8px 8px 0;color:#475569}
+    pre{background:#1e293b;color:#e2e8f0;padding:16px 20px;border-radius:8px;overflow-x:auto;font-size:13px;line-height:1.6;margin:16px 0}
+    code{background:#f1f5f9;padding:2px 6px;border-radius:4px;font-size:.9em}
+    pre code{background:none;padding:0}
+    img{max-width:100%;border-radius:8px;margin:16px 0}
+    figure{margin:20px 0;text-align:center}
+    figcaption{font-size:13px;color:#64748b;margin-top:8px;font-style:italic}
+    figure.vl-align-left{float:left;margin-right:24px;max-width:50%}
+    figure.vl-align-right{float:right;margin-left:24px;max-width:50%}
+    img[align="left"]{float:left;margin-right:24px;max-width:50%}
+    img[align="right"]{float:right;margin-left:24px;max-width:50%}
+    img[align="center"]{display:block;margin-left:auto;margin-right:auto}
+    a{color:#2563eb;text-decoration:underline}
+    hr{border:none;border-top:2px solid #e2e8f0;margin:24px 0}
+    table{border-collapse:collapse;width:100%;margin:16px 0;font-size:14px}
+    th{background:#f8fafc;padding:10px 14px;border:1px solid #e2e8f0;font-weight:700;text-align:left}
+    td{padding:10px 14px;border:1px solid #e2e8f0}
+    video{max-width:100%;border-radius:8px;margin:16px 0}
+    [data-pos]{cursor:pointer;transition:background .2s;border-radius:4px;padding:2px 0}
+    [data-pos]:hover{background:#f0f4ff}
+  `;
+  const srcdoc=`<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>${previewCSS}</style></head><body><h1 style="margin-top:0">${esc(pageTitle)}</h1>${html}<script>
+    document.addEventListener('click',function(e){var t=e.target;while(t&&!t.hasAttribute('data-pos')){t=t.parentElement}if(t){parent.postMessage({type:'cms-edit-pos',pos:parseInt(t.getAttribute('data-pos'))},'*');e.preventDefault()}});
+    document.addEventListener('mouseover',function(e){var t=e.target;while(t&&!t.hasAttribute('data-pos')){t=t.parentElement}if(t){t.style.outline='2px solid #2563eb';t.style.outlineOffset='2px'}});
+    document.addEventListener('mouseout',function(e){var t=e.target;while(t&&!t.hasAttribute('data-pos')){t=t.parentElement}if(t){t.style.outline='none'}});
+  <\/script></body></html>`;
+  iframe.srcdoc=srcdoc;
+  iframe.style.width=vpWidth;
+}
+
+function generatePreviewHTML(){
+  if(!editor)return'';
+  const html=editor.getHTML();
+  const temp=document.createElement('div');
+  temp.innerHTML=html;
+  const blocks=Array.from(temp.children);
+  blocks.forEach((el,i)=>{
+    el.setAttribute('data-pos',i);
+  });
+  return temp.innerHTML;
+}
+
+function updateSEOPreview(){
+  const title=document.getElementById('pageMetaTitle').value.trim()||document.getElementById('pageTitle').value.trim()||'Page Title';
+  const desc=document.getElementById('pageDesc').value.trim()||'Meta description goes here and will be truncated for the search result snippet.';
+  const slug=document.getElementById('pageSlug').value.trim()||'page-slug';
+  document.getElementById('seoUrl').textContent='vigyanllm.in › '+slug;
+  document.getElementById('seoTitle').textContent=title;
+  document.getElementById('seoDesc').textContent=desc.length>160?desc.substring(0,157)+'...':desc;
+}
+
+function calcReadability(text){
+  const words=text.trim().split(/\s+/).filter(w=>w.length>0);
+  if(words.length<10)return '— (too short)';
+  const sentences=text.split(/[.!?]+/).filter(s=>s.trim().length>0).length||1;
+  const syllableCount=words.reduce((sum,w)=>sum+countSyllables(w),0);
+  const grade=0.39*(words.length/sentences)+11.8*(syllableCount/words.length)-15.59;
+  const g=Math.round(grade*10)/10;
+  let label='';
+  if(g<=5)label='Very Easy';
+  else if(g<=7)label='Fairly Easy';
+  else if(g<=9)label='Standard';
+  else if(g<=12)label='Fairly Difficult';
+  else if(g<=15)label='Difficult';
+  else label='Very Difficult';
+  return 'Grade '+g+' — '+label;
+}
+
+function countSyllables(word){
+  word=word.toLowerCase().replace(/[^a-z]/g,'');
+  if(!word)return 0;
+  if(word.length<=3)return 1;
+  let count=0,prevVowel=false;
+  const vowels='aeiouy';
+  for(let i=0;i<word.length;i++){
+    const isV=vowels.includes(word[i]);
+    if(isV&&!prevVowel)count++;
+    prevVowel=isV;
+  }
+  if(word.endsWith('e')&&count>1)count--;
+  return Math.max(1,count);
+}
+
+window.addEventListener('message',function(e){
+  if(e.data.type==='cms-edit-pos'&&editor){
+    const pos=e.data.pos;
+    const container=document.getElementById('editorContent');
+    const el=container?.querySelector('[data-pos="'+pos+'"]');
+    if(el){
+      el.scrollIntoView({behavior:'smooth',block:'center'});
+      el.classList.add('highlight-flash');
+      setTimeout(()=>el.classList.remove('highlight-flash'),1200);
+      const doc=editor.state.doc;
+      let foundPos=0,currentBlock=0;
+      doc.forEach((node,offset)=>{
+        if(currentBlock===pos){foundPos=offset}
+        currentBlock++;
+      });
+      if(foundPos>0){
+        editor.chain().focus().setTextSelection(foundPos).run();
+      }
+    }
+  }
+});
+
+document.querySelectorAll('.preview-viewport button').forEach(btn=>{
+  btn.addEventListener('click',function(){
+    document.querySelectorAll('.preview-viewport button').forEach(b=>b.classList.remove('is-active'));
+    this.classList.add('is-active');
+    const iframe=document.getElementById('previewIframe');
+    iframe.style.width=this.dataset.vp;
+  });
+});
+
+function updateStatusBar(p){
+  const sb=document.getElementById('statusBar');
+  sb.style.display='flex';
+  const status=p.status||'draft';
+  const updated=p.updated_at?new Date(p.updated_at).toLocaleString():'never';
+  sb.innerHTML='Status: <span class="badge badge-'+status+'">'+status.replace(/_/g,' ')+'</span><span>Last updated: '+updated+'</span>';
+}
+
+function getContentJSON(){
+  return editor?editor.getJSON():{type:'doc',content:[{type:'paragraph'}]};
+}
+
+function validate(){
+  const title=document.getElementById('pageTitle').value.trim();
+  const slug=document.getElementById('pageSlug').value.trim();
+  if(!title){showToast('Page Title is required','error');document.getElementById('pageTitle').focus();return false}
+  if(!slug){showToast('URL Slug is required','error');document.getElementById('pageSlug').focus();return false}
+  if(!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(slug)){showToast('Slug must be lowercase letters, numbers, and hyphens only','error');return false}
+  return true;
+}
+
+function buildPageBody(status){
+  const sch=document.getElementById('pageSchedule').value;
+  return {
+    title:document.getElementById('pageTitle').value.trim(),
+    slug:document.getElementById('pageSlug').value.trim(),
+    description:document.getElementById('pageDesc').value.trim()||null,
+    meta_title:document.getElementById('pageMetaTitle').value.trim()||null,
+    tags:document.getElementById('pageTags').value.trim()||null,
+    hero_image:document.getElementById('pageHero').value.trim()||null,
+    content_type:document.getElementById('pageType').value,
+    publish_schedule_at:sch?new Date(sch).toISOString():null,
+    content_json:getContentJSON(),
+    status:status||'draft',
+    change_note:status==='pending_review'?'Submitted for review':'Saved as draft'
+  };
+}
+
+function saveDraft(){
+  if(!validate())return;
+  const body=buildPageBody('draft');
+  const method=currentSlug?'PUT':'POST';
+  const url=currentSlug?API_BASE+'/api/v1/cms/pages/'+currentSlug:API_BASE+'/api/v1/cms/pages';
+  document.getElementById('editorTitle').textContent='Saving...';
+  authFetch(url,{method,body:JSON.stringify(body)}).then(r=>{
+    if(!r.ok)return r.json().then(d=>{throw new Error(d.detail||'Save failed')});
+    return r.json();
+  }).then(res=>{
+    const slug=res?.data?.slug||body.slug;
+    currentSlug=slug;
+    document.getElementById('editorTitle').textContent='Editing: '+document.getElementById('pageTitle').value;
+    window.history.replaceState(null,'','/cms-editor?slug='+slug);
+    const data=res?.data||res;
+    if(data)updateStatusBar(data);
+    showToast('Draft saved successfully','success');
+  }).catch(e=>{
+    showToast('Error: '+e.message,'error');
+    document.getElementById('editorTitle').textContent='Editing: '+document.getElementById('pageTitle').value;
+  });
+}
+
+function submitReview(){
+  if(!validate())return;
+  if(!currentSlug){showToast('Save as draft first before submitting for review','error');return}
+  const body=buildPageBody('pending_review');
+  authFetch(API_BASE+'/api/v1/cms/pages/'+currentSlug,{method:'PUT',body:JSON.stringify(body)}).then(r=>{
+    if(!r.ok)return r.json().then(d=>{throw new Error(d.detail||'Submit failed')});
+    return r.json();
+  }).then(res=>{
+    showToast('Submitted for review','success');
+    const data=res?.data||res;
+    if(data)updateStatusBar(data);
+  }).catch(e=>showToast('Error: '+e.message,'error'));
+}
+
+function sanitizeTiptapDoc(doc){
+  if(!doc||typeof doc!=='object'||!Array.isArray(doc.content))return doc;
+  function cleanNode(node){
+    if(!node||typeof node!=='object')return null;
+    var out={type:node.type};
+    if(node.attrs&&Object.keys(node.attrs).length)out.attrs=node.attrs;
+    if(node.marks&&node.marks.length)out.marks=node.marks;
+    if(node.text!==undefined){out.text=node.text;return out}
+    if(node.content){
+      var cleaned=[];
+      (node.content||[]).forEach(function(child){
+        var c=cleanNode(child);
+        if(c)cleaned.push(c);
+      });
+      if(cleaned.length)out.content=cleaned;
+    }
+    return out;
+  }
+  var cleaned=doc.content.map(cleanNode).filter(Boolean);
+  return {type:'doc',content:cleaned};
+}
+
+function loadPage(slug){
+  currentSlug=slug;
+  document.getElementById('editorTitle').textContent='Loading...';
+  authFetch(API_BASE+'/api/v1/cms/pages/'+slug).then(r=>{
+    if(!r.ok){window.location.href='/cms-editor';return Promise.reject('Page not found')}
+    return r.json();
+  }).then(res=>{
+    const p=res?.data||res;
+    if(!p)return;
+    document.getElementById('pageTitle').value=p.title||'';
+    document.getElementById('pageSlug').value=p.slug||'';
+    document.getElementById('pageDesc').value=p.description||'';
+    document.getElementById('pageMetaTitle').value=p.meta_title||'';
+    document.getElementById('pageTags').value=p.tags||'';
+    document.getElementById('pageType').value=p.content_type||'page';
+    document.getElementById('pageHero').value=p.hero_image||'';
+    if(p.publish_schedule_at){const d=new Date(p.publish_schedule_at);document.getElementById('pageSchedule').value=d.toISOString().slice(0,16)}
+    document.getElementById('editorTitle').textContent='Editing: '+p.title;
+    updateStatusBar(p);
+    if(editor&&p.content_json&&p.content_json.type==='doc'){
+      editor.commands.setContent(sanitizeTiptapDoc(p.content_json));
+    }else if(editor&&p.content_html){
+      editor.commands.setHTML(p.content_html);
+    }
+    updateSEOPreview();
+    updateWordCount();
+  }).catch(e=>{
+    if(e.message!=='Page not found'){
+      showToast('Error loading page: '+e.message,'error');
+      setTimeout(()=>window.location.href='/cms-editor',1500);
+    }
+  });
+}
+
+function numberEditorBlocks(){
+  const container=document.getElementById('editorContent');
+  if(!container)return;
+  const children=Array.from(container.children);
+  children.forEach((el,i)=>{
+    if(el.tagName!=='DIV'||!el.classList.contains('spinner')){
+      el.setAttribute('data-pos',i);
+    }
+  });
+}
+
+function debounce(fn,ms){
+  let timer;
+  return function(...args){clearTimeout(timer);timer=setTimeout(()=>fn.apply(this,args),ms)}
+}
+
+const debouncedNumberBlocks=debounce(numberEditorBlocks,300);
+
+document.getElementById('pageTitle').addEventListener('input',function(){
+  if(!currentSlug&&!document.getElementById('pageSlug').value){
+    document.getElementById('pageSlug').value=this.value.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+  }
+  updateSEOPreview();
+  updateWordCount();
+});
+
+document.getElementById('pageDesc').addEventListener('input',updateSEOPreview);
+document.getElementById('pageMetaTitle').addEventListener('input',updateSEOPreview);
+document.getElementById('pageSlug').addEventListener('input',updateSEOPreview);
+
+if(window.MutationObserver){
+  const observer=new MutationObserver(()=>debouncedNumberBlocks());
+  document.addEventListener('DOMContentLoaded',()=>{
+    const container=document.getElementById('editorContent');
+    if(container){
+      observer.observe(container,{childList:true,subtree:false,characterData:false});
+    }
+  });
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  if(!getToken()){window.location.href='/cms-login';return}
+  initEditor();
+  // Number blocks after initial render
+  setTimeout(numberEditorBlocks,500);
+});
+</script>
+</body>
+</html>

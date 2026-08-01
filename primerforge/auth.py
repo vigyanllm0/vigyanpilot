@@ -230,6 +230,16 @@ def init_db():
             job_id TEXT DEFAULT '',
             created_at REAL DEFAULT (strftime('%s','now'))
         );
+
+        CREATE TABLE IF NOT EXISTS cookie_consents (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            email TEXT DEFAULT '',
+            consent TEXT NOT NULL DEFAULT 'accepted',
+            ip_address TEXT DEFAULT '',
+            user_agent TEXT DEFAULT '',
+            page_url TEXT DEFAULT '',
+            accepted_at REAL NOT NULL DEFAULT (strftime('%s','now'))
+        );
     """)
 
     # Backfill plan columns for existing users (if missing in older schema)

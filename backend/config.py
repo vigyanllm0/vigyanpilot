@@ -1,6 +1,11 @@
 import os
 from urllib.parse import urlparse, urlencode, parse_qs, urlunparse
 
+# Anchored to repo root so uploads resolve identically regardless of CWD.
+_BACKEND_DIR = os.path.dirname(os.path.abspath(__file__))
+_REPO_ROOT = os.path.dirname(_BACKEND_DIR)
+_DEFAULT_UPLOAD_DIR = os.path.join(_REPO_ROOT, "frontend", "uploads", "cms")
+
 # Use SQLite for local dev, PostgreSQL for production
 DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite:///./cms.db")
 
@@ -30,7 +35,7 @@ if not _jwt_secret:
 JWT_SECRET = _jwt_secret
 JWT_ALGORITHM = "HS256"
 JWT_EXPIRY_HOURS = 24
-UPLOAD_DIR = os.environ.get("UPLOAD_DIR", "frontend/uploads/cms")
+UPLOAD_DIR = os.environ.get("UPLOAD_DIR", _DEFAULT_UPLOAD_DIR)
 MAX_UPLOAD_SIZE = 5 * 1024 * 1024
 ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp", ".gif", ".svg"}
 ALLOWED_MIMES = {"image/jpeg", "image/png", "image/webp", "image/gif", "image/svg+xml"}

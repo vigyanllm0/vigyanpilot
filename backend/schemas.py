@@ -30,6 +30,7 @@ class PageListItem(BaseModel):
     description: Optional[str] = None
     content_type: str = "page"
     status: str
+    tags: Optional[str] = None
     author: AuthorInfo
     published_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
@@ -48,6 +49,9 @@ class PageDetail(BaseModel):
     content_json: Any
     content_html: Optional[str] = None
     hero_image: Optional[str] = None
+    meta_title: Optional[str] = None
+    tags: Optional[str] = None
+    publish_schedule_at: Optional[datetime] = None
     status: str
     content_type: str = "page"
     author: AuthorInfo
@@ -65,6 +69,9 @@ class PageCreate(BaseModel):
     description: Optional[str] = None
     content_json: dict
     hero_image: Optional[str] = None
+    meta_title: Optional[str] = None
+    tags: Optional[str] = None
+    publish_schedule_at: Optional[datetime] = None
     status: str = "draft"
     content_type: str = "page"
     change_note: Optional[str] = None
@@ -101,6 +108,9 @@ class PageUpdate(BaseModel):
     description: Optional[str] = None
     content_json: Optional[dict] = None
     hero_image: Optional[str] = None
+    meta_title: Optional[str] = None
+    tags: Optional[str] = None
+    publish_schedule_at: Optional[datetime] = None
     status: Optional[str] = None
     content_type: Optional[str] = None
     change_note: Optional[str] = None
@@ -109,6 +119,8 @@ class PageCreateResponse(BaseModel):
     id: str
     slug: str
     status: str
+    tags: Optional[str] = None
+    meta_title: Optional[str] = None
 
 class ReviewNoteCreate(BaseModel):
     note: str = Field(..., min_length=1, max_length=2048)
@@ -152,3 +164,134 @@ class RevisionItem(BaseModel):
     changed_by: AuthorInfo
     status_at_save: str
     created_at: Optional[datetime] = None
+
+class MediaItem(BaseModel):
+    id: str
+    filename: str
+    original_name: Optional[str] = None
+    url: str
+    mime_type: str
+    media_type: str
+    size_bytes: int
+    width: int
+    height: int
+    alt_text: Optional[str] = None
+    caption: Optional[str] = None
+    uploaded_by: Optional[AuthorInfo] = None
+    created_at: Optional[datetime] = None
+
+class MediaUploadResponse(BaseModel):
+    success: bool
+    data: MediaItem
+
+class MediaListResponse(BaseModel):
+    items: list[MediaItem]
+    total: int
+
+class SettingItem(BaseModel):
+    id: str
+    key: str
+    value: Optional[Any] = None
+    type: str
+    updated_at: Optional[datetime] = None
+
+class SettingUpdate(BaseModel):
+    value: Optional[Any] = None
+    type: Optional[str] = None
+
+class SettingListResponse(BaseModel):
+    settings: list[SettingItem]
+
+class BlockItem(BaseModel):
+    id: str
+    name: str
+    slug: str
+    description: Optional[str] = None
+    content_json: Any
+    content_html: Optional[str] = None
+    category: str
+    created_by: Optional[AuthorInfo] = None
+    updated_at: Optional[datetime] = None
+
+class BlockCreate(BaseModel):
+    name: str
+    slug: str
+    description: Optional[str] = None
+    content_json: dict
+    category: str = "custom"
+
+    @field_validator("slug")
+    @classmethod
+    def validate_slug(cls, v):
+        if not re.match(r'^[a-z0-9]+(?:-[a-z0-9]+)*$', v):
+            raise ValueError("Slug must be URL-safe: lowercase letters, numbers, hyphens")
+        if len(v) > 255:
+            raise ValueError("Slug max 255 characters")
+        return v
+
+    @field_validator("name")
+    @classmethod
+    def validate_name(cls, v):
+        if len(v) < 1 or len(v) > 255:
+            raise ValueError("Name must be 1-255 characters")
+        return v
+
+    @field_validator("content_json")
+    @classmethod
+    def validate_content_json(cls, v):
+        if not isinstance(v, dict):
+            raise ValueError("content_json must be a JSON object")
+        if v.get("type") != "doc":
+            raise ValueError("content_json must have type='doc'")
+        if "content" not in v:
+            raise ValueError("content_json must have a content array")
+        return v
+
+class BlockUpdate(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    content_json: Optional[dict] = None
+    category: Optional[str] = None
+
+class BlockListResponse(BaseModel):
+    blocks: list[BlockItem]
+    total: int
+
+class UserCreate(BaseModel):
+    email: str
+    password: str
+    display_name: Optional[str] = None
+    role: str = "editor"
+
+    @field_validator("email")
+    @classmethod
+    def validate_email(cls, v):
+        if not re.match(r'^[^@\s]+@[^@\s]+\.[^@\s]+$', v):
+            raise ValueError("Invalid email address")
+        return v
+
+    @field_validator("password")
+    @classmethod
+    def validate_password(cls, v):
+        if len(v) < 8:
+            raise ValueError("Password must be at least 8 characters")
+        return v
+
+    @field_validator("role")
+    @classmethod
+    def validate_role(cls, v):
+        allowed = {"admin", "editor", "viewer"}
+        if v not in allowed:
+            raise ValueError(f"Role must be one of: {', '.join(sorted(allowed))}")
+        return v
+
+class UserListItem(BaseModel):
+    id: str
+    email: str
+    display_name: Optional[str] = None
+    role: str
+    last_login_at: Optional[datetime] = None
+    created_at: Optional[datetime] = None
+
+class UserListResponse(BaseModel):
+    users: list[UserListItem]

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en-IN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CMS Login — VigyanLLM</title>
+<link rel="stylesheet" href="/cms-design.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PB0XMF4GEH"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)};gtag('js',new Date());gtag('config','G-PB0XMF4GEH');</script>
+<script src="/cookie-banner.js" defer></script>
+</head>
+<body class="login-body">
+<div class="login-card" role="main">
+  <div class="cms-badge"><span>CMS Admin</span></div>
+  <h1>Content Management</h1>
+  <p>Sign in to manage pages and content</p>
+  <div class="form-group">
+    <label class="form-label" for="email">Email</label>
+    <input type="email" id="email" class="form-input" placeholder="contact@vigyanllm.in" autocomplete="email" aria-required="true">
+  </div>
+  <div class="form-group">
+    <label class="form-label" for="password">Password</label>
+    <input type="password" id="password" class="form-input" placeholder="Enter password" autocomplete="current-password" aria-required="true">
+  </div>
+  <div class="form-group">
+    <label class="tc-checkbox"><input type="checkbox" id="auth-tc"> I agree to the <a href="/terms" target="_blank" rel="noopener">Terms &amp; Conditions</a> and <a href="/privacy" target="_blank" rel="noopener">Privacy Policy</a></label>
+  </div>
+  <button type="button" class="btn btn-primary" id="loginBtn" onclick="handleLogin()">Sign in</button>
+  <div class="error" id="error" role="alert" aria-live="polite"></div>
+</div>
+<script>
+const API_BASE = '';
+
+async function handleLogin(){
+  const email=document.getElementById('email').value.trim();
+  const pass=document.getElementById('password').value.trim();
+  const btn=document.getElementById('loginBtn');
+  const err=document.getElementById('error');
+  const tc=document.getElementById('auth-tc');
+  if(!email||!pass){err.style.display='block';err.textContent='Please enter email and password';return}
+  if(tc&&!tc.checked){err.style.display='block';err.textContent='Please accept the Terms & Conditions to continue.';return}
+  btn.disabled=true;btn.innerHTML='<span class="skeleton" style="display:inline-block;width:70px;height:12px;border-radius:4px"></span>';
+  err.style.display='none';
+  try {
+    var resp = await fetch(API_BASE+'/api/v1/cms/auth/login',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({email,password:pass})
+    });
+    var text = await resp.text();
+    var data;
+    try { data = JSON.parse(text); } catch(_) { throw new Error('Server returned: '+text.slice(0,200)); }
+    if(!resp.ok) throw new Error(data.detail||data.error||'Login failed (HTTP '+resp.status+')');
+    if(!data.token) throw new Error('No token in response');
+    localStorage.setItem('cms_token',data.token);
+    localStorage.setItem('cms_user',JSON.stringify(data.user||{}));
+    window.location.href='/cms-admin';
+  } catch(e) {
+    console.error('CMS login error:', e);
+    var msg = e&&e.message?String(e.message):(e&&e.detail?String(e.detail):'Server unavailable - check console (F12)');
+    err.style.display='block';err.textContent=msg;
+    btn.disabled=false;btn.textContent='Sign in';
+  }
+}
+document.getElementById('password').addEventListener('keydown',function(ev){if(ev.key==='Enter')handleLogin()});
+</script>
+</body>
+</html>

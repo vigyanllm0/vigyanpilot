@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, Column, String, Text, Boolean, DateTime, ForeignKey, TypeDecorator
+from sqlalchemy import create_engine, Column, String, Text, Boolean, DateTime, ForeignKey, Integer, TypeDecorator
 from sqlalchemy.orm import declarative_base, relationship
 from sqlalchemy.sql import func
 import json
@@ -65,6 +65,9 @@ class CMSPage(Base):
     submitted_at = Column(DateTime(timezone=True))
     reviewed_at = Column(DateTime(timezone=True))
     rejection_reason = Column(String(1024))
+    tags = Column(Text)
+    meta_title = Column(String(512))
+    publish_schedule_at = Column(DateTime(timezone=True))
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
@@ -109,3 +112,51 @@ class CMSNotification(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     page = relationship("CMSPage", back_populates="notifications")
+
+class CMSPageView(Base):
+    __tablename__ = "cms_page_views"
+    id = Column(String, primary_key=True, default=gen_uuid)
+    page_id = Column(String, ForeignKey("cms_pages.id", ondelete="CASCADE"), nullable=False)
+    viewed_at = Column(DateTime(timezone=True), server_default=func.now())
+    ip_address = Column(String(45))
+    user_agent = Column(String(512))
+
+class CMSMedia(Base):
+    __tablename__ = "cms_media"
+    id = Column(String, primary_key=True, default=gen_uuid)
+    filename = Column(String(255), nullable=False)
+    original_name = Column(String(255))
+    url = Column(String(512), nullable=False)
+    mime_type = Column(String(50), nullable=False)
+    media_type = Column(String(20), nullable=False, default="image")  # image, video, document
+    size_bytes = Column(Integer, nullable=False, default=0)
+    width = Column(Integer, default=0)
+    height = Column(Integer, default=0)
+    alt_text = Column(String(512))
+    caption = Column(String(1024))
+    uploaded_by = Column(String, ForeignKey("admin_users.id"))
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    
+    uploader = relationship("AdminUser")
+
+class CMSSetting(Base):
+    __tablename__ = "cms_settings"
+    id = Column(String, primary_key=True, default=gen_uuid)
+    key = Column(String(128), unique=True, nullable=False)
+    value = Column(Text)
+    type = Column(String(20), default="text")  # text, json, image, boolean
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+class CMSBlock(Base):
+    __tablename__ = "cms_blocks"
+    id = Column(String, primary_key=True, default=gen_uuid)
+    name = Column(String(255), nullable=False)
+    slug = Column(String(255), unique=True, nullable=False)
+    description = Column(String(1024))
+    content_json = Column(JSONType, nullable=False)
+    content_html = Column(Text)
+    category = Column(String(50), default="custom")
+    created_by = Column(String, ForeignKey("admin_users.id"))
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())

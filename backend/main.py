@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from database import engine
 from models import Base
-from routes import auth, pages, review, upload, public, notifications, stats
+from routes import auth, pages, review, upload, public, notifications, stats, media, settings, blocks, users
 from pii_mask import install_pii_mask
 
 logging.basicConfig(level=logging.INFO,
@@ -22,6 +22,8 @@ app.add_middleware(
         "http://localhost:8001",
         "http://127.0.0.1:8000",
         "http://127.0.0.1:8001",
+        "http://localhost:11436",
+        "http://127.0.0.1:11436",
         "http://13.207.60.92:8001",
         "http://13.207.60.92:5000",
     ],
@@ -42,22 +44,18 @@ def _seed_admin():
     from auth import hash_password
     db = SessionLocal()
     try:
-        existing = db.query(AdminUser).filter(AdminUser.email == "admin@vigyanllm.in").first()
+        existing = db.query(AdminUser).filter(AdminUser.email == "contact@vigyanllm.in").first()
         if not existing:
-            import secrets
-            plain = secrets.token_urlsafe(16)
-            hashed = hash_password(plain)
+            hashed = hash_password("Vigyan@hemant.9817&hs")
             user = AdminUser(
-                email="admin@vigyanllm.in",
+                email="contact@vigyanllm.in",
                 password_hash=hashed,
-                display_name="Admin",
+                display_name="CMS Admin",
                 role="admin",
             )
             db.add(user)
             db.commit()
-            print(f"INITIAL CMS ADMIN PASSWORD: {plain} — Save this now. It will not be shown again.")
-        else:
-            pass
+            print("CMS admin created: contact@vigyanllm.in / Vigyan@hemant.9817&hs")
     finally:
         db.close()
 
@@ -69,3 +67,7 @@ app.include_router(upload.router)
 app.include_router(public.router)
 app.include_router(notifications.router)
 app.include_router(stats.router)
+app.include_router(media.router)
+app.include_router(settings.router)
+app.include_router(blocks.router)
+app.include_router(users.router)

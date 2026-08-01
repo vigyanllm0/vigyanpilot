@@ -20,7 +20,7 @@ Max file size: 5 MB (MAX_UPLOAD_SIZE from config)
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from sqlalchemy.orm import Session
 from database import get_db
-from models import AdminUser
+from models import AdminUser, CMSMedia
 from deps import get_current_user
 from config import UPLOAD_DIR, MAX_UPLOAD_SIZE, ALLOWED_EXTENSIONS
 import os
@@ -302,6 +302,23 @@ async def upload_image(
         "Uploaded %s (%s, %d bytes) by user %s",
         new_filename, magic_mime, len(write_data), user.email if hasattr(user, "email") else "unknown",
     )
+
+    record = CMSMedia(
+        filename=new_filename,
+        original_name=file.filename,
+        url=url,
+        mime_type=magic_mime,
+        media_type="image",
+        size_bytes=len(write_data),
+        width=w,
+        height=h,
+        alt_text=None,
+        caption=None,
+        uploaded_by=user.id,
+    )
+    db.add(record)
+    db.commit()
+
     return {
         "success": True,
         "data": {
@@ -310,5 +327,6 @@ async def upload_image(
             "size_bytes": len(write_data),
             "mime_type": magic_mime,
             "dimensions": {"width": w, "height": h},
+            "media_id": record.id,
         },
     }

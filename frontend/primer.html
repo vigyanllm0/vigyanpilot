@@ -1,6 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PB0XMF4GEH"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-PB0XMF4GEH');
+</script>
+
 <!-- Google Tag Manager -->
 <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
 new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
@@ -611,6 +621,7 @@ footer{background:var(--black);color:rgba(255,255,255,.8);padding:56px 0 24px}
 }
 </script>
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How do I design PCR primers online for free?","acceptedAnswer":{"@type":"Answer","text":"VigyanLLM offers a free online primer design tool at vigyanllm.in/primer. Paste your target DNA sequence, set optional parameters like Tm range and amplicon size, and click Design. The tool runs 24-step validation including thermodynamic calculations, BLAST specificity checking, and secondary structure analysis. No account required for basic use."}},{"@type":"Question","name":"What makes a good primer design tool?","acceptedAnswer":{"@type":"Answer","text":"A good primer design tool provides accurate melting temperature calculation using nearest-neighbor thermodynamics, comprehensive specificity checking against genomic databases via BLAST, secondary structure prediction (hairpins, self-dimers, cross-dimers), GC content optimization, and support for multiplex PCR design. VigyanLLM combines all these features in a single web interface."}},{"@type":"Question","name":"How does VigyanLLM primer design compare to Primer3?","acceptedAnswer":{"@type":"Answer","text":"Primer3 generates primer candidates based on thermodynamic rules. VigyanLLM builds on Primer3 output by adding 18 additional validation steps: BLAST specificity checking against NCBI databases, secondary structure free-energy calculations, dbSNP variant filtering, repeat element masking, and multiplex compatibility scoring. See vigyanllm.in/blog/primer3-vs-vigyanllm for a detailed comparison."}},{"@type":"Question","name":"How to design qPCR primers that minimize primer-dimer formation?","acceptedAnswer":{"@type":"Answer","text":"VigyanLLM checks primer-dimer formation by calculating the free energy (delta-G) of all possible self and cross interactions between primer pairs. For qPCR, choose primers with delta-G values above -6 kcal/mol to minimize dimer risk. The tool also optimizes amplicon size (70-200 bp) and targets Tm of 58-62\u00b0C for maximum qPCR efficiency."}},{"@type":"Question","name":"What Tm calculation method does VigyanLLM use for primer design?","acceptedAnswer":{"@type":"Answer","text":"VigyanLLM uses the SantaLucia nearest-neighbor thermodynamic model for melting temperature calculation, with corrections for salt concentration, magnesium ions, and primer concentration. This method accounts for sequence context effects and is significantly more accurate than the basic 4+2 rule or Wallace formula. Visit vigyanllm.in/tm-calculator for detailed Tm calculations."}},{"@type":"Question","name":"How does VigyanLLM check primer specificity against genomic databases?","acceptedAnswer":{"@type":"Answer","text":"VigyanLLM integrates NCBI BLAST+ to search designed primers against comprehensive genomic databases including nr/nt, RefSeq, and whole-genome assemblies. The specificity check identifies potential off-target binding sites, calculates alignment scores and E-values, and flags primers with significant homology to non-target sequences. Results are displayed alongside the primer pair report."}},{"@type":"Question","name":"Can VigyanLLM design multiplex PCR primers?","acceptedAnswer":{"@type":"Answer","text":"Yes, VigyanLLM supports multiplex PCR primer design with cross-primer interaction analysis, uniform Tm targeting across all primer pairs, and amplicon size separation optimization. The tool checks all possible cross-dimer interactions between every primer in the multiplex set and provides compatibility scores to help design robust multiplex assays."}},{"@type":"Question","name":"What is the ideal GC content for PCR primers?","acceptedAnswer":{"@type":"Answer","text":"The ideal GC content for PCR primers is 40-60%. Primers with GC content outside this range may have suboptimal annealing characteristics: low GC (<40%) reduces binding efficiency, while high GC (>60%) increases the risk of non-specific binding and secondary structure formation. VigyanLLM automatically flags primers with GC content outside the optimal range. Use vigyanllm.in/gc-calculator to analyze GC content."}},{"@type":"Question","name":"How does VigyanLLM detect hairpins and self-dimers in primers?","acceptedAnswer":{"@type":"Answer","text":"VigyanLLM calculates the free energy (delta-G) of possible secondary structures including hairpins, self-dimers, and cross-dimers using nearest-neighbor thermodynamic parameters. Structures with delta-G below -3 kcal/mol are flagged as potentially problematic. The tool provides a visual representation of the predicted secondary structure and recommends alternatives when significant self-complementarity is detected."}},{"@type":"Question","name":"How do I get the reverse complement of my primer sequence?","acceptedAnswer":{"@type":"Answer","text":"VigyanLLM automatically generates the reverse complement sequence for each designed primer. You can also use the standalone DNA-to-RNA converter at vigyanllm.in/dna-to-rna which provides reverse complement, transcription, and translation functions for any input DNA sequence without requiring an account."}},{"@type":"Question","name":"Can I BLAST my designed primers against NCBI databases from VigyanLLM?","acceptedAnswer":{"@type":"Answer","text":"Yes, VigyanLLM's primer design workflow includes an integrated BLAST specificity check that searches designed primers against NCBI nucleotide databases. After primer design, the tool automatically runs BLAST for each primer pair and displays alignment results including percent identity, E-values, and any potential off-target matches. Visit vigyanllm.in/blast for standalone BLAST searches."}},{"@type":"Question","name":"What parameters should beginners check when designing primers?","acceptedAnswer":{"@type":"Answer","text":"Beginners should focus on five key parameters: melting temperature (Tm, target 52-65\u00b0C), GC content (40-60%), primer length (18-24 nucleotides), 3-prime end stability (avoid GC-rich last 5 bases that may cause mispriming), and specificity (check BLAST results for off-target matches). VigyanLLM automatically validates all these parameters and provides clear pass/fail indicators."}},{"@type":"Question","name":"What are the standard guidelines for PCR primer design?","acceptedAnswer":{"@type":"Answer","text":"Standard guidelines include: primer length 18-25 bp, Tm between 55-65\u00b0C (within 5\u00b0C of each other), GC content 40-60%, avoid runs of 4+ identical nucleotides, include a GC clamp at the 3-prime end (G or C in the last 3 bases), avoid secondary structures and primer-dimer formation, and ensure specific binding only to the target sequence checked via BLAST."}},{"@type":"Question","name":"Does VigyanLLM support degenerate primer design?","acceptedAnswer":{"@type":"Answer","text":"Yes, VigyanLLM supports degenerate (consensus) primer design using IUPAC nucleotide codes. The tool accounts for degenerate positions in thermodynamic calculations, adjusts Tm estimates for mixed bases, and provides coverage analysis for degenerate primer pools. This is particularly useful for targeting conserved regions across multiple species or viral quasispecies."}},{"@type":"Question","name":"Is VigyanLLM primer design software completely free?","acceptedAnswer":{"@type":"Answer","text":"Yes, VigyanLLM offers a free Academic tier with 10 primer designs per month for users with institutional email addresses (.edu, .ac.in, .res.in). No credit card is required. Paid plans start at INR 2499/month for 250 designs with advanced features including PDF audit reports, batch export, and priority support. All tiers use the same 24-step validation pipeline."}}]}</script>
+<script src="/cookie-banner.js" defer></script>
 </head>
 <body>
 <a href="#main-content" class="skip-link">Skip to content</a><main id="main-content">
@@ -1775,7 +1786,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <a href="/cite-vigyanllm">Cite Us</a>
   </div>
 </div>
-<div class="footer-bottom">
+<div class="footer-bottom"><a href="/cms-admin" style="color:rgba(255,255,255,.45);font-size:12px">CMS</a> · 
   <span>&copy; <script>document.write(new Date().getFullYear())</script> VigyanLLM Pvt. Ltd. · Sovereign Research AI</span>
   <span>WWW.VIGYANLLM.IN</span>
 </div>
@@ -1812,6 +1823,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="form-group">
         <label class="form-label">Password</label>
         <input type="password" id="auth-password" class="form-input" placeholder="Min 6 characters">
+      </div>
+      <div class="form-group">
+        <label class="tc-checkbox"><input type="checkbox" id="auth-tc"> I agree to the <a href="/terms" target="_blank" rel="noopener">Terms &amp; Conditions</a> and <a href="/privacy" target="_blank" rel="noopener">Privacy Policy</a></label>
       </div>
       <button type="button" class="btn-primary" id="auth-submit-btn" style="margin-top:8px">Log in</button>
       <div class="auth-error" id="auth-error"></div>
@@ -3964,6 +3978,8 @@ async function handleAuthSubmit() {
   const name = $('auth-name')?.value.trim();
   const errEl = $('auth-error');
   if (!email || !password) { errEl.textContent='Email and password required'; errEl.classList.add('show'); return; }
+  const tc = $('auth-tc');
+  if (tc && !tc.checked) { errEl.textContent='Please accept the Terms & Conditions to continue.'; errEl.classList.add('show'); return; }
   const endpoint = auth.mode === 'register' ? '/api/auth/register' : '/api/auth/login';
   const body = auth.mode === 'register' ? {email,password,name} : {email,password};
   try {
@@ -3995,6 +4011,12 @@ async function handleAuthSubmit() {
 }
 async function handleGoogleSignIn() {
   const GOOGLE_CLIENT_ID = (PF_CONFIG && PF_CONFIG.googleClientId) || '598272150916-57hl3s7jijaamh3er18alk93gj2op6jt.apps.googleusercontent.com';
+  const tc = $('auth-tc');
+  if (tc && !tc.checked) {
+    $('auth-error').textContent = 'Please accept the Terms & Conditions to continue.';
+    $('auth-error').classList.add('show');
+    return;
+  }
   if (!GOOGLE_CLIENT_ID) {
     $('auth-error').textContent = 'Google Sign-In not configured. Try email/password instead.';
     $('auth-error').classList.add('show');

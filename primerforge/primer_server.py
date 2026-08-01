@@ -763,6 +763,44 @@ def create_app() -> Flask:
             "auth": {"google": bool(GOOGLE_CLIENT_ID)}
         }), 200
 
+    @app.route("/api/cookie-consent", methods=["POST"])
+    def cookie_consent():
+        import sqlite3
+        from primerforge.auth import get_db, init_db as _init_db
+        data = request.get_json(silent=True) or {}
+        consent = str(data.get("consent", "accepted"))[:32]
+        email = str(data.get("email", ""))[:255]
+        page_url = str(data.get("page_url", request.referrer or ""))[:1024]
+        try:
+            db = get_db()
+            now = time.time()
+            db.execute(
+                "INSERT INTO cookie_consents (email, consent, ip_address, user_agent, page_url, accepted_at) "
+                "VALUES (?, ?, ?, ?, ?, ?)",
+                (email, consent, request.remote_addr or "", (request.headers.get("User-Agent") or "")[:512], page_url, now),
+            )
+            db.commit()
+            return jsonify({"success": True, "accepted_at": now}), 200
+        except sqlite3.OperationalError:
+            logger.warning("cookie_consents table missing; reinitializing schema", exc_info=True)
+            _init_db()
+            try:
+                db = get_db()
+                now = time.time()
+                db.execute(
+                    "INSERT INTO cookie_consents (email, consent, ip_address, user_agent, page_url, accepted_at) "
+                    "VALUES (?, ?, ?, ?, ?, ?)",
+                    (email, consent, request.remote_addr or "", (request.headers.get("User-Agent") or "")[:512], page_url, now),
+                )
+                db.commit()
+                return jsonify({"success": True, "accepted_at": now}), 200
+            except Exception as exc:
+                logger.error("cookie consent insert failed after re-init: %s", exc)
+                return jsonify({"success": False, "error": str(exc)}), 500
+        except Exception as exc:
+            logger.error("cookie consent insert failed: %s", exc)
+            return jsonify({"success": False, "error": str(exc)}), 500
+
     if not USE_POSTGRES:
         DEV_PIPELINE_JOBS = {}
 
@@ -1052,9 +1090,83 @@ def create_app() -> Flask:
                     "code": "RESULT_ERROR",
                 }), 500
 
+    # ── CMS API Proxy ─────────────────────────────────────────────────────
+    import urllib.request, urllib.error
+
+    CMS_BACKEND = os.environ.get("CMS_BACKEND_URL", "http://localhost:8001")
+
+    from flask import Response as FlaskResponse
+
+    @app.route("/api/v1/cms/<path:cms_path>", methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
+    def proxy_cms(cms_path):
+        import io
+        body = request.get_data()
+        logger.info("CMS proxy: %s /api/v1/cms/%s (body_len=%d, body_start=%s, ct=%s, cl=%s)",
+                     request.method, cms_path, len(body), body[:50].decode('utf-8','replace'),
+                     request.content_type, request.content_length)
+        target = f"{CMS_BACKEND}/api/v1/cms/{cms_path}"
+        if request.query_string:
+            target += "?" + request.query_string.decode("utf-8", "replace")
+        if request.method in ("GET", "OPTIONS"):
+            headers = {k: v for k, v in request.headers if k.lower() not in ("host",)}
+            req = urllib.request.Request(target, headers=headers, method=request.method)
+        else:
+            headers = {k: v for k, v in request.headers if k.lower() not in ("host", "content-length", "transfer-encoding", "accept-encoding")}
+            headers["Content-Type"] = request.content_type or "application/json"
+            if not body and request.method != "DELETE":
+                logger.error("CMS proxy: EMPTY BODY for %s — returning 502", cms_path)
+                return jsonify({"detail": "Empty request body"}), 502
+            if body:
+                headers["Content-Length"] = str(len(body))
+            req = urllib.request.Request(target, data=body, headers=headers, method=request.method)
+        try:
+            resp = urllib.request.urlopen(req, timeout=30)
+            return FlaskResponse(
+                response=resp.read(),
+                status=resp.status,
+                headers=dict(resp.headers),
+            )
+        except urllib.error.HTTPError as e:
+            err_body = e.read()
+            logger.warning("CMS proxy error: %d from %s — %s", e.code, cms_path, err_body[:200])
+            return FlaskResponse(response=err_body, status=e.code, headers=dict(e.headers))
+        except Exception as e:
+            logger.error("CMS proxy exception: %s", e, exc_info=True)
+            return jsonify({"detail": f"Proxy error: {str(e)}"}), 502
+
+    @app.route("/api/v1/pages", methods=["GET", "POST", "OPTIONS"])
+    @app.route("/api/v1/pages/<path:public_path>", methods=["GET", "POST", "OPTIONS"])
+    def proxy_cms_public(public_path=""):
+        target = f"{CMS_BACKEND}/api/v1/pages/{public_path}" if public_path else f"{CMS_BACKEND}/api/v1/pages"
+        if request.query_string:
+            target += "?" + request.query_string.decode("utf-8", "replace")
+        try:
+            body = request.get_data()
+            req = urllib.request.Request(
+                target,
+                data=body if body else None,
+                headers={k: v for k, v in request.headers if k.lower() not in ("host", "content-length")},
+                method=request.method,
+            )
+            resp = urllib.request.urlopen(req, timeout=30)
+            return FlaskResponse(response=resp.read(), status=resp.status, headers=dict(resp.headers))
+        except urllib.error.HTTPError as e:
+            return FlaskResponse(response=e.read(), status=e.code, headers=dict(e.headers))
+        except Exception as e:
+            return jsonify({"detail": f"Proxy error: {str(e)}"}), 502
+
     # ── Serve Frontend HTML Files ─────────────────────────────────────────
     from flask import send_from_directory
+
     STATIC_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "frontend")
+
+    # ── Serve CMS Uploaded Files ─────────────────────────────────────────
+    import os as _os
+    _uploads_dir = _os.path.join(STATIC_DIR, "uploads")
+    if _os.path.isdir(_uploads_dir):
+        @app.route("/uploads/<path:filepath>")
+        def serve_cms_uploads(filepath):
+            return send_from_directory(_uploads_dir, filepath)
 
     @app.route("/")
     def serve_index():
@@ -1068,6 +1180,14 @@ def create_app() -> Flask:
     def serve_docking():
         return send_from_directory(STATIC_DIR, "docking.html")
 
+    @app.route("/blast")
+    def serve_blast():
+        return send_from_directory(STATIC_DIR, "blast.html")
+
+    @app.route("/msa")
+    def serve_msa():
+        return send_from_directory(STATIC_DIR, "msa.html")
+
     @app.route("/protein-docking")
     def serve_protein_docking_redirect():
         return send_from_directory(STATIC_DIR, "protein-docking.html")
@@ -1080,12 +1200,25 @@ def create_app() -> Flask:
     def serve_pricing():
         return send_from_directory(STATIC_DIR, "pricing.html")
 
+    for _sp in ["cms-login", "cms-admin", "cms-editor", "cms-test"]:
+        def _mk_route(_page):
+            def _handler():
+                return send_from_directory(STATIC_DIR, f"{_page}.html")
+            _handler.__name__ = f"serve_{_page.replace('-', '_')}"
+            return _handler
+        app.route(f"/{_sp}")(_mk_route(_sp))
+
     @app.route("/<path:filename>")
     def serve_static(filename):
         if filename.endswith((".html", ".css", ".js", ".png", ".ico", ".svg", ".json", ".xml")):
             filepath = os.path.join(STATIC_DIR, filename)
             if os.path.isfile(filepath):
                 return send_from_directory(STATIC_DIR, filename)
+        # Clean-URL fallback: /terms → terms.html, /blog/slug → blog/slug.html (matches Vercel behavior)
+        if "." not in filename.rsplit("/", 1)[-1]:
+            html_path = os.path.join(STATIC_DIR, filename + ".html")
+            if os.path.isfile(html_path):
+                return send_from_directory(STATIC_DIR, filename + ".html")
         return jsonify({"error": "Not found"}), 404
 
     @app.route("/api/primer/auto-design", methods=["POST"])

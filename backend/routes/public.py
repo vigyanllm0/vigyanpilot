@@ -24,7 +24,8 @@ Bleach whitelist policy:
 import logging
 
 import bleach
-from fastapi import APIRouter, Depends, HTTPException
+from bleach.css_sanitizer import CSSSanitizer
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 from sqlalchemy import desc
 
@@ -54,11 +55,19 @@ _ALLOWED_TAGS = [
 
 _ALLOWED_ATTRIBUTES = {
     "a":   ["href", "title", "target", "rel"],
-    "img": ["src", "alt", "width", "height", "loading", "title"],
+    "img": ["src", "alt", "width", "height", "loading", "title", "align", "data-caption", "style"],
     "td":  ["colspan", "rowspan"],
     "th":  ["colspan", "rowspan", "scope"],
     "*":   ["class", "id"],   # Used for styling/anchors — no event handlers
 }
+
+# Allow only layout-safe CSS properties on inline style attributes (SEC-08).
+_SAFE_CSS_PROPERTIES = [
+    "width", "max-width", "height", "float", "margin", "margin-left",
+    "margin-right", "margin-top", "margin-bottom", "display", "border-radius",
+    "text-align",
+]
+_CSS_SANITIZER = CSSSanitizer(allowed_css_properties=_SAFE_CSS_PROPERTIES)
 
 # Only allow safe protocols in href/src
 _ALLOWED_PROTOCOLS = ["http", "https", "mailto"]
@@ -86,6 +95,7 @@ def _sanitize_html(raw_html: str | None) -> str:
             tags=_ALLOWED_TAGS,
             attributes=_ALLOWED_ATTRIBUTES,
             protocols=_ALLOWED_PROTOCOLS,
+            css_sanitizer=_CSS_SANITIZER,
             strip=True,          # Remove disallowed tags rather than escaping
             strip_comments=True, # Remove HTML comments (can hide payloads)
         )
@@ -94,6 +104,27 @@ def _sanitize_html(raw_html: str | None) -> str:
         # Fail-closed: return empty string rather than unsanitized content
         return ""
 
+
+@router.post("/{slug}/view")
+def track_page_view(
+    slug: str,
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    from models import CMSPageView
+    try:
+        page = db.query(CMSPage).filter(CMSPage.slug == slug, CMSPage.status == "published").first()
+        if page:
+            view = CMSPageView(
+                page_id=page.id,
+                ip_address=request.client.host if request.client else None,
+                user_agent=request.headers.get("user-agent"),
+            )
+            db.add(view)
+            db.commit()
+    except Exception:
+        pass
+    return {"ok": True}
 
 @router.get("")
 def public_list_pages(
@@ -181,6 +212,8 @@ def get_public_page(slug: str, db: Session = Depends(get_db)):
             "slug": page.slug,
             "title": page.title,
             "description": page.description,
+            "meta_title": page.meta_title,
+            "tags": page.tags.split(",") if page.tags else [],
             "content_html": safe_html,
             "hero_image": page.hero_image,
             "content_type": page.content_type,

@@ -17,6 +17,7 @@ def page_to_list_item(page: CMSPage) -> PageListItem:
         description=page.description,
         content_type=page.content_type,
         status=page.status,
+        tags=page.tags,
         author=AuthorInfo(display_name=page.author.display_name, email=page.author.email),
         published_at=page.published_at,
         updated_at=page.updated_at,
@@ -34,6 +35,9 @@ def page_to_detail(page: CMSPage, db: Session) -> PageDetail:
         content_json=page.content_json,
         content_html=page.content_html,
         hero_image=page.hero_image,
+        meta_title=page.meta_title,
+        tags=page.tags,
+        publish_schedule_at=page.publish_schedule_at,
         status=page.status,
         content_type=page.content_type,
         author=AuthorInfo(display_name=page.author.display_name, email=page.author.email),
@@ -88,10 +92,12 @@ def create_page(
     if existing:
         raise HTTPException(status_code=409, detail="A page with this slug already exists.")
 
-    if req.status not in ("draft", "pending_review"):
-        raise HTTPException(status_code=400, detail="Status must be 'draft' or 'pending_review'")
+    if req.status not in ("draft", "pending_review", "published"):
+        raise HTTPException(status_code=400, detail="Status must be 'draft', 'pending_review' or 'published'")
     if req.status == "pending_review" and user.role == "editor":
         raise HTTPException(status_code=403, detail="Editors cannot submit for review on create. Save as draft first.")
+    if req.status == "published" and user.role != "admin":
+        raise HTTPException(status_code=403, detail="Only admins can publish directly on create.")
 
     content_json = req.content_json
     content_html = _render_html(content_json)
@@ -103,10 +109,14 @@ def create_page(
         content_json=content_json,
         content_html=content_html,
         hero_image=req.hero_image,
+        meta_title=req.meta_title,
+        tags=req.tags,
+        publish_schedule_at=req.publish_schedule_at,
         content_type=req.content_type,
         status=req.status,
         author_id=user.id,
         submitted_at=datetime.now(timezone.utc) if req.status == "pending_review" else None,
+        published_at=datetime.now(timezone.utc) if req.status == "published" else None,
     )
     db.add(page)
     db.flush()
@@ -125,7 +135,7 @@ def create_page(
         _create_notification(db, "submitted_for_review", page, user)
 
     db.commit()
-    return {"data": PageCreateResponse(id=page.id, slug=page.slug, status=page.status)}
+    return {"data": PageCreateResponse(id=page.id, slug=page.slug, status=page.status, tags=page.tags, meta_title=page.meta_title)}
 
 @router.get("/{slug}")
 def get_page(slug: str, db: Session = Depends(get_db), user: AdminUser = Depends(get_current_user)):
@@ -150,8 +160,8 @@ def update_page(
         raise HTTPException(status_code=403, detail="Access denied")
 
     if req.content_type:
-        if req.content_type not in ("page", "blog"):
-            raise HTTPException(status_code=400, detail="content_type must be 'page' or 'blog'")
+        if req.content_type not in ("page", "blog", "glossary"):
+            raise HTTPException(status_code=400, detail="content_type must be 'page', 'blog' or 'glossary'")
 
     if req.status:
         if req.status not in ("draft", "pending_review"):
@@ -165,6 +175,12 @@ def update_page(
         page.description = req.description
     if req.hero_image is not None:
         page.hero_image = req.hero_image
+    if req.meta_title is not None:
+        page.meta_title = req.meta_title
+    if req.tags is not None:
+        page.tags = req.tags
+    if req.publish_schedule_at is not None:
+        page.publish_schedule_at = req.publish_schedule_at
     if req.content_type:
         page.content_type = req.content_type
 
@@ -310,10 +326,25 @@ def _render_node(node: dict) -> str:
     elif t == "image":
         src = attrs.get("src", "")
         alt = attrs.get("alt", "")
+        title = attrs.get("title", "")
         caption = attrs.get("caption", "")
-        img = f'<img src="{src}" alt="{alt}" loading="lazy">'
+        align = attrs.get("align", "")
+        style = attrs.get("style", "")
+        loading = attrs.get("loading", "lazy") or "lazy"
+        attrs_out = f' src="{src}"'
+        if alt:
+            attrs_out += f' alt="{alt}"'
+        if title:
+            attrs_out += f' title="{title}"'
+        if style:
+            attrs_out += f' style="{style}"'
+        if align:
+            attrs_out += f' align="{align}"'
+        attrs_out += f' loading="{loading}"'
+        img = f"<img{attrs_out}>"
         if caption:
-            return f'<figure>{img}<figcaption>{caption}</figcaption></figure>'
+            fig_class = f' class="vl-figure vl-align-{align}"' if align else ' class="vl-figure"'
+            return f'<figure{fig_class}>{img}<figcaption>{caption}</figcaption></figure>'
         return img
     elif t == "text":
         text = node.get("text", "")
