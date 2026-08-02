@@ -11,7 +11,7 @@ const CORE = [
   "/platform","/solution","/architecture","/problem","/compare","/roadmap",
   "/validated-primer-design","/security","/privacy","/terms","/faq","/about","/contact","/cite-vigyanllm","/cite",
   "/academic-partnership","/Learning-vigyanllm","/demo","/sitemap","/cookies","/refund","/changelog",
-  "/primer-design-india","/primer-3-alternative","/primer3-alternative","/primer-blast-alternative",
+  "/primer-design-india","/primer3-alternative","/primer-blast-alternative",
   "/primer-blast-specificity","/primer-design-best-practices","/primer-design-thermodynamics",
   "/biomedical-ai-platform","/ai-crispr-analysis","/hipaa-compliant-genomics",
   "/molecular-docking-guide","/multiplex-primer-design","/qpcr-primer-design",
