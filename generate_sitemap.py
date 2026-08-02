@@ -38,6 +38,7 @@ PRIORITY_MAP = {
     "compare.html": 0.80,
     "roadmap.html": 0.80,
     "pricing.html": 0.90,
+    "glossary.html": 0.80,
     "validated-primer-design.html": 0.90,
     "validated-primer-design-report.html": 0.70,
     "security.html": 0.80,
@@ -82,6 +83,7 @@ EXCLUDE_PAGES = {
     "404.html", "db-redirect.html", "p.html",
     "payment-success.html", "payment-failed.html",
     "admin-security.html", "blog-post.html", "login.html",
+    "dashboard.html",
 }
 
 EXCLUDE_DIR_PREFIXES = {"admin/", "api/"}
@@ -344,21 +346,23 @@ def update_sitemap_edge_function(blog_slugs, glossary_slugs, gene_slugs, landing
 // Auto-generated — {TODAY}
 export const config = {{ runtime: "edge" }};
 
-const BASE_URL = "https://vigyanllm.in";
+const BASE_URL = "https://www.vigyanllm.in";
 
 const CORE = [
   "/","/primer","/blast","/msa","/search","/primer-design","/primer-design-pipeline",
   "/pcr-analysis","/crispr-analysis","/protein-docking","/tm-calculator","/gc-calculator",
-  "/dna-to-rna","/tools/dna-to-rna",
+  "/dna-to-rna",
   "/platform","/solution","/architecture","/problem","/compare","/roadmap",
-  "/validated-primer-design","/security","/privacy","/terms","/faq","/about","/contact","/cite",
+  "/validated-primer-design","/security","/privacy","/terms","/faq","/about","/contact","/cite-vigyanllm","/cite",
   "/academic-partnership","/Learning-vigyanllm","/demo","/sitemap","/cookies","/refund","/changelog",
   "/primer-design-india","/primer-3-alternative","/primer3-alternative","/primer-blast-alternative",
   "/primer-blast-specificity","/primer-design-best-practices","/primer-design-thermodynamics",
   "/biomedical-ai-platform","/ai-crispr-analysis","/hipaa-compliant-genomics",
   "/molecular-docking-guide","/multiplex-primer-design","/qpcr-primer-design",
-  "/validated-primer-design-report","/dna-3d",
+  "/validated-primer-design-report","/dna-3d","/pricing","/glossary",
+  "/gene-prefers","/landing-pages","/hub",
   "/docs/getting-started","/docs/pipeline-config",
+  "/autodock-vs-swissdock","/blast-vs-diamond","/clustal-vs-muscle","/idt-vs-vigyanllm",
 ];
 
 const BLOG = {blog_json};

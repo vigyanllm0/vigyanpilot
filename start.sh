@@ -6,7 +6,7 @@ cd "$SCRIPT_DIR"
 
 # Free up ports if previous server instances are lingering
 for port in 11436 8080; do
-    pid=$(lsof -ti :$port 2>/dev/null)
+    pid=$(lsof -ti :$port 2>/dev/null || true)
     if [ -n "$pid" ]; then
         echo "[VigyanLLM] Port $port in use by PID $pid — terminating..."
         kill "$pid" 2>/dev/null
