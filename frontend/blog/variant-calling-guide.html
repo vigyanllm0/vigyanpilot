@@ -402,10 +402,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <h2>The Complete Variant Calling Workflow</h2>
 
 <h3>1. Read Alignment (Mapping)</h3>
-<p>Raw sequencing reads are aligned to a reference genome using aligners like <a href="/glossary/bwa">BWA-MEM</a>, Bowtie2, or Minimap2. The output is a <a href="/glossary/bam">BAM</a> or <a href="/glossary/sam">SAM</a> file containing read positions, mapping quality scores, and alignment information. Proper alignment is critical — poor mapping leads to false variant calls.</p>
+<p>Raw sequencing reads are aligned to a reference genome using aligners like <a href="/glossary/bowtie2-alignment">BWA-MEM</a>, Bowtie2, or Minimap2. The output is a <a href="/glossary/bam">BAM</a> or <a href="/glossary/bam">SAM</a> file containing read positions, mapping quality scores, and alignment information. Proper alignment is critical — poor mapping leads to false variant calls.</p>
 
 <h3>2. Pre-Processing</h3>
-<p>Aligned reads undergo several quality improvement steps: <strong>Mark Duplicates</strong> (Picard MarkDuplicates or <a href="/glossary/samtools">samtools markdup</a>) tags PCR and optical duplicate reads. <strong>Base Quality Score Recalibration (BQSR)</strong> recalibrates base quality scores using known variant sites. <strong>Indel Realignment</strong> realigns reads around indels to reduce false positives. These steps are standard in the <a href="/glossary/gatk">GATK</a> Best Practices pipeline.</p>
+<p>Aligned reads undergo several quality improvement steps: <strong>Mark Duplicates</strong> (Picard MarkDuplicates or <a href="/glossary/bam">samtools markdup</a>) tags PCR and optical duplicate reads. <strong>Base Quality Score Recalibration (BQSR)</strong> recalibrates base quality scores using known variant sites. <strong>Indel Realignment</strong> realigns reads around indels to reduce false positives. These steps are standard in the <a href="/glossary/variant-calling">GATK</a> Best Practices pipeline.</p>
 
 <h3>3. Variant Discovery</h3>
 <p>The core step. Variant callers analyze the aligned read pileup at each genomic position and apply statistical models to determine if a variant is present. Key tools include:</p>
@@ -421,7 +421,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <p>Raw variant calls contain false positives. Standard filters include: QUAL score (keep variants with Phred-scaled quality &gt; 30), read depth (DP &gt; 10), genotype quality (GQ &gt; 20), strand bias (FS &lt; 60 for SNPs, &lt; 200 for indels), and mapping quality (MQ &gt; 40). The GATK VQSR (Variant Quality Score Recalibration) tool uses machine learning to filter variants based on multiple annotations simultaneously.</p>
 
 <h3>5. Variant Annotation</h3>
-<p>Filtered variants are annotated with functional impact using tools like <a href="/glossary/annovar">ANNOVAR</a>, SnpEff, or VEP. Annotations include: gene name and transcript ID, variant type (missense, nonsense, synonymous, splice site), predicted protein change, population allele frequency from <a href="/glossary/gnomad">gnomAD</a>, and clinical significance from <a href="/glossary/clinvar">ClinVar</a>.</p>
+<p>Filtered variants are annotated with functional impact using tools like <a href="/glossary/variant-calling">ANNOVAR</a>, SnpEff, or VEP. Annotations include: gene name and transcript ID, variant type (missense, nonsense, synonymous, splice site), predicted protein change, population allele frequency from <a href="/glossary/snp">gnomAD</a>, and clinical significance from <a href="/glossary/clinvar">ClinVar</a>.</p>
 
 <h2>Germline vs Somatic Variant Calling</h2>
 <table>
@@ -519,7 +519,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <h2>Key Applications</h2>
 
 <h3>Clinical Diagnostics</h3>
-<p>Variant calling is used to identify disease-causing mutations in patients with suspected genetic disorders. Clinical workflows require high sensitivity and specificity, with orthogonal validation (<a href="/glossary/sanger-sequencing">Sanger sequencing</a>) of all reported variants. The <a href="/glossary/amp">AMP</a>/ASCO/CAP guidelines provide standards for clinical variant interpretation.</p>
+<p>Variant calling is used to identify disease-causing mutations in patients with suspected genetic disorders. Clinical workflows require high sensitivity and specificity, with orthogonal validation (<a href="/glossary/sanger-sequencing">Sanger sequencing</a>) of all reported variants. The <a href="/glossary/amplicon">AMP</a>/ASCO/CAP guidelines provide standards for clinical variant interpretation.</p>
 
 <h3>Cancer Genomics</h3>
 <p>Somatic variant calling from tumor sequencing identifies driver mutations, guides targeted therapy selection, and monitors minimal residual disease. Key challenges include tumor heterogeneity, low tumor purity, and clonal hematopoiesis artifacts. Liquid biopsy variant calling requires ultra-deep sequencing (100,000x) and specialized error suppression techniques.</p>

@@ -402,21 +402,21 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <h2>Molecular Docking Workflow: Step by Step</h2>
 
 <h3>Step 1: Obtain Protein Structure (PDB File)</h3>
-<p>Download the protein 3D structure from the <a href="/glossary/pdb">Protein Data Bank (PDB)</a>. Search by PDB ID, protein name, or gene. For proteins without experimental structures, use <a href="/glossary/esmfold">ESMFold</a> or AlphaFold2 for predicted models. Ensure the structure covers the binding site of interest and has reasonable resolution (&lt; 3.0 &Aring; for X-ray, &lt; 4.0 &Aring; for cryo-EM).</p>
+<p>Download the protein 3D structure from the <a href="/glossary/protein-structure-prediction">Protein Data Bank (PDB)</a>. Search by PDB ID, protein name, or gene. For proteins without experimental structures, use <a href="/glossary/esmfold">ESMFold</a> or AlphaFold2 for predicted models. Ensure the structure covers the binding site of interest and has reasonable resolution (&lt; 3.0 &Aring; for X-ray, &lt; 4.0 &Aring; for cryo-EM).</p>
 
 <h3>Step 2: Prepare the Protein</h3>
-<p>Protein preparation is critical. Remove water molecules (unless they mediate key interactions), add missing hydrogen atoms, assign bond orders, and repair missing side chains. Tools like AutoDock Tools, <a href="/glossary/pymol">PyMOL</a>, or <a href="/glossary/gnina">GNINA</a> built-in preparation can handle this. Set the protonation state relevant to physiological pH (7.4). Save in PDBQT format (AutoDock) or PDB format.</p>
+<p>Protein preparation is critical. Remove water molecules (unless they mediate key interactions), add missing hydrogen atoms, assign bond orders, and repair missing side chains. Tools like AutoDock Tools, <a href="/dna-3d">PyMOL</a>, or <a href="/glossary/gnina">GNINA</a> built-in preparation can handle this. Set the protonation state relevant to physiological pH (7.4). Save in PDBQT format (AutoDock) or PDB format.</p>
 
 <h3>Step 3: Define the Binding Site (Grid Box)</h3>
 <p>Set a grid box that encompasses the binding site. If the binding site is known (from co-crystallized ligands or mutagenesis data), center the box there. For blind docking (unknown binding site), expand the box to cover the entire protein. Grid box dimensions typically range from 20x20x20 &Aring; (known site) to 60x60x60 &Aring; (blind docking). Grid spacing is usually 1.0 &Aring; (coarse) or 0.375 &Aring; (fine for precise docking).</p>
 
 <h3>Step 4: Prepare the Ligand</h3>
-<p>Obtain the ligand structure as a SMILES string, SDF, or MOL2 file. Sources include <a href="/glossary/pubchem">PubChem</a>, ChEMBL, or ZINC. Add hydrogens, generate 3D coordinates, set rotatable bonds, and assign Gasteiger partial charges. Save in PDBQT format. For virtual screening of large libraries, use automated ligand preparation scripts.</p>
+<p>Obtain the ligand structure as a SMILES string, SDF, or MOL2 file. Sources include <a href="/glossary/protein">PubChem</a>, ChEMBL, or ZINC. Add hydrogens, generate 3D coordinates, set rotatable bonds, and assign Gasteiger partial charges. Save in PDBQT format. For virtual screening of large libraries, use automated ligand preparation scripts.</p>
 
 <h3>Step 5: Run Docking</h3>
 <p>Execute the docking calculation. Popular programs include:</p>
 <ul>
-  <li><strong><a href="/glossary/autodock-vina">AutoDock Vina</a>:</strong> Fast, open-source, widely used. Runs from command line. Good for screening and production work.</li>
+  <li><strong><a href="/docking">AutoDock Vina</a>:</strong> Fast, open-source, widely used. Runs from command line. Good for screening and production work.</li>
   <li><strong><a href="/glossary/gnina">GNINA</a>:</strong> Deep learning-enhanced docking scoring. More accurate than classical scoring functions. GPU-accelerated.</li>
   <li><strong>AutoDock 4:</strong> The original. Slower but offers more parameter control. Best for detailed mechanistic studies.</li>
   <li><strong>SwissDock:</strong> Web-based. Good for beginners. No command line required.</li>
@@ -648,11 +648,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           <p>Learn what molecular docking is and how different docking programs approach the sampling and scoring problem.</p>
         </div>
         <div class="related-card">
-          <h3><a href="/glossary/autodock-vina">AutoDock Vina — Docking Program Guide</a></h3>
+          <h3><a href="/docking">AutoDock Vina — Docking Program Guide</a></h3>
           <p>Detailed guide to AutoDock Vina parameters, command-line options, and best practices for production docking.</p>
         </div>
         <div class="related-card">
-          <h3><a href="/blog/docking-scoring-functions-compared">Docking Scoring Functions Compared</a></h3>
+          <h3><a href="/blog/molecular-docking-tutorial">Docking Scoring Functions Compared</a></h3>
           <p>Comparison of empirical, force-field, and machine-learning scoring functions for molecular docking accuracy.</p>
         </div>
       </div>
