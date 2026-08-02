@@ -162,6 +162,26 @@ Also fixed: sitemap still included 6 noindex/template URLs (removed: admin-secur
 
 ---
 
+## ✅ COMPLETE — New Glossary Pages + Broken-Link Retargeting (Aug 2026)
+
+**Status:** ✅ Fixed  
+**Scope:** SEO broken-link sweep found 129+ internal links pointing to non-existent glossary slugs / dead pages. High-link-demand terms (>3 links) got new pages; single-link terms were retargeted to real pages.
+
+**New glossary pages created** (clone of `gene-expression.html` template, FAQPage + BreadcrumbList JSON-LD, real related-tags):
+- `sanger-sequencing.html` (badge "Genomics & Sequencing", 8 incoming links)
+- `sybr-green.html` (badge "qPCR & Detection", 6 links)
+- `taqman.html` (badge "qPCR & Probes", 5 links)
+- `alignment.html` (badge "Bioinformatics & Analysis")
+- `e-value.html` (badge "Bioinformatics & Statistics")
+
+**Retargeted ~34 single-link terms** to existing pages (subset): `amp`→amplicon, `bwa`→bowtie2-alignment, `gatk`→variant-calling, `sam`/`samtools`→bam, `gnomad`→snp, `annovar`→variant-calling, `central-dogma`→transcription, `dna-methylation`→epigenetics, `dna-sequencing`→next-generation-sequencing, `guide-rna`→cas9, `clustal-omega`→/msa, `autodock-vina`→/docking, `pdb`→protein-structure-prediction, `pymol`→/dna-3d, `miqe`→qpcr, dead blog links → molecular-docking-tutorial / next-generation-sequencing.
+
+**Other fixes:** 5 broken `plasmid.html` related-tags; taqman cross-link added to `taqman-probe.html`; `dashboard.html` favicon `/favicon.ico` → `/logo.svg` (missing file); related-tags on new pages deduplicated.
+
+**Verification:** 0 broken internal links site-wide (38,197 hrefs checked). Sitemap regenerated: 425 URLs, 210 glossary (was 205). `robots.txt` comment updated.
+
+---
+
 ## 🟡 MEDIUM — Fix This Sprint
 
 ### M1. Duplicate meta description
