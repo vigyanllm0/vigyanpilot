@@ -119,6 +119,8 @@ Three different organization names used across pages:
 
 **Action:** Standardize all schemas to use **one legal name**. Reccomend `"VigyanLLM Private Limited"` (full legal name). Update ~10 pages that use `"VigyanLLM Pvt. Ltd."` or just `"VigyanLLM"`.
 
+**Status:** ✅ Fixed (Git Push #4, commit `5c5a85f6`) — `index.html` Organization schema → `"VigyanLLM Private Limited"`; 424 footer instances `"VigyanLLM Pvt. Ltd."` → `"VigyanLLM Private Limited"`. Verified 0 remaining.
+
 ---
 
 ### H5. Inconsistent SoftwareApplication name in schema
@@ -131,6 +133,8 @@ Three different organization names used across pages:
 
 **Action:** Choose one canonical software name. Recommend `"VigyanLLM VPrime 2.0"` for the primer tool and `"VigyanLLM"` for the platform-level schema.
 
+**Status:** ✅ Fixed (Git Push #4, commit `5c5a85f6`) — `idt-vs-vigyanllm.html` SoftwareApplication → `"VigyanLLM Primer Design"`. Remaining per-tool names (VigyanLLM Primer Design ×4, VigyanLLM MSA ×2, VigyanLLM BLAST ×2, VigyanLLM Platform, VigyanLLM 3D DNA Viewer) are intentional per-tool naming.
+
 ---
 
 ### H6. Conflicting applicationCategory
@@ -141,6 +145,8 @@ Three different organization names used across pages:
 | All other pages | `"BioinformaticsApplication"` |
 
 **Action:** Standardize. Recommend `"BioinformaticsApplication"` (more specific/standard for search engines).
+
+**Status:** ✅ Fixed (Git Push #4, commit `5c5a85f6`) — all 20 `applicationCategory` → `"BioinformaticsApplication"` (was 8 `ScientificApplication` + 12 `BiotechnologyApplication`; 19 remain in tree, one was in deleted `primer-3-alternative.html`).
 
 ---
 
@@ -185,6 +191,8 @@ Pages with <100 words of visible body text:
 - `login.html`: Add more descriptive text about what users can access after login
 - `p.html`: Add meaningful placeholder content that gets replaced by JS
 
+**Status:** ✅ Fixed (Git Push #4, commit `5c5a85f6`) — `dna-3d.html` +~200 words of B-DNA educational content (groove geometry, base-pair hydrogen bonding, major-groove protein reading); `login.html` +~120 words ("What you get after signing in" feature list, academic access, support links). Note: `p.html`, `payment-success.html`, `payment-failed.html`, `db-redirect.html`, `admin-security.html` are all `noindex` → not SEO-relevant, no content added.
+
 ---
 
 ### M3. Orphaned pages (no internal links pointing to them)
@@ -208,6 +216,15 @@ These pages have zero `<a>` incoming links:
 - Add `blog/vprime-internal-validation.html` to blog/index.html listing
 - Cross-link orphaned landing pages from related tool pages
 
+**Status:** ✅ Fixed (Git Push #4, commit `5c5a85f6`):
+- `dna-3d.html`: 422 incoming links (nav + dna-to-rna cross-links already live)
+- `login.html`: 426 incoming (nav auth buttons) — fine as-is
+- `blog/vprime-internal-validation.html`: 13 incoming
+- `primer-design-pipeline.html`: 0 → 2 (linked from `primer.html` "24-parameter validation pipeline" text)
+- `landing-pages/drug-discovery-ai-platform.html`: 1 → 3 (added link from `docking.html` "structure-based drug discovery" text)
+- `landing-pages/taqman-probe-design-tool.html`: 1 → 3 (added link from `primer.html` "TaqMan probe design" text)
+- `admin-security.html`, `p.html`: `noindex` admin/utility pages — intentionally not linked
+
 ---
 
 ### M4. Confusing similar filenames
@@ -216,6 +233,8 @@ These pages have zero `<a>` incoming links:
 (hyphen in `primer-3` vs `primer3`)
 
 **Action:** Choose one canonical URL. Recommend keeping `primer3-alternative.html` (matches search query "Primer3 alternative" exactly) and set up a redirect from the other, OR delete the duplicate.
+
+**Status:** ✅ Fixed (Git Push #4, commit `5c5a85f6`) — deleted `frontend/primer-3-alternative.html`; 148 internal links rewritten to `primer3-alternative`; `vercel.json` 301 `/primer-3-alternative` → `/primer3-alternative`; `/primer-3-alternative` removed from `frontend/api/sitemap.xml.js` and `generate_sitemap.py`. `primer3-alternative.html` is canonical (in sitemap).
 
 ---
 
@@ -318,15 +337,15 @@ Sprint 1 (Now):
 
 Sprint 2 (This Week):
   ├── C2 — Unblock dynamic sitemap in vercel.json
-  ├── H4,H5,H6 — Standardize schema names
+  ├── H4,H5,H6 — Standardize schema names ✅
   ├── M1 — Fix duplicate meta descriptions
-  ├── M2 — Add content to thin pages
-  ├── M4 — Resolve primer3 duplicate filenames
+  ├── M2 — Add content to thin pages ✅
+  ├── M4 — Resolve primer3 duplicate filenames ✅
   └── L1 — Nav URL consistency (clean vs .html)
 
 Sprint 3 (Next Week):
   ├── C5 — Fix glossary broken links (~85+ instances → actually 942 Type B + 105 Type A) ✅
-  ├── M3 — Add internal links to orphaned pages
+  ├── M3 — Add internal links to orphaned pages ✅
   ├── L3-L5 — Fix 404, vercel, p.html issues (all already done) ✅
   ├── L8 — Deduplicate index.html schemas (already done) ✅
   ├── L8b — Remove duplicate Article schemas from 51 blog posts ✅
@@ -356,9 +375,9 @@ Sprint 2.5 (Emergency):
 | H5. Software name inconsistency | `index.html` |
 | H6. App category inconsistency | `index.html` |
 | M1. Duplicate meta desc | `p.html`, `blog-post.html` |
-| M2. Thin content | `dna-3d.html`, `login.html`, `p.html`, `payment-success.html`, `payment-failed.html`, `db-redirect.html`, `admin-security.html` |
-| M3. Orphaned pages | Internal links needed from nav/content pages |
-| M4. Similar filenames | `primer-3-alternative.html` or `primer3-alternative.html` |
+| M2. Thin content | `dna-3d.html`, `login.html`, `p.html`, `payment-success.html`, `payment-failed.html`, `db-redirect.html`, `admin-security.html` ✅ |
+| M3. Orphaned pages | Internal links needed from nav/content pages ✅ |
+| M4. Similar filenames | `primer-3-alternative.html` or `primer3-alternative.html` ✅ (deleted `primer-3-alternative`, 301 added) |
 | L1. Nav URL consistency | All ~400+ HTML files (nav links) |
 | L3. Absolute URL | `404.html` |
 | L4. Unused page | `p.html` |
