@@ -13,6 +13,7 @@ var SITE_INDEX = [
   { t:'Reverse Complement', d:'Free reverse complement calculator — converts DNA to reverse complement sequence instantly', u:'reverse-complement.html', c:'Tools' },
   { t:'DNA to Protein', d:'Free DNA to protein translation tool — convert nucleotide sequence to amino acids', u:'dna-to-protein.html', c:'Tools' },
   { t:'PCR Product Calculator', d:'Free PCR product size calculator — amplicon length, melting temp and GC content', u:'pcr-product-calculator.html', c:'Tools' },
+  { t:'Restriction Enzyme Finder', d:'Free restriction enzyme finder — maps cut sites, sticky/blunt ends and fragment sizes', u:'restriction-enzyme-finder.html', c:'Tools' },
 
   { t:'Platform Overview', d:'Sovereign biomedical AI platform', u:'platform.html', c:'Platform' },
   { t:'Architecture', d:'Multi-agent AI architecture', u:'architecture.html', c:'Platform' },
@@ -57,6 +58,7 @@ var SITE_INDEX = [
   { t:'Primer Design for mRNA', d:'Designing primers for mRNA targets', u:'blog/primer-design-mrna.html', c:'Blog' },
   { t:'Primer Design in India', d:'Affordable primer design options in India', u:'blog/primer-design-india-affordable.html', c:'Blog' },
   { t:'VPrime Internal Validation', d:'Case study: 80% faster primer design with VPrime 1.0 — benchmark results', u:'blog/vprime-internal-validation.html', c:'Blog' },
+  { t:'Best Free Bioinformatics Tools 2026', d:'8 best free bioinformatics tools in 2026 — primer design, BLAST, docking and sequence analysis ranked', u:'blog/best-free-bioinformatics-tools-2026.html', c:'Blog' },
 
   { t:'Top 10 Free Bioinformatics Tools', d:'10 best free bioinformatics tools ranked and reviewed', u:'blog/top-10-free-bioinformatics-tools.html', c:'Blog' },
   { t:'Primer Design Basics', d:'Complete beginner\'s guide to PCR primer design rules and best practices', u:'blog/primer-design-basics.html', c:'Blog' },
