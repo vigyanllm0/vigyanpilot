@@ -50,6 +50,8 @@ PRIORITY_MAP = {
     "terms.html": 0.70,
     "faq.html": 0.85,
     "about.html": 0.75,
+    "sovereign-ai.html": 0.80,
+    "on-premises.html": 0.80,
     "contact.html": 0.65,
     "cite.html": 0.85,
     "academic-partnership.html": 0.85,
@@ -141,6 +143,10 @@ def get_priority(filepath, rel):
         return 0.75
     if rel.startswith("docs/"):
         return 0.60
+    if rel.startswith("about/"):
+        return 0.75
+    if rel.startswith("features/"):
+        return 0.75
     
     return 0.50
 
@@ -356,6 +362,7 @@ const CORE = [
   "/pcr-analysis","/crispr-analysis","/protein-docking","/tm-calculator","/gc-calculator",
   "/dna-to-rna",
   "/platform","/solution","/architecture","/problem","/compare","/roadmap",
+  "/about/sovereign-ai","/features/on-premises",
   "/validated-primer-design","/security","/privacy","/terms","/faq","/about","/contact","/cite-vigyanllm","/cite",
   "/academic-partnership","/Learning-vigyanllm","/demo","/sitemap","/cookies","/refund","/changelog",
   "/primer-design-india","/primer3-alternative","/primer-blast-alternative",

@@ -21,6 +21,8 @@ var SITE_INDEX = [
   { t:'The Solution', d:'Unified multi-agent AI platform', u:'solution.html', c:'Platform' },
   { t:'Compare', d:'VigyanLLM vs AlphaFold, Schrödinger, Benchling', u:'compare.html', c:'Platform' },
   { t:'Roadmap', d:'Development milestones and timeline', u:'roadmap.html', c:'Platform' },
+  { t:'Sovereign AI', d:'Sovereign AI platform built in India — data sovereignty, DPDP-compliant, Make in India AI', u:'about/sovereign-ai.html', c:'Platform' },
+  { t:'On-Premises', d:'Self-hosted, air-gapped, offline bioinformatics platform with zero data egress', u:'features/on-premises.html', c:'Platform' },
   { t:'Demo', d:'Interactive platform demonstration', u:'demo.html', c:'Platform' },
 
   { t:'Learning Hub', d:'140+ biology terms organized by topic with definitions', u:'Learning-vigyanllm.html', c:'Learning' },

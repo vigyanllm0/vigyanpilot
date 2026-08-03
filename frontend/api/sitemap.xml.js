@@ -1,5 +1,5 @@
 // Vercel Edge Function: Dynamic Sitemap Generator
-// Auto-generated — 2026-08-02
+// Auto-generated — 2026-08-03
 export const config = { runtime: "edge" };
 
 const BASE_URL = "https://www.vigyanllm.in";
@@ -8,9 +8,8 @@ const CORE = [
   "/","/primer","/blast","/msa","/search","/primer-design","/primer-design-pipeline",
   "/pcr-analysis","/crispr-analysis","/protein-docking","/tm-calculator","/gc-calculator",
   "/dna-to-rna",
-  "/reverse-complement","/dna-to-protein","/pcr-product-calculator",
-  "/restriction-enzyme-finder",
   "/platform","/solution","/architecture","/problem","/compare","/roadmap",
+  "/about/sovereign-ai","/features/on-premises",
   "/validated-primer-design","/security","/privacy","/terms","/faq","/about","/contact","/cite-vigyanllm","/cite",
   "/academic-partnership","/Learning-vigyanllm","/demo","/sitemap","/cookies","/refund","/changelog",
   "/primer-design-india","/primer3-alternative","/primer-blast-alternative",
