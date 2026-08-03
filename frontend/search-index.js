@@ -1,6 +1,6 @@
 // ── Site Search Index ──
 var SITE_INDEX = [
-  { t:'Primer Design — VPrime 2.0', d:'Design primers with 24-step biophysical validation', u:'primer.html', c:'Tools' },
+  { t:'Primer Design', d:'Design primers with 24-step biophysical validation', u:'primer.html', c:'Tools' },
   { t:'Sequence Search', d:'Search biological sequences against databases', u:'search.html', c:'Tools' },
   { t:'BLAST', d:'Basic Local Alignment Search Tool', u:'blast.html', c:'Tools' },
   { t:'MSA', d:'Multiple Sequence Alignment', u:'msa.html', c:'Tools' },
@@ -10,6 +10,9 @@ var SITE_INDEX = [
   { t:'GC Calculator', d:'Calculate GC content of sequences', u:'gc-calculator.html', c:'Tools' },
   { t:'Protein Docking', d:'Molecular docking and binding analysis', u:'protein-docking.html', c:'Tools' },
   { t:'DNA to RNA Converter', d:'Free online DNA to RNA transcription tool — no login required', u:'dna-to-rna.html', c:'Tools' },
+  { t:'Reverse Complement', d:'Free reverse complement calculator — converts DNA to reverse complement sequence instantly', u:'reverse-complement.html', c:'Tools' },
+  { t:'DNA to Protein', d:'Free DNA to protein translation tool — convert nucleotide sequence to amino acids', u:'dna-to-protein.html', c:'Tools' },
+  { t:'PCR Product Calculator', d:'Free PCR product size calculator — amplicon length, melting temp and GC content', u:'pcr-product-calculator.html', c:'Tools' },
 
   { t:'Platform Overview', d:'Sovereign biomedical AI platform', u:'platform.html', c:'Platform' },
   { t:'Architecture', d:'Multi-agent AI architecture', u:'architecture.html', c:'Platform' },
