@@ -175,29 +175,32 @@ def calculate_tm(sequence: str, buffer: BufferConditions = None) -> ThermoResult
     # Free Mg²+ (dNTPs chelate Mg²+ 1:1)
     free_mg = max(0.0, mg_m - dntp_m)
 
-    # ── Salt Correction (Owczarzy 2004) ───────────────────────────────────
-    # ΔS°_salt = ΔS°_1M + 0.368·(N-1)·ln([Mon+])
+    # ── Salt Correction (SantaLucia 1998 / Owczarzy 2004) ────────────────
+    # ΔS°_salt = ΔS°_1M + 0.368·(N-1)·ln([Na_eq])
+    # tm_salt_adjusted reflects only the monovalent contribution.
     if monovalent_m > 0:
         delta_s_salt = delta_s + 0.368 * (n - 1) * math.log(monovalent_m)
     else:
         delta_s_salt = delta_s
 
-    # ── Basic Tm (1M NaCl equivalent) ─────────────────────────────────────
+    # ── Tm (with monovalent salt correction) ─────────────────────────────
     # Tm = ΔH / (ΔS + R·ln(Ct/4)) - 273.15
     denominator = delta_s_salt + R * math.log(ct / 4.0)
     if denominator == 0:
-        tm_basic = 0.0
+        tm_salt = 0.0
     else:
-        tm_basic = (delta_h * 1000.0) / denominator - 273.15
-        # Note: ΔH is in kcal/mol, need to convert to cal/mol for consistency with ΔS
+        tm_salt = (delta_h * 1000.0) / denominator - 273.15
 
-    # Correct: ΔH in kcal/mol × 1000 = cal/mol to match ΔS units
-    tm_salt = tm_basic
-
-    # ── Mg²+ Correction (von Ahsen 2001) ─────────────────────────────────
-    # Tm(Mg²+) = Tm(salt) + 7.21·ln([Mg²+])
+    # ── Mg²+ Correction (von Ahsen 2001, sodium-equivalence) ─────────────
+    # Mg2+ stabilises duplexes equivalently to additional Na+:
+    #   [Na_eq] = [Na+] + 120·√([Mg2+] − [dNTPs])     (concentrations in mM)
+    # Only applied when free Mg2+ is present.
     if free_mg > 0:
-        tm_mg = tm_salt + 7.21 * math.log(free_mg)
+        na_eq_mm = buffer.monovalent_mm + 120.0 * math.sqrt(free_mg * 1e3)
+        na_eq_m = na_eq_mm * 1e-3
+        delta_s_mg = delta_s + 0.368 * (n - 1) * math.log(na_eq_m)
+        denom_mg = delta_s_mg + R * math.log(ct / 4.0)
+        tm_mg = (delta_h * 1000.0) / denom_mg - 273.15 if denom_mg != 0 else tm_salt
     else:
         tm_mg = tm_salt
 
@@ -210,7 +213,7 @@ def calculate_tm(sequence: str, buffer: BufferConditions = None) -> ThermoResult
     gc_percent = (gc_count / n) * 100.0
 
     return ThermoResult(
-        tm=round(tm_basic, 2),
+        tm=round(tm_salt, 2),
         tm_salt_adjusted=round(tm_salt, 2),
         tm_mg_adjusted=round(tm_mg, 2),
         delta_h=round(delta_h, 2),
