@@ -181,19 +181,19 @@ function toolBadge(tool) {
 }
 
 async function loadDashboard() {
-  var tkn = sessionStorage.getItem('pf_token') || localStorage.getItem('pf_token');
   var api = window.VIGYAN_BACKEND_URL || '';
-  if (!tkn) {
+  var pr = sessionStorage.getItem('pf_user') || localStorage.getItem('pf_user');
+  if (!pr) {
     document.getElementById('dash-sub').textContent = 'Please sign in to view your dashboard.';
     return;
   }
 
   try {
-    // Fetch plan & usage in parallel
+    // Fetch plan & usage in parallel (auth via HttpOnly cookie)
     var [meRes, planRes, usageRes] = await Promise.all([
-      fetch(api+'/api/auth/me', {headers:{'Authorization':'Bearer '+tkn}}),
-      fetch(api+'/api/payments/status', {headers:{'Authorization':'Bearer '+tkn}}),
-      fetch(api+'/api/usage/check?tool=all', {headers:{'Authorization':'Bearer '+tkn}})
+      fetch(api+'/api/auth/me', {credentials:'same-origin'}),
+      fetch(api+'/api/payments/status', {credentials:'same-origin'}),
+      fetch(api+'/api/usage/check?tool=all', {credentials:'same-origin'})
     ]);
     var me = await meRes.json();
     var planStatus = planRes.ok ? await planRes.json() : {};
@@ -251,12 +251,11 @@ async function loadDashboard() {
 }
 
 async function loadSavedResults() {
-  var tkn = sessionStorage.getItem('pf_token') || localStorage.getItem('pf_token');
   var api = window.VIGYAN_BACKEND_URL || '';
   try {
     var url = api+'/api/results/list?limit=20&offset='+(_page*20);
     if (_filter) url += '&tool='+encodeURIComponent(_filter);
-    var r = await fetch(url, {headers:{'Authorization':'Bearer '+tkn}});
+    var r = await fetch(url, {credentials:'same-origin'});
     var d = await r.json();
     if (!d.results) throw new Error('No data');
     _total = d.total || 0;
@@ -289,10 +288,9 @@ async function loadSavedResults() {
 
 async function deleteResult(id) {
   if (!confirm('Delete this saved result?')) return;
-  var tkn = sessionStorage.getItem('pf_token') || localStorage.getItem('pf_token');
   var api = window.VIGYAN_BACKEND_URL || '';
   try {
-    var r = await fetch(api+'/api/results/delete', {method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+tkn},body:JSON.stringify({id:id})});
+    var r = await fetch(api+'/api/results/delete', {method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify({id:id})});
     if (r.ok) loadSavedResults();
     else alert('Failed to delete');
   } catch(e) { alert('Network error'); }

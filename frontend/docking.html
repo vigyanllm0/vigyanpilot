@@ -1078,8 +1078,7 @@ async function handleDockPayment(qtyOverride) {
   var qty = qtyOverride || Math.min(100, Math.max(1, parseInt($('dock-pay-qty').value) || 1));
   var errEl = $('dock-pay-error');
   errEl.classList.remove('show');
-  var authToken = sessionStorage.getItem('pf_token') || localStorage.getItem('pf_token');
-  if (!authToken) { showAuth(); return; }
+  if (!authUser) { showAuth(); return; }
   try {
     var r = await fetch(API + '/api/payments/create-order', {
       method: 'POST',
@@ -1095,8 +1094,7 @@ async function handleDockPayment(qtyOverride) {
   }
 }
 async function handlePlanPurchase(productId) {
-  var authToken = sessionStorage.getItem('pf_token') || localStorage.getItem('pf_token');
-  if (!authToken) { showAuth(); return; }
+  if (!authUser) { showAuth(); return; }
   try {
     var r = await fetch(API + '/api/payments/create-order', {
       method: 'POST',
@@ -1131,7 +1129,7 @@ async function openRazorpayCheckout(order, context) {
       return;
     }
   }
-  var authToken = sessionStorage.getItem('pf_token') || localStorage.getItem('pf_token');
+  var authToken = window.authToken || '';
   var purchasedRuns = order.runs || order.tokens || (context && context.runs) || 1;
   var verifyEndpoint = order.verify_endpoint || '/api/payments/verify-payment';
   var opts = {
@@ -1210,13 +1208,28 @@ async function openRazorpayCheckout(order, context) {
 var API = window.VIGYAN_BACKEND_URL || '';
 var authMode = 'login';
 var authUser = null;
+var authToken = '';
 function $(id) { return document.getElementById(id); }
 function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 // ── Auth ────────────────────────────────────────────────────────────────
+// Rehydrate session from the HttpOnly cookie (JWT never persisted to storage)
+async function rehydrateSession() {
+  if (sessionStorage.getItem('pf_rehydrated')) return;
+  sessionStorage.setItem('pf_rehydrated', '1');
+  try {
+    var r = await fetch(API + '/api/auth/me', { credentials: 'include' });
+    if (r.ok) {
+      var d = await r.json();
+      if (d.user && d.user.email) {
+        authUser = d.user;
+        updateAuthUI();
+      }
+    }
+  } catch(e) {}
+}
 function loadAuth() {
-  var t = sessionStorage.getItem('pf_token') || localStorage.getItem('pf_token');
   var u = sessionStorage.getItem('pf_user') || localStorage.getItem('pf_user');
-  if (t && u) { try { authUser = JSON.parse(u); } catch(e) {} }
+  if (u) { try { authUser = JSON.parse(u); } catch(e) {} }
   updateAuthUI();
 }
 function updateAuthUI() {
@@ -1285,7 +1298,7 @@ async function handleAuth() {
       errEl.classList.add('show');
       return;
     }
-    sessionStorage.setItem('pf_token', d.token || d.access_token || 'tok_'+Date.now());
+    authToken = d.token || '';
     sessionStorage.setItem('pf_user', JSON.stringify({email:d.email||email, name:d.name||name, role:d.role||'user'}));
     authUser = JSON.parse(sessionStorage.getItem('pf_user'));
     updateAuthUI();
@@ -1293,10 +1306,11 @@ async function handleAuth() {
   } catch(e) { errEl.textContent = 'Network error: '+e.message; errEl.classList.add('show'); }
 }
 function logout() {
-  sessionStorage.removeItem('pf_token'); sessionStorage.removeItem('pf_user');
-  localStorage.removeItem('pf_token'); localStorage.removeItem('pf_user');
-  authUser = null; updateAuthUI();
+  sessionStorage.removeItem('pf_user');
+  localStorage.removeItem('pf_user');
+  authToken = ''; authUser = null; updateAuthUI();
   document.querySelectorAll('.user-menu').forEach(function(el){el.remove();});
+  fetch(API+'/api/auth/logout', {method:'POST',credentials:'include'}).catch(()=>{});
   location.reload();
 }
 // ── Payment ─────────────────────────────────────────────────────────────
@@ -1379,10 +1393,10 @@ async function runDocking() {
     return;
   }
   // Gate: daily usage check
-  var tkn = sessionStorage.getItem('pf_token') || localStorage.getItem('pf_token');
+  var tkn = authUser ? authToken : '';
   if (tkn) {
     try {
-      var _ur = await fetch(API + '/api/usage/check?tool=docking', { headers: { 'Authorization': 'Bearer ' + tkn } });
+      var _ur = await fetch(API + '/api/usage/check?tool=docking', { credentials: 'include', headers: { 'Authorization': 'Bearer ' + tkn } });
       if (_ur.ok) {
         var _ud = await _ur.json();
         if (!_ud.can_analyze) {
@@ -1406,7 +1420,7 @@ async function runDocking() {
   // Mark stage 1 running
   setStage(1, 'running', 'Submitting docking job...');
   try {
-    var authToken = sessionStorage.getItem('pf_token') || localStorage.getItem('pf_token');
+    var authToken = window.authToken || '';
     var headers = { 'Content-Type': 'application/json' };
     if (authToken) headers['Authorization'] = 'Bearer ' + authToken;
     var r = await fetch(API + '/api/primer/docking/consensus', {
@@ -1918,6 +1932,7 @@ async function downloadResults(fmt) {
 }
 // ── Init ────────────────────────────────────────────────────────────────
 loadAuth();
+rehydrateSession();
 // Bulk top-up button
 var dockBulkBtn = document.getElementById('dock-bulk-topup-btn');
 if (dockBulkBtn) {

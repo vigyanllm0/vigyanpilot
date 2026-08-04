@@ -691,8 +691,8 @@ function updateBillingUI(isYearly) {
 // ── Razorpay Payment Integration (4-Tier Subscription) ────────────────────
 var API = window.VIGYAN_BACKEND_URL || '';
 
-function getToken() {
-  return sessionStorage.getItem('pf_token') || localStorage.getItem('pf_token');
+function isLoggedIn() {
+  return !!(sessionStorage.getItem('pf_user') || localStorage.getItem('pf_user'));
 }
 
 function showLoading(show) {
@@ -712,8 +712,7 @@ function loadRazorpaySdk() {
 }
 
 async function purchasePlan(planId) {
-  var token = getToken();
-  if (!token) {
+  if (!isLoggedIn()) {
     openAuthModal();
     return;
   }
@@ -721,7 +720,7 @@ async function purchasePlan(planId) {
   try {
     var r = await fetch(API + '/api/payments/create-order', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      headers: { 'Content-Type': 'application/json' }, credentials: 'same-origin',
       body: JSON.stringify({ plan_id: planId })
     });
     var d = await r.json();
@@ -769,7 +768,7 @@ async function openRazorpayCheckout(order) {
       try {
         var vr = await fetch(API + '/api/payments/verify-payment', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + getToken() },
+          headers: { 'Content-Type': 'application/json' }, credentials: 'same-origin',
           body: JSON.stringify({
             razorpay_payment_id: response.razorpay_payment_id,
             razorpay_order_id: response.razorpay_order_id,

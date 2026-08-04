@@ -3,10 +3,6 @@ var BUI = window.BUI || {};
 
 BUI.API = window.VIGYAN_BACKEND_URL || '';
 
-BUI.token = function() {
-  return sessionStorage.getItem('pf_token') || localStorage.getItem('pf_token');
-};
-
 BUI.parseFasta = function(text) {
   var lines = text.split('\n');
   var seqs = [], cur = null;
@@ -43,10 +39,8 @@ BUI.count = function(text) {
 };
 
 BUI.checkSize = async function(count) {
-  var token = BUI.token();
-  if (!token) { window.showAuthGate && showAuthGate(); return false; }
   try {
-    var r = await fetch(BUI.API + '/api/usage/check?tool=batch', { headers: { 'Authorization': 'Bearer ' + token } });
+    var r = await fetch(BUI.API + '/api/usage/check?tool=batch', { credentials: 'same-origin' });
     if (r.ok) {
       var d = await r.json();
       var max = d.batch_max_seq || 1;

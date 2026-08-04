@@ -65,15 +65,13 @@
     }
 
     function syncConsentWithBackend(accepted) {
-        const token = localStorage.getItem('pf_token') || getCookie('pf_token');
-        if (!token) return;
-
+        // Auth is carried by the HttpOnly pf_token cookie (same-origin).
         fetch('/api/consent/record', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + token
+                'Content-Type': 'application/json'
             },
+            credentials: 'same-origin',
             body: JSON.stringify({
                 consent_type: 'cookies',
                 accepted: accepted

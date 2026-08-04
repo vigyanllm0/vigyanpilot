@@ -275,13 +275,15 @@ def _prune_blacklist():
 def get_current_user():
     """Extract user from Authorization header or pf_token cookie."""
     auth = request.headers.get("Authorization", "")
-    token = ""
     if auth.startswith("Bearer "):
         token = auth[7:]
-    elif request.cookies.get("pf_token"):
-        token = request.cookies.get("pf_token", "")
-    if token:
         user = verify_token(token)
+        if user and user.get("user_id"):
+            set_rls_context(user["user_id"])
+            return user
+    cookie_token = request.cookies.get("pf_token", "")
+    if cookie_token:
+        user = verify_token(cookie_token)
         if user and user.get("user_id"):
             set_rls_context(user["user_id"])
         return user

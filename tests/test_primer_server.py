@@ -59,7 +59,9 @@ def app(monkeypatch):
         "design",
         lambda self, *args, **kwargs: [_fake_pair()],
     )
-    return create_app()
+    app = create_app()
+    # create_app() returns a _ServerHeaderMiddleware wrapper; unwrap to Flask app
+    return app.wsgi_app if hasattr(app, "wsgi_app") else app
 
 
 @pytest.fixture
@@ -117,7 +119,8 @@ def test_inconclusive_specificity_is_not_specific(monkeypatch):
         "design",
         lambda self, *args, **kwargs: [_fake_pair(inconclusive)],
     )
-    client = create_app().test_client()
+    _app = create_app()
+    client = (_app.wsgi_app if hasattr(_app, "wsgi_app") else _app).test_client()
     response = client.post(
         "/api/primer/auto-design",
         json={
@@ -147,7 +150,8 @@ def test_fetch_uniprot_is_not_auto_design_usable(monkeypatch):
             "protein_name": "Example protein",
         },
     )
-    client = create_app().test_client()
+    _app = create_app()
+    client = (_app.wsgi_app if hasattr(_app, "wsgi_app") else _app).test_client()
     response = client.post("/api/primer/fetch-sequence", json={"accession": "P38398"})
 
     assert response.status_code == 200

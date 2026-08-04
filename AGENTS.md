@@ -1,7 +1,7 @@
 # AGENTS.md — Agent Handoff & Tracking
 
-**Session:** CMS Image Editing — alignment, caption, alt/title/link/width/loading with insert/edit round-trip + sanitization-safe public rendering — Completed Aug 1 2026
-**Next Sprint:** Re-verify decline-cookie path → final sweep → git commit/push (commit scope pending user decision: all ~458 modified files vs CMS-only vs image-feature-only)
+**Session:** HttpOnly-cookie auth migration (completed + full regression) & CMS image editing — Completed Aug 5 2026
+**Next Sprint:** CMS decline-cookie re-verify → DB plan/token diff → final sweep
 
 **⚠️ Phase 4 critical note:** `/api/usage/check` must fire **before** batch processing starts — client-side gate (feature-gate.js `requireFeature('batch')`) first, then server-side `/api/usage/check` as fallback. Free user submitting 50 sequences should hit upgrade modal immediately, not burn server time processing 5 then blocking.
 
@@ -27,6 +27,43 @@ TEST ORDER (do these first, in this order):
 
 If test 1 fails, stop and fix. Nothing else matters until the Free→upgrade flow works.
 ```
+
+---
+
+## HttpOnly-Cookie Auth Migration — Completed Aug 5 2026
+
+### What & Why
+JWT `pf_token` is now **HttpOnly-cookie-only** (never in `sessionStorage`/`localStorage`). This closes XSS token-theft. `pf_user` (non-sensitive profile marker) stays in storage purely as the UI login-state indicator.
+
+### Design decisions
+- **In-memory `auth.token` per page** (Option 1, user-approved): pages keep a transient in-memory token for JS API calls; a `rehydrateSession()` fetch to `/api/auth/me` (cookie-authenticated) re-establishes it on load. UI gating is on `pf_user` presence, **not** token presence.
+- **Backend cookie fallback**: `get_current_user()` (both SQLite `auth.py` + PG `pg_auth.py`) tries Bearer header first, then the `pf_token` cookie. Empty `Authorization: Bearer ` headers from cookie-sessions are harmless.
+- **`/api/auth/me` returns `auth_provider`** (SQLite + PG) so the frontend knows email vs google.
+- **`admin-app.js` left untouched** — separate CMS backend trust boundary (localhost:8001 dev / `/api/v1/*` prod). Flag as backlog when backends unify.
+
+### Backend changes
+- SQLite `users` schema + `auth_provider TEXT DEFAULT 'email'` / `google_id TEXT DEFAULT ''` (CREATE TABLE + idempotent ALTER backfill); PG migration `0100_initial_schema.sql` users table updated.
+- SQLite register + google now set the `pf_token` cookie; SQLite login + PG login/google already did. Cookie: `httponly=True, secure=True, samesite='Lax', max_age=86400*7, path='/'` (PG admin sets `admin_tk` 1800s SameSite=Strict).
+- Google endpoints capture `sub`→`google_id` and set `auth_provider='google'` in user payload + DB.
+- SQLite backfill: existing google-login users get `auth_provider='google'` (idempotent UPDATE driven by `usage_log` action=`google_login`).
+
+### Frontend changes
+- **Shared JS off localStorage** (all `node --check` clean): `auth-shared.js`, `feature-gate.js` (`fgToken()`→`''`), `results-ui.js`, `batch-ui.js` (`BUI.token()` removed), `cookie-consent.js` — all use `credentials:'same-origin'`, gates on `pf_user`/server 401.
+- **7 pages migrated** (inline JS parse-checked): `primer.html` (in-memory auth + `rehydrateSession()`), `docking.html`, `blast.html`, `msa.html`, `dashboard.html`, `checkout.html`, `pricing.html`.
+- `cookies.html` policy updated: `pf_token` row → "Cookie (HttpOnly, Secure, SameSite=Lax) — inaccessible to JavaScript, cleared on logout or after 7 days".
+
+### Tests
+- **`tests/test_http_only_cookie_auth.py`** (new, 3 pass): register sets HttpOnly cookie; login sets cookie + `/api/auth/me` returns `auth_provider='email'`; google login persists `auth_provider='google'` + `google_id` + cookie, and the cookie authenticates `/api/auth/me`. Fixture forces SQLite (`DATABASE_URL=""` + temp `PRIMERFORGE_DB`, stub `init_admin_rbac`), unwraps `_ServerHeaderMiddleware` via `app.wsgi_app`.
+- **Full suite regression**: 342 passed (340 baseline + 3 new − 1 where two previously-ERROR primer tests now PASS from a test-client unwrap fix). Remaining failures are **pre-existing and unrelated**: 4 payment tests error on the old `create_app().test_client()` wrapper pattern (file untouched), 2 primer tests fail on a pre-existing local-PG enum divergence (`pg_auth.py` inserts `status='pending'` into a `user_status` enum the migration defines as `VARCHAR`). Verified identical failures on baseline commit via stash.
+- `tests/test_primer_server.py`: unwrapped `create_app()` returns to Flask app in 3 spots (was `_ServerHeaderMiddleware` — had no `.test_client()`).
+
+### Known environment quirks
+- `.env` is loaded at module import (`override=False`); tests that want SQLite must set `DATABASE_URL=""` **before** importing `create_app` to stop the PG path. Full-suite collection needs a real `DATABASE_URL` for `test_order_serializer.py` (imports `primerforge.database`).
+- Pre-existing: `test_payment_routes.py` (4 tests) and 2 `test_primer_server.py` tests cannot pass against local Postgres without the enum/VARCHAR schema fix. Not part of this migration.
+
+### Deploy notes
+- Same-origin API via `vercel.json` rewrites (`/api/:path*` → `http://13.207.60.92/api/:path*`); `frontend/config.js:6` `VIGYAN_BACKEND_URL='/api'`; requests use `credentials:'same-origin'`. Cookies work through the proxy.
+- Verify on deploy: cookie set on `/api/auth/google` end-to-end, and rehydrate-then-Bearer pages with empty token (harmless due to cookie fallback).
 
 ---
 
@@ -467,6 +504,20 @@ Added "Scientific References" sections with proper citations to 8 tool pages:
 1. User to review VPrime redesign at http://localhost:11436/primer
 2. On approval: `git add` + `git commit` + `git push` all modified files
 3. **No Vercel deployment needed** — back to local dev for now
+
+## HttpOnly-Cookie Migration — Files Changed
+| File | Change |
+|------|--------|
+| `primerforge/auth.py` | SQLite `users` schema + `auth_provider`/`google_id` columns (CREATE + ALTER backfill); google-login backfill from `usage_log`; `get_current_user()` cookie fallback |
+| `primerforge/auth_routes.py` | SQLite register + google set `pf_token` HttpOnly cookie; `/api/auth/me` returns `auth_provider` |
+| `primerforge/pg_auth.py` | `get_current_user()` cookie fallback + `set_rls_context` on both paths |
+| `primerforge/pg_auth_routes.py` | Google endpoint captures google_id + provider + cookie; `/api/auth/me` auth_provider |
+| `deploy/migrations/0100_initial_schema.sql` | users table `auth_provider`/`google_id` |
+| `frontend/auth-shared.js`, `feature-gate.js`, `results-ui.js`, `batch-ui.js`, `cookie-consent.js` | Off localStorage; cookie-based fetch; gates on `pf_user`/server 401 |
+| `frontend/primer.html`, `docking.html`, `blast.html`, `msa.html`, `dashboard.html`, `checkout.html`, `pricing.html` | In-memory token + `rehydrateSession()` / `pf_user`-gating; cookie fetch |
+| `frontend/cookies.html` | Cookie policy: `pf_token` → HttpOnly cookie row |
+| `tests/test_http_only_cookie_auth.py` | New: 3 tests (register/login/google HttpOnly cookie + `auth_provider`) |
+| `tests/test_primer_server.py` | Unwrap `create_app()`→Flask app in 3 spots (`.wsgi_app`) |
 
 ## Key Commands
 - Python bulk-replace scripts for 200+ file operations

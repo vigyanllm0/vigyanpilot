@@ -17,15 +17,13 @@ var FEATURE_TIER = {
 
 var TIER_ORDER = ['free', 'pro', 'lab', 'enterprise'];
 
-function fgToken() { return sessionStorage.getItem('pf_token') || localStorage.getItem('pf_token'); }
+function fgToken() { return ''; }
 
 async function fgFetchStatus() {
   var now = Date.now();
   if (FG_CACHE && (now - FG_CACHE_TIME) < 60000) return FG_CACHE;
-  var token = fgToken();
-  if (!token) return null;
   try {
-    var r = await fetch(FG_API + '/api/payments/status', { headers: { 'Authorization': 'Bearer ' + token } });
+    var r = await fetch(FG_API + '/api/payments/status', { credentials: 'same-origin' });
     if (!r.ok) return null;
     FG_CACHE = await r.json();
     FG_CACHE_TIME = now;
@@ -34,12 +32,10 @@ async function fgFetchStatus() {
 }
 
 async function requireFeature(featureName) {
-  var token = fgToken();
-  if (!token) { showAuthGate(); return false; }
   var info = FEATURE_TIER[featureName];
   if (!info) return true;
   var status = await fgFetchStatus();
-  if (!status) return true;
+  if (!status) { showAuthGate(); return false; }
   // Admin bypass — admins see everything without gating
   if (status.role === 'admin') return true;
   var userTier = status.plan || 'free';

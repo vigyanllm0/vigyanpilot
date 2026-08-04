@@ -19,9 +19,10 @@ CREATE TABLE IF NOT EXISTS users (
     locked_until TIMESTAMP,
     last_active_at TIMESTAMP,
     created_at TIMESTAMP DEFAULT NOW(),
-    updated_at TIMESTAMP DEFAULT NOW()
+    updated_at TIMESTAMP DEFAULT NOW(),
+    auth_provider VARCHAR(20) DEFAULT 'email',
+    google_id VARCHAR(255) DEFAULT ''
 );
-
 -- Token balances
 CREATE TABLE IF NOT EXISTS token_balances (
     id SERIAL PRIMARY KEY,

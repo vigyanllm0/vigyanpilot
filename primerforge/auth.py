@@ -119,7 +119,9 @@ def init_db():
             created_at REAL DEFAULT (strftime('%s','now')),
             last_login REAL DEFAULT 0,
             locked_until REAL DEFAULT 0,
-            failed_attempts INTEGER DEFAULT 0
+            failed_attempts INTEGER DEFAULT 0,
+            auth_provider TEXT DEFAULT 'email',
+            google_id TEXT DEFAULT ''
         );
 
         CREATE TABLE IF NOT EXISTS token_blacklist (
@@ -267,6 +269,28 @@ def init_db():
         db.execute("ALTER TABLE users ADD COLUMN academic_discount REAL DEFAULT 0")
     except sqlite3.OperationalError:
         pass
+    try:
+        db.execute("ALTER TABLE users ADD COLUMN auth_provider TEXT DEFAULT 'email'")
+    except sqlite3.OperationalError:
+        pass
+    try:
+        db.execute("ALTER TABLE users ADD COLUMN google_id TEXT DEFAULT ''")
+    except sqlite3.OperationalError:
+        pass
+    # Backfill auth_provider for existing Google users (detected via audit log).
+    # Safe to run on every init: only touches rows still marked 'email'.
+    try:
+        db.execute(
+            """
+            UPDATE users SET auth_provider = 'google'
+            WHERE auth_provider = 'email' OR auth_provider IS NULL
+              AND email IN (
+                  SELECT DISTINCT user_email FROM usage_log WHERE action = 'google_login'
+              )
+            """
+        )
+    except sqlite3.OperationalError:
+        pass
     db.commit()
 
     # Ensure admin exists (only if ADMIN_PASSWORD is configured)
@@ -373,13 +397,14 @@ def cleanup_expired_blacklist():
 def get_current_user():
     """Extract user from Authorization header or pf_token cookie."""
     auth = request.headers.get("Authorization", "")
-    token = ""
     if auth.startswith("Bearer "):
         token = auth[7:]
-    elif request.cookies.get("pf_token"):
-        token = request.cookies.get("pf_token", "")
-    if token:
-        return verify_token(token)
+        user = verify_token(token)
+        if user:
+            return user
+    cookie_token = request.cookies.get("pf_token", "")
+    if cookie_token:
+        return verify_token(cookie_token)
     return None
 
 

@@ -2,12 +2,11 @@ var API = window.VIGYAN_BACKEND_URL || '';
 var isRegister = false;
 
 function updateAuthUI(){
-  var token=sessionStorage.getItem('pf_token')||localStorage.getItem('pf_token');
   var userStr=sessionStorage.getItem('pf_user')||localStorage.getItem('pf_user');
   var user=null;try{if(userStr)user=JSON.parse(userStr)}catch(e){}
   var btns=document.getElementById('navBtns');
   var profile=document.getElementById('navProfile');
-  if(token&&user){
+  if(user){
     if(btns)btns.style.display='none';
     if(profile)profile.style.display='flex';
     var letter=document.querySelector('#navProfile .nav-avatar-letter');
@@ -33,8 +32,11 @@ function closeUserMenu(){
 }
 
 function logout(){
-  sessionStorage.removeItem('pf_token');sessionStorage.removeItem('pf_user');
-  localStorage.removeItem('pf_token');localStorage.removeItem('pf_user');
+  try {
+    fetch((window.VIGYAN_BACKEND_URL||'')+'/api/auth/logout',{method:'POST',credentials:'same-origin'});
+  } catch(e) {}
+  sessionStorage.removeItem('pf_user');
+  localStorage.removeItem('pf_user');
   closeUserMenu();
   updateAuthUI();
 }
@@ -99,8 +101,7 @@ function handleGoogleCredential(res){
     body:JSON.stringify({credential:res.credential})
   }).then(function(r){return r.json().then(function(d){return{ok:r.ok,data:d}})})
     .then(function(res){
-      if(res.ok&&res.data.token){
-        sessionStorage.setItem('pf_token',res.data.token);
+      if(res&&res.ok&&res.data){
         sessionStorage.setItem('pf_user',JSON.stringify(res.data.user||{}));
         closeAuth();
         updateAuthUI();
@@ -108,7 +109,7 @@ function handleGoogleCredential(res){
         closeAuth();
         window.location.href='primer.html';
       }else{
-        err.style.display='block';err.textContent=res.data.error||'Google sign-in failed.';
+        err.style.display='block';err.textContent=(res&&res.data&&res.data.error)||'Google sign-in failed.';
       }
     })
     .catch(function(){
@@ -130,16 +131,15 @@ function submitAuth(){
   fetch(API+'/api/auth/'+(isRegister?'register':'login'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
     .then(function(r){return r.json().then(function(d){return{ok:r.ok,data:d}})})
     .then(function(res){
-      if(res.ok&&res.data.token){
-        sessionStorage.setItem('pf_token',res.data.token);
+      if(res&&res.ok&&res.data&&res.data.user){
         sessionStorage.setItem('pf_user',JSON.stringify(res.data.user||{email:email}));
         closeAuth();
         updateAuthUI();
-      }else if(res.ok){
+      }else if(res&&res.ok){
         closeAuth();
         window.location.href='primer.html';
       }else{
-        err.style.display='block';err.textContent=res.data.error||res.data||'Authentication failed.';
+        err.style.display='block';err.textContent=(res&&res.data&&res.data.error)||res||'Authentication failed.';
       }
     })
     .catch(function(){err.style.display='block';err.textContent='Server unavailable. Please try again.'});
@@ -149,23 +149,22 @@ function openAuthModal(){isRegister=false;showAuth()}
 
 (function(){
   updateAuthUI();
-  var token = sessionStorage.getItem('pf_token') || localStorage.getItem('pf_token');
   var userRaw = sessionStorage.getItem('pf_user') || localStorage.getItem('pf_user');
   var user = null;
-  if (token && userRaw) { try { user = JSON.parse(userRaw); } catch(e) {} }
+  if (userRaw) { try { user = JSON.parse(userRaw); } catch(e) {} }
 
   document.querySelectorAll('.nav-login').forEach(function(btn) {
-    if (token && user) { btn.style.display = 'none'; }
+    if (user) { btn.style.display = 'none'; }
     else {
       btn.style.display = '';
       btn.onclick = function(){ openAuthModal(); };
     }
   });
   document.querySelectorAll('.nav-cta').forEach(function(btn) {
-    btn.style.display = (token && user) ? 'none' : '';
+    btn.style.display = user ? 'none' : '';
   });
   document.querySelectorAll('.nav-profile').forEach(function(profile) {
-    if (token && user) {
+    if (user) {
       profile.style.display = 'flex';
       var letterEl = profile.querySelector('.nav-avatar-letter');
       if (letterEl) letterEl.textContent = (user.email || user.name || 'U').charAt(0).toUpperCase();
@@ -173,18 +172,15 @@ function openAuthModal(){isRegister=false;showAuth()}
       profile.style.display = 'none';
     }
   });
-  if (token && user) {
+  if (user) {
     var letter = (user.email || user.name || 'U').charAt(0).toUpperCase();
     var pe = document.getElementById('userPopupAvatar');
     if (pe) pe.textContent = letter;
     var ee = document.getElementById('userPopupEmail');
     if (ee) ee.textContent = user.email || '';
   }
-  if (sessionStorage.getItem('pf_token') || localStorage.getItem('pf_token')) {
-    var u = sessionStorage.getItem('pf_user') || localStorage.getItem('pf_user');
-    if (u) {
-      document.querySelectorAll('[data-auth-show]').forEach(function(el) { el.style.display = ''; });
-    }
+  if (user) {
+    document.querySelectorAll('[data-auth-show]').forEach(function(el) { el.style.display = ''; });
   }
   // Wire Dashboard link to /dashboard
   document.querySelectorAll('.user-popup-item[href="/primer"]').forEach(function(el) {
@@ -194,10 +190,12 @@ function openAuthModal(){isRegister=false;showAuth()}
 })();
 
 function loadPlanUI() {
-  var token = sessionStorage.getItem('pf_token') || localStorage.getItem('pf_token');
-  if (!token) return;
+  var user = null;
+  var userRaw = sessionStorage.getItem('pf_user') || localStorage.getItem('pf_user');
+  if (userRaw) { try { user = JSON.parse(userRaw); } catch(e) {} }
+  if (!user) return;
   var api = window.VIGYAN_BACKEND_URL || '';
-  fetch(api + '/api/payments/status', {headers: {'Authorization': 'Bearer ' + token}})
+  fetch(api + '/api/payments/status', {credentials: 'same-origin'})
   .then(function(r){ return r.json(); })
   .then(function(st){
     if (!st || !st.plan) return;

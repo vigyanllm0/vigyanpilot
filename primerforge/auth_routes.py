@@ -93,11 +93,17 @@ def register():
     token = create_token(email, "user")
     log_action(email, "register", f"New account created{' (academic)' if is_acad else ''}")
 
-    return jsonify({
+    resp = jsonify({
         "token": token,
         "user": {"email": email, "name": name, "role": "user"},
         "message": "Account created successfully."
-    }), 201
+    })
+    resp.set_cookie(
+        'pf_token', token,
+        httponly=True, secure=True, samesite='Lax',
+        max_age=86400 * 7, path='/'
+    )
+    return resp, 201
 
 
 LOCKOUT_THRESHOLDS = [
@@ -232,6 +238,7 @@ def me():
             "email": row['email'], "name": row['name'], "role": row['role'],
             "run_count": row['run_count'], "paid_runs": row['paid_runs'],
             "created_at": row['created_at'],
+            "auth_provider": row['auth_provider'] or 'email',
         },
         "usage": usage,
         "is_admin": row['role'] == "admin",
@@ -297,6 +304,7 @@ def google_auth():
 
     email = ginfo.get('email', '').strip().lower()
     name = ginfo.get('name', '')
+    google_id = str(ginfo.get('sub', '') or '')
 
     if not email:
         return jsonify({"error": "Could not retrieve email from Google."}), 400
@@ -305,9 +313,10 @@ def google_auth():
     row = db.execute("SELECT * FROM users WHERE email=?", (email,)).fetchone()
 
     if row:
-        # Existing user — login
+        # Existing user — login (silent auto-link, seamless)
         role = row['role']
-        db.execute("UPDATE users SET last_login=? WHERE email=?", (time.time(), email))
+        db.execute("UPDATE users SET last_login=?, auth_provider='google', google_id=? WHERE email=?",
+                   (time.time(), google_id, email))
         db.commit()
     else:
         # New user — register via Google
@@ -317,8 +326,8 @@ def google_auth():
         pw_hash = bcrypt.hashpw(random_pw.encode(), bcrypt.gensalt()).decode()
         role = "admin" if email == ADMIN_EMAIL else "user"
         db.execute(
-            "INSERT INTO users (email, password_hash, name, role) VALUES (?, ?, ?, ?)",
-            (email, pw_hash, name, role)
+            "INSERT INTO users (email, password_hash, name, role, auth_provider, google_id) VALUES (?, ?, ?, ?, 'google', ?)",
+            (email, pw_hash, name, role, google_id)
         )
         db.commit()
 
@@ -326,12 +335,18 @@ def google_auth():
     log_action(email, "google_login", f"Name: {name}")
     usage = check_usage(email)
 
-    return jsonify({
+    resp = jsonify({
         "token": token,
-        "user": {"email": email, "name": name, "role": role},
+        "user": {"email": email, "name": name, "role": role, "auth_provider": "google"},
         "usage": usage,
         "is_admin": role == "admin",
-    }), 200
+    })
+    resp.set_cookie(
+        'pf_token', token,
+        httponly=True, secure=True, samesite='Lax',
+        max_age=86400 * 7, path='/'
+    )
+    return resp, 200
 
 
 # ═══════════════════════════════════════════════════════════════════════════

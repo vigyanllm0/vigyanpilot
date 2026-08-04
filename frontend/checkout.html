@@ -123,7 +123,9 @@ var CHECKOUT_PLAN = null;
 var CHECKOUT_DATA = null;
 var CHECKOUT_ACADEMIC = false;
 
-function getToken() { return sessionStorage.getItem('pf_token') || localStorage.getItem('pf_token'); }
+// Auth is carried by the HttpOnly pf_token cookie (same-origin). 'pf_user'
+// is a non-sensitive profile marker used only for UI/login-state decisions.
+function isLoggedIn() { return !!(sessionStorage.getItem('pf_user') || localStorage.getItem('pf_user')); }
 
 function showLoading(show) { var el = document.getElementById('pay-loading'); if (el) el.style.display = show ? 'flex' : 'none'; }
 
@@ -155,7 +157,7 @@ async function loadPlanDetails(planId) {
 }
 
 function renderOrder(plan, pricing) {
-  var token = getToken();
+  var loggedIn = isLoggedIn();
   document.getElementById('display-plan').textContent = plan.display_name + ' (' + plan.tier + ')';
   document.getElementById('display-billing').textContent = plan.billing.charAt(0).toUpperCase() + plan.billing.slice(1);
   document.getElementById('display-analyses').textContent = plan.daily_analyses + ' / day';
@@ -166,8 +168,8 @@ function renderOrder(plan, pricing) {
   var period = plan.billing === 'yearly' ? '/year' : '/month';
 
   // Show academic verify section for non-academic users
-  if (token) {
-    fetch(API + '/api/payments/status', { headers: { 'Authorization': 'Bearer ' + token } })
+  if (loggedIn) {
+    fetch(API + '/api/payments/status', { credentials: 'same-origin' })
       .then(function(r) { return r.json(); })
       .then(function(s) {
         if (!s.is_academic) {
@@ -177,8 +179,8 @@ function renderOrder(plan, pricing) {
   }
 
   // Check for academic discount
-  if (token) {
-    fetch(API + '/api/payments/status', { headers: { 'Authorization': 'Bearer ' + token } })
+  if (loggedIn) {
+    fetch(API + '/api/payments/status', { credentials: 'same-origin' })
       .then(function(r) { return r.json(); })
       .then(function(status) {
         if (status.is_academic && plan.price_inr > 0) {
@@ -203,15 +205,14 @@ function renderOrder(plan, pricing) {
 }
 
 async function verifyAcademic() {
-  var token = getToken();
-  if (!token) { if (typeof openAuthModal === 'function') openAuthModal(); return; }
+  if (!isLoggedIn()) { if (typeof openAuthModal === 'function') openAuthModal(); return; }
   var btn = document.getElementById('btn-verify-academic');
   var txt = document.getElementById('verify-acad-txt');
   var res = document.getElementById('verify-acad-result');
   btn.disabled = true; txt.textContent = 'Verifying...';
   try {
     var r = await fetch(API + '/api/auth/verify-academic', {
-      method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'same-origin'
     });
     var d = await r.json();
     if (d.is_academic) {
@@ -241,8 +242,7 @@ function loadRazorpaySdk() {
 }
 
 async function proceedCheckout() {
-  var token = getToken();
-  if (!token) {
+  if (!isLoggedIn()) {
     if (typeof openAuthModal === 'function') openAuthModal();
     return;
   }
@@ -253,7 +253,7 @@ async function proceedCheckout() {
     if (CHECKOUT_ACADEMIC) orderBody.discount = 30;
     var r = await fetch(API + '/api/payments/create-order', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      headers: { 'Content-Type': 'application/json' }, credentials: 'same-origin',
       body: JSON.stringify(orderBody)
     });
     var d = await r.json();
@@ -281,7 +281,7 @@ async function openRazorpayCheckout(order) {
       try {
         var vr = await fetch(API + '/api/payments/verify-payment', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + getToken() },
+          headers: { 'Content-Type': 'application/json' }, credentials: 'same-origin',
           body: JSON.stringify({ razorpay_payment_id: response.razorpay_payment_id, razorpay_order_id: response.razorpay_order_id, razorpay_signature: response.razorpay_signature })
         });
         var vd = await vr.json();

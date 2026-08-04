@@ -2892,7 +2892,7 @@ async function runAutoDesign() {
   seqEl.classList.remove('error');
   errEl.classList.remove('show');
   // Gate: login required to run pipeline
-  if (!auth.token) {
+  if (!auth.user) {
     state._pendingRun = true;
     showAuthModal();
     return;
@@ -3167,8 +3167,7 @@ async function runBatchAnalysis(){
   $('manual-results').innerHTML=BUI.progressHTML(0,1);
   try{
     const d=await apiPost('/api/primer/batch-analysis',{file_content:_batchData});
-    var tkn=sessionStorage.getItem('pf_token')||localStorage.getItem('pf_token');
-    if(tkn){fetch((window.VIGYAN_BACKEND_URL||'')+'/api/usage/record',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+tkn},body:JSON.stringify({tool:'primer',sequences_count:d.total||1})}).catch(function(){});}
+    if(auth.user){fetch((window.VIGYAN_BACKEND_URL||'')+'/api/usage/record',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify({tool:'primer',sequences_count:d.total||1})}).catch(function(){});}
     $('manual-results').innerHTML='';
     let html='';
     if(d.parse_info){
@@ -3879,7 +3878,16 @@ document.addEventListener('DOMContentLoaded',function(){
 // ═══════════════════════════════════════════════════════════════════════════
 // AUTH MODULE
 // ═══════════════════════════════════════════════════════════════════════════
-const auth = { token: sessionStorage.getItem('pf_token')||localStorage.getItem('pf_token')||'', user: null, mode: 'login' };
+const auth = { token: '', user: null, mode: 'login' };
+// ── Session rehydrate: cookie is HttpOnly (not readable by JS). If a valid
+// session exists server-side, /api/auth/me authenticates via the cookie and
+// returns the user. The JWT itself is never persisted to storage.
+async function rehydrateSession() {
+  if (!sessionStorage.getItem('pf_rehydrated')) {
+    sessionStorage.setItem('pf_rehydrated', '1');
+    await fetchMe();
+  }
+}
 // ── Fetch wrapper with auto-refresh ───────────────────────────────────────
 const _origFetch = window.fetch;
 let _refreshing = null;
@@ -3908,14 +3916,13 @@ window.fetch = function(input, init) {
   });
 };
 function _saveAuth() {
-  try { sessionStorage.setItem('pf_token', auth.token || ''); localStorage.setItem('pf_token', auth.token || ''); } catch(e) {}
   try { if (auth.user) { sessionStorage.setItem('pf_user', JSON.stringify(auth.user)); localStorage.setItem('pf_user', JSON.stringify(auth.user)); } } catch(e) {}
 }
 async function initAuth() {
   // Fetch public config (Google Client ID, etc.)
   try { const r=await fetch(API+'/api/config/public', {}); if(r.ok) PF_CONFIG=await r.json(); } catch(_) {}
-  // Restore session
-  if (auth.token) { fetchMe(); }
+  // Restore session via cookie (HttpOnly, not readable by JS)
+  rehydrateSession();
   updateAuthUI();
   // Auth modal events
   $('auth-toggle')?.addEventListener('click', toggleAuthMode);
@@ -3942,7 +3949,7 @@ async function initAuth() {
   });
   // Auto-show login modal if ?showLogin=1
   var _sp = new URLSearchParams(window.location.search);
-  if (_sp.get('showLogin') === '1' && !auth.token) {
+  if (_sp.get('showLogin') === '1' && !auth.user) {
     setTimeout(showAuthModal, 600);
   }
 }
@@ -3988,7 +3995,7 @@ function updateAuthUI() {
   }
 }
 function toggleUserMenu() {
-  if (!auth.token) { showAuthModal(); return; }
+  if (!auth.user) { showAuthModal(); return; }
   $('user-menu-overlay')?.classList.add('show');
   fetchUsageForMenu();
 }
@@ -4026,7 +4033,6 @@ async function handleAuthSubmit() {
     if (!r.ok) { errEl.textContent = d.error || 'Authentication failed'; errEl.classList.add('show'); return; }
     auth.token = d.token;
     auth.user = d.user;
-    sessionStorage.setItem('pf_token', d.token); localStorage.setItem('pf_token', d.token);
     sessionStorage.setItem('pf_user', JSON.stringify(d.user || {})); localStorage.setItem('pf_user', JSON.stringify(d.user || {}));
     hideAuthModal();
     updateAuthUI();
@@ -4091,7 +4097,6 @@ async function handleGoogleSignIn() {
           }
           auth.token = d.token;
           auth.user = d.user;
-          sessionStorage.setItem('pf_token', d.token); localStorage.setItem('pf_token', d.token);
           sessionStorage.setItem('pf_user', JSON.stringify(d.user || {})); localStorage.setItem('pf_user', JSON.stringify(d.user || {}));
           hideAuthModal();
           updateAuthUI();
@@ -4112,22 +4117,22 @@ async function handleGoogleSignIn() {
 }
 async function fetchMe() {
   try {
-    const r = await fetch(API+'/api/auth/me', {headers:{'Authorization':'Bearer '+auth.token}});
+    const r = await fetch(API+'/api/auth/me', {credentials:'include', headers: auth.token ? {'Authorization':'Bearer '+auth.token} : {}});
     if (r.ok) {
       const d = await r.json();
       auth.user = d.user;
+      _saveAuth();
       updateAuthUI();
       if (d.usage) { $('menu-usage').textContent = `Runs: ${d.usage.runs_used} used, ${d.usage.paid_remaining} remaining`; }
     } else {
-      // Token expired
+      // No valid session (cookie missing or expired)
       auth.token = ''; auth.user = null;
-      sessionStorage.removeItem('pf_token'); localStorage.removeItem('pf_token');
+      sessionStorage.removeItem('pf_user'); localStorage.removeItem('pf_user');
     }
   } catch(e) { /* silent */ }
 }
 function logout() {
   auth.token = ''; auth.user = null;
-  sessionStorage.removeItem('pf_token'); localStorage.removeItem('pf_token');
   sessionStorage.removeItem('pf_user'); localStorage.removeItem('pf_user');
   updateAuthUI();
   $('user-menu-overlay')?.classList.remove('show');
@@ -4152,14 +4157,14 @@ function updateTopupFromInput() {
   updateTopup();
 }
 async function buyPlan(productId) {
-  if (!auth.token) { showAuthModal(); return; }
+  if (!auth.user) { showAuthModal(); return; }
   const body = {product_id: productId};
   if (productId === 'top_up') body.quantity = 1;
   if (!state.online) console.warn('buyPlan: state.online is false, attempting anyway');
   await startRazorpayCheckout(body);
 }
 async function buyCustomTopup() {
-  if (!auth.token) { showAuthModal(); return; }
+  if (!auth.user) { showAuthModal(); return; }
   const qty = parseInt($('topup-input')?.value) || 1;
   if (!state.online) console.warn('buyCustomTopup: state.online is false, attempting anyway');
   await startRazorpayCheckout({product_id: 'top_up', quantity: qty});
@@ -4560,7 +4565,7 @@ origTabSwitch.forEach(btn => {
   });
 });
 async function fetchUsageForMenu() {
-  if (!auth.token) return;
+  if (!auth.user) return;
   try {
     const r = await fetch(API + '/api/auth/usage', { headers: { 'Authorization': 'Bearer ' + auth.token } });
     if (!r.ok) return;
@@ -4584,7 +4589,7 @@ function setStarRating(val) {
   stars.forEach((s, i) => { s.textContent = i < val ? '★' : '☆'; s.style.color = i < val ? '#f59e0b' : '#ccc'; });
 }
 async function maybeShowAcademicPopup() {
-  if (!auth.token || !auth.user) return;
+  if (!auth.user || !auth.user.email) return;
   try {
     const r = await fetch(API + '/api/academic/status', {
       headers: { 'Authorization': 'Bearer ' + auth.token }
@@ -4686,7 +4691,7 @@ async function submitAcademicClaim() {
       return;
     }
   }
-  if (!auth.token) { showAuthModal(); closeAcademicModal(); return; }
+  if (!auth.user) { showAuthModal(); closeAcademicModal(); return; }
   const btn = $('acad-submit-btn');
   const spinner = $('acad-spinner');
   const btnText = $('acad-btn-text');
@@ -4755,7 +4760,7 @@ async function openHistoryModal() {
 async function loadReportHistory() {
   const body = $('history-modal-body');
   if (!body) return;
-  if (!auth.token) {
+  if (!auth.user) {
     body.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted)">Please log in to view your report history.</div>';
     return;
   }
@@ -4825,7 +4830,7 @@ function renderHistoryModal(reports, total) {
     ${rows}`;
 }
 async function downloadReport(reportId, format) {
-  if (!auth.token) { showAuthModal(); return; }
+  if (!auth.user) { showAuthModal(); return; }
   try {
     const r = await fetch(`${API}/api/reports/${reportId}/${format === 'csv' ? 'csv' : 'download'}`, {
       headers: { 'Authorization': 'Bearer ' + auth.token }
@@ -4845,7 +4850,7 @@ async function downloadReport(reportId, format) {
 }
 async function deleteReport(reportId) {
   if (!confirm('Delete this report? This cannot be undone.')) return;
-  if (!auth.token) return;
+  if (!auth.user) return;
   try {
     const r = await fetch(`${API}/api/reports/${reportId}`, {
       method: 'DELETE',
@@ -4859,7 +4864,7 @@ async function deleteReport(reportId) {
 }
 // Auto-save report after a successful pipeline run
 async function autoSaveReport(jobId, pairs, sequenceLength, geneInput) {
-  if (!auth.token || !jobId || !pairs || !pairs.length) return;
+  if (!auth.user || !jobId || !pairs || !pairs.length) return;
   try {
     const top = pairs[0] || {};
     const title = geneInput
@@ -4875,7 +4880,7 @@ async function autoSaveReport(jobId, pairs, sequenceLength, geneInput) {
   } catch(e) { /* silent — auto-save failure must not interrupt UI */ }
 }
 async function triggerReferralComplete() {
-  if (!auth.token) return;
+  if (!auth.user) return;
   try {
     await fetch(API + '/api/referral/complete', {
       method: 'POST',
@@ -4885,13 +4890,13 @@ async function triggerReferralComplete() {
 }
 // ── Referral Panel ─────────────────────────────────────────────────────────
 function openReferralPanel() {
-  if (!auth.token) { showAuthModal(); return; }
+  if (!auth.user) { showAuthModal(); return; }
   $('referral-overlay')?.classList.add('show');
   loadReferralPanel();
 }
 async function loadReferralPanel() {
   const body = $('referral-panel-body');
-  if (!body || !auth.token) return;
+  if (!body || !auth.user) return;
   body.innerHTML = '<div style="text-align:center;color:var(--muted)">Loading…</div>';
   try {
     const r = await fetch(API + '/api/referral/code', {

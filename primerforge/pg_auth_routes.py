@@ -419,6 +419,7 @@ def me():
     try:
         user = fetch_one(
             """SELECT u.id, u.email, u.full_name, u.role, u.organization, u.created_at,
+                      u.auth_provider,
                       tb.balance, tb.total_purchased, tb.total_consumed,
                       s.is_active AS has_subscription, s.expires_at
                FROM users u
@@ -441,6 +442,7 @@ def me():
             "role": user["role"],
             "organization": user.get("organization"),
             "member_since": str(user["created_at"]),
+            "auth_provider": user.get("auth_provider") or 'email',
         },
         "tokens": {
             "balance": user.get("balance") or 0,
@@ -524,6 +526,7 @@ def google_auth():
 
     email = (ginfo.get("email") or "").strip().lower()
     name = sanitize_string(ginfo.get("name", ""), max_length=256)
+    google_id = str(ginfo.get("sub", "") or "")
 
     if not email:
         return jsonify({"error": "Could not retrieve email from Google."}), 400
@@ -553,7 +556,10 @@ def google_auth():
                 (user_id,)
             )
             logger.info("Google auth auto-verified pending user %s", email)
-        execute("UPDATE users SET last_active_at = NOW() WHERE id = %s", (user_id,))
+        execute(
+            "UPDATE users SET last_active_at = NOW(), auth_provider = 'google', google_id = %s WHERE id = %s",
+            (google_id, user_id),
+        )
     else:
         # New user — register via Google
         random_pw = os.urandom(32).hex()
@@ -564,9 +570,9 @@ def google_auth():
         cur = db.cursor()
         try:
             cur.execute(
-                """INSERT INTO users (email, password_hash, full_name, role, status)
-                   VALUES (%s, %s, %s, %s, 'active') RETURNING id""",
-                (email, pw_hash, name, role),
+                """INSERT INTO users (email, password_hash, full_name, role, status, auth_provider, google_id)
+                   VALUES (%s, %s, %s, %s, 'active', 'google', %s) RETURNING id""",
+                (email, pw_hash, name, role, google_id),
             )
             row = cur.fetchone()
             user_id = row["id"]
@@ -591,11 +597,23 @@ def google_auth():
     token = create_token(email, role, user_id)
     log_action(email, "google_login", f"Name: {name}")
 
-    return jsonify({
+    resp = jsonify({
         "success": True,
         "token": token,
-        "user": {"email": email, "role": role, "id": user_id, "name": name},
-    }), 200
+        "user": {"email": email, "role": role, "id": user_id, "name": name, "auth_provider": "google"},
+    })
+    resp.set_cookie(
+        'pf_token', token,
+        httponly=True, secure=True, samesite='Lax',
+        max_age=86400 * 7, path='/'
+    )
+    if role == "admin":
+        resp.set_cookie(
+            'admin_tk', token,
+            httponly=True, secure=True, samesite='Strict',
+            max_age=1800, path='/'
+        )
+    return resp, 200
 
 
 # ═══════════════════════════════════════════════════════════════════════════

@@ -1,4 +1,3 @@
-var _rui_token = function(){return sessionStorage.getItem('pf_token')||localStorage.getItem('pf_token')};
 var _rui_api = window.VIGYAN_BACKEND_URL||'';
 var _rui_observer = null;
 
@@ -35,11 +34,9 @@ async function _rui_handleClick(e) {
     if (!await requireFeature('saved_results')) return;
     var tool = btn.dataset.tool;
     var data = await _rui_collectData(tool);
-    var tkn = _rui_token();
-    if (!tkn) { showAuthGate(); return; }
     try {
       var r = await fetch(_rui_api + '/api/results/save', {
-        method: 'POST', headers: {'Content-Type':'application/json','Authorization':'Bearer '+tkn},
+        method: 'POST', headers: {'Content-Type':'application/json'}, credentials: 'same-origin',
         body: JSON.stringify({tool: tool, title: tool+' analysis', inputs: data.inputs, outputs: {}, sequences_count: data.sequences_count})
       });
       var d = await r.json();
@@ -51,11 +48,9 @@ async function _rui_handleClick(e) {
     var fmt = btn.classList.contains('rui-pdf') ? 'pdf' : 'pptx';
     var tool = btn.dataset.tool;
     var data = await _rui_collectData(tool);
-    var tkn = _rui_token();
-    if (!tkn) { showAuthGate(); return; }
     try {
       var r = await fetch(_rui_api + '/api/export/'+fmt, {
-        method: 'POST', headers: {'Content-Type':'application/json','Authorization':'Bearer '+tkn},
+        method: 'POST', headers: {'Content-Type':'application/json'}, credentials: 'same-origin',
         body: JSON.stringify({tool: tool, inputs: data.inputs, outputs: {summary: 'Exported results'}})
       });
       if (!r.ok) { alert('Export failed'); return; }
