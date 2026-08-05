@@ -1,7 +1,47 @@
 # AGENTS.md — Agent Handoff & Tracking
 
-**Session:** Registration-wall restructure → guest mode ("computation is free, persistence is paid") — Completed Aug 5 2026
-**Next Sprint:** Phase 2 — Credibility (validation benchmark page live; wire faculty outreach next) → CMS decline-cookie re-verify → DB plan/token diff → final sweep
+**Session:** Design-audit verification pass → font token coherence + print CSS + noscript fallback — Aug 6 2026
+**Next Sprint:** Phase 2 — Credibility (validation benchmark page live; wire faculty outreach next) → design-audit Sprint 2+ (inline-style extraction, token adoption) → CMS decline-cookie re-verify → DB plan/token diff → final sweep
+
+## Design-Audit Verification Pass — Aug 6 2026
+
+### What & Why
+Third-party "Super Z" design audit (Manus cross-analysis, at `/Users/macbookpro/Downloads/vigyanllm-design-audit-cross-analysis.md`) made 10 claims. Verified every one against actual code before changing anything. **6 of 10 claims were wrong/stale**; 4 were real or partially real. Applied the genuinely-correct fixes; documented the refuted ones so we don't chase ghosts.
+
+### Verified findings (evidence-based)
+- **Font ("Inter renders, standardize on Inter") — PARTIALLY WRONG.** `design-tokens.css:83` hard-overrode body to `"Inter",-apple-system,sans-serif!important`, but **Inter is never loaded** on the 433 public pages (only 4 CMS/dashboard pages load `family=Inter`; public font call = Montserrat + Open Sans only). Net effect: body rendered the **OS system font** (looks like Inter → auditor's misread). `--font-b: Open Sans` was a dead token.
+- **Gradient hero ("#1 AI tell") — WRONG/stale.** All heroes already flat navy (`index.html` `.hero`) or transparent (`blast/msa/docking/validation` `.page-header`). The `linear-gradient(135deg,#1565C0,#22D3EE)` appears only on 30–52px circular avatars (60 pages), which is fine.
+- **"No loading states" — WRONG.** Spinners exist on all 4 tool pages.
+- **"No error states" — WRONG.** `.error-card`/`.error-msg`/`.fail-card` present everywhere.
+- **"Skip-link targets wrong on tools" — WRONG.** All 6 core pages link `#main-content` → real `id="main-content"`.
+- **"Dark-theme contrast fails (#94A3B8 on #0F172A)" — N/A.** No `prefers-color-scheme` / dark mode exists in any CSS.
+- **"No font-display:swap" — WRONG.** `display=swap` present on all 434 font links.
+- **Inline-style counts** — CONFIRMED: primer 338, index 71.
+- **Design tokens exist but unused** — CONFIRMED: `--space-*`, `--font-*`, color tokens defined in `primer.css`/`design-tokens.css`; 338 inline styles on primer fight them.
+- **No `@media print`** — CONFIRMED absent everywhere.
+- **No user-facing `<noscript>`** — CONFIRMED: only the GTM iframe fallback, no "enable JavaScript" message.
+
+### Changes applied
+| File | Change |
+|------|--------|
+| `frontend/design-tokens.css` | Body font override → `var(--font-b,"Open Sans")` (honors loaded Open Sans; kills dead Inter/system-font fallback). Added full `@media print` block: hides nav/modals/widgets, forces white bg + black text on dark blocks (report-preview/report-block/seq-display), page-break rules, single-column card layouts |
+| `frontend/primer.html` | Real `<noscript>` fallback ("This tool requires JavaScript…") after GTM iframe |
+| `frontend/blast.html` | Same noscript fallback |
+| `frontend/msa.html` | Same noscript fallback |
+| `frontend/docking.html` | Same noscript fallback |
+| `frontend/validation.html` | Same noscript fallback |
+| `frontend/index.html` | Same noscript fallback |
+
+### Verified
+- CSS brace balance 57/57; noscript open/close balanced 2/2 on all 6 pages.
+- Served via Flask test client (SQLite-forced): `/primer /blast /msa /docking /validation /index /design-tokens.css` all 200; assertions passed for noscript text + `@media print` + Open Sans body font.
+- No page-size regression: primer 106KB (~105KB prior), blast 74KB, msa 71KB, docking 142KB, validation 47KB.
+
+### Deferred / Not yet done
+- Sprint 2+: inline-style → design-token extraction (primer 338 styles is the big one; audit recommends extract-first-then-adopt order). High value but large; separate pass.
+- `--hero-bg` token in design-tokens.css is defined but only used in one place — harmless, leave.
+- `/landing-pages/` URL doorway concern — real but routing-level; needs product decision before rename.
+- No commit yet (user approval required); `docking_queue/` still untracked — do not commit.
 
 ## Phase 2: Public Validation Benchmark (`/validation`) — Completed Aug 5 2026
 

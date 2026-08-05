@@ -80,7 +80,7 @@
 
 /* Font consistency */
 h1{font-family:"Montserrat",sans-serif!important;font-size:clamp(28px,4vw,48px)!important}
-body{font-family:"Inter",-apple-system,sans-serif!important}
+body{font-family:var(--font-b,"Open Sans"),-apple-system,sans-serif!important}
 
 /* Terms & Conditions checkbox (auth modals + login/signup/cms-login) */
 .tc-field{margin-bottom:14px}
@@ -88,3 +88,24 @@ body{font-family:"Inter",-apple-system,sans-serif!important}
 .tc-checkbox input[type=checkbox],.tc-label input[type=checkbox],.auth-tc-input{width:16px;height:16px;margin-top:1px;accent-color:var(--blue);cursor:pointer;flex-shrink:0}
 .tc-checkbox a,.tc-label a{color:var(--blue);text-decoration:underline}
 .tc-label{display:flex;align-items:flex-start;gap:8px;font-size:13px;line-height:1.5;color:var(--text2);cursor:pointer}
+
+/* Print stylesheet */
+@media print{
+  header,nav,.nav-inner,.mobile-menu,.hamburger,.user-popup-overlay,.auth-overlay,.gate-overlay,.order-overlay,.pay-overlay,#ai-widget,#ai-widget-panel,#guest-claim-card,.nav-search-wrap,.drop-menu,.status-pill,.disclaimer,.footer-social,.skip-link,.slow-warn,button[class*="btn"],.mm-cta{display:none!important}
+  body{font-family:var(--font-b,"Open Sans"),-apple-system,sans-serif;color:#000;background:#fff;font-size:11pt}
+  main,.container,.tool-center,.tool-wrap,.results-wrap,.report-preview,.seq-display,.report-block,.primer-seq{width:100%!important;max-width:100%!important;margin:0;padding:0}
+  a{color:#000;text-decoration:underline}
+  .tool-wrap{flex-direction:column}
+  .tool-left,.tool-right{position:static;flex:auto}
+  .primer-grid,.two-col,.sample-report{grid-template-columns:1fr 1fr}
+  .report-preview,.report-block,.seq-display,.primer-seq{background:#fff!important;color:#000!important;border:1px solid #999;white-space:pre-wrap;overflow:visible}
+  .result-card,.panel-card,.proof-card,.tool-card{border:1px solid #999;box-shadow:none;page-break-inside:avoid}
+  h1,h2,h3,h4{page-break-after:avoid}
+  .pricing-grid,.proof-grid,.faq-grid,.trust-list,.db-health-grid{display:block}
+  .price-card,.proof-card,.faq-item,.trust-item,.db-health-item{margin-bottom:12px;page-break-inside:avoid}
+  section{padding:12pt 0}
+  footer{padding:12pt 0 0;border-top:1px solid #999}
+  .footer-grid{display:block}
+  .footer-col{margin-bottom:12pt}
+  .footer-bottom,.footer-col p,.footer-col a{color:#000!important}
+}
