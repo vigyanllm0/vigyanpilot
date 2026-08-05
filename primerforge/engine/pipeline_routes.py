@@ -23,10 +23,73 @@ from flask import Blueprint, Response, g, jsonify, request
 
 from ..crypto_utils import decrypt_data
 from ..database import execute, execute_returning, fetch_all, fetch_one
-from ..pg_auth import consume_token, require_auth
+from ..pg_auth import consume_token, get_current_user, require_auth
 from .branding import brand_error, brand_response
 
 logger = logging.getLogger("primerforge.engine.pipeline_routes")
+
+_GUEST_EMAIL = "guest@vigyanllm.local"
+
+
+def _ensure_guest_user() -> dict:
+    """Return the shared guest system user as {'email', 'role', 'user_id'}.
+    Creates the row on first anonymous request so guest compute reuses the
+    standard DB pipeline path without persisting to any account."""
+    row = fetch_one(
+        "SELECT id, email, role FROM users WHERE email = %s", (_GUEST_EMAIL,)
+    )
+    if not row:
+        import hashlib
+
+        pw = hashlib.sha256(os.urandom(32)).hexdigest()
+        try:
+            row = execute_returning(
+                """INSERT INTO users (email, password_hash, full_name, role, status)
+                   VALUES (%s, %s, 'Anonymous Guest', 'guest', 'active')
+                   RETURNING id, email, role""",
+                (_GUEST_EMAIL, pw),
+            )
+        except Exception:
+            # Legacy DBs may lack a 'guest' value in the user_role enum — fall
+            # back to 'user'. Guests are still isolated by the g.is_guest flag
+            # (quota skip + decorator), never by role.
+            try:
+                row = execute_returning(
+                    """INSERT INTO users (email, password_hash, full_name, role, status)
+                       VALUES (%s, %s, 'Anonymous Guest', 'user', 'active')
+                       RETURNING id, email, role""",
+                    (_GUEST_EMAIL, pw),
+                )
+            except Exception:
+                return {}
+    if not row:
+        return {}
+    return {"email": row["email"], "role": row["role"], "user_id": row["id"]}
+
+
+def allow_guest(f):
+    """Decorator: allow anonymous (guest) access.
+
+    Authenticated users keep their own identity; anonymous users run under a
+    shared guest identity so "computation is free". Persistence/admin routes
+    keep @require_auth. Isolation relies on UUID job ids (128-bit secrets)."""
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        user = get_current_user()
+        if not user:
+            user = _ensure_guest_user()
+            if not user.get("user_id"):
+                return jsonify(brand_response({
+                    "error": brand_error("Guest access unavailable."),
+                    "code": "AUTH_REQUIRED",
+                })), 401
+            g.user = user
+            g.is_guest = True
+        else:
+            g.user = user
+            g.is_guest = False
+        return f(*args, **kwargs)
+    return decorated
 
 
 def _route_error_handler(f):
@@ -188,7 +251,7 @@ def _normalise_order_probe(probe: dict, index: int) -> dict:
 
 @pipeline_bp.route("/api/pipeline/submit", methods=["POST"])
 @_route_error_handler
-@require_auth
+@allow_guest
 def submit_pipeline():
     """
     Submit a new 22-step pipeline job.
@@ -296,9 +359,10 @@ def submit_pipeline():
 
     user_id = g.user.get("user_id")
     is_admin = g.user.get("role") == "admin"
+    is_guest = bool(getattr(g, "is_guest", False))
 
-    # Quota check: skip for admin users, reject if regular user exceeded monthly quota
-    if not is_admin:
+    # Quota check: skip for admin and guest users, reject if regular user exceeded monthly quota
+    if not is_admin and not is_guest:
         try:
             quota_row = fetch_one(
                 """SELECT quota_used, monthly_quota FROM user_quotas
@@ -405,7 +469,7 @@ def submit_pipeline():
     })), 202
 @pipeline_bp.route("/api/pipeline/status/<job_id>", methods=["GET"])
 @_route_error_handler
-@require_auth
+@allow_guest
 def get_pipeline_status(job_id: str):
     """Get current status and progress of a pipeline job."""
     user_id = g.user.get("user_id")
@@ -449,7 +513,7 @@ def get_pipeline_status(job_id: str):
 
 @pipeline_bp.route("/api/pipeline/result/<job_id>", methods=["GET"])
 @_route_error_handler
-@require_auth
+@allow_guest
 def get_pipeline_result(job_id: str):
     """Get full results of a completed pipeline job, including compliance and order payloads."""
     user_id = g.user.get("user_id")

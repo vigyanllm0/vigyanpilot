@@ -1,6 +1,6 @@
 # AGENTS.md — Agent Handoff & Tracking
 
-**Session:** HttpOnly-cookie auth migration (completed + full regression) & CMS image editing — Completed Aug 5 2026
+**Session:** Registration-wall restructure → guest mode ("computation is free, persistence is paid") — Completed Aug 5 2026
 **Next Sprint:** CMS decline-cookie re-verify → DB plan/token diff → final sweep
 
 **⚠️ Phase 4 critical note:** `/api/usage/check` must fire **before** batch processing starts — client-side gate (feature-gate.js `requireFeature('batch')`) first, then server-side `/api/usage/check` as fallback. Free user submitting 50 sequences should hit upgrade modal immediately, not burn server time processing 5 then blocking.
@@ -524,4 +524,56 @@ Added "Scientific References" sections with proper citations to 8 tool pages:
 - `import os, glob` loop with `string.replace()` for safe batch editing
 - `grep -n` for finding exact line numbers in large HTML files
 - Follow existing blog post HTML patterns for new content (nav, footer, auth, schema, styling)
+- Headless-Chrome verification: `"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless=new --remote-debugging-port=9222 --remote-allow-origins='*' --user-data-dir=<tmp> <url>` then drive via Python `websocket-client` CDP (use `--remote-allow-origins=*` on Chrome 150+, else 403)
+
+## Registration-Wall Restructure — Guest Mode (Aug 5 2026)
+
+### Decision
+**Option A — guest mode, then register.** "Computation is free, persistence is paid."
+- Anonymous visitors can **run** all tools (manual analysis, docking, and the full auto-design pipeline) at no charge, no login.
+- **Persistence stays paid/gated**: save to dashboard, export PDF/PPT, batch/history, advanced docking — via `feature-gate.js` `requireFeature()`.
+- **Killed the legacy FREE_RUNS=2 / `run_count` gate** — the 5/day daily-limit is the sole Free-tier gate; `run_count` column kept only as a counter (`record_daily_usage` still increments it — harmless, not a gate).
+- Rationale: 2.07% conversion behind a pre-value wall; IDT/NCBI/NEB show results before asking; BLAST/MSA already guest-mode; the "No login. Design now." hero promise must be true.
+- Guests get a **claim card** ("Save My Results →") after a run; clicking opens the **Create Account** (register) modal and fires the report-save on login.
+
+### Backend changes
+- **SQLite path (`primerforge/primer_server.py`)**: `_dev_user_or_error()` (~848) now returns `(user_or_None, None)` — never 401s.
+  - `/api/pipeline/submit` (858): usage check only `if user:`; switched `check_usage` → `check_daily_usage(user["email"],"primer")`; jobs store `"user_email"` (or `""`) + `"guest": not user`; usage/log only when user.
+  - `/api/pipeline/status`(1020)/`result`(1056): guest jobs readable by anyone; owned jobs still envelope-checked.
+  - `/api/primer/auto-design`(1227): 401 removed; `if user:` daily-limit + PG-token consume; usage increment guarded `if not test_mode and user:`.
+  - `/api/primer/manual-analysis`(~1511): 401 removed (no usage check existed).
+  - docking consensus(~2491): 401 removed; `if user:` daily-limit + token consume/record; polling unchanged.
+- **Postgres production blueprint (`primerforge/engine/pipeline_routes.py`)** — the important one (prod runs PG; the shared SQLite handlers aren't registered):
+  - Added `allow_guest` decorator + `_ensure_guest_user()` (shared system user, email `guest@vigyanllm.local`, role `guest`; **falls back to role `user`** on legacy DBs whose `user_role` enum lacks `guest` — quota gating uses the `g.is_guest` flag, not role, so this is safe).
+  - `submit/status/result` switched `@require_auth` → `@allow_guest`. Guests get a real `user_id` (guest row), quota/token blocks skip when `g.is_guest`. Isolation via UUID job ids (122-bit). No frontend changes needed (no guest_token threading).
+  - **`pipeline_jobs.user_id` stays `NOT NULL`** — no migration required.
+  - Advanced/export routes (`jobs`, `order`, `compliance`, raw export, step output) keep `@require_auth` (persistence/export = paid ✓).
+
+### Frontend changes
+- **`frontend/primer-app.js`** (minified; edited via Python `str.replace`): removed `if(!G.user)return n._pendingRun=!0,void K();` from auto-design `C()`; guest claim card injected post-run (`!G.user&&P.length>0` → `#guest-claim-card`); `window.openGuestClaim`; claim-save hook in login-success handlers (`/api/reports/save` when `n._pendingClaim`); `T.limit`→`T.daily_limit`; copy ("Create a free account to save & export… 5 analyses free every day").
+- **`frontend/docking.html`**: guest claim banner in `displayResults` (single-ligand anon runs already worked — no client gate).
+- **Register/Login modal fix**: `Z()` is a **toggle** (`login↔register`), so `openGuestClaim`/`openAuthModal` were pre-setting `G.mode` then toggling → wrong tab. Gave `Z(t)` an optional target arg; `openAuthModal`→`Z("login")`, `openGuestClaim`→`Z("register")`.
+- **password hint aligned to server policy** everywhere: "Min 8: upper, lower, digit, special" (`primer.html`, `login.html`, `signup.html`, `auth-shared.js`) + `auth-shared.js` client validation (≥8 + upper+lower+digit+special).
+- **Google buttons fixed** on standalone `signup.html`/`login.html`: replaced broken `google.accounts.id.prompt()` (no initialize) with `google.accounts.oauth2.initTokenClient({client_id:'598272150916-…', scope:'email profile', callback:handleGoogleCredential}).requestAccessToken()` + fallback (id.initialize/prompt + lazy script load); `handleGoogleCredential` POSTs `{access_token}` to `/api/auth/google`, stores `pf_user`, redirects `/dashboard`.
+
+### Tests & verification
+- **`tests/test_guest_mode.py`** (new, 6 pass, SQLite-forced): anon manual-analysis 200; anon pipeline submit 202; anon reads own guest job; anon single-ligand docking 202; `results/save` still 401 for anon; logged-in Free user sees daily limit.
+- **Live PG production server (headless Chrome, user-mandated step 4.5)** ✅: anon `/primer` (no auth modal) → pasted real human HBB → "Run" → 16 pairs rendered (no 401) → **"Save My Results →" claim card appears** → click → **Create Account** modal. Confirmed the PG blueprint gap (SQLite-only tests missed it) and the register/login toggle bug.
+- **Pre-existing failures (verified baseline via `git stash`)**: `test_auto_design_does_not_mark_unrun_specificity_as_pass` + `test_inconclusive_specificity_is_not_specific` (both fail identically on baseline — anon auto-design in PG mode) + 4 `test_payment_routes.py`. Not caused by this work.
+- **No regression**: `test_guest_mode.py` (6) + `test_http_only_cookie_auth.py` (3) pass; `test_primer_server.py` matches baseline.
+
+### Files Changed
+| File | Change |
+|------|--------|
+| `primerforge/engine/pipeline_routes.py` | `allow_guest` decorator + `_ensure_guest_user()` (guest system user, role-fallback to `user`); `submit/status/result` `@require_auth`→`@allow_guest`; quota/token blocks skip for `g.is_guest` |
+| `primerforge/primer_server.py` | Guest mode on `_dev_user_or_error`, `/api/pipeline/*`, `auto-design`, `manual-analysis`, docking consensus (`if user:` limits/increments; `guest` job ownership) |
+| `frontend/primer-app.js` | Removed auto-design auth wall; guest claim card + `openGuestClaim`; claim-save hook; `T.daily_limit`; `Z(t)` mode arg (fix register/login toggle) |
+| `frontend/docking.html` | Guest claim banner in `displayResults` |
+| `frontend/primer.html`, `login.html`, `signup.html`, `auth-shared.js` | Password hint/validation = server policy (8+ upper/lower/digit/special); fixed Google OAuth flow (signup/login) |
+| `tests/test_guest_mode.py` | New: 6 guest-mode tests |
+
+### Next Steps
+1. ✅ **Phase 1 complete** — guest mode shipped & pushed (approved by user after live prod verification).
+2. **Phase 2 — Credibility**: validation benchmarks, faculty outreach, positioning pivot ("credibility-first"). The registration wall was the last blocker.
+3. Do not `git add docking_queue/` — pre-existing local runtime artifact, not part of the repo.
 - No git push until user approval

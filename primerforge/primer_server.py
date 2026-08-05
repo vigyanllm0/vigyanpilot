@@ -846,13 +846,9 @@ def create_app() -> Flask:
                 )
 
         def _dev_user_or_error():
+            """Guest-mode auth: returns (user_or_None, auth_error).
+            Anonymous requests are allowed (computation is free); None user means guest."""
             user = get_current_user()
-            if not user:
-                return None, (jsonify({
-                    "error": "Authentication required. Please login or register to run the pipeline.",
-                    "code": "AUTH_REQUIRED",
-                    "action": "show_auth",
-                }), 401)
             return user, None
 
         @app.route("/api/pipeline/submit", methods=["POST"])
@@ -866,14 +862,16 @@ def create_app() -> Flask:
                 if auth_error:
                     return auth_error
 
-                usage = check_usage(user["email"])
-                if not usage["can_run"] and user.get("role") != "admin":
-                    return jsonify({
-                        "error": "Usage limit reached. Payment required for additional runs.",
-                        "code": "PAYMENT_REQUIRED",
-                        "action": "show_payment",
-                        "usage": usage,
-                    }), 402
+                if user:
+                    from .auth import check_daily_usage
+                    usage = check_daily_usage(user["email"], "primer")
+                    if not usage["can_analyze"] and user.get("role") != "admin":
+                        return jsonify({
+                            "error": "Daily analysis limit reached. Upgrade to Pro for more analyses or wait until midnight IST.",
+                            "code": "PAYMENT_REQUIRED",
+                            "action": "show_payment",
+                            "usage": usage,
+                        }), 402
 
                 data = request.get_json(silent=True) or {}
                 sequence = data.get("sequence", "")
@@ -986,7 +984,8 @@ def create_app() -> Flask:
 
                 DEV_PIPELINE_JOBS[job_id] = {
                     "job_id": job_id,
-                    "user_email": user["email"],
+                    "user_email": user["email"] if user else "",
+                    "guest": not user,
                     "status": status,
                     "mode": mode,
                     "steps": outcomes,
@@ -995,7 +994,7 @@ def create_app() -> Flask:
                     "created_at": started,
                 }
 
-                if status == "completed" and user.get("role") != "admin":
+                if status == "completed" and user and user.get("role") != "admin":
                     increment_usage(user["email"])
                     try: record_daily_usage(user["email"], "primer", 1)
                     except: pass
@@ -1024,7 +1023,9 @@ def create_app() -> Flask:
                     return auth_error
 
                 job = DEV_PIPELINE_JOBS.get(job_id)
-                if not job or job["user_email"] != user["email"]:
+                if not job:
+                    return jsonify({"error": "Job not found."}), 404
+                if not job.get("guest") and (not user or job["user_email"] != user["email"]):
                     return jsonify({"error": "Job not found."}), 404
 
                 return jsonify({
@@ -1060,7 +1061,9 @@ def create_app() -> Flask:
                     return auth_error
 
                 job = DEV_PIPELINE_JOBS.get(job_id)
-                if not job or job["user_email"] != user["email"]:
+                if not job:
+                    return jsonify({"error": "Job not found."}), 404
+                if not job.get("guest") and (not user or job["user_email"] != user["email"]):
                     return jsonify({"error": "Job not found."}), 404
 
                 return jsonify({
@@ -1254,17 +1257,16 @@ def create_app() -> Flask:
 
         # ── Auth & Usage Check ────────────────────────────────────────────
         user = get_current_user()
-        if not user:
-            return jsonify({"error": "Authentication required. Please login or register to run the pipeline.",
-                           "code": "AUTH_REQUIRED", "action": "show_auth"}), 401
-        usage = check_usage(user['email'])
-        if not usage['can_run'] and user.get('role') != 'admin':
-            return jsonify({"error": "Usage limit reached. Payment required for additional runs.",
-                           "code": "PAYMENT_REQUIRED", "action": "show_payment",
-                           "usage": usage}), 402
+        if user:
+            from .auth import check_daily_usage
+            usage = check_daily_usage(user['email'], "primer")
+            if not usage['can_analyze'] and user.get('role') != 'admin':
+                return jsonify({"error": "Daily analysis limit reached. Upgrade to Pro for more analyses or wait until midnight IST.",
+                               "code": "PAYMENT_REQUIRED", "action": "show_payment",
+                               "usage": usage}), 402
 
         # Consume token BEFORE running pipeline (PostgreSQL mode)
-        if USE_POSTGRES and consume_token:
+        if user and USE_POSTGRES and consume_token:
             if user.get('role') != 'admin':
                 if not consume_token(user.get('user_id'), user['email']):
                     return jsonify({"error": "No tokens remaining. Purchase more to continue.",
@@ -1472,7 +1474,7 @@ def create_app() -> Flask:
         pipeline_envelope = _build_pipeline_status(normalised, elapsed_ms)
 
         # ── Increment usage after successful run ──────────────────────────
-        if not test_mode:
+        if not test_mode and user:
             if USE_POSTGRES and record_operation_cost:
                 record_operation_cost(
                     user_id=user.get('user_id'),
@@ -1513,9 +1515,6 @@ def create_app() -> Flask:
         if not READY:
             return err("Core not available.", "DESIGN_FAILED", 503)
         user = get_current_user()
-        if not user:
-            return jsonify({"error": "Authentication required. Please login first.",
-                           "code": "AUTH_REQUIRED", "action": "show_auth"}), 401
         data = request.get_json(silent=True) or {}
         forward = data.get("forward", "").strip()
         reverse = data.get("reverse", "").strip()
@@ -2491,19 +2490,18 @@ def create_app() -> Flask:
 
         # ── Auth & Docking Usage Check ────────────────────────────────────
         user = get_current_user()
-        if not user:
-            return jsonify({"error": "Authentication required. Please login or register to use molecular docking.",
-                           "code": "AUTH_REQUIRED", "action": "show_auth"}), 401
-        dock_usage = check_docking_usage(user['email'])
-        if not dock_usage['can_run'] and user.get('role') != 'admin':
-            return jsonify({"error": "Docking usage limit reached. Purchase more docking runs to continue.",
-                           "code": "PAYMENT_REQUIRED", "action": "show_docking_payment",
-                           "usage": dock_usage}), 402
+        if user:
+            from .auth import check_daily_usage
+            dock_usage = check_daily_usage(user['email'], "docking")
+            if not dock_usage['can_analyze'] and user.get('role') != 'admin':
+                return jsonify({"error": "Daily docking analysis limit reached. Upgrade to Pro for more analyses or wait until midnight IST.",
+                               "code": "PAYMENT_REQUIRED", "action": "show_docking_payment",
+                               "usage": dock_usage}), 402
 
         job_id = create_job(sequence, ligand_smiles_list, top_n)
 
         # Consume token AFTER successful queuing (both SQLite and PostgreSQL)
-        if user.get('role') != 'admin':
+        if user and user.get('role') != 'admin':
             if USE_POSTGRES and consume_docking_token:
                 if not consume_docking_token(user.get('user_id'), user['email']):
                     return jsonify({"error": "No docking tokens remaining. Purchase more to continue.",

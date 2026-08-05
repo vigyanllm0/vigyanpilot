@@ -63,7 +63,7 @@ function renderAuth(){
     '<div style="display:flex;align-items:center;gap:12px;margin-bottom:16px"><span style="flex:1;height:1px;background:var(--outline)"></span><span style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em">or</span><span style="flex:1;height:1px;background:var(--outline)"></span></div>'+
     (isRegister?'<div class="field"><label>Full name</label><input type="text" id="auth-name" class="auth-input" placeholder="Dr. Anjali Sharma"></div>':'')+
     '<div class="field"><label>Email</label><input type="email" id="auth-email" class="auth-input" placeholder="researcher@lab.edu"></div>'+
-    '<div class="field"><label>Password</label><input type="password" id="auth-pass" class="auth-input" placeholder="Min 6 characters"></div>'+
+    '<div class="field"><label>Password</label><input type="password" id="auth-pass" class="auth-input" placeholder="Min 8: upper, lower, digit, special"></div>'+
     '<div class="field tc-field"><label class="tc-label"><input type="checkbox" id="auth-tc" class="auth-tc-input"> I agree to the <a href="/terms" target="_blank" rel="noopener">Terms &amp; Conditions</a> and <a href="/privacy" target="_blank" rel="noopener">Privacy Policy</a></label></div>'+
     '<button class="auth-btn" id="auth-submit">'+(isRegister?'Create account':'Sign in')+'</button>'+
     '<div class="auth-err" id="auth-err"></div>'+
@@ -123,7 +123,7 @@ function submitAuth(){
   var err=document.getElementById('auth-err');
   var tc=document.getElementById('auth-tc');
   if(!email||!pass){err.style.display='block';err.textContent='Please fill all fields.';return}
-  if(pass.length<6){err.style.display='block';err.textContent='Password must be 6+ characters.';return}
+  if(pass.length<8||!/[A-Z]/.test(pass)||!/[a-z]/.test(pass)||!/[0-9]/.test(pass)||!/[^A-Za-z0-9]/.test(pass)){err.style.display='block';err.textContent='Password must be 8+ chars with upper, lower, digit & special.';return}
   if(tc&&!tc.checked){err.style.display='block';err.textContent='Please accept the Terms & Conditions to continue.';return}
   err.style.display='none';
   var body={email:email,password:pass};
