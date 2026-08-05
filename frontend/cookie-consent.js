@@ -39,7 +39,7 @@
                     <p style="margin: 0; font-size: 0.875rem;">
                         We use cookies to improve your experience and analyze traffic.
                         By clicking "Accept", you consent to our use of cookies per the DPDP Act 2023.
-                        <a href="/privacy.html" style="color: #60a5fa; text-decoration: underline;">Read our Privacy Policy</a>.
+                        <a href="/privacy" style="color: #60a5fa; text-decoration: underline;">Read our Privacy Policy</a>.
                     </p>
                 </div>
                 <div style="display: flex; gap: 0.5rem;">
