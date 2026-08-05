@@ -45,6 +45,7 @@ PRIORITY_MAP = {
     "glossary.html": 0.80,
     "validated-primer-design.html": 0.90,
     "validated-primer-design-report.html": 0.70,
+    "validation.html": 0.60,
     "security.html": 0.80,
     "privacy.html": 0.70,
     "terms.html": 0.70,
@@ -373,6 +374,7 @@ const CORE = [
   "/gene-prefers","/landing-pages","/hub",
   "/docs/getting-started","/docs/pipeline-config",
   "/autodock-vs-swissdock","/blast-vs-diamond","/clustal-vs-muscle","/idt-vs-vigyanllm",
+  "/validation",
 ];
 
 const BLOG = {blog_json};

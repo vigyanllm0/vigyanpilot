@@ -1,7 +1,47 @@
 # AGENTS.md — Agent Handoff & Tracking
 
 **Session:** Registration-wall restructure → guest mode ("computation is free, persistence is paid") — Completed Aug 5 2026
-**Next Sprint:** CMS decline-cookie re-verify → DB plan/token diff → final sweep
+**Next Sprint:** Phase 2 — Credibility (validation benchmark page live; wire faculty outreach next) → CMS decline-cookie re-verify → DB plan/token diff → final sweep
+
+## Phase 2: Public Validation Benchmark (`/validation`) — Completed Aug 5 2026
+
+### What & Why
+Built `/validation` — an independent, reproducible calibration of VigyanLLM's primer thermodynamics against **published primer sets**. Supports the "credibility-first" positioning pivot: instead of asserting accuracy, show the engine reproducing literature-backed oligos.
+
+### Method
+- Picked **3 published primer pairs** (all sequences verified verbatim against ≥2 independent sources):
+  - **SARS-CoV-2 nucleocapsid N1** — Lu X, et al. 2020, Emerg Infect Dis; DOI 10.3201/eid2608.201246 (F `GACCCCAAAATCAGCGAAAT`, R `TCTGGTTACTGCCAGTTGAATCTG`).
+  - **Human GAPDH** (NM_002046) — OriGene qSTAR pair **HP205798** (rep seq F `GTCTCCTCTGACTTCAACAGCG`, R `ACCACCCTGTTGCTGTAGCCAA`), cited in 75+ publications.
+  - **Human ACTB** (NM_001101) — OriGene **HP204660**, independently confirmed identical in JBC Table S1 (DOI 10.1074/jbc.M111.311605); F `CACCATTGGCAATGAGCGGTTC`, R `AGGTCTTTGCGGATGTCCACGT`.
+- Ran every primer through the **real engine** (`primerforge/core/manual_analyser.py` → SantaLucia 1998 NN Tm + Primer3 v2.6.1 hairpin/dimer), NOT copied from papers. Conditions: 50 mM Na⁺, 1.5 mM Mg²⁺, 0.2 mM dNTP, 200 nM primer (Primer-BLAST defaults).
+- **Amplicon sizes verified against live NCBI references** (EFetch, not guessed): N1 = 72 bp (genome-verified), GAPDH = 131 bp (NM_002046.7), ACTB = 135 bp (NM_001101.5).
+- Page equates VigyanLLM's math with the shared published model underlying NCBI Primer-BLAST (Primer3 backend) and IDT OligoAnalyzer (SantaLucia NN + salt model); honest claim: "same chemistry, agree within tool-to-tool variation" — not "better than".
+
+### Files Changed
+| File | Change |
+|------|--------|
+| `frontend/validation.html` | New — copied template from blast-vs-diamond.html; swapped meta/twitter/OG, BreadcrumbList→Validation, SoftwareApplication(BLAST)→ dropped, FAQPage JSON-LD (5 Q&A) rewritten; body renders 3 pair cards (Tm/GC%/hairpin/dimer/warnings) + references + inline FAQ + CTA to `/primer`; footer Validation link; extra CSS (`.pair-card`, `.val-table`, `.pill`, `.mono`, `.warn`, `.faq-item`) |
+| `frontend/validation-data.json` | New — JSON snapshot computed by the real engine + verified amplicon sizes |
+| `frontend/api/sitemap.xml.js` | Added `/validation` to CORE array |
+| `frontend/sitemap.xml` | Added `/validation` URL (prio 0.6, lastmod 2026-08-03→0.6) |
+| `generate_sitemap.py` | Added `validation.html: 0.60` to PRIORITY_MAP + `/validation` to CORE array |
+
+### Verified
+- Served via clean-URL fallback (`/validation` → `validation.html`) — 200.
+- Headless-Chrome DOM: 3 pair cards, all sequences + Tm values render, 5 FAQ items, footer link present, auth popup wired; no JS errors.
+- Both JSON-LD blocks (Breadcrumb + FAQPage) valid JSON.
+- `sitemap.xml.js` ESM-syntax-checked; `sitemap.xml` XML-parses; `generate_sitemap.py` AST-parses.
+- ⚠ Model read-only (no image input) — screenshot `/tmp/vlc/validation.png` capture was taken but could not be visually inspected; DOM dump used instead.
+
+### Not Yet Done / Notes
+- Faculty outreach emails (Task 2.3) drafted but NOT sent — awaits `/validation` reference as the credibility hook. Recommended next step: tailor outreach to `faculty@<univ>.in` using this page as the evidence link.
+- Footer "Validation" link added **on validation.html only**; other pages still link via sitemap. Enemy if we want cross-page visibility, batch the footer link like the "Cite Us" pass.
+- `docking_queue/` untracked — do not commit.
+
+### Next Steps
+1. Task 2.3: draft faculty outreach emails using `/validation` as the proof point; send in batches.
+2. Positioning pivot copy uses `/validation` as the credibility anchor.
+3. (eventually) Batch footer nav link across pages.
 
 **⚠️ Phase 4 critical note:** `/api/usage/check` must fire **before** batch processing starts — client-side gate (feature-gate.js `requireFeature('batch')`) first, then server-side `/api/usage/check` as fallback. Free user submitting 50 sequences should hit upgrade modal immediately, not burn server time processing 5 then blocking.
 
