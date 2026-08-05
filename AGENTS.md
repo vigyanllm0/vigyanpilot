@@ -3,6 +3,30 @@
 **Session:** Design-audit verification pass → font token coherence + print CSS + noscript fallback — Aug 6 2026
 **Next Sprint:** Phase 2 — Credibility (validation benchmark page live; wire faculty outreach next) → design-audit Sprint 2+ (inline-style extraction, token adoption) → CMS decline-cookie re-verify → DB plan/token diff → final sweep
 
+## CTR / Tracking Cleanup — Aug 6 2026 (committed `b3960cbd` + pending)
+
+### What & Why
+Two P0 CTR fixes per user: (1) remove duplicate GTM/GA loads, (2) rewrite `/blog/ncbi-primer-blast-guide` title/meta. **Note: the user's described line-by-line homepage dupes did NOT match the repo** — index.html already had exactly one `gtag/js` + one `gtm.js` with correct consent→init ordering. Actual issues found & fixed:
+- **4 pages had a stray plain `<script async src="...gtm.js?id=GTM-KRP5LLPR"></script>`** in addition to the proper GTM loader (dna-to-protein, pcr-product-calculator, restriction-enzyme-finder, reverse-complement) → removed; each now loads `gtm.js` exactly once.
+- **dashboard.html used a different GTM container (`GTM-KX72TQBS`)** in both loader + noscript while all 115 other pages use `GTM-KRP5LLPR` → normalized to `GTM-KRP5LLPR`.
+- Blog post: rewritten title/meta would have been **false claims** ("with Examples", "Includes example sequences for SARS-CoV-2 N1 and human GAPDH") — the post had zero example sequences. Added a compact **"Worked Example: Checking Published Primers"** section using the already-verified N1 + GAPDH pairs from `/validation-data.json` (with amplicon sizes + DOI/OriGene sources + cross-link to `/validation`), making the title/meta truthful.
+
+### Changes applied
+| File | Change |
+|------|--------|
+| `frontend/dna-to-protein.html`, `pcr-product-calculator.html`, `restriction-enzyme-finder.html`, `reverse-complement.html` | Removed stray duplicate `gtm.js` plain script tag (keep proper loader) |
+| `frontend/dashboard.html` | `GTM-KX72TQBS` → `GTM-KRP5LLPR` in GTM loader + noscript iframe |
+| `frontend/blog/ncbi-primer-blast-guide.html` | Title/meta/OG/Twitter → "NCBI Primer-BLAST Guide (2026): Step-by-Step with Examples"; added worked-example H2 section (N1 + GAPDH) cross-linking /validation |
+
+### Verified
+- `gtm.js?id=` loaders: no page >1; `gtag/js`: no page >1; single GTM ID `GTM-KRP5LLPR` (113 pages).
+- Blog: 4 primer sequences present, N1/GAPDH sections present, all tag pairs balanced.
+- Test-client: `/blog/ncbi-primer-blast-guide` + 5 edited pages all 200; blog title + worked-example assertions pass; edited pages load `gtm.js` exactly once.
+
+### Deferred / Not yet done
+- **Double-tracking risk from GTM container also firing GA4** (58 pages load BOTH direct `gtag.js` AND GTM) — this is a GTM-container config decision, not a code fix; verify inside GTM whether GA4 tag is deployed there and if so rely on GTM alone or direct gtag alone.
+- No commit yet (user approval required); `docking_queue/` still untracked — do not commit.
+
 ## Design-Audit Verification Pass — Aug 6 2026
 
 ### What & Why
