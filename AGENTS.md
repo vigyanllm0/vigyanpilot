@@ -27,8 +27,8 @@ Also committed prior pending CTR/GTM batch as `7d4c28b8` (dedup GTM/GA + ncbi bl
 - Task-5 titles all ≤65 chars; `<title>`/og/twitter/JSON-LD headline+breadcrumb consistent (JSON-LD raw `&`, HTML attrs escaped).
 - Special chars OK in JSON-LD (`&` raw), HTML attrs escaped (`&amp;`).
 
-### Pre-existing issue (NOT from this sprint) — needs a decision
-**145 glossary OG-image 404s**: 210 glossary pages point at `https://www.vigyanllm.in/og-glossary-<slug>.png` at the repo ROOT (not `/assets/`), but **no such files ever existed** — live `curl` returns 404. Predates this session. Every glossary page social-share shows a broken OG card. The generation pipeline is ready to make ~145 more on-brand cards, but that's a deliberate scope choice — **awaiting user go**. (Also note: the `og-glossary-*` refs point to root, not `/assets/`, unlike the blog cards.)
+### Pre-existing issue — RESOLVED Aug 6 2026 (commit `ad26e75b`)
+**145 glossary OG-image 404s**: 210 glossary pages point at `https://www.vigyanllm.in/og-glossary-<slug>.png` at the repo ROOT (not `/assets/`), but **no such files ever existed** — live `curl` returned 404. Predates this session; every glossary page social-share showed a broken OG card. **FIXED**: generated all 145 missing branded 1200×630 cards (navy gradient + Montserrat term + Open Sans definition line, matches Task-6 template), committed as pure asset additions — no code changes, all `og:image` refs now resolve.
 
 ### Deferred
 - `docking_queue/` still untracked — do not commit.
