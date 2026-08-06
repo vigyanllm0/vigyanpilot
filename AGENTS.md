@@ -1,7 +1,18 @@
 # AGENTS.md — Agent Handoff & Tracking
 
 **Session:** Overnight P0 CTR sprint (6 SEO tasks) — Aug 6 2026
-**Next Sprint:** Phase 2 — Credibility (validation benchmark page live; wire faculty outreach next) → design-audit Sprint 2+ → CMS decline-cookie re-verify → **fix 145 pre-existing glossary OG-image 404s** → DB plan/token diff → final sweep
+**Next Sprint:** **2026-08-27 Sprint Impact Re-Measurement** (see below) → Phase 2 — Credibility (validation benchmark page live; wire faculty outreach next) → design-audit Sprint 2+ → CMS decline-cookie re-verify → **fix 145 pre-existing glossary OG-image 404s** → DB plan/token diff → final sweep
+
+## 2026-08-27 — Sprint Impact Re-Measurement
+**Trigger**: Date-based (2-3 week GSC lag from 9-commit CTR sprint + GEO fixes)
+**What to measure**:
+1. CTR delta: Overall CTR (baseline 0.84%) — target 1.5%+
+2. Position band 4-10 CTR (baseline 0.43%) — target 2%+ (industry: 5-12%)
+3. ncbi-primer-blast-guide CTR (baseline 0.20% @ pos 7.6) — target 3%+
+4. GEO re-measure: Query Perplexity/ChatGPT/SGE for same 10 terms (docs/GEO_BASELINE.md) — target 7+/10
+5. Desktop CTR (baseline 0.56%) — check if any movement from font/schema/OG fixes
+**Data source**: Export new GSC 3-month report on 08-27, compare against 2026-08-06 baseline
+**Compare against**: `/home/z/my-project/upload/vigyanllm.in-Performance-on-Search-2026-08-06 (1).xlsx`
 
 ## Overnight P0 CTR Sprint — Aug 6 2026 (6 tasks, 6 commits, all pushed)
 
