@@ -1,7 +1,37 @@
 # AGENTS.md — Agent Handoff & Tracking
 
-**Session:** Design-audit verification pass → font token coherence + print CSS + noscript fallback — Aug 6 2026
-**Next Sprint:** Phase 2 — Credibility (validation benchmark page live; wire faculty outreach next) → design-audit Sprint 2+ (inline-style extraction, token adoption) → CMS decline-cookie re-verify → DB plan/token diff → final sweep
+**Session:** Overnight P0 CTR sprint (6 SEO tasks) — Aug 6 2026
+**Next Sprint:** Phase 2 — Credibility (validation benchmark page live; wire faculty outreach next) → design-audit Sprint 2+ → CMS decline-cookie re-verify → **fix 145 pre-existing glossary OG-image 404s** → DB plan/token diff → final sweep
+
+## Overnight P0 CTR Sprint — Aug 6 2026 (6 tasks, 6 commits, all pushed)
+
+### What & Why
+Six coordinated SEO/CTR tasks requested by the user. **Note: repeated "src/" paths in the prompt were wrong — the repo is static `frontend/*.html` (no Astro `src/`); all work was mapped to `frontend/`.**
+- `.html`-suffixed duplicate URLs (`/demo.html`, `/glossary/santalucia-1998.html`) were **already 301'd** to clean URLs via vercel.json `cleanUrls:true` + `/(.+)\.html` redirect — no code change needed.
+
+### Tasks & commits (all pushed to GitHub)
+| Task | Commit | Scope |
+|------|--------|-------|
+| Task 1 — Rewrite 20 zero-CTR page titles (pos 1-10) | `cea3cb3b` | 18 pages (titles/metas/OG/TW), content-verified for honesty; skipped /platform |
+| Task 2 — Expand glossary H1s | `4c1335b5` | All 210 glossary H1s bare term → "Term, depth-signaling clause" sourced from each page's honest meta description |
+| Task 3 — `article:published_time` + author | `5cf64676` | 59 blog posts (ISO-8601 Z, matched existing JSON-LD + RSS pubDates) |
+| Task 4 — Min font 9/11px→12px | `9da7aaa9` | Shared CSS only: primer.css (5×) + content-styles.css (1×); CMS-admin cms-design.css left (admin-only) |
+| Task 5 — rewrite blog titles at GSC pos ≤20 | `0a74d035` | 11 posts (title/desc/og/tw/JSON-LD headline+breadcrumb), all ≤65 chars, verified vs H2 content; 3 skipped (good CTR). **User said "15" but explicit REWRITE action list = 11.** |
+| Task 6 — unique OG images, top 10 blogs | `7317abb5` | Generated 10 branded 1200×630 OG cards (Montserrat/Open Sans downloaded, navy gradient + per-post accent) into `frontend/assets/og-blog-*.png`; wired og/tw + Article JSON-LD image |
+| Fix 2 OG 404s | `08361494` | `blog/index.html`→`og-vigyanllm-blog.png`; `primer-design-complete-guide.html`→`og-primer-design-guide.png` (assets never existed; generated + twitter:image aligned) |
+
+Also committed prior pending CTR/GTM batch as `7d4c28b8` (dedup GTM/GA + ncbi blog title). Pushed `8f155ac1..08361494`.
+
+### Verified (final sweep)
+- All 210 glossary exactly 1 expanded H1; all 59 posts have valid ISO `published_time`; all JSON-LD blocks parse; all og/twitter refs exist (excl. glossary gap).
+- Task-5 titles all ≤65 chars; `<title>`/og/twitter/JSON-LD headline+breadcrumb consistent (JSON-LD raw `&`, HTML attrs escaped).
+- Special chars OK in JSON-LD (`&` raw), HTML attrs escaped (`&amp;`).
+
+### Pre-existing issue (NOT from this sprint) — needs a decision
+**145 glossary OG-image 404s**: 210 glossary pages point at `https://www.vigyanllm.in/og-glossary-<slug>.png` at the repo ROOT (not `/assets/`), but **no such files ever existed** — live `curl` returns 404. Predates this session. Every glossary page social-share shows a broken OG card. The generation pipeline is ready to make ~145 more on-brand cards, but that's a deliberate scope choice — **awaiting user go**. (Also note: the `og-glossary-*` refs point to root, not `/assets/`, unlike the blog cards.)
+
+### Deferred
+- `docking_queue/` still untracked — do not commit.
 
 ## CTR / Tracking Cleanup — Aug 6 2026 (committed `b3960cbd` + pending)
 
