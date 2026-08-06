@@ -30,7 +30,10 @@ A wave of **new, low-competition tool aggregator sites** published/refreshed in 
 These are exactly the "5 targeted pages capturing untapped long-tail queries" opportunity — but being taken by smaller, faster movers. They are beatable (thin content, generic templates) but the window is closing as they accumulate indexation and links.
 
 ## Recommended next moves (ranked)
-1. **Fix the BLAST gap** (cheapest win): the blog post ranks but `/blast` doesn't. Add GEO-oriented FAQ content + a definitional block to `/blast` and internal-link from the blog post to the tool page. Same pattern likely applies to `/msa`, `/docking`, `/tm-calculator`, `/gc-calculator`, `/dna-to-rna` — each blog/cross-sell should deep-link its tool page.
+1. **Fix the BLAST gap** (cheapest win): the blog post ranks but `/blast` doesn't. Add GEO-appropriate FAQ content + a definitional block to the `/blast` and internal-link from the blog post to the tool page.
+
+## Status update — GEO blocks shipped 2026-08-06
+The GEO Quick-Answer block pattern (below-H1, "What is this tool?" + "How do I use it online?") has now been applied to all **8** core tool pages: `/blast`, `/msa`, `/docking`, `/tm-calculator`, `/gc-calculator`, `/dna-to-rna`, `/reverse-complement`, `/dna-to-protein`. FAQPage JSON-LD added to the 2 that lacked it (`reverse-complement`, `dna-to-protein`). Combined tool-page impressions covered: blast 285 + msa 114 + docking 156 + tm-calc 239 + gc-calc 437 + dna-to-rna 352 ≈ **1,583 impressions** now carry crawlable direct answers. Re-measure at 2026-08-27 against the term table above.
 2. **GEO-answer blocks on tool pages**: add short "Quick Answer" definition + FAQ blocks directly answerable by LLM crawlers (many competitors already do this — see tmcalculator.us, simulations4all "Quick Answer").
 3. **Re-measure 2026-08-27** alongside the GSC CTR check (Option 3). Track this doc's table as the before/after.
 
