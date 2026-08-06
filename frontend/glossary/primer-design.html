@@ -662,25 +662,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <p>A widespread error is designing primers with complementary 3' ends, which promotes primer-dimer formation even when the rest of the primer is well-designed. Researchers often choose primers with Tm differences exceeding 5 °C between forward and reverse, leading to biased amplification. Another common oversight is failing to check for repetitive elements (Alu, LINE) within the primer sequence, causing nonspecific amplification across the genome. Many users rely solely on default Primer3 parameters without adjusting salt concentration, primer concentration, or Mg²⁺ to match their experimental conditions. Checking primer specificity by BLAST against the intended genome is frequently skipped, resulting in off-target amplification.</p>
     </section>
 
-    <section class="section" id="mechanism">
-      <h2>Mechanism / How It Works</h2>
-      <p>Primer design begins with identifying a conserved target region within the DNA sequence of interest (typically 100–1000 bp for standard PCR). The forward and reverse primers flank the target, oriented such that their 3' ends point toward each other. Candidate primers are evaluated using thermodynamic calculations based on the nearest-neighbor model (SantaLucia 1998), which predicts melting temperature (Tm) from base-stacking enthalpies and entropies. The algorithm computes Tm using the formula Tm = ΔH°/(ΔS° + R ln(C/4)) for self-complementary primers, accounting for salt concentration (typically 50 mM Na⁺ or 1.5–2.5 mM Mg²⁺) and primer concentration (0.1–1 μM). GC content ideally ranges from 40–60%, with 3' end stability checked to prevent false priming. Secondary structure prediction evaluates the free energy of hairpins and self-dimers, while cross-dimer analysis assesses interactions between forward and reverse primers. BLAST or sequence-similarity searches confirm specificity against the target genome. Modern primer design tools such as Primer3, Primer-BLAST, and Primer automate these evaluations across 20–30 distinct checks.</p>
-    </section>
-
-    <section class="section" id="applications">
-      <h2>Applications in Research</h2>
-      <p>Primer design is fundamental to PCR-based applications including diagnostic assay development, cloning (restriction-site incorporation), site-directed mutagenesis, bisulfite sequencing PCR (MSP), and multiplex PCR for pathogen detection panels. In qPCR, primer design must accommodate amplicons of 70–150 bp with Tm matching between primer pairs within 1 °C. Degenerate primers target conserved regions across homologous genes from different species. Tiling primer sets arrayed across genomic regions enable targeted next-generation sequencing panel design. In CRISPR applications, guide RNA design (crRNA) follows similar principles of specificity and minimal off-target homology.</p>
-    </section>
-
-    <section class="section" id="parameters">
-      <h2>Key Parameters / Variables</h2>
-      <p>Key primer design parameters include: primer length (18–25 nt); Tm (52–58 °C for standard PCR, 58–60 °C for qPCR); Tm difference between paired primers (<5 °C); GC content (40–60%); 3' end stability (ΔG> −9 kcal/mol); maximum 3' GC clamp length (3–4 G/C bases); absence of long mononucleotide runs (>4 identical bases); maximum self-complementarity score (<3 consecutive bases matching); maximum pair complementarity score (<3 bases); amplicon length (70–150 bp for qPCR, 200–1000 bp for standard PCR); and specificity (0 mismatches in last 5 bases at 3' end against non-target sequences, or>2 mismatches total).</p>
-    </section>
-
-    <section class="section" id="mistakes">
-      <h2>Common Mistakes / Misconceptions</h2>
-      <p>A widespread error is designing primers with complementary 3' ends, which promotes primer-dimer formation even when the rest of the primer is well-designed. Researchers often choose primers with Tm differences exceeding 5 °C between forward and reverse, leading to biased amplification. Another common oversight is failing to check for repetitive elements (Alu, LINE) within the primer sequence, causing nonspecific amplification across the genome. Many users rely solely on default Primer3 parameters without adjusting salt concentration, primer concentration, or Mg²⁺ to match their experimental conditions. Checking primer specificity by BLAST against the intended genome is frequently skipped, resulting in off-target amplification.</p>
-    </section>
 </section>
 
     <section class="section" id="in-practice">
