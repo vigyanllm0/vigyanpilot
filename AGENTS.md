@@ -48,7 +48,7 @@ Also: brief wanted "trim FAQ 5-6" but all 7 FAQ items were distinct, high-qualit
 | Status | Item |
 |--------|------|
 | ✅ DONE | Gene-prefers validated fix, glossary bugs, rs verification, E-E-A-T blocker, BLAST E-value, all 8 tool rewrites |
-| ⏳ READY | **Week 3: Blog rewrites** (Agent 63 — top 10 by impressions; **4/8 done** — primer-dimer-fix `aa401e5b`, real-time-pcr-data-analysis `6775a624`, pcr-steps `ffea1ea2`, pcr-primer-design-rules `62626eeb`; 4 remaining: rt-pcr-vs-qpcr, digital-pcr-vs-qpcr, pcr-troubleshooting-guide, types-of-pcr) |
+| ⏳ READY | **Week 3: Blog rewrites** (Agent 63 — top 10 by impressions; **5/8 done** — primer-dimer-fix `aa401e5b`, real-time-pcr-data-analysis `6775a624`, pcr-steps `ffea1ea2`, pcr-primer-design-rules `62626eeb`, rt-pcr-vs-qpcr `1385cbe2`; 4 remaining: rt-pcr-vs-qpcr, digital-pcr-vs-qpcr, pcr-troubleshooting-guide, types-of-pcr) |
 | ⏳ READY | **Week 3: SERP snippet optimization** (Agent 69 — top 20 pages by impressions) |
 | ⏳ READY | **Functional testing** (Agents 73-80 — buttons, forms, APIs, links, JS errors on live site) |
 | 🕐 DEFERRED | Pruning 130+ thin pages (past 08-27 measurement window) |
