@@ -1,7 +1,7 @@
 # AGENTS.md — Agent Handoff & Tracking
 
-**Session:** Overnight P0 CTR sprint (6 SEO tasks) — Aug 6 2026
-**Next Sprint:** **2026-08-27 Sprint Impact Re-Measurement** (see below) → Phase 2 — Credibility (validation benchmark page live; wire faculty outreach next) → design-audit Sprint 2+ → CMS decline-cookie re-verify → **fix 145 pre-existing glossary OG-image 404s** → DB plan/token diff → final sweep
+**Session:** Week 2 tool rewrite sprint — COMPLETE (8 pages) → Week 3 blog rewrites + SERP snippet optimization
+**Next Sprint:** **Week 3** — Top-10 blog rewrites (Agent 63: Lab Notebook / Middle Mile / Indian Academic) + SERP snippet optimization (Agent 69: title/meta for top-20-by-impressions non-tool pages) → **2026-08-27 Sprint Impact Re-Measurement** below → Phase 2 — credibility (validation benchmark page live; wire faculty outreach next) → design-audit Sprint 2+ → CMS decline-cookie re-verify → **fix 145 pre-existing glossary OG-image 404s** → DB plan/token diff → final sweep
 
 ## 2026-08-27 — Sprint Impact Re-Measurement
 **Trigger**: Date-based (2-3 week GSC lag from 9-commit CTR sprint + GEO fixes)
@@ -13,6 +13,48 @@
 5. Desktop CTR (baseline 0.56%) — check if any movement from font/schema/OG fixes
 **Data source**: Export new GSC 3-month report on 08-27, compare against 2026-08-06 baseline
 **Compare against**: `/home/z/my-project/upload/vigyanllm.in-Performance-on-Search-2026-08-06 (1).xlsx`
+
+## Week 2 — Tool Rewrite Sprint (8 pages, COMPLETE, all pushed)
+
+### What & Why
+De-branded, de-ChatGPT'd, and re-scoped 8 live tool pages with real worked examples. Each rewrite verified via Flask test client + tag/JSON-LD balance; no-touch zone (tool form/JS/meta) preserved.
+
+### Tool Page Table
+| Page | Brand Before→After | Words | Key Differentiator Added |
+|------|-------------------|-------|--------------------------|
+| Primer Design | 46→10 | 2960 | BRCA1 c.5266dupC + GAPDH examples, troubleshooting |
+| BLAST | 20→0 | ~2000 | BRCA1 vs BRCA1P1 pseudogene money-shot |
+| Tm Calculator | 18→3 | 1826 | GAPDH 4-method comparison (6°C spread) |
+| Docking | 21→0 | 2004 | Imatinib vs ABL1 worked example |
+| MSA | 21→0 | 1809 | TP53 5-species paralog trap |
+| GC Calculator | 13→1 | 1840 | GC spectrum table + 3 gene examples (GAPDH/BRCA1/KIT) |
+| DNA-to-RNA | 20→1 | 1600 | Coding vs template strand confusion |
+| Thermodynamics | 26→0 | ~3600 | Wallace arithmetic fix, trimmed 600w |
+| **Total** | **~175 → ~5** | **~17,645** | |
+
+### Commits (all pushed)
+`82bf40e1` thermodynamics · `459eed19` dna-to-rna · `f6bcf321` gc-calculator · `4676ba86` msa · `7e3052bd` docking · `2671cad` tm-calculator (bl)
+
+### Corrections — false alarms from the rewrite brief
+The thermodynamics (page 8) brief claimed **3 scientific bugs** (4°C/9°C example Tm lower bounds, 273°C upper bound). **All three were FALSE ALARMS** — verified against the actual code:
+- 4°C appears only inside the **correct** Wallace rule (2°C×(A+T) + 4°C×(G+C)).
+- 273.15 appears only in the **correct** Kelvin→°C conversion (Tm = ΔH/(ΔS + R·ln(Ct/4)) − 273.15).
+- The worked example already yields a realistic **45.9 → 42.3°C** chain (consistent, no change needed).
+The **one real defect** found & fixed: the Wallace example for `5'-ATCGGCTA-3'` showed `2×3 + 4×5 = 26°C` but the sequence actually has A+T=4, G+C=4 → **24°C**. Corrected to `2×4 + 4×4 = 8 + 16 = 24°C`.
+Also: brief wanted "trim FAQ 5-6" but all 7 FAQ items were distinct, high-quality thermodynamics Q&A — kept all 7.
+
+## Current Board State — 2026-08-07
+
+| Status | Item |
+|--------|------|
+| ✅ DONE | Gene-prefers validated fix, glossary bugs, rs verification, E-E-A-T blocker, BLAST E-value, all 8 tool rewrites |
+| ⏳ READY | **Week 3: Blog rewrites** (Agent 63 — top 10 by impressions) |
+| ⏳ READY | **Week 3: SERP snippet optimization** (Agent 69 — top 20 pages by impressions) |
+| ⏳ READY | **Functional testing** (Agents 73-80 — buttons, forms, APIs, links, JS errors on live site) |
+| 🕐 DEFERRED | Pruning 130+ thin pages (past 08-27 measurement window) |
+| 🕐 DEFERRED | Primer BLAST verification, gene-specific param tuning |
+
+**Recommendation:** 08-27 measurement window ~19 days out. Blog rewrites + snippet optimization are the two CTR levers for that window. Functional testing (Agents 73-80) is a QA pass, not a CTR lever. Note: several DONE items above (gene-prefers fix, glossary bugs, rs verification, E-E-A-T blocker, BLAST E-value) predate this AGENTS.md and lack commit records here — to be traced if verification needed.
 
 ## Overnight P0 CTR Sprint — Aug 6 2026 (6 tasks, 6 commits, all pushed)
 
