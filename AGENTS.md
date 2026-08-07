@@ -1,6 +1,6 @@
 # AGENTS.md — Agent Handoff & Tracking
 
-**Session:** Week 2 tool rewrite sprint — COMPLETE (8 pages) → Week 3 blog rewrites + SERP snippet optimization
+**Session:** Week 2 tool rewrite sprint — COMPLETE (8 pages) → Week 3 blog rewrites — COMPLETE (8/8) + SERP snippet optimization
 **Next Sprint:** **Week 3** — Top-10 blog rewrites (Agent 63: Lab Notebook / Middle Mile / Indian Academic) + SERP snippet optimization (Agent 69: title/meta for top-20-by-impressions non-tool pages) → **2026-08-27 Sprint Impact Re-Measurement** below → Phase 2 — credibility (validation benchmark page live; wire faculty outreach next) → design-audit Sprint 2+ → CMS decline-cookie re-verify → **fix 145 pre-existing glossary OG-image 404s** → DB plan/token diff → final sweep
 
 ## 2026-08-27 — Sprint Impact Re-Measurement
@@ -43,12 +43,29 @@ The thermodynamics (page 8) brief claimed **3 scientific bugs** (4°C/9°C examp
 The **one real defect** found & fixed: the Wallace example for `5'-ATCGGCTA-3'` showed `2×3 + 4×5 = 26°C` but the sequence actually has A+T=4, G+C=4 → **24°C**. Corrected to `2×4 + 4×4 = 8 + 16 = 24°C`.
 Also: brief wanted "trim FAQ 5-6" but all 7 FAQ items were distinct, high-quality thermodynamics Q&A — kept all 7.
 
-## Current Board State — 2026-08-07
+## Week 3 — Blog Rewrite Sprint (8/8, COMPLETE, all pushed)
+
+### What & Why
+De-branded, de-ChatGPT'd, and re-scoped 8 blog posts with real worked examples. Each rewrite verified via Flask test client + tag/JSON-LD balance; tool form/JS/nav/footer untouched. All inline FAQ items mirrored 1:1 in FAQPage JSON-LD.
+
+### Blog Table
+| Blog | Commit | Words | Brand | Format |
+|------|--------|-------|-------|--------|
+| pcr-steps | `ffea1ea2` | 2,327 | 0 | Explain Like a PI |
+| pcr-primer-design-rules | `62626eeb` | 1,926 | 1 | Decision Guide |
+| rt-pcr-vs-qpcr | `1385cbe2` | ~1,900 | 1 | Comparison with Teeth |
+| primer-dimer-fix | `aa401e5b` | ~1,430 | 1 | Lab Notebook |
+| real-time-pcr-data-analysis | `6775a624` | 1,862 | 0 | Explain Like a PI |
+| digital-pcr-vs-qpcr | `061ea5ee` | ~1,610 | 1 | Decision Guide |
+| pcr-troubleshooting-guide | `5d62d61a` | ~1,400 | 1 | Lab Notebook |
+| types-of-pcr | `a246b9cc` | ~1,536 | 2 | Decision Guide |
+
+## Current Board State — 2026-08-08
 
 | Status | Item |
 |--------|------|
 | ✅ DONE | Gene-prefers validated fix, glossary bugs, rs verification, E-E-A-T blocker, BLAST E-value, all 8 tool rewrites |
-| ⏳ READY | **Week 3: Blog rewrites** (Agent 63 — top 10 by impressions; **5/8 done** — primer-dimer-fix `aa401e5b`, real-time-pcr-data-analysis `6775a624`, pcr-steps `ffea1ea2`, pcr-primer-design-rules `62626eeb`, rt-pcr-vs-qpcr `1385cbe2`; 4 remaining: rt-pcr-vs-qpcr, digital-pcr-vs-qpcr, pcr-troubleshooting-guide, types-of-pcr) |
+| ✅ DONE | **Week 3: Blog rewrites** (Agent 63 — **8/8 complete**) — pcr-steps `ffea1ea2`, pcr-primer-design-rules `62626eeb`, rt-pcr-vs-qpcr `1385cbe2`, primer-dimer-fix `aa401e5b`, real-time-pcr-data-analysis `6775a624`, digital-pcr-vs-qpcr `061ea5ee`, pcr-troubleshooting-guide `5d62d61a`, types-of-pcr `a246b9cc` |
 | ⏳ READY | **Week 3: SERP snippet optimization** (Agent 69 — top 20 pages by impressions) |
 | ⏳ READY | **Functional testing** (Agents 73-80 — buttons, forms, APIs, links, JS errors on live site) |
 | 🕐 DEFERRED | Pruning 130+ thin pages (past 08-27 measurement window) |
