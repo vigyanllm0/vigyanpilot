@@ -72,8 +72,7 @@ nav{position:sticky;top:0;background:var(--navy);z-index:1000;height:72px;border
 .nav-cta:hover{background:var(--blue-light);color:#fff;box-shadow:0 4px 16px rgba(21,101,192,.3)}
 .nav-avatar{width:32px;height:32px;border-radius:50%;background:var(--blue);display:flex;align-items:center;justify-content:center;cursor:pointer}
 .nav-avatar-letter{color:#fff;font-size:13px;font-weight:700}
-.user-popup-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center;padding:24px}
-.user-popup-overlay.open{display:flex}
+
 .user-popup{background:#fff;border-radius:16px;padding:28px;width:100%;max-width:320px;position:relative}
 .user-popup-close{position:absolute;top:12px;right:14px;background:none;border:none;font-size:20px;cursor:pointer;color:var(--muted)}
 .user-popup-header{text-align:center;margin-bottom:16px}
@@ -211,15 +210,27 @@ footer{background:var(--black);color:rgba(255,255,255,.8);padding:56px 0 24px}
       <div class="nav-avatar" id="navAvatar" onclick="toggleUserMenu()">
         <span class="nav-avatar-letter" id="navAvatarLetter"></span>
       </div>
-    </div>
-    <div class="user-popup-overlay" id="userPopupOverlay" onclick="if(event.target===this)closeUserMenu()">
-      <div class="user-popup">
-        <button type="button" class="user-popup-close" onclick="closeUserMenu()">&times;</button>
-        <div class="user-popup-header">
-          <div class="user-popup-avatar" id="userPopupAvatar"></div>
-          <div class="user-popup-email" id="userPopupEmail"></div>
+      <div class="user-dropdown" id="userDropdown">
+        <div class="user-dropdown-header">
+          <div class="ud-name" id="udName"></div>
+          <div class="ud-email" id="udEmail"></div>
+          <div class="ud-plan" id="udPlan"></div>
+        </div>
+        <a class="ud-item" href="/dashboard">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+          Saved Reports
+        </a>
+        <a class="ud-item" href="/dashboard#settings">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          Settings
+        </a>
+        <div class="ud-item logout" onclick="logout()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          Logout
         </div>
       </div>
+    </div>
+  </div>
     </div>
   </div>
   <button type="button" class="hamburger" id="hamburger" aria-label="Menu">
@@ -742,4 +753,5 @@ document.addEventListener('DOMContentLoaded',function(){
 
 <script src="/search-index.js"></script>
 <script src="/auth-shared.js"></script>
+<script src="/cookie-banner.js" defer></script>
 </body></html>

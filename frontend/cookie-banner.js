@@ -77,7 +77,7 @@
     banner.setAttribute('aria-label', 'Cookie consent');
     banner.innerHTML =
       '<p class="vl-cookie-title">We value your privacy</p>' +
-      '<p class="vl-cookie-text">We use cookies and local storage to keep our tools working, remember your preferences, and understand how the platform is used. You can read our <a href="/cookies" target="_blank" rel="noopener">Cookie Policy</a> and <a href="/privacy" target="_blank" rel="noopener">Privacy Policy</a> for details.</p>' +
+      '<p class="vl-cookie-text">We use cookies and local storage to keep our tools working, remember your preferences, and understand how the platform is used. You can withdraw consent anytime by clicking the cookie settings in our <a href="/cookies" target="_blank" rel="noopener">Cookie Policy</a>. Data is retained for up to 365 days. For questions, contact <a href="mailto:privacy@vigyanllm.in">privacy@vigyanllm.in</a>. Read our <a href="/privacy" target="_blank" rel="noopener">Privacy Policy</a> for details.</p>' +
       '<div class="vl-cookie-actions">' +
       '<button type="button" class="vl-cookie-btn vl-cookie-accept" data-action="accept">Accept all</button>' +
       '<button type="button" class="vl-cookie-btn vl-cookie-decline" data-action="decline">Decline optional</button>' +

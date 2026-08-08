@@ -11,10 +11,10 @@ function updateAuthUI(){
     if(profile)profile.style.display='flex';
     var letter=document.querySelector('#navProfile .nav-avatar-letter');
     if(letter)letter.textContent=(user.email||user.name||'U').charAt(0).toUpperCase();
-    var pe=document.getElementById('userPopupAvatar');
-    if(pe)pe.textContent=(user.email||user.name||'U').charAt(0).toUpperCase();
-    var ee=document.getElementById('userPopupEmail');
-    if(ee)ee.textContent=user.email||'';
+    var dn=document.getElementById('udName');
+    if(dn)dn.textContent=user.name||user.email||'User';
+    var de=document.getElementById('udEmail');
+    if(de)de.textContent=user.email||'';
   }else{
     if(btns)btns.style.display='flex';
     if(profile)profile.style.display='none';
@@ -22,12 +22,15 @@ function updateAuthUI(){
 }
 
 function toggleUserMenu(){
-  var o=document.getElementById('userPopupOverlay');
-  if(o)o.classList.toggle('open');
+  var o=document.getElementById('userDropdown');
+  if(!o)return;
+  var wasOpen=o.classList.contains('open');
+  closeUserMenu();
+  if(!wasOpen)o.classList.add('open');
 }
 
 function closeUserMenu(){
-  var o=document.getElementById('userPopupOverlay');
+  var o=document.getElementById('userDropdown');
   if(o)o.classList.remove('open');
 }
 
@@ -173,54 +176,34 @@ function openAuthModal(){isRegister=false;showAuth()}
     }
   });
   if (user) {
-    var letter = (user.email || user.name || 'U').charAt(0).toUpperCase();
-    var pe = document.getElementById('userPopupAvatar');
-    if (pe) pe.textContent = letter;
-    var ee = document.getElementById('userPopupEmail');
-    if (ee) ee.textContent = user.email || '';
-  }
-  if (user) {
     document.querySelectorAll('[data-auth-show]').forEach(function(el) { el.style.display = ''; });
   }
-  // Wire Dashboard link to /dashboard
-  document.querySelectorAll('.user-popup-item[href="/primer"]').forEach(function(el) {
-    if (el.textContent.trim() === 'Dashboard') el.href = '/dashboard';
-  });
-  loadPlanUI();
-})();
-
-function loadPlanUI() {
-  var user = null;
-  var userRaw = sessionStorage.getItem('pf_user') || localStorage.getItem('pf_user');
-  if (userRaw) { try { user = JSON.parse(userRaw); } catch(e) {} }
-  if (!user) return;
-  // Dedup guard: skip if already injected
-  if (document.querySelector('.user-popup-header .plan-badge')) return;
-  var api = window.VIGYAN_BACKEND_URL || '';
-  fetch(api + '/api/payments/status', {credentials: 'same-origin'})
-  .then(function(r){ return r.json(); })
-  .then(function(st){
-    if (!st || !st.plan) return;
-    var plan = st.plan;
-    var labels = {free:'Free',pro:'Pro',lab:'Lab',enterprise:'Enterprise'};
-    var tierOrder = ['free','pro','lab','enterprise'];
-    var userIdx = tierOrder.indexOf(plan);
-
-    // Plan badge in user popup header
-    var hdr = document.querySelector('.user-popup-header');
-    if (hdr && !hdr.querySelector('.plan-badge')) {
-      var badge = document.createElement('div');
-      badge.className = 'plan-badge';
-      badge.textContent = labels[plan] || 'Free';
-      badge.style.cssText = 'font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;display:inline-block;margin-top:4px;text-align:center';
-      if (plan==='free') { badge.style.background='#F1F5F9'; badge.style.color='#64748B'; }
-      else if (plan==='pro') { badge.style.background='#DBEAFE'; badge.style.color='#1D4ED8'; }
-      else if (plan==='lab') { badge.style.background='#EDE9FE'; badge.style.color='#6D28D9'; }
-      else { badge.style.background='#FEF3C7'; badge.style.color='#92400E'; }
-      hdr.appendChild(badge);
+  // Fetch plan for badge
+  if (user) {
+    var api = window.VIGYAN_BACKEND_URL || '';
+    fetch(api + '/api/payments/status', {credentials: 'same-origin'})
+    .then(function(r){ return r.json(); })
+    .then(function(st){
+      if (!st || !st.plan) return;
+      var plan = st.plan;
+      var labels = {free:'Free',pro:'Pro',lab:'Lab',enterprise:'Enterprise'};
+      var colors = {free:['#F1F5F9','#64748B'],pro:['#DBEAFE','#1D4ED8'],lab:['#EDE9FE','#6D28D9'],enterprise:['#FEF3C7','#92400E']};
+      var c = colors[plan] || colors.free;
+      var badge = document.getElementById('udPlan');
+      if (badge) {
+        badge.textContent = labels[plan] || 'Free';
+        badge.style.background = c[0];
+        badge.style.color = c[1];
+      }
+    })
+    .catch(function(){});
+  }
+  // Close dropdown on outside click
+  document.addEventListener('click', function(e) {
+    var dropdown = document.getElementById('userDropdown');
+    var avatar = document.getElementById('navAvatar');
+    if (dropdown && !dropdown.contains(e.target) && avatar && !avatar.contains(e.target)) {
+      closeUserMenu();
     }
-
-
-  })
-  .catch(function(){});
-}
+  });
+})();
