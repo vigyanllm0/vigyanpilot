@@ -392,26 +392,29 @@ footer{background:var(--black);color:rgba(255,255,255,.8);padding:56px 0 24px}
 </nav>
 </header>
 <main id="main-content" class="main">
-  <h1 class="page-title">Dashboard</h1>
-  <p class="page-sub" id="dash-sub">Loading your account…</p>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
+    <div>
+      <h1 class="page-title">Dashboard</h1>
+      <p class="page-sub" id="dash-sub" style="margin-bottom:0">Loading your account…</p>
+    </div>
+    <div id="upgrade-banner" style="display:none"></div>
+  </div>
 
-  <div id="upgrade-banner" style="display:none"></div>
-
-  <div class="grid-2">
-    <div class="card" id="plan-card">
-      <div class="card-title">Plan Overview</div>
+  <div class="grid-2" style="margin-bottom:24px">
+    <div class="card" id="plan-card" style="border-left:3px solid var(--primary)">
+      <div class="card-title" style="color:var(--primary)">&#x1F4B0; Plan Overview</div>
       <div id="plan-content"><p style="color:var(--muted);font-size:13px">Loading…</p></div>
     </div>
-    <div class="card" id="stats-card">
-      <div class="card-title">Quick Stats</div>
+    <div class="card" id="stats-card" style="border-left:3px solid var(--bio)">
+      <div class="card-title" style="color:var(--bio)">&#x1F4CA; Quick Stats</div>
       <div id="stats-content"><p style="color:var(--muted);font-size:13px">Loading…</p></div>
     </div>
   </div>
 
   <div class="tab-bar" id="tab-bar">
-    <button class="tab-btn active" data-tab="saved">Saved Results</button>
-    <button class="tab-btn" data-tab="team" disabled>Team <span style="font-size:10px;color:var(--muted)">Lab</span></button>
-    <button class="tab-btn" data-tab="api" disabled>API Keys <span style="font-size:10px;color:var(--muted)">Pro</span></button>
+    <button class="tab-btn active" data-tab="saved">&#x1F4CB; Saved Results</button>
+    <button class="tab-btn" data-tab="analytics">&#x1F4C8; Analytics</button>
+    <button class="tab-btn" data-tab="settings">&#x2699;&#xFE0F; Settings</button>
   </div>
 
   <div class="tab-content active" id="tab-saved">
@@ -435,21 +438,161 @@ footer{background:var(--black);color:rgba(255,255,255,.8);padding:56px 0 24px}
     </div>
   </div>
 
-  <div class="tab-content" id="tab-team">
-    <div class="card">
-      <div class="card-title">Team Collaboration</div>
-      <p style="font-size:13px;color:var(--text2);line-height:1.7">Invite lab members, share analyses, and manage team access. Available on the <strong>Lab plan</strong> and above.</p>
-      <p style="font-size:13px;color:var(--muted);margin-top:8px">Coming soon — Team features are in development.</p>
+  <div class="tab-content" id="tab-analytics">
+    <div class="grid-2" style="margin-bottom:0">
+      <div class="card">
+        <div class="card-title">&#x23F1;&#xFE0F; Session Activity</div>
+        <div id="analytics-session">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+            <div style="width:48px;height:48px;border-radius:50%;background:var(--primary-soft);display:flex;align-items:center;justify-content:center">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+            <div>
+              <div style="font-size:24px;font-weight:800;font-family:var(--font-h);color:var(--text)" id="active-time-today">0m</div>
+              <div style="font-size:12px;color:var(--muted)">Active time today</div>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div style="padding:12px;background:var(--slate);border-radius:8px">
+              <div style="font-size:18px;font-weight:700;color:var(--text)" id="session-count-today">0</div>
+              <div style="font-size:11px;color:var(--muted)">Sessions today</div>
+            </div>
+            <div style="padding:12px;background:var(--slate);border-radius:8px">
+              <div style="font-size:18px;font-weight:700;color:var(--text)" id="avg-session-time">0m</div>
+              <div style="font-size:11px;color:var(--muted)">Avg session</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">&#x1F4CA; Weekly Overview</div>
+        <div id="analytics-weekly">
+          <div style="display:flex;align-items:flex-end;gap:8px;height:120px;margin-bottom:12px" id="weekly-chart">
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+              <div style="width:100%;background:var(--primary);border-radius:4px 4px 0 0;height:20px;min-height:4px"></div>
+              <span style="font-size:10px;color:var(--muted)">Mon</span>
+            </div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+              <div style="width:100%;background:var(--primary);border-radius:4px 4px 0 0;height:40px;min-height:4px"></div>
+              <span style="font-size:10px;color:var(--muted)">Tue</span>
+            </div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+              <div style="width:100%;background:var(--primary);border-radius:4px 4px 0 0;height:60px;min-height:4px"></div>
+              <span style="font-size:10px;color:var(--muted)">Wed</span>
+            </div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+              <div style="width:100%;background:var(--primary);border-radius:4px 4px 0 0;height:30px;min-height:4px"></div>
+              <span style="font-size:10px;color:var(--muted)">Thu</span>
+            </div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+              <div style="width:100%;background:var(--primary);border-radius:4px 4px 0 0;height:80px;min-height:4px"></div>
+              <span style="font-size:10px;color:var(--muted)">Fri</span>
+            </div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+              <div style="width:100%;background:var(--primary-soft);border-radius:4px 4px 0 0;height:10px;min-height:4px"></div>
+              <span style="font-size:10px;color:var(--muted)">Sat</span>
+            </div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+              <div style="width:100%;background:var(--primary-soft);border-radius:4px 4px 0 0;height:5px;min-height:4px"></div>
+              <span style="font-size:10px;color:var(--muted)">Sun</span>
+            </div>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted)">
+            <span>Total this week: <strong id="weekly-total">0</strong> analyses</span>
+            <span>Last 7 days activity</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:20px">
+      <div class="card-title">&#x1F50D; Tool Usage Breakdown</div>
+      <div id="analytics-tools">
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+          <div style="padding:16px;background:var(--slate);border-radius:8px;text-align:center">
+            <div style="font-size:20px;font-weight:800;color:var(--primary)" id="tool-primer-count">0</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:4px">Primer Design</div>
+          </div>
+          <div style="padding:16px;background:var(--slate);border-radius:8px;text-align:center">
+            <div style="font-size:20px;font-weight:800;color:var(--bio)" id="tool-blast-count">0</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:4px">BLAST</div>
+          </div>
+          <div style="padding:16px;background:var(--slate);border-radius:8px;text-align:center">
+            <div style="font-size:20px;font-weight:800;color:#7C3AED" id="tool-msa-count">0</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:4px">MSA</div>
+          </div>
+          <div style="padding:16px;background:var(--slate);border-radius:8px;text-align:center">
+            <div style="font-size:20px;font-weight:800;color:var(--orange)" id="tool-docking-count">0</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:4px">Docking</div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
-  <div class="tab-content" id="tab-api">
+  <div class="tab-content" id="tab-settings">
+    <div class="card" style="margin-bottom:20px">
+      <div class="card-title">&#x1F464; Profile Information</div>
+      <div id="settings-profile">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+          <div>
+            <label style="display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:6px">Full Name</label>
+            <input type="text" id="settings-name" class="form-input" style="width:100%;padding:10px 12px;border:1px solid var(--slate-border);border-radius:8px;font-size:13px" placeholder="Your name">
+          </div>
+          <div>
+            <label style="display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:6px">Email Address</label>
+            <input type="email" id="settings-email" class="form-input" style="width:100%;padding:10px 12px;border:1px solid var(--slate-border);border-radius:8px;font-size:13px;background:var(--slate)" disabled>
+          </div>
+        </div>
+        <div style="margin-top:16px">
+          <button type="button" class="btn-primary" style="padding:10px 20px;font-size:13px" onclick="saveProfile()">Save Changes</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:20px">
+      <div class="card-title">&#x1F514; Notification Preferences</div>
+      <div id="settings-notifications">
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <label style="display:flex;align-items:center;gap:12px;cursor:pointer">
+            <input type="checkbox" id="notif-email" style="width:18px;height:18px;accent-color:var(--primary)">
+            <div>
+              <div style="font-size:13px;font-weight:600;color:var(--text)">Email notifications</div>
+              <div style="font-size:11px;color:var(--muted)">Receive updates about your analyses and account</div>
+            </div>
+          </label>
+          <label style="display:flex;align-items:center;gap:12px;cursor:pointer">
+            <input type="checkbox" id="notif-product" style="width:18px;height:18px;accent-color:var(--primary)">
+            <div>
+              <div style="font-size:13px;font-weight:600;color:var(--text)">Product updates</div>
+              <div style="font-size:11px;color:var(--muted)">New features and improvements</div>
+            </div>
+          </label>
+          <label style="display:flex;align-items:center;gap:12px;cursor:pointer">
+            <input type="checkbox" id="notif-usage" style="width:18px;height:18px;accent-color:var(--primary)" checked>
+            <div>
+              <div style="font-size:13px;font-weight:600;color:var(--text)">Usage alerts</div>
+              <div style="font-size:11px;color:var(--muted)">Get notified when approaching daily limits</div>
+            </div>
+          </label>
+        </div>
+        <div style="margin-top:16px">
+          <button type="button" class="btn-primary" style="padding:10px 20px;font-size:13px" onclick="saveNotifications()">Save Preferences</button>
+        </div>
+      </div>
+    </div>
+
     <div class="card">
-      <div class="card-title">API Access</div>
-      <p style="font-size:13px;color:var(--text2);line-height:1.7">Generate API keys to access VigyanLLM tools programmatically. Available on the <strong>Pro plan</strong> and above.</p>
-      <p style="font-size:13px;color:var(--muted);margin-top:8px">Coming soon — API keys are in development.</p>
+      <div class="card-title" style="color:var(--error)">&#x26A0;&#xFE0F; Danger Zone</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:16px;background:var(--error-soft);border-radius:8px">
+        <div>
+          <div style="font-size:13px;font-weight:600;color:var(--error)">Delete Account</div>
+          <div style="font-size:12px;color:var(--text2)">Permanently delete your account and all associated data</div>
+        </div>
+        <button type="button" style="padding:8px 16px;background:var(--error);color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer" onclick="confirmDeleteAccount()">Delete Account</button>
+      </div>
     </div>
   </div>
+
 <div class="auth-overlay" id="auth-overlay"><div class="auth-card"><div class="auth-title" id="auth-modal-title">Log in to VigyanLLM</div><div class="auth-sub" id="auth-modal-sub">Sign in to save &amp; export your results</div><div id="auth-content"></div></div></div></main>
 
 <script defer src="/search-index.js"></script>
@@ -465,11 +608,105 @@ function formatDate(ts) {
   return d.toLocaleDateString('en-IN', {year:'numeric',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
 }
 
+function formatDuration(seconds) {
+  if (seconds < 60) return seconds + 's';
+  var m = Math.floor(seconds / 60);
+  var s = seconds % 60;
+  if (m < 60) return m + 'm ' + s + 's';
+  var h = Math.floor(m / 60);
+  m = m % 60;
+  return h + 'h ' + m + 'm';
+}
+
 function toolBadge(tool) {
   var cls = 'tool-'+tool;
   var label = {primer:'Primer',blast:'BLAST',msa:'MSA',docking:'Docking'}[tool]||tool;
   return '<span class="tool-badge '+cls+'">'+label+'</span>';
 }
+
+// Analytics tracking
+var Analytics = {
+  STORAGE_KEY: 'vl_analytics',
+  sessionStart: Date.now(),
+  
+  getData: function() {
+    try {
+      var raw = localStorage.getItem(this.STORAGE_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch(e) {}
+    return {sessions: [], daily: {}, tools: {}};
+  },
+  
+  saveData: function(data) {
+    try { localStorage.setItem(this.STORAGE_KEY, JSON.stringify(data)); } catch(e) {}
+  },
+  
+  trackSession: function() {
+    var data = this.getData();
+    var today = new Date().toISOString().split('T')[0];
+    
+    // Initialize today if needed
+    if (!data.daily[today]) {
+      data.daily[today] = {time: 0, sessions: 0};
+    }
+    
+    // Track session time
+    var elapsed = Math.floor((Date.now() - this.sessionStart) / 1000);
+    data.daily[today].time += elapsed;
+    data.daily[today].sessions += 1;
+    
+    // Keep only last 30 days
+    var cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - 30);
+    var cutoffStr = cutoff.toISOString().split('T')[0];
+    Object.keys(data.daily).forEach(function(key) {
+      if (key < cutoffStr) delete data.daily[key];
+    });
+    
+    this.saveData(data);
+    this.sessionStart = Date.now();
+  },
+  
+  trackTool: function(tool) {
+    var data = this.getData();
+    data.tools[tool] = (data.tools[tool] || 0) + 1;
+    this.saveData(data);
+  },
+  
+  getTodayTime: function() {
+    var data = this.getData();
+    var today = new Date().toISOString().split('T')[0];
+    var elapsed = Math.floor((Date.now() - this.sessionStart) / 1000);
+    return (data.daily[today] ? data.daily[today].time : 0) + elapsed;
+  },
+  
+  getTodaySessions: function() {
+    var data = this.getData();
+    var today = new Date().toISOString().split('T')[0];
+    return data.daily[today] ? data.daily[today].sessions : 0;
+  },
+  
+  getWeeklyData: function() {
+    var data = this.getData();
+    var days = [];
+    for (var i = 6; i >= 0; i--) {
+      var d = new Date();
+      d.setDate(d.getDate() - i);
+      var key = d.toISOString().split('T')[0];
+      var label = d.toLocaleDateString('en-US', {weekday: 'short'});
+      days.push({date: key, label: label, time: data.daily[key] ? data.daily[key].time : 0});
+    }
+    return days;
+  },
+  
+  getToolCounts: function() {
+    var data = this.getData();
+    return data.tools || {};
+  }
+};
+
+// Start tracking on page load
+Analytics.sessionStart = Date.now();
 
 async function loadDashboard() {
   var api = window.VIGYAN_BACKEND_URL || '';
@@ -501,13 +738,13 @@ async function loadDashboard() {
     var expiresAt = planStatus.expires_at || 0;
     var expiryStr = expiresAt ? 'Renewal: '+formatDate(expiresAt) : 'No active plan';
     document.getElementById('plan-content').innerHTML =
-      '<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">' +
+      '<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">' +
       '<span class="plan-pill '+planColors[plan]+'">'+planLabels[plan]+'</span>' +
       '<span style="font-size:12px;color:var(--muted)">'+expiryStr+'</span></div>' +
-      '<div style="font-size:12px;color:var(--text2);line-height:1.6">' +
+      '<div style="font-size:12px;color:var(--text2);line-height:1.8">' +
       '<div><strong>Email:</strong> '+esc(user.email||'')+'</div>' +
       '<div><strong>Role:</strong> '+(user.role||'user')+'</div>' +
-      '<div><strong>Account:</strong> '+formatDate(user.created_at)+'</div></div>';
+      '<div><strong>Member since:</strong> '+formatDate(user.created_at)+'</div></div>';
 
     // Stats card
     var dailyLimit = usage.daily_limit || 10;
@@ -529,15 +766,125 @@ async function loadDashboard() {
     if (plan === 'free') {
       document.getElementById('upgrade-banner').style.display = 'flex';
       document.getElementById('upgrade-banner').innerHTML =
-        '<div><h3>Upgrade to Pro</h3><p>Get saved results, batch processing, PDF exports, and more.</p></div>' +
-        '<a href="/pricing">View Plans &rarr;</a>';
+        '<a href="/pricing" style="display:inline-flex;align-items:center;gap:8px;padding:10px 20px;background:var(--primary);color:#fff;border-radius:8px;font-size:13px;font-weight:700;text-decoration:none">Upgrade to Pro &rarr;</a>';
     }
 
     // Load saved results
     loadSavedResults();
+    
+    // Load analytics
+    loadAnalytics();
+    
+    // Load settings
+    loadSettings(user);
 
   } catch(e) {
     document.getElementById('dash-sub').textContent = 'Could not load dashboard. Please try again.';
+  }
+}
+
+function loadAnalytics() {
+  // Update active time display
+  function updateActiveTime() {
+    var time = Analytics.getTodayTime();
+    document.getElementById('active-time-today').textContent = formatDuration(time);
+  }
+  
+  updateActiveTime();
+  setInterval(updateActiveTime, 1000);
+  
+  // Session count
+  document.getElementById('session-count-today').textContent = Analytics.getTodaySessions();
+  
+  // Average session time
+  var data = Analytics.getData();
+  var today = new Date().toISOString().split('T')[0];
+  var todayData = data.daily[today];
+  if (todayData && todayData.sessions > 0) {
+    var avg = Math.round(todayData.time / todayData.sessions);
+    document.getElementById('avg-session-time').textContent = formatDuration(avg);
+  }
+  
+  // Weekly chart
+  var weeklyData = Analytics.getWeeklyData();
+  var maxTime = Math.max.apply(null, weeklyData.map(function(d) { return d.time; }));
+  var chartBars = document.getElementById('weekly-chart');
+  var bars = chartBars.children;
+  var weeklyTotal = 0;
+  
+  for (var i = 0; i < weeklyData.length && i < bars.length; i++) {
+    var bar = bars[i].querySelector('div');
+    var height = maxTime > 0 ? Math.max(4, (weeklyData[i].time / maxTime) * 100) : 4;
+    bar.style.height = height + 'px';
+    bar.style.background = weeklyData[i].time > 0 ? 'var(--primary)' : 'var(--primary-soft)';
+    weeklyTotal += weeklyData[i].time;
+  }
+  document.getElementById('weekly-total').textContent = formatDuration(weeklyTotal);
+  
+  // Tool counts
+  var toolCounts = Analytics.getToolCounts();
+  document.getElementById('tool-primer-count').textContent = toolCounts.primer || 0;
+  document.getElementById('tool-blast-count').textContent = toolCounts.blast || 0;
+  document.getElementById('tool-msa-count').textContent = toolCounts.msa || 0;
+  document.getElementById('tool-docking-count').textContent = toolCounts.docking || 0;
+}
+
+function loadSettings(user) {
+  document.getElementById('settings-name').value = user.name || '';
+  document.getElementById('settings-email').value = user.email || '';
+  
+  // Load notification preferences
+  var prefs = {};
+  try { prefs = JSON.parse(localStorage.getItem('vl_notif_prefs') || '{}'); } catch(e) {}
+  document.getElementById('notif-email').checked = prefs.email !== false;
+  document.getElementById('notif-product').checked = prefs.product === true;
+  document.getElementById('notif-usage').checked = prefs.usage !== false;
+}
+
+function saveProfile() {
+  var name = document.getElementById('settings-name').value.trim();
+  if (!name) { alert('Name cannot be empty'); return; }
+  
+  var api = window.VIGYAN_BACKEND_URL || '';
+  fetch(api + '/api/auth/me', {
+    method: 'PUT',
+    headers: {'Content-Type': 'application/json'},
+    credentials: 'same-origin',
+    body: JSON.stringify({name: name})
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    if (d.user) {
+      var pr = sessionStorage.getItem('pf_user') || localStorage.getItem('pf_user');
+      if (pr) {
+        var user = JSON.parse(pr);
+        user.name = name;
+        var key = sessionStorage.getItem('pf_user') ? 'sessionStorage' : 'localStorage';
+        window[key].setItem('pf_user', JSON.stringify(user));
+      }
+      alert('Profile updated successfully');
+    } else {
+      alert('Failed to update profile');
+    }
+  })
+  .catch(function() { alert('Network error'); });
+}
+
+function saveNotifications() {
+  var prefs = {
+    email: document.getElementById('notif-email').checked,
+    product: document.getElementById('notif-product').checked,
+    usage: document.getElementById('notif-usage').checked
+  };
+  localStorage.setItem('vl_notif_prefs', JSON.stringify(prefs));
+  alert('Preferences saved');
+}
+
+function confirmDeleteAccount() {
+  if (confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
+    if (confirm('This will permanently delete all your data. Type "DELETE" to confirm.')) {
+      alert('Account deletion requested. Please contact support@vigyanllm.in to complete this process.');
+    }
   }
 }
 
@@ -589,6 +936,12 @@ async function deleteResult(id) {
 
 document.addEventListener('DOMContentLoaded', function() {
   loadDashboard();
+
+  // Track session on page unload
+  window.addEventListener('beforeunload', function() { Analytics.trackSession(); });
+  
+  // Also track periodically
+  setInterval(function() { Analytics.trackSession(); }, 60000);
 
   // Hamburger / mobile menu
   var h = document.getElementById('hamburger'), m = document.getElementById('mobile-menu');
