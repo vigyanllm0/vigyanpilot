@@ -88,19 +88,74 @@ html{scroll-behavior:smooth}
 body{background:var(--surface);color:var(--text);font-family:var(--font-b);line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
 a{text-decoration:none;color:inherit}
 img{max-width:100%}
+
+/* Demo Hero */
+.demo-hero{max-width:900px;margin:0 auto;padding:64px 24px 32px;text-align:center}
+.demo-hero .eyebrow{font-family:var(--font-h);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--blue);margin-bottom:12px;display:flex;align-items:center;justify-content:center;gap:8px}
+.demo-hero h1{font-family:var(--font-h);font-size:clamp(2rem,4vw,2.8rem);font-weight:900;color:var(--text);margin-bottom:16px;line-height:1.1}
+.demo-hero .hero-sub{font-size:15px;color:var(--text2);line-height:1.7;max-width:680px;margin:0 auto 28px}
+
+/* Tab Bar */
+.tab-bar{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:8px}
+.tab-btn{font-family:var(--font-h);font-size:13px;font-weight:700;padding:8px 18px;border-radius:8px;border:1px solid var(--outline);background:var(--surface);color:var(--text2);cursor:pointer;transition:all .15s;text-transform:uppercase;letter-spacing:.04em}
+.tab-btn:hover{border-color:var(--blue);color:var(--blue)}
+.tab-btn.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+
+/* Card Grid */
+.card-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:24px;max-width:1100px;margin:0 auto;padding:32px 24px 64px}
+@media(max-width:768px){.card-grid{grid-template-columns:1fr}}
+
+/* Demo Card */
+.demo-card{background:var(--surface);border:1px solid var(--outline);border-radius:16px;overflow:hidden;transition:box-shadow .2s,border-color .2s}
+.demo-card:hover{box-shadow:0 8px 32px rgba(0,0,0,.08);border-color:#cbd5e1}
+
+.demo-card .card-badge{position:absolute;top:12px;right:12px;font-family:var(--font-h);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:4px 12px;border-radius:6px;background:var(--navy);color:#fff;z-index:2}
+
+.demo-card .video-wrap{position:relative;background:#000;border-bottom:1px solid var(--outline)}
+.demo-card .video-wrap video,
+.demo-card .video-wrap iframe{display:block;width:100%;aspect-ratio:16/9;object-fit:cover}
+
+.demo-card .card-content{padding:24px}
+.demo-card .card-content h3{font-family:var(--font-h);font-size:18px;font-weight:800;color:var(--text);margin-bottom:6px}
+.demo-card .card-content .card-sub{font-size:13px;color:var(--blue);font-weight:600;margin-bottom:10px}
+.demo-card .card-content .card-desc{font-size:14px;color:var(--text2);line-height:1.7;margin-bottom:16px}
+.demo-card .card-content .card-label{font-family:var(--font-h);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:8px}
+.demo-card .card-content ul{list-style:none;padding:0;margin:0 0 20px}
+.demo-card .card-content li{font-size:13px;color:var(--text2);line-height:1.6;padding:4px 0;display:flex;gap:8px}
+.demo-card .card-content li span:first-child{color:var(--blue);font-weight:700;flex-shrink:0}
+.demo-card .card-actions{display:flex;align-items:center;justify-content:space-between;padding-top:16px;border-top:1px solid var(--outline)}
+.demo-card .card-actions .runtime{font-size:12px;color:var(--muted)}
+.demo-card .card-actions .cta{font-family:var(--font-h);font-size:13px;font-weight:700;color:var(--blue);transition:color .15s}
+.demo-card .card-actions .cta:hover{color:var(--navy)}
+
+/* Footer */
+footer{background:var(--black);color:rgba(255,255,255,.8);padding:56px 0 24px}
+.footer-grid{display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr 1fr;gap:40px;max-width:var(--max-w);margin:0 auto 32px;padding:0 16px}
+.footer-col h5{font-size:12px;text-transform:uppercase;letter-spacing:.12em;color:#fff;margin-bottom:16px;font-weight:700}
+.footer-col a{display:block;font-size:13px;color:rgba(255,255,255,.5);margin-bottom:10px;transition:color .15s}
+.footer-col a:hover{color:#fff}
+.footer-social{display:flex;gap:8px;margin-top:16px}
+.footer-social a{width:36px;height:36px;display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,.12);border-radius:8px;transition:all .3s ease}
+.footer-social a:hover{border-color:rgba(255,255,255,.3);transform:translateY(-2px);background:rgba(255,255,255,.05)}
+.footer-social svg{width:16px;height:16px;filter:grayscale(1);opacity:.5;transition:all .3s ease}
+.footer-social a:hover svg{filter:grayscale(0);opacity:1}
+.footer-bottom{max-width:var(--max-w);margin:0 auto;padding:16px 16px 0;border-top:1px solid rgba(255,255,255,.06);display:flex;font-size:12px;color:rgba(255,255,255,.35)}
+
+@media(max-width:768px){.footer-grid{grid-template-columns:1fr 1fr;gap:24px}.demo-hero{padding:40px 16px 24px}.demo-hero h1{font-size:1.8rem}}
+
+/* Nav */
 nav{position:sticky;top:0;background:var(--navy);z-index:1000;height:80px;border-bottom:1px solid rgba(255,255,255,.08)}
 .nav-inner{display:flex;align-items:center;height:100%;max-width:var(--max-w);margin:0 auto;padding:0 16px}
 .nav-brand{display:flex;align-items:center;gap:12px;color:#fff;font-family:var(--font-h);font-size:20px;font-weight:800;flex-shrink:0}
 .nav-brand img{width:70px;height:70px;border-radius:8px}
-
 .nav-links{display:flex;gap:8px;align-items:center;margin-left:24px}
 .nav-links>a,.drop-trigger{font-family:var(--font-h);font-size:14px;color:rgba(255,255,255,.85);font-weight:700;cursor:pointer;padding:8px 14px;text-transform:uppercase;letter-spacing:.05em;transition:color .15s;white-space:nowrap;border-radius:6px}
 .nav-links>a:hover,.drop-trigger:hover{color:#fff;background:rgba(255,255,255,.08)}
 .drop-wrap{position:relative;display:inline-block}
-.drop-menu{display:none;position:absolute;top:100%;left:-16px;background:#fff;border:1px solid var(--outline);border-radius:12px;min-width:240px;padding:8px;z-index:1001;box-shadow:0 12px 40px rgba(0,0,0,.12);opacity:0;transform:translateY(4px);transition:opacity .2s,transform .2s}
-.drop-wrap:hover .drop-menu{display:block;opacity:1;transform:translateY(0)}
+.drop-menu{display:none;position:absolute;top:100%;left:-16px;background:#fff;border:1px solid var(--outline);border-radius:12px;min-width:240px;padding:8px;z-index:1001;box-shadow:0 12px 40px rgba(0,0,0,.12)}
+.drop-wrap:hover .drop-menu{display:block}
 .drop-menu a{display:block;padding:10px 16px;font-size:13px;color:var(--text2);border-radius:8px;font-weight:500;transition:all .12s}
-.drop-menu a:hover{background:var(--blue-bg);color:var(--blue);padding-left:20px}
+.drop-menu a:hover{background:var(--blue-bg);color:var(--blue)}
 .nav-right{display:flex;align-items:center;gap:14px;margin-left:auto}
 .nav-btns{display:flex;flex-direction:row;align-items:center;gap:10px}
 .nav-search-wrap{position:relative;display:flex;align-items:center}
@@ -110,23 +165,18 @@ nav{position:sticky;top:0;background:var(--navy);z-index:1000;height:80px;border
 .nav-search-wrap .ns-icon{position:absolute;right:10px;color:rgba(255,255,255,.4);pointer-events:none;display:flex}
 .nav-search-results{position:absolute;top:calc(100% + 8px);right:0;width:360px;background:#fff;border-radius:12px;box-shadow:0 12px 48px rgba(0,0,0,.25);overflow:hidden;display:none;z-index:1001}
 .nav-search-results.open{display:block}
-.nav-search-results .nsr-group{padding:4px 0 0}
-.nav-search-results .nsr-label{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:#94A3B8;font-weight:700;padding:6px 14px 2px}
 .nav-search-results .nsr-item{display:flex;align-items:center;gap:10px;padding:8px 14px;cursor:pointer;text-decoration:none;transition:background .1s}
 .nav-search-results .nsr-item:hover{background:#F1F5F9}
-.nav-search-results .nsr-item .r-icon{font-size:14px;flex-shrink:0}
-.nav-search-results .nsr-item .r-text{flex:1;min-width:0}
 .nav-search-results .nsr-item .r-title{font-size:12px;font-weight:600;color:#0F172A}
 .nav-search-results .nsr-item .r-desc{font-size:12px;color:#64748B;margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.nav-search-no{font-size:12px;color:#94A3B8;padding:20px 14px;text-align:center}
-@media(max-width:900px){.nav-search-wrap input{width:140px}.nav-search-wrap input:focus{width:180px}.nav-search-results{width:280px}}
-@media(max-width:768px){.nav-search-wrap{display:none}.nav-right{gap:14px;margin-left:auto}.nav-login{padding:8px 20px;background:transparent;color:rgba(255,255,255,.8);border:1.5px solid rgba(255,255,255,.25);border-radius:8px;font-family:var(--font-b);font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;line-height:1.3;white-space:nowrap}}
-
+.nav-cta{padding:8px 24px;background:#fff;color:var(--navy);border:none;border-radius:8px;font-family:var(--font-h);font-size:13px;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:.06em;transition:all .2s;line-height:1.3}
+.nav-cta:hover{background:var(--blue-light);color:#fff;box-shadow:0 4px 16px rgba(21,101,192,.3)}
+.nav-login{padding:8px 20px;background:transparent;color:rgba(255,255,255,.8);border:1.5px solid rgba(255,255,255,.25);border-radius:8px;font-family:var(--font-b);font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;line-height:1.3;white-space:nowrap}
+.nav-login:hover{border-color:#fff;color:#fff;background:rgba(255,255,255,.06)}
 .nav-profile{display:flex;align-items:center;position:relative}
 .nav-avatar{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#1565C0,#22D3EE);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .2s;border:2px solid transparent}
 .nav-avatar:hover{transform:scale(1.08);border-color:rgba(255,255,255,.4)}
 .nav-avatar span{color:#fff;font-family:var(--font-h);font-size:14px;font-weight:700;text-transform:uppercase}
-
 .user-dropdown{display:none!important;position:absolute;top:calc(100% + 10px);right:0;background:#fff;border-radius:16px;min-width:240px;padding:8px;z-index:1001;box-shadow:0 12px 40px rgba(0,0,0,.18);border:1px solid #E2E8F0}
 .user-dropdown.open{display:block}
 .user-dropdown-header{padding:16px;border-bottom:1px solid #F1F5F9;margin-bottom:6px}
@@ -138,20 +188,12 @@ nav{position:sticky;top:0;background:var(--navy);z-index:1000;height:80px;border
 .ud-item svg{width:18px;height:18px;flex-shrink:0;opacity:.5}
 .ud-item.logout{color:#EF4444;margin-top:6px;border-top:1px solid #F1F5F9;padding-top:12px}
 .ud-item.logout:hover{background:#FEF2F2;color:#DC2626}
-.ud-item.logout svg{opacity:.7}
-
-.nav-cta{padding:8px 24px;background:#fff;color:var(--navy);border:none;border-radius:8px;font-family:var(--font-h);font-size:13px;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:.06em;transition:all .2s;line-height:1.3}.nav-btns{gap:3px}
-@media(max-width:480px){.nav-right{gap:14px;margin-left:auto}.nav-login{padding:8px 20px;background:transparent;color:rgba(255,255,255,.8);border:1.5px solid rgba(255,255,255,.25);border-radius:8px;font-family:var(--font-b);font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;line-height:1.3;white-space:nowrap}.nav-cta{padding:8px 24px;background:#fff;color:var(--navy);border:none;border-radius:8px;font-family:var(--font-h);font-size:13px;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:.06em;transition:all .2s;line-height:1.3}.nav-btns{gap:2px}}
-.nav-cta{padding:8px 24px;background:#fff;color:var(--navy);border:none;border-radius:8px;font-family:var(--font-h);font-size:13px;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:.06em;transition:all .2s;line-height:1.3}
-.nav-cta:hover{background:var(--blue-light);color:#fff;box-shadow:0 4px 16px rgba(21,101,192,.3)}
-.nav-login{padding:8px 20px;background:transparent;color:rgba(255,255,255,.8);border:1.5px solid rgba(255,255,255,.25);border-radius:8px;font-family:var(--font-b);font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;line-height:1.3;white-space:nowrap}
-.nav-login:hover{border-color:#fff;color:#fff;background:rgba(255,255,255,.06)}
 .hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;background:none;border:none;padding:4px;z-index:1001}
 .hamburger span{width:22px;height:2.5px;background:#fff;border-radius:2px;transition:all .3s}
 .hamburger.active span:nth-child(1){transform:rotate(45deg) translate(5px,5px)}
 .hamburger.active span:nth-child(2){opacity:0}
 .hamburger.active span:nth-child(3){transform:rotate(-45deg) translate(5px,-5px)}
-.mobile-menu{display:none;position:fixed;top:72px;left:0;right:0;background:var(--navy);padding:20px 24px;z-index:999;border-bottom:1px solid rgba(255,255,255,.08);max-height:calc(100vh-72px);overflow-y:auto}
+.mobile-menu{display:none;position:fixed;top:72px;left:0;right:0;background:var(--navy);padding:20px 24px;z-index:999;border-bottom:1px solid rgba(255,255,255,.08);max-height:calc(100vh - 72px);overflow-y:auto}
 .mobile-menu.open{display:block}
 .mobile-menu .mm-group{margin-bottom:16px}
 .mobile-menu .mm-hdr{font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.4);font-weight:700;padding:8px 0 4px}
@@ -172,23 +214,9 @@ nav{position:sticky;top:0;background:var(--navy);z-index:1000;height:80px;border
 .auth-modal .toggle-link{text-align:center;font-size:12px;color:var(--muted);margin-top:14px}
 .auth-modal .toggle-link a{color:var(--blue);font-weight:600;cursor:pointer}
 .auth-modal .auth-err{color:#DC2626;font-size:12px;text-align:center;margin-top:8px;display:none}
-
-footer{background:var(--black);color:rgba(255,255,255,.8);padding:56px 0 24px}
-.footer-grid{display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr 1fr;gap:40px;max-width:var(--max-w);margin:0 auto 32px;padding:0 16px}
-.footer-col h5{font-size:12px;text-transform:uppercase;letter-spacing:.12em;color:#fff;margin-bottom:16px;font-weight:700}
-.footer-col a{display:block;font-size:13px;color:rgba(255,255,255,.5);margin-bottom:10px;transition:color .15s}
-.footer-col a:hover{color:#fff}
-.footer-social{display:flex;gap:8px;margin-top:16px}
-.footer-social a{width:36px;height:36px;display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,.12);border-radius:8px;transition:all .3s ease}
-.footer-social a:hover{border-color:rgba(255,255,255,.3);transform:translateY(-2px);background:rgba(255,255,255,.05)}
-.footer-social svg{width:16px;height:16px;filter:grayscale(1);opacity:.5;transition:all .3s ease}
-.footer-social a:hover svg{filter:grayscale(0);opacity:1}
-.footer-bottom{max-width:var(--max-w);margin:0 auto;padding:16px 16px 0;border-top:1px solid rgba(255,255,255,.06);display:flex;font-size:12px;color:rgba(255,255,255,.35)}
-
-
+.skip-link{position:absolute;top:-100%;left:50%;transform:translateX(-50%);padding:8px 16px;background:#667eea;color:#fff;z-index:10000;border-radius:0 0 8px 8px;font-weight:600;text-decoration:none;font-size:14px}
+.skip-link:focus{top:0;outline:none}
 @media(max-width:768px){.nav-links{display:none}.nav-inner{padding:0 12px}.hamburger{display:flex}}
-
-.skip-link{position:absolute;top:-100%;left:50%;transform:translateX(-50%);padding:8px 16px;background:#667eea;color:#fff;z-index:10000;border-radius:0 0 8px 8px;font-weight:600;text-decoration:none;font-size:14px}.skip-link:focus{top:0;outline:none}
 </style>
 <script src="https://accounts.google.com/gsi/client?hl=en" async defer></script>
 <script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.vigyanllm.in"}, {"@type": "ListItem", "position": 2, "name": "Product Demo", "item": "https://www.vigyanllm.in/demo"}]}</script>
@@ -337,12 +365,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <section class="demo-hero">
   <div class="eyebrow"><span>⬥</span> LIVE PRODUCT DEMONSTRATIONS</div>
   <h1>Product Demo Suite</h1>
-<div itemscope itemtype="https://schema.org/Question" style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:12px;padding:24px;margin:24px 0">
-<p style="font-weight:700;font-size:15px;margin-bottom:8px" itemprop="name">What is this tool?</p>
-<div itemprop="acceptedAnswer" itemscope itemtype="https://schema.org/Answer">
-<p itemprop="text" style="color:#475569;font-size:14px">This product demo suite showcases the VigyanLLM platform's autonomous biomedical AI workflows including the Consensus Pipeline, Smart Switch, and VigyanLLM Primer design tool. It is intended for researchers and lab directors evaluating VigyanLLM for their institution.</p>
-</div></div>
-  <p>A full platform tour plus three autonomous biomedical AI workflows — each recorded live inside VigyanLLM. No narration, no overlays, no staging. This is the real product.</p>
+  <p class="hero-sub">A full platform tour plus three autonomous biomedical AI workflows — each recorded live inside VigyanLLM. No narration, no overlays, no staging. This is the real product.</p>
   <div class="tab-bar">
     <button type="button" class="tab-btn active" data-tab="all">All Workflows</button>
     <button type="button" class="tab-btn" data-tab="platform">Platform Tour</button>
@@ -351,46 +374,41 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <button type="button" class="tab-btn" data-tab="genomics">Primer Design</button>
   </div>
 </section>
-<p style="font-size:12px;color:#94A3B8;margin-top:8px">Last updated: July 2026 · Reviewed by VigyanLLM Research Team</p>
 
   <div class="card-grid" id="card-grid">
-    <article class="card" data-category="platform">
-      <div class="card-video-header">
-        <div class="dots"><span class="dot" style="background:#ef4444"></span><span class="dot" style="background:#f59e0b"></span><span class="dot" style="background:#22c55e"></span></div>
-        <span class="label">product demo.mp4</span>
-        <span class="badge">PLATFORM</span>
+    <article class="demo-card" data-category="platform">
+      <div class="video-wrap">
+        <span class="card-badge">PLATFORM</span>
+        <video muted playsinline controls controlslist="nodownload" preload="none" poster="poster.png" src="product-demo.mp4">Video loading — check connection.</video>
       </div>
-      <video muted playsinline controls controlslist="nodownload" preload="none" poster="poster.png" src="product-demo.mp4">Video loading — check connection.</video>
-      <div class="card-body">
-        <h2>Full Platform Tour</h2>
-        <div class="sub">Complete VigyanLLM web features walkthrough</div>
-        <div class="desc">A complete product walkthrough covering the VigyanLLM web interface, feature navigation, research workflows, project creation, and output review in one place.</div>
-        <div class="section-label">What you're seeing</div>
+      <div class="card-content">
+        <h3>Full Platform Tour</h3>
+        <div class="card-sub">Complete VigyanLLM web features walkthrough</div>
+        <div class="card-desc">A complete product walkthrough covering the VigyanLLM web interface, feature navigation, research workflows, project creation, and output review in one place.</div>
+        <div class="card-label">What you're seeing</div>
         <ul>
           <li><span>▸</span><span>End-to-end website and product feature overview</span></li>
           <li><span>▸</span><span>Workflow navigation and project-level user experience</span></li>
           <li><span>▸</span><span>Biomedical tools shown together as one platform experience</span></li>
           <li><span>▸</span><span>Recommended first watch before the individual workflow demos</span></li>
         </ul>
-        <div class="card-footer">
+        <div class="card-actions">
           <span class="runtime">Runtime: product tour</span>
           <a href="/" class="cta">Request a Lab Demo →</a>
         </div>
       </div>
     </article>
 
-    <article class="card" data-category="docking">
-      <div class="card-video-header">
-        <div class="dots"><span class="dot" style="background:#ef4444"></span><span class="dot" style="background:#f59e0b"></span><span class="dot" style="background:#22c55e"></span></div>
-        <span class="label">consensus_pipeline.mp4</span>
-        <span class="badge">DOCKING</span>
+    <article class="demo-card" data-category="docking">
+      <div class="video-wrap">
+        <span class="card-badge">DOCKING</span>
+        <video muted playsinline controls controlslist="nodownload" preload="none" poster="poster.png" src="consensus_pipeline.mp4">Video loading — check connection.</video>
       </div>
-      <video muted playsinline controls controlslist="nodownload" preload="none" poster="poster.png" src="consensus_pipeline.mp4">Video loading — check connection.</video>
-      <div class="card-body">
-        <h2>Consensus Pipeline</h2>
-        <div class="sub">Multi-engine molecular docking with structural consensus scoring</div>
-        <div class="desc">Runs Smina, Vina, and Gnina in parallel against a PDB target. Scores are aggregated, poses ranked by RMSD deviation, and the top-binding conformation is returned.</div>
-        <div class="section-label">What you're seeing</div>
+      <div class="card-content">
+        <h3>Consensus Pipeline</h3>
+        <div class="card-sub">Multi-engine molecular docking with structural consensus scoring</div>
+        <div class="card-desc">Runs Smina, Vina, and Gnina in parallel against a PDB target. Scores are aggregated, poses ranked by RMSD deviation, and the top-binding conformation is returned.</div>
+        <div class="card-label">What you're seeing</div>
         <ul>
           <li><span>▸</span><span>Smina, Vina, Gnina running simultaneously against PDB: 6Y2E</span></li>
           <li><span>▸</span><span>Binding affinity (kcal/mol) aggregated across all three engines</span></li>
@@ -398,25 +416,23 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           <li><span>▸</span><span>ESMFold preprocessing for apo-structure inputs</span></li>
           <li><span>▸</span><span>Output downloadable as ranked SDF / PDBQT file set</span></li>
         </ul>
-        <div class="card-footer">
+        <div class="card-actions">
           <span class="runtime">Runtime: ~2 min</span>
           <a href="primer" class="cta">Try VigyanLLM Primer →</a>
         </div>
       </div>
     </article>
 
-    <article class="card" data-category="nlp">
-      <div class="card-video-header">
-        <div class="dots"><span class="dot" style="background:#ef4444"></span><span class="dot" style="background:#f59e0b"></span><span class="dot" style="background:#22c55e"></span></div>
-        <span class="label">smart_switch_demo.mp4</span>
-        <span class="badge">NLP ROUTING</span>
+    <article class="demo-card" data-category="nlp">
+      <div class="video-wrap">
+        <span class="card-badge">COMMAND INTERFACE</span>
+        <video muted playsinline controls controlslist="nodownload" preload="none" poster="poster.png" src="smart_switch_demo.mp4">Video loading — check connection.</video>
       </div>
-      <video muted playsinline controls controlslist="nodownload" preload="none" poster="poster.png" src="smart_switch_demo.mp4">Video loading — check connection.</video>
-      <div class="card-body">
-        <h2>Smart Switch / Project Forge</h2>
-        <div class="sub">Intent-based workflow routing from a single natural language command</div>
-        <div class="desc">A researcher types 'Dock Aspirin to 6Y2E'. Smart Switch parses the biomedical intent, routes to the Consensus Pipeline, scaffolds a project, and begins execution — no form-filling, no configuration.</div>
-        <div class="section-label">What you're seeing</div>
+      <div class="card-content">
+        <h3>Smart Switch / Project Forge</h3>
+        <div class="card-sub">Intent-based workflow routing from a single natural language command</div>
+        <div class="card-desc">A researcher types 'Dock Aspirin to 6Y2E'. Smart Switch parses the biomedical intent, routes to the Consensus Pipeline, scaffolds a project, and begins execution — no form-filling, no configuration.</div>
+        <div class="card-label">What you're seeing</div>
         <ul>
           <li><span>▸</span><span>NLP parser extracts: ligand name, target ID, task type</span></li>
           <li><span>▸</span><span>Routing engine maps intent → correct workflow module</span></li>
@@ -424,25 +440,23 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           <li><span>▸</span><span>Supports: docking, primer design, literature mining, ADR detection</span></li>
           <li><span>▸</span><span>Fallback disambiguation: ambiguous commands prompt a structured clarification</span></li>
         </ul>
-        <div class="card-footer">
+        <div class="card-actions">
           <span class="runtime">Runtime: ~2 min</span>
           <a href="primer" class="cta">Try VigyanLLM Primer →</a>
         </div>
       </div>
     </article>
 
-    <article class="card" data-category="genomics">
-      <div class="card-video-header">
-        <div class="dots"><span class="dot" style="background:#ef4444"></span><span class="dot" style="background:#f59e0b"></span><span class="dot" style="background:#22c55e"></span></div>
-        <span class="label">primer design tutorial</span>
-        <span class="badge">GENOMICS</span>
+    <article class="demo-card" data-category="genomics">
+      <div class="video-wrap">
+        <span class="card-badge">PRIMER DESIGN</span>
+        <div style="position:relative;padding-bottom:56.25%;height:0"><iframe src="https://www.youtube.com/embed/JOxw3D-L5Dw" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none" allowfullscreen loading="lazy"></iframe></div>
       </div>
-      <div style="position:relative;padding-bottom:56.25%;height:0;margin:0"><iframe src="https://www.youtube.com/embed/JOxw3D-L5Dw" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none" allowfullscreen loading="lazy"></iframe></div>
-      <div class="card-body">
-        <h2>VigyanLLM Primer</h2>
-        <div class="sub">Thermodynamically validated primer pairs delivered in under 30 seconds</div>
-        <div class="desc">Enter a gene name or NCBI accession. VigyanLLM retrieves the sequence, runs thermodynamic profiling, checks for secondary structures, and returns a validated primer pair — lab-ready.</div>
-        <div class="section-label">What you're seeing</div>
+      <div class="card-content">
+        <h3>VigyanLLM Primer</h3>
+        <div class="card-sub">Thermodynamically validated primer pairs delivered in under 30 seconds</div>
+        <div class="card-desc">Enter a gene name or NCBI accession. VigyanLLM retrieves the sequence, runs thermodynamic profiling, checks for secondary structures, and returns a validated primer pair — lab-ready.</div>
+        <div class="card-label">What you're seeing</div>
         <ul>
           <li><span>▸</span><span>Accepts: gene symbol, NCBI accession, Ensembl ID, or raw FASTA</span></li>
           <li><span>▸</span><span>Outputs: Tm (°C), GC%, amplicon size (bp), ΔG (kcal/mol)</span></li>
@@ -450,8 +464,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           <li><span>▸</span><span>Off-target BLAST check against reference genome</span></li>
           <li><span>▸</span><span>Output format: table + downloadable CSV for lab orders</span></li>
         </ul>
-        <div class="card-footer">
-          <span class="runtime">Runtime: ~2 min</span>
+        <div class="card-actions">
+          <span class="runtime">Tutorial: ~5 min</span>
           <a href="primer" class="cta">Try VigyanLLM Primer →</a>
         </div>
       </div>
