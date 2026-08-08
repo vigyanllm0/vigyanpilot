@@ -637,8 +637,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <script defer src="/auth-shared.js"></script>
 <script>
 // Nearest-neighbor enthalpy (ΔH) and entropy (ΔS) parameters (SantaLucia 1998)
-var NN={AA:[-7.9,-22.2],AT:[-7.2,-20.4],TA:[-7.2,-21.3],CA:[-8.5,-22.7],GT:[-8.4,-22.4],CT:[-7.8,-21.0],GA:[-8.2,-22.2],CG:[-10.6,-27.2],GC:[-9.8,-24.4],GG:[-8.0,-19.9],AC:[-6.5,-17.3],TC:[-6.5,-17.3],AG:[-7.8,-21.0],TG:[-8.5,-22.7]};
-var TERM_AT=[2.3,4.1]; // terminal AT penalty
+var NN={AA:[-7.9,-22.2],AT:[-7.2,-20.4],TA:[-7.2,-21.3],CA:[-8.5,-22.7],GT:[-8.4,-22.4],CT:[-7.8,-21.0],GA:[-8.2,-22.2],CG:[-10.6,-27.2],GC:[-9.8,-24.4],GG:[-8.0,-19.9],CC:[-8.0,-19.9],TT:[-7.9,-22.2],TG:[-8.5,-22.7],AC:[-7.8,-21.0],TC:[-8.2,-22.2],AG:[-7.8,-21.0]};
+var INIT_AT=[-2.3,-4.1]; // SantaLucia 1998 initiation: terminal AT
+var INIT_GC=[0.1,-2.8];  // SantaLucia 1998 initiation: terminal GC
 var R=1.987; // cal/mol·K
 
 function calcTm(){
@@ -656,9 +657,11 @@ function calcTm(){
     var key=s.substr(i,2);
     if(NN[key]){dH+=NN[key][0];dS+=NN[key][1];}
   }
-  // Terminal AT penalty
-  if(s[0]==='A'||s[0]==='T'){dH+=TERM_AT[0];dS+=TERM_AT[1];}
-  if(s[len-1]==='A'||s[len-1]==='T'){dH+=TERM_AT[0];dS+=TERM_AT[1];}
+  // SantaLucia 1998 initiation parameters — check both termini
+  if(s[0]==='A'||s[0]==='T'){dH+=INIT_AT[0];dS+=INIT_AT[1];}
+  else{dH+=INIT_GC[0];dS+=INIT_GC[1];}
+  if(s[len-1]==='A'||s[len-1]==='T'){dH+=INIT_AT[0];dS+=INIT_AT[1];}
+  else{dH+=INIT_GC[0];dS+=INIT_GC[1];}
   // Salt correction (SantaLucia modified)
   var saltCorr=na+mg*0.92+0.01;
   dS=dS+0.368*(len-1)*Math.log(saltCorr/1e-3);
