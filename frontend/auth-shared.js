@@ -194,6 +194,8 @@ function loadPlanUI() {
   var userRaw = sessionStorage.getItem('pf_user') || localStorage.getItem('pf_user');
   if (userRaw) { try { user = JSON.parse(userRaw); } catch(e) {} }
   if (!user) return;
+  // Dedup guard: skip if already injected
+  if (document.querySelector('.user-popup-header .plan-badge')) return;
   var api = window.VIGYAN_BACKEND_URL || '';
   fetch(api + '/api/payments/status', {credentials: 'same-origin'})
   .then(function(r){ return r.json(); })
@@ -206,8 +208,9 @@ function loadPlanUI() {
 
     // Plan badge in user popup header
     var hdr = document.querySelector('.user-popup-header');
-    if (hdr) {
+    if (hdr && !hdr.querySelector('.plan-badge')) {
       var badge = document.createElement('div');
+      badge.className = 'plan-badge';
       badge.textContent = labels[plan] || 'Free';
       badge.style.cssText = 'font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;display:inline-block;margin-top:4px;text-align:center';
       if (plan==='free') { badge.style.background='#F1F5F9'; badge.style.color='#64748B'; }
@@ -227,11 +230,13 @@ function loadPlanUI() {
     if (!popup) return;
     var logoutEl = popup.querySelector('.user-popup-logout');
     if (!logoutEl) return;
+    // Dedup: skip if gated items already present
+    if (popup.querySelector('.gated-nav-item')) return;
 
     gated.forEach(function(g){
       var unlocked = tierOrder.indexOf(g.t) <= userIdx;
       var el = unlocked ? document.createElement('a') : document.createElement('div');
-      el.className = 'user-popup-item';
+      el.className = 'user-popup-item gated-nav-item';
       el.style.cssText = 'display:flex;align-items:center;gap:6px;justify-content:center;padding:12px 16px;font-size:14px;border-radius:8px;margin-top:4px;text-decoration:none';
       if (unlocked) {
         el.href = g.h;
@@ -247,20 +252,22 @@ function loadPlanUI() {
     });
 
     // Upgrade CTA
-    var up = document.createElement('a');
-    up.href = '/pricing';
-    up.className = 'user-popup-item';
-    up.style.cssText = 'display:flex;align-items:center;gap:6px;justify-content:center;padding:10px 16px;font-size:13px;font-weight:700;border-radius:8px;text-decoration:none;margin-top:8px';
-    if (plan === 'free') {
-      up.style.color = '#fff';
-      up.style.background = 'var(--blue,#1565C0)';
-      up.textContent = 'Upgrade to Pro \u2192';
-    } else if (plan === 'pro') {
-      up.style.color = '#6D28D9';
-      up.style.background = '#EDE9FE';
-      up.textContent = 'Upgrade to Lab \u2192';
+    if (!popup.querySelector('.upgrade-cta-item')) {
+      var up = document.createElement('a');
+      up.href = '/pricing';
+      up.className = 'user-popup-item upgrade-cta-item';
+      up.style.cssText = 'display:flex;align-items:center;gap:6px;justify-content:center;padding:10px 16px;font-size:13px;font-weight:700;border-radius:8px;text-decoration:none;margin-top:8px';
+      if (plan === 'free') {
+        up.style.color = '#fff';
+        up.style.background = 'var(--blue,#1565C0)';
+        up.textContent = 'Upgrade to Pro \u2192';
+      } else if (plan === 'pro') {
+        up.style.color = '#6D28D9';
+        up.style.background = '#EDE9FE';
+        up.textContent = 'Upgrade to Lab \u2192';
+      }
+      popup.insertBefore(up, logoutEl);
     }
-    popup.insertBefore(up, logoutEl);
   })
   .catch(function(){});
 }
