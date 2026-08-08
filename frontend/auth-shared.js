@@ -151,6 +151,7 @@ function submitAuth(){
 function openAuthModal(){isRegister=false;showAuth()}
 
 (function(){
+  closeUserMenu();
   updateAuthUI();
   var userRaw = sessionStorage.getItem('pf_user') || localStorage.getItem('pf_user');
   var user = null;
