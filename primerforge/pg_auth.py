@@ -523,7 +523,12 @@ def register_user(email: str, password: str, name: str = "") -> dict:
     existing = fetch_one("SELECT id, status FROM users WHERE email = %s", (email,))
     if existing:
         if existing["status"] == "pending":
-            return {"error": "Please check your email to verify your account before logging in."}
+            # Resend verification email with new token
+            verify_token = create_verification_token(existing["id"])
+            if verify_token:
+                send_verification_email(email, verify_token)
+                logger.info("Resent verification email for existing pending user %s", email)
+            return {"user": {"email": email, "id": existing["id"]}, "requires_verification": True}
         return {"error": "Email already registered."}
 
     password_hash = bcrypt.hashpw(password.encode(), bcrypt.gensalt(rounds=12)).decode()

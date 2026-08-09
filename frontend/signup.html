@@ -299,9 +299,10 @@ footer{background:var(--black);color:rgba(255,255,255,.8);padding:56px 0 24px}
 
 <div class="login-wrap">
   <div class="login-card">
-    <h1>Create your free account</h1>
-    <p>Sign in to access all tools and features</p>
     <div id="auth-form-area">
+      <h1 id="auth-heading">Create your free account</h1>
+      <p id="auth-subheading">Sign in to access all tools and features</p>
+      <div id="auth-form-fields">
       <div class="form-group" id="name-group" style="display:none">
         <label class="form-label">Full Name</label>
         <input type="text" id="reg-name" class="form-input" placeholder="Dr. Anjali Sharma">
@@ -318,34 +319,67 @@ footer{background:var(--black);color:rgba(255,255,255,.8);padding:56px 0 24px}
       <div class="form-group">
         <label class="tc-checkbox"><input type="checkbox" id="auth-tc"> I agree to the <a href="/terms" target="_blank" rel="noopener">Terms &amp; Conditions</a> and <a href="/privacy" target="_blank" rel="noopener">Privacy Policy</a></label>
       </div>
-      <button type="button" class="btn-primary" id="auth-submit-btn">Log in</button>
+      <button type="button" class="btn-primary" id="auth-submit-btn">Create account</button>
       <div class="auth-error" id="auth-error"></div>
-      <div id="resend-verify-area" style="display:none;text-align:center;margin-top:12px">
-        <p style="font-size:12px;color:var(--muted);margin-bottom:6px">Haven't received the verification email?</p>
-        <button type="button" onclick="resendVerification()" style="background:none;border:none;color:var(--primary);font-size:12px;font-weight:600;cursor:pointer;text-decoration:underline" id="resend-verify-btn">Resend verification email</button>
-        <p id="resend-verify-msg" style="font-size:12px;margin-top:6px;display:none"></p>
-      </div>
       <div class="divider"><hr><span>or</span><hr></div>
       <button type="button" class="btn-google" onclick="handleGoogleSignIn()">
         <svg viewBox="0 0 24 24" style="width:18px;height:18px"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
         Sign in with Google
       </button>
-      <div class="auth-toggle" id="auth-toggle">Don't have an account? <a id="auth-toggle-link">Register</a></div>
+      <div class="auth-toggle" id="auth-toggle">Already have an account? <a id="auth-toggle-link">Sign in</a></div>
+      </div>
+      <!-- Verification success state -->
+      <div id="verify-success-area" style="display:none;text-align:center">
+        <div style="width:72px;height:72px;border-radius:50%;background:#DCFCE7;color:#16A34A;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:36px">&#9993;</div>
+        <h1 style="margin-bottom:8px">Check your email</h1>
+        <p style="color:var(--muted);font-size:14px;margin-bottom:4px" id="verify-email-sent-to"></p>
+        <p style="color:var(--text2);font-size:13px;line-height:1.6;margin-bottom:24px">We sent a verification link. Click the link in the email to verify your account. The link expires in 24 hours.</p>
+        <div style="background:var(--slate);border-radius:8px;padding:16px;margin-bottom:20px">
+          <p style="font-size:12px;color:var(--muted);margin-bottom:8px">Didn't receive the email?</p>
+          <button type="button" id="resend-btn" onclick="doResend()" style="background:none;border:1.5px solid var(--primary);color:var(--primary);padding:10px 24px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s">Resend verification email</button>
+          <p id="resend-msg" style="font-size:12px;margin-top:8px;display:none"></p>
+          <p id="resend-count" style="font-size:11px;color:var(--muted);margin-top:6px;display:none"></p>
+        </div>
+        <div style="display:flex;gap:12px;justify-content:center">
+          <a href="/login" style="font-size:13px;color:var(--primary);font-weight:600">Sign in</a>
+          <span style="color:var(--muted)">|</span>
+          <a href="#" onclick="showForm();return false" style="font-size:13px;color:var(--muted)">Try another email</a>
+        </div>
+      </div>
     </div>
   </div>
 </div>
 <script>
 var API = window.VIGYAN_BACKEND_URL || '';
 function $(id){return document.getElementById(id)}
-var isRegister=false;
+var isRegister=true;
+var registeredEmail='';
+var resendAttempts=0;
+var MAX_RESENDS=5;
+
+function showForm(){
+  $('verify-success-area').style.display='none';
+  $('auth-form-fields').style.display='block';
+  $('auth-heading').textContent='Create your free account';
+  $('auth-subheading').style.display='block';
+  $('auth-error').style.display='none';
+  $('auth-email').value='';
+  $('auth-password').value='';
+  $('reg-name').value='';
+  var tc=$('auth-tc');if(tc)tc.checked=false;
+  resendAttempts=0;
+}
+
 $('auth-toggle-link').addEventListener('click',function(){
   isRegister=!isRegister;
   $('name-group').style.display=isRegister?'block':'none';
-  $('auth-submit-btn').textContent=isRegister?'Register':'Log in';
-  $('auth-toggle-link').textContent=isRegister?'Log in':'Register';
-  $('auth-toggle').innerHTML=isRegister?'Already have an account? <a id="auth-toggle-link">Log in</a>':"Don't have an account? <a id='auth-toggle-link'>Register</a>";
+  $('auth-submit-btn').textContent=isRegister?'Create account':'Sign in';
+  $('auth-heading').textContent=isRegister?'Create your free account':'Sign in to VigyanLLM';
+  $('auth-toggle-link').textContent=isRegister?'Sign in':'Create account';
+  $('auth-toggle').innerHTML=isRegister?'Already have an account? <a id="auth-toggle-link">Sign in</a>':"Don't have an account? <a id='auth-toggle-link'>Create account</a>";
   $('auth-toggle-link').addEventListener('click',arguments.callee);
 });
+
 $('auth-submit-btn').addEventListener('click',async function(){
   var email=$('auth-email').value.trim(),pass=$('auth-password').value.trim();
   if(!email||!pass){$('auth-error').style.display='block';$('auth-error').textContent='Please fill all fields.';return}
@@ -353,16 +387,52 @@ $('auth-submit-btn').addEventListener('click',async function(){
   if(tc&&!tc.checked){$('auth-error').style.display='block';$('auth-error').textContent='Please accept the Terms & Conditions to continue.';return}
   $('auth-error').style.display='none';
   try{
-    var r=await fetch(API+'/api/auth/'+(isRegister?'register':'login'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
-      email:email,password:pass,name:isRegister?$('reg-name').value.trim():undefined
-    })});
+    var body={email:email,password:pass};
+    if(isRegister){body.name=$('reg-name').value.trim();body.consent_accepted=true;}
+    var r=await fetch(API+'/api/auth/'+(isRegister?'register':'login'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
     var d=await r.json();
-    if(r.ok&&d&&d.requires_verification){$('auth-error').style.display='block';$('auth-error').style.color='#F59E0B';$('auth-error').textContent=d.message||'Account created! Check your email to verify before logging in.';$('resend-verify-area').style.display='block';return}
+    if(r.ok&&d&&d.requires_verification){
+      registeredEmail=email;
+      $('auth-form-fields').style.display='none';
+      $('auth-subheading').style.display='none';
+      $('auth-heading').textContent='Check your email';
+      $('verify-email-sent-to').textContent=email;
+      $('verify-success-area').style.display='block';
+      resendAttempts=0;
+      return;
+    }
     if(r.ok){window.location.href='primer'}else{
       $('auth-error').style.display='block';$('auth-error').style.color='';$('auth-error').textContent=(d&&d.error)||'Authentication failed';
     }
   }catch(e){$('auth-error').style.display='block';$('auth-error').textContent='Server unavailable. Please try again.';}
 });
+
+function doResend(){
+  if(resendAttempts>=MAX_RESENDS){
+    $('resend-msg').style.display='block';$('resend-msg').style.color='#DC2626';
+    $('resend-msg').textContent='Too many attempts. Please wait 24 hours and check your spam folder.';
+    return;
+  }
+  var btn=$('resend-btn'),msg=$('resend-msg'),cnt=$('resend-count');
+  btn.disabled=true;btn.textContent='Sending...';msg.style.display='none';
+  fetch(API+'/api/auth/resend-verification',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:registeredEmail})})
+  .then(function(r){return r.json()})
+  .then(function(d){
+    resendAttempts++;
+    msg.style.display='block';msg.style.color='#16A34A';
+    msg.textContent=d.message||'Verification email sent! Please check your inbox.';
+    btn.textContent='Resend again';
+    btn.disabled=false;
+    if(resendAttempts>=MAX_RESENDS){cnt.style.display='block';cnt.textContent='Maximum resend limit reached. Try again tomorrow.';}
+    else{cnt.style.display='block';cnt.textContent=(MAX_RESENDS-resendAttempts)+' resend'+(MAX_RESENDS-resendAttempts===1?'':'s')+' remaining today.';}
+  })
+  .catch(function(){
+    msg.style.display='block';msg.style.color='#DC2626';
+    msg.textContent='Failed to send. Please try again.';
+    btn.disabled=false;btn.textContent='Resend verification email';
+  });
+}
+
 function handleGoogleSignIn(){
   var tc=$('auth-tc');
   if(tc&&!tc.checked){$('auth-error').style.display='block';$('auth-error').textContent='Please accept the Terms & Conditions to continue.';return}
@@ -405,27 +475,6 @@ document.addEventListener('DOMContentLoaded',function(){
   var h=$('hamburger'),m=$('mobile-menu');
   if(h&&m){h.addEventListener('click',function(){m.classList.toggle('open')});m.querySelectorAll('a').forEach(function(l){l.addEventListener('click',function(){m.classList.remove('open')})})}
 });
-
-function resendVerification(){
-  var email=$('auth-email').value.trim().toLowerCase();
-  if(!email){$('auth-error').style.display='block';$('auth-error').textContent='Please enter your email address above first.';return}
-  var btn=document.getElementById('resend-verify-btn');
-  var msg=document.getElementById('resend-verify-msg');
-  btn.disabled=true;btn.textContent='Sending...';msg.style.display='none';
-  var api=window.VIGYAN_BACKEND_URL||'';
-  fetch(api+'/api/auth/resend-verification',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email})})
-  .then(function(r){return r.json()})
-  .then(function(d){
-    msg.style.display='block';msg.style.color='#16A34A';
-    msg.textContent=d.message||'Verification email sent! Please check your inbox.';
-    btn.textContent='Sent!';
-  })
-  .catch(function(){
-    msg.style.display='block';msg.style.color='#DC2626';
-    msg.textContent='Failed to send. Please try again.';
-    btn.disabled=false;btn.textContent='Resend verification email';
-  });
-}
 </script>
 
 <script defer src="/search-index.js"></script>

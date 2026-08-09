@@ -319,10 +319,11 @@ footer{background:var(--black);color:rgba(255,255,255,.8);padding:56px 0 24px}
       </div>
       <button type="button" class="btn-primary" id="auth-submit-btn">Log in</button>
       <div class="auth-error" id="auth-error"></div>
-      <div id="resend-verify-area" style="display:none;text-align:center;margin-top:12px">
-        <p style="font-size:12px;color:var(--muted);margin-bottom:6px">Haven't received the verification email?</p>
-        <button type="button" onclick="resendVerification()" style="background:none;border:none;color:var(--primary);font-size:12px;font-weight:600;cursor:pointer;text-decoration:underline" id="resend-verify-btn">Resend verification email</button>
-        <p id="resend-verify-msg" style="font-size:12px;margin-top:6px;display:none"></p>
+      <div id="resend-verify-area" style="display:none;text-align:center;margin-top:16px;padding:16px;background:var(--slate);border-radius:8px">
+        <p style="font-size:13px;color:var(--text);margin-bottom:8px">Haven't received the verification email?</p>
+        <button type="button" id="resend-verify-btn" onclick="resendVerification()" style="background:none;border:1.5px solid var(--primary);color:var(--primary);padding:8px 20px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer">Resend verification email</button>
+        <p id="resend-verify-msg" style="font-size:12px;margin-top:8px;display:none"></p>
+        <p id="resend-count" style="font-size:11px;color:var(--muted);margin-top:6px;display:none"></p>
       </div>
       <div class="divider"><hr><span>or</span><hr></div>
       <button type="button" class="btn-google" onclick="handleGoogleSignIn()">
@@ -423,6 +424,7 @@ function resendVerification(){
   if(!email){$('auth-error').style.display='block';$('auth-error').textContent='Please enter your email address above first.';return}
   var btn=document.getElementById('resend-verify-btn');
   var msg=document.getElementById('resend-verify-msg');
+  var cnt=document.getElementById('resend-count');
   btn.disabled=true;btn.textContent='Sending...';msg.style.display='none';
   var api=window.VIGYAN_BACKEND_URL||'';
   fetch(api+'/api/auth/resend-verification',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email})})
@@ -430,7 +432,9 @@ function resendVerification(){
   .then(function(d){
     msg.style.display='block';msg.style.color='#16A34A';
     msg.textContent=d.message||'Verification email sent! Please check your inbox.';
-    btn.textContent='Sent!';
+    btn.textContent='Resend again';btn.disabled=false;
+    var remaining=d.remaining;
+    if(remaining!==undefined){cnt.style.display='block';cnt.textContent=remaining+' resend'+(remaining===1?'':'s')+' remaining today.';}
   })
   .catch(function(){
     msg.style.display='block';msg.style.color='#DC2626';

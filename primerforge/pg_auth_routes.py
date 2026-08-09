@@ -149,8 +149,11 @@ def verify_email():
 
 @auth_bp.route("/api/auth/resend-verification", methods=["POST"])
 def resend_verification():
-    """Resend the verification email for a pending account."""
-    from .database import fetch_one
+    """Resend the verification email for a pending account.
+
+    Rate limit: 5 resends per email per 24 hours.
+    Always generates a new token (invalidates previous).
+    """
     from .pg_auth import create_verification_token, send_verification_email
 
     data = request.get_json(silent=True) or {}
@@ -161,6 +164,7 @@ def resend_verification():
 
     user = fetch_one("SELECT id, status FROM users WHERE email = %s", (email,))
     if not user:
+        # Don't reveal whether email exists
         return jsonify({
             "success": True,
             "message": "If this email is registered and pending verification, a new verification link has been sent.",
@@ -172,11 +176,41 @@ def resend_verification():
             "message": "This account is already verified. Please log in.",
         }), 200
 
+    # Rate limit: check resend count in last 24 hours
+    try:
+        from ..database import fetch_one as _fo
+        count_row = _fo(
+            """SELECT COUNT(*) AS cnt FROM resend_logs
+               WHERE email = %s AND created_at > NOW() - INTERVAL '24 hours'""",
+            (email,)
+        )
+        resend_count = count_row["cnt"] if count_row else 0
+    except Exception:
+        resend_count = 0
+
+    if resend_count >= 5:
+        logger.warning("Resend rate limit hit for %s (%d in 24h)", email, resend_count)
+        return jsonify({
+            "success": True,
+            "message": "Too many resend requests. Please wait 24 hours before trying again. Check your spam/junk folder.",
+        }), 200
+
     verify_token = create_verification_token(user["id"])
     if not verify_token:
         return jsonify({"error": "Failed to generate verification token."}), 500
 
     email_sent = send_verification_email(email, verify_token)
+
+    # Log the resend
+    try:
+        from ..database import execute as _ex
+        _ex(
+            "INSERT INTO resend_logs (email, ip_address) VALUES (%s, %s)",
+            (email, request.remote_addr or "0.0.0.0"),
+        )
+    except Exception as e:
+        logger.warning("Failed to log resend for %s: %s", email, e)
+
     if not email_sent:
         logger.error("Failed to resend verification email to %s", email)
 
