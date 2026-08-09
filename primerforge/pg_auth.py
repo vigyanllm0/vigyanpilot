@@ -456,11 +456,18 @@ def create_verification_token(user_id: int) -> str:
 
 
 def verify_email_with_token(token: str) -> bool:
-    """Verify a user's email using a verification token. Returns True on success."""
+    """Verify a user's email using a verification token. Returns True on success.
+
+    Handles three cases:
+      1. Token found + unused → verify user, mark token consumed
+      2. Token found + already consumed (e.g. Brevo pre-fetch) + user active → return True (idempotent)
+      3. Token not found / expired → return False
+    """
     if not token or not isinstance(token, str):
         logger.warning("verify_email_with_token: empty or non-string token")
         return False
     try:
+        # Case 1: Unused token
         row = fetch_one(
             """SELECT ev.user_id, ev.expires_at, u.status
                FROM email_verifications ev
@@ -468,36 +475,49 @@ def verify_email_with_token(token: str) -> bool:
                WHERE ev.token = %s AND ev.verified_at IS NULL""",
             (token,)
         )
-        if not row:
-            logger.warning("verify_email_with_token: no matching row for token (len=%d)", len(token))
-            return False
-        expires_at = row["expires_at"]
-        if isinstance(expires_at, datetime):
-            if expires_at.timestamp() < time.time():
-                logger.warning("verify_email_with_token: token expired for user_id=%s", row["user_id"])
-                return False
-        if row["status"] != "pending":
-            logger.info("verify_email_with_token: user_id=%s already status=%s", row["user_id"], row["status"])
+        if row:
+            expires_at = row["expires_at"]
+            if isinstance(expires_at, datetime):
+                if expires_at.timestamp() < time.time():
+                    logger.warning("verify_email_with_token: token expired for user_id=%s", row["user_id"])
+                    return False
+            if row["status"] != "pending":
+                logger.info("verify_email_with_token: user_id=%s already status=%s", row["user_id"], row["status"])
+                return True
+            user_id = row["user_id"]
+            execute("UPDATE email_verifications SET verified_at = NOW() WHERE token = %s", (token,))
+            execute("UPDATE users SET status = 'active' WHERE id = %s", (user_id,))
+            execute(
+                """INSERT INTO token_balances (user_id, balance, total_purchased)
+                   VALUES (%s, 2, 2)
+                   ON CONFLICT (user_id) DO UPDATE
+                   SET balance = token_balances.balance + 2,
+                       total_purchased = token_balances.total_purchased + 2""",
+                (user_id,)
+            )
+            logger.info("Email verified for user_id=%s", user_id)
             return True
-        user_id = row["user_id"]
-        execute("UPDATE email_verifications SET verified_at = NOW() WHERE token = %s", (token,))
-        execute("UPDATE users SET status = 'active' WHERE id = %s", (user_id,))
-        execute(
-            """INSERT INTO token_balances (user_id, balance, total_purchased)
-               VALUES (%s, 2, 2)
-               ON CONFLICT (user_id) DO UPDATE
-               SET balance = token_balances.balance + 2,
-                   total_purchased = token_balances.total_purchased + 2""",
-            (user_id,)
+
+        # Case 2: Token already consumed (Brevo pre-fetch or double-click) — idempotent success
+        row2 = fetch_one(
+            """SELECT ev.user_id, u.status
+               FROM email_verifications ev
+               JOIN users u ON u.id = ev.user_id
+               WHERE ev.token = %s AND ev.verified_at IS NOT NULL""",
+            (token,)
         )
-        logger.info("Email verified for user_id=%s", user_id)
-        return True
+        if row2 and row2["status"] == "active":
+            logger.info("verify_email_with_token: token already consumed, user_id=%s active (idempotent)", row2["user_id"])
+            return True
+
+        logger.warning("verify_email_with_token: no matching row for token (len=%d)", len(token))
+        return False
     except Exception as e:
         logger.error("Verification failed with exception: %s", e, exc_info=True)
         return False
 
 
-def register_user(email: str, password: str, name: str = "") -> dict:
+def register_user(email: str, password: str, name: str = "", ip_address: str = "") -> dict:
     """Register a new user. Returns user dict or error.
 
     Users are created in 'pending' status until their email is verified.
@@ -509,6 +529,8 @@ def register_user(email: str, password: str, name: str = "") -> dict:
         return {"error": "Invalid input types."}
     if not isinstance(name, str):
         name = ""
+    if not isinstance(ip_address, str):
+        ip_address = ""
 
     valid, err = validate_email(email)
     if not valid:
@@ -538,10 +560,10 @@ def register_user(email: str, password: str, name: str = "") -> dict:
     user = None
     try:
         cur.execute(
-            """INSERT INTO users (email, password_hash, full_name, role, status)
-               VALUES (%s, %s, %s, 'user', 'pending')
+            """INSERT INTO users (email, password_hash, full_name, role, status, first_login_ip)
+               VALUES (%s, %s, %s, 'user', 'pending', %s)
                RETURNING id, email, role""",
-            (email, password_hash, name)
+            (email, password_hash, name, ip_address or None)
         )
         user = dict(cur.fetchone())
         db.commit()
@@ -625,9 +647,11 @@ def login_user(email: str, password: str, ip_address: str = "0.0.0.0", user_agen
     # Verify password (bcrypt is constant-time internally)
     if not bcrypt.checkpw(password.encode(), user["password_hash"].encode()):
         _log_login(user["id"], ip_address, user_agent, "failed_wrong_password")
+        _increment_failed_login(user["id"])
         return {"error": "Invalid email or password."}
 
-    # Success
+    # Success — reset failed login counter
+    _reset_failed_login(user["id"])
     _log_login(user["id"], ip_address, user_agent, "success")
     execute("UPDATE users SET last_active_at = NOW() WHERE id = %s", (user["id"],))
 
@@ -673,6 +697,38 @@ def _log_login(user_id, ip_address: str, user_agent: str, result: str):
         )
     except Exception as e:
         logger.error("Failed to log login: %s", e)
+
+
+# ── Account Lockout (5 failed attempts → 15 min lock) ─────────────────────
+MAX_FAILED_LOGINS = 5
+LOCKOUT_MINUTES = 15
+
+
+def _increment_failed_login(user_id: int):
+    """Increment failed login counter; lock account after MAX_FAILED_LOGINS."""
+    try:
+        row = fetch_one("SELECT failed_login_count FROM users WHERE id = %s", (user_id,))
+        count = (row.get("failed_login_count") or 0) + 1
+        if count >= MAX_FAILED_LOGINS:
+            execute(
+                """UPDATE users SET failed_login_count = %s,
+                   locked_until = NOW() + make_interval(mins => %s)
+                   WHERE id = %s""",
+                (count, LOCKOUT_MINUTES, user_id)
+            )
+            logger.warning("Account locked for user_id=%s after %d failed attempts", user_id, count)
+        else:
+            execute("UPDATE users SET failed_login_count = %s WHERE id = %s", (count, user_id))
+    except Exception as e:
+        logger.debug("Failed to increment login counter: %s", e)
+
+
+def _reset_failed_login(user_id: int):
+    """Reset failed login counter on successful login."""
+    try:
+        execute("UPDATE users SET failed_login_count = 0, locked_until = NULL WHERE id = %s", (user_id,))
+    except Exception as e:
+        logger.debug("Failed to reset login counter: %s", e)
 
 
 # ── Usage & Token Balance ─────────────────────────────────────────────────

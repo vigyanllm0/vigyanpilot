@@ -94,13 +94,30 @@ def register():
     # DPDP-01 FIX: Explicit consent required before collecting any PII
     consent_accepted = data.get("consent_accepted")
     if consent_accepted is not True:
-        logger.warning("Registration without explicit consent_accepted — frontend may need update")
-        # DPDP-01: Frontend hasn't been updated yet — accept registration and record
-        # consent via /api/consent/record separately. Remove this fallback once
-        # all registration forms include the consent checkbox.
-        consent_accepted = True
+        return jsonify({
+            "error": "You must accept the Terms of Service and Privacy Policy to create an account.",
+            "code": "CONSENT_REQUIRED",
+        }), 400
 
-    result = register_user(email, password, name)
+    # IP-based registration rate limit: max 5 accounts per IP per hour
+    ip_address = request.remote_addr or "0.0.0.0"
+    try:
+        ip_registrations = fetch_one(
+            """SELECT COUNT(*) AS cnt FROM users
+               WHERE first_login_ip = %s
+               AND created_at > NOW() - INTERVAL '1 hour'""",
+            (ip_address,)
+        )
+        if ip_registrations and ip_registrations["cnt"] >= 5:
+            logger.warning("Registration rate limit hit for IP %s (%d in 1h)", ip_address, ip_registrations["cnt"])
+            return jsonify({
+                "error": "Too many accounts created from this IP. Please try again later.",
+                "code": "IP_RATE_LIMITED",
+            }), 429
+    except Exception:
+        pass  # Don't block if check fails
+
+    result = register_user(email, password, name, ip_address=ip_address)
     if "error" in result:
         return jsonify({"error": result["error"]}), 400
 
@@ -234,6 +251,23 @@ def login():
 
     ip_address = request.remote_addr or "0.0.0.0"
     user_agent = request.headers.get("User-Agent", "")[:512]  # Truncate UA to prevent abuse
+
+    # IP-based brute force protection: block IP after 20 failed logins in 15 min
+    try:
+        ip_failures = fetch_one(
+            """SELECT COUNT(*) AS cnt FROM login_logs
+               WHERE ip_address = %s AND result LIKE 'failed_%'
+               AND created_at > NOW() - INTERVAL '15 minutes'""",
+            (ip_address,)
+        )
+        if ip_failures and ip_failures["cnt"] >= 20:
+            logger.warning("IP %s blocked after %d failed attempts in 15 min", ip_address, ip_failures["cnt"])
+            return jsonify({
+                "error": "Too many failed login attempts. Please try again later.",
+                "code": "IP_RATE_LIMITED",
+            }), 429
+    except Exception:
+        pass  # Don't block login if rate check fails
 
     result = login_user(email, password, ip_address, user_agent)
     if "error" in result:
@@ -459,6 +493,7 @@ def forgot_password():
     """
     Request password reset. For security, always returns success
     regardless of whether the email exists (prevents enumeration).
+    Rate limit: 3 requests per email per hour.
     """
     import secrets
 
@@ -467,6 +502,26 @@ def forgot_password():
 
     if not email:
         return jsonify({"error": "Email is required."}), 400
+
+    # Rate limit: 3 per hour per email
+    try:
+        from ..database import fetch_one as _fo
+        count_row = _fo(
+            """SELECT COUNT(*) AS cnt FROM password_resets
+               WHERE user_id = (SELECT id FROM users WHERE email = %s)
+               AND created_at > NOW() - INTERVAL '1 hour'""",
+            (email,)
+        )
+        reset_count = count_row["cnt"] if count_row else 0
+    except Exception:
+        reset_count = 0
+
+    if reset_count >= 3:
+        logger.warning("Password reset rate limit hit for %s", email)
+        return jsonify({
+            "success": True,
+            "message": "If this email is registered, a password reset link has been sent.",
+        }), 200
 
     # Generate a secure reset token
     reset_token = secrets.token_urlsafe(32)
