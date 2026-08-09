@@ -134,6 +134,7 @@ def verify_email():
     if not token:
         return jsonify({"error": "Verification token is required."}), 400
 
+    logger.info("verify-email: received token (len=%d)", len(token))
     if verify_email_with_token(token):
         return jsonify({
             "success": True,

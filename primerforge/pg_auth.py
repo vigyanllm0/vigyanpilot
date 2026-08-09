@@ -458,6 +458,7 @@ def create_verification_token(user_id: int) -> str:
 def verify_email_with_token(token: str) -> bool:
     """Verify a user's email using a verification token. Returns True on success."""
     if not token or not isinstance(token, str):
+        logger.warning("verify_email_with_token: empty or non-string token")
         return False
     try:
         row = fetch_one(
@@ -468,12 +469,15 @@ def verify_email_with_token(token: str) -> bool:
             (token,)
         )
         if not row:
+            logger.warning("verify_email_with_token: no matching row for token (len=%d)", len(token))
             return False
         expires_at = row["expires_at"]
         if isinstance(expires_at, datetime):
             if expires_at.timestamp() < time.time():
+                logger.warning("verify_email_with_token: token expired for user_id=%s", row["user_id"])
                 return False
         if row["status"] != "pending":
+            logger.info("verify_email_with_token: user_id=%s already status=%s", row["user_id"], row["status"])
             return True
         user_id = row["user_id"]
         execute("UPDATE email_verifications SET verified_at = NOW() WHERE token = %s", (token,))
@@ -489,7 +493,7 @@ def verify_email_with_token(token: str) -> bool:
         logger.info("Email verified for user_id=%s", user_id)
         return True
     except Exception as e:
-        logger.error("Verification failed: %s", e)
+        logger.error("Verification failed with exception: %s", e, exc_info=True)
         return False
 
 
@@ -548,11 +552,15 @@ def register_user(email: str, password: str, name: str = "") -> dict:
 
     verify_token = create_verification_token(user["id"])
     if verify_token:
+        logger.info("Registration: created verification token (len=%d) for user_id=%s", len(verify_token), user["id"])
         email_sent = send_verification_email(email, verify_token)
         if not email_sent:
+            logger.error("Registration: failed to send verification email to %s", email)
             env = os.environ.get("VIGYANLLM_ENV", "production")
             if env == "development":
                 logger.warning("Email sending failed — verification token: %s", verify_token)
+    else:
+        logger.error("Registration: create_verification_token returned empty for user_id=%s", user["id"])
 
     log_action(email, "registration", "User registered (status: pending, verification sent)")
     return {"user": {"email": user["email"], "id": user["id"]}, "requires_verification": True}
