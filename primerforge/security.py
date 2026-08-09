@@ -155,6 +155,7 @@ def init_security(app):
             "https://cdn.tiptap.dev",
             "https://fonts.googleapis.com",
             "https://code.jquery.com",
+            "https://3Dmol.org",
         ],
         "style-src": ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
         "font-src": ["'self'", "https://fonts.gstatic.com", "data:"],
