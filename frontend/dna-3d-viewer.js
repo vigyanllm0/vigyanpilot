@@ -284,10 +284,9 @@ function generatePDB(seq, dnaType = 'B-DNA', fwdPrimer = '', revPrimer = '') {
     pdb += `  1.00  0.00           ${a.name.charAt(0).padEnd(2)}\n`;
   }
 
-  // Add bonds as CONECT records
-  for (const [a1, a2] of bonds) {
-    pdb += `CONECT${String(a1).padStart(5)}${String(a2).padStart(5)}\n`;
-  }
+  // NO CONECT records — let 3Dmol.js infer bonds from atomic proximity.
+  // Explicit CONECT bonds between backbone P atoms create straight lines
+  // across the helix instead of smooth curves.
 
   pdb += 'ENDMDL\n';
 
