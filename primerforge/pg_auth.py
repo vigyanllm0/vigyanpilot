@@ -319,50 +319,120 @@ def require_admin(f):
 # ── Email Verification ─────────────────────────────────────────────────────
 
 def send_verification_email(email: str, verification_token: str) -> bool:
-    """Send email verification link to newly registered user."""
-    import smtplib
-    from email.mime.text import MIMEText
+    """Send email verification link to newly registered user.
 
+    Supports two transport methods (checked in order):
+      1. Brevo API (if BREVO_API_KEY is set) — preferred, more reliable
+      2. SMTP fallback (if SMTP_HOST/SMTP_USER/SMTP_PASSWORD are set)
+    """
+    app_url = os.environ.get("APP_URL", "https://www.vigyanllm.in")
+    verify_url = f"{app_url}/verify-email?token={verification_token}"
+    from_name = "VigyanLLM"
+    from_email = os.environ.get("SMTP_FROM_EMAIL", "noreply@vigyanllm.in")
+    subject = "VigyanLLM \u2014 Verify Your Email Address"
+
+    html_body = f"""<!DOCTYPE html>
+<html><head><meta charset="utf-8"></head>
+<body style="margin:0;padding:0;background:#f8fafc;font-family:'Segoe UI',Roboto,sans-serif">
+<div style="max-width:520px;margin:40px auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.08)">
+  <div style="background:linear-gradient(135deg,#1565C0,#0D47A1);padding:32px;text-align:center">
+    <h1 style="color:#fff;margin:0;font-size:22px">VigyanLLM</h1>
+    <p style="color:rgba(255,255,255,.85);margin:8px 0 0;font-size:14px">Automated Bioinformatics Platform</p>
+  </div>
+  <div style="padding:32px">
+    <h2 style="color:#1e293b;margin:0 0 16px;font-size:20px">Verify your email address</h2>
+    <p style="color:#475569;line-height:1.6;margin:0 0 24px">
+      Thanks for creating an account on VigyanLLM. Please confirm this is your email address by clicking the button below.
+    </p>
+    <div style="text-align:center;margin:0 0 24px">
+      <a href="{verify_url}" style="display:inline-block;background:#1565C0;color:#fff;text-decoration:none;padding:14px 36px;border-radius:8px;font-weight:600;font-size:15px">
+        Verify Email Address
+      </a>
+    </div>
+    <p style="color:#94a3b8;font-size:13px;line-height:1.5;margin:0 0 8px">
+      This link expires in <strong>24 hours</strong>. If you did not create this account, you can safely ignore this email.
+    </p>
+    <p style="color:#94a3b8;font-size:13px;margin:0">
+      If the button doesn't work, copy and paste this link into your browser:<br>
+      <a href="{verify_url}" style="color:#1565C0;word-break:break-all">{verify_url}</a>
+    </p>
+  </div>
+  <div style="background:#f1f5f9;padding:20px 32px;text-align:center">
+    <p style="color:#94a3b8;font-size:12px;margin:0">
+      &copy; 2026 VigyanLLM &middot; <a href="{app_url}" style="color:#64748b">vigyanllm.in</a>
+    </p>
+  </div>
+</div>
+</body></html>"""
+
+    # ── Method 1: Brevo API (preferred) ──
+    brevo_key = os.environ.get("BREVO_API_KEY", "")
+    if brevo_key:
+        try:
+            import requests as _req
+            resp = _req.post(
+                "https://api.brevo.com/v3/smtp/email",
+                headers={
+                    "api-key": brevo_key,
+                    "Content-Type": "application/json",
+                    "Accept": "application/json",
+                },
+                json={
+                    "sender": {"name": from_name, "email": from_email},
+                    "to": [{"email": email}],
+                    "subject": subject,
+                    "htmlContent": html_body,
+                },
+                timeout=15,
+            )
+            if resp.status_code in (200, 201):
+                logger.info("Verification email sent to %s via Brevo API", email)
+                return True
+            logger.error("Brevo API returned %d: %s", resp.status_code, resp.text[:200])
+        except Exception as e:
+            logger.error("Brevo API failed for %s: %s", email, e)
+
+    # ── Method 2: SMTP fallback ──
     smtp_host = os.environ.get("SMTP_HOST")
     smtp_port = int(os.environ.get("SMTP_PORT", "587"))
     smtp_user = os.environ.get("SMTP_USER")
     smtp_password = os.environ.get("SMTP_PASSWORD")
-    from_email = os.environ.get("SMTP_FROM_EMAIL", "noreply@vigyanllm.in")
-    app_url = os.environ.get("APP_URL", "https://vigyanllm.com")
 
     if not smtp_host or not smtp_user or not smtp_password:
         env = os.environ.get("VIGYANLLM_ENV", "production")
         if env == "development":
             logger.warning(
-                "SMTP not configured — verification token for %s: %s (dev mode)",
+                "No email transport configured — verification token for %s: %s (dev mode)",
                 email, verification_token,
             )
             return True
-        logger.error("SMTP not configured. Cannot send verification email.")
+        logger.error("No email transport configured (neither BREVO_API_KEY nor SMTP). Cannot send verification email.")
         return False
 
     try:
+        import smtplib
+        from email.mime.text import MIMEText
         msg = MIMEText(
             f"Welcome to VigyanLLM!\n\n"
             f"Please verify your email address by clicking this link:\n"
-            f"{app_url}/verify-email?token={verification_token}\n\n"
+            f"{verify_url}\n\n"
             f"This link expires in 24 hours.\n\n"
             f"If you did not create this account, please ignore this email.\n\n"
-            f"— VigyanLLM Team"
+            f"\u2014 VigyanLLM Team"
         )
-        msg["From"] = from_email
+        msg["From"] = f"{from_name} <{from_email}>"
         msg["To"] = email
-        msg["Subject"] = "VigyanLLM — Verify Your Email Address"
+        msg["Subject"] = subject
 
         with smtplib.SMTP(smtp_host, smtp_port) as server:
             server.starttls()
             server.login(smtp_user, smtp_password)
             server.sendmail(from_email, email, msg.as_string())
 
-        logger.info("Verification email sent to %s", email)
+        logger.info("Verification email sent to %s via SMTP", email)
         return True
     except Exception as e:
-        logger.error("Failed to send verification email to %s: %s", email, e)
+        logger.error("SMTP failed for %s: %s", email, e)
         return False
 
 
