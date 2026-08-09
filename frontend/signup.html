@@ -350,8 +350,10 @@ $('auth-submit-btn').addEventListener('click',async function(){
     var r=await fetch(API+'/api/auth/'+(isRegister?'register':'login'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
       email:email,password:pass,name:isRegister?$('reg-name').value.trim():undefined
     })});
+    var d=await r.json();
+    if(r.ok&&d&&d.requires_verification){$('auth-error').style.display='block';$('auth-error').style.color='#22C55E';$('auth-error').textContent=d.message||'Account created! Check your email to verify before logging in.';return}
     if(r.ok){window.location.href='primer'}else{
-      var e=await r.text();$('auth-error').style.display='block';$('auth-error').textContent=e||'Authentication failed';
+      $('auth-error').style.display='block';$('auth-error').style.color='';$('auth-error').textContent=(d&&d.error)||'Authentication failed';
     }
   }catch(e){$('auth-error').style.display='block';$('auth-error').textContent='Server unavailable. Please try again.';}
 });

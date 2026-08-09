@@ -1191,6 +1191,12 @@ async function handleAuth() {
     var r = await fetch(API + endpoint, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });
     var d = await r.json();
     if (!r.ok) { errEl.textContent = d.error || 'Authentication failed'; errEl.classList.add('show'); return; }
+    if (d.requires_verification) {
+      errEl.textContent = d.message || 'Account created! Check your email to verify before logging in.';
+      errEl.style.color = 'var(--bio)';
+      errEl.classList.add('show');
+      return;
+    }
     if (authMode === 'register') {
       authMode = 'login';
       toggleAuthMode();

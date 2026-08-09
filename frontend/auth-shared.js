@@ -134,6 +134,11 @@ function submitAuth(){
   fetch(API+'/api/auth/'+(isRegister?'register':'login'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
     .then(function(r){return r.json().then(function(d){return{ok:r.ok,data:d}})})
     .then(function(res){
+      if(res&&res.ok&&res.data&&res.data.requires_verification){
+        err.style.display='block';err.style.color='#22C55E';
+        err.textContent=res.data.message||'Account created! Check your email to verify your account before logging in.';
+        return;
+      }
       if(res&&res.ok&&res.data&&res.data.user){
         sessionStorage.setItem('pf_user',JSON.stringify(res.data.user||{email:email}));
         closeAuth();
@@ -142,10 +147,10 @@ function submitAuth(){
         closeAuth();
         window.location.href='primer.html';
       }else{
-        err.style.display='block';err.textContent=(res&&res.data&&res.data.error)||res||'Authentication failed.';
+        err.style.display='block';err.style.color='';err.textContent=(res&&res.data&&res.data.error)||res||'Authentication failed.';
       }
     })
-    .catch(function(){err.style.display='block';err.textContent='Server unavailable. Please try again.'});
+    .catch(function(){err.style.display='block';err.style.color='';err.textContent='Server unavailable. Please try again.'});
 }
 
 function openAuthModal(){isRegister=false;showAuth()}
