@@ -46,7 +46,7 @@ logger = logging.getLogger("primerforge.server")
 # Load .env file from project root (enables changing keys without code edits)
 _env_path = Path(__file__).parent.parent / ".env"
 if _env_path.exists():
-    load_dotenv(_env_path)
+    load_dotenv(_env_path, override=True)
     logger.info("Loaded environment from %s", _env_path)
 
 from flask import Flask, Response, jsonify, request
