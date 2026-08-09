@@ -192,6 +192,7 @@ def resend_verification():
         logger.warning("Resend rate limit hit for %s (%d in 24h)", email, resend_count)
         return jsonify({
             "success": True,
+            "remaining": 0,
             "message": "Too many resend requests. Please wait 24 hours before trying again. Check your spam/junk folder.",
         }), 200
 
@@ -216,6 +217,7 @@ def resend_verification():
 
     return jsonify({
         "success": True,
+        "remaining": max(0, 4 - resend_count),
         "message": "If this email is registered and pending verification, a new verification link has been sent.",
     }), 200
 
