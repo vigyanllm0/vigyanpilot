@@ -1186,7 +1186,7 @@ async function handleAuth() {
   if (tc && !tc.checked) { errEl.textContent = 'Please accept the Terms & Conditions to continue.'; errEl.classList.add('show'); return; }
   var endpoint = authMode === 'login' ? '/auth/login' : '/auth/register';
   var body = { email, password: pass };
-  if (authMode === 'register') body.name = name || email.split('@')[0];
+  if (authMode === 'register') { body.name = name || email.split('@')[0]; body.consent_accepted = true; }
   try {
     var r = await fetch(API + endpoint, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });
     var d = await r.json();

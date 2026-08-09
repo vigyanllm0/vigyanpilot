@@ -130,7 +130,7 @@ function submitAuth(){
   if(tc&&!tc.checked){err.style.display='block';err.textContent='Please accept the Terms & Conditions to continue.';return}
   err.style.display='none';
   var body={email:email,password:pass};
-  if(isRegister)body.name=(document.getElementById('auth-name').value||'').trim();
+  if(isRegister){body.name=(document.getElementById('auth-name').value||'').trim();body.consent_accepted=true;}
   fetch(API+'/auth/'+(isRegister?'register':'login'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
     .then(function(r){return r.json().then(function(d){return{ok:r.ok,data:d}})})
     .then(function(res){

@@ -366,9 +366,9 @@ $('auth-submit-btn').addEventListener('click',async function(){
   if(tc&&!tc.checked){$('auth-error').style.display='block';$('auth-error').textContent='Please accept the Terms & Conditions to continue.';return}
   $('auth-error').style.display='none';
   try{
-    var r=await fetch(API+'/auth/'+(isRegister?'register':'login'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
-      email:email,password:pass,name:isRegister?$('reg-name').value.trim():undefined
-    })});
+    var body={email:email,password:pass};
+    if(isRegister){body.name=$('reg-name').value.trim();body.consent_accepted=true;}
+    var r=await fetch(API+'/auth/'+(isRegister?'register':'login'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
     var d=await r.json();
     if(r.ok&&d&&d.requires_verification){$('auth-error').style.display='block';$('auth-error').style.color='#F59E0B';$('auth-error').textContent=d.message||'Account created! Check your email to verify before logging in.';$('resend-verify-area').style.display='block';return}
     if(r.ok){window.location.href='primer'}else{
