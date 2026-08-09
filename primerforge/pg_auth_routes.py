@@ -312,56 +312,108 @@ def change_password_route():
 
 
 def _send_reset_email(email: str, reset_token: str) -> bool:
-    """Send password reset email via SMTP."""
-    import smtplib
-    from email.mime.multipart import MIMEMultipart
-    from email.mime.text import MIMEText
+    """Send password reset email. Supports Brevo API (preferred) + SMTP fallback."""
+    app_url = os.environ.get("APP_URL", "https://www.vigyanllm.in")
+    reset_link = f"{app_url}/reset-password?token={reset_token}"
+    from_name = "VigyanLLM"
+    from_email = os.environ.get("SMTP_FROM_EMAIL", "noreply@vigyanllm.in")
+    subject = "VigyanLLM \u2014 Password Reset Request"
 
+    html_body = f"""<!DOCTYPE html>
+<html><head><meta charset="utf-8"></head>
+<body style="margin:0;padding:0;background:#f8fafc;font-family:'Segoe UI',Roboto,sans-serif">
+<div style="max-width:520px;margin:40px auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.08)">
+  <div style="background:linear-gradient(135deg,#1565C0,#0D47A1);padding:32px;text-align:center">
+    <h1 style="color:#fff;margin:0;font-size:22px">VigyanLLM</h1>
+    <p style="color:rgba(255,255,255,.85);margin:8px 0 0;font-size:14px">Automated Bioinformatics Platform</p>
+  </div>
+  <div style="padding:32px">
+    <h2 style="color:#1e293b;margin:0 0 16px;font-size:20px">Reset your password</h2>
+    <p style="color:#475569;line-height:1.6;margin:0 0 24px">
+      We received a request to reset the password for your VigyanLLM account. Click the button below to choose a new password.
+    </p>
+    <div style="text-align:center;margin:0 0 24px">
+      <a href="{reset_link}" style="display:inline-block;background:#1565C0;color:#fff;text-decoration:none;padding:14px 36px;border-radius:8px;font-weight:600;font-size:15px">
+        Reset Password
+      </a>
+    </div>
+    <p style="color:#94a3b8;font-size:13px;line-height:1.5;margin:0 0 8px">
+      This link expires in <strong>1 hour</strong>. If you did not request a password reset, you can safely ignore this email &mdash; your password will remain unchanged.
+    </p>
+    <p style="color:#94a3b8;font-size:13px;margin:0">
+      If the button doesn't work, copy and paste this link into your browser:<br>
+      <a href="{reset_link}" style="color:#1565C0;word-break:break-all">{reset_link}</a>
+    </p>
+  </div>
+  <div style="background:#f1f5f9;padding:20px 32px;text-align:center">
+    <p style="color:#94a3b8;font-size:12px;margin:0">
+      &copy; 2026 VigyanLLM &middot; <a href="{app_url}" style="color:#64748b">vigyanllm.in</a>
+    </p>
+  </div>
+</div>
+</body></html>"""
+
+    # ── Method 1: Brevo API (preferred) ──
+    brevo_key = os.environ.get("BREVO_API_KEY", "")
+    if brevo_key:
+        try:
+            import requests as _req
+            resp = _req.post(
+                "https://api.brevo.com/v3/smtp/email",
+                headers={
+                    "api-key": brevo_key,
+                    "Content-Type": "application/json",
+                    "Accept": "application/json",
+                },
+                json={
+                    "sender": {"name": from_name, "email": from_email},
+                    "to": [{"email": email}],
+                    "subject": subject,
+                    "htmlContent": html_body,
+                },
+                timeout=15,
+            )
+            if resp.status_code in (200, 201):
+                logger.info("Password reset email sent to %s via Brevo API", email)
+                return True
+            logger.error("Brevo API returned %d: %s", resp.status_code, resp.text[:200])
+        except Exception as e:
+            logger.error("Brevo API failed for reset email to %s: %s", email, e)
+
+    # ── Method 2: SMTP fallback ──
     smtp_host = os.environ.get("SMTP_HOST")
     smtp_port = int(os.environ.get("SMTP_PORT", "587"))
     smtp_user = os.environ.get("SMTP_USER")
     smtp_password = os.environ.get("SMTP_PASSWORD")
-    from_email = os.environ.get("SMTP_FROM_EMAIL", "noreply@vigyanllm.in")
-    app_url = os.environ.get("APP_URL", "https://vigyanllm.com")
 
     if not smtp_host or not smtp_user or not smtp_password:
         env = os.environ.get("VIGYANLLM_ENV", "production")
         if env == "development":
             logger.warning(
-                "VigyanLLM: SMTP not configured — reset token for %s: %s (dev mode only)",
+                "No email transport — reset token for %s: %s (dev mode)",
                 email, reset_token,
             )
             return True
-        else:
-            logger.error("VigyanLLM: SMTP not configured. Cannot send password reset email.")
-            return False
+        logger.error("No email transport configured for password reset.")
+        return False
 
     try:
+        import smtplib
+        from email.mime.multipart import MIMEMultipart
+        from email.mime.text import MIMEText
         msg = MIMEMultipart()
-        msg["From"] = from_email
+        msg["From"] = f"{from_name} <{from_email}>"
         msg["To"] = email
-        msg["Subject"] = "VigyanLLM — Password Reset Request"
-
-        reset_link = f"{app_url}/reset-password?token={reset_token}"
-        body = (
-            f"Hello,\n\n"
-            f"You requested a password reset for your VigyanLLM account.\n\n"
-            f"Click here to reset your password:\n{reset_link}\n\n"
-            f"This link expires in 1 hour.\n\n"
-            f"If you did not request this, please ignore this email.\n\n"
-            f"— VigyanLLM Team"
-        )
-        msg.attach(MIMEText(body, "plain"))
-
+        msg["Subject"] = subject
+        msg.attach(MIMEText(html_body, "html"))
         with smtplib.SMTP(smtp_host, smtp_port) as server:
             server.starttls()
             server.login(smtp_user, smtp_password)
             server.sendmail(from_email, email, msg.as_string())
-
-        logger.info("VigyanLLM: Password reset email sent to %s", email)
+        logger.info("Password reset email sent to %s via SMTP", email)
         return True
     except Exception as e:
-        logger.error("VigyanLLM: Failed to send reset email to %s: %s", email, e)
+        logger.error("SMTP failed for reset email to %s: %s", email, e)
         return False
 
 
@@ -409,6 +461,66 @@ def forgot_password():
     return jsonify({
         "success": True,
         "message": "If this email is registered, a password reset link has been sent."
+    }), 200
+
+
+@auth_bp.route("/api/auth/reset-password", methods=["POST"])
+def reset_password():
+    """Reset password using a valid reset token from email."""
+    import bcrypt as _bcrypt
+
+    data = request.get_json(silent=True) or {}
+    token = _safe_str(data.get("token")).strip()
+    new_password = _safe_str(data.get("new_password"))
+
+    if not token or not new_password:
+        return jsonify({"error": "Token and new password are required."}), 400
+
+    if len(new_password) < 8:
+        return jsonify({"error": "Password must be at least 8 characters."}), 400
+    if not any(c.isupper() for c in new_password):
+        return jsonify({"error": "Password must contain an uppercase letter."}), 400
+    if not any(c.islower() for c in new_password):
+        return jsonify({"error": "Password must contain a lowercase letter."}), 400
+    if not any(c.isdigit() for c in new_password):
+        return jsonify({"error": "Password must contain a digit."}), 400
+    if not any(c in "!@#$%^&*()_+-=[]{}|;:',.<>?/`~" for c in new_password):
+        return jsonify({"error": "Password must contain a special character."}), 400
+
+    try:
+        row = fetch_one(
+            """SELECT pr.user_id, pr.expires_at, u.email
+               FROM password_resets pr
+               JOIN users u ON u.id = pr.user_id
+               WHERE pr.token = %s""",
+            (token,)
+        )
+    except Exception as e:
+        logger.error("Reset password lookup failed: %s", e)
+        return jsonify({"error": "Something went wrong. Please try again."}), 500
+
+    if not row:
+        return jsonify({"error": "Invalid or expired reset token. Please request a new one."}), 400
+
+    from datetime import datetime as _dt
+    expires_at = row["expires_at"]
+    if isinstance(expires_at, _dt) and expires_at.timestamp() < __import__("time").time():
+        return jsonify({"error": "Reset token has expired. Please request a new one."}), 400
+
+    user_id = row["user_id"]
+    pw_hash = _bcrypt.hashpw(new_password.encode(), _bcrypt.gensalt(rounds=12)).decode()
+
+    try:
+        execute("UPDATE users SET password_hash = %s, updated_at = NOW() WHERE id = %s", (pw_hash, user_id))
+        execute("DELETE FROM password_resets WHERE user_id = %s", (user_id,))
+    except Exception as e:
+        logger.error("Reset password update failed for user_id=%s: %s", user_id, e)
+        return jsonify({"error": "Failed to reset password. Please try again."}), 500
+
+    logger.info("Password reset completed for %s", row["email"])
+    return jsonify({
+        "success": True,
+        "message": "Password reset successfully. You can now sign in with your new password.",
     }), 200
 
 

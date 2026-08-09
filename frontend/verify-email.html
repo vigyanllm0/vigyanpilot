@@ -95,11 +95,14 @@ footer a{color:var(--blue-light)}
     <h1 id="verifyTitle">Verifying your email...</h1>
     <p class="msg" id="verifyMsg">Please wait while we confirm your email address.</p>
     <div id="verifyActions" style="display:none">
-      <a href="/primer" class="btn btn-primary">Open VigyanLLM</a>
+      <a href="/login" class="btn btn-primary">Sign in to VigyanLLM</a>
     </div>
     <div class="resend-section" id="resendSection" style="display:none">
       <p>Didn't receive the email?</p>
-      <button class="resend-btn" id="resendBtn" onclick="resendVerification()">Resend verification email</button>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <input type="email" id="resendEmail" class="form-input" placeholder="Your registered email" style="flex:1;padding:10px 12px;font-size:13px;border:1px solid #E2E8F0;border-radius:8px">
+        <button class="resend-btn" id="resendBtn" onclick="resendVerification()" style="padding:10px 16px;border:1px solid #1565C0;border-radius:8px;white-space:nowrap">Resend</button>
+      </div>
       <p id="resendMsg" style="margin-top:8px;display:none"></p>
     </div>
   </div>
@@ -156,9 +159,12 @@ footer a{color:var(--blue-light)}
 })();
 
 function resendVerification(){
-  var params = new URLSearchParams(window.location.search);
-  var email = prompt('Enter your registered email address:');
-  if (!email) return;
+  var emailInput = document.getElementById('resendEmail');
+  var email = emailInput ? emailInput.value.trim().toLowerCase() : '';
+  if (!email) {
+    if (emailInput) emailInput.focus();
+    return;
+  }
   var btn = document.getElementById('resendBtn');
   var msg = document.getElementById('resendMsg');
   btn.disabled = true;
@@ -169,7 +175,7 @@ function resendVerification(){
   fetch(api + '/api/auth/resend-verification', {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({email: email.trim().toLowerCase()})
+    body: JSON.stringify({email: email})
   })
   .then(function(r){ return r.json(); })
   .then(function(d){
@@ -183,7 +189,7 @@ function resendVerification(){
     msg.style.color = '#DC2626';
     msg.textContent = 'Failed to send. Please try again.';
     btn.disabled = false;
-    btn.textContent = 'Resend verification email';
+    btn.textContent = 'Resend';
   });
 }
 </script>
