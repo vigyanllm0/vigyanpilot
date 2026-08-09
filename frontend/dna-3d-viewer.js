@@ -157,9 +157,10 @@ function generatePDB(seq, dnaType = 'B-DNA', fwdPrimer = '', revPrimer = '') {
   const STRAND1_OFFSET = Math.PI / 2;
   const STRAND2_OFFSET = isLeftHanded ? -Math.PI / 2 : Math.PI * 1.5;
   const direction = isLeftHanded ? -1 : 1;
+  const zOffset = (n - 1) * params.rise / 2;  // center helix at origin
 
   for (let i = 0; i < n; i++) {
-    const z = i * params.rise;
+    const z = i * params.rise - zOffset;
     const theta = i * twistRad * direction;
     const base = seqUpper[i];
 

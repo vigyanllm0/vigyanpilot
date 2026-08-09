@@ -58,7 +58,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://3Dmol.org/build/3Dmol-min.js"></script>
 <script src="https://accounts.google.com/gsi/client?hl=en" async defer></script>
 <script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.vigyanllm.in"}, {"@type": "ListItem", "position": 2, "name": "3D DNA Structure Viewer", "item": "https://www.vigyanllm.in/dna-3d"}]}</script>
 <script type="application/ld+json">{"@context": "https://schema.org", "@type": "SoftwareApplication", "name": "VigyanLLM 3D DNA Viewer", "url": "https://www.vigyanllm.in/dna-3d", "description": "Free interactive 3D DNA structure viewer supporting A-DNA, B-DNA, and Z-DNA. Input any sequence to visualize helix geometry, primer binding, and groove analysis.", "applicationCategory": "BioinformaticsApplication", "operatingSystem": "Web Browser", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "INR"}, "creator": {"@type": "Organization", "name": "VigyanLLM Private Limited"}}</script>
@@ -189,7 +188,8 @@ nav{position:sticky;top:0;background:var(--navy);z-index:1000;height:80px;border
 .seq-stat .lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
 
 /* ─── VIEWER PANEL ───────────────────── */
-.viewer-panel{position:relative;border-radius:16px;overflow:hidden;background:#0a0a1a;border:1px solid var(--outline)}
+.viewer-panel{position:relative;border-radius:16px;overflow:hidden;background:#0a0a1a;border:1px solid var(--outline);min-height:500px}
+@media(max-width:900px){.viewer-panel{min-height:400px}}
 #viewer-3d{width:100%;height:100%;min-height:500px}
 @media(max-width:900px){#viewer-3d{min-height:400px}}
 .viewer-hint{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);font-size:11px;color:rgba(255,255,255,.5);pointer-events:none;text-align:center;z-index:10}
@@ -588,13 +588,14 @@ async function handleAuth(e){e.preventDefault();var err=document.getElementById(
 <script defer src="/search-index.js"></script>
 <script defer src="/auth-shared.js"></script>
 <script src="/dna-3d-viewer.js"></script>
+<script src="https://3Dmol.org/build/3Dmol-min.js"></script>
 <script>
 // ─── STATE ────────────────────────────────────────
 let viewer = null;
 let currentData = null;
 
 // ─── INIT ──────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', function() {
+function initViewer() {
   // DNA type selector
   document.querySelectorAll('.dna-type-btn').forEach(btn => {
     btn.addEventListener('click', function() {
@@ -613,7 +614,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // Toggle changes re-render if structure exists
   ['showBackbone','showBases','showHbonds','showLabels','showPrimerHL'].forEach(id => {
     document.getElementById(id).addEventListener('change', function() {
-      if (currentData) applyDisplayOptions();
+      if (currentData) buildStructure();
     });
   });
 
@@ -636,9 +637,19 @@ document.addEventListener('DOMContentLoaded', function() {
   // Initial stats
   updateStats();
 
-  // Auto-build on load
-  setTimeout(buildStructure, 300);
-});
+  // Auto-build — wait for 3Dmol to load
+  waitFor3Dmol();
+}
+
+function waitFor3Dmol() {
+  if (typeof $3Dmol !== 'undefined') {
+    buildStructure();
+  } else {
+    setTimeout(waitFor3Dmol, 100);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', initViewer);
 
 // ─── UPDATE STATS ──────────────────────────────────
 function updateStats() {
@@ -723,9 +734,11 @@ function renderViewer() {
     // Apply style
     applyStyle(model);
 
-    // Zoom to fit
+    // Center and zoom — use viewportProperty for auto-fit
     viewer.zoomTo();
-    viewer.zoom(0.9);
+    // Rotate to show helix from side view
+    viewer.rotate(90, 'y');
+    viewer.zoom(1.6);
     viewer.render();
 
     // Resize handler
@@ -752,83 +765,100 @@ function applyStyle(model) {
   var colorBy = document.getElementById('colorSelect').value;
   var showBB = document.getElementById('showBackbone').checked;
   var showBP = document.getElementById('showBases').checked;
-  var showHB = document.getElementById('showHbonds').checked;
   var showLBL = document.getElementById('showLabels').checked;
   var showPH = document.getElementById('showPrimerHL').checked;
 
-  // Clear previous
+  // Clear everything
   viewer.setStyle({}, {});
+  viewer.removeAllLabels();
 
   var baseColors = { A: '#3B82F6', T: '#EF4444', G: '#22C55E', C: '#EAB308' };
 
-  // Backbone style for strands A and B
+  // Determine atom style based on mode
+  var atomStyle;
+  if (style === 'stick') {
+    atomStyle = { stick: { radius: 0.25, colorscheme: 'Jmol' } };
+  } else if (style === 'line') {
+    atomStyle = { line: { linewidth: 3, colorscheme: 'Jmol' } };
+  } else if (style === 'cartoon') {
+    atomStyle = { cartoon: { color: 'spectrum', opacity: 0.95, tubes: true } };
+  } else {
+    atomStyle = { sphere: { scale: 0.5, colorscheme: 'Jmol' }, stick: { radius: 0.18, colorscheme: 'Jmol' } };
+  }
+
+  // Apply base style to all atoms
+  viewer.setStyle({}, atomStyle);
+
+  // Override backbone atoms (P and sugar) if backbone toggle is on
   if (showBB) {
-    var bbStyle = {};
-    if (style === 'cartoon') {
-      bbStyle = { cartoon: { color: colorBy === 'strand' ? undefined : '#c8c8d4', opacity: 0.95 } };
-    } else if (style === 'stick') {
-      bbStyle = { stick: { radius: 0.12, color: '#c8c8d4' } };
-    } else if (style === 'line') {
-      bbStyle = { line: { color: '#c8c8d4', linewidth: 2 } };
-    } else {
-      bbStyle = { sphere: { scale: 0.3, color: '#c8c8d4' }, stick: { radius: 0.08, color: '#a8a8b4' } };
-    }
-    viewer.setStyle({ chain: 'A' }, bbStyle);
-    viewer.setStyle({ chain: 'B' }, bbStyle);
-  }
-
-  // Base pair atoms
-  if (showBP) {
-    var baseStyle = {};
+    var bbAtoms = { atom: ['P', "C4'"] };
+    var bbStyle;
     if (style === 'stick') {
-      baseStyle = { stick: { radius: 0.1, colorscheme: 'Jmol' } };
+      bbStyle = { stick: { radius: 0.3, color: '#c8c8d4' } };
     } else if (style === 'line') {
-      baseStyle = { line: { linewidth: 1.5, colorscheme: 'Jmol' } };
+      bbStyle = { line: { color: '#c8c8d4', linewidth: 3.5 } };
     } else if (style === 'cartoon') {
-      baseStyle = { cartoon: { color: 'spectrum', opacity: 0.9 } };
+      bbStyle = { cartoon: { color: '#c8c8d4', opacity: 0.95, tubes: true } };
     } else {
-      baseStyle = { sphere: { scale: 0.25, colorscheme: 'Jmol' }, stick: { radius: 0.06, colorscheme: 'Jmol' } };
+      bbStyle = { sphere: { scale: 0.65, color: '#c8c8d4' }, stick: { radius: 0.2, color: '#a8a8b4' } };
     }
-
-    // Color by base
-    if (colorBy === 'base') {
-      ['A','T','G','C'].forEach(function(base) {
-        viewer.setStyle({ resn: base }, { sphere: { scale: 0.25, color: baseColors[base] }, stick: { radius: 0.06, color: baseColors[base] } });
-      });
-    } else if (colorBy === 'strand') {
-      viewer.setStyle({ chain: 'A' }, { sphere: { scale: 0.25, color: '#22D3EE' }, stick: { radius: 0.06, color: '#22D3EE' } });
-      viewer.setStyle({ chain: 'B' }, { sphere: { scale: 0.25, color: '#F97316' }, stick: { radius: 0.06, color: '#F97316' } });
-    } else if (colorBy === 'region') {
-      viewer.setStyle({}, { sphere: { scale: 0.25, color: '#94A3B8' }, stick: { radius: 0.06, color: '#94A3B8' } });
-      if (currentData.fwdRange && showPH) {
-        for (var i = currentData.fwdRange[0]; i <= currentData.fwdRange[1]; i++) {
-          viewer.setStyle({ chain: 'A', resi: i + 1 }, { sphere: { scale: 0.35, color: '#F59E0B' }, stick: { radius: 0.1, color: '#F59E0B' } });
-        }
-      }
-      if (currentData.revRange && showPH) {
-        for (var i = currentData.revRange[0]; i <= currentData.revRange[1]; i++) {
-          viewer.setStyle({ chain: 'B', resi: currentData.sequence.length - i }, { sphere: { scale: 0.35, color: '#EF4444' }, stick: { radius: 0.1, color: '#EF4444' } });
-        }
-      }
-    } else {
-      viewer.setStyle({}, { sphere: { scale: 0.25, color: '#8B9DC3' }, stick: { radius: 0.06, color: '#8B9DC3' } });
-    }
+    viewer.setStyle(bbAtoms, bbStyle);
   }
 
-  // Hydrogen bonds (dashed)
-  if (showHB && currentData.hbondLines.length > 0) {
-    viewer.addCustom({
-      wireframe: true,
-      linewidth: 1.5,
-      color: '#ffffff',
-      opacity: 0.4
+  // Override colors based on color mode
+  if (colorBy === 'base') {
+    ['A','T','G','C'].forEach(function(base) {
+      var sel = { resn: base };
+      var s;
+      if (style === 'stick') s = { stick: { radius: 0.25, color: baseColors[base] } };
+      else if (style === 'line') s = { line: { color: baseColors[base], linewidth: 3 } };
+      else s = { sphere: { scale: 0.5, color: baseColors[base] }, stick: { radius: 0.18, color: baseColors[base] } };
+      viewer.setStyle(sel, s);
     });
+  } else if (colorBy === 'strand') {
+    var s1, s2;
+    if (style === 'stick') {
+      s1 = { stick: { radius: 0.25, color: '#22D3EE' } };
+      s2 = { stick: { radius: 0.25, color: '#F97316' } };
+    } else if (style === 'line') {
+      s1 = { line: { color: '#22D3EE', linewidth: 3 } };
+      s2 = { line: { color: '#F97316', linewidth: 3 } };
+    } else {
+      s1 = { sphere: { scale: 0.5, color: '#22D3EE' }, stick: { radius: 0.18, color: '#22D3EE' } };
+      s2 = { sphere: { scale: 0.5, color: '#F97316' }, stick: { radius: 0.18, color: '#F97316' } };
+    }
+    viewer.setStyle({ chain: 'A' }, s1);
+    viewer.setStyle({ chain: 'B' }, s2);
+  } else if (colorBy === 'region') {
+    // Default uniform color
+    var us;
+    if (style === 'stick') us = { stick: { radius: 0.25, color: '#94A3B8' } };
+    else if (style === 'line') us = { line: { color: '#94A3B8', linewidth: 3 } };
+    else us = { sphere: { scale: 0.5, color: '#94A3B8' }, stick: { radius: 0.18, color: '#94A3B8' } };
+    viewer.setStyle({}, us);
+    // Primer highlights (most specific — apply last)
+    if (showPH && currentData.fwdRange) {
+      var ps;
+      if (style === 'stick') ps = { stick: { radius: 0.35, color: '#F59E0B' } };
+      else ps = { sphere: { scale: 0.7, color: '#F59E0B' }, stick: { radius: 0.25, color: '#F59E0B' } };
+      for (var i = currentData.fwdRange[0]; i <= currentData.fwdRange[1]; i++) {
+        viewer.setStyle({ chain: 'A', resi: i + 1 }, ps);
+      }
+    }
+    if (showPH && currentData.revRange) {
+      var rs;
+      if (style === 'stick') rs = { stick: { radius: 0.35, color: '#EF4444' } };
+      else rs = { sphere: { scale: 0.7, color: '#EF4444' }, stick: { radius: 0.25, color: '#EF4444' } };
+      for (var i = currentData.revRange[0]; i <= currentData.revRange[1]; i++) {
+        viewer.setStyle({ chain: 'B', resi: currentData.sequence.length - i }, rs);
+      }
+    }
   }
 
   // Labels
   if (showLBL) {
     var seqUpper = currentData.sequence;
-    for (var i = 0; i < Math.min(seqUpper.length, 200); i += 3) {
+    for (var i = 0; i < Math.min(seqUpper.length, 200); i += 2) {
       var z = i * currentData.params.rise;
       var theta = i * (currentData.params.twist * Math.PI / 180);
       var r = currentData.params.radius - 5.5;
@@ -836,26 +866,18 @@ function applyStyle(model) {
       var y = r * Math.sin(theta);
       viewer.addLabel(seqUpper[i], {
         position: { x: x, y: y, z: z },
-        fontSize: 11,
+        fontSize: 14,
         fontColor: baseColors[seqUpper[i]] || '#ffffff',
-        backgroundColor: 'rgba(0,0,0,0.6)',
-        backgroundOpacity: 0.6,
-        padding: 2,
-        borderRadius: 3
+        backgroundColor: 'rgba(0,0,0,0.7)',
+        backgroundOpacity: 0.7,
+        padding: 3,
+        borderRadius: 4,
+        font: 'arial'
       });
     }
   }
 
   viewer.render();
-}
-
-// ─── DISPLAY OPTIONS ──────────────────────────────
-function applyDisplayOptions() {
-  if (!viewer || !currentData) return;
-  viewer.removeAllModels();
-  viewer.removeAllLabels();
-  var model = viewer.addModel(currentData.pdb, 'pdb');
-  applyStyle(model);
 }
 
 // ─── VIEW PRESETS ──────────────────────────────────
@@ -864,23 +886,25 @@ function setView(preset) {
   viewer.zoomTo();
   switch (preset) {
     case 'default':
-      viewer.zoom(0.9);
+      viewer.rotate(90, 'y');
+      viewer.zoom(1.6);
       break;
     case 'major':
-      viewer.zoom(0.7);
       viewer.rotate(45, 'y');
+      viewer.zoom(1.4);
       break;
     case 'minor':
-      viewer.zoom(0.7);
       viewer.rotate(-45, 'y');
+      viewer.zoom(1.4);
       break;
     case 'top':
-      viewer.zoom(0.8);
+      viewer.rotate(0, 'y');
       viewer.rotate(90, 'x');
+      viewer.zoom(1.6);
       break;
     case 'side':
-      viewer.zoom(0.7);
       viewer.rotate(90, 'y');
+      viewer.zoom(1.6);
       break;
   }
   viewer.render();
@@ -889,7 +913,8 @@ function setView(preset) {
 function resetView() {
   if (viewer) {
     viewer.zoomTo();
-    viewer.zoom(0.9);
+    viewer.rotate(90, 'y');
+    viewer.zoom(1.6);
     viewer.render();
   }
 }
