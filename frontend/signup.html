@@ -389,7 +389,7 @@ $('auth-submit-btn').addEventListener('click',async function(){
   try{
     var body={email:email,password:pass};
     if(isRegister){body.name=$('reg-name').value.trim();body.consent_accepted=true;}
-    var r=await fetch(API+'/api/auth/'+(isRegister?'register':'login'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    var r=await fetch(API+'/auth/'+(isRegister?'register':'login'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
     var d=await r.json();
     if(r.ok&&d&&d.requires_verification){
       registeredEmail=email;
@@ -415,7 +415,7 @@ function doResend(){
   }
   var btn=$('resend-btn'),msg=$('resend-msg'),cnt=$('resend-count');
   btn.disabled=true;btn.textContent='Sending...';msg.style.display='none';
-  fetch(API+'/api/auth/resend-verification',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:registeredEmail})})
+  fetch(API+'/auth/resend-verification',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:registeredEmail})})
   .then(function(r){return r.json()})
   .then(function(d){
     resendAttempts++;
@@ -454,7 +454,7 @@ function handleGoogleCredential(res){
   var err=$('auth-error');
   var accessToken=res&&(res.access_token||(res.credential?res.credential:null));
   if(!accessToken){if(err){err.style.display='block';err.textContent='Google sign-in was cancelled.'}return}
-  fetch(API+'/api/auth/google',{
+  fetch(API+'/auth/google',{
     method:'POST',
     headers:{'Content-Type':'application/json'},
     body:JSON.stringify({access_token:accessToken})

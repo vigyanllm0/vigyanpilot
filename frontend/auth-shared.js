@@ -36,7 +36,7 @@ function closeUserMenu(){
 
 function logout(){
   try {
-    fetch((window.VIGYAN_BACKEND_URL||'')+'/api/auth/logout',{method:'POST',credentials:'same-origin'});
+    fetch((window.VIGYAN_BACKEND_URL||'')+'/auth/logout',{method:'POST',credentials:'same-origin'});
   } catch(e) {}
   sessionStorage.removeItem('pf_user');
   localStorage.removeItem('pf_user');
@@ -98,7 +98,7 @@ function handleGoogleCredential(res){
   var tc=document.getElementById('auth-tc');
   if(!res||!res.credential){if(err){err.style.display='block';err.textContent='Google sign-in was cancelled.'}return}
   if(tc&&!tc.checked){if(err){err.style.display='block';err.textContent='Please accept the Terms & Conditions to continue.'}return}
-  fetch(API+'/api/auth/google',{
+  fetch(API+'/auth/google',{
     method:'POST',
     headers:{'Content-Type':'application/json'},
     body:JSON.stringify({credential:res.credential})
@@ -131,7 +131,7 @@ function submitAuth(){
   err.style.display='none';
   var body={email:email,password:pass};
   if(isRegister)body.name=(document.getElementById('auth-name').value||'').trim();
-  fetch(API+'/api/auth/'+(isRegister?'register':'login'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
+  fetch(API+'/auth/'+(isRegister?'register':'login'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
     .then(function(r){return r.json().then(function(d){return{ok:r.ok,data:d}})})
     .then(function(res){
       if(res&&res.ok&&res.data&&res.data.requires_verification){

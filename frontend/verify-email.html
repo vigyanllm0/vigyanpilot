@@ -130,8 +130,13 @@ footer a{color:var(--blue-light)}
     return;
   }
 
-  // Use direct path — do NOT use VIGYAN_BACKEND_URL (may cause double /api)
-  fetch('/api/auth/verify-email?token=' + encodeURIComponent(token))
+  // Use POST to prevent token from appearing in browser history / server logs
+  // Token is still in URL for email link, but the page reads it and sends via POST
+  fetch('/api/auth/verify-email', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({token: token})
+  })
     .then(function(r){ return r.json().then(function(d){ return {ok: r.ok, status: r.status, data: d}; }); })
     .then(function(res){
       if (res.ok && res.data && res.data.success) {

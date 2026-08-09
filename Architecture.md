@@ -1,6 +1,6 @@
 # VigyanLLM — Architecture & Detailed Project Report (DPR)
 
-> **Version:** 1.0.0 | **Last Updated:** July 2026
+> **Version:** 1.1.0 | **Last Updated:** August 2026
 > **Platform:** VigyanLLM — Sovereign Bioinformatics Platform
 > **Company:** VigyanLLM Private Limited
 
@@ -118,7 +118,7 @@ VigyanLLM is a sovereign bioinformatics platform offering 10+ web-based computat
 | **Cache/Queue** | Redis 7 | Docker (EC2) | Rate limits, Celery broker, sessions |
 | **Compute** | Azure Container Instances | Azure (ACI) | Heavy bioinformatics (ESMFold, docking) |
 | **Payment** | Razorpay | SaaS | Indian payment gateway |
-| **Email** | SMTP (Hostinger) | Hostinger | Verification, password reset |
+| **Email** | Brevo API + SMTP fallback | Brevo (Hostinger SMTP) | Verification, password reset |
 | **CI/CD** | GitHub Actions | GitHub | Lint, test, deploy to EC2 + ACR |
 
 ---
@@ -557,7 +557,7 @@ Payload: { email, user_id?, exp (7 days), iat }
 
 - Tokens stored in `sessionStorage` (session) + `localStorage` (persist) via frontend
 - 7-day expiry with refresh token option (30 days) in PostgreSQL mode
-- Blacklisted tokens tracked in `token_blacklist` table (SQLite) or in-memory blacklist + DB (PG)
+- Blacklisted tokens tracked in `token_blacklist` table (SQLite) or in-memory cache + DB `token_blacklist` table (PG) for server-restart safety
 
 ### 6.3 Progressive Lockout
 
@@ -592,6 +592,90 @@ User clicks "Subscribe to Pro" (no token):
           ├─ Success: store token, close modal, retry purchasePlan
           └─ Failure: show error message
 ```
+
+### 6.6 Email Verification System (Aug 2026)
+
+Complete email verification flow with security hardening:
+
+#### Overview
+
+```
+User registers → Backend creates user (status: pending) →
+Backend generates token → Token SHA-256 hashed + stored in DB →
+Verification email sent via Brevo API → User clicks link →
+Frontend reads token from URL → Sends POST to /api/auth/verify-email →
+Backend hashes token → DB lookup → Activate user + grant tokens
+```
+
+#### Token Security
+
+| Property | Value | Rationale |
+|----------|-------|-----------|
+| **Generation** | `secrets.token_urlsafe(48)` | 384-bit entropy, cryptographically secure |
+| **Format** | 64-char URL-safe base64 | Validated via regex `^[A-Za-z0-9_-]{64}$` |
+| **Storage** | SHA-256 hash (`_hash_token()`) | DB breach ≠ token compromise |
+| **Hash input** | `PRIMERFORGE_SECRET + "_token_hash"` + token | Prevents rainbow table attacks |
+| **Expiry** | 24 hours (`INTERVAL '24 hours'`) | Time-limited verification window |
+| **Uniqueness** | UNIQUE constraint on `user_id` | One active token per user |
+| **Idempotency** | Consumed token + active user → `True` | Fixes Brevo pre-fetch race condition |
+
+#### Verification Flow (3 Cases)
+
+```
+verify_email_with_token(token):
+  1. Validate token format (reject malformed tokens early)
+  2. Hash token with SHA-256
+  3. DB lookup: WHERE token = hash AND verified_at IS NULL
+     ├─ FOUND + not expired + user pending →
+     │   Atomic transaction: mark consumed + activate user + grant 2 tokens
+     │   Returns True
+     ├─ FOUND + not expired + user already active →
+     │   Returns True (idempotent — Brevo pre-fetch fix)
+     └─ NOT FOUND →
+         Check consumed tokens: WHERE token = hash AND verified_at IS NOT NULL
+         ├─ Found + user active → Returns True (idempotent)
+         └─ Not found → Returns False
+```
+
+#### Email Transport
+
+```
+send_verification_email(email, token):
+  Priority 1: Brevo API (if BREVO_API_KEY set)
+    POST https://api.brevo.com/v3/smtp/email
+    Headers: api-key: xkeysib-...
+    Body: { sender, to, subject, htmlContent }
+    
+  Priority 2: SMTP fallback (if SMTP_HOST/USER/PASSWORD set)
+    smtp-relay.brevo.com:587 (STARTTLS)
+    Login: b02500001@smtp-brevo.com
+    
+  Dev mode: Log token to console (VIGYANLLM_ENV=development)
+```
+
+#### Frontend Implementation
+
+```
+verify-email.html:
+  - Reads token from URL: ?token=...
+  - Sends POST to /api/auth/verify-email { token }
+  - Prevents token from appearing in:
+    • Browser history (GET URLs logged)
+    • Server access logs (query strings logged)
+    • Referrer headers
+  - Idempotent UI: success OR "Try signing in" (never "failed")
+  - Resend section: email input → POST /api/auth/resend-verification
+```
+
+#### Rate Limits
+
+| Action | Limit | Window | Scope |
+|--------|-------|--------|-------|
+| Registration | 5 accounts | 1 hour | Per IP |
+| Resend verification | 5 emails | 24 hours | Per email |
+| Password reset | 3 requests | 1 hour | Per email |
+| Login | 5 failures → 15 min lockout | — | Per account |
+| IP login brute force | 20 failures | 15 minutes | Per IP |
 
 ---
 
@@ -990,14 +1074,19 @@ Layer 3: Flask Application
 Layer 4: Application Code
 ├── bcrypt password hashing
 ├── HMAC-SHA256 token signing
-├── Progressive login lockout
+├── Token hashing at rest (SHA-256 with secret prefix)
+├── Persistent token blacklist (survives server restarts)
+├── Progressive login lockout (5 fails → 15 min)
+├── IP brute-force protection (20 failures → 15 min)
 ├── Constant-time bcrypt dummy hash (prevents user enumeration)
 ├── Parameterized SQL queries (no injection)
 ├── bleach HTML sanitization
 ├── Fernet AES-256 encryption for stored results
-├── Input validation: email (RFC-5321), password (complexity), quantity (reject floats/NaN)
+├── Input validation: email (RFC-5321), password (complexity), token format, quantity (reject floats/NaN)
 ├── File scan on uploads
-└── Step output validation in pipeline engine
+├── Step output validation in pipeline engine
+├── Atomic DB transactions (email verification)
+└── Registration IP rate limiting (5/hour per IP)
 
 Layer 5: System
 ├── systemd security hardening (NoNewPrivileges, ProtectSystem, PrivateTmp)
@@ -1018,20 +1107,38 @@ Layer 5: System
 
 ### 11.3 Rate Limit Endpoint Map
 
-| Endpoint Pattern | Rate Limit |
-|-----------------|------------|
-| `/api/auth/login` | 5/minute |
-| `/api/auth/register` | 3/minute |
-| `/api/payments/verify-payment` | 10/minute |
-| `/api/payments/create-order` | 10/minute |
-| All others | 200/minute default, 5000/hour |
+| Endpoint Pattern | Rate Limit | Window | Source |
+|-----------------|------------|--------|--------|
+| `/api/auth/register` | 5 | 1 hour | `pg_auth_routes.py` + `security.py` |
+| `/api/auth/login` | 5 failures → 15 min lockout | per account | `pg_auth.py` |
+| `/api/auth/login` (IP) | 20 failures | 15 min | `pg_auth.py` |
+| `/api/auth/forgot-password` | 3 | 1 hour | `security.py` + `pg_auth_routes.py` |
+| `/api/auth/resend-verification` | 5 | 24 hours | `pg_auth_routes.py` |
+| `/api/payments/verify-payment` | 10/minute | — | `security.py` |
+| `/api/payments/create-order` | 10/minute | — | `security.py` |
+| All other `/api/*` | 30/minute | — | `security.py` |
 
-### 11.4 Encryption
+### 11.4 Token Security (Aug 2026)
 
-- **At Rest:** Fernet AES-256 (`cryptography` library) for pipeline result storage
+| Measure | Implementation | Protection |
+|---------|----------------|-------------|
+| **Token generation** | `secrets.token_urlsafe(48)` = 64 chars, 384 bits | Cryptographically secure |
+| **Token hashing** | SHA-256 with `PRIMERFORGE_SECRET + "_token_hash"` prefix | DB breach ≠ token compromise |
+| **Persistent blacklist** | `token_blacklist` table (SQLite) + in-memory (PG) | Revoked tokens stay invalid across restarts |
+| **Format validation** | `^[A-Za-z0-9_-]{64}$` regex | Reject malformed tokens before DB lookup |
+| **Atomic verification** | `db.cursor()` transaction with rollback | Prevents partial activation on DB failure |
+| **POST verify-email** | Frontend sends token via POST body | Prevents browser history / server log leakage |
+| **Idempotent verification** | Consumed token + active user → True | Safe for Brevo pre-fetch / email clients |
+| **Expiry** | 24 hours | Time-limited verification window |
+| **Uniqueness** | UNIQUE constraint on `user_id` | One active token per user |
+
+### 11.5 Encryption
+
+- **At Rest:** Fernet AES-256 (`cryptography` library) for pipeline result storage; SHA-256 for verification tokens
 - **In Transit:** TLS 1.2/1.3 (Let's Encrypt SSL)
 - **Passwords:** bcrypt with work factor 12
 - **API Tokens:** HMAC-SHA256 signed
+- **Verification Tokens:** SHA-256 hashed with secret prefix before DB storage
 
 ---
 
@@ -1236,12 +1343,16 @@ User                     Frontend                    Flask Backend           Azu
 | `POST` | `/api/auth/register` | Create account (auto-detects academic email) | No |
 | `POST` | `/api/auth/login` | Login with progressive lockout | No |
 | `POST` | `/api/auth/google` | Google OAuth2 (ID token or access token) | No |
+| `GET` | `/api/auth/verify-email` | Verify email (GET for email links) | No |
+| `POST` | `/api/auth/verify-email` | Verify email (POST for frontend) | No |
+| `POST` | `/api/auth/resend-verification` | Resend verification email (5/24h per email) | No |
+| `POST` | `/api/auth/forgot-password` | Request password reset | No |
+| `POST` | `/api/auth/reset-password` | Reset password with token | No |
 | `GET` | `/api/auth/me` | Current user profile + usage | Yes |
 | `GET` | `/api/auth/check-usage` | Usage status | Yes |
 | `POST` | `/api/auth/logout` | Revoke token | Yes |
 | `POST` | `/api/auth/verify-academic` | Verify academic email | Yes |
 | `POST` | `/api/auth/refresh` | Refresh token exchange (PG only) | Yes |
-| `POST` | `/api/auth/forgot-password` | Request password reset | No |
 | `POST` | `/api/auth/change-password` | Change password + invalidate sessions | Yes |
 | `GET` | `/api/auth/export` | DPDP data portability (full JSON export) | Yes |
 | `DELETE` | `/api/auth/account` | DPDP right to erasure (anonymize) | Yes |
@@ -1418,6 +1529,7 @@ pytest
 | Auth routes (SQLite) | `primerforge/auth_routes.py` |
 | Auth routes (PG) | `primerforge/pg_auth_routes.py` |
 | Pipeline orchestrator | `primerforge/engine/orchestrator.py` |
+| Token blacklist migration | `deploy/migrations/0113_token_blacklist.sql` |
 | Gunicorn config | `deploy/gunicorn.conf.py` |
 | Systemd service | `deploy/vigyan.service` |
 | Docker Compose | `deploy/docker-compose.yml` |

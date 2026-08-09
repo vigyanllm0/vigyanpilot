@@ -138,20 +138,26 @@ def register():
     }), 201
 
 
-@auth_bp.route("/api/auth/verify-email", methods=["GET"])
+@auth_bp.route("/api/auth/verify-email", methods=["GET", "POST"])
 def verify_email():
     """Verify a user's email address using a verification token.
 
-    Called when the user clicks the link in their verification email.
+    Accepts both GET (from email link) and POST (from verify-email.html page).
+    POST prevents token from appearing in browser history and server logs.
     Token is a secure URL-safe string, valid for 24 hours.
     """
     from .pg_auth import verify_email_with_token
 
-    token = request.args.get("token", "")
+    if request.method == "POST":
+        data = request.get_json(silent=True) or {}
+        token = _safe_str(data.get("token"))
+    else:
+        token = request.args.get("token", "")
+
     if not token:
         return jsonify({"error": "Verification token is required."}), 400
 
-    logger.info("verify-email: received token (len=%d)", len(token))
+    logger.info("verify-email: received token (method=%s)", request.method)
     if verify_email_with_token(token):
         return jsonify({
             "success": True,

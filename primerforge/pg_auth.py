@@ -38,6 +38,8 @@ import hmac
 import json
 import logging
 import os
+import re
+import secrets as _secrets
 import threading
 import time
 from datetime import datetime
@@ -47,6 +49,26 @@ import bcrypt
 from flask import g, jsonify, request
 
 from .database import execute, execute_returning, fetch_one, get_db, set_rls_context
+
+# ── Token Hashing ──────────────────────────────────────────────────────────
+# Tokens are stored as SHA-256 hashes in the DB, never plaintext.
+# This prevents token theft from DB dumps.
+
+_TOKEN_SECRET = os.environ.get("PRIMERFORGE_SECRET", "") + "_token_hash"
+
+
+def _hash_token(token: str) -> str:
+    """Hash a token with SHA-256 for storage. Prevents DB compromise from leaking tokens."""
+    return hashlib.sha256((_TOKEN_SECRET + token).encode()).hexdigest()
+
+
+# Token format: URL-safe base64, exactly 64 chars from secrets.token_urlsafe(48)
+_TOKEN_FORMAT_RE = re.compile(r'^[A-Za-z0-9_-]{64}$')
+
+
+def _validate_token_format(token: str) -> bool:
+    """Validate token format to prevent injection / brute-force with malformed tokens."""
+    return bool(token) and bool(_TOKEN_FORMAT_RE.match(token))
 
 logger = logging.getLogger("primerforge.auth")
 
@@ -64,9 +86,10 @@ ADMIN_PASSWORD = os.environ.get("PRIMERFORGE_ADMIN_PASSWORD", "")
 # PREVIOUSLY: plain dict/set were shared across threads without locking,
 # causing corruption under concurrent Gunicorn workers.
 # FIX: All mutations go through a reentrant lock (_SESSION_LOCK).
+# UPDATE: Blacklist persisted in DB (token_blacklist table) for server-restart safety.
 _SESSION_LOCK = threading.RLock()
 _USER_SESSIONS: dict = {}   # {user_id: [token, ...]}
-_TOKEN_BLACKLIST: set = set()
+_TOKEN_BLACKLIST: set = set()  # In-memory cache, synced with DB
 
 # SECURITY: Constant-time dummy hash for timing-oracle prevention.
 # When a login attempt is made for a non-existent user, we still perform
@@ -175,7 +198,7 @@ def refresh_access_token(refresh_token: str) -> dict | None:
     token = create_token(user["email"], user["role"], user_id)
     return {
         "token": token,
-        "user": {"email": user["email"], "role": user["role"], "id": user_id},
+        "user": {"email": user["email"], "role": user["role"]},
     }
 
 
@@ -192,7 +215,10 @@ def _token_not_expired(token: str) -> bool:
 
 
 def verify_token(token: str) -> dict:
-    """Verify and decode a session token. Returns {'email','role','user_id'} or None."""
+    """Verify and decode a session token. Returns {'email','role','user_id'} or None.
+
+    Checks both in-memory blacklist and DB blacklist for server-restart safety.
+    """
     if not token or not isinstance(token, str):
         return None
     try:
@@ -213,8 +239,18 @@ def verify_token(token: str) -> dict:
         if data.get("exp", 0) < time.time():
             return None
 
-        # Check blacklist
+        # Check in-memory blacklist (fast path)
         if token in _TOKEN_BLACKLIST:
+            return None
+
+        # Check DB blacklist (server-restart safety)
+        token_hash = _hash_token(token)
+        blacklisted = fetch_one(
+            "SELECT 1 FROM token_blacklist WHERE token_hash = %s AND expires_at > NOW()",
+            (token_hash,)
+        )
+        if blacklisted:
+            _TOKEN_BLACKLIST.add(token)  # Cache in memory for future requests
             return None
 
         return {"email": data["email"], "role": data["role"], "user_id": data.get("user_id")}
@@ -226,11 +262,12 @@ def invalidate_token(token: str):
     """
     Add token to the blacklist and remove from user's active session list.
 
-    Called on logout and on password change. All mutations are protected by
-    _SESSION_LOCK to prevent concurrent modification race conditions.
+    Called on logout and on password change. Persists to DB for server-restart safety.
+    All mutations are protected by _SESSION_LOCK to prevent concurrent modification race conditions.
     """
     with _SESSION_LOCK:
         _TOKEN_BLACKLIST.add(token)
+        _persist_blacklist_token(token)
 
         # Remove from user's session list
         try:
@@ -248,6 +285,26 @@ def invalidate_token(token: str):
         # Prune expired tokens from blacklist periodically
         if len(_TOKEN_BLACKLIST) > 10000:
             _prune_blacklist()
+
+
+def _persist_blacklist_token(token: str):
+    """Persist a blacklisted token to DB. Best-effort, logged on failure."""
+    try:
+        # Extract expiry from token
+        parts = token.split(".")
+        if len(parts) == 2:
+            payload = json.loads(base64.urlsafe_b64decode(parts[0] + "==").decode())
+            expires_at = payload.get("exp")
+        else:
+            expires_at = None
+        execute(
+            """INSERT INTO token_blacklist (token_hash, expires_at)
+               VALUES (%s, to_timestamp(%s))
+               ON CONFLICT (token_hash) DO NOTHING""",
+            (_hash_token(token), expires_at)
+        )
+    except Exception as e:
+        logger.debug("Failed to persist blacklist token: %s", e)
 
 
 def _prune_blacklist():
@@ -437,9 +494,13 @@ def send_verification_email(email: str, verification_token: str) -> bool:
 
 
 def create_verification_token(user_id: int) -> str:
-    """Create a secure email verification token with 24-hour expiry."""
-    import secrets as _secrets
+    """Create a secure email verification token with 24-hour expiry.
+
+    The raw token is returned to the caller (for email), but only the
+    SHA-256 hash is stored in the database.
+    """
     token = _secrets.token_urlsafe(48)
+    token_hash = _hash_token(token)
     try:
         execute(
             """INSERT INTO email_verifications (user_id, token, expires_at)
@@ -447,7 +508,7 @@ def create_verification_token(user_id: int) -> str:
                ON CONFLICT (user_id) DO UPDATE
                SET token = EXCLUDED.token, expires_at = EXCLUDED.expires_at,
                    verified_at = NULL""",
-            (user_id, token),
+            (user_id, token_hash),
         )
     except Exception as e:
         logger.error("Failed to store verification token: %s", e)
@@ -462,10 +523,20 @@ def verify_email_with_token(token: str) -> bool:
       1. Token found + unused → verify user, mark token consumed
       2. Token found + already consumed (e.g. Brevo pre-fetch) + user active → return True (idempotent)
       3. Token not found / expired → return False
+
+    Security: token is hashed before DB lookup. All DB mutations are atomic.
     """
     if not token or not isinstance(token, str):
         logger.warning("verify_email_with_token: empty or non-string token")
         return False
+
+    # Reject malformed tokens early (prevents brute-force with junk)
+    if not _validate_token_format(token):
+        logger.warning("verify_email_with_token: invalid token format")
+        return False
+
+    token_hash = _hash_token(token)
+
     try:
         # Case 1: Unused token
         row = fetch_one(
@@ -473,7 +544,7 @@ def verify_email_with_token(token: str) -> bool:
                FROM email_verifications ev
                JOIN users u ON u.id = ev.user_id
                WHERE ev.token = %s AND ev.verified_at IS NULL""",
-            (token,)
+            (token_hash,)
         )
         if row:
             expires_at = row["expires_at"]
@@ -485,16 +556,27 @@ def verify_email_with_token(token: str) -> bool:
                 logger.info("verify_email_with_token: user_id=%s already status=%s", row["user_id"], row["status"])
                 return True
             user_id = row["user_id"]
-            execute("UPDATE email_verifications SET verified_at = NOW() WHERE token = %s", (token,))
-            execute("UPDATE users SET status = 'active' WHERE id = %s", (user_id,))
-            execute(
-                """INSERT INTO token_balances (user_id, balance, total_purchased)
-                   VALUES (%s, 2, 2)
-                   ON CONFLICT (user_id) DO UPDATE
-                   SET balance = token_balances.balance + 2,
-                       total_purchased = token_balances.total_purchased + 2""",
-                (user_id,)
-            )
+            # Atomic: mark token consumed + activate user + grant tokens
+            db = get_db()
+            cur = db.cursor()
+            try:
+                cur.execute("UPDATE email_verifications SET verified_at = NOW() WHERE token = %s", (token_hash,))
+                cur.execute("UPDATE users SET status = 'active' WHERE id = %s", (user_id,))
+                cur.execute(
+                    """INSERT INTO token_balances (user_id, balance, total_purchased)
+                       VALUES (%s, 2, 2)
+                       ON CONFLICT (user_id) DO UPDATE
+                       SET balance = token_balances.balance + 2,
+                           total_purchased = token_balances.total_purchased + 2""",
+                    (user_id,)
+                )
+                db.commit()
+            except Exception as e:
+                db.rollback()
+                logger.error("verify_email_with_token: transaction failed for user_id=%s: %s", user_id, e)
+                return False
+            finally:
+                cur.close()
             logger.info("Email verified for user_id=%s", user_id)
             return True
 
@@ -504,13 +586,13 @@ def verify_email_with_token(token: str) -> bool:
                FROM email_verifications ev
                JOIN users u ON u.id = ev.user_id
                WHERE ev.token = %s AND ev.verified_at IS NOT NULL""",
-            (token,)
+            (token_hash,)
         )
         if row2 and row2["status"] == "active":
             logger.info("verify_email_with_token: token already consumed, user_id=%s active (idempotent)", row2["user_id"])
             return True
 
-        logger.warning("verify_email_with_token: no matching row for token (len=%d)", len(token))
+        logger.warning("verify_email_with_token: no matching row for token")
         return False
     except Exception as e:
         logger.error("Verification failed with exception: %s", e, exc_info=True)
@@ -550,7 +632,7 @@ def register_user(email: str, password: str, name: str = "", ip_address: str = "
             if verify_token:
                 send_verification_email(email, verify_token)
                 logger.info("Resent verification email for existing pending user %s", email)
-            return {"user": {"email": email, "id": existing["id"]}, "requires_verification": True}
+            return {"user": {"email": email}, "requires_verification": True}
         return {"error": "Email already registered."}
 
     password_hash = bcrypt.hashpw(password.encode(), bcrypt.gensalt(rounds=12)).decode()
@@ -590,7 +672,7 @@ def register_user(email: str, password: str, name: str = "", ip_address: str = "
         logger.error("Registration: create_verification_token returned empty for user_id=%s", user["id"])
 
     log_action(email, "registration", "User registered (status: pending, verification sent)")
-    return {"user": {"email": user["email"], "id": user["id"]}, "requires_verification": True}
+    return {"user": {"email": user["email"]}, "requires_verification": True}
 
 
 def login_user(email: str, password: str, ip_address: str = "0.0.0.0", user_agent: str = "") -> dict:
@@ -656,7 +738,7 @@ def login_user(email: str, password: str, ip_address: str = "0.0.0.0", user_agen
     execute("UPDATE users SET last_active_at = NOW() WHERE id = %s", (user["id"],))
 
     token = create_token(user["email"], user["role"], user["id"])
-    return {"token": token, "user": {"email": user["email"], "role": user["role"], "id": user["id"]}}
+    return {"token": token, "user": {"email": user["email"], "role": user["role"]}}
 
 
 def change_password(user_id: int, old_password: str, new_password: str) -> dict:

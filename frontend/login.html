@@ -366,7 +366,7 @@ $('auth-submit-btn').addEventListener('click',async function(){
   if(tc&&!tc.checked){$('auth-error').style.display='block';$('auth-error').textContent='Please accept the Terms & Conditions to continue.';return}
   $('auth-error').style.display='none';
   try{
-    var r=await fetch(API+'/api/auth/'+(isRegister?'register':'login'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+    var r=await fetch(API+'/auth/'+(isRegister?'register':'login'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
       email:email,password:pass,name:isRegister?$('reg-name').value.trim():undefined
     })});
     var d=await r.json();
@@ -397,7 +397,7 @@ function handleGoogleCredential(res){
   var err=$('auth-error');
   var accessToken=res&&(res.access_token||(res.credential?res.credential:null));
   if(!accessToken){if(err){err.style.display='block';err.textContent='Google sign-in was cancelled.'}return}
-  fetch(API+'/api/auth/google',{
+  fetch(API+'/auth/google',{
     method:'POST',
     headers:{'Content-Type':'application/json'},
     body:JSON.stringify({access_token:accessToken})
@@ -427,7 +427,7 @@ function resendVerification(){
   var cnt=document.getElementById('resend-count');
   btn.disabled=true;btn.textContent='Sending...';msg.style.display='none';
   var api=window.VIGYAN_BACKEND_URL||'';
-  fetch(api+'/api/auth/resend-verification',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email})})
+  fetch(api+'/auth/resend-verification',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email})})
   .then(function(r){return r.json()})
   .then(function(d){
     msg.style.display='block';msg.style.color='#16A34A';

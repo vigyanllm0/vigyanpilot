@@ -1184,7 +1184,7 @@ async function handleAuth() {
   if (!email || !pass) { errEl.textContent = 'Email and password are required.'; errEl.classList.add('show'); return; }
   var tc = $('auth-tc');
   if (tc && !tc.checked) { errEl.textContent = 'Please accept the Terms & Conditions to continue.'; errEl.classList.add('show'); return; }
-  var endpoint = authMode === 'login' ? '/api/auth/login' : '/api/auth/register';
+  var endpoint = authMode === 'login' ? '/auth/login' : '/auth/register';
   var body = { email, password: pass };
   if (authMode === 'register') body.name = name || email.split('@')[0];
   try {
