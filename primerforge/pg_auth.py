@@ -588,9 +588,29 @@ def verify_email_with_token(token: str) -> bool:
                WHERE ev.token = %s AND ev.verified_at IS NOT NULL""",
             (token_hash,)
         )
-        if row2 and row2["status"] == "active":
-            logger.info("verify_email_with_token: token already consumed, user_id=%s active (idempotent)", row2["user_id"])
-            return True
+        if row2:
+            if row2["status"] == "active":
+                logger.info("verify_email_with_token: token already consumed, user_id=%s active (idempotent)", row2["user_id"])
+                return True
+            # Token consumed but user still pending — retry activation (edge case: crash between steps)
+            try:
+                db = get_db()
+                cur = db.cursor()
+                cur.execute("UPDATE users SET status = 'active' WHERE id = %s", (row2["user_id"],))
+                cur.execute(
+                    """INSERT INTO token_balances (user_id, balance, total_purchased)
+                       VALUES (%s, 2, 2)
+                       ON CONFLICT (user_id) DO UPDATE
+                       SET balance = token_balances.balance + 2,
+                           total_purchased = token_balances.total_purchased + 2""",
+                    (row2["user_id"],)
+                )
+                db.commit()
+                logger.info("verify_email_with_token: retried activation for user_id=%s", row2["user_id"])
+                return True
+            except Exception as e:
+                db.rollback()
+                logger.error("verify_email_with_token: retry activation failed for user_id=%s: %s", row2["user_id"], e)
 
         logger.warning("verify_email_with_token: no matching row for token")
         return False

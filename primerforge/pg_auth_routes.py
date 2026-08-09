@@ -150,9 +150,9 @@ def verify_email():
 
     if request.method == "POST":
         data = request.get_json(silent=True) or {}
-        token = _safe_str(data.get("token"))
+        token = _safe_str(data.get("token")).strip()
     else:
-        token = request.args.get("token", "")
+        token = request.args.get("token", "").strip()
 
     if not token:
         return jsonify({"error": "Verification token is required."}), 400
