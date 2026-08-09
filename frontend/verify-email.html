@@ -53,7 +53,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-:root{--blue:#1565C0;--blue-light:#42A5F5;--blue-bg:#E3F2FD;--navy:#0F172A;--surface:#FFFFFF;--surface-alt:#F5F7FA;--outline:#E2E5EA;--text:#0A0A0F;--text2:#4A4A6A;--muted:#7A7A9A;--font-h:'Montserrat',sans-serif;--font-b:'Open Sans',sans-serif}
+:root{--blue:#1565C0;--blue-light:#42A5F5;--blue-bg:#E3F2FD;--navy:#0F172A;--surface:#FFFFFF;--surface-alt:#F5F7FA;--outline:#E2E5EA;--text:#0A0A0F;--text2:#4A4A6A;--muted:#7A7A9A;--primary:#2563EB;--font-h:'Montserrat',sans-serif;--font-b:'Open Sans',sans-serif}
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--surface-alt);color:var(--text);font-family:var(--font-b);line-height:1.6;min-height:100vh;display:flex;flex-direction:column}
 a{text-decoration:none;color:inherit}
@@ -71,12 +71,11 @@ a{text-decoration:none;color:inherit}
 .verify-card .msg strong{color:var(--text)}
 .btn{display:inline-block;padding:12px 28px;border-radius:8px;font-family:var(--font-h);font-size:14px;font-weight:600;cursor:pointer;border:none;transition:all .2s;text-decoration:none}
 .btn-primary{background:var(--blue);color:#fff}.btn-primary:hover{background:#1258A8;box-shadow:0 4px 16px rgba(21,101,192,.3)}
-.btn-outline{background:transparent;color:var(--blue);border:1.5px solid var(--blue);margin-left:12px}.btn-outline:hover{background:var(--blue-bg)}
 .resend-section{margin-top:24px;padding-top:24px;border-top:1px solid var(--outline)}
 .resend-section p{font-size:13px;color:var(--muted);margin-bottom:12px}
-.resend-btn{background:none;border:none;color:var(--blue);font-size:13px;font-weight:600;cursor:pointer;text-decoration:underline}
-.resend-btn:hover{color:#1258A8}
-.resend-btn:disabled{color:var(--muted);cursor:default;text-decoration:none}
+.resend-btn{background:none;border:1.5px solid var(--blue);color:var(--blue);padding:10px 24px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s}
+.resend-btn:hover{background:var(--blue-bg)}
+.resend-btn:disabled{color:var(--muted);border-color:var(--muted);cursor:default}
 footer{background:var(--navy);padding:20px;text-align:center}
 footer p{color:rgba(255,255,255,.4);font-size:12px}
 footer a{color:var(--blue-light)}
@@ -99,11 +98,11 @@ footer a{color:var(--blue-light)}
     </div>
     <div class="resend-section" id="resendSection" style="display:none">
       <p>Didn't receive the email?</p>
-      <div style="display:flex;gap:8px;margin-top:8px">
-        <input type="email" id="resendEmail" class="form-input" placeholder="Your registered email" style="flex:1;padding:10px 12px;font-size:13px;border:1px solid #E2E8F0;border-radius:8px">
-        <button class="resend-btn" id="resendBtn" onclick="resendVerification()" style="padding:10px 16px;border:1px solid #1565C0;border-radius:8px;white-space:nowrap">Resend</button>
+      <div style="display:flex;gap:8px;margin-top:8px;max-width:360px;margin-left:auto;margin-right:auto">
+        <input type="email" id="resendEmail" placeholder="Your registered email" style="flex:1;padding:10px 12px;font-size:13px;border:1px solid #E2E8F0;border-radius:8px;font-family:var(--font-b)">
+        <button class="resend-btn" id="resendBtn" onclick="doResend()">Resend</button>
       </div>
-      <p id="resendMsg" style="margin-top:8px;display:none"></p>
+      <p id="resendMsg" style="margin-top:8px;display:none;font-size:13px"></p>
     </div>
   </div>
 </div>
@@ -131,9 +130,9 @@ footer a{color:var(--blue-light)}
     return;
   }
 
-  var api = window.VIGYAN_BACKEND_URL || '';
-  fetch(api + '/api/auth/verify-email?token=' + encodeURIComponent(token))
-    .then(function(r){ return r.json().then(function(d){ return {ok: r.ok, data: d}; }); })
+  // Use direct path — do NOT use VIGYAN_BACKEND_URL (may cause double /api)
+  fetch('/api/auth/verify-email?token=' + encodeURIComponent(token))
+    .then(function(r){ return r.json().then(function(d){ return {ok: r.ok, status: r.status, data: d}; }); })
     .then(function(res){
       if (res.ok && res.data && res.data.success) {
         icon.className = 'icon-wrap success';
@@ -142,54 +141,48 @@ footer a{color:var(--blue-light)}
         msg.innerHTML = '<strong>' + (res.data.message || 'Your email has been verified successfully.') + '</strong><br>You can now sign in to your account.';
         actions.style.display = 'block';
       } else {
+        // Token might have been consumed by a previous call — try login hint
         icon.className = 'icon-wrap error';
         icon.innerHTML = '&#10006;';
-        title.textContent = 'Verification failed';
-        msg.innerHTML = (res.data && res.data.error) || 'Invalid or expired verification link. Please try registering again.';
+        title.textContent = 'Verification issue';
+        msg.innerHTML = 'This link may have already been used or expired.<br><strong>Try signing in</strong> — if your account was just verified, it should work.';
+        actions.style.display = 'block';
         resendSection.style.display = 'block';
       }
     })
-    .catch(function(){
+    .catch(function(e){
+      // Network error — but verification might have worked server-side
       icon.className = 'icon-wrap error';
       icon.innerHTML = '&#10006;';
       title.textContent = 'Connection error';
-      msg.textContent = 'Could not reach the server. Please check your connection and try again.';
+      msg.innerHTML = 'Could not reach the server. <strong>Try signing in</strong> — your account may already be verified.';
+      actions.style.display = 'block';
       resendSection.style.display = 'block';
     });
 })();
 
-function resendVerification(){
+function doResend(){
   var emailInput = document.getElementById('resendEmail');
   var email = emailInput ? emailInput.value.trim().toLowerCase() : '';
-  if (!email) {
-    if (emailInput) emailInput.focus();
-    return;
-  }
+  if (!email) { if (emailInput) emailInput.focus(); return; }
   var btn = document.getElementById('resendBtn');
   var msg = document.getElementById('resendMsg');
-  btn.disabled = true;
-  btn.textContent = 'Sending...';
-  msg.style.display = 'none';
-
-  var api = window.VIGYAN_BACKEND_URL || '';
-  fetch(api + '/api/auth/resend-verification', {
+  btn.disabled = true; btn.textContent = 'Sending...'; msg.style.display = 'none';
+  fetch('/api/auth/resend-verification', {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
     body: JSON.stringify({email: email})
   })
   .then(function(r){ return r.json(); })
   .then(function(d){
-    msg.style.display = 'block';
-    msg.style.color = '#16A34A';
+    msg.style.display = 'block'; msg.style.color = '#16A34A';
     msg.textContent = d.message || 'Verification email sent. Please check your inbox.';
-    btn.textContent = 'Sent!';
+    btn.textContent = 'Sent!'; btn.disabled = false;
   })
   .catch(function(){
-    msg.style.display = 'block';
-    msg.style.color = '#DC2626';
+    msg.style.display = 'block'; msg.style.color = '#DC2626';
     msg.textContent = 'Failed to send. Please try again.';
-    btn.disabled = false;
-    btn.textContent = 'Resend';
+    btn.disabled = false; btn.textContent = 'Resend';
   });
 }
 </script>
