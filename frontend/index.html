@@ -86,7 +86,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <noscript><link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
-<script defer src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js" onload="initDNAAnim()"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
 <script src="https://accounts.google.com/gsi/client?hl=en" async defer></script>
 <style>
     html { overflow-x: hidden; }
@@ -859,7 +859,8 @@ document.addEventListener('DOMContentLoaded', function(){
 
 function initDNAAnim(){
   var el=document.getElementById('protein-stage');
-  if(!el||el.offsetParent===null)return;
+  if(!el||el.offsetParent===null||el.dataset.init)return;
+  el.dataset.init='1';
   lottie.loadAnimation({
     container: el,
     renderer: 'svg',
