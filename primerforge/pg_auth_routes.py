@@ -545,21 +545,33 @@ def google_auth():
         user_id = existing["id"]
         role = existing["role"]
         if existing["status"] == "pending":
-            execute("UPDATE users SET status = 'active' WHERE id = %s", (user_id,))
-            execute("UPDATE email_verifications SET verified_at = NOW() WHERE user_id = %s", (user_id,))
-            execute(
-                """INSERT INTO token_balances (user_id, balance, total_purchased)
-                   VALUES (%s, 2, 2)
-                   ON CONFLICT (user_id) DO UPDATE
-                   SET balance = token_balances.balance + 2,
-                       total_purchased = token_balances.total_purchased + 2""",
-                (user_id,)
-            )
+            try:
+                execute("UPDATE users SET status = 'active' WHERE id = %s", (user_id,))
+            except Exception as e:
+                logger.warning("Failed to activate pending user %s: %s", email, e)
+            try:
+                execute("UPDATE email_verifications SET verified_at = NOW() WHERE user_id = %s", (user_id,))
+            except Exception as e:
+                logger.warning("Failed to update email_verifications for %s: %s", email, e)
+            try:
+                execute(
+                    """INSERT INTO token_balances (user_id, balance, total_purchased)
+                       VALUES (%s, 2, 2)
+                       ON CONFLICT (user_id) DO UPDATE
+                       SET balance = token_balances.balance + 2,
+                           total_purchased = token_balances.total_purchased + 2""",
+                    (user_id,)
+                )
+            except Exception as e:
+                logger.warning("Failed to init token_balances for %s: %s", email, e)
             logger.info("Google auth auto-verified pending user %s", email)
-        execute(
-            "UPDATE users SET last_active_at = NOW(), auth_provider = 'google', google_id = %s WHERE id = %s",
-            (google_id, user_id),
-        )
+        try:
+            execute(
+                "UPDATE users SET last_active_at = NOW(), auth_provider = 'google', google_id = %s WHERE id = %s",
+                (google_id, user_id),
+            )
+        except Exception as e:
+            logger.warning("Failed to update user metadata for %s: %s", email, e)
     else:
         # New user — register via Google
         random_pw = os.urandom(32).hex()
