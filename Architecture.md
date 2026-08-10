@@ -1,6 +1,6 @@
 # VigyanLLM — Architecture & Detailed Project Report (DPR)
 
-> **Version:** 1.1.0 | **Last Updated:** August 2026
+> **Version:** 2.0.0 | **Last Updated:** August 2026
 > **Platform:** VigyanLLM — Sovereign Bioinformatics Platform
 > **Company:** VigyanLLM Private Limited
 
@@ -16,13 +16,12 @@
 6. [Authentication & Authorization](#6-authentication--authorization)
 7. [Payment & Subscription System](#7-payment--subscription-system)
 8. [Pipeline Engine](#8-pipeline-engine)
-9. [Azure Worker Infrastructure](#9-azure-worker-infrastructure)
-10. [Deployment & DevOps](#10-deployment--devops)
-11. [Security Architecture](#11-security-architecture)
-12. [Tech Stack Summary](#12-tech-stack-summary)
-13. [Data Flow Diagrams](#13-data-flow-diagrams)
-14. [API Reference](#14-api-reference)
-15. [Development Setup](#15-development-setup)
+9. [Deployment & DevOps](#9-deployment--devops)
+10. [Security Architecture](#10-security-architecture)
+11. [Tech Stack Summary](#11-tech-stack-summary)
+12. [Data Flow Diagrams](#12-data-flow-diagrams)
+13. [API Reference](#13-api-reference)
+14. [Development Setup](#14-development-setup)
 
 ---
 
@@ -30,17 +29,18 @@
 
 ### 1.1 What is VigyanLLM?
 
-VigyanLLM is a sovereign bioinformatics platform offering 10+ web-based computational biology tools including primer design, BLAST search, multiple sequence alignment (MSA), molecular docking, CRISPR analysis, and thermodynamic calculators. It serves researchers, students, and labs in India and globally with a freemium subscription model.
+VigyanLLM is a sovereign bioinformatics platform offering 15+ web-based computational biology tools including primer design, BLAST search, multiple sequence alignment (MSA), CRISPR analysis, codon optimization, ORF finding, and thermodynamic calculators. It serves researchers, students, and labs in India and globally with a freemium subscription model.
 
 ### 1.2 Core Capabilities
 
 - **Primer Design Pipeline** — 24-step automated pipeline (Primer3 + SantaLucia NN thermodynamics)
 - **BLAST Search** — Local NCBI BLAST 2.17.0+ with sequence database
 - **Multiple Sequence Alignment** — Clustal Omega backend
-- **Molecular Docking** — AutoDock Vina + GNINA (deep learning scoring)
-- **Protein Structure Prediction** — ESMFold integration via Azure GPU workers
 - **CRISPR gRNA Design** — In development
-- **Tool Suite** — Tm calculator, GC calculator, DNA→RNA transcription, PCR analysis, protein docking
+- **Codon Optimization** — E. coli, human, yeast expression optimization
+- **ORF Finding** — Open reading frame detection in nucleotide sequences
+- **Protein Analysis** — Molecular weight, pI, amino acid composition
+- **Tool Suite** — Tm calculator, GC calculator, DNA→RNA transcription, PCR analysis, restriction enzymes
 
 ### 1.3 Business Model
 
@@ -79,31 +79,20 @@ VigyanLLM is a sovereign bioinformatics platform offering 10+ web-based computat
               ┌──────────────────────┼──────────────────────┐
               │                      │                      │
      ┌────────▼────────┐   ┌────────▼────────┐   ┌────────▼────────┐
-     │   AWS EC2       │   │  Azure PG       │   │  Docker Redis   │
-     │   t3.micro      │   │  Flexible       │   │  7-alpine       │
-     │                 │   │  Server         │   │                │
+     │   AWS EC2       │   │  AWS RDS /      │   │  Docker Redis   │
+     │   t3.medium     │   │  Local PG       │   │  7-alpine       │
+     │                 │   │  (localhost)     │   │                │
      │  ┌───────────┐  │   │                 │   │  Rate limits    │
      │  │  Nginx    │  │   │  Users          │   │  Celery MQ      │
      │  │  (proxy)  │  │   │  Payments       │   │  Session cache  │
      │  └─────┬─────┘  │   │  Jobs           │   └────────────────┘
      │        │        │   │  Audit          │
      │  ┌─────▼─────┐  │   │  Webhooks       │
-     │  │ Gunicorn  │  │   └────────────────┘
-     │  │ Flask App │  │
+     │  │ Gunicorn  │  │   │  Docking Jobs   │
+     │  │ Flask App │  │   └────────────────┘
      │  │ :11436    │  │
      │  └───────────┘  │
      └─────────────────┘
-              │
-     ┌────────▼────────────────────────────────────────┐
-     │         Azure Container Instances (ACI)          │
-     │  ┌─────────────────────┐  ┌──────────────────┐  │
-     │  │ CPU Worker          │  │ GPU Worker       │  │
-     │  │ 4 vCPU, 24GB RAM    │  │ V100, 24GB RAM   │  │
-     │  │ MSA, Vina, light    │  │ ESMFold, GNINA   │  │
-     │  └─────────────────────┘  └──────────────────┘  │
-     │  Registry: vigyanregistry01.azurecr.io           │
-     │  Resource Group: VigyanComputeGroup              │
-     └──────────────────────────────────────────────────┘
 ```
 
 ### 2.2 Infrastructure Components
@@ -113,13 +102,12 @@ VigyanLLM is a sovereign bioinformatics platform offering 10+ web-based computat
 | **Static Frontend** | HTML, CSS, Vanilla JS | Vercel (CDN) | ~410 tool/blog/glossary pages |
 | **Edge Middleware** | JavaScript (Vercel Edge) | Vercel | Crawler blocking, admin RBAC |
 | **Edge Functions** | Node.js | Vercel | `/api/sitemap.xml.js`, BLAST proxy |
-| **API Backend** | Flask 3.1.3 / Gunicorn | AWS EC2 t3.micro | Auth, payments, pipeline engine |
-| **Database** | PostgreSQL 16 (primary) / SQLite (dev) | Azure Flexible Server | User data, payments, jobs |
+| **API Backend** | Flask 3.1.3 / Gunicorn | AWS EC2 t3.medium | Auth, payments, pipeline engine |
+| **Database** | PostgreSQL 16 (primary) / SQLite (dev) | AWS (localhost:5432) | User data, payments, jobs, docking |
 | **Cache/Queue** | Redis 7 | Docker (EC2) | Rate limits, Celery broker, sessions |
-| **Compute** | Azure Container Instances | Azure (ACI) | Heavy bioinformatics (ESMFold, docking) |
 | **Payment** | Razorpay | SaaS | Indian payment gateway |
 | **Email** | Brevo API + SMTP fallback | Brevo (Hostinger SMTP) | Verification, password reset |
-| **CI/CD** | GitHub Actions | GitHub | Lint, test, deploy to EC2 + ACR |
+| **CI/CD** | GitHub Actions | GitHub | Lint, test, deploy to EC2 |
 
 ---
 
@@ -141,14 +129,23 @@ frontend/
 ├── primer.html                   # Primer design tool
 ├── blast.html                    # BLAST search tool
 ├── msa.html                      # Multiple sequence alignment
-├── docking.html                  # Molecular docking
 ├── tm-calculator.html            # Melting temperature calculator
 ├── gc-calculator.html            # GC content calculator
 ├── dna-to-rna.html               # Transcription tool
+├── dna-to-protein.html           # Translation tool
 ├── crispr-analysis.html          # CRISPR design (in development)
 ├── pcr-analysis.html             # In silico PCR
-├── protein-docking.html          # Protein-ligand docking
-├── primer-design.html            # Primer design info page
+├── pcr-product-calculator.html   # PCR product size calculator
+├── restriction-enzyme-finder.html # Restriction enzyme search
+├── reverse-complement.html       # Reverse complement tool
+├── compare.html                  # Primer3 comparison
+├── codon-optimizer.html          # Codon optimization (NEW)
+├── orf-finder.html               # Open reading frame finder (NEW)
+├── protein-mw-calculator.html    # Protein molecular weight (NEW)
+├── cloning-planner.html          # Cloning strategy planner (NEW)
+├── restriction-digest.html       # Restriction digest simulator (NEW)
+├── qpcr-standard-curve.html      # qPCR standard curve calculator (NEW)
+├── primer.html                   # Primer design info page
 ├── pricing.html                  # Subscription plans
 ├── checkout.html                 # Order summary + Razorpay
 ├── payment-success.html          # Post-payment success
@@ -164,7 +161,7 @@ frontend/
 ├── blog/                         # 57+ blog posts
 ├── glossary/                     # 205 glossary pages
 ├── landing-pages/                # 28 marketing landing pages
-├── compare/                      # Comparison pages (autodock-vs-swissdock, etc.)
+├── compare/                      # Comparison pages
 ├── admin/                        # Admin panel pages
 ├── docs/                         # Documentation pages
 ├── hub/                          # Educational hub pages
@@ -192,7 +189,6 @@ FEATURE_TIER = {
   saved_results:   'pro',    // Save to dashboard
   api_access:      'pro',    // API access
   large_msa:       'pro',    // MSA >10 sequences
-  advanced_docking:'pro',    // Advanced docking features
   crispr_offtarget:'pro',    // CRISPR off-target analysis
   collaboration:   'lab',    // Team collaboration
   admin_panel:     'lab',    // Admin panel
@@ -321,19 +317,13 @@ primerforge/
 │   ├── thermodynamics.py              # SantaLucia NN thermodynamics
 │   └── pipeline_validator.py          # Input validation
 │
-├── pipelines/                         # Consensus pipeline
-│   ├── consensus_pipeline.py          # ESMFold→Vina→GNINA pipeline
-│   ├── docking_engine.py              # Molecular docking engine
-│   ├── esmfold_engine.py              # ESMFold protein structure prediction
-│   ├── protein_structure_prediction.py
-│   ├── colab_t4_docking_server.py
-│   └── warmup.py
-│
+├── pipelines/                         # Pipeline modules
+│   ├── warmup.py
+│   └── (consensus pipeline removed)
+
 ├── reports_routes.py                  # PostgreSQL reports API
 ├── reports_routes_sqlite.py           # SQLite reports API
 ├── consent_routes.py                  # DPDP consent routes
-├── docking_db.py                      # Docking database access
-├── docking_queue.py                   # Docking job queue
 ├── celery_app.py                      # Celery configuration
 └── admin-*.py                         # Admin route files
 ```
@@ -367,16 +357,17 @@ create_app()
 │
 ├── Register shared blueprints
 │   ├── pipeline_bp (engine.pipeline_routes)
-│   ├── docking_bp (docking_queue)
 │   └── consent_bp (consent_routes)
-│
+
 ├── Register core tool endpoints
 │   ├── POST /api/primer/auto_design
 │   ├── POST /api/blast/search
 │   ├── POST /api/msa/align
-│   ├── POST /api/docking/run
 │   ├── POST /api/thermodynamics/tm
-│   └── POST /api/thermodynamics/gc
+│   ├── POST /api/thermodynamics/gc
+│   ├── POST /api/tools/codon-optimize
+│   ├── POST /api/tools/orf-find
+│   └── POST /api/tools/protein-mw
 │
 ├── Register result/export endpoints
 │   ├── POST /api/results/save
@@ -593,17 +584,18 @@ User clicks "Subscribe to Pro" (no token):
           └─ Failure: show error message
 ```
 
-### 6.6 Email Verification System (Aug 2026)
+### 6.6 Email Verification System (Aug 2026, Hardened)
 
-Complete email verification flow with security hardening:
+Complete email verification flow with security hardening and transport reliability:
 
 #### Overview
 
 ```
 User registers → Backend creates user (status: pending) →
 Backend generates token → Token SHA-256 hashed + stored in DB →
-Verification email sent via Brevo API → User clicks link →
-Frontend reads token from URL → Sends POST to /api/auth/verify-email →
+Verification email sent via Brevo API (3x retry + SMTP fallback) →
+User clicks link → Frontend reads token from URL →
+Sends POST to /api/auth/verify-email →
 Backend hashes token → DB lookup → Activate user + grant tokens
 ```
 
@@ -637,7 +629,7 @@ verify_email_with_token(token):
          └─ Not found → Returns False
 ```
 
-#### Email Transport
+#### Email Transport (Hardened with 3x Retry)
 
 ```
 send_verification_email(email, token):
@@ -645,12 +637,40 @@ send_verification_email(email, token):
     POST https://api.brevo.com/v3/smtp/email
     Headers: api-key: xkeysib-...
     Body: { sender, to, subject, htmlContent }
+    Retry: 3 attempts with exponential backoff (2s, 4s, 8s)
     
   Priority 2: SMTP fallback (if SMTP_HOST/USER/PASSWORD set)
     smtp-relay.brevo.com:587 (STARTTLS)
     Login: b02500001@smtp-brevo.com
+    Retry: 3 attempts with exponential backoff
+    
+  Failure Handling:
+    - register_user() returns email_sent: bool
+    - If both transports fail → user created but email_sent=False
+    - Frontend shows yellow warning: "Account created but verification email failed"
+    - Frontend displays inline "Resend Verification" button
+    - User can resend via POST /api/auth/resend-verification
     
   Dev mode: Log token to console (VIGYANLLM_ENV=development)
+```
+
+#### Registration Response
+
+```
+POST /api/auth/register
+Response (201):
+{
+  "message": "Account created. Check your email to verify.",
+  "token": "...",           // Auth token (for immediate login)
+  "email_sent": true        // Whether verification email was sent
+}
+
+If email fails:
+{
+  "message": "Account created but verification email could not be sent. Use resend.",
+  "token": "...",
+  "email_sent": false
+}
 ```
 
 #### Frontend Implementation
@@ -665,6 +685,12 @@ verify-email.html:
     • Referrer headers
   - Idempotent UI: success OR "Try signing in" (never "failed")
   - Resend section: email input → POST /api/auth/resend-verification
+
+auth-shared.js (submitAuth):
+  - On register success: checks email_sent field
+  - If email_sent=false: shows yellow warning banner with inline resend button
+  - resendVerif() → POST /api/auth/resend-verification { email }
+  - Shows success/error feedback without page reload
 ```
 
 #### Rate Limits
@@ -672,6 +698,7 @@ verify-email.html:
 | Action | Limit | Window | Scope |
 |--------|-------|--------|-------|
 | Registration | 5 accounts | 1 hour | Per IP |
+| Verify email | 10 requests | 1 minute | Per endpoint |
 | Resend verification | 5 emails | 24 hours | Per email |
 | Password reset | 3 requests | 1 hour | Per email |
 | Login | 5 failures → 15 min lockout | — | Per account |
@@ -864,84 +891,12 @@ def run_pipeline(self, job_id: str, config: dict):
 | **NCBI BLAST** | Sequence similarity search | Local binaries (`tools/ncbi-blast-2.17.0+`) |
 | **Bowtie2** | Structural alignment | Local binary |
 | **Clustal Omega** | Multiple sequence alignment | System binary |
-| **AutoDock Vina** | Molecular docking | `vina` Python package |
-| **GNINA** | Deep learning scoring | Binary download (GitHub releases) |
-| **ESMFold** | Protein structure prediction | Azure GPU worker (PyTorch) |
 | **ViennaRNA** | RNA secondary structure | System package |
 | **OpenBabel** | Chemical file format conversion | System package |
 
 ---
 
-## 9. Azure Worker Infrastructure
-
-### 9.1 Purpose
-
-Heavy bioinformatics workloads (ESMFold protein structure prediction, GNINA scoring, large-scale docking) run on Azure Container Instances (ACI) rather than the main EC2 server to avoid resource contention.
-
-### 9.2 Worker Types
-
-| Worker | vCPU | RAM | GPU | Use Case |
-|--------|------|-----|-----|----------|
-| **CPU Worker** | 4 | 24 GB | — | MSA, Vina, light processing |
-| **GPU Worker** | 4 | 24 GB | V100 (16GB) | ESMFold, GNINA, deep learning |
-
-### 9.3 Worker Lifecycle
-
-```
-1. User submits job on main Flask app
-2. Flask creates job record in PostgreSQL (status: pending)
-3. Flask pushes job to Azure Storage Queue / triggers ACI
-4. ACI worker pulls job config:
-   - Accepts config via CLI args, environment, or stdin
-   - Can run in daemon mode (poll for jobs)
-5. Worker executes computation:
-   - CPU worker: MSA, Vina docking, preprocessing
-   - GPU worker: ESMFold model inference, GNINA scoring
-6. Worker POSTs results to callback URL (Flask endpoint)
-7. Flask stores results, updates job status
-```
-
-### 9.4 Docker Images
-
-**CPU Image** (`Dockerfile.azure`):
-- Base: `python:3.11-slim`
-- Installs: PyTorch (CPU), ESMFold, transformers, tokenizers
-- System deps: blast, bowtie2, openbabel, primer3, samtools, vienna-rna
-
-**GPU Image** (`Dockerfile.gpu`):
-- Base: `nvidia/cuda:12.1.0-runtime-ubuntu22.04`
-- CUDA-enabled PyTorch
-- Same bioinformatics tools as CPU image
-
-### 9.5 Deployment Script (`deploy_aci.sh`)
-
-```
-1. Check AZ CLI login
-2. Choose mode: CPU or GPU
-3. Build Docker image from chosen Dockerfile
-4. Tag and push to vigyanregistry01.azurecr.io
-5. Delete old ACI container (if exists)
-6. Create new ACI container:
-   - CPU: 4 vCPU, 24GB RAM
-   - GPU: 4 vCPU, 24GB RAM, 1x V100
-7. Poll for running state
-8. Verify with health check
-```
-
-### 9.6 Azure Resources Summary
-
-| Resource | Name | Region |
-|----------|------|--------|
-| **Container Registry** | `vigyanregistry01` | — |
-| **ACI CPU Worker** | `vigyan-worker-cpu` | East US |
-| **ACI GPU Worker** | `vigyan-worker-gpu` | East US |
-| **PG Database** | `vigyan-db-prod.postgres.database.azure.com` | — |
-| **Docking Database** | `vigyan-docking-db.postgres.database.azure.com` | — |
-| **Resource Group** | `VigyanComputeGroup` | — |
-
----
-
-## 10. Deployment & DevOps
+## 9. Deployment & DevOps
 
 ### 10.1 Deployment Architecture
 
@@ -957,20 +912,15 @@ GitHub (main branch)
     │       │   ├── safety check
     │       │   └── pytest
     │       │
-    │       ├── Deploy Job (on lint pass)
-    │       │   ├── SSH into EC2
-    │       │   ├── git pull
-    │       │   ├── .venv + pip install
-    │       │   ├── Write .env from secrets
-    │       │   ├── Start PostgreSQL + Redis
-    │       │   ├── Run migrations
-    │       │   ├── Restart vigyan.service
-    │       │   └── Health check via Vercel proxy
-    │       │
-    │       └── Azure Worker Deploy (on azure_worker/* changes)
-    │           ├── Login to ACR
-    │           ├── Build & push Docker image
-    │           │   (separate workflow)
+    │       └── Deploy Job (on lint pass)
+    │           ├── SSH into EC2
+    │           ├── git pull
+    │           ├── .venv + pip install
+    │           ├── Write .env from secrets
+    │           ├── Start PostgreSQL + Redis
+    │           ├── Run migrations
+    │           ├── Restart vigyan.service
+    │           └── Health check via Vercel proxy
     │
     └── Vercel Auto-Deploy (frontend/ only)
         ├── Static site deploy
@@ -988,7 +938,7 @@ GitHub (main branch)
 
 ### 10.3 EC2 Backend Deployment
 
-- **Server:** AWS EC2 t3.micro
+- **Server:** AWS EC2 t3.medium
 - **Process Manager:** systemd (`vigyan.service`)
 - **Health Check:** Cron job every 5 min (`deploy/healthcheck.sh`)
 - **Auto-restart:** systemd `Restart=on-failure` with backoff (5s → 30s max)
@@ -1168,9 +1118,6 @@ Layer 5: System
 | | NCBI BLAST | 2.17.0 | Sequence search |
 | | Bowtie2 | — | Structural alignment |
 | | Clustal Omega | — | MSA |
-| | AutoDock Vina | — | Molecular docking |
-| | GNINA | 1.0 | Deep learning scoring |
-| | ESMFold | — | Protein structure |
 | | ViennaRNA | — | RNA structure |
 | **Security** | Flask-Talisman | 1.1.0 | Security headers |
 | | Flask-Limiter | 3.8.0 | Rate limiting |
@@ -1181,10 +1128,8 @@ Layer 5: System
 | | bandit | — | Security scanner |
 | | pytest | — | Test runner |
 | **Cloud** | Vercel | — | Frontend hosting |
-| | AWS EC2 | t3.micro | Backend hosting |
-| | Azure ACI | — | Heavy compute |
-| | Azure PG | Flexible | Database |
-| | Azure ACR | — | Container registry |
+| | AWS EC2 | t3.medium | Backend hosting |
+| | AWS RDS / Local PG | 16 | Database |
 | **Monitoring** | systemd | — | Process supervision |
 | | Cron | — | Health checks (5min) |
 | | journald | — | Log aggregation |
@@ -1192,9 +1137,8 @@ Layer 5: System
 ### 12.2 Dependency Count
 
 - **requirements.txt:** 22 direct dependencies
-- **requirements-docking.txt:** 6 direct dependencies (Azure worker)
 - **Node.js (backend/):** ~15 dependencies (legacy CMS, not actively used)
-- **System packages (Dockerfile):** ~12 bioinformatics tools
+- **System packages:** ~12 bioinformatics tools
 
 ---
 
@@ -1218,13 +1162,31 @@ User                        Frontend                      Backend               
  │                            │                              ├─ Hash password (bcrypt)    │
  │                            │                              ├─ Detect academic email     │
  │                            │                              ├─ Generate token            │
- │                            │                              ├─ INSERT user ──────────────┤
- │                            │                              ├─ Return { token, user }    │
+ │                            │                              ├─ INSERT user (pending) ───┤
+ │                            │                              ├─ Send verification email   │
+ │                            │                              │  (Brevo API 3x retry)     │
+ │                            │                              ├─ Return { token,           │
+ │                            │                              │    email_sent: bool }      │
  │                            │                              │                          │
  │                            ├─ Store token in sessionStorage│                          │
+ │                            ├─ IF email_sent=false:         │                          │
+ │                            │  └─ Show yellow warning       │                          │
+ │                            │     + inline resend button    │                          │
  │                            ├─ closeAuth()                  │                          │
  │                            ├─ updateAuthUI()               │                          │
  │                            │  └─ Show user profile avatar  │                          │
+ │                            │                              │                          │
+ ├─ Check email inbox         │                              │                          │
+ │  └─ Click verification link│                              │                          │
+ │                            ├─ verify-email.html            │                          │
+ │                            │  └─ POST /api/auth/           │                          │
+ │                            │     verify-email ────────────┤                          │
+ │                            │     { token }                 │                          │
+ │                            │                              ├─ Hash token               │
+ │                            │                              ├─ DB lookup                │
+ │                            │                              ├─ Activate user ──────────┤
+ │                            │                              ├─ Grant tokens             │
+ │                            │                              ├─ Return success           │
  │                            │                              │                          │
  ├─ See profile popup         │                              │                          │
  │  └─ Plan badge: Free       │                              │                          │
@@ -1279,7 +1241,7 @@ User                        Frontend                      Backend               
 ### 13.3 Primer Design Pipeline Flow
 
 ```
-User                     Frontend                    Flask Backend           Azure Worker
+User                     Frontend                    Flask Backend           Celery Worker
  │                          │                            │                      │
  ├─ Enter gene accession    │                            │                      │
  ├─ Click "Design Primers"  │                            │                      │
@@ -1303,11 +1265,6 @@ User                     Frontend                    Flask Backend           Azu
  │                          │                            │  ├─ Step 1: Isoform   │
  │                          │                            │  ├─ Step 2: Junction  │
  │                          │                            │  ├─ ... (24 steps)    │
- │                          │                            │  │                    │
- │                          │                            │  ├─ ESMFold step ─────┤
- │                          │                            │  │  (Azure worker)    │
- │                          │                            │  │                    ├─ Run ESMFold
- │                          │                            │  │                    ├─ Return structure
  │                          │                            │  │                    │
  │                          │                            │  ├─ Step 22: Ranking  │
  │                          │                            │  └─ Step 24: Probe    │
@@ -1468,17 +1425,24 @@ PRIMERFORGE_ADMIN_EMAIL=admin@...
 PRIMERFORGE_ADMIN_PASSWORD=...
 
 # Database (SQLite used if DATABASE_URL not set)
-DATABASE_URL=postgresql://user:pass@host:5432/vigyan_prod
+DATABASE_URL=postgresql://user:pass@localhost:5432/vigyan_prod
 DB_SSL_MODE=require
 
 # Redis (in-memory fallback if not set)
 REDIS_URL=redis://:password@localhost:6379/0
 REDIS_PASSWORD=...
 
+# Email (Brevo API preferred, SMTP fallback)
+BREVO_API_KEY=xkeysib-...           # Brevo API key
+SMTP_HOST=smtp-relay.brevo.com      # SMTP fallback
+SMTP_PORT=587
+SMTP_USER=b02500001@smtp-brevo.com
+SMTP_PASSWORD=...
+SMTP_FROM_EMAIL=noreply@vigyanllm.in
+
 # Optional
 GOOGLE_CLIENT_ID=...                 # Google OAuth
 NCBI_API_KEY=...                     # NCBI E-utilities (higher rate limit)
-SMTP_HOST=...                        # Email verification
 DATA_ENCRYPTION_KEY=...              # Fernet key for result encryption
 ```
 
@@ -1506,8 +1470,6 @@ pytest
 
 | Term | Definition |
 |------|------------|
-| **ACI** | Azure Container Instance — serverless container execution |
-| **ACR** | Azure Container Registry — Docker image registry |
 | **CSP** | Content Security Policy — HTTP header controlling allowed resources |
 | **DPDP** | Digital Personal Data Protection Act (India 2023) |
 | **GSI** | Google Sign-In — OAuth 2.0 / OpenID Connect library |
@@ -1536,7 +1498,6 @@ pytest
 | Nginx config | `deploy/nginx.conf` |
 | Vercel config | `vercel.json` |
 | Edge middleware | `middleware.js` |
-| Azure deploy script | `azure_worker/deploy_aci.sh` |
 | GitHub Actions | `.github/workflows/deploy.yml` |
 
 ### C. Port Reference
