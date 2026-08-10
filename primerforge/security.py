@@ -264,6 +264,7 @@ def apply_rate_limits(app):
             "auth.register": "3 per minute",
             "auth.forgot_password": "3 per hour",
             "auth.resend_verification": "5 per hour",
+            "auth.verify_email": "10 per minute",
             "payments.verify_payment": "10 per minute",
             "payments.create_order": "10 per minute",
         }
