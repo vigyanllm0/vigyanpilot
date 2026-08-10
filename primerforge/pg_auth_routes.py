@@ -263,7 +263,7 @@ def login():
         ip_failures = fetch_one(
             """SELECT COUNT(*) AS cnt FROM login_logs
                WHERE ip_address = %s AND result LIKE 'failed_%'
-               AND created_at > NOW() - INTERVAL '15 minutes'""",
+               AND logged_at > NOW() - INTERVAL '15 minutes'""",
             (ip_address,)
         )
         if ip_failures and ip_failures["cnt"] >= 20:
@@ -638,7 +638,8 @@ def me():
                WHERE u.email = %s""",
             (g.user["email"],)
         )
-    except Exception:
+    except Exception as e:
+        logger.error("Failed to fetch user profile for %s: %s", g.user.get("email"), e)
         return jsonify({"error": "Internal server error."}), 500
 
     if not user:
@@ -817,6 +818,7 @@ def google_auth():
 
     from .pg_auth import create_token
     token = create_token(email, role, user_id)
+    refresh_token = create_refresh_token(user_id)
     log_action(email, "google_login", f"Name: {name}")
 
     resp = jsonify({
@@ -828,6 +830,11 @@ def google_auth():
         'pf_token', token,
         httponly=True, secure=True, samesite='Lax',
         max_age=86400 * 7, path='/'
+    )
+    resp.set_cookie(
+        'pf_refresh', refresh_token,
+        httponly=True, secure=True, samesite='Lax',
+        max_age=86400 * 30, path='/api/auth'
     )
     if role == "admin":
         resp.set_cookie(
@@ -915,7 +922,7 @@ def unlock_user_ip(user_id):
     data = request.get_json(silent=True) or {}
     new_ip = data.get("new_ip", "").strip()
 
-    user = fetch_one("SELECT id, email, first_login_ip FROM users WHERE id = %s", (user_id,))
+    user = fetch_one("SELECT id, email, role, first_login_ip FROM users WHERE id = %s", (user_id,))
     if not user:
         return jsonify({"error": "User not found"}), 404
 

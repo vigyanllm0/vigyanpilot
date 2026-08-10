@@ -36,7 +36,7 @@ function closeUserMenu(){
 
 function logout(){
   try {
-    fetch((window.VIGYAN_BACKEND_URL||'')+'/auth/logout',{method:'POST',credentials:'same-origin'});
+    fetch(API+'/auth/logout',{method:'POST',credentials:'same-origin'});
   } catch(e) {}
   sessionStorage.removeItem('pf_user');
   localStorage.removeItem('pf_user');
@@ -186,8 +186,8 @@ function openAuthModal(){isRegister=false;showAuth()}
   }
   // Fetch plan for badge
   if (user) {
-    var api = window.VIGYAN_BACKEND_URL || '';
-    fetch(api + '/api/payments/status', {credentials: 'same-origin'})
+    var api = window.VIGYAN_BACKEND_URL || '/api';
+    fetch(api + '/payments/status', {credentials: 'same-origin'})
     .then(function(r){ return r.json(); })
     .then(function(st){
       if (!st || !st.plan) return;

@@ -192,13 +192,13 @@ def refresh_access_token(refresh_token: str) -> dict | None:
     if not data:
         return None
     user_id = data["user_id"]
-    user = fetch_one("SELECT email, role FROM users WHERE id = %s AND status = 'active'", (user_id,))
+    user = fetch_one("SELECT id, email, role FROM users WHERE id = %s AND status = 'active'", (user_id,))
     if not user:
         return None
     token = create_token(user["email"], user["role"], user_id)
     return {
         "token": token,
-        "user": {"email": user["email"], "role": user["role"]},
+        "user": {"id": user["id"], "email": user["email"], "role": user["role"]},
     }
 
 
