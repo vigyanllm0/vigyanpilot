@@ -122,12 +122,18 @@ def register():
         return jsonify({"error": result["error"]}), 400
 
     if result.get("requires_verification"):
+        email_sent = result.get("email_sent", False)
+        if email_sent:
+            message = "Account created. Please check your email to verify your account before logging in. Verification link expires in 24 hours."
+        else:
+            message = ("Account created but we couldn't send the verification email. "
+                       "Please use the Resend button below or try logging in — if your email was previously verified, it should work.")
         return jsonify({
             "success": True,
             "requires_verification": True,
             "user": result["user"],
-            "message": "Account created. Please check your email to verify your account before logging in. "
-                       "Verification link expires in 24 hours.",
+            "email_sent": email_sent,
+            "message": message,
         }), 201
 
     return jsonify({

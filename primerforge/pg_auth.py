@@ -378,9 +378,11 @@ def require_admin(f):
 def send_verification_email(email: str, verification_token: str) -> bool:
     """Send email verification link to newly registered user.
 
-    Supports two transport methods (checked in order):
+    Supports two transport methods (both tried on failure):
       1. Brevo API (if BREVO_API_KEY is set) — preferred, more reliable
       2. SMTP fallback (if SMTP_HOST/SMTP_USER/SMTP_PASSWORD are set)
+
+    Retries each method up to 3 times with exponential backoff.
     """
     app_url = os.environ.get("APP_URL", "https://www.vigyanllm.in")
     verify_url = f"{app_url}/verify-email?token={verification_token}"
@@ -422,32 +424,49 @@ def send_verification_email(email: str, verification_token: str) -> bool:
 </div>
 </body></html>"""
 
+    import time as _time
+
     # ── Method 1: Brevo API (preferred) ──
     brevo_key = os.environ.get("BREVO_API_KEY", "")
     if brevo_key:
-        try:
-            import requests as _req
-            resp = _req.post(
-                "https://api.brevo.com/v3/smtp/email",
-                headers={
-                    "api-key": brevo_key,
-                    "Content-Type": "application/json",
-                    "Accept": "application/json",
-                },
-                json={
-                    "sender": {"name": from_name, "email": from_email},
-                    "to": [{"email": email}],
-                    "subject": subject,
-                    "htmlContent": html_body,
-                },
-                timeout=15,
-            )
-            if resp.status_code in (200, 201):
-                logger.info("Verification email sent to %s via Brevo API", email)
-                return True
-            logger.error("Brevo API returned %d: %s", resp.status_code, resp.text[:200])
-        except Exception as e:
-            logger.error("Brevo API failed for %s: %s", email, e)
+        for attempt in range(3):
+            try:
+                import requests as _req
+                logger.info("Brevo: sending verification email to %s (attempt %d/3)", email, attempt + 1)
+                resp = _req.post(
+                    "https://api.brevo.com/v3/smtp/email",
+                    headers={
+                        "api-key": brevo_key,
+                        "Content-Type": "application/json",
+                        "Accept": "application/json",
+                    },
+                    json={
+                        "sender": {"name": from_name, "email": from_email},
+                        "to": [{"email": email}],
+                        "subject": subject,
+                        "htmlContent": html_body,
+                    },
+                    timeout=20,
+                )
+                if resp.status_code in (200, 201):
+                    logger.info("Brevo: verification email SENT to %s (status=%d)", email, resp.status_code)
+                    return True
+                logger.warning("Brevo: attempt %d failed — status=%d: %s", attempt + 1, resp.status_code, resp.text[:300])
+                if resp.status_code == 401:
+                    logger.error("Brevo: API key is invalid or expired — check BREVO_API_KEY")
+                    break  # Don't retry on auth failure
+                if resp.status_code == 400:
+                    logger.error("Brevo: bad request — sender email '%s' may not be verified in Brevo", from_email)
+                    break  # Don't retry on bad request
+                if attempt < 2:
+                    _time.sleep(2 ** attempt)  # Exponential backoff: 1s, 2s
+            except Exception as e:
+                logger.warning("Brevo: attempt %d exception for %s: %s", attempt + 1, email, e)
+                if attempt < 2:
+                    _time.sleep(2 ** attempt)
+        logger.error("Brevo: all 3 attempts failed for %s", email)
+    else:
+        logger.warning("Brevo: BREVO_API_KEY not set — skipping Brevo")
 
     # ── Method 2: SMTP fallback ──
     smtp_host = os.environ.get("SMTP_HOST")
@@ -463,34 +482,47 @@ def send_verification_email(email: str, verification_token: str) -> bool:
                 email, verification_token,
             )
             return True
-        logger.error("No email transport configured (neither BREVO_API_KEY nor SMTP). Cannot send verification email.")
+        logger.error("SMTP: not configured (missing SMTP_HOST/SMTP_USER/SMTP_PASSWORD). Cannot send verification email to %s", email)
         return False
 
-    try:
-        import smtplib
-        from email.mime.text import MIMEText
-        msg = MIMEText(
-            f"Welcome to VigyanLLM!\n\n"
-            f"Please verify your email address by clicking this link:\n"
-            f"{verify_url}\n\n"
-            f"This link expires in 24 hours.\n\n"
-            f"If you did not create this account, please ignore this email.\n\n"
-            f"\u2014 VigyanLLM Team"
-        )
-        msg["From"] = f"{from_name} <{from_email}>"
-        msg["To"] = email
-        msg["Subject"] = subject
+    for attempt in range(3):
+        try:
+            import smtplib
+            from email.mime.multipart import MIMEMultipart
+            from email.mime.text import MIMEText
+            logger.info("SMTP: sending verification email to %s (attempt %d/3)", email, attempt + 1)
 
-        with smtplib.SMTP(smtp_host, smtp_port) as server:
-            server.starttls()
-            server.login(smtp_user, smtp_password)
-            server.sendmail(from_email, email, msg.as_string())
+            msg = MIMEMultipart("alternative")
+            msg["From"] = f"{from_name} <{from_email}>"
+            msg["To"] = email
+            msg["Subject"] = subject
 
-        logger.info("Verification email sent to %s via SMTP", email)
-        return True
-    except Exception as e:
-        logger.error("SMTP failed for %s: %s", email, e)
-        return False
+            # Attach both plain text and HTML
+            text_part = MIMEText(
+                f"Verify your email address by visiting this link:\n{verify_url}\n\n"
+                f"This link expires in 24 hours.\n\nVigyanLLM Team",
+                "plain"
+            )
+            html_part = MIMEText(html_body, "html")
+            msg.attach(text_part)
+            msg.attach(html_part)
+
+            with smtplib.SMTP(smtp_host, smtp_port, timeout=20) as server:
+                server.ehlo()
+                server.starttls()
+                server.ehlo()
+                server.login(smtp_user, smtp_password)
+                server.sendmail(from_email, [email], msg.as_string())
+
+            logger.info("SMTP: verification email SENT to %s", email)
+            return True
+        except Exception as e:
+            logger.warning("SMTP: attempt %d failed for %s: %s", attempt + 1, email, e)
+            if attempt < 2:
+                _time.sleep(2 ** attempt)
+
+    logger.error("SMTP: all 3 attempts failed for %s", email)
+    return False
 
 
 def create_verification_token(user_id: int) -> str:
@@ -680,19 +712,17 @@ def register_user(email: str, password: str, name: str = "", ip_address: str = "
         return {"error": "Registration failed."}
 
     verify_token = create_verification_token(user["id"])
+    email_sent = False
     if verify_token:
         logger.info("Registration: created verification token (len=%d) for user_id=%s", len(verify_token), user["id"])
         email_sent = send_verification_email(email, verify_token)
         if not email_sent:
-            logger.error("Registration: failed to send verification email to %s", email)
-            env = os.environ.get("VIGYANLLM_ENV", "production")
-            if env == "development":
-                logger.warning("Email sending failed — verification token: %s", verify_token)
+            logger.error("Registration: FAILED to send verification email to %s after all retries", email)
     else:
         logger.error("Registration: create_verification_token returned empty for user_id=%s", user["id"])
 
     log_action(email, "registration", "User registered (status: pending, verification sent)")
-    return {"user": {"email": user["email"]}, "requires_verification": True}
+    return {"user": {"email": user["email"]}, "requires_verification": True, "email_sent": email_sent}
 
 
 def login_user(email: str, password: str, ip_address: str = "0.0.0.0", user_agent: str = "") -> dict:

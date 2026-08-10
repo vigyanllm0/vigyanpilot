@@ -135,8 +135,15 @@ function submitAuth(){
     .then(function(r){return r.json().then(function(d){return{ok:r.ok,data:d}})})
     .then(function(res){
       if(res&&res.ok&&res.data&&res.data.requires_verification){
-        err.style.display='block';err.style.color='#22C55E';
-        err.textContent=res.data.message||'Account created! Check your email to verify your account before logging in.';
+        var emailSent=res.data.email_sent;
+        if(emailSent){
+          err.style.display='block';err.style.color='#22C55E';
+          err.textContent=res.data.message||'Account created! Check your email to verify your account before logging in.';
+        }else{
+          err.style.display='block';err.style.color='#F59E0B';
+          err.innerHTML=res.data.message||'Account created but email could not be sent.';
+          err.innerHTML+='<br><a href="#" onclick="resendVerif(\''+email+'\');return false" style="color:#1565C0;font-weight:600">Resend verification email</a>';
+        }
         return;
       }
       if(res&&res.ok&&res.data&&res.data.user){
@@ -151,6 +158,19 @@ function submitAuth(){
       }
     })
     .catch(function(){err.style.display='block';err.style.color='';err.textContent='Server unavailable. Please try again.'});
+}
+
+function resendVerif(email){
+  var err=document.getElementById('auth-err');
+  if(err){err.style.color='#22C55E';err.textContent='Sending...';}
+  fetch(API+'/auth/resend-verification',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email})})
+    .then(function(r){return r.json()})
+    .then(function(d){
+      if(err){err.style.color='#22C55E';err.textContent=d.message||'Verification email resent. Check your inbox and spam folder.';}
+    })
+    .catch(function(){
+      if(err){err.style.color='#DC2626';err.textContent='Failed to resend. Please try again later.';}
+    });
 }
 
 function openAuthModal(){isRegister=false;showAuth()}
