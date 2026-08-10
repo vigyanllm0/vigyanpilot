@@ -726,7 +726,7 @@ def login_user(email: str, password: str, ip_address: str = "0.0.0.0", user_agen
 
     # Check if email is verified (pending = not yet verified)
     if user.get("status") == "pending":
-        _log_login(user["id"], ip_address, user_agent, "blocked_unverified")
+        _log_login(user["id"], ip_address, user_agent, "blocked_unverified", email)
         return {"error": "Please verify your email address before logging in. Check your inbox for the verification link.", "code": "EMAIL_UNVERIFIED"}
 
     # Check if account is locked
@@ -734,31 +734,31 @@ def login_user(email: str, password: str, ip_address: str = "0.0.0.0", user_agen
     if locked_until:
         if isinstance(locked_until, datetime):
             if locked_until.timestamp() > time.time():
-                _log_login(user["id"], ip_address, user_agent, "blocked")
+                _log_login(user["id"], ip_address, user_agent, "blocked", email)
                 return {"error": "Account temporarily locked. Try again later."}
         elif isinstance(locked_until, (int, float)):
             if locked_until > time.time():
-                _log_login(user["id"], ip_address, user_agent, "blocked")
+                _log_login(user["id"], ip_address, user_agent, "blocked", email)
                 return {"error": "Account temporarily locked. Try again later."}
 
     # Check if account is suspended
     if user.get("status") == "suspended":
-        _log_login(user["id"], ip_address, user_agent, "blocked")
+        _log_login(user["id"], ip_address, user_agent, "blocked", email)
         return {"error": "Account suspended. Contact support."}
 
     # Verify password (bcrypt is constant-time internally)
     if not bcrypt.checkpw(password.encode(), user["password_hash"].encode()):
-        _log_login(user["id"], ip_address, user_agent, "failed_wrong_password")
+        _log_login(user["id"], ip_address, user_agent, "failed_wrong_password", email)
         _increment_failed_login(user["id"])
         return {"error": "Invalid email or password."}
 
     # Success — reset failed login counter
     _reset_failed_login(user["id"])
-    _log_login(user["id"], ip_address, user_agent, "success")
+    _log_login(user["id"], ip_address, user_agent, "success", email)
     execute("UPDATE users SET last_active_at = NOW() WHERE id = %s", (user["id"],))
 
     token = create_token(user["email"], user["role"], user["id"])
-    return {"token": token, "user": {"email": user["email"], "role": user["role"]}}
+    return {"token": token, "user": {"id": user["id"], "email": user["email"], "role": user["role"]}}
 
 
 def change_password(user_id: int, old_password: str, new_password: str) -> dict:
@@ -787,15 +787,15 @@ def change_password(user_id: int, old_password: str, new_password: str) -> dict:
     return {"success": True, "message": "Password changed successfully."}
 
 
-def _log_login(user_id, ip_address: str, user_agent: str, result: str):
+def _log_login(user_id, ip_address: str, user_agent: str, result: str, email: str = ""):
     """Record login attempt in login_logs table."""
     if not user_id:
         return
     try:
         execute(
-            """INSERT INTO login_logs (user_id, ip_address, user_agent, result)
-               VALUES (%s, %s, %s, %s)""",
-            (user_id, ip_address or "0.0.0.0", user_agent or "", result)
+            """INSERT INTO login_logs (user_id, user_email, ip_address, user_agent, result)
+               VALUES (%s, %s, %s, %s, %s)""",
+            (user_id, email or "", ip_address or "0.0.0.0", user_agent or "", result)
         )
     except Exception as e:
         logger.error("Failed to log login: %s", e)
