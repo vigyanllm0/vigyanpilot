@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en-IN">
+<head>
+<!-- Google tag (gtag.js) -->
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('consent', 'default', {
+    'ad_storage': 'denied',
+    'ad_user_data': 'denied',
+    'ad_personalization': 'denied',
+    'analytics_storage': 'denied',
+    'region': ['AT','BE','BG','HR','CY','CZ','DK','EE','FI','FR','DE','GR','HU','IE','IT','LV','LT','LU','MT','NL','PL','PT','RO','SK','SI','ES','SE','IS','LI','NO','GB','CH']
+  });
+  gtag('consent', 'default', {
+    'ad_storage': 'granted',
+    'ad_user_data': 'granted',
+    'ad_personalization': 'granted',
+    'analytics_storage': 'granted'
+  });
+  try {
+    var vlcs = JSON.parse(localStorage.getItem('vigyanllm_cookie_consent') || 'null');
+    if (vlcs && vlcs.consent === 'accepted') {
+      gtag('consent', 'update', { 'ad_storage': 'granted', 'ad_user_data': 'granted', 'ad_personalization': 'granted', 'analytics_storage': 'granted' });
+    } else if (vlcs && vlcs.consent === 'declined') {
+      gtag('consent', 'update', { 'ad_storage': 'denied', 'ad_user_data': 'denied', 'ad_personalization': 'denied', 'analytics_storage': 'denied' });
+    }
+  } catch (e) {}
+
+  gtag('set', 'ads_data_redaction', true);
+</script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PB0XMF4GEH"></script>
+<script>
+  gtag('js', new Date());
+  gtag('config', 'G-PB0XMF4GEH');
+</script>
+
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-KRP5LLPR');</script>
+<!-- End Google Tag Manager -->
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CRISPR gRNA Design: PAM Selection and Off-Target Scoring</title>
+  <link rel="stylesheet" href="/design-tokens.css">
+<link rel="manifest" href="/manifest.json" />
+<link rel="sitemap" type="application/xml" href="/sitemap.xml" />
+<link rel="alternate" type="application/rss+xml" title="VigyanLLM Blog RSS" href="/blog/rss.xml" />
+<meta name="theme-color" content="#0F172A" />
+<meta name="twitter:image" content="https://www.vigyanllm.in/poster.png">
+<meta name="twitter:description" content="CRISPR gRNA design walkthrough: PAM identification, on-target efficiency scoring, off-target evaluation, and a TP53 exon 7 worked example.">
+<meta name="twitter:title" content="CRISPR gRNA Design: PAM Selection and Off-Target Scoring">
+<meta name="twitter:card" content="summary_large_image">
+<meta property="og:site_name" content="VigyanLLM">
+<meta property="og:image" content="https://www.vigyanllm.in/poster.png">
+  <meta name="robots" content="index, follow" />
+<meta name="author" content="VigyanLLM Private Limited" />
+<meta name="description" content="CRISPR gRNA design walkthrough: PAM identification, on-target efficiency scoring, off-target evaluation, and a TP53 exon 7 worked example.">
+  <meta name="keywords" content="CRISPR gRNA design, guide RNA design, Cas9 PAM, off-target scoring, CRISPR genome editing, gRNA efficiency">
+  <link rel="canonical" href="https://www.vigyanllm.in/blog/crispr-grna-design-guide">
+<link rel="alternate" hreflang="en" href="https://www.vigyanllm.in/blog/crispr-grna-design-guide" />
+<link rel="alternate" hreflang="en-IN" href="https://www.vigyanllm.in/blog/crispr-grna-design-guide" />
+<link rel="alternate" hreflang="x-default" href="https://www.vigyanllm.in/blog/crispr-grna-design-guide" />
+  <meta property="og:title" content="CRISPR gRNA Design: PAM Selection and Off-Target Scoring">
+  <meta property="og:description" content="CRISPR gRNA design walkthrough with a TP53 exon 7 worked example.">
+  <meta property="og:type" content="article">
+<meta property="article:published_time" content="2026-07-21T20:46:45Z">
+<meta property="article:author" content="VigyanLLM Private Limited">
+<meta property="article:publisher" content="https://www.vigyanllm.in">
+  <meta property="og:url" content="https://www.vigyanllm.in/blog/crispr-grna-design-guide">
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&amp;family=Open+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+  
+  <style>
+    html { overflow-x: hidden; }
+    :root {
+  --navy: #0F172A;
+  --navy-light: #1E293B;
+  --white: #FFFFFF;
+  --slate: #F8FAFC;
+  --slate-border: #E2E8F0;
+  --text: #0F172A;
+  --text2: #475569;
+  --muted: #94A3B8;
+  --primary: #2563EB;
+  --bio: #059669;
+  --amber: #D97706;
+  --accent: #22D3EE;
+  --font-h: 'Montserrat', sans-serif;
+  --font-b: 'Open Sans', sans-serif;
+  --bg: #FFFFFF;
+  --border: #E2E8F0;
+  --surface: #F8FAFC;
+  --space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-5:20px;--space-6:24px;--space-8:32px;--space-10:40px;--space-12:48px;--space-16:64px;--space-20:80px;--space-24:96px;--max-w: 1100px;
+  --sec-p: 100px;
+  --blue: #1565C0;
+  --blue-light: #42A5F5;
+  --blue-bg: #E3F2FD;
+  --outline: #E2E5EA;
+  --black: #0A0A0F;
+  --surface-alt: #F5F7FA;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--surface);color:var(--text);font-family:var(--font-b);line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{text-decoration:none;color:inherit}
+img{max-width:100%}
+nav{position:sticky;top:0;background:var(--navy);z-index:1000;height:80px;border-bottom:1px solid rgba(255,255,255,.08)}
+.nav-inner{display:flex;align-items:center;height:100%;max-width:var(--max-w);margin:0 auto;padding:0 16px}
+.nav-brand{display:flex;align-items:center;gap:12px;color:#fff;font-family:var(--font-h);font-size:20px;font-weight:800;flex-shrink:0}
+.nav-brand img{width:70px;height:70px;border-radius:8px}
+
+.nav-links{display:flex;gap:8px;align-items:center;margin-left:24px}
+.nav-links>a,.drop-trigger{font-family:var(--font-h);font-size:14px;color:rgba(255,255,255,.85);font-weight:700;cursor:pointer;padding:8px 14px;text-transform:uppercase;letter-spacing:.05em;transition:color .15s;white-space:nowrap;border-radius:6px}
+.nav-links>a:hover,.drop-trigger:hover{color:#fff;background:rgba(255,255,255,.08)}
+.drop-wrap{position:relative;display:inline-block}
+.drop-menu{display:none;position:absolute;top:100%;left:-16px;background:#fff;border:1px solid var(--outline);border-radius:12px;min-width:240px;padding:8px;z-index:1001;box-shadow:0 12px 40px rgba(0,0,0,.12);opacity:0;transform:translateY(4px);transition:opacity .2s,transform .2s}
+.drop-wrap:hover .drop-menu{display:block;opacity:1;transform:translateY(0)}
+.drop-menu a{display:block;padding:10px 16px;font-size:13px;color:var(--text2);border-radius:8px;font-weight:500;transition:all .12s}
+.drop-menu a:hover{background:var(--blue-bg);color:var(--blue);padding-left:20px}
+.nav-right{display:flex;align-items:center;gap:14px;margin-left:auto}
+.nav-btns{display:flex;flex-direction:row;align-items:center;gap:10px}
+.nav-search-wrap{position:relative;display:flex;align-items:center}
+.nav-search-wrap input{width:200px;padding:8px 36px 8px 12px;border-radius:8px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:#fff;font-family:var(--font-b);font-size:13px;outline:none;transition:all .2s}
+.nav-search-wrap input::placeholder{color:rgba(255,255,255,.4)}
+.nav-search-wrap input:focus{border-color:rgba(255,255,255,.4);background:rgba(255,255,255,.12);width:260px}
+.nav-search-wrap .ns-icon{position:absolute;right:10px;color:rgba(255,255,255,.4);pointer-events:none;display:flex}
+.nav-search-results{position:absolute;top:calc(100% + 8px);right:0;width:360px;background:#fff;border-radius:12px;box-shadow:0 12px 48px rgba(0,0,0,.25);overflow:hidden;display:none;z-index:1001}
+.nav-search-results.open{display:block}
+.nav-search-results .nsr-group{padding:4px 0 0}
+.nav-search-results .nsr-label{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:#94A3B8;font-weight:700;padding:6px 14px 2px}
+.nav-search-results .nsr-item{display:flex;align-items:center;gap:10px;padding:8px 14px;cursor:pointer;text-decoration:none;transition:background .1s}
+.nav-search-results .nsr-item:hover{background:#F1F5F9}
+.nav-search-results .nsr-item .r-icon{font-size:14px;flex-shrink:0}
+.nav-search-results .nsr-item .r-text{flex:1;min-width:0}
+.nav-search-results .nsr-item .r-title{font-size:12px;font-weight:600;color:#0F172A}
+.nav-search-results .nsr-item .r-desc{font-size:12px;color:#64748B;margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nav-search-no{font-size:12px;color:#94A3B8;padding:20px 14px;text-align:center}
+
+@media(max-width:900px){.nav-search-wrap input{width:140px}.nav-search-wrap input:focus{width:180px}.nav-search-results{width:280px}}
+@media(max-width:768px){.nav-search-wrap{display:none}.nav-right{gap:14px;margin-left:auto}.nav-login{padding:8px 20px;background:transparent;color:rgba(255,255,255,.8);border:1.5px solid rgba(255,255,255,.25);border-radius:8px;font-family:var(--font-b);font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;line-height:1.3;white-space:nowrap}
+.nav-profile{display:none;align-items:center;position:relative}
+.nav-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#1565C0,#22D3EE);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .2s;border:2px solid transparent;flex-shrink:0}
+.nav-avatar:hover{transform:scale(1.08);border-color:rgba(255,255,255,.4)}
+.nav-avatar span{color:#fff;font-family:var(--font-h);font-size:13px;font-weight:700;text-transform:uppercase}
+.user-popup-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center;padding:24px}
+.user-popup-overlay.open{display:flex}
+.user-popup{background:#fff;border-radius:16px;padding:24px;width:100%;max-width:340px;box-shadow:0 24px 64px rgba(0,0,0,.25);position:relative;text-align:center}
+.user-popup-close{position:absolute;top:12px;right:14px;background:none;border:none;font-size:20px;cursor:pointer;color:#94A3B8;line-height:1;padding:4px}
+.user-popup-close:hover{color:#0F172A}
+.user-popup-header{padding:8px 0 16px}
+.user-popup-avatar{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#1565C0,#22D3EE);display:flex;align-items:center;justify-content:center;margin:0 auto 10px;font-family:var(--font-h);font-size:22px;font-weight:700;color:#fff;text-transform:uppercase}
+.user-popup-email{font-size:13px;color:#64748B;word-break:break-all}
+.user-popup-item{display:block;padding:12px 16px;font-size:14px;color:#334155;cursor:pointer;text-decoration:none;border-radius:8px;transition:background .15s;text-align:center;margin-top:4px}
+.user-popup-item:hover{background:#F1F5F9;color:#0F172A}
+.user-popup-logout{color:#EF4444;margin-top:8px}
+.user-popup-logout:hover{background:#FEF2F2;color:#DC2626}
+
+.nav-cta{padding:8px 24px;background:#fff;color:var(--navy);border:none;border-radius:8px;font-family:var(--font-h);font-size:13px;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:.06em;transition:all .2s;line-height:1.3}.nav-btns{gap:3px}.nav-links{display:flex;gap:8px;align-items:center;margin-left:24px}.hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;background:none;border:none;padding:4px;z-index:1001}}
+@media(max-width:480px){.nav-inner{padding:0 8px}.nav-right{gap:14px;margin-left:auto}.nav-login{padding:4px 10px;font-size:12px;border-width:1px}.nav-cta{padding:4px 12px;font-size:12px}.nav-btns{gap:5px}.nav-links{display:none}}
+.nav-cta{padding:8px 24px;background:#fff;color:var(--navy);border:none;border-radius:8px;font-family:var(--font-h);font-size:13px;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:.06em;transition:all .2s;line-height:1.3}
+.nav-cta:hover{background:var(--blue-light);color:#fff;box-shadow:0 4px 16px rgba(21,101,192,.3)}
+.nav-login{padding:8px 20px;background:transparent;color:rgba(255,255,255,.8);border:1.5px solid rgba(255,255,255,.25);border-radius:8px;font-family:var(--font-b);font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;line-height:1.3;white-space:nowrap}
+.nav-login:hover{border-color:#fff;color:#fff;background:rgba(255,255,255,.06)}
+.hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;background:none;border:none;padding:4px;z-index:1001}
+.hamburger span{width:22px;height:2.5px;background:#fff;border-radius:2px;transition:all .3s}
+.hamburger.active span:nth-child(1){transform:rotate(45deg) translate(5px,5px)}
+.hamburger.active span:nth-child(2){opacity:0}
+.hamburger.active span:nth-child(3){transform:rotate(-45deg) translate(5px,-5px)}
+.article-body { padding: 40px 0; max-width: 800px; margin: 0 auto; }
+    .article-body h1 { font-family: var(--font-b); font-size: clamp(2rem,4vw,2.8rem); font-weight: 400; line-height: 1.1; margin-bottom: 16px; }
+    .article-body h2 { font-size: 24px; font-weight: 600; color: var(--text); margin: 40px 0 16px; }
+    .article-body h3 { font-size: 18px; font-weight: 600; color: var(--text); margin: 28px 0 12px; }
+    .article-body p { margin-bottom: 16px; color: var(--text2); font-size: 15px; line-height: 1.8; }
+    .article-body ul, .article-body ol { margin-left: 24px; margin-bottom: 16px; color: var(--text2); font-size: 15px; }
+    .article-body li { margin-bottom: 8px; }
+    .article-body strong { color: var(--text); }
+    .article-body a { color: var(--primary); text-decoration: none; }
+    .article-body a:hover { text-decoration: underline; }
+    .article-body table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 14px; }
+    .article-body th { background: var(--surface); color: var(--text); padding: 12px; text-align: left; border: 1px solid var(--border); font-size:12px; text-transform: uppercase; letter-spacing: 0.05em; }
+    .article-body td { padding: 12px; border: 1px solid var(--border); color: var(--text2); }
+    .article-body tr:nth-child(even) { background: var(--surface); }
+    .article-body .callout { background: var(--surface); border-left: 4px solid var(--primary); padding: 20px 24px; border-radius: 0 12px 12px 0; margin: 24px 0; }
+    .article-body .callout-title { font-weight: 700; color: var(--primary); margin-bottom: 8px; }
+    .article-body code { background: var(--surface); padding: 2px 6px; border-radius: 4px; font-size: 13px; color: var(--text); border: 1px solid var(--border); }
+    .hero-blog { padding: 60px 0 30px; text-align: center; border-bottom: 1px solid var(--border); }
+    .cta-box { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 36px; text-align: center; margin: 40px 0; }
+    .cta-box h3 { font-size: 20px; color: var(--text); margin-bottom: 10px; }
+    .cta-box p { color: var(--text2); margin-bottom: 20px; }
+    .cta-btn { display: inline-block; padding: 14px 32px; background: var(--primary); color: #fff; text-decoration: none; border-radius: 8px; font-weight: 700; font-size: 14px; transition: background 0.2s; }
+    .cta-btn:hover { background: #0044ff; }
+    .references { padding: 30px 0; border-top: 1px solid var(--border); margin-top: 40px; }
+    .references h2 { font-size: 20px; color: var(--text); margin-bottom: 16px; font-weight: 600; }
+    .references ol { margin-left: 24px; color: var(--text2); font-size: 14px; }
+    
+    .article-header .article-tag { display: inline-block; background: #f0e6ff; color: #7c3aed; padding: 4px 14px; border-radius: 12px; font-size:12px; font-weight: 600; margin-bottom: 16px; }
+    .article-header .article-date { color: var(--muted); font-size: 13px; }
+    .article-header .article-author { color: var(--text2); font-size: 13px; font-weight: 600; }
+    .article-header h1 { font-size: clamp(2rem,4vw,2.8rem); font-weight: 400; line-height: 1.1; margin-bottom: 16px; }
+    .article-header .subtitle { font-size: 16px; color: var(--text2); line-height: 1.6; max-width: 700px; }
+    .article-meta-bar { display: flex; gap: 16px; align-items: center; margin-bottom: 16px; flex-wrap: wrap; }
+    .author-bio { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 28px; margin: 40px 0 24px; display: flex; gap: 20px; align-items: flex-start; }
+    .author-bio-avatar { width: 60px; height: 60px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 24px; flex-shrink: 0; }
+    .author-bio h4 { font-size: 16px; color: var(--text); margin-bottom: 6px; }
+    .author-bio p { font-size: 13px; color: var(--text2); line-height: 1.6; margin-bottom: 0; }
+    .related-articles { padding: 30px 0; border-top: 1px solid var(--border); margin-top: 24px; }
+    .related-articles h2 { font-size: 20px; color: var(--text); margin-bottom: 20px; font-weight: 600; }
+    .related-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; }
+    .related-card { border: 1px solid var(--border); border-radius: 12px; padding: 20px; transition: border-color 0.2s; }
+    .related-card:hover { border-color: var(--primary); }
+    .related-card h3 { font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+    .related-card p { font-size: 12px; color: var(--text2); line-height: 1.6; margin-bottom: 0; }
+    .related-card a { color: var(--primary); font-weight: 600; }
+  .auth-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center;padding:24px}
+.auth-overlay.open{display:flex}
+.auth-modal{background:#fff;border-radius:16px;padding:36px;width:100%;max-width:400px;box-shadow:0 24px 64px rgba(0,0,0,.25);position:relative;max-height:90vh;overflow-y:auto}
+.auth-modal .close-btn{position:absolute;top:14px;right:16px;background:none;border:none;font-size:22px;cursor:pointer;color:var(--muted);line-height:1}
+.auth-modal h2{font-family:var(--font-h);font-size:20px;font-weight:800;color:var(--text);margin-bottom:2px}
+.auth-modal .sub{font-size:13px;color:var(--muted);margin-bottom:24px}
+.auth-modal .field{margin-bottom:14px}
+.auth-modal .field label{display:block;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text2);margin-bottom:5px}
+.auth-modal .field input{width:100%;padding:11px 13px;border:1px solid var(--outline);border-radius:8px;font-family:var(--font-b);font-size:14px;color:var(--text);transition:border-color .15s}
+.auth-modal .field input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(21,101,192,.1)}
+.auth-modal .auth-btn{width:100%;padding:13px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-family:var(--font-b);font-size:14px;font-weight:700;cursor:pointer;transition:opacity .15s}
+.auth-modal .auth-btn:hover{opacity:.9}
+.auth-modal .toggle-link{text-align:center;font-size:12px;color:var(--muted);margin-top:14px}
+.auth-modal .toggle-link a{color:var(--blue);font-weight:600;cursor:pointer}
+.auth-modal .auth-err{color:#DC2626;font-size:12px;text-align:center;margin-top:8px;display:none}
+
+footer{background:var(--black);color:rgba(255,255,255,.8);padding:56px 0 24px}
+.footer-grid{display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr 1fr;gap:40px;max-width:var(--max-w);margin:0 auto 32px;padding:0 16px}
+.footer-col h5{font-size:12px;text-transform:uppercase;letter-spacing:.12em;color:#fff;margin-bottom:16px;font-weight:700}
+.footer-col a{display:block;font-size:13px;color:rgba(255,255,255,.5);margin-bottom:10px;transition:color .15s}
+.footer-col a:hover{color:#fff}
+.footer-social{display:flex;gap:8px;margin-top:16px}
+.footer-social a{width:36px;height:36px;display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,.12);border-radius:8px;transition:all .3s ease}
+.footer-social a:hover{border-color:rgba(255,255,255,.3);transform:translateY(-2px);background:rgba(255,255,255,.05)}
+.footer-social svg{width:16px;height:16px;filter:grayscale(1);opacity:.5;transition:all .3s ease}
+.footer-social a:hover svg{filter:grayscale(0);opacity:1}
+.footer-bottom{max-width:var(--max-w);margin:0 auto;padding:16px 16px 0;border-top:1px solid rgba(255,255,255,.06);display:flex;font-size:12px;color:rgba(255,255,255,.35)}
+
+.mobile-menu{display:none;position:fixed;top:72px;left:0;right:0;background:var(--navy);padding:20px 24px;z-index:999;border-bottom:1px solid rgba(255,255,255,.08);max-height:calc(100vh-72px);overflow-y:auto}.mobile-menu.open{display:block}.mobile-menu .mm-group{margin-bottom:16px}.mobile-menu .mm-hdr{font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.4);font-weight:700;padding:8px 0 4px}.mobile-menu a{display:block;color:rgba(255,255,255,.7);font-size:14px;padding:10px 0;font-weight:500}.mobile-menu .mm-cta{display:block;margin-top:8px;padding:12px;background:#fff;color:var(--navy);border-radius:8px;text-align:center;font-weight:700;font-size:13px}
+
+@media(max-width:768px){.nav-links{display:none}.nav-inner{padding:0 12px}.hamburger{display:flex}}
+</style>
+  
+  <link rel="icon" type="image/png" href="/logo.png">
+<link rel="apple-touch-icon" href="/logo.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <script src="https://accounts.google.com/gsi/client?hl=en" async defer></script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.vigyanllm.in"}, {"@type": "ListItem", "position": 2, "name": "Blog", "item": "https://www.vigyanllm.in/blog"}, {"@type": "ListItem", "position": 3, "name": "CRISPR gRNA Design: PAM Selection and Off-Target Scoring", "item": "https://www.vigyanllm.in/blog/crispr-grna-design-guide"}]}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "CRISPR gRNA Design: PAM Selection and Off-Target Scoring", "description": "CRISPR gRNA design walkthrough: PAM identification, on-target efficiency scoring, off-target evaluation, and a TP53 exon 7 worked example.", "url": "https://www.vigyanllm.in/blog/crispr-grna-design-guide", "mainEntityOfPage": "https://www.vigyanllm.in/blog/crispr-grna-design-guide", "author": {"@type": "Organization", "name": "VigyanLLM Research Team", "url": "https://www.vigyanllm.in/about", "sameAs": ["https://github.com/vigyanllm", "https://www.linkedin.com/company/vigyanllm/"]}, "publisher": {"@type": "Organization", "name": "VigyanLLM Private Limited", "logo": {"@type": "ImageObject", "url": "https://www.vigyanllm.in/logo.png"}}, "datePublished": "2026-07-21", "dateModified": "2026-07-21"}</script>
+
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What is a PAM sequence in CRISPR?","acceptedAnswer":{"@type":"Answer","text":"A PAM (Protospacer Adjacent Motif) is a short DNA sequence (2-6 bp) immediately downstream of the target site on the non-target strand that Cas9 or Cas12a requires for DNA binding and cleavage. For SpCas9, the PAM is 5'-NGG-3' located 3' of the 20-nt target. Without a PAM adjacent to the target, the Cas nuclease will not cut, regardless of gRNA complementarity."}},{"@type":"Question","name":"How do I choose between Cas9 and Cas12a?","acceptedAnswer":{"@type":"Answer","text":"Choose SpCas9 when you need the broadest target range (NGG PAM is frequent in the genome), established delivery protocols, and well-characterized off-target prediction tools. Choose Cas12a (Cpf1) when you want T-rich PAMs (5'-TTTV-3') for AT-rich regions, staggered cuts with 5' overhangs, crRNA-only processing (no tracrRNA needed), and potentially lower off-target activity."}},{"@type":"Question","name":"How do I minimize CRISPR off-target effects?","acceptedAnswer":{"@type":"Answer","text":"Minimize off-targets by: (1) choosing gRNAs with high on-target scores and no close off-target matches, (2) using high-fidelity Cas9 variants (eSpCas9, HiFi Cas9), (3) truncating the gRNA to 17-18 nt, (4) co-expressing anti-CRISPR proteins as temporal regulators, (5) using paired nickases (Cas9n) with two gRNAs, and (6) validating with GUIDE-seq, CIRCLE-seq, or Digenome-seq."}},{"@type":"Question","name":"What gRNA length is optimal for Cas9?","acceptedAnswer":{"@type":"Answer","text":"The standard gRNA length for SpCas9 is 20 nucleotides. However, truncated gRNAs of 17-18 nt can reduce off-target effects without significantly compromising on-target activity. The gRNA spacer must be immediately adjacent to the PAM (5'-NGG-3') on the target strand, with the PAM positioned 3' of the target sequence."}},{"@type":"Question","name":"Can I use CRISPR for gene knock-in?","acceptedAnswer":{"@type":"Answer","text":"Yes, CRISPR can mediate gene knock-in via homology-directed repair (HDR) when a donor template with homology arms flanking the desired insertion is co-delivered with the Cas9-gRNA complex. HDR efficiency depends on cell type, cell cycle stage, donor template design (single-stranded vs double-stranded), and the use of HDR-enhancing small molecules. Typical HDR rates range from 1-50% depending on the locus and cell type."}},{"@type":"Question","name":"How do I validate CRISPR editing efficiency?","acceptedAnswer":{"@type":"Answer","text":"Validate editing by: (1) T7 endonuclease I or SURF-PR assay for bulk indel detection, (2) Sanger sequencing of the target locus, (3) next-generation sequencing (NGS) for quantitative indel profiling, (4) Western blot or qPCR for protein/mRNA-level changes, (5) functional assays specific to the target gene, and (6) off-target analysis by targeted NGS at predicted off-target sites."}}]}</script>
+<script src="/cookie-banner.js" defer></script>
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to content</a><header>
+<nav aria-label="Main navigation">
+<div class="nav-inner">
+  <a href="/" class="nav-brand">
+    <img src="/logo.png" alt="VigyanLLM Logo" width="70" height="70" style="border-radius:8px" loading="lazy">
+    <span>VigyanLLM</span>
+  </a>
+  <div class="nav-links">
+    <div class="drop-wrap">
+      <span class="drop-trigger">Products ▾</span>
+      <div class="drop-menu">
+        <a href="primer">Primer Design</a>
+        <a href="search">Sequence Search</a>
+        <a href="blast">BLAST</a>
+        <a href="msa">MSA</a>
+        <a href="pcr-analysis">PCR Analysis</a>
+        <a href="crispr-analysis">CRISPR Analysis <span style="font-size:12px;font-weight:700;color:#fff;background:#F59E0B;padding:2px 6px;border-radius:99px;line-height:1.3">Coming Soon</span></a>
+        <a href="tm-calculator">Tm Calculator</a>
+        <a href="gc-calculator">GC Calculator</a>
+        <a href="protein-docking">Protein Docking</a>
+        <a href="/docking">Molecular Docking</a>
+        <a href="/dna-3d">3D DNA Viewer</a>
+        <a href="dna-to-rna" style="display:flex;align-items:center;gap:6px">DNA → RNA Converter</a>
+        <a href="reverse-complement" style="display:flex;align-items:center;gap:6px">Reverse Complement <span style="font-size:9px;font-weight:700;color:#fff;background:#16A34A;padding:2px 7px;border-radius:99px;line-height:1.4">Free</span></a>
+        <a href="dna-to-protein" style="display:flex;align-items:center;gap:6px">DNA → Protein <span style="font-size:9px;font-weight:700;color:#fff;background:#16A34A;padding:2px 7px;border-radius:99px;line-height:1.4">Free</span></a>
+        <a href="pcr-product-calculator" style="display:flex;align-items:center;gap:6px">PCR Product Calc <span style="font-size:9px;font-weight:700;color:#fff;background:#16A34A;padding:2px 7px;border-radius:99px;line-height:1.4">Free</span></a>
+        <a href="restriction-enzyme-finder" style="display:flex;align-items:center;gap:6px">Restriction Enzyme Finder <span style="font-size:9px;font-weight:700;color:#fff;background:#16A34A;padding:2px 7px;border-radius:99px;line-height:1.4">Free</span></a>
+      </div>
+    </div>
+    <div class="drop-wrap">
+      <span class="drop-trigger">Platform ▾</span>
+      <div class="drop-menu">
+        <a href="platform">Overview</a>
+        <a href="architecture">Architecture</a>
+        <a href="problem">Problem</a>
+        <a href="solution">Solution</a>
+        <a href="compare">Compare</a>
+        <a href="roadmap">Roadmap</a>
+        <a href="about/sovereign-ai">Sovereign AI</a>
+        <a href="features/on-premises">On-Premises</a>
+      </div>
+    </div>
+    <a href="/learning-vigyanllm">Learning</a>
+    <a href="academic-partnership">Partnership</a>
+    <a href="pricing">Pricing</a>
+  </div>
+  <div class="nav-right">
+    <div class="nav-search-wrap">
+      <input type="text" id="navSearchInput" placeholder="Search tools, learning, blog..." autocomplete="off">
+      <span class="ns-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
+      <div class="nav-search-results" id="navSearchResults"></div>
+    </div>
+    <div class="nav-btns" id="navBtns">
+      <button type="button" class="nav-login" onclick="openAuthModal()">Sign in</button>
+      <button type="button" class="nav-cta" onclick="openAuthModal()">Get started</button>
+    </div>
+    <div class="nav-profile" id="navProfile" style="display:none">
+      <div class="nav-avatar" id="navAvatar" onclick="toggleUserMenu()">
+        <span class="nav-avatar-letter" id="navAvatarLetter"></span>
+      </div>
+    </div>
+    <div class="user-popup-overlay" id="userPopupOverlay" onclick="if(event.target===this)closeUserMenu()">
+      <div class="user-popup">
+        <button type="button" class="user-popup-close" onclick="closeUserMenu()">&times;</button>
+        <div class="user-popup-header">
+          <div class="user-popup-avatar" id="userPopupAvatar"></div>
+          <div class="user-popup-email" id="userPopupEmail"></div>
+        </div>
+        <a class="user-popup-item" href="primer">Dashboard</a>
+        <div class="user-popup-item user-popup-logout" onclick="logout()">Logout</div>
+      </div>
+    </div>
+  </div>
+  <button type="button" class="hamburger" id="hamburger" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</div>
+<div class="mobile-menu" id="mobile-menu">
+  <div class="mm-group"><div class="mm-hdr">Products</div>
+    <a href="primer">Primer Design</a>
+    <a href="search">Sequence Search</a>
+    <a href="blast">BLAST</a>
+    <a href="msa">MSA</a>
+    <a href="pcr-analysis">PCR Analysis</a>
+    <a href="crispr-analysis">CRISPR Analysis <span style="font-size:12px;font-weight:700;color:#fff;background:#F59E0B;padding:2px 6px;border-radius:99px;line-height:1.3">Coming Soon</span></a>
+    <a href="tm-calculator">Tm Calculator</a>
+    <a href="gc-calculator">GC Calculator</a>
+    <a href="protein-docking">Protein Docking</a>
+    <a href="/docking">Molecular Docking</a>
+        <a href="/dna-3d">3D DNA Viewer</a>
+        <a href="dna-to-rna">DNA → RNA Converter</a>
+        <a href="reverse-complement">Reverse Complement</a>
+        <a href="dna-to-protein">DNA → Protein</a>
+        <a href="pcr-product-calculator">PCR Product Calculator</a>
+        <a href="restriction-enzyme-finder">Restriction Enzyme Finder</a>
+  </div>
+  <div class="mm-group"><div class="mm-hdr">Platform</div>
+    <a href="platform">Overview</a>
+    <a href="architecture">Architecture</a>
+    <a href="problem">Problem</a>
+    <a href="solution">Solution</a>
+    <a href="compare">Compare</a>
+    <a href="roadmap">Roadmap</a>
+    <a href="about/sovereign-ai">Sovereign AI</a>
+    <a href="features/on-premises">On-Premises</a>
+  </div>
+  <div class="mm-group">
+    <a href="/learning-vigyanllm">Learning</a>
+    <a href="academic-partnership">Academic Partnership</a>
+    <a href="pricing">Pricing</a>
+    <a href="mailto:contact@vigyanllm.in">Enterprise Inquiry</a>
+  </div>
+  <a href="#" onclick="closeMobileMenu();var e=document.getElementById('navSearchInput');if(e){e.focus();e.scrollIntoView({behavior:'smooth',block:'center'})};return false" class="mm-cta" style="background:transparent;border:1px solid rgba(255,255,255,.25);color:rgba(255,255,255,.8);margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:8px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Search</a>
+  <a href="#" class="mm-cta" onclick="openAuthModal();return false">Sign in</a>
+</div>
+</nav>
+</header>
+<main id="main-content">
+
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-KRP5LLPR"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+
+
+  <div style="max-width:var(--max-w);margin:0 auto;padding:0 24px">
+    <header style="padding:50px 0 30px;border-bottom:1px solid var(--border)">
+      <div class="article-meta-bar">
+        <span class="article-tag">CRISPR</span>
+        <span class="article-date">Published: July 21, 2026</span>
+        <span class="article-author">By Hemant Sharma, Founder, VigyanLLM</span>
+      </div>
+      <h1>CRISPR gRNA Design: PAM Selection and Off-Target Scoring</h1>
+      <p class="subtitle">A practical walkthrough for designing CRISPR guide RNAs — PAM identification, on-target efficiency, off-target evaluation, and a TP53 exon 7 worked example.</p>
+    
+
+    <article class="article-body">
+      
+      <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:12px;padding:24px;margin:24px 0 32px">
+        <p style="font-weight:700;font-size:15px;margin-bottom:8px">How do you design a gRNA that cuts your target with minimal off-targets?</p>
+        <p style="color:#475569;font-size:14px">Design a CRISPR guide RNA by: (1) identifying a PAM (NGG for SpCas9) adjacent to your target, (2) scoring on-target efficiency using algorithms like Doench 2016 or Rule Set 2, (3) evaluating off-target sites by mismatch number and position, and (4) selecting the gRNA with the best balance of on-target activity and specificity.</p>
+      </div>
+
+<h2>How CRISPR-Cas9 Actually Cuts DNA</h2>
+<p>Before designing a single gRNA, it helps to understand exactly what happens at the molecular level. The <a href="/glossary/crispr">CRISPR-Cas9</a> system requires three components to cut DNA: the <strong>Cas9 protein</strong>, the <strong>guide RNA (gRNA)</strong>, and a <strong>target sequence</strong> immediately adjacent to a <a href="/glossary/pam-sequence">PAM (Protospacer Adjacent Motif)</a>.</p>
+
+<p>The gRNA is a 20-nucleotide RNA sequence complementary to the target DNA. It guides Cas9 to the correct genomic location by Watson-Crick base pairing. But Cas9 does not scan for complementarity first — it scans for <strong>PAM sequences</strong>. Only when Cas9 encounters a PAM does it unwind the adjacent DNA and check for gRNA complementarity. This means your gRNA design is fundamentally constrained by PAM availability.</p>
+
+<div class="callout">
+<div class="callout-title">Key Concept: PAM Comes First</div>
+<p>Cas9 proteins recognize PAM sequences, not gRNA sequences. SpCas9 recognizes <code>5′-NGG-3′</code> on the non-target strand. Cas12a (Cpf1) recognizes <code>5′-TTTV-3′</code> (V = A, C, or G). You cannot cut a target that lacks an adjacent PAM, regardless of how well your gRNA matches.</p>
+</div>
+
+<h2>Cas9 vs Cas12a: Choosing Your Nuclease</h2>
+<p>The two most commonly used CRISPR nucleases have distinct properties that affect gRNA design and target selection:</p>
+
+<table>
+<tr><th>Feature</th><th>SpCas9</th><th>Cas12a (Cpf1)</th></tr>
+<tr><td>PAM</td><td><code>5′-NGG-3′</code> (3′ of target)</td><td><code>5′-TTTV-3′</code> (5′ of target)</td></tr>
+<tr><td>Cut position</td><td>3 bp upstream of PAM</td><td>18-23 nt downstream of PAM</td></tr>
+<tr><td>Cut type</td><td>Blunt ends</td><td>Staggered (5′ overhangs)</td></tr>
+<tr><td>gRNA structure</td><td>crRNA + tracrRNA (or sgRNA)</td><td>crRNA only (no tracrRNA)</td></tr>
+<tr><td>PAM frequency</td><td>~1 per 8 bp (high)</td><td>~1 per 32 bp (lower)</td></tr>
+<tr><td>Multiplexing</td><td>Requires separate promoters</td><td>Self-processing crRNA array</td></tr>
+<tr><td>Off-target profile</td><td>Well-characterized</td><td>Potentially lower off-targets</td></tr>
+</table>
+
+<p><strong>Choose SpCas9 when:</strong> you need the broadest target range (NGG is frequent), established delivery protocols, and well-characterized off-target prediction tools. <strong>Choose Cas12a when:</strong> you want T-rich PAMs for AT-rich regions, staggered cuts for directional cloning, simpler gRNA processing (no tracrRNA), and potentially lower off-target activity.</p>
+
+<h2>Worked Example: TP53 Exon 7 Knockout</h2>
+<p>Let us walk through a concrete example: designing a gRNA to knock out exon 7 of the human <a href="/glossary/tumor-suppressor">TP53</a> tumor suppressor gene. This exon encodes part of the DNA-binding domain, and frameshift mutations here produce a functional null.</p>
+
+<div class="callout">
+<div class="callout-title">Target Region</div>
+<p><strong>Gene:</strong> TP53 (ENSG00000141510), exon 7<br>
+<strong>Genomic coordinates:</strong> chr17:7,674,220–7,675,100 (GRCh38)<br>
+<strong>Target sequence (example):</strong> <code>5′-ATGGCCATGGCGCGGACGCG-3′</code> (20 nt, NGG PAM underlined)<br>
+<strong>PAM:</strong> <code>CGG</code> (3′ of target on non-target strand)</p>
+</div>
+
+<h3>Step 1: Identify PAM Sites</h3>
+<p>Scan the target region for all NGG PAMs on both strands. In a 100 bp window of exon 7, you might find 4–6 NGG sites. Each one represents a potential gRNA target. List them with their positions relative to the exon boundaries.</p>
+
+<p>For our example, the forward strand contains the PAM <code>CGG</code> at position +42 from the exon 7 start. The gRNA spacer is the 20 nt immediately 5′ of this PAM on the target strand.</p>
+
+<h3>Step 2: Score On-Target Efficiency</h3>
+<p>Not all gRNAs cut with equal efficiency. On-target scoring algorithms predict how well a given gRNA will cut based on the nucleotide composition at each position. The two most widely used scorers are:</p>
+
+<ul>
+<li><strong>Doench 2016 (Rule Set 2):</strong> Scores 0–1, higher is better. Based on deep mutagenesis data from 16,000+ gRNAs in human cells. Available in the <a href="/glossary/cas-offinder">CRISPOR</a>, <a href="/glossary/chopchop">CHOPCHOP</a>, and Benchling interfaces.</li>
+<li><strong>MORENO:</strong> A newer model that accounts for chromatin accessibility and epigenetic state, improving predictions for cell-type-specific editing.</li>
+</ul>
+
+<p>For our TP53 gRNA: the spacer <code>ATGGCCATGGCGCGGACGCG</code> has a Doench 2016 score of <strong>0.72</strong> (above the 0.5 threshold, indicating good on-target activity). The G/C content is 65%, within the 40–70% optimal range.</p>
+
+<h3>Step 3: Evaluate Off-Target Sites</h3>
+<p>Off-target scoring is where most gRNA designs fail. A gRNA with perfect on-target activity is useless if it also cuts 50 other genomic loci. Off-target evaluation considers:</p>
+
+<ul>
+<li><strong>Mismatch number:</strong> Sites with ≤2 mismatches are the highest risk. Sites with 3+ mismatches are progressively less likely to be cut.</li>
+<li><strong>Mismatch position:</strong> Mismatches in the <strong>seed region</strong> (positions 1–12 from the PAM) are more disruptive than mismatches in the distal region (positions 13–20). A single mismatch in the seed can abolish cutting.</li>
+<li><strong>Mismatch type:</strong> rG:dT base pairs are poorly recognized by Cas9 and can tolerate mismatches that other types cannot.</li>
+<li><strong>Chromatin accessibility:</strong> Off-target sites in heterochromatin are less likely to be cut than those in open chromatin.</li>
+</ul>
+
+<p>For our TP53 gRNA, the top off-target site is at chr3:42,345,678 with 3 mismatches (positions 5, 11, 18) — all outside the seed region. This is a <strong>low-risk</strong> off-target. No sites with ≤2 mismatches were found in the genome.</p>
+
+<h3>Step 4: Final Selection Criteria</h3>
+<p>The optimal gRNA balances on-target efficiency with off-target specificity. Use this checklist:</p>
+
+<table>
+<tr><th>Criterion</th><th>Threshold</th><th>Our gRNA</th></tr>
+<tr><td>On-target score (Doench)</td><td>≥ 0.5</td><td>0.72 ✓</td></tr>
+<tr><td>Off-target: ≤2 mismatches</td><td>0 sites</td><td>0 ✓</td></tr>
+<tr><td>Off-target: 3 mismatches</td><td>≤ 5 sites</td><td>1 ✓</td></tr>
+<tr><td>GC content</td><td>40–70%</td><td>65% ✓</td></tr>
+<tr><td>Poly-T tract (≥4 T)</td><td>Avoid</td><td>None ✓</td></tr>
+<tr><td>Self-complementarity</td><td>No hairpin ΔG > −2</td><td>ΔG −1.1 ✓</td></tr>
+<tr><td>Genomic context</td><td>Exonic, not UTR</td><td>Exon 7 ✓</td></tr>
+</table>
+
+<h2>gRNA Design Rules That Matter</h2>
+
+<h3>Length: 20 nt Standard, 17–18 nt for Specificity</h3>
+<p>The standard gRNA spacer is 20 nucleotides. Truncated gRNAs of 17–18 nt can reduce off-target effects by 2–5 fold without significantly compromising on-target activity. The trade-off is a modest reduction in cutting efficiency at some loci.</p>
+
+<h3>GC Content: 40–70%</h3>
+<p>G/C content outside this range correlates with reduced on-target activity. Below 40%, the gRNA may not form a stable R-loop with the target. Above 70%, the gRNA may form secondary structures that prevent Cas9 binding.</p>
+
+<h3>Avoid Poly-T Tracts</h3>
+<p>Runs of 4+ thymidines (TTTT) act as RNA polymerase III termination signals when expressing gRNAs from U6 or H1 promoters. If your gRNA contains a poly-T tract, consider switching to a different PAM site or using an alternative expression system.</p>
+
+<h3>Seed Region Matters Most</h3>
+<p>The 12 nucleotides closest to the PAM (the seed region) are critical for target recognition. A single mismatch in the seed can reduce or abolish cutting. When evaluating off-target sites, prioritize those with mismatches in the seed over those with mismatches in the distal region.</p>
+
+<h2>Validating Your gRNA Experimentally</h2>
+<p>No scoring algorithm replaces experimental validation. After selecting your gRNA:</p>
+
+<ol>
+<li><strong>T7 endonuclease I assay:</strong> PCR-amplify the target locus, denature and re-anneal, then digest with T7EI. Heteroduplex DNA (from indel-containing alleles) is cleaved, producing a characteristic banding pattern on a gel.</li>
+<li><strong>Sanger sequencing:</strong> Sequence the PCR product directly. Indels appear as overlapping peaks in the chromatogram starting at the cut site.</li>
+<li><strong>Next-generation sequencing:</strong> Amplicon-seq provides quantitative indel profiling with single-nucleotide resolution. This is the gold standard for measuring editing efficiency.</li>
+<li><strong>Off-target validation:</strong> Use GUIDE-seq, CIRCLE-seq, or DISCOVER-seq to identify actual off-target cleavage events genome-wide.</li>
+</ol>
+
+
+    <section class="faq-section" style="max-width:760px;margin:40px auto 0;padding:0 24px;">
+      <h2>Frequently Asked Questions</h2>
+      <div itemscope itemtype="https://schema.org/FAQPage">
+        <div itemscope itemprop="mainEntity" itemtype="https://schema.org/Question" style="margin-bottom:16px">
+          <h3 itemprop="name">What is a PAM sequence in CRISPR?</h3>
+          <div itemprop="acceptedAnswer" itemscope itemtype="https://schema.org/Answer">
+            <p itemprop="text" style="color:#475569">A PAM (Protospacer Adjacent Motif) is a short DNA sequence (2-6 bp) immediately downstream of the target site on the non-target strand that Cas9 or Cas12a requires for DNA binding and cleavage. For SpCas9, the PAM is 5'-NGG-3' located 3' of the 20-nt target. Without a PAM adjacent to the target, the Cas nuclease will not cut, regardless of gRNA complementarity.</p>
+          </div>
+        </div>
+        <div itemscope itemprop="mainEntity" itemtype="https://schema.org/Question" style="margin-bottom:16px">
+          <h3 itemprop="name">How do I choose between Cas9 and Cas12a?</h3>
+          <div itemprop="acceptedAnswer" itemscope itemtype="https://schema.org/Answer">
+            <p itemprop="text" style="color:#475569">Choose SpCas9 when you need the broadest target range (NGG PAM is frequent in the genome), established delivery protocols, and well-characterized off-target prediction tools. Choose Cas12a (Cpf1) when you want T-rich PAMs (5'-TTTV-3') for AT-rich regions, staggered cuts with 5' overhangs, crRNA-only processing (no tracrRNA needed), and potentially lower off-target activity.</p>
+          </div>
+        </div>
+        <div itemscope itemprop="mainEntity" itemtype="https://schema.org/Question" style="margin-bottom:16px">
+          <h3 itemprop="name">How do I minimize CRISPR off-target effects?</h3>
+          <div itemprop="acceptedAnswer" itemscope itemtype="https://schema.org/Answer">
+            <p itemprop="text" style="color:#475569">Minimize off-targets by: (1) choosing gRNAs with high on-target scores and no close off-target matches, (2) using high-fidelity Cas9 variants (eSpCas9, HiFi Cas9), (3) truncating the gRNA to 17-18 nt, (4) co-expressing anti-CRISPR proteins as temporal regulators, (5) using paired nickases (Cas9n) with two gRNAs, and (6) validating with GUIDE-seq, CIRCLE-seq, or Digenome-seq.</p>
+          </div>
+        </div>
+        <div itemscope itemprop="mainEntity" itemtype="https://schema.org/Question" style="margin-bottom:16px">
+          <h3 itemprop="name">What gRNA length is optimal for Cas9?</h3>
+          <div itemprop="acceptedAnswer" itemscope itemtype="https://schema.org/Answer">
+            <p itemprop="text" style="color:#475569">The standard gRNA length for SpCas9 is 20 nucleotides. However, truncated gRNAs of 17-18 nt can reduce off-target effects without significantly compromising on-target activity. The gRNA spacer must be immediately adjacent to the PAM (5'-NGG-3') on the target strand, with the PAM positioned 3' of the target sequence.</p>
+          </div>
+        </div>
+        <div itemscope itemprop="mainEntity" itemtype="https://schema.org/Question" style="margin-bottom:16px">
+          <h3 itemprop="name">Can I use CRISPR for gene knock-in?</h3>
+          <div itemprop="acceptedAnswer" itemscope itemtype="https://schema.org/Answer">
+            <p itemprop="text" style="color:#475569">Yes, CRISPR can mediate gene knock-in via homology-directed repair (HDR) when a donor template with homology arms flanking the desired insertion is co-delivered with the Cas9-gRNA complex. HDR efficiency depends on cell type, cell cycle stage, donor template design (single-stranded vs double-stranded), and the use of HDR-enhancing small molecules. Typical HDR rates range from 1-50% depending on the locus and cell type.</p>
+          </div>
+        </div>
+        <div itemscope itemprop="mainEntity" itemtype="https://schema.org/Question" style="margin-bottom:16px">
+          <h3 itemprop="name">How do I validate CRISPR editing efficiency?</h3>
+          <div itemprop="acceptedAnswer" itemscope itemtype="https://schema.org/Answer">
+            <p itemprop="text" style="color:#475569">Validate editing by: (1) T7 endonuclease I or SURF-PR assay for bulk indel detection, (2) Sanger sequencing of the target locus, (3) next-generation sequencing (NGS) for quantitative indel profiling, (4) Western blot or qPCR for protein/mRNA-level changes, (5) functional assays specific to the target gene, and (6) off-target analysis by targeted NGS at predicted off-target sites.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+<div class="cta-box">
+<h3>Design and Score gRNAs in One Tool</h3>
+<p>The CRISPR analysis tool scores on-target efficiency, maps off-target sites, and validates PAM compatibility — built for researchers who need publication-ready gRNA designs.</p>
+<a href="/crispr-analysis" class="cta-btn">Try CRISPR Analysis →</a>
+</div>
+
+<div class="author-bio">
+<div class="author-bio-avatar">HS</div>
+<div>
+<h4>About the Author — Hemant Sharma</h4>
+<p>Hemant Sharma is the founder of VigyanLLM and a molecular biology researcher. He designs bioinformatics tools for PCR primer analysis, CRISPR guide RNA design, and epigenetics workflows.</p>
+</div>
+</div>
+
+<h2>Frequently Asked Questions</h2>
+
+<div style="margin-bottom:20px">
+<h3>What is a PAM sequence in CRISPR?</h3>
+<p style="color:var(--text2)">A PAM (Protospacer Adjacent Motif) is a short DNA sequence (2–6 bp) immediately downstream of the target site on the non-target strand that Cas9 or Cas12a requires for DNA binding and cleavage. For SpCas9, the PAM is 5′-NGG-3′ located 3′ of the 20-nt target. Without a PAM adjacent to the target, the Cas nuclease will not cut, regardless of gRNA complementarity.</p>
+</div>
+
+<div style="margin-bottom:20px">
+<h3>How do I choose between Cas9 and Cas12a?</h3>
+<p style="color:var(--text2)">Choose SpCas9 when you need the broadest target range (NGG PAM is frequent in the genome), established delivery protocols, and well-characterized off-target prediction tools. Choose Cas12a (Cpf1) when you want T-rich PAMs (5′-TTTV-3′) for AT-rich regions, staggered cuts with 5′ overhangs, crRNA-only processing (no tracrRNA needed), and potentially lower off-target activity.</p>
+</div>
+
+<div style="margin-bottom:20px">
+<h3>How do I minimize CRISPR off-target effects?</h3>
+<p style="color:var(--text2)">Minimize off-targets by: (1) choosing gRNAs with high on-target scores and no close off-target matches, (2) using high-fidelity Cas9 variants (eSpCas9, HiFi Cas9), (3) truncating the gRNA to 17–18 nt, (4) co-expressing anti-CRISPR proteins as temporal regulators, (5) using paired nickases (Cas9n) with two gRNAs, and (6) validating with GUIDE-seq, CIRCLE-seq, or Digenome-seq.</p>
+</div>
+
+<div style="margin-bottom:20px">
+<h3>What gRNA length is optimal for Cas9?</h3>
+<p style="color:var(--text2)">The standard gRNA length for SpCas9 is 20 nucleotides. However, truncated gRNAs of 17–18 nt can reduce off-target effects without significantly compromising on-target activity. The gRNA spacer must be immediately adjacent to the PAM (5′-NGG-3′) on the target strand, with the PAM positioned 3′ of the target sequence.</p>
+</div>
+
+<div style="margin-bottom:20px">
+<h3>Can I use CRISPR for gene knock-in?</h3>
+<p style="color:var(--text2)">Yes, CRISPR can mediate gene knock-in via homology-directed repair (HDR) when a donor template with homology arms flanking the desired insertion is co-delivered with the Cas9-gRNA complex. HDR efficiency depends on cell type, cell cycle stage, donor template design (single-stranded vs double-stranded), and the use of HDR-enhancing small molecules. Typical HDR rates range from 1–50% depending on the locus and cell type.</p>
+</div>
+
+<div style="margin-bottom:20px">
+<h3>How do I validate CRISPR editing efficiency?</h3>
+<p style="color:var(--text2)">Validate editing by: (1) T7 endonuclease I or SURF-PR assay for bulk indel detection, (2) Sanger sequencing of the target locus, (3) next-generation sequencing (NGS) for quantitative indel profiling, (4) Western blot or qPCR for protein/mRNA-level changes, (5) functional assays specific to the target gene, and (6) off-target analysis by targeted NGS at predicted off-target sites.</p>
+</div>
+
+<section class="related-articles">
+<h2>Related Articles</h2>
+<div class="related-grid">
+<div class="related-card">
+<h3><a href="/blog/pcr-steps">PCR Steps Explained</a></h3>
+<p>Step-by-step walkthrough of the polymerase chain reaction, from denaturation to final extension.</p>
+</div>
+<div class="related-card">
+<h3><a href="/blog/primer-dimer-fix">Primer Dimer Fix</a></h3>
+<p>Identifying and eliminating primer-dimer artifacts that can compromise PCR and qPCR results.</p>
+</div>
+<div class="related-card">
+<h3><a href="/blog/tm-calculation-methods">Tm Calculation Methods</a></h3>
+<p>Four methods for calculating primer melting temperature — from Wallace rule to SantaLucia nearest-neighbor.</p>
+</div>
+</div>
+</section>
+
+<section class="references">
+<h2>References</h2>
+<ol>
+<li>Jinek M, et al. (2012). A programmable dual-RNA-guided DNA endonuclease in adaptive bacterial immunity. <em>Science</em>, 337(6096), 816–821.</li>
+<li>Doench JG, et al. (2016). Optimized sgRNA design to maximize activity and minimize off-target effects of CRISPR-Cas9. <em>Nat Biotechnol</em>, 34(2), 184–191.</li>
+<li>Zetsche B, et al. (2015). Cpf1 is a single RNA-guided endonuclease of a class 2 CRISPR-Cas system. <em>Cell</em>, 163(3), 759–771.</li>
+<li>Tsai SQ, et al. (2015). GUIDE-seq enables genome-wide profiling of off-target cleavage by CRISPR-Cas nucleases. <em>Nat Biotechnol</em>, 33(2), 187–197.</li>
+<li>Haeussler M, et al. (2016). Evaluation of off-target and on-target scoring algorithms and integration into the guide RNA selection tool CRISPOR. <em>Genome Biol</em>, 17(1), 148.</li>
+</ol>
+</section>
+  </div>
+
+  
+
+</main>
+
+<footer>
+
+<div class="footer-grid">
+  <div class="footer-col">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+      <img src="/logo.png" alt="VigyanLLM Logo" style="width:80px;height:80px;border-radius:8px" loading="lazy">
+      <span style="font-family:var(--font-h);font-size:18px;font-weight:800;color:#fff">VigyanLLM</span>
+    </div>
+    <p style="font-size:13px;color:rgba(255,255,255,.45);line-height:1.6">Sovereign Healthcare &amp; Life Sciences AI.<br>Built in India. For the world.</p>
+    <a href="mailto:contact@vigyanllm.in" style="color:var(--blue-light);font-size:13px;display:block;margin-top:12px">contact@vigyanllm.in</a>
+    <div class="footer-social">
+      <a href="https://github.com/vigyanllm" rel="me" aria-label="GitHub"><svg fill="#fff" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg></a>
+      <a href="https://www.linkedin.com/company/vigyanllm/" rel="me" aria-label="LinkedIn"><svg fill="#0077B5" viewBox="0 0 24 24"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg></a>
+      <a href="https://www.facebook.com/vigyanllm" rel="me" aria-label="Facebook"><svg fill="#1877F2" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></a>
+    </div>
+  </div>
+  <div class="footer-col">
+    <h5>Products</h5>
+    <a href="/primer">Primer Design</a>
+    <a href="/blast">BLAST</a>
+    <a href="/msa">MSA</a>
+    <a href="/docking">Molecular Docking</a>
+    <a href="/pcr-analysis">PCR Analysis</a>
+    <a href="/tm-calculator">Tm Calculator</a>
+    <a href="/gc-calculator">GC Calculator</a>
+  </div>
+  <div class="footer-col">
+    <h5>Platform</h5>
+    <a href="/platform">Overview</a>
+    <a href="/compare">Compare</a>
+    <a href="/architecture">Architecture</a>
+    <a href="/roadmap">Roadmap</a>
+    <a href="/pricing">Pricing</a>
+  </div>
+  <div class="footer-col">
+    <h5>Resources</h5>
+    <a href="/blog">Blog</a>
+    <a href="/learning-vigyanllm">Learning</a>
+    <a href="/validation">Validation</a>
+    <a href="/cite-vigyanllm">Cite Us</a>
+    <a href="/glossary">Glossary</a>
+  </div>
+  <div class="footer-col">
+    <h5>Company</h5>
+    <a href="/about">About</a>
+    <a href="/academic-partnership">Academic Partnership</a>
+    <a href="mailto:contact@vigyanllm.in">Contact</a>
+    <a href="/terms">Terms</a>
+    <a href="/privacy">Privacy</a>
+    <a href="/cookies">Cookies</a>
+  </div>
+</div>
+<div class="footer-bottom" style="justify-content:space-between">
+  <span>© 2026 VigyanLLM Private Limited. All rights reserved.</span>
+  <span>Built with scientific rigour, not marketing hype.</span>
+</div>
+</footer>
+
+<div class="auth-overlay" id="authOverlay" onclick="if(event.target===this)closeAuthModal()">
+<div class="auth-modal">
+  <button type="button" class="close-btn" onclick="closeAuthModal()">&times;</button>
+  <h2 id="authTitle">Sign in to VigyanLLM</h2>
+  <div class="sub" id="authSub">Access your primer designs, docking results, and saved analyses.</div>
+  <div class="auth-err" id="authErr"></div>
+  <form id="authForm" onsubmit="handleAuth(event)">
+    <div class="field" id="authNameField" style="display:none">
+      <label>Full Name</label>
+      <input type="text" id="authName" placeholder="Dr. Jane Smith">
+    </div>
+    <div class="field">
+      <label>Email</label>
+      <input type="email" id="authEmail" placeholder="you@university.ac.in" required>
+    </div>
+    <div class="field">
+      <label>Password</label>
+      <input type="password" id="authPassword" placeholder="Min 8: upper, lower, digit, special" required>
+    </div>
+    <button type="submit" class="auth-btn" id="authBtn">Sign in</button>
+  </form>
+  <div class="toggle-link" id="authToggle">Don't have an account? <a onclick="toggleAuthMode()">Create one</a></div>
+</div>
+</div>
+
+<script src="/auth-shared.js"></script>
+<script src="/search-index.js"></script>
+</body>
+</html>

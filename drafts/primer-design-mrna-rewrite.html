@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en-IN">
+<head>
+<!-- Google tag (gtag.js) -->
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('consent', 'default', {
+    'ad_storage': 'denied',
+    'ad_user_data': 'denied',
+    'ad_personalization': 'denied',
+    'analytics_storage': 'denied',
+    'region': ['AT','BE','BG','HR','CY','CZ','DK','EE','FI','FR','DE','GR','HU','IE','IT','LV','LT','LU','MT','NL','PL','PT','RO','SK','SI','ES','SE','IS','LI','NO','GB','CH']
+  });
+  gtag('consent', 'default', {
+    'ad_storage': 'granted',
+    'ad_user_data': 'granted',
+    'ad_personalization': 'granted',
+    'analytics_storage': 'granted'
+  });
+  try {
+    var vlcs = JSON.parse(localStorage.getItem('vigyanllm_cookie_consent') || 'null');
+    if (vlcs && vlcs.consent === 'accepted') {
+      gtag('consent', 'update', { 'ad_storage': 'granted', 'ad_user_data': 'granted', 'ad_personalization': 'granted', 'analytics_storage': 'granted' });
+    } else if (vlcs && vlcs.consent === 'declined') {
+      gtag('consent', 'update', { 'ad_storage': 'denied', 'ad_user_data': 'denied', 'ad_personalization': 'denied', 'analytics_storage': 'denied' });
+    }
+  } catch (e) {}
+
+  gtag('set', 'ads_data_redaction', true);
+</script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PB0XMF4GEH"></script>
+<script>
+  gtag('js', new Date());
+  gtag('config', 'G-PB0XMF4GEH');
+</script>
+
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-KRP5LLPR');</script>
+<!-- End Google Tag Manager -->
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>mRNA/cDNA Primer Design: Avoid Genomic DNA Contamination</title>
+  <link rel="stylesheet" href="/design-tokens.css">
+<link rel="manifest" href="/manifest.json" />
+<link rel="sitemap" type="application/xml" href="/sitemap.xml" />
+<link rel="alternate" type="application/rss+xml" title="VigyanLLM Blog RSS" href="/blog/rss.xml" />
+<meta name="theme-color" content="#0F172A" />
+<meta name="twitter:image" content="https://www.vigyanllm.in/poster.png">
+<meta name="twitter:description" content="Diagnose and fix common TaqMan probe problems: no amplification, high background, weak signal, and high Ct variation. Real examples with sequences and concentrations.">
+<meta name="twitter:title" content="TaqMan Probe Troubleshooting Guide for qPCR (2026)">
+<meta name="twitter:card" content="summary_large_image">
+<meta property="og:site_name" content="VigyanLLM">
+<meta property="og:image" content="https://www.vigyanllm.in/poster.png">
+  <meta name="robots" content="index, follow" />
+<meta name="author" content="VigyanLLM Private Limited" />
+<meta name="description" content="Diagnose and fix common TaqMan probe problems: no amplification, high background, weak signal, and high Ct variation. Real examples with sequences and concentrations.">
+  <meta name="keywords" content="TaqMan probe troubleshooting, qPCR probe problems, no amplification TaqMan, high background qPCR, weak signal TaqMan, probe design">
+  <link rel="canonical" href="https://www.vigyanllm.in/blog/taqman-probe-troubleshooting">
+<link rel="alternate" hreflang="en" href="https://www.vigyanllm.in/blog/taqman-probe-troubleshooting" />
+<link rel="alternate" hreflang="en-IN" href="https://www.vigyanllm.in/blog/taqman-probe-troubleshooting" />
+<link rel="alternate" hreflang="x-default" href="https://www.vigyanllm.in/blog/taqman-probe-troubleshooting" />
+  <meta property="og:title" content="TaqMan Probe Troubleshooting Guide for qPCR (2026)">
+  <meta property="og:description" content="Diagnose and fix common TaqMan probe problems: no amplification, high background, weak signal, and high Ct variation. Real examples with sequences and concentrations.">
+  <meta property="og:type" content="article">
+<meta property="article:published_time" content="2026-07-21T20:46:45Z">
+<meta property="article:author" content="VigyanLLM Private Limited">
+<meta property="article:publisher" content="https://www.vigyanllm.in">
+  <meta property="og:url" content="https://www.vigyanllm.in/blog/taqman-probe-troubleshooting">
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&amp;family=Open+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+  
+  <style>
+    html { overflow-x: hidden; }
+    :root {
+  --navy: #0F172A;
+  --navy-light: #1E293B;
+  --white: #FFFFFF;
+  --slate: #F8FAFC;
+  --slate-border: #E2E8F0;
+  --text: #0F172A;
+  --text2: #475569;
+  --muted: #94A3B8;
+  --primary: #2563EB;
+  --bio: #059669;
+  --amber: #D97706;
+  --accent: #22D3EE;
+  --font-h: 'Montserrat', sans-serif;
+  --font-b: 'Open Sans', sans-serif;
+  --bg: #FFFFFF;
+  --border: #E2E8F0;
+  --surface: #F8FAFC;
+  --space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-5:20px;--space-6:24px;--space-8:32px;--space-10:40px;--space-12:48px;--space-16:64px;--space-20:80px;--space-24:96px;--max-w: 1100px;
+  --sec-p: 100px;
+  --blue: #1565C0;
+  --blue-light: #42A5F5;
+  --blue-bg: #E3F2FD;
+  --outline: #E2E5EA;
+  --black: #0A0A0F;
+  --surface-alt: #F5F7FA;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--surface);color:var(--text);font-family:var(--font-b);line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{text-decoration:none;color:inherit}
+img{max-width:100%}
+nav{position:sticky;top:0;background:var(--navy);z-index:1000;height:80px;border-bottom:1px solid rgba(255,255,255,.08)}
+.nav-inner{display:flex;align-items:center;height:100%;max-width:var(--max-w);margin:0 auto;padding:0 16px}
+.nav-brand{display:flex;align-items:center;gap:12px;color:#fff;font-family:var(--font-h);font-size:20px;font-weight:800;flex-shrink:0}
+.nav-brand img{width:70px;height:70px;border-radius:8px}
+
+.nav-links{display:flex;gap:8px;align-items:center;margin-left:24px}
+.nav-links>a,.drop-trigger{font-family:var(--font-h);font-size:14px;color:rgba(255,255,255,.85);font-weight:700;cursor:pointer;padding:8px 14px;text-transform:uppercase;letter-spacing:.05em;transition:color .15s;white-space:nowrap;border-radius:6px}
+.nav-links>a:hover,.drop-trigger:hover{color:#fff;background:rgba(255,255,255,.08)}
+.drop-wrap{position:relative;display:inline-block}
+.drop-menu{display:none;position:absolute;top:100%;left:-16px;background:#fff;border:1px solid var(--outline);border-radius:12px;min-width:240px;padding:8px;z-index:1001;box-shadow:0 12px 40px rgba(0,0,0,.12);opacity:0;transform:translateY(4px);transition:opacity .2s,transform .2s}
+.drop-wrap:hover .drop-menu{display:block;opacity:1;transform:translateY(0)}
+.drop-menu a{display:block;padding:10px 16px;font-size:13px;color:var(--text2);border-radius:8px;font-weight:500;transition:all .12s}
+.drop-menu a:hover{background:var(--blue-bg);color:var(--blue);padding-left:20px}
+.nav-right{display:flex;align-items:center;gap:14px;margin-left:auto}
+.nav-btns{display:flex;flex-direction:row;align-items:center;gap:10px}
+.nav-search-wrap{position:relative;display:flex;align-items:center}
+.nav-search-wrap input{width:200px;padding:8px 36px 8px 12px;border-radius:8px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:#fff;font-family:var(--font-b);font-size:13px;outline:none;transition:all .2s}
+.nav-search-wrap input::placeholder{color:rgba(255,255,255,.4)}
+.nav-search-wrap input:focus{border-color:rgba(255,255,255,.4);background:rgba(255,255,255,.12);width:260px}
+.nav-search-wrap .ns-icon{position:absolute;right:10px;color:rgba(255,255,255,.4);pointer-events:none;display:flex}
+.nav-search-results{position:absolute;top:calc(100% + 8px);right:0;width:360px;background:#fff;border-radius:12px;box-shadow:0 12px 48px rgba(0,0,0,.25);overflow:hidden;display:none;z-index:1001}
+.nav-search-results.open{display:block}
+.nav-search-results .nsr-group{padding:4px 0 0}
+.nav-search-results .nsr-label{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:#94A3B8;font-weight:700;padding:6px 14px 2px}
+.nav-search-results .nsr-item{display:flex;align-items:center;gap:10px;padding:8px 14px;cursor:pointer;text-decoration:none;transition:background .1s}
+.nav-search-results .nsr-item:hover{background:#F1F5F9}
+.nav-search-results .nsr-item .r-icon{font-size:14px;flex-shrink:0}
+.nav-search-results .nsr-item .r-text{flex:1;min-width:0}
+.nav-search-results .nsr-item .r-title{font-size:12px;font-weight:600;color:#0F172A}
+.nav-search-results .nsr-item .r-desc{font-size:12px;color:#64748B;margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nav-search-no{font-size:12px;color:#94A3B8;padding:20px 14px;text-align:center}
+
+@media(max-width:900px){.nav-search-wrap input{width:140px}.nav-search-wrap input:focus{width:180px}.nav-search-results{width:280px}}
+@media(max-width:768px){.nav-search-wrap{display:none}.nav-right{gap:14px;margin-left:auto}.nav-login{padding:8px 20px;background:transparent;color:rgba(255,255,255,.8);border:1.5px solid rgba(255,255,255,.25);border-radius:8px;font-family:var(--font-b);font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;line-height:1.3;white-space:nowrap}
+.nav-profile{display:none;align-items:center;position:relative}
+.nav-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#1565C0,#22D3EE);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .2s;border:2px solid transparent;flex-shrink:0}
+.nav-avatar:hover{transform:scale(1.08);border-color:rgba(255,255,255,.4)}
+.nav-avatar span{color:#fff;font-family:var(--font-h);font-size:13px;font-weight:700;text-transform:uppercase}
+.user-popup-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center;padding:24px}
+.user-popup-overlay.open{display:flex}
+.user-popup{background:#fff;border-radius:16px;padding:24px;width:100%;max-width:340px;box-shadow:0 24px 64px rgba(0,0,0,.25);position:relative;text-align:center}
+.user-popup-close{position:absolute;top:12px;right:14px;background:none;border:none;font-size:20px;cursor:pointer;color:#94A3B8;line-height:1;padding:4px}
+.user-popup-close:hover{color:#0F172A}
+.user-popup-header{padding:8px 0 16px}
+.user-popup-avatar{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#1565C0,#22D3EE);display:flex;align-items:center;justify-content:center;margin:0 auto 10px;font-family:var(--font-h);font-size:22px;font-weight:700;color:#fff;text-transform:uppercase}
+.user-popup-email{font-size:13px;color:#64748B;word-break:break-all}
+.user-popup-item{display:block;padding:12px 16px;font-size:14px;color:#334155;cursor:pointer;text-decoration:none;border-radius:8px;transition:background .15s;text-align:center;margin-top:4px}
+.user-popup-item:hover{background:#F1F5F9;color:#0F172A}
+.user-popup-logout{color:#EF4444;margin-top:8px}
+.user-popup-logout:hover{background:#FEF2F2;color:#DC2626}
+
+.nav-cta{padding:8px 24px;background:#fff;color:var(--navy);border:none;border-radius:8px;font-family:var(--font-h);font-size:13px;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:.06em;transition:all .2s;line-height:1.3}.nav-btns{gap:3px}.nav-links{display:flex;gap:8px;align-items:center;margin-left:24px}.hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;background:none;border:none;padding:4px;z-index:1001}}
+@media(max-width:480px){.nav-inner{padding:0 8px}.nav-right{gap:14px;margin-left:auto}.nav-login{padding:4px 10px;font-size:12px;border-width:1px}.nav-cta{padding:4px 12px;font-size:12px}.nav-btns{gap:5px}.nav-links{display:none}}
+.nav-cta{padding:8px 24px;background:#fff;color:var(--navy);border:none;border-radius:8px;font-family:var(--font-h);font-size:13px;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:.06em;transition:all .2s;line-height:1.3}
+.nav-cta:hover{background:var(--blue-light);color:#fff;box-shadow:0 4px 16px rgba(21,101,192,.3)}
+.nav-login{padding:8px 20px;background:transparent;color:rgba(255,255,255,.8);border:1.5px solid rgba(255,255,255,.25);border-radius:8px;font-family:var(--font-b);font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;line-height:1.3;white-space:nowrap}
+.nav-login:hover{border-color:#fff;color:#fff;background:rgba(255,255,255,.06)}
+.hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;background:none;border:none;padding:4px;z-index:1001}
+.hamburger span{width:22px;height:2.5px;background:#fff;border-radius:2px;transition:all .3s}
+.hamburger.active span:nth-child(1){transform:rotate(45deg) translate(5px,5px)}
+.hamburger.active span:nth-child(2){opacity:0}
+.hamburger.active span:nth-child(3){transform:rotate(-45deg) translate(5px,-5px)}
+.article-body { padding: 40px 0; max-width: 800px; margin: 0 auto; }
+    .article-body h1 { font-family: var(--font-b); font-size: clamp(2rem,4vw,2.8rem); font-weight: 400; line-height: 1.1; margin-bottom: 16px; }
+    .article-body h2 { font-size: 24px; font-weight: 600; color: var(--text); margin: 40px 0 16px; }
+    .article-body h3 { font-size: 18px; font-weight: 600; color: var(--text); margin: 28px 0 12px; }
+    .article-body p { margin-bottom: 16px; color: var(--text2); font-size: 15px; line-height: 1.8; }
+    .article-body ul, .article-body ol { margin-left: 24px; margin-bottom: 16px; color: var(--text2); font-size: 15px; }
+    .article-body li { margin-bottom: 8px; }
+    .article-body strong { color: var(--text); }
+    .article-body a { color: var(--primary); text-decoration: none; }
+    .article-body a:hover { text-decoration: underline; }
+    .article-body table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 14px; }
+    .article-body th { background: var(--surface); color: var(--text); padding: 12px; text-align: left; border: 1px solid var(--border); font-size:12px; text-transform: uppercase; letter-spacing: 0.05em; }
+    .article-body td { padding: 12px; border: 1px solid var(--border); color: var(--text2); }
+    .article-body tr:nth-child(even) { background: var(--surface); }
+    .article-body .callout { background: var(--surface); border-left: 4px solid var(--primary); padding: 20px 24px; border-radius: 0 12px 12px 0; margin: 24px 0; }
+    .article-body .callout-title { font-weight: 700; color: var(--primary); margin-bottom: 8px; }
+    .article-body code { background: var(--surface); padding: 2px 6px; border-radius: 4px; font-size: 13px; color: var(--text); border: 1px solid var(--border); }
+    .hero-blog { padding: 60px 0 30px; text-align: center; border-bottom: 1px solid var(--border); }
+    .cta-box { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 36px; text-align: center; margin: 40px 0; }
+    .cta-box h3 { font-size: 20px; color: var(--text); margin-bottom: 10px; }
+    .cta-box p { color: var(--text2); margin-bottom: 20px; }
+    .cta-btn { display: inline-block; padding: 14px 32px; background: var(--primary); color: #fff; text-decoration: none; border-radius: 8px; font-weight: 700; font-size: 14px; transition: background 0.2s; }
+    .cta-btn:hover { background: #0044ff; }
+    .references { padding: 30px 0; border-top: 1px solid var(--border); margin-top: 40px; }
+    .references h2 { font-size: 20px; color: var(--text); margin-bottom: 16px; font-weight: 600; }
+    .references ol { margin-left: 24px; color: var(--text2); font-size: 14px; }
+    
+    .article-header .article-tag { display: inline-block; background: #e8f0ff; color: var(--primary); padding: 4px 14px; border-radius: 12px; font-size:12px; font-weight: 600; margin-bottom: 16px; }
+    .article-header .article-date { color: var(--muted); font-size: 13px; }
+    .article-header .article-author { color: var(--text2); font-size: 13px; font-weight: 600; }
+    .article-header h1 { font-size: clamp(2rem,4vw,2.8rem); font-weight: 400; line-height: 1.1; margin-bottom: 16px; }
+    .article-header .subtitle { font-size: 16px; color: var(--text2); line-height: 1.6; max-width: 700px; }
+    .article-meta-bar { display: flex; gap: 16px; align-items: center; margin-bottom: 16px; flex-wrap: wrap; }
+    .author-bio { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 28px; margin: 40px 0 24px; display: flex; gap: 20px; align-items: flex-start; }
+    .author-bio-avatar { width: 60px; height: 60px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 24px; flex-shrink: 0; }
+    .author-bio h4 { font-size: 16px; color: var(--text); margin-bottom: 6px; }
+    .author-bio p { font-size: 13px; color: var(--text2); line-height: 1.6; margin-bottom: 0; }
+    .related-articles { padding: 30px 0; border-top: 1px solid var(--border); margin-top: 24px; }
+    .related-articles h2 { font-size: 20px; color: var(--text); margin-bottom: 20px; font-weight: 600; }
+    .related-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; }
+    .related-card { border: 1px solid var(--border); border-radius: 12px; padding: 20px; transition: border-color 0.2s; }
+    .related-card:hover { border-color: var(--primary); }
+    .related-card h3 { font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+    .related-card p { font-size: 12px; color: var(--text2); line-height: 1.6; margin-bottom: 0; }
+    .related-card a { color: var(--primary); font-weight: 600; }
+  .auth-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center;padding:24px}
+.auth-overlay.open{display:flex}
+.auth-modal{background:#fff;border-radius:16px;padding:36px;width:100%;max-width:400px;box-shadow:0 24px 64px rgba(0,0,0,.25);position:relative;max-height:90vh;overflow-y:auto}
+.auth-modal .close-btn{position:absolute;top:14px;right:16px;background:none;border:none;font-size:22px;cursor:pointer;color:var(--muted);line-height:1}
+.auth-modal h2{font-family:var(--font-h);font-size:20px;font-weight:800;color:var(--text);margin-bottom:2px}
+.auth-modal .sub{font-size:13px;color:var(--muted);margin-bottom:24px}
+.auth-modal .field{margin-bottom:14px}
+.auth-modal .field label{display:block;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text2);margin-bottom:5px}
+.auth-modal .field input{width:100%;padding:11px 13px;border:1px solid var(--outline);border-radius:8px;font-family:var(--font-b);font-size:14px;color:var(--text);transition:border-color .15s}
+.auth-modal .field input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(21,101,192,.1)}
+.auth-modal .auth-btn{width:100%;padding:13px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-family:var(--font-b);font-size:14px;font-weight:700;cursor:pointer;transition:opacity .15s}
+.auth-modal .auth-btn:hover{opacity:.9}
+.auth-modal .toggle-link{text-align:center;font-size:12px;color:var(--muted);margin-top:14px}
+.auth-modal .toggle-link a{color:var(--blue);font-weight:600;cursor:pointer}
+.auth-modal .auth-err{color:#DC2626;font-size:12px;text-align:center;margin-top:8px;display:none}
+
+footer{background:var(--black);color:rgba(255,255,255,.8);padding:56px 0 24px}
+.footer-grid{display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr 1fr;gap:40px;max-width:var(--max-w);margin:0 auto 32px;padding:0 16px}
+.footer-col h5{font-size:12px;text-transform:uppercase;letter-spacing:.12em;color:#fff;margin-bottom:16px;font-weight:700}
+.footer-col a{display:block;font-size:13px;color:rgba(255,255,255,.5);margin-bottom:10px;transition:color .15s}
+.footer-col a:hover{color:#fff}
+.footer-social{display:flex;gap:8px;margin-top:16px}
+.footer-social a{width:36px;height:36px;display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,.12);border-radius:8px;transition:all .3s ease}
+.footer-social a:hover{border-color:rgba(255,255,255,.3);transform:translateY(-2px);background:rgba(255,255,255,.05)}
+.footer-social svg{width:16px;height:16px;filter:grayscale(1);opacity:.5;transition:all .3s ease}
+.footer-social a:hover svg{filter:grayscale(0);opacity:1}
+.footer-bottom{max-width:var(--max-w);margin:0 auto;padding:16px 16px 0;border-top:1px solid rgba(255,255,255,.06);display:flex;font-size:12px;color:rgba(255,255,255,.35)}
+
+.mobile-menu{display:none;position:fixed;top:72px;left:0;right:0;background:var(--navy);padding:20px 24px;z-index:999;border-bottom:1px solid rgba(255,255,255,.08);max-height:calc(100vh-72px);overflow-y:auto}.mobile-menu.open{display:block}.mobile-menu .mm-group{margin-bottom:16px}.mobile-menu .mm-hdr{font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.4);font-weight:700;padding:8px 0 4px}.mobile-menu a{display:block;color:rgba(255,255,255,.7);font-size:14px;padding:10px 0;font-weight:500}.mobile-menu .mm-cta{display:block;margin-top:8px;padding:12px;background:#fff;color:var(--navy);border-radius:8px;text-align:center;font-weight:700;font-size:13px}
+
+@media(max-width:768px){.nav-links{display:none}.nav-inner{padding:0 12px}.hamburger{display:flex}}
+</style>
+  
+  <link rel="icon" type="image/png" href="/logo.png">
+<link rel="apple-touch-icon" href="/logo.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <script src="https://accounts.google.com/gsi/client?hl=en" async defer></script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.vigyanllm.in"}, {"@type": "ListItem", "position": 2, "name": "Blog", "item": "https://www.vigyanllm.in/blog"}, {"@type": "ListItem", "position": 3, "name": "TaqMan Probe Troubleshooting Guide for qPCR (2026)", "item": "https://www.vigyanllm.in/blog/taqman-probe-troubleshooting"}]}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "TaqMan Probe Troubleshooting Guide for qPCR (2026)", "description": "Diagnose and fix common TaqMan probe problems: no amplification, high background, weak signal, and high Ct variation. Real examples with sequences and concentrations.", "url": "https://www.vigyanllm.in/blog/taqman-probe-troubleshooting", "mainEntityOfPage": "https://www.vigyanllm.in/blog/taqman-probe-troubleshooting", "author": {"@type": "Organization", "name": "VigyanLLM Research Team", "url": "https://www.vigyanllm.in/about", "sameAs": ["https://github.com/vigyanllm", "https://www.linkedin.com/company/vigyanllm/"]}, "publisher": {"@type": "Organization", "name": "VigyanLLM Private Limited", "logo": {"@type": "ImageObject", "url": "https://www.vigyanllm.in/logo.png"}}, "datePublished": "2026-07-01", "dateModified": "2026-07-01"}</script>
+
+
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What is the most common cause of no amplification in TaqMan probe assays?","acceptedAnswer":{"@type":"Answer","text":"The most common cause is probe degradation from repeated freeze-thaw cycles. Store probes as single-use aliquots at -20°C, protected from light. Other causes include probe Tm mismatch (should be 68-72°C, 8-10°C above primer Tm) and using a master mix not formulated for probe-based qPCR."}},{"@type":"Question","name":"How do you fix high background fluorescence in TaqMan qPCR?","acceptedAnswer":{"@type":"Answer","text":"Reduce probe concentration from 300 nM to 200 nM. Check for secondary structure in the probe sequence. Switch to a double-quenched probe with an internal quencher (ZEN or TAO). Use dUTP/UDG for carryover contamination prevention. Ensure reaction plates are properly sealed."}},{"@type":"Question","name":"What probe-to-primer concentration ratio works best for TaqMan assays?","acceptedAnswer":{"@type":"Answer","text":"Start with 100 nM probe and 300 nM each primer. Standard range is 50-250 nM probe with 200-900 nM each primer. Optimise the probe in 50 nM increments. Too much probe increases background; too little reduces signal amplitude."}},{"@type":"Question","name":"Why do my TaqMan replicate Ct values vary by more than 0.5 cycles?","acceptedAnswer":{"@type":"Answer","text":"High Ct variation between replicates is usually caused by pipetting errors, insufficient template volume, or air bubbles in the plate. Use a master mix for consistency, increase template volume to 5 µL, centrifuge plates at 1000 g for 2 min before reading, and pre-warm the thermal cycler block."}},{"@type":"Question","name":"Can I use SYBR Green primers with a TaqMan probe?","acceptedAnswer":{"@type":"Answer","text":"SYBR Green primers are typically designed for shorter amplicons (70-150 bp) and may not flank the probe binding site correctly. TaqMan assays require the probe to bind between the two primers, with the probe Tm 8-10°C higher than primer Tm. Redesign primers specifically for probe-based detection."}},{"@type":"Question","name":"How do I know if my TaqMan probe has degraded?","acceptedAnswer":{"@type":"Answer","text":"Signs of probe degradation include: declining fluorescence amplitude over time, increasing baseline fluorescence, and loss of signal in positive controls. Run a fresh probe aliquot alongside the old one. If the fresh probe gives significantly better Ct values or signal amplitude, the old probe has degraded."}}]}</script>
+<script src="/cookie-banner.js" defer></script>
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to content</a><header>
+<nav aria-label="Main navigation">
+<div class="nav-inner">
+  <a href="/" class="nav-brand">
+    <img src="/logo.png" alt="VigyanLLM Logo" width="70" height="70" style="border-radius:8px" loading="lazy">
+    <span>VigyanLLM</span>
+  </a>
+  <div class="nav-links">
+    <div class="drop-wrap">
+      <span class="drop-trigger">Products ▾</span>
+      <div class="drop-menu">
+        <a href="primer">Primer Design</a>
+        <a href="search">Sequence Search</a>
+        <a href="blast">BLAST</a>
+        <a href="msa">MSA</a>
+        <a href="pcr-analysis">PCR Analysis</a>
+        <a href="crispr-analysis">CRISPR Analysis <span style="font-size:12px;font-weight:700;color:#fff;background:#F59E0B;padding:2px 6px;border-radius:99px;line-height:1.3">Coming Soon</span></a>
+        <a href="tm-calculator">Tm Calculator</a>
+        <a href="gc-calculator">GC Calculator</a>
+        <a href="protein-docking">Protein Docking</a>
+        <a href="/docking">Molecular Docking</a>
+        <a href="/dna-3d">3D DNA Viewer</a>
+        <a href="dna-to-rna" style="display:flex;align-items:center;gap:6px">DNA → RNA Converter</a>
+        <a href="reverse-complement" style="display:flex;align-items:center;gap:6px">Reverse Complement <span style="font-size:9px;font-weight:700;color:#fff;background:#16A34A;padding:2px 7px;border-radius:99px;line-height:1.4">Free</span></a>
+        <a href="dna-to-protein" style="display:flex;align-items:center;gap:6px">DNA → Protein <span style="font-size:9px;font-weight:700;color:#fff;background:#16A34A;padding:2px 7px;border-radius:99px;line-height:1.4">Free</span></a>
+        <a href="pcr-product-calculator" style="display:flex;align-items:center;gap:6px">PCR Product Calc <span style="font-size:9px;font-weight:700;color:#fff;background:#16A34A;padding:2px 7px;border-radius:99px;line-height:1.4">Free</span></a>
+        <a href="restriction-enzyme-finder" style="display:flex;align-items:center;gap:6px">Restriction Enzyme Finder <span style="font-size:9px;font-weight:700;color:#fff;background:#16A34A;padding:2px 7px;border-radius:99px;line-height:1.4">Free</span></a>
+      </div>
+    </div>
+    <div class="drop-wrap">
+      <span class="drop-trigger">Platform ▾</span>
+      <div class="drop-menu">
+        <a href="platform">Overview</a>
+        <a href="architecture">Architecture</a>
+        <a href="problem">Problem</a>
+        <a href="solution">Solution</a>
+        <a href="compare">Compare</a>
+        <a href="roadmap">Roadmap</a>
+        <a href="about/sovereign-ai">Sovereign AI</a>
+        <a href="features/on-premises">On-Premises</a>
+      </div>
+    </div>
+    <a href="/learning-vigyanllm">Learning</a>
+    <a href="academic-partnership">Partnership</a>
+    <a href="pricing">Pricing</a>
+  </div>
+  <div class="nav-right">
+    <div class="nav-search-wrap">
+      <input type="text" id="navSearchInput" placeholder="Search tools, learning, blog..." autocomplete="off">
+      <span class="ns-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
+      <div class="nav-search-results" id="navSearchResults"></div>
+    </div>
+    <div class="nav-btns" id="navBtns">
+      <button type="button" class="nav-login" onclick="openAuthModal()">Sign in</button>
+      <button type="button" class="nav-cta" onclick="openAuthModal()">Get started</button>
+    </div>
+    <div class="nav-profile" id="navProfile" style="display:none">
+      <div class="nav-avatar" id="navAvatar" onclick="toggleUserMenu()">
+        <span class="nav-avatar-letter" id="navAvatarLetter"></span>
+      </div>
+    </div>
+    <div class="user-popup-overlay" id="userPopupOverlay" onclick="if(event.target===this)closeUserMenu()">
+      <div class="user-popup">
+        <button type="button" class="user-popup-close" onclick="closeUserMenu()">&times;</button>
+        <div class="user-popup-header">
+          <div class="user-popup-avatar" id="userPopupAvatar"></div>
+          <div class="user-popup-email" id="userPopupEmail"></div>
+        </div>
+        <a class="user-popup-item" href="primer">Dashboard</a>
+        <div class="user-popup-item user-popup-logout" onclick="logout()">Logout</div>
+      </div>
+    </div>
+  </div>
+  <button type="button" class="hamburger" id="hamburger" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</div>
+<div class="mobile-menu" id="mobile-menu">
+  <div class="mm-group"><div class="mm-hdr">Products</div>
+    <a href="primer">Primer Design</a>
+    <a href="search">Sequence Search</a>
+    <a href="blast">BLAST</a>
+    <a href="msa">MSA</a>
+    <a href="pcr-analysis">PCR Analysis</a>
+    <a href="crispr-analysis">CRISPR Analysis <span style="font-size:12px;font-weight:700;color:#fff;background:#F59E0B;padding:2px 6px;border-radius:99px;line-height:1.3">Coming Soon</span></a>
+    <a href="tm-calculator">Tm Calculator</a>
+    <a href="gc-calculator">GC Calculator</a>
+    <a href="protein-docking">Protein Docking</a>
+    <a href="/docking">Molecular Docking</a>
+        <a href="/dna-3d">3D DNA Viewer</a>
+        <a href="dna-to-rna" style="display:flex;align-items:center;gap:6px">DNA → RNA Converter</a>
+        <a href="reverse-complement">Reverse Complement</a>
+        <a href="dna-to-protein">DNA → Protein</a>
+        <a href="pcr-product-calculator">PCR Product Calculator</a>
+        <a href="restriction-enzyme-finder">Restriction Enzyme Finder</a>
+  </div>
+  <div class="mm-group"><div class="mm-hdr">Platform</div>
+    <a href="platform">Overview</a>
+    <a href="architecture">Architecture</a>
+    <a href="problem">Problem</a>
+    <a href="solution">Solution</a>
+    <a href="compare">Compare</a>
+    <a href="roadmap">Roadmap</a>
+    <a href="about/sovereign-ai">Sovereign AI</a>
+    <a href="features/on-premises">On-Premises</a>
+  </div>
+  <div class="mm-group">
+    <a href="/learning-vigyanllm">Learning</a>
+    <a href="academic-partnership">Academic Partnership</a>
+    <a href="pricing">Pricing</a>
+    <a href="mailto:contact@vigyanllm.in">Enterprise Inquiry</a>
+  </div>
+  <a href="#" onclick="closeMobileMenu();var e=document.getElementById('navSearchInput');if(e){e.focus();e.scrollIntoView({behavior:'smooth',block:'center'})};return false" class="mm-cta" style="background:transparent;border:1px solid rgba(255,255,255,.25);color:rgba(255,255,255,.8);margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:8px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Search</a>
+  <a href="#" class="mm-cta" onclick="openAuthModal();return false">Sign in</a>
+</div>
+</nav>
+</header>
+<main id="main-content">
+
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-KRP5LLPR"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+
+
+  <div style="max-width:var(--max-w);margin:0 auto;padding:0 24px">
+    <header style="padding:50px 0 30px;border-bottom:1px solid var(--border)">
+      <div class="article-meta-bar">
+        <span class="article-tag">Advanced Primer Design</span>
+        <span class="article-date">Published: July 1, 2026</span>
+        <span class="article-author">By VigyanLLM Research Team</span>
+      </div>
+      <h1>mRNA/cDNA Primer Design: Avoid Genomic DNA Contamination</h1>
+      <p class="subtitle">Accurate gene expression analysis by RT-qPCR requires primers that amplify cDNA but not genomic DNA. Master exon-exon junction design and intron-spanning strategies for specific mRNA detection.</p>
+    
+
+    <article class="article-body">
+      
+      <h2>Why mRNA-Specific Primer Design Matters</h2>
+<p><a href="/glossary/gene-expression">Gene expression</a> analysis by RT-<a href="/pcr-analysis">qPCR</a> measures mRNA abundance by converting RNA to cDNA and amplifying the cDNA. The critical challenge is distinguishing cDNA from contaminating genomic DNA (gDNA). Two strategies address this: (1) <strong>exon-exon junction spanning</strong> — the primer spans a splice junction so it can only bind to cDNA, and (2) <strong><a href="/glossary/intron">intron</a> spanning</strong> — primers in different exons produce a large gDNA product that does not amplify efficiently.</p>
+
+<h2>Worked Example: Designing GAPDH Exon-Junction Primers</h2>
+<p>To make this concrete, here is how to design exon-exon junction primers for human <a href="/glossary/gapdh">GAPDH</a> (NM_002046.7), a common housekeeping gene used in normalisation:</p>
+
+<div class="callout">
+  <div class="callout-title">Worked Example: GAPDH Exon 2→3 Junction Primer</div>
+<p><strong>Gene:</strong> Human GAPDH (NM_002046.7)</p>
+<p><strong>Exon-exon junction:</strong> Exon 2 → Exon 3 (constitutive, present in all splice variants)</p>
+<p><strong>Forward primer:</strong> <code>5′-GTCTCCTCTGACTTCAACAGCG-3′</code></p>
+<p><strong>Junction location:</strong> Bases 1–14 from Exon 2, bases 15–22 from Exon 3</p>
+<p><strong>3′ end position:</strong> 3 bases into Exon 3 (crosses the splice junction)</p>
+
+<table>
+<tr><th>Parameter</th><th>Value</th><th>Why</th></tr>
+<tr><td>Primer length</td><td>22 nt</td><td>Specificity for GAPDH</td></tr>
+<tr><td>Tm</td><td>63.8°C</td><td>Within 60–65°C optimal range</td></tr>
+<tr><td>GC%</td><td>59%</td><td>Within 50–60% optimal range</td></tr>
+<tr><td>Amplicon size</td><td>131 bp</td><td>Efficient qPCR amplification</td></tr>
+<tr><td>gDNA product</td><td>>5 kb (intron 2)</td><td>Does not amplify under standard conditions</td></tr>
+</table>
+</div>
+
+<p>The forward primer crosses the Exon 2→3 junction. When aligned to genomic DNA, the 3′ end lands in a 1.2 kb intron, so extension cannot occur. The reverse primer (<code>5′-ACCACCCTGTTGCTGTAGCCAA-3′</code>) binds entirely within Exon 3. Together they produce a 131 bp cDNA product and no gDNA product.</p>
+
+<h2>Exon-Exon Junction Primers</h2>
+<p>An exon-exon junction primer has 3–6 bases on one side of a splice junction and the remaining bases on the other. The 3′ end should cross the junction to ensure extension cannot occur from gDNA. Typically 5–10 bases on each side. Check <a href="/glossary/ensembl">Ensembl</a> or UCSC for annotated isoforms and avoid regions subject to <a href="/glossary/alternative-splicing">alternative splicing</a>. Always validate by running a gDNA-only control (no RT).</p>
+
+<h2>Intron-Spanning Primer Pairs</h2>
+<p>Forward primer in one <a href="/glossary/exon">exon</a>, reverse in a downstream exon with the intron(s) in between. The cDNA product is 80–250 bp; the gDNA product is 500 bp to >10 kb and does not amplify under short extension times (30–40 s). The intron should be at least 500 bp. Always include a no-RT control to verify gDNA exclusion.</p>
+
+<h2>Primer Design Workflow for mRNA Targets</h2>
+<ol>
+<li>Obtain the mRNA sequence from RefSeq (NM_ accession) or Ensembl.</li>
+<li>Identify constitutive exon-exon junctions present in all transcript variants.</li>
+<li>Design primers: length 20–24 nt, <a href="/tm-calculator">Tm</a> 60–65°C, GC 50–60%, <a href="/glossary/amplicon">amplicon</a> 80–200 bp, with junction or intron-spanning design.</li>
+<li>Check <a href="/glossary/diagnostic-specificity">specificity</a> with NCBI <a href="/blast">Primer-BLAST</a> or the <a href="/primer">primer design tool</a> specificity checker.</li>
+<li>Validate by RT-qPCR with melt curve analysis.</li>
+</ol>
+
+<h2>Validating mRNA-Specific Primers</h2>
+<ul>
+<li><strong>Standard curve:</strong> R² > 0.99 and 90–110% efficiency.</li>
+<li><strong>Melt curve:</strong> Single peak confirms specificity. See <a href="/blog/primer-dimer-fix">primer dimer guide</a> for multiple peaks.</li>
+<li><strong>No-RT control:</strong> Ct > 35 confirms no gDNA contamination.</li>
+<li><strong>RNA integrity:</strong> RIN > 7 for reliable results.</li>
+</ul>
+
+<h2>Common Mistakes</h2>
+<ul>
+<li>Designing in repetitive elements (use RepeatMasker).</li>
+<li>Ignoring SNPs (check <a href="/glossary/dbsnp">dbSNP</a>).</li>
+<li>Using pseudogene sequences (check for pseudogenes via <a href="/glossary/blast">BLAST</a>).</li>
+<li>Not checking off-target homology to paralogous genes.</li>
+<li>Forgetting to check mRNA <a href="/glossary/secondary-structure">secondary structure</a> in the primer binding region (use Mfold).</li>
+</ul>
+
+      <div class="cta-box">
+        <h3>Design RT-qPCR Primers with Automated Validation</h3>
+        <p>Free for researchers and professors. Check exon-exon junctions, specificity, and Tm in one step.</p>
+        <a href="/primer" class="cta-btn">Try It Free →</a>
+      </div>
+   </article></article>
+
+    <div class="author-bio">
+      <div class="author-bio-avatar">VR</div>
+      <div>
+        <h4>About the Author — VigyanLLM Research Team</h4>
+        <p>The VigyanLLM Research Team combines expertise in molecular biology, bioinformatics, and software engineering to build sovereign computational biology tools for researchers worldwide.</p>
+      </div>
+    </div>
+      <p style="font-size:12px;color:#94A3B8;margin-top:4px">References: NCBI Primer-BLAST, SantaLucia 1998 nearest-neighbour thermodynamics, MIQE guidelines for qPCR.</p>
+
+    
+      <h2>Frequently Asked Questions</h2>
+      <div itemscope itemtype="https://schema.org/FAQPage">
+        <div itemscope itemprop="mainEntity" itemtype="https://schema.org/Question" style="margin-bottom:16px">
+          <h3 itemprop="name">How do you design primers for mRNA/cDNA that avoid genomic DNA amplification?</h3>
+          <div itemprop="acceptedAnswer" itemscope itemtype="https://schema.org/Answer">
+            <p itemprop="text" style="color:#475569">Design primers across exon-exon junctions so the 3′ end crosses a splice boundary. This ensures the primer can only bind to spliced cDNA, not to intron-containing genomic DNA. Alternatively, use intron-spanning primer pairs where the forward and reverse primers are in different exons separated by a large intron (>500 bp).</p>
+          </div>
+        </div>
+        <div itemscope itemprop="mainEntity" itemtype="https://schema.org/Question" style="margin-bottom:16px">
+          <h3 itemprop="name">What is the difference between exon-exon junction and intron-spanning primers?</h3>
+          <div itemprop="acceptedAnswer" itemscope itemtype="https://schema.org/Answer">
+            <p itemprop="text" style="color:#475569">Exon-exon junction primers cross a splice junction so they physically cannot bind to genomic DNA. Intron-spanning primers are in separate exons and produce a very large gDNA product that does not amplify efficiently under standard PCR conditions. Junction primers are more rigorous but require knowing the exact splice site.</p>
+          </div>
+        </div>
+        <div itemscope itemprop="mainEntity" itemtype="https://schema.org/Question" style="margin-bottom:16px">
+          <h3 itemprop="name">How do you verify that cDNA primers are specific to mRNA and not gDNA?</h3>
+          <div itemprop="acceptedAnswer" itemscope itemtype="https://schema.org/Answer">
+            <p itemprop="text" style="color:#475569">Run three controls: (1) No-RT control (cDNA synthesized without reverse transcriptase) should show no amplification or Ct >35. (2) gDNA-only control should show no product on a gel. (3) BLAST the primer pair against the genomic sequence to confirm the 3′ end crosses a splice junction.</p>
+          </div>
+        </div>
+        <div itemscope itemprop="mainEntity" itemtype="https://schema.org/Question" style="margin-bottom:16px">
+          <h3 itemprop="name">What is the optimal amplicon size for RT-qPCR primers?</h3>
+          <div itemprop="acceptedAnswer" itemscope itemtype="https://schema.org/Answer">
+            <p itemprop="text" style="color:#475569">For gene expression analysis, aim for 80–200 bp amplicons. Smaller amplicons amplify more efficiently and are less sensitive to RNA degradation. For exon-exon junction designs, the amplicon should span at least one splice junction with the junction within the last 5 nucleotides of one primer’s 3′ end.</p>
+          </div>
+        </div>
+        <div itemscope itemprop="mainEntity" itemtype="https://schema.org/Question" style="margin-bottom:16px">
+          <h3 itemprop="name">Can I use the same primers for RT-PCR and qPCR?</h3>
+          <div itemprop="acceptedAnswer" itemscope itemtype="https://schema.org/Answer">
+            <p itemprop="text" style="color:#475569">Yes, if the primers meet both requirements: exon-exon junction spanning for gDNA discrimination and amplicon size 80–200 bp for efficient qPCR amplification. The primer Tm should be 60–65°C with GC content 50–60%. Run a standard curve to confirm 90–110% efficiency before using for quantification.</p>
+          </div>
+        </div>
+      </div>
+
+      <h2>Why This Matters</h2>
+      <p>Troubleshooting TaqMan probe issues systematically saves reagents, time, andvaluable samples. The most common problems—degraded probes, wrong master mix, and excess probe concentration—are all fixable with a structured diagnostic approach. Starting with the probe Tm check and storage conditions resolves most failures.</p>
+<section class="related-articles">
+      <h2>Related Articles</h2>
+      <div class="related-grid">
+        <div class="related-card">
+          <h3><a href="/blog/real-time-pcr-data-analysis">Real-Time PCR Data Analysis</a></h3>
+          <p>Analyse Ct values, efficiency, and melt curves for reliable qPCR.</p>
+        </div>
+        <div class="related-card">
+          <h3><a href="/blog/primer-dimer-fix">Primer Dimer Fix</a></h3>
+          <p>Eliminate primer dimer through design and protocol optimisation.</p>
+        </div>
+        <div class="related-card">
+          <h3><a href="/blog/primer-design-mrna">Primers for mRNA/cDNA</a></h3>
+          <p>Design exon-exon junction and intron-spanning primers for RT-qPCR.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="references">
+      <h2>References</h2>
+      <ol>
+        <li>Heid, C. A. et al. (1996). Real time quantitative PCR. <em>Genome Research</em>, 6(10), 986–994.</li>
+        <li>Livak, K. J. & Schmittgen, T. D. (2001). Analysis of relative gene expression data using real-time quantitative PCR and the 2−ΔΔCT method. <em>Methods</em>, 25(4), 402–408.</li>
+        <li>Bustin, S. A. et al. (2009). The MIQE guidelines: minimum information for publication of quantitative real-time PCR experiments. <em>Clinical Chemistry</em>, 55(4), 611–622.</li>
+      </ol>
+    </section>
+  </div>
+
+  
+
+</main>
+
+<footer>
+
+<div class="footer-grid">
+  <div class="footer-col">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+      <img src="/logo.png" alt="VigyanLLM Logo" style="width:80px;height:80px;border-radius:8px" loading="lazy">
+      <span style="font-family:var(--font-h);font-size:18px;font-weight:800;color:#fff">VigyanLLM</span>
+    </div>
+    <p style="font-size:13px;color:rgba(255,255,255,.45);line-height:1.6">Sovereign Healthcare &amp; Life Sciences AI.<br>Built in India. For the world.</p>
+    <a href="mailto:contact@vigyanllm.in" style="color:var(--blue-light);font-size:13px;display:block;margin-top:12px">contact@vigyanllm.in</a>
+    <div class="footer-social">
+      <a href="https://github.com/vigyanllm" rel="me" aria-label="GitHub"><svg fill="#fff" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg></a>
+      <a href="https://www.linkedin.com/company/vigyanllm/" rel="me" aria-label="LinkedIn"><svg fill="#0077B5" viewBox="0 0 24 24"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg></a>
+      <a href="https://www.facebook.com/vigyanllm" rel="me" aria-label="Facebook"><svg fill="#1877F2" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></a>
+      <a href="https://www.youtube.com/@VigyanLLM" rel="me" aria-label="YouTube"><svg fill="#FF0000" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+    </div>
+  </div>
+  <div class="footer-col">
+    <h5>Products</h5>
+    <a href="primer">Primer Design</a>
+    <a href="search">Sequence Search</a>
+    <a href="blast">BLAST</a>
+    <a href="msa">MSA</a>
+    <a href="pcr-analysis">PCR Analysis</a>
+    <a href="crispr-analysis">CRISPR <span style="font-size:12px;font-weight:700;color:#fff;background:#F59E0B;padding:2px 6px;border-radius:99px;line-height:1.3">Coming Soon</span></a>
+    <a href="protein-docking">Docking</a>
+  </div>
+  <div class="footer-col">
+    <h5>Platform</h5>
+    <a href="platform">Overview</a>
+    <a href="architecture">Architecture</a>
+    <a href="problem">Problem</a>
+    <a href="solution">Solution</a>
+    <a href="compare">Compare</a>
+    <a href="roadmap">Roadmap</a>
+    <a href="about/sovereign-ai">Sovereign AI</a>
+    <a href="features/on-premises">On-Premises</a>
+  </div>
+  <div class="footer-col">
+    <h5>Resources</h5>
+    <a href="blog/index">Blog</a>
+    <a href="faq">FAQ</a>
+    <a href="about">About</a>
+    <a href="demo">Demo</a>
+    <a href="/learning-vigyanllm">Learning</a>
+    <a href="academic-partnership">Academic Partnership</a>
+    <a href="pricing">Pricing</a>
+  </div>
+  <div class="footer-col">
+    <h5>Contact</h5>
+    <a href="mailto:contact@vigyanllm.in">contact@vigyanllm.in</a>
+    <a href="privacy">Privacy</a>
+    <a href="terms">Terms</a>
+    <a href="cookies">Cookies</a>
+    <a href="refund">Refund</a>
+    <a href="security">Security</a>
+    <a href="cite-vigyanllm">Cite Us</a>
+  </div>
+</div>
+<div class="footer-bottom"> <span>&copy; <script>document.write(new Date().getFullYear())</script> VigyanLLM Private Limited · Sovereign Research AI</span>
+  <span>WWW.VIGYANLLM.IN</span>
+</div>
+
+
+
+
+</footer>
+
+<script defer src="/search-index.js"></script>
+<script defer src="/auth-shared.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded',function(){var h=document.getElementById('hamburger'),m=document.getElementById('mobile-menu');if(h&&m){h.addEventListener('click',function(){h.classList.toggle('active');m.classList.toggle('open')});m.querySelectorAll('a').forEach(function(l){l.addEventListener('click',function(){m.classList.remove('open');h.classList.remove('active')})})}window.closeMobileMenu=function(){if(m){m.classList.remove('open');if(h)h.classList.remove('active')}}});
+
+</script>
+
+<div class="auth-overlay" id="auth-overlay" onclick="if(event.target===this)closeAuth()">
+  <div class="auth-modal">
+    <button type="button" class="close-btn" onclick="closeAuth()">&#10005;</button>
+    <div id="auth-content"></div>
+  </div>
+</div>
+
+</body>
+</html>

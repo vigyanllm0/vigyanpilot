@@ -1,0 +1,186 @@
+# NCBI Primer-BLAST Guide Enhancement — Aug 11 2026
+
+**Output**: `drafts/ncbi-primer-blast-guide-enhancement.html`
+**Status**: COMPLETE
+**Target page**: `/blog/ncbi-primer-blast-guide`
+**GSC data**: 47 clicks, 24,196 impressions, pos 7.4, 0.19% CTR
+
+---
+
+## Current State
+
+The page has:
+- Title: "NCBI Primer-BLAST Guide (2026): Step-by-Step with Examples"
+- Meta description: mentions "SARS-CoV-2 N1 and human GAPDH" examples
+- Worked example section with N1 + GAPDH primers
+- FAQ section with 5 items
+- JSON-LD FAQPage schema
+
+## Problem
+
+CTR is 0.19% at position 7.4 — very low. Industry average for position 7 is 2-4%.
+
+**Root cause**: The SERP snippet doesn't communicate value. Users see "NCBI Primer-BLAST Guide" and skip because:
+1. No visual cue of what they'll learn
+2. No promise of specific outcome
+3. No urgency or uniqueness
+
+## Enhancement Plan
+
+### 1. Title Optimization
+
+**Current**: `NCBI Primer-BLAST Guide (2026): Step-by-Step with Examples`
+
+**Options** (A/B test):
+- A: `How to Use NCBI Primer-BLAST: Free Primer Design Tutorial (2026)`
+- B: `NCBI Primer-BLAST Tutorial: Design Verified Primers in 5 Minutes`
+- C: `Primer-BLAST Guide: Find Specific Primers Without Off-Target Hits`
+
+**Recommendation**: Option B — promises outcome ("verified primers") + time ("5 minutes")
+
+### 2. Meta Description Optimization
+
+**Current**: Generic description
+
+**Recommended**:
+```
+Learn how to use NCBI Primer-BLAST to design specific PCR primers. Step-by-step tutorial with SARS-CoV-2 N1 and human GAPDH examples. Free tool, no installation required.
+```
+
+**Why this works**:
+- "Learn how to" — educational intent match
+- "specific PCR primers" — outcome-focused
+- "SARS-CoV-2 N1 and human GAPDH" — concrete examples (proven primers)
+- "Free tool, no installation" — removes friction
+
+### 3. Content Enhancement
+
+Add these sections above the existing content:
+
+#### Section: "What You'll Learn" (above the fold)
+
+```html
+<div class="learning-objectives">
+  <h3>What You'll Learn</h3>
+  <ul>
+    <li>How to set up Primer-BLAST for specific primer design</li>
+    <li>How to interpret E-values and alignment scores</li>
+    <li>How to avoid off-target amplification</li>
+    <li>Real examples with verified SARS-CoV-2 and human primers</li>
+  </ul>
+</div>
+```
+
+#### Section: "Quick Answer" (featured snippet bait)
+
+```html
+<div class="quick-answer">
+  <h2>How do I use NCBI Primer-BLAST?</h2>
+  <p>To design specific primers using NCBI Primer-BLAST:</p>
+  <ol>
+    <li>Go to <a href="https://www.ncbi.nlm.nih.gov/tools/primer-blast/">ncbi.nlm.nih.gov/tools/primer-blast</a></li>
+    <li>Enter your target sequence (or paste an accession number)</li>
+    <li>Set primer size (18-25 bp), Tm (57-63°C), GC% (40-60%)</li>
+    <li>Select your organism's genome database for specificity check</li>
+    <li>Click "Get Primers" — Primer-BLAST finds primers and checks specificity in one step</li>
+  </ol>
+</div>
+```
+
+#### Section: "Why Primer-BLAST Over Other Tools" (comparison table)
+
+```html
+<table>
+  <thead>
+    <tr>
+      <th>Feature</th>
+      <th>Primer-BLAST</th>
+      <th>Primer3 Only</th>
+      <th>IDT OligoAnalyzer</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Thermodynamic Tm</td>
+      <td>SantaLucia 1998</td>
+      <td>SantaLucia 1998</td>
+      <td>SantaLucia 1998</td>
+    </tr>
+    <tr>
+      <td>Specificity check</td>
+      <td>✅ Genome-wide</td>
+      <td>❌ Manual</td>
+      <td>⚠️ BLAST separately</td>
+    </tr>
+    <tr>
+      <td>Off-target detection</td>
+      <td>✅ Automatic</td>
+      <td>❌ No</td>
+      <td>⚠️ Partial</td>
+    </tr>
+    <tr>
+      <td>Free to use</td>
+      <td>✅ Yes</td>
+      <td>✅ Yes</td>
+      <td>⚠️ Limited free</td>
+    </tr>
+    <tr>
+      <td>No installation</td>
+      <td>✅ Web-based</td>
+      <td>❌ Desktop</td>
+      <td>✅ Web-based</td>
+    </tr>
+  </tbody>
+</table>
+```
+
+### 4. Internal Linking
+
+Add these links within the content:
+- Link to `/primer` tool: "Try our free primer design tool"
+- Link to `/tm-calculator`: "Calculate Tm for your primers"
+- Link to `/validation`: "See our validation benchmarks"
+- Link to `/blog/primer-design-basics`: "Read our primer design basics guide"
+
+### 5. FAQ Enhancement
+
+Add 2 more FAQ items:
+
+**Q: What's the difference between Primer-BLAST and Primer3?**
+A: Primer3 designs primers based on thermodynamic parameters (Tm, GC%, secondary structure). Primer-BLAST extends this by checking primer specificity against the entire genome — it finds primers AND verifies they won't bind to off-target sites. Use Primer-BLAST when you need specific primers for complex genomes.
+
+**Q: Can I use Primer-BLAST for qPCR primer design?**
+A: Yes. Primer-BLAST supports qPCR-specific parameters including amplicon size range (75-150 bp for SYBR Green), probe design, and intron-spanning primers. Set the "Product size range" to 75-150 for qPCR applications.
+
+## SERP Preview
+
+**Before**:
+```
+NCBI Primer-BLAST Guide (2026): Step-by-Step with Examples
+vigyanllm.in/blog/ncbi-primer-blast-guide
+Learn how to use NCBI Primer-BLAST to design PCR primers ...
+```
+
+**After**:
+```
+NCBI Primer-BLAST Tutorial: Design Verified Primers in 5 Minutes
+vigyanllm.in/blog/ncbi-primer-blast-guide
+Step-by-step guide with SARS-CoV-2 N1 and GAPDH examples. Free tool, no installation needed.
+```
+
+## Expected Impact
+
+| Metric | Current | Target | Timeframe |
+|--------|---------|--------|-----------|
+| CTR | 0.19% | 0.5-1.0% | 2-4 weeks |
+| Position | 7.4 | 5-7 | 4-6 weeks |
+| Clicks | 47 | 100-200 | 4 weeks |
+| Impressions | 24,196 | 25,000+ | 4 weeks |
+
+## Implementation Notes
+
+- DO NOT change the tool form, JS, or nav
+- DO NOT remove existing content — add above it
+- DO ensure FAQ items match JSON-LD exactly
+- DO verify all internal links work
+- DO update sitemap.xml lastmod date after changes
