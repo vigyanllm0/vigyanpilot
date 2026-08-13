@@ -114,7 +114,15 @@ def run_remote_blast(
                 poll_params["API_KEY"] = ncbi_api_key
             status_resp = requests.get(status_url, params=poll_params, timeout=30)
             status_resp.raise_for_status()
-            data = status_resp.json()
+            resp_text = status_resp.text.strip()
+            if not resp_text:
+                time.sleep(5)
+                continue
+            try:
+                data = status_resp.json()
+            except Exception:
+                time.sleep(5)
+                continue
 
             status = data.get("BlastOutput2", {}).get("report", {}).get("results", {}).get("search", {}).get("message", "")
             if "No hits" in status:

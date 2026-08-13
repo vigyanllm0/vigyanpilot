@@ -1778,6 +1778,8 @@ def create_app() -> Flask:
         try:
             from primerforge.core.sequence_fetcher import search_databases
             result = search_databases(query, database=database, organism=organism)
+            if not result.get("results") and result.get("warnings"):
+                result["error_detail"] = "NCBI services may be temporarily unavailable. Try a more specific query or different organism."
             return jsonify(result), 200
         except Exception as exc:
             logger.error("Search error: %s", exc, exc_info=True)
@@ -2498,7 +2500,7 @@ def create_app() -> Flask:
     @app.route("/api/primer/docking/consensus", methods=["POST"])
     def docking_consensus():
         if not READY:
-            return err("Core not available.", "DESIGN_FAILED", 503)
+            return err("Docking engine failed to load on the server. Please contact support or try again later.", "CORE_NOT_READY", 503)
 
         data = request.get_json(silent=True) or {}
         sequence = (data.get("sequence") or "").strip()
