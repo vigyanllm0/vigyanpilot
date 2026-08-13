@@ -71,7 +71,7 @@ def _generate_referral_code(user_email: str) -> str:
 def public_stats():
     db = get_db()
     total_users = db.execute("SELECT COUNT(*) as c FROM users").fetchone()["c"]
-    total_runs = db.execute("SELECT SUM(run_count) as c FROM users").fetchone()["c"] or 0
+    total_runs = db.execute("SELECT COUNT(*) as c FROM pipeline_jobs WHERE status = 'completed'").fetchone()["c"] or 0
     active_today = db.execute(
         "SELECT COUNT(*) as c FROM users WHERE last_login > ?",
         (time.time() - 86400,)
@@ -81,7 +81,6 @@ def public_stats():
         "researchers": total_users,
         "designs_runs": total_runs,
         "validated_primers": total_reports,
-        "partner_organizations": 18,
         "active_today": active_today,
     }), 200
 

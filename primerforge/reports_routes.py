@@ -175,7 +175,7 @@ def check_ip_allowed(user_id: int, current_ip: str, role: str = "user") -> dict:
 def public_stats():
     """Public platform stats for the homepage counter."""
     row1 = fetch_one("SELECT COUNT(*) as c FROM users")
-    row2 = fetch_one("SELECT COALESCE(SUM(balance), 0) as c FROM token_balances")
+    row2 = fetch_one("SELECT COUNT(*) as c FROM pipeline_jobs WHERE status = 'completed'")
     row3 = fetch_one("SELECT COUNT(*) as c FROM user_reports")
     total_users = row1["c"] if row1 else 0
     total_designs = row2["c"] if row2 else 0
@@ -188,7 +188,6 @@ def public_stats():
         "researchers": total_users,
         "designs_runs": total_designs,
         "validated_primers": total_reports,
-        "partner_organizations": 18,
         "active_today": active_today,
     }), 200
 
