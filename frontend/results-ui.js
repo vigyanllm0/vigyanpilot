@@ -1,4 +1,4 @@
-var _rui_api = window.VIGYAN_BACKEND_URL||'';
+var _rui_api = window.VIGYAN_BACKEND_URL||'/api';
 var _rui_observer = null;
 
 function _rui_inject(targetEl, toolName) {

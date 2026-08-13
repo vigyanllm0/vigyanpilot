@@ -349,7 +349,7 @@ footer{background:var(--black);color:rgba(255,255,255,.8);padding:56px 0 24px}
   <p>Having trouble signing in? Check the <a href="/faq" style="color:var(--blue);font-weight:600">FAQ</a> or read the <a href="/privacy" style="color:var(--blue);font-weight:600">Privacy Policy</a> to understand how your data is handled under India's DPDP-compliant architecture.</p>
 </div>
 <script>
-var API = window.VIGYAN_BACKEND_URL || '';
+var API = window.VIGYAN_BACKEND_URL || '/api';
 function $(id){return document.getElementById(id)}
 var isRegister=false;
 $('auth-toggle-link').addEventListener('click',function(){
@@ -427,7 +427,7 @@ function resendVerification(){
   var msg=document.getElementById('resend-verify-msg');
   var cnt=document.getElementById('resend-count');
   btn.disabled=true;btn.textContent='Sending...';msg.style.display='none';
-  var api=window.VIGYAN_BACKEND_URL||'';
+  var api=window.VIGYAN_BACKEND_URL||'/api';
   fetch(api+'/auth/resend-verification',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email})})
   .then(function(r){return r.json()})
   .then(function(d){
