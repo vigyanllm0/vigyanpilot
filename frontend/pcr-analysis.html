@@ -519,7 +519,7 @@ async function runCheckPrimers(){
   setLoading('check-spinner','btn-check-text','btn-check-primers',true,'Checking…');
   $('check-results').innerHTML='';
   try{
-    var d=await apiPost('/api/primer/check-primers',{template:tmpl,file_content:primerText});
+    var d=await apiPost('/primer/check-primers',{template:tmpl,file_content:primerText});
     var html='';
     if(d.parse_info){
       html+='<div class="success-card" style="margin-bottom:12px">📄 '+esc(d.parse_info)+'</div>';

@@ -981,7 +981,7 @@ async function handleDockPayment(qtyOverride) {
   errEl.classList.remove('show');
   if (!authUser) { showAuth(); return; }
   try {
-    var r = await fetch(API + '/api/payments/create-order', {
+    var r = await fetch(API + '/payments/create-order', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken },
       body: JSON.stringify({ product_id: 'dock_top_up', quantity: qty })
@@ -997,7 +997,7 @@ async function handleDockPayment(qtyOverride) {
 async function handlePlanPurchase(productId) {
   if (!authUser) { showAuth(); return; }
   try {
-    var r = await fetch(API + '/api/payments/create-order', {
+    var r = await fetch(API + '/payments/create-order', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken },
       body: JSON.stringify({ product_id: productId, quantity: 1 })
@@ -1032,7 +1032,7 @@ async function openRazorpayCheckout(order, context) {
   }
   var authToken = window.authToken || '';
   var purchasedRuns = order.runs || order.tokens || (context && context.runs) || 1;
-  var verifyEndpoint = order.verify_endpoint || '/api/payments/verify-payment';
+  var verifyEndpoint = order.verify_endpoint || '/payments/verify-payment';
   var opts = {
     key: order.key_id,
     amount: order.amount,
@@ -1118,7 +1118,7 @@ async function rehydrateSession() {
   if (sessionStorage.getItem('pf_rehydrated')) return;
   sessionStorage.setItem('pf_rehydrated', '1');
   try {
-    var r = await fetch(API + '/api/auth/me', { credentials: 'include' });
+    var r = await fetch(API + '/auth/me', { credentials: 'include' });
     if (r.ok) {
       var d = await r.json();
       if (d.user && d.user.email) {
@@ -1217,7 +1217,7 @@ function logout() {
   localStorage.removeItem('pf_user');
   authToken = ''; authUser = null; updateAuthUI();
   document.querySelectorAll('.user-menu').forEach(function(el){el.remove();});
-  fetch(API+'/api/auth/logout', {method:'POST',credentials:'include'}).catch(()=>{});
+  fetch(API+'/auth/logout', {method:'POST',credentials:'include'}).catch(()=>{});
   location.reload();
 }
 // ── Payment ─────────────────────────────────────────────────────────────
@@ -1303,7 +1303,7 @@ async function runDocking() {
   var tkn = authUser ? authToken : '';
   if (tkn) {
     try {
-      var _ur = await fetch(API + '/api/usage/check?tool=docking', { credentials: 'include', headers: { 'Authorization': 'Bearer ' + tkn } });
+      var _ur = await fetch(API + '/usage/check?tool=docking', { credentials: 'include', headers: { 'Authorization': 'Bearer ' + tkn } });
       if (_ur.ok) {
         var _ud = await _ur.json();
         if (!_ud.can_analyze) {
@@ -1330,7 +1330,7 @@ async function runDocking() {
     var authToken = window.authToken || '';
     var headers = { 'Content-Type': 'application/json' };
     if (authToken) headers['Authorization'] = 'Bearer ' + authToken;
-    var r = await fetch(API + '/api/primer/docking/consensus', {
+    var r = await fetch(API + '/primer/docking/consensus', {
       method: 'POST',
       headers: headers,
       body: JSON.stringify({ sequence: validAA, ligand_smiles_list: smilesList, top_n: topN })
@@ -1354,7 +1354,7 @@ async function runDocking() {
     var jobId = submitResult.job_id;
     // Record usage
     if (authToken) {
-      fetch(API + '/api/usage/record', {
+      fetch(API + '/usage/record', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken },
         body: JSON.stringify({ tool: 'docking', sequences_count: smilesList.length })
@@ -1367,7 +1367,7 @@ async function runDocking() {
     var pollAttempts = 0;
     var pollInterval = setInterval(async function() {
       try {
-        var pr = await fetch(API + '/api/primer/docking/status/' + jobId);
+        var pr = await fetch(API + '/primer/docking/status/' + jobId);
         if (!pr.ok) {
           clearInterval(pollInterval);
           setStage(1, 'fail', 'API error: ' + pr.status);
