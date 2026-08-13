@@ -268,7 +268,8 @@ footer{background:var(--black);color:rgba(255,255,255,.8);padding:56px 0 24px}
 <script src="/cookie-banner.js" defer></script>
 </head>
 <body>
-<a href="#main-content" class="skip-link">Skip to content</a><header>
+
+<header>
 <nav aria-label="Main navigation">
 <div class="nav-inner">
   <a href="/" class="nav-brand">
@@ -395,6 +396,7 @@ footer{background:var(--black);color:rgba(255,255,255,.8);padding:56px 0 24px}
 </div>
 </nav>
 </header>
+<a href="#main-content" class="skip-link">Skip to content</a>
 <main id="main-content">
 
 <!-- Google Tag Manager (noscript) -->
@@ -422,6 +424,28 @@ function closeAuthModal(){}
 
 </main>
 
+
+
+<script defer src="/search-index.js"></script>
+<script defer src="/auth-shared.js"></script>
+
+<script>
+// Email obfuscation — prevents plaintext harvesting by bots
+(function(){
+  var user = 'contact';
+  var domain = 'vigyanllm.in';
+  var email = user + '@' + domain;
+  var els = document.querySelectorAll('[id^="email-"]');
+  for(var i=0;i<els.length;i++){
+    if(els[i].tagName==='A'){
+      els[i].href='mailto:'+email;
+      if(!els[i].textContent.trim() || els[i].textContent.indexOf('@')===-1){
+        els[i].textContent=email;
+      }
+    }
+  }
+})();
+</script>
 <footer>
 
 <div class="footer-grid">
@@ -495,26 +519,5 @@ function closeAuthModal(){}
 
 
 </footer>
-
-<script defer src="/search-index.js"></script>
-<script defer src="/auth-shared.js"></script>
-
-<script>
-// Email obfuscation — prevents plaintext harvesting by bots
-(function(){
-  var user = 'contact';
-  var domain = 'vigyanllm.in';
-  var email = user + '@' + domain;
-  var els = document.querySelectorAll('[id^="email-"]');
-  for(var i=0;i<els.length;i++){
-    if(els[i].tagName==='A'){
-      els[i].href='mailto:'+email;
-      if(!els[i].textContent.trim() || els[i].textContent.indexOf('@')===-1){
-        els[i].textContent=email;
-      }
-    }
-  }
-})();
-</script>
 </body>
 </html>

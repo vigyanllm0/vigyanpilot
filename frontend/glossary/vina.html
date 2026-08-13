@@ -492,11 +492,12 @@ footer{background:var(--black);color:rgba(255,255,255,.8);padding:56px 0 24px}
 <script src="/cookie-banner.js" defer></script>
 </head>
 <body>
-<a href="#main-content" class="skip-link">Skip to content</a><header>
+
+<header>
 <nav aria-label="Main navigation">
 <div class="nav-inner">
   <a href="/" class="nav-brand">
-    <img src="/logo.png" alt="VigyanLLM Logo" class="site-logo" style="height:36px;width:auto;object-fit:contain" loading="lazy">
+    <img src="logo.png" alt="VigyanLLM Logo" class="site-logo" style="height:36px;width:auto;object-fit:contain" loading="lazy">
     <span>VigyanLLM</span>
   </a>
   <div class="nav-links">
@@ -552,17 +553,27 @@ footer{background:var(--black);color:rgba(255,255,255,.8);padding:56px 0 24px}
       <div class="nav-avatar" id="navAvatar" onclick="toggleUserMenu()">
         <span class="nav-avatar-letter" id="navAvatarLetter"></span>
       </div>
-    </div>
-    <div class="user-popup-overlay" id="userPopupOverlay" onclick="if(event.target===this)closeUserMenu()">
-      <div class="user-popup">
-        <button type="button" class="user-popup-close" onclick="closeUserMenu()">&times;</button>
-        <div class="user-popup-header">
-          <div class="user-popup-avatar" id="userPopupAvatar"></div>
-          <div class="user-popup-email" id="userPopupEmail"></div>
+      <div class="user-dropdown" id="userDropdown">
+        <div class="user-dropdown-header">
+          <div class="ud-name" id="udName"></div>
+          <div class="ud-email" id="udEmail"></div>
+          <div class="ud-plan" id="udPlan"></div>
         </div>
-        <a class="user-popup-item" href="primer">Dashboard</a>
-        <div class="user-popup-item user-popup-logout" onclick="logout()">Logout</div>
+        <a class="ud-item" href="/dashboard">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+          Saved Reports
+        </a>
+        <a class="ud-item" href="/dashboard#settings">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          Settings
+        </a>
+        <div class="ud-item logout" onclick="logout()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          Logout
+        </div>
       </div>
+    </div>
+  </div>
     </div>
   </div>
   <button type="button" class="hamburger" id="hamburger" aria-label="Menu">
@@ -609,6 +620,7 @@ footer{background:var(--black);color:rgba(255,255,255,.8);padding:56px 0 24px}
 </div>
 </nav>
 </header>
+<a href="#main-content" class="skip-link">Skip to content</a>
 <main id="main-content">
 
 
@@ -622,13 +634,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
     
 
-  <nav class="breadcrumb" aria-label="Breadcrumb">
-    <a href="/index">Home</a>
-    <span class="sep">&rsaquo;</span>
-    <a href="/glossary">Biology Glossary</a>
-    <span class="sep">&rsaquo;</span>
-    <span aria-current="page">Vina</span>
-  </nav>
+  
 
   
     <header class="term-header">
@@ -708,12 +714,18 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
 </main>
 
+
+
+
+
+<script defer src="/search-index.js"></script>
+<script defer src="/auth-shared.js"></script>
 <footer>
 
 <div class="footer-grid">
   <div class="footer-col">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
-      <img src="/logo.png" alt="VigyanLLM Logo" class="site-logo" style="height:36px;width:auto;object-fit:contain" loading="lazy">
+      <img src="logo.png" alt="VigyanLLM Logo" class="site-logo" style="height:36px;width:auto;object-fit:contain" loading="lazy">
       <span style="font-family:var(--font-h);font-size:18px;font-weight:800;color:#fff">VigyanLLM</span>
     </div>
     <p style="font-size:13px;color:rgba(255,255,255,.45);line-height:1.6">Sovereign Healthcare &amp; Life Sciences AI.<br>Built in India. For the world.</p>
@@ -781,10 +793,5 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
 
 </footer>
-
-
-
-<script defer src="/search-index.js"></script>
-<script defer src="/auth-shared.js"></script>
 </body>
 </html>

@@ -303,7 +303,7 @@ footer{background:var(--black);color:rgba(255,255,255,.8);padding:56px 0 24px}
 <script src="/cookie-banner.js" defer></script>
 </head>
 <body>
-<a href="#main-content" class="skip-link">Skip to content</a>
+
 <header>
 <nav aria-label="Main navigation">
 <div class="nav-inner">
@@ -431,6 +431,8 @@ footer{background:var(--black);color:rgba(255,255,255,.8);padding:56px 0 24px}
 </div>
 </nav>
 </header>
+<a href="#main-content" class="skip-link">Skip to content</a>
+
 <main id="main-content">
 
 <!-- Google Tag Manager (noscript) -->
@@ -596,6 +598,66 @@ footer{background:var(--black);color:rgba(255,255,255,.8);padding:56px 0 24px}
 
 <div class="auth-overlay" id="auth-overlay"><div class="auth-card"><div class="auth-title" id="auth-modal-title">Log in to VigyanLLM</div><div class="auth-sub" id="auth-modal-sub">Sign in to save &amp; export your results</div><div id="auth-content"></div></div></div></main>
 
+
+
+<script defer src="/search-index.js"></script>
+<script defer src="/auth-shared.js"></script>
+
+<div id="ai-widget">
+  <button type="button" id="ai-widget-toggle" aria-label="Open AI Assistant">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+  </button>
+  <div id="ai-widget-panel" hidden>
+    <div class="ai-widget-header"><span>Ask VigyanLLM</span><button type="button" class="ai-widget-close" id="ai-widget-close" aria-label="Close">&times;</button></div>
+    <div class="ai-widget-body">
+      <p>How can we help you?</p>
+      <div class="ai-widget-options">
+        <button type="button" class="ai-widget-btn" data-prompt="Tell me about the Academic Partnership Program">Tell me about the Academic Partnership Program</button>
+        <button type="button" class="ai-widget-btn" data-prompt="How do I apply for academic access?">How do I apply for academic access?</button>
+        <button type="button" class="ai-widget-btn" data-prompt="What tools are included in VigyanLLM Primer?">What tools are included in VigyanLLM Primer?</button>
+        <button type="button" class="ai-widget-btn" data-prompt="How does on-premises deployment work?">How does on-premises deployment work?</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  var hamburger = document.getElementById('hamburger');
+  var mobileMenu = document.getElementById('mobile-menu');
+  if (hamburger && mobileMenu) {
+    hamburger.addEventListener('click', function() {
+      mobileMenu.classList.toggle('open');
+    });
+    mobileMenu.querySelectorAll('a').forEach(function(link) {
+      link.addEventListener('click', function() {
+        mobileMenu.classList.remove('open');
+      });
+    });
+  }
+  var toggleBtn = document.getElementById('ai-widget-toggle');
+  var panel = document.getElementById('ai-widget-panel');
+  var closeBtn = document.getElementById('ai-widget-close');
+  if (toggleBtn && panel) {
+    toggleBtn.addEventListener('click', function() {
+      if (panel.hidden) { panel.hidden = false; setTimeout(function() { panel.classList.add('visible'); }, 10); }
+      else { panel.classList.remove('visible'); setTimeout(function() { panel.hidden = true; }, 200); }
+    });
+    if (closeBtn) {
+      closeBtn.addEventListener('click', function() {
+        panel.classList.remove('visible');
+        setTimeout(function() { panel.hidden = true; }, 200);
+      });
+    }
+  }
+  var observer = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) {
+      if (e.isIntersecting) { e.target.classList.add('visible'); }
+    });
+  }, { threshold: 0.15 });
+  document.querySelectorAll('.reveal').forEach(function(el) { observer.observe(el); });
+});
+</script>
 <footer>
 
 <div class="footer-grid">
@@ -669,64 +731,5 @@ footer{background:var(--black);color:rgba(255,255,255,.8);padding:56px 0 24px}
 
 
 </footer>
-
-<script defer src="/search-index.js"></script>
-<script defer src="/auth-shared.js"></script>
-
-<div id="ai-widget">
-  <button type="button" id="ai-widget-toggle" aria-label="Open AI Assistant">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-  </button>
-  <div id="ai-widget-panel" hidden>
-    <div class="ai-widget-header"><span>Ask VigyanLLM</span><button type="button" class="ai-widget-close" id="ai-widget-close" aria-label="Close">&times;</button></div>
-    <div class="ai-widget-body">
-      <p>How can we help you?</p>
-      <div class="ai-widget-options">
-        <button type="button" class="ai-widget-btn" data-prompt="Tell me about the Academic Partnership Program">Tell me about the Academic Partnership Program</button>
-        <button type="button" class="ai-widget-btn" data-prompt="How do I apply for academic access?">How do I apply for academic access?</button>
-        <button type="button" class="ai-widget-btn" data-prompt="What tools are included in VigyanLLM Primer?">What tools are included in VigyanLLM Primer?</button>
-        <button type="button" class="ai-widget-btn" data-prompt="How does on-premises deployment work?">How does on-premises deployment work?</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-  var hamburger = document.getElementById('hamburger');
-  var mobileMenu = document.getElementById('mobile-menu');
-  if (hamburger && mobileMenu) {
-    hamburger.addEventListener('click', function() {
-      mobileMenu.classList.toggle('open');
-    });
-    mobileMenu.querySelectorAll('a').forEach(function(link) {
-      link.addEventListener('click', function() {
-        mobileMenu.classList.remove('open');
-      });
-    });
-  }
-  var toggleBtn = document.getElementById('ai-widget-toggle');
-  var panel = document.getElementById('ai-widget-panel');
-  var closeBtn = document.getElementById('ai-widget-close');
-  if (toggleBtn && panel) {
-    toggleBtn.addEventListener('click', function() {
-      if (panel.hidden) { panel.hidden = false; setTimeout(function() { panel.classList.add('visible'); }, 10); }
-      else { panel.classList.remove('visible'); setTimeout(function() { panel.hidden = true; }, 200); }
-    });
-    if (closeBtn) {
-      closeBtn.addEventListener('click', function() {
-        panel.classList.remove('visible');
-        setTimeout(function() { panel.hidden = true; }, 200);
-      });
-    }
-  }
-  var observer = new IntersectionObserver(function(entries) {
-    entries.forEach(function(e) {
-      if (e.isIntersecting) { e.target.classList.add('visible'); }
-    });
-  }, { threshold: 0.15 });
-  document.querySelectorAll('.reveal').forEach(function(el) { observer.observe(el); });
-});
-</script>
 </body>
 </html>
