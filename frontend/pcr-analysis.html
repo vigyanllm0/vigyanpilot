@@ -464,10 +464,12 @@ function setLoading(spId,txtId,btnId,loading,label){
 }
 async function apiPost(ep,body){
   var headers={'Content-Type':'application/json'};
-  var r=await fetch(API+ep,{method:'POST',headers:headers,body:JSON.stringify(body),signal:AbortSignal.timeout(60000)});
+  var r=await fetch(API+ep,{method:'POST',headers:headers,body:JSON.stringify(body),signal:AbortSignal.timeout(50000)});
+  var ct=r.headers.get('content-type')||'';
+  if(!ct.includes('json')){var t=await r.text();throw new Error('Server returned an error page. The service may be temporarily unavailable.')}
   var text=await r.text();
   try{var d=JSON.parse(text);if(!r.ok)throw new Error(d.error||d.message||'HTTP '+r.status);return d;}
-  catch(e){if(e instanceof SyntaxError)throw new Error('Server returned: '+text.slice(0,200));throw e;}
+  catch(e){if(e instanceof SyntaxError)throw new Error('Server returned unexpected response. Please try again.');throw e;}
 }
 // ── Check Primers ─────────────────────────────────────────────────────────
 var _checkPrimerData = '';

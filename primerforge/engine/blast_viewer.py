@@ -59,6 +59,9 @@ def run_remote_blast(
 
     results = []
     error_detail = None
+    import time as _time
+    _start = _time.time()
+    _MAX_TOTAL = 55  # must finish before Vercel's 60s proxy timeout
     try:
         # Step 1: Submit BLAST job
         submit_url = "https://blast.ncbi.nlm.nih.gov/Blast.cgi"
@@ -76,7 +79,7 @@ def run_remote_blast(
         if organism:
             params["EQ_QUERY"] = f"{organism}[ORGN]"
 
-        r = requests.post(submit_url, data=params, timeout=30)
+        r = requests.post(submit_url, data=params, timeout=15)
         r.raise_for_status()
 
         # Extract RID from response
@@ -100,11 +103,14 @@ def run_remote_blast(
                 rtoe = int(m.group(1))
                 break
 
-        wait_time = rtoe if rtoe else 15
-        time.sleep(min(wait_time, 30))
+        wait_time = rtoe if rtoe else 10
+        time.sleep(min(wait_time, 10))
 
         status_url = "https://blast.ncbi.nlm.nih.gov/Blast.cgi"
-        for attempt in range(30):
+        for attempt in range(12):
+            if _time.time() - _start > _MAX_TOTAL:
+                error_detail = "BLAST polling timed out (server limit)"
+                break
             poll_params = {
                 "CMD": "Get",
                 "FORMAT_TYPE": "JSON2",
@@ -112,16 +118,16 @@ def run_remote_blast(
             }
             if ncbi_api_key:
                 poll_params["API_KEY"] = ncbi_api_key
-            status_resp = requests.get(status_url, params=poll_params, timeout=30)
+            status_resp = requests.get(status_url, params=poll_params, timeout=10)
             status_resp.raise_for_status()
             resp_text = status_resp.text.strip()
             if not resp_text:
-                time.sleep(5)
+                time.sleep(3)
                 continue
             try:
                 data = status_resp.json()
             except Exception:
-                time.sleep(5)
+                time.sleep(3)
                 continue
 
             status = data.get("BlastOutput2", {}).get("report", {}).get("results", {}).get("search", {}).get("message", "")
@@ -129,7 +135,7 @@ def run_remote_blast(
                 return {"results": [], "total": 0, "params": {"program": program, "database": db}}
             if "There are no more hits" in status or data.get("BlastOutput2", {}).get("report", {}).get("results", {}).get("search", {}).get("hits"):
                 break
-            time.sleep(5)
+            time.sleep(3)
         else:
             error_detail = "BLAST polling timed out"
             return {"results": [], "total": 0, "params": {"program": program, "database": db, "error": error_detail}}
