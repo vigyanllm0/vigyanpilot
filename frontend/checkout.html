@@ -52,7 +52,7 @@ body{background:var(--surface-alt);color:var(--text);font-family:var(--font-b);-
 .page{max-width:520px;margin:0 auto;padding:60px 20px}
 .checkout-card{background:var(--surface);border-radius:16px;box-shadow:0 4px 24px rgba(0,0,0,.06);overflow:hidden}
 .checkout-header{background:linear-gradient(135deg,#1565C0,#1E40AF);color:#fff;padding:32px 32px 28px;text-align:center}
-.checkout-header h1{font-family:var(--font-h);font-size:22px;font-weight:800;margin-bottom:4px}
+.checkout-header h1{font-family:var(--font-h);font-size:13px;font-weight:800;margin-bottom:4px}
 .checkout-header .sub{font-size:13px;opacity:.8}
 .checkout-body{padding:28px 32px 32px}
 .order-summary{background:var(--surface-alt);border-radius:12px;padding:20px;margin-bottom:24px}
@@ -60,14 +60,14 @@ body{background:var(--surface-alt);color:var(--text);font-family:var(--font-b);-
 .summary-row:last-child{border-bottom:none}
 .summary-label{font-size:13px;color:var(--text2)}
 .summary-value{font-size:14px;font-weight:600;color:var(--text)}
-.price-big{font-family:var(--font-h);font-size:28px;font-weight:900;color:var(--text);text-align:center;padding:16px 0 4px}
-.price-big .curr{font-size:16px;font-weight:700;color:var(--text2)}
+.price-big{font-family:var(--font-h);font-size:28px;font-weight:900;color:var(--text);text-align:center;padding:12px 0 4px}
+.price-big .curr{font-size:13px;font-weight:700;color:var(--text2)}
 .price-big .period{font-size:13px;font-weight:500;color:var(--muted)}
 .academic-badge{display:inline-flex;align-items:center;gap:6px;background:#DCFCE7;color:#16A34A;font-size:12px;font-weight:700;padding:4px 12px;border-radius:99px;margin:8px 0 16px}
 .feature-list{list-style:none;padding:0;margin:16px 0 24px}
 .feature-list li{font-size:13px;color:var(--text2);padding:6px 0;display:flex;align-items:center;gap:8px}
 .feature-list li .check{color:#16A34A;font-weight:700}
-.btn-proceed{display:block;width:100%;padding:14px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-family:var(--font-b);font-size:15px;font-weight:700;cursor:pointer;transition:opacity .15s;text-align:center}
+.btn-proceed{display:block;width:100%;padding:12px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-family:var(--font-b);font-size:13px;font-weight:700;cursor:pointer;transition:opacity .15s;text-align:center}
 .btn-proceed:hover{opacity:.9}
 .btn-proceed:disabled{opacity:.5;cursor:not-allowed}
 .security-note{text-align:center;font-size:11px;color:var(--muted);margin-top:16px;display:flex;align-items:center;justify-content:center;gap:6px}
@@ -208,7 +208,7 @@ body{background:var(--surface-alt);color:var(--text);font-family:var(--font-b);-
 <main id="main-content" class="page">
   <div class="checkout-card">
     <div class="checkout-header">
-      <div style="font-size:24px;margin-bottom:8px">&#128722;</div>
+      <div style="font-size:13px;margin-bottom:8px">&#128722;</div>
       <h1>Complete Your Order</h1>
       <p class="sub">Secure checkout powered by Razorpay</p>
     </div>
@@ -223,8 +223,8 @@ body{background:var(--surface-alt);color:var(--text);font-family:var(--font-b);-
         <div class="summary-row"><span class="summary-label">API calls / month</span><span class="summary-value" id="display-api">—</span></div>
       </div>
       <div id="academic-verify-section" style="margin-bottom:16px;display:none">
-        <div style="background:var(--surface-alt);border-radius:12px;padding:16px;text-align:center">
-          <div style="font-size:24px;margin-bottom:6px">&#127891;</div>
+        <div style="background:var(--surface-alt);border-radius:12px;padding:12px;text-align:center">
+          <div style="font-size:13px;margin-bottom:6px">&#127891;</div>
           <p style="font-size:13px;color:var(--text2);margin-bottom:10px">Academic or research institution? You may be eligible for a <strong>30% discount</strong>.</p>
           <button type="button" class="btn-secondary btn-sm" id="btn-verify-academic" onclick="verifyAcademic()" style="width:100%;justify-content:center">
             <span id="verify-acad-txt">Verify my email</span>
@@ -314,7 +314,7 @@ function renderOrder(plan, pricing) {
         if (status.is_academic && plan.price_inr > 0) {
           CHECKOUT_ACADEMIC = true;
           var discounted = Math.round(plan.price_inr * 0.7);
-          document.getElementById('price-amount').innerHTML = '<span style="text-decoration:line-through;color:var(--muted);font-size:18px">&#8377;' + plan.price_inr + '</span> &#8377;' + discounted;
+          document.getElementById('price-amount').innerHTML = '<span style="text-decoration:line-through;color:var(--muted);font-size:13px">&#8377;' + plan.price_inr + '</span> &#8377;' + discounted;
           document.getElementById('price-period').textContent = period;
           document.getElementById('academic-discount-info').style.display = 'inline-flex';
         } else {
@@ -440,7 +440,7 @@ async function openRazorpayCheckout(order) {
   <div class="footer-col">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
       <img src="logo.png" alt="VigyanLLM Logo" class="site-logo" style="height:36px;width:auto;object-fit:contain" loading="lazy">
-      <span style="font-family:var(--font-h);font-size:18px;font-weight:800;color:#fff">VigyanLLM</span>
+      <span style="font-family:var(--font-h);font-size:13px;font-weight:800;color:#fff">VigyanLLM</span>
     </div>
     <p style="font-size:13px;color:rgba(255,255,255,.45);line-height:1.6">Sovereign Healthcare &amp; Life Sciences AI.<br>Built in India. For the world.</p>
     <a href="mailto:contact@vigyanllm.in" style="color:var(--blue-light);font-size:13px;display:block;margin-top:12px">contact@vigyanllm.in</a>
