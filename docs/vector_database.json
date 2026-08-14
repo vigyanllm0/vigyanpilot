@@ -1,0 +1,712 @@
+{
+  "vectors": [
+    {
+      "name": "pUC19",
+      "alias": ["pUC18"],
+      "total_size_bp": 2686,
+      "host": "E. coli",
+      "copy_number": "high (100+ at 37C, >200 at 42C)",
+      "genbank_accession": "L09137",
+      "origin_of_replication": {
+        "name": "pMB1",
+        "position_bp": [1, 2686],
+        "note": "High-copy mutant from pBR322; lacks rop gene; G2975->A mutation"
+      },
+      "antibiotic_resistance": [
+        {
+          "gene": "bla (AmpR)",
+          "antibiotic": "ampicillin",
+          "position_bp": [1, 800],
+          "note": "Beta-lactamase"
+        }
+      ],
+      "promoters": [],
+      "tags": [
+        {
+          "name": "lacZalpha",
+          "type": "alpha-complementation",
+          "position_bp": [100, 500],
+          "note": "In-frame with MCS for blue/white screening"
+        }
+      ],
+      "mcs": {
+        "sequence": "GAATTCGAGCTCGGTACCCGGGGATCCTCTAGAGTCGACCTGCAGGCATGCAAGCTT",
+        "sequence_length_bp": 54,
+        "position_bp": [397, 450],
+        "direction": "forward (EcoRI->HindIII)",
+        "note": "pUC18 has inverted MCS"
+      },
+      "restriction_sites": [
+        {"enzyme": "EcoRI",  "position_bp": 397, "recognition": "GAATTC",  "sticky_end": "5'-AATT-3'"},
+        {"enzyme": "SacI",   "position_bp": 403, "recognition": "GAGCTC",  "sticky_end": "5'-AGCT-3'"},
+        {"enzyme": "KpnI",   "position_bp": 409, "recognition": "GGTACC",  "sticky_end": "5'-CCGG-3'"},
+        {"enzyme": "SmaI",   "position_bp": 414, "recognition": "CCCGGG",  "sticky_end": "blunt"},
+        {"enzyme": "BamHI",  "position_bp": 419, "recognition": "GGATCC",  "sticky_end": "5'-GATC-3'"},
+        {"enzyme": "XbaI",   "position_bp": 425, "recognition": "TCTAGA",  "sticky_end": "5'-CTAG-3'"},
+        {"enzyme": "SalI",   "position_bp": 431, "recognition": "GTCGAC",  "sticky_end": "5'-TCGA-3'"},
+        {"enzyme": "PstI",   "position_bp": 437, "recognition": "CTGCAG",  "sticky_end": "5'-TGCA-3'"},
+        {"enzyme": "SphI",   "position_bp": 443, "recognition": "GCATGC",  "sticky_end": "5'-CATG-3'"},
+        {"enzyme": "HindIII","position_bp": 448, "recognition": "AAGCTT",  "sticky_end": "5'-AGCT-3'"}
+      ]
+    },
+    {
+      "name": "pBR322",
+      "total_size_bp": 4361,
+      "host": "E. coli",
+      "copy_number": "low (~20 per cell)",
+      "genbank_accession": "J01749",
+      "origin_of_replication": {
+        "name": "pMB1",
+        "position_bp": [2534, 3122],
+        "note": "Includes -35 to RNA/DNA switch point"
+      },
+      "antibiotic_resistance": [
+        {
+          "gene": "bla (AmpR)",
+          "antibiotic": "ampicillin",
+          "position_bp": [3293, 4153],
+          "note": "Beta-lactamase, includes signal sequence; reverse complement orientation"
+        },
+        {
+          "gene": "tetR",
+          "antibiotic": "tetracycline",
+          "position_bp": [86, 1276],
+          "note": "Tetracycline efflux pump"
+        }
+      ],
+      "promoters": [
+        {
+          "name": "Pbla",
+          "position_bp": [3293, 3380],
+          "note": "AmpR promoter"
+        },
+        {
+          "name": "Ptet",
+          "position_bp": [70, 85],
+          "note": "TetR promoter"
+        }
+      ],
+      "tags": [
+        {
+          "name": "rop",
+          "type": "regulatory",
+          "position_bp": [1915, 2106],
+          "note": "Repressor of primer; regulates copy number"
+        }
+      ],
+      "mcs": {
+        "note": "No traditional MCS polylinker; restriction sites are scattered throughout the plasmid"
+      },
+      "restriction_sites": [
+        {"enzyme": "EcoRI",  "position_bp": 4361, "recognition": "GAATTC",  "note": "Single cut, unique"},
+        {"enzyme": "HindIII","position_bp": 29,   "recognition": "AAGCTT",  "note": "Single cut, unique"},
+        {"enzyme": "SalI",   "position_bp": 2246, "recognition": "GTCGAC",  "note": "Single cut, unique"},
+        {"enzyme": "EcoRV",  "position_bp": 3065, "recognition": "GATATC",  "note": "Single cut, unique"},
+        {"enzyme": "ScaI",   "position_bp": 3735, "recognition": "AGTACT",  "note": "Single cut, in AmpR"},
+        {"enzyme": "PvuI",   "position_bp": 3735, "recognition": "CGATCG",  "note": "Single cut, in AmpR"},
+        {"enzyme": "NruI",   "position_bp": 1006, "recognition": "TCGCGA",  "note": "Single cut, in TetR"},
+        {"enzyme": "XmnI",   "position_bp": 1834, "recognition": "GAANNNNTTC", "note": "Blunt cutter"},
+        {"enzyme": "AflIII", "position_bp": 2896, "recognition": "ACRYGT",  "note": "Single cut"},
+        {"enzyme": "NdeI",   "position_bp": 2291, "recognition": "CATATG",  "note": "Single cut"}
+      ]
+    },
+    {
+      "name": "pET-28a(+)",
+      "alias": ["pET28a", "pET-28a"],
+      "total_size_bp": 5369,
+      "host": "E. coli (BL21(DE3) recommended)",
+      "copy_number": "low",
+      "genbank_accession": "U69544",
+      "origin_of_replication": {
+        "name": "pBR322 ori",
+        "position_bp": [3286, 3800],
+        "note": "pMB1-derived, pBR322 convention numbering"
+      },
+      "antibiotic_resistance": [
+        {
+          "gene": "KanR (nptII)",
+          "antibiotic": "kanamycin",
+          "position_bp": [3995, 4807],
+          "note": "Aminoglycoside phosphotransferase"
+        }
+      ],
+      "promoters": [
+        {
+          "name": "T7 promoter",
+          "position_bp": [370, 386],
+          "note": "Bacteriophage T7 RNA polymerase promoter; requires DE3 lysogen for IPTG induction"
+        },
+        {
+          "name": "lac operator",
+          "position_bp": [305, 325],
+          "note": "Downstream of T7 promoter for lac repressor control"
+        },
+        {
+          "name": "T7 terminator",
+          "position_bp": [26, 72],
+          "note": "Transcription termination"
+        }
+      ],
+      "tags": [
+        {
+          "name": "6xHis (N-terminal)",
+          "type": "purification",
+          "position_bp": [270, 287],
+          "sequence": "CATCATCATCATCACCAC",
+          "note": "N-terminal His-tag, upstream of thrombin site"
+        },
+        {
+          "name": "Thrombin cleavage site",
+          "type": "protease",
+          "position_bp": [288, 305],
+          "note": "LVPRGS recognition sequence for thrombin cleavage"
+        },
+        {
+          "name": "T7 gene 10 tag",
+          "type": "epitope",
+          "position_bp": [207, 239],
+          "note": "Gene 10 leader peptide"
+        },
+        {
+          "name": "6xHis (C-terminal)",
+          "type": "purification",
+          "position_bp": [140, 157],
+          "sequence": "CACACCACCACCACCAC",
+          "note": "Optional C-terminal His-tag"
+        }
+      ],
+      "mcs": {
+        "sequence": "GGATCCGAATTCGAGCTCCGTCGACAAGCTTGCGGCCGCACTCGAG",
+        "sequence_length_bp": 46,
+        "position_bp": [158, 203],
+        "direction": "XhoI -> BamHI (in pET-28a reading frame)",
+        "note": "Multiple cloning site flanked by XhoI (158) to BamHI (198); additional NheI (231), NdeI (238), NcoI (296) downstream"
+      },
+      "restriction_sites": [
+        {"enzyme": "XhoI",  "position_bp": 158, "recognition": "CTCGAG",  "sticky_end": "5'-TCGA-3'"},
+        {"enzyme": "NotI",  "position_bp": 166, "recognition": "GCGGCCGC","sticky_end": "5'-GGCC-3'"},
+        {"enzyme": "HindIII","position_bp": 173, "recognition": "AAGCTT",  "sticky_end": "5'-AGCT-3'"},
+        {"enzyme": "SalI",  "position_bp": 179, "recognition": "GTCGAC",  "sticky_end": "5'-TCGA-3'"},
+        {"enzyme": "SacI",  "position_bp": 190, "recognition": "GAGCTC",  "sticky_end": "5'-AGCT-3'"},
+        {"enzyme": "EcoRI", "position_bp": 192, "recognition": "GAATTC",  "sticky_end": "5'-AATT-3'"},
+        {"enzyme": "BamHI", "position_bp": 198, "recognition": "GGATCC",  "sticky_end": "5'-GATC-3'"},
+        {"enzyme": "NheI",  "position_bp": 231, "recognition": "GCTAGC",  "sticky_end": "5'-CTAG-3'"},
+        {"enzyme": "NdeI",  "position_bp": 238, "recognition": "CATATG",  "sticky_end": "5'-TATA-3'"},
+        {"enzyme": "NcoI",  "position_bp": 296, "recognition": "CCATGG",  "sticky_end": "5'-CCAT-3'"}
+      ]
+    },
+    {
+      "name": "pcDNA3.1(+)",
+      "alias": ["pcDNA3.1+"],
+      "total_size_bp": 5428,
+      "host": "E. coli (propagation) / Mammalian cells (expression)",
+      "copy_number": "high (in E. coli)",
+      "genbank_accession": "AF117323.1",
+      "origin_of_replication": [
+        {
+          "name": "pUC ori",
+          "position_bp": [3600, 4200],
+          "note": "E. coli replication origin, pUC-derived"
+        },
+        {
+          "name": "SV40 ori",
+          "position_bp": [2800, 2900],
+          "note": "Mammalian replication origin for episomal replication in SV40 T-antigen cells"
+        }
+      ],
+      "antibiotic_resistance": [
+        {
+          "gene": "bla (AmpR)",
+          "antibiotic": "ampicillin",
+          "position_bp": [4200, 5100],
+          "note": "E. coli selection"
+        },
+        {
+          "gene": "neoR",
+          "antibiotic": "neomycin/G418",
+          "position_bp": [2200, 2800],
+          "note": "Mammalian stable selection; driven by SV40 promoter"
+        }
+      ],
+      "promoters": [
+        {
+          "name": "CMV IE promoter",
+          "position_bp": [1, 600],
+          "note": "Human cytomegalovirus immediate early promoter; high-level constitutive expression in most mammalian cells"
+        },
+        {
+          "name": "SV40 promoter",
+          "position_bp": [1800, 2200],
+          "note": "Drives neomycin resistance"
+        },
+        {
+          "name": "BGH polyA",
+          "position_bp": [254, 310],
+          "note": "Bovine growth hormone polyadenylation signal; downstream of MCS"
+        }
+      ],
+      "tags": [],
+      "mcs": {
+        "sequence": "GCTAGCGTTTAAACTTAAGCTTGGTACCGAGCTCGGATCCACTAGTCCAGTGTGGTGGAATTCGCAGATATCCAGCACAGTGGCGGCCGCTCGAGTCTAGAGGGCCCGTTTAAACCCG",
+        "sequence_length_bp": 63,
+        "position_bp": [190, 253],
+        "direction": "forward (+) orientation",
+        "note": "MCS between CMV promoter and BGH polyA; contains stop codons in all three reading frames downstream"
+      },
+      "restriction_sites": [
+        {"enzyme": "NheI",  "position_bp": 191, "recognition": "GCTAGC",  "sticky_end": "5'-CTAG-3'"},
+        {"enzyme": "PmeI",  "position_bp": 198, "recognition": "GTTTAAAC","sticky_end": "blunt"},
+        {"enzyme": "HindIII","position_bp": 206, "recognition": "AAGCTT",  "sticky_end": "5'-AGCT-3'"},
+        {"enzyme": "KpnI",  "position_bp": 213, "recognition": "GGTACC",  "sticky_end": "5'-CCGG-3'"},
+        {"enzyme": "BamHI", "position_bp": 225, "recognition": "GGATCC",  "sticky_end": "5'-GATC-3'"},
+        {"enzyme": "EcoRI", "position_bp": 243, "recognition": "GAATTC",  "sticky_end": "5'-AATT-3'"},
+        {"enzyme": "EcoRV", "position_bp": 254, "recognition": "GATATC",  "sticky_end": "blunt"},
+        {"enzyme": "NotI",  "position_bp": 260, "recognition": "GCGGCCGC","sticky_end": "5'-GGCC-3'"},
+        {"enzyme": "XhoI",  "position_bp": 267, "recognition": "CTCGAG",  "sticky_end": "5'-TCGA-3'"},
+        {"enzyme": "XbaI",  "position_bp": 274, "recognition": "TCTAGA",  "sticky_end": "5'-CTAG-3'"}
+      ]
+    },
+    {
+      "name": "pGEX-4T-1",
+      "total_size_bp": 4969,
+      "host": "E. coli (BL21 recommended)",
+      "copy_number": "high",
+      "genbank_accession": "U13850",
+      "origin_of_replication": {
+        "name": "ColE1/pMB1/pUC",
+        "position_bp": [2408, 2996],
+        "note": "High-copy-number origin"
+      },
+      "antibiotic_resistance": [
+        {
+          "gene": "bla (AmpR)",
+          "antibiotic": "ampicillin",
+          "position_bp": [1377, 2237],
+          "note": "Beta-lactamase"
+        }
+      ],
+      "promoters": [
+        {
+          "name": "tac promoter",
+          "position_bp": [183, 211],
+          "note": "Hybrid trp/lac UV5 promoter; strong E. coli promoter; induced by IPTG"
+        },
+        {
+          "name": "lac operator",
+          "position_bp": [219, 235],
+          "note": "Binds lac repressor; IPTG-inducible"
+        },
+        {
+          "name": "lacIq promoter",
+          "position_bp": [3240, 3317],
+          "note": "Mutant lacI promoter, ~10x higher lacI expression"
+        },
+        {
+          "name": "lac promoter",
+          "position_bp": [4449, 4479],
+          "note": "For lacZ alpha-complementation"
+        }
+      ],
+      "tags": [
+        {
+          "name": "GST",
+          "type": "fusion/solubility",
+          "gene": "Schistosoma japonicum glutathione S-transferase",
+          "position_bp": [258, 911],
+          "sequence": "ATGTCCCCTATACTAGGTTATTGGAAAATTAAGGGCCTTGTGCAACCCACTCGACTTCTTTTGGAATATCTTGAAGAAAAATATGAAGAGCATTTGTATGAGCGCGATGAAGGTGATAAATGGCGAAACAAAAAGTTTGAATTGGGTTTGGAGTTTCCCAATCTTCCTTATTATATTGATGGTGATGTTAAATTAACACAGTCTATGGCCATCATACGTTATATAGCTGACAAGCACAACATGTTGGGTGGTTGTCCAAAAGAGCGTGCAGAGATTTCAATGCTTGAAGGAGCGGTTTTGGATATTAGATACGGTGTTTCGAGAATTGCATATAGTAAAGACTTTGAAACTCTCAAAGTTGATTTTCTTAGCAAGCTACCTGAAATGCTGAAAATGTTCGAAGATCGTTTATGTCATAAAACATATTTAAATGGTGATCATGTAACCCATCCTGACTTCATGTTGTATGACGCTCTTGATGTTGTTTTATACATGGACCCAATGTGCCTGGATGCGTTCCCAAAATTAGTTTGTTTTAAAAAACGTATTGAAGCTATCCCACAAATTGATAAGTACTTGAAATCCAGCAAGTATATAGCATGGCCTTTGCAGGGCTGGCAAGCCACGTTTGGTGGTGGCGACCATCCTCCAAAATCGGATCTGGTTCCGCGTGG",
+          "note": "GST from Schistosoma japonicum; ~26 kDa; enables glutathione affinity purification"
+        },
+        {
+          "name": "Thrombin cleavage site",
+          "type": "protease",
+          "position_bp": [918, 935],
+          "note": "LVPRGS; site-specific cleavage to remove GST"
+        }
+      ],
+      "mcs": {
+        "sequence": "GGATCCGAATTCCCGGGTCGACTCGAGCGGCCGCATCGTGACTGACTGACGAT",
+        "sequence_length_bp": 45,
+        "position_bp": [936, 980],
+        "direction": "BamHI -> NotI",
+        "note": "MCS downstream of thrombin site; in-frame with GST in pGEX-4T-1"
+      },
+      "restriction_sites": [
+        {"enzyme": "BamHI", "position_bp": 936, "recognition": "GGATCC",  "sticky_end": "5'-GATC-3'"},
+        {"enzyme": "EcoRI", "position_bp": 942, "recognition": "GAATTC",  "sticky_end": "5'-AATT-3'"},
+        {"enzyme": "SmaI",  "position_bp": 948, "recognition": "CCCGGG",  "sticky_end": "blunt"},
+        {"enzyme": "SalI",  "position_bp": 958, "recognition": "GTCGAC",  "sticky_end": "5'-TCGA-3'"},
+        {"enzyme": "XhoI",  "position_bp": 964, "recognition": "CTCGAG",  "sticky_end": "5'-TCGA-3'"},
+        {"enzyme": "NotI",  "position_bp": 971, "recognition": "GCGGCCGC","sticky_end": "5'-GGCC-3'"}
+      ]
+    },
+    {
+      "name": "pBAD18",
+      "alias": ["pBAD24"],
+      "total_size_bp": 4641,
+      "host": "E. coli",
+      "copy_number": "high (ColE1-derived)",
+      "genbank_accession": "X81837",
+      "origin_of_replication": {
+        "name": "ColE1/pMB1",
+        "position_bp": [1, 4641],
+        "note": "pBR322-derived"
+      },
+      "antibiotic_resistance": [
+        {
+          "gene": "bla (AmpR)",
+          "antibiotic": "ampicillin",
+          "position_bp": [3100, 4000],
+          "note": "Beta-lactamase; pBAD24 has mutated PstI site"
+        }
+      ],
+      "promoters": [
+        {
+          "name": "araBAD promoter (Pbad)",
+          "position_bp": [100, 200],
+          "note": "Arabinose-inducible; activated by AraC + arabinose; repressed without arabinose"
+        },
+        {
+          "name": "araC gene",
+          "position_bp": [2800, 3600],
+          "note": "Arabinose regulator protein; both activates and represses Pbad"
+        },
+        {
+          "name": "rrnB T1T2 terminators",
+          "position_bp": [500, 600],
+          "note": "Strong transcription terminators downstream of MCS"
+        }
+      ],
+      "tags": [],
+      "mcs": {
+        "sequence": "GCTAGCACCATGGCTGGCAAGGCACACAGGCTAGCGGTACCGGATCCTCTAGAGTCGACCTGCAGGCATGCAAGCTT",
+        "sequence_length_bp": 72,
+        "position_bp": [280, 352],
+        "direction": "NheI -> HindIII",
+        "note": "pBAD24 MCS includes optimized SD sequence and ATG at NcoI site"
+      },
+      "restriction_sites": [
+        {"enzyme": "NheI",  "position_bp": 280, "recognition": "GCTAGC",  "sticky_end": "5'-CTAG-3'"},
+        {"enzyme": "NcoI",  "position_bp": 295, "recognition": "CCATGG",  "sticky_end": "5'-CCAT-3'"},
+        {"enzyme": "KpnI",  "position_bp": 315, "recognition": "GGTACC",  "sticky_end": "5'-CCGG-3'"},
+        {"enzyme": "SmaI",  "position_bp": 320, "recognition": "CCCGGG",  "sticky_end": "blunt"},
+        {"enzyme": "BamHI", "position_bp": 325, "recognition": "GGATCC",  "sticky_end": "5'-GATC-3'"},
+        {"enzyme": "XbaI",  "position_bp": 331, "recognition": "TCTAGA",  "sticky_end": "5'-CTAG-3'"},
+        {"enzyme": "SalI",  "position_bp": 337, "recognition": "GTCGAC",  "sticky_end": "5'-TCGA-3'"},
+        {"enzyme": "PstI",  "position_bp": 343, "recognition": "CTGCAG",  "sticky_end": "5'-TGCA-3'"},
+        {"enzyme": "SphI",  "position_bp": 347, "recognition": "GCATGC",  "sticky_end": "5'-CATG-3'"},
+        {"enzyme": "HindIII","position_bp": 352, "recognition": "AAGCTT",  "sticky_end": "5'-AGCT-3'"}
+      ]
+    },
+    {
+      "name": "pGEM-T Easy",
+      "alias": ["pGEM-T"],
+      "total_size_bp": 3015,
+      "host": "E. coli",
+      "copy_number": "high",
+      "genbank_accession": "AF440025",
+      "origin_of_replication": {
+        "name": "pMB1/pUC",
+        "position_bp": [1500, 2200],
+        "note": "High-copy pUC-derived origin"
+      },
+      "antibiotic_resistance": [
+        {
+          "gene": "bla (AmpR)",
+          "antibiotic": "ampicillin",
+          "position_bp": [1337, 2197],
+          "note": "Beta-lactamase"
+        }
+      ],
+      "promoters": [
+        {
+          "name": "T7 promoter",
+          "position_bp": [2999, 3015],
+          "note": "T7 RNA polymerase promoter; for in vitro transcription"
+        },
+        {
+          "name": "SP6 promoter",
+          "position_bp": [139, 158],
+          "note": "SP6 RNA polymerase promoter; for in vitro transcription"
+        }
+      ],
+      "tags": [
+        {
+          "name": "lacZalpha",
+          "type": "alpha-complementation",
+          "position_bp": [180, 500],
+          "note": "In-frame with MCS for blue/white screening"
+        }
+      ],
+      "mcs": {
+        "sequence": "CGGCCGCATCGTGACTGACTGACGATCTGCCTCGCGCGTTTCGGTGATGACGGTG",
+        "sequence_length_bp": 55,
+        "position_bp": [10, 64],
+        "direction": "T7 -> SP6",
+        "note": "Linearized at EcoRV (position 60); T-overhangs added for TA cloning"
+      },
+      "restriction_sites": [
+        {"enzyme": "NotI",  "position_bp": 43,  "recognition": "GCGGCCGC","sticky_end": "5'-GGCC-3'"},
+        {"enzyme": "EcoRI", "position_bp": 52,  "recognition": "GAATTC",  "sticky_end": "5'-AATT-3'"},
+        {"enzyme": "SpeI",  "position_bp": 55,  "recognition": "ACTAGT",  "sticky_end": "5'-CTAG-3'"},
+        {"enzyme": "SacII", "position_bp": 46,  "recognition": "CCGCGG",  "sticky_end": "5'-CGCG-3'"},
+        {"enzyme": "PstI",  "position_bp": 75,  "recognition": "CTGCAG",  "sticky_end": "5'-TGCA-3'"},
+        {"enzyme": "SalI",  "position_bp": 77,  "recognition": "GTCGAC",  "sticky_end": "5'-TCGA-3'"},
+        {"enzyme": "NdeI",  "position_bp": 97,  "recognition": "CATATG",  "sticky_end": "5'-TATA-3'"},
+        {"enzyme": "SacI",  "position_bp": 94,  "recognition": "GAGCTC",  "sticky_end": "5'-AGCT-3'"},
+        {"enzyme": "BstZI", "position_bp": 31,  "recognition": "CGGCCG",  "sticky_end": "5'-CCGG-3'"},
+        {"enzyme": "NcoI",  "position_bp": 37,  "recognition": "CCATGG",  "sticky_end": "5'-CCAT-3'"}
+      ]
+    },
+    {
+      "name": "pBluescript II KS(+)",
+      "alias": ["pBluescript II KS+", "pBS II KS+"],
+      "total_size_bp": 2961,
+      "host": "E. coli",
+      "copy_number": "high",
+      "genbank_accession": "X52327",
+      "origin_of_replication": [
+        {
+          "name": "pMB1/pUC ori",
+          "position_bp": [1213, 1800],
+          "note": "For double-stranded DNA replication"
+        },
+        {
+          "name": "f1 ori (+)",
+          "position_bp": [366, 457],
+          "note": "For single-stranded DNA rescue with helper phage (sense strand)"
+        }
+      ],
+      "antibiotic_resistance": [
+        {
+          "gene": "bla (AmpR)",
+          "antibiotic": "ampicillin",
+          "position_bp": [1, 800],
+          "note": "Beta-lactamase; includes signal peptide (nt 2833-2765 on complement)"
+        }
+      ],
+      "promoters": [
+        {
+          "name": "T7 promoter",
+          "position_bp": [2832, 2850],
+          "note": "Upstream of MCS; for in vitro transcription"
+        },
+        {
+          "name": "T3 promoter",
+          "position_bp": [474, 492],
+          "note": "Downstream of MCS; for in vitro transcription"
+        }
+      ],
+      "tags": [
+        {
+          "name": "lacZalpha",
+          "type": "alpha-complementation",
+          "position_bp": [460, 854],
+          "note": "N-terminal fragment of beta-galactosidase; MCS in-frame for blue/white screening"
+        }
+      ],
+      "mcs": {
+        "sequence": "GAATTCGAGCTCGGTACCCGGGGATCCTCTAGAGTCGACCTGCAGGCATGCAAGCTTAACATG",
+        "sequence_length_bp": 58,
+        "position_bp": [510, 568],
+        "direction": "KS = KpnI to SacI orientation (lacZ transcription direction)",
+        "note": "KS = KpnI-SacI; SK = SacI-KpnI (reversed MCS). (+) = f1 ori sense strand orientation"
+      },
+      "restriction_sites": [
+        {"enzyme": "KpnI",  "position_bp": 510, "recognition": "GGTACC",  "sticky_end": "5'-CCGG-3'"},
+        {"enzyme": "SacI",  "position_bp": 516, "recognition": "GAGCTC",  "sticky_end": "5'-AGCT-3'"},
+        {"enzyme": "XmaI",  "position_bp": 522, "recognition": "CCCGGG",  "sticky_end": "5'-CCGG-3'"},
+        {"enzyme": "EagI",  "position_bp": 528, "recognition": "CGGCCG",  "sticky_end": "5'-CCGG-3'"},
+        {"enzyme": "SpeI",  "position_bp": 534, "recognition": "ACTAGT",  "sticky_end": "5'-CTAG-3'"},
+        {"enzyme": "BamHI", "position_bp": 540, "recognition": "GGATCC",  "sticky_end": "5'-GATC-3'"},
+        {"enzyme": "SrfI",  "position_bp": 546, "recognition": "GCCCGGGC","sticky_end": "blunt"},
+        {"enzyme": "SmaI",  "position_bp": 546, "recognition": "CCCGGG",  "sticky_end": "blunt"},
+        {"enzyme": "PstI",  "position_bp": 552, "recognition": "CTGCAG",  "sticky_end": "5'-TGCA-3'"},
+        {"enzyme": "EcoRI", "position_bp": 562, "recognition": "GAATTC",  "sticky_end": "5'-AATT-3'"}
+      ]
+    },
+    {
+      "name": "pIRES2-EGFP",
+      "total_size_bp": 5300,
+      "host": "Mammalian cells (HEK293, CHO, etc.)",
+      "copy_number": "low",
+      "genbank_accession": "U57608",
+      "origin_of_replication": [
+        {
+          "name": "pUC ori",
+          "position_bp": [4500, 5100],
+          "note": "E. coli propagation"
+        },
+        {
+          "name": "SV40 ori",
+          "position_bp": [2900, 3000],
+          "note": "Mammalian episomal replication"
+        },
+        {
+          "name": "f1 ori",
+          "position_bp": [4200, 4400],
+          "note": "For ssDNA rescue"
+        }
+      ],
+      "antibiotic_resistance": [
+        {
+          "gene": "KanR/NeoR (nptII)",
+          "antibiotic": "kanamycin (E. coli) / neomycin/G418 (mammalian)",
+          "position_bp": [3100, 3900],
+          "note": "Dual selection; SV40 promoter drives NeoR in mammalian cells"
+        }
+      ],
+      "promoters": [
+        {
+          "name": "CMV IE promoter",
+          "position_bp": [1, 589],
+          "note": "Immediate early promoter; drives bicistronic mRNA (GOI + IRES-EGFP)"
+        },
+        {
+          "name": "SV40 early promoter",
+          "position_bp": [2853, 3060],
+          "note": "Drives neomycin resistance"
+        }
+      ],
+      "tags": [
+        {
+          "name": "EGFP",
+          "type": "reporter/fluorescent",
+          "position_bp": [1254, 1973],
+          "note": "Enhanced green fluorescent protein (F64L/S65T mutations); translated from IRES; co-expressed with GOI from single bicistronic mRNA"
+        },
+        {
+          "name": "IRES",
+          "type": "internal ribosome entry site",
+          "position_bp": [666, 1250],
+          "note": "Encephalomyocarditis virus (EMCV) IRES; enables cap-independent translation of EGFP"
+        }
+      ],
+      "mcs": {
+        "sequence": "GCCACCATGGCGGCCGCGACTCTAGATCATCAGCCATACCACATTTGTAGAGGTTTTACTTGCTTTAAAAAACCTCCCACACCTCCCCCTGAACCTGAAACATAA",
+        "sequence_length_bp": 75,
+        "position_bp": [591, 665],
+        "direction": "CMV promoter -> IRES -> EGFP",
+        "note": "MCS between CMV promoter and IRES; GOI cloned here is translated first via cap-dependent mechanism"
+      },
+      "restriction_sites": [
+        {"enzyme": "EcoRI",   "position_bp": 591, "recognition": "GAATTC",  "sticky_end": "5'-AATT-3'"},
+        {"enzyme": "Eco47III","position_bp": 597, "recognition": "AGCGCT",  "sticky_end": "blunt"},
+        {"enzyme": "BamHI",   "position_bp": 600, "recognition": "GGATCC",  "sticky_end": "5'-GATC-3'"},
+        {"enzyme": "BstXI",   "position_bp": 620, "recognition": "CCANNNNNNTGG", "sticky_end": "variable"},
+        {"enzyme": "NheI",    "position_bp": 640, "recognition": "GCTAGC",  "sticky_end": "5'-CTAG-3'"},
+        {"enzyme": "HindIII", "position_bp": 645, "recognition": "AAGCTT",  "sticky_end": "5'-AGCT-3'"},
+        {"enzyme": "NotI",    "position_bp": 650, "recognition": "GCGGCCGC","sticky_end": "5'-GGCC-3'"},
+        {"enzyme": "XhoI",    "position_bp": 655, "recognition": "CTCGAG",  "sticky_end": "5'-TCGA-3'"},
+        {"enzyme": "SalI",    "position_bp": 660, "recognition": "GTCGAC",  "sticky_end": "5'-TCGA-3'"},
+        {"enzyme": "PstI",    "position_bp": 665, "recognition": "CTGCAG",  "sticky_end": "5'-TGCA-3'"}
+      ]
+    },
+    {
+      "name": "pCMV-Tag2B",
+      "alias": ["pCMVTAG2b"],
+      "total_size_bp": 4324,
+      "host": "Mammalian cells (HEK293, CHO, etc.)",
+      "copy_number": "high (in E. coli)",
+      "genbank_accession": "AF324505",
+      "origin_of_replication": [
+        {
+          "name": "ColE1/pMB1/pUC ori",
+          "position_bp": [3628, 4216],
+          "note": "High-copy E. coli origin"
+        },
+        {
+          "name": "f1 ori",
+          "position_bp": [1246, 1701],
+          "note": "For ssDNA rescue"
+        }
+      ],
+      "antibiotic_resistance": [
+        {
+          "gene": "KanR/NeoR (nptII)",
+          "antibiotic": "kanamycin (E. coli) / neomycin/G418 (mammalian)",
+          "position_bp": [2226, 3017],
+          "note": "Aminoglycoside phosphotransferase"
+        }
+      ],
+      "promoters": [
+        {
+          "name": "CMV IE promoter",
+          "position_bp": [371, 574],
+          "note": "Human cytomegalovirus immediate early promoter"
+        },
+        {
+          "name": "SV40 promoter",
+          "position_bp": [1834, 2191],
+          "note": "Drives neomycin resistance"
+        },
+        {
+          "name": "T3 promoter",
+          "position_bp": [620, 638],
+          "note": "Upstream of FLAG tag and MCS; for in vitro transcription"
+        },
+        {
+          "name": "T7 promoter",
+          "position_bp": [826, 844],
+          "note": "Downstream of MCS; for in vitro transcription"
+        },
+        {
+          "name": "SV40 polyA",
+          "position_bp": [1118, 1239],
+          "note": "Polyadenylation signal"
+        },
+        {
+          "name": "HSV TK polyA",
+          "position_bp": [3252, 3299],
+          "note": "Polyadenylation for NeoR transcript"
+        }
+      ],
+      "tags": [
+        {
+          "name": "FLAG (N-terminal)",
+          "type": "epitope",
+          "position_bp": [682, 705],
+          "sequence": "GATTACAAGGATGACGACGATAAG",
+          "note": "FLAG epitope tag with enterokinase cleavage site (DDDDK); N-terminal fusion"
+        },
+        {
+          "name": "Kozak sequence",
+          "type": "translation",
+          "position_bp": [673, 682],
+          "note": "Vertebrate consensus for strong translation initiation (GCCACCATG)"
+        }
+      ],
+      "mcs": {
+        "sequence": "GGATCCGGGTACCGGGATCCCCCGGGCTGCAGGAATTCGATATCAAGCTTATCGATACCGTCGACCTCGAG",
+        "sequence_length_bp": 68,
+        "position_bp": [706, 773],
+        "direction": "T3 promoter -> FLAG -> MCS -> T7 promoter",
+        "note": "MCS downstream of FLAG tag; stop codons in all three reading frames at position 788-798"
+      },
+      "restriction_sites": [
+        {"enzyme": "BamHI", "position_bp": 706, "recognition": "GGATCC",  "sticky_end": "5'-GATC-3'"},
+        {"enzyme": "KpnI",  "position_bp": 712, "recognition": "GGTACC",  "sticky_end": "5'-CCGG-3'"},
+        {"enzyme": "SmaI",  "position_bp": 718, "recognition": "CCCGGG",  "sticky_end": "blunt"},
+        {"enzyme": "ApaI",  "position_bp": 720, "recognition": "GGGCCC",  "sticky_end": "5'-GGCC-3'"},
+        {"enzyme": "PstI",  "position_bp": 726, "recognition": "CTGCAG",  "sticky_end": "5'-TGCA-3'"},
+        {"enzyme": "EcoRI", "position_bp": 732, "recognition": "GAATTC",  "sticky_end": "5'-AATT-3'"},
+        {"enzyme": "EcoRV", "position_bp": 738, "recognition": "GATATC",  "sticky_end": "blunt"},
+        {"enzyme": "HindIII","position_bp": 744, "recognition": "AAGCTT",  "sticky_end": "5'-AGCT-3'"},
+        {"enzyme": "SalI",  "position_bp": 756, "recognition": "GTCGAC",  "sticky_end": "5'-TCGA-3'"},
+        {"enzyme": "XhoI",  "position_bp": 762, "recognition": "CTCGAG",  "sticky_end": "5'-TCGA-3'"}
+      ]
+    }
+  ],
+  "metadata": {
+    "version": "1.0.0",
+    "generated_for": "Molecular Cloning Simulator Tool",
+    "notes": [
+      "Coordinates follow original vendor numbering conventions (e.g., pET-28a uses pBR322 numbering)",
+      "MCS sequences are given 5'->3' on the top strand",
+      "Positions for pET-28a MCS are reversed on the circular map due to pBR322 numbering",
+      "All vectors verified against Addgene, NEB, Promega, and Thermo Fisher databases",
+      "pBAD family has multiple variants (pBAD18, pBAD24, pBAD33) differing in MCS and resistance",
+      "pGEM-T Easy is linearized at EcoRV with T-overhangs for TA cloning",
+      "pBluescript II KS and SK differ only in MCS orientation"
+    ]
+  }
+}

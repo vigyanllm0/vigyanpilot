@@ -34,6 +34,7 @@ PRIORITY_MAP = {
     "dna-to-protein.html": 0.80,
     "pcr-product-calculator.html": 0.80,
     "restriction-enzyme-finder.html": 0.80,
+    "cloning-simulator.html": 0.80,
     # Tier 3: Platform/Info pages
     "platform.html": 0.85,
     "solution.html": 0.85,

@@ -1,0 +1,1507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Free Molecular Cloning Simulator — Plasmid Map, Digest &amp; Virtual Gel | VigyanLLM</title>
+  <meta name="description" content="Simulate the complete molecular cloning workflow in your browser: pick a plasmid vector, choose a gene of interest, digest with restriction enzymes, ligate, view the recombinant circular plasmid map, and run virtual agarose gel electrophoresis. Free, client-side, no sign-up.">
+  <meta name="keywords" content="cloning simulator, plasmid map, restriction digestion, ligation simulation, virtual gel electrophoresis, molecular cloning, circular plasmid, vector design, gene of interest">
+  <meta name="robots" content="index, follow">
+  <meta name="author" content="VigyanLLM Private Limited" />
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="VigyanLLM">
+  <meta property="og:title" content="Free Molecular Cloning Simulator — Plasmid Map, Digest &amp; Virtual Gel | VigyanLLM">
+  <meta property="og:description" content="Simulate vector selection, restriction digestion, ligation and gel electrophoresis for molecular cloning — all in your browser. Free, client-side, no sign-up.">
+  <meta property="og:url" content="https://www.vigyanllm.in/cloning-simulator">
+  <meta property="og:image" content="https://www.vigyanllm.in/poster.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Free Molecular Cloning Simulator — Plasmid Map, Digest &amp; Virtual Gel">
+  <meta name="twitter:description" content="Simulate vector selection, restriction digestion, ligation and gel electrophoresis for molecular cloning — all in your browser.">
+  <meta name="twitter:image" content="https://www.vigyanllm.in/poster.png">
+  <link rel="canonical" href="https://www.vigyanllm.in/cloning-simulator">
+  <link rel="alternate" hreflang="en" href="https://www.vigyanllm.in/cloning-simulator" />
+  <link rel="alternate" hreflang="en-IN" href="https://www.vigyanllm.in/cloning-simulator" />
+  <link rel="alternate" hreflang="x-default" href="https://www.vigyanllm.in/cloning-simulator" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/png" href="/logo.png">
+  <link rel="apple-touch-icon" href="/logo.png">
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://www.vigyanllm.in"},{"@type":"ListItem","position":2,"name":"Free Molecular Cloning Simulator","item":"https://www.vigyanllm.in/cloning-simulator"}]}
+  </script>
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"SoftwareApplication","name":"VigyanLLM Molecular Cloning Simulator","url":"https://www.vigyanllm.in/cloning-simulator","applicationCategory":"BioinformaticsApplication","operatingSystem":"Web Browser","description":"Browser-based molecular cloning simulation: plasmid map visualization, restriction digestion, ligation, and virtual gel electrophoresis.","offers":{"@type":"Offer","price":"0","priceCurrency":"INR"},"author":{"@type":"Organization","name":"VigyanLLM Private Limited"}}
+  </script>
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What is a molecular cloning simulator?","acceptedAnswer":{"@type":"Answer","text":"A molecular cloning simulator lets you model the cloning workflow before touching a pipette: choose a plasmid vector, select a gene of interest, simulate restriction enzyme digestion, check sticky-end compatibility, ligate the insert into the vector, and predict what the recombinant plasmid looks like on a gel."}},{"@type":"Question","name":"Which restriction enzymes are compatible with each other?","acceptedAnswer":{"@type":"Answer","text":"Enzymes are compatible when they leave the same sticky-end overhang. EcoRI leaves an AATT overhang; BamHI and BglII both leave GATC overhangs, so a BamHI-cut vector ligates with a BglII-cut insert. Blunt-end enzymes such as SmaI and EcoRV are compatible with any other blunt end. The tool checks this automatically."}},{"@type":"Question","name":"Is this cloning simulator accurate enough for real experiments?","acceptedAnswer":{"@type":"Answer","text":"The digestion and ligation logic follows standard molecular biology rules: fragment sizes are computed from real cut positions, and compatibility uses actual overhang sequences. Use it for experiment planning and teaching. Always confirm with the vendor's reference maps and a sequence viewer before ordering primers."}},{"@type":"Question","name":"Does the cloning simulator send my DNA sequences to a server?","acceptedAnswer":{"@type":"Answer","text":"No. Everything runs in your browser with pure JavaScript. Your plasmid and gene sequences are never uploaded, logged, or stored. This is part of VigyanLLM's data sovereignty commitment."}},{"@type":"Question","name":"What plasmids can I use in the simulator?","acceptedAnswer":{"@type":"Answer","text":"The simulator ships with 10+ common vectors (pUC19, pBR322, pET-28a(+), pcDNA3.1(+), pGEX-4T-1, pBAD18, pGEM-T Easy, pBluescript II KS, pIRES2-EGFP, pCMV-Tag2B). You can also paste any custom vector sequence and define your own features."}}]}
+  </script>
+  <style>
+  :root{--navy:#0F172A;--navy-light:#1E293B;--blue:#1565C0;--blue-light:#42A5F5;--blue-bg:#E3F2FD;--black:#0A0A0F;--surface:#FFFFFF;--surface-alt:#F5F7FA;--outline:#E2E5EA;--text:#0A0A0F;--text2:#4A4A6A;--muted:#7A7A9A;--bio:#059669;--amber:#D97706;--red:#EF4444;--font-h:'Montserrat',sans-serif;--font-b:'Open Sans',sans-serif;--max-w:1100px}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--surface);color:var(--text);font-family:var(--font-b);line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+  a{text-decoration:none;color:inherit}
+  nav{position:sticky;top:0;background:var(--navy);z-index:1000;height:56px;border-bottom:1px solid rgba(255,255,255,.08)}
+  .nav-inner{display:flex;align-items:center;height:100%;max-width:var(--max-w);margin:0 auto;padding:0 16px}
+  .nav-brand{display:flex;align-items:center;gap:12px;color:#fff;font-family:var(--font-h);font-size:20px;font-weight:800;flex-shrink:0}
+  .nav-brand img{height:36px;width:auto;object-fit:contain}
+  @media(max-width:768px){.nav-brand img{height:28px}}
+  .nav-links{display:flex;gap:8px;align-items:center;margin-left:24px}
+  .nav-links a{font-family:var(--font-h);font-size:14px;color:rgba(255,255,255,.85);font-weight:700;transition:color .15s;letter-spacing:.05em;padding:8px 14px;border-radius:6px;text-transform:uppercase}
+  .nav-links a:hover{color:#fff;background:rgba(255,255,255,.08)}
+  .drop-wrap{position:relative;display:inline-block}
+  .drop-trigger{font-family:var(--font-h);font-size:14px;color:rgba(255,255,255,.85);font-weight:700;cursor:pointer;white-space:nowrap;padding:8px 14px;border-radius:6px;text-transform:uppercase}
+  .drop-menu{display:none;position:absolute;top:100%;left:0;background:#fff;border:1px solid #E2E5EA;border-radius:12px;min-width:240px;padding:8px;z-index:1001;box-shadow:0 12px 40px rgba(0,0,0,.08)}
+  .drop-menu a{display:block;padding:10px 16px;font-size:13px;color:#4A4A6A;border-radius:8px;text-decoration:none}
+  .drop-wrap:hover .drop-menu{display:block}
+  .drop-menu a:hover{background:var(--blue-bg);color:var(--blue)}
+  .nav-right{display:flex;align-items:center;gap:14px;margin-left:auto}
+  .nav-btns{display:flex;flex-direction:row;align-items:center;gap:10px}
+  .nav-cta{padding:8px 24px;background:#fff;color:var(--navy);border:none;border-radius:8px;font-family:var(--font-h);font-size:13px;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:.06em;transition:all .2s;line-height:1.3;white-space:nowrap}
+  .nav-cta:hover{background:var(--blue-light);color:#fff}
+  .nav-login{padding:8px 20px;background:transparent;color:rgba(255,255,255,.8);border:1.5px solid rgba(255,255,255,.25);border-radius:8px;font-family:var(--font-b);font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;line-height:1.3;white-space:nowrap}
+  .nav-login:hover{border-color:#fff;color:#fff;background:rgba(255,255,255,.06)}
+  .user-dropdown{display:none!important;position:absolute;top:calc(100% + 10px);right:0;background:#fff;border-radius:16px;min-width:240px;padding:8px;z-index:1001;box-shadow:0 12px 40px rgba(0,0,0,.18);border:1px solid #E2E8F0}
+  .user-dropdown.open{display:block!important}
+  .user-dropdown-header{padding:12px;border-bottom:1px solid #F1F5F9;margin-bottom:6px}
+  .user-dropdown-header .ud-name{font-size:14px;font-weight:700;color:#0F172A;font-family:var(--font-h);margin-bottom:2px}
+  .user-dropdown-header .ud-email{font-size:12px;color:#4B5563;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:6px}
+  .user-dropdown-header .ud-plan{display:inline-block;font-size:10px;font-weight:700;padding:3px 10px;border-radius:99px;text-transform:uppercase;letter-spacing:.03em}
+  .ud-item{display:flex;align-items:center;gap:12px;padding:11px 16px;font-size:13px;color:#334155;cursor:pointer;text-decoration:none;border-radius:10px;transition:all .15s;font-weight:500}
+  .ud-item:hover{background:#F8FAFC;color:#0F172A;transform:translateX(2px)}
+  .ud-item svg{width:18px;height:18px;flex-shrink:0;opacity:.5}
+  .ud-item.logout{color:#EF4444;margin-top:6px;border-top:1px solid #F1F5F9;padding-top:12px}
+  .ud-item.logout:hover{background:#FEF2F2;color:#DC2626}
+  .ud-item.logout svg{opacity:.7}
+  .hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;background:none;border:none;padding:4px;z-index:1001}
+  .hamburger span{display:block;width:22px;height:2px;background:#fff;border-radius:2px;transition:all .3s}
+  .hamburger.active span:nth-child(1){transform:rotate(45deg) translate(5px,5px)}
+  .hamburger.active span:nth-child(2){opacity:0}
+  .hamburger.active span:nth-child(3){transform:rotate(-45deg) translate(5px,-5px)}
+  .mobile-menu{display:none;position:fixed;top:56px;left:0;right:0;background:var(--navy);padding:20px 24px;z-index:999;border-bottom:1px solid rgba(255,255,255,.08);max-height:calc(100vh - 56px);overflow-y:auto}
+  .mobile-menu.open{display:block}
+  .mobile-menu .mm-group{margin-bottom:16px}
+  .mobile-menu .mm-hdr{font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.4);font-weight:700;padding:8px 0 4px}
+  .mobile-menu a{display:block;color:rgba(255,255,255,.7);font-size:14px;padding:10px 0;font-weight:500}
+  .mobile-menu .mm-cta{display:block;margin-top:8px;padding:12px;background:#fff;color:var(--navy);border-radius:8px;text-align:center;font-weight:700;font-size:13px}
+  .page{max-width:900px;margin:0 auto;padding:48px 24px 64px}
+  .lead{font-size:15px;color:var(--text2);line-height:1.7;margin-top:8px;max-width:760px}
+  .quick-answer{background:linear-gradient(135deg,var(--navy),var(--navy-light));color:#fff;padding:24px 28px;border-radius:12px;margin:24px 0}
+  .quick-answer h2{font-size:16px;font-weight:700;margin-bottom:8px;font-family:var(--font-h)}
+  .quick-answer p{font-size:14px;color:rgba(255,255,255,.72);line-height:1.7}
+  .step-bar{display:flex;gap:6px;margin-bottom:28px;flex-wrap:wrap}
+  .step-pill{flex:1;min-width:120px;text-align:center;padding:12px 8px;border-radius:8px;background:var(--surface-alt);font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;border:2px solid var(--outline);font-family:var(--font-b)}
+  .step-pill.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+  .step-pill.done{background:var(--bio);color:#fff;border-color:var(--bio)}
+  .step-pill.disabled{opacity:.4;cursor:not-allowed}
+  .step-panel{display:none}
+  .step-panel.active{display:block}
+  .tool-card{background:var(--surface-alt);border:1px solid var(--outline);border-radius:12px;padding:28px;margin-bottom:24px}
+  .tool-card h2{font-size:18px;font-weight:700;margin-bottom:16px;font-family:var(--font-h)}
+  .tool-card label{display:block;font-size:13px;font-weight:600;margin:14px 0 6px;color:var(--text)}
+  .form-input{width:100%;border:1px solid var(--outline);border-radius:8px;padding:10px 14px;font-size:13px;font-family:var(--font-b);background:#fff;color:var(--text);transition:border-color .15s}
+  .form-input:focus{border-color:var(--blue);outline:none;box-shadow:0 0 0 3px rgba(21,101,192,.1)}
+  .form-textarea{width:100%;border:1px solid var(--outline);border-radius:8px;padding:10px 14px;font-size:12px;font-family:var(--font-b);background:#fff;color:var(--text);resize:vertical;min-height:110px;line-height:1.7}
+  .form-textarea:focus{border-color:var(--blue);outline:none}
+  .btn-primary{padding:10px 24px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:opacity .15s}
+  .btn-primary:hover{opacity:.9}
+  .btn-secondary{padding:10px 24px;background:var(--surface);color:var(--text);border:1px solid var(--outline);border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;transition:all .15s}
+  .btn-secondary:hover{background:var(--surface-alt);border-color:#CBD5E1}
+  .tool-row{display:flex;gap:10px;margin-top:16px;align-items:center;flex-wrap:wrap}
+  .plasmid-map-wrap{position:relative;width:100%;max-width:520px;margin:20px auto 0}
+  .plasmid-map-wrap svg{width:100%;height:auto}
+  .feature-legend{display:flex;flex-wrap:wrap;gap:14px;margin-top:16px;justify-content:center}
+  .legend-item{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text2)}
+  .legend-dot{width:12px;height:12px;border-radius:3px;flex-shrink:0}
+  .enzyme-tooltip{position:absolute;background:var(--navy);color:#fff;padding:8px 12px;border-radius:8px;font-size:12px;pointer-events:none;z-index:10;box-shadow:0 4px 12px rgba(0,0,0,.3);max-width:220px;display:none}
+  .vector-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-top:14px}
+  .vector-card{padding:12px;border:2px solid var(--outline);border-radius:10px;cursor:pointer;transition:all .15s;text-align:center;background:#fff}
+  .vector-card:hover{border-color:var(--blue-light)}
+  .vector-card.selected{border-color:var(--blue);background:var(--blue-bg)}
+  .vector-card-name{font-weight:700;font-size:13px;margin-bottom:3px}
+  .vector-card-size{font-size:11px;color:var(--muted)}
+  .goi-card{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px;margin-top:14px}
+  .goi-stat{padding:12px;background:#fff;border:1px solid var(--outline);border-radius:8px;text-align:center}
+  .goi-stat-value{font-size:18px;font-weight:700;color:var(--blue)}
+  .goi-stat-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.03em}
+  .frag-table{width:100%;border-collapse:collapse;font-size:13px;background:#fff}
+  .frag-table th,.frag-table td{padding:8px 12px;border-bottom:1px solid var(--outline);text-align:left;font-size:12px}
+  .frag-table th{background:var(--surface-alt);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--text2)}
+  .digest-result{background:#fff;border:1px solid var(--outline);border-radius:8px;padding:16px;margin-top:12px;font-size:13px;line-height:1.8}
+  .compat-yes{color:var(--bio);font-weight:700}
+  .compat-no{color:var(--red);font-weight:700}
+  .compat-box{margin-top:16px;padding:16px;border-radius:8px;font-weight:600;font-size:13px;display:none}
+  .compat-box.ok{background:#F0FDF4;border:1px solid #BBF7D0;color:#166534}
+  .compat-box.bad{background:#FEF2F2;border:1px solid #FECACA;color:#991B1B}
+  .legend-row{font-size:12px;color:var(--text2);line-height:1.7}
+  .legend-swatch{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:middle}
+  .warn{color:#B45309}
+  .vc-name{font-weight:700;font-size:13px;margin-bottom:3px}
+  .vc-meta{font-size:11px;color:var(--muted);margin-bottom:6px}
+  .vc-desc{font-size:11px;color:var(--text2);line-height:1.5;margin-top:4px}
+  .vc-custom{border-style:dashed}
+  .vc-btn{margin-top:8px;padding:7px 10px;font-size:12px;font-weight:700;color:var(--blue);border:1px solid var(--blue-light);border-radius:8px;text-align:center;cursor:pointer;transition:background .15s}
+  .vc-btn:hover{background:var(--blue-bg)}
+  .ec-name{font-weight:600}
+  .ec-siteseq{margin-left:auto;font-size:10px;color:var(--muted);font-family:Menlo,Consolas,monospace}
+  .ec-oh{font-size:9px;font-weight:700;color:var(--blue);background:var(--blue-bg);padding:1px 6px;border-radius:99px;text-transform:uppercase}
+  .gel-wrap{background:#04070a;border-radius:12px;padding:20px 16px;overflow:hidden;border:1px solid #1f2937}
+  .gel-wrap svg{width:100%;height:auto;display:block}
+  .enzyme-check-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;margin-top:10px}
+  .enzyme-check{display:flex;align-items:center;gap:8px;padding:8px 10px;background:#fff;border:1px solid var(--outline);border-radius:8px;font-size:12px;cursor:pointer;transition:all .15s}
+  .enzyme-check:hover{border-color:var(--blue-light)}
+  .enzyme-check input{accent-color:var(--blue)}
+  .info-box{border:1px solid var(--outline);border-radius:12px;padding:20px;margin-bottom:16px;background:#fff}
+  .info-box h2{font-size:16px;font-weight:700;margin-bottom:8px;font-family:var(--font-h)}
+  .info-box p{font-size:13px;color:var(--text2);line-height:1.8}
+  .info-box ul{margin:10px 0 0 18px;font-size:13px;color:var(--text2);line-height:1.8}
+  .faq-section{margin-top:32px}
+  .faq-section h2{font-size:20px;font-weight:700;margin-bottom:16px;font-family:var(--font-h)}
+  .faq-item{border-top:1px solid var(--outline);padding:14px 0}
+  .faq-item h3{font-size:14px;margin-bottom:6px;font-weight:600}
+  .faq-item p{font-size:13px;color:var(--text2);line-height:1.7}
+  .watermark{text-align:center;font-size:12px;color:var(--muted);padding:16px 0;border-top:1px solid var(--outline);margin-top:32px}
+  .auth-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;align-items:center;justify-content:center;padding:24px}
+  .auth-overlay.show{display:flex}
+  .auth-modal{background:#fff;border-radius:16px;padding:28px;width:100%;max-width:400px;position:relative}
+  .auth-modal .close-btn{position:absolute;top:14px;right:16px;background:none;border:none;font-size:20px;cursor:pointer;color:var(--muted);line-height:1}
+  .auth-modal .auth-btn{width:100%;padding:12px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-family:var(--font-b);font-size:13px;font-weight:700;cursor:pointer;transition:opacity .15s}
+  footer{background:var(--black);color:rgba(255,255,255,.8);padding:56px 0 24px;margin-top:40px}
+  .footer-grid{display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr 1fr;gap:40px;max-width:var(--max-w);margin:0 auto 32px;padding:0 16px}
+  .footer-col h5{font-size:12px;text-transform:uppercase;letter-spacing:.12em;color:#fff;margin-bottom:16px;font-weight:700}
+  .footer-col a{display:block;font-size:13px;color:rgba(255,255,255,.5);margin-bottom:10px;transition:color .15s}
+  .footer-col a:hover{color:#fff}
+  .footer-social{display:flex;gap:8px;margin-top:16px}
+  .footer-social a{width:36px;height:36px;display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,.12);border-radius:8px;transition:all .3s ease}
+  .footer-social a:hover{border-color:rgba(255,255,255,.3);transform:translateY(-2px);background:rgba(255,255,255,.05)}
+  .footer-social svg{width:16px;height:16px;filter:grayscale(1);opacity:.5;transition:all .3s ease}
+  .footer-social a:hover svg{filter:grayscale(0);opacity:1}
+  .footer-bottom{max-width:var(--max-w);margin:0 auto;padding:16px 16px 0;border-top:1px solid rgba(255,255,255,.06);display:flex;justify-content:space-between;font-size:12px;color:rgba(255,255,255,.35);flex-wrap:wrap;gap:8px}
+  .skip-link{position:absolute;top:-100%;left:50%;transform:translateX(-50%);padding:8px 16px;background:#667eea;color:#fff;z-index:10000;border-radius:0 0 8px 8px;font-weight:600;text-decoration:none;font-size:14px}
+  .skip-link:focus{top:0;outline:none}
+  @media(max-width:768px){.nav-links{display:none}.hamburger{display:flex}.nav-inner{padding:0 16px}.footer-grid{grid-template-columns:1fr 1fr;gap:24px}.step-pill{min-width:calc(50% - 6px)}.enzyme-check-list{grid-template-columns:1fr 1fr}}
+  @media(max-width:480px){.step-pill{min-width:100%}.vector-grid{grid-template-columns:1fr 1fr}.enzyme-check-list{grid-template-columns:1fr}.footer-grid{grid-template-columns:1fr 1fr;gap:16px}.page{padding:32px 16px 48px}}
+  </style>
+</head>
+<body>
+<header>
+<nav aria-label="Main navigation">
+<div class="nav-inner">
+  <a href="/" class="nav-brand">
+    <img src="logo.png" alt="VigyanLLM Logo" class="site-logo" style="height:36px;width:auto;object-fit:contain" loading="lazy">
+    <span>VigyanLLM</span>
+  </a>
+  <div class="nav-links">
+    <div class="drop-wrap">
+      <span class="drop-trigger">Products ▾</span>
+      <div class="drop-menu">
+        <a href="primer">Primer Design</a>
+        <a href="search">Sequence Search</a>
+        <a href="blast">BLAST</a>
+        <a href="msa">MSA</a>
+        <a href="pcr-analysis">PCR Analysis</a>
+        <a href="crispr-analysis">CRISPR Analysis <span style="font-size:12px;font-weight:700;color:#fff;background:#F59E0B;padding:2px 6px;border-radius:99px;line-height:1.3">Coming Soon</span></a>
+        <a href="tm-calculator">Tm Calculator</a>
+        <a href="gc-calculator">GC Calculator</a>
+        <a href="protein-docking">Protein Docking</a>
+        <a href="/docking">Molecular Docking</a>
+        <a href="/dna-3d">3D DNA Viewer</a>
+        <a href="dna-to-rna" style="display:flex;align-items:center;gap:6px">DNA → RNA Converter</a>
+        <a href="reverse-complement" style="display:flex;align-items:center;gap:6px">Reverse Complement <span style="font-size:9px;font-weight:700;color:#fff;background:#16A34A;padding:2px 7px;border-radius:99px;line-height:1.4">Free</span></a>
+        <a href="dna-to-protein" style="display:flex;align-items:center;gap:6px">DNA → Protein <span style="font-size:9px;font-weight:700;color:#fff;background:#16A34A;padding:2px 7px;border-radius:99px;line-height:1.4">Free</span></a>
+        <a href="pcr-product-calculator" style="display:flex;align-items:center;gap:6px">PCR Product Calc <span style="font-size:9px;font-weight:700;color:#fff;background:#16A34A;padding:2px 7px;border-radius:99px;line-height:1.4">Free</span></a>
+        <a href="cloning-simulator" style="display:flex;align-items:center;gap:6px">Cloning Simulator <span style="font-size:9px;font-weight:700;color:#fff;background:#16A34A;padding:2px 7px;border-radius:99px;line-height:1.4">Free</span></a>
+        <a href="restriction-enzyme-finder" style="display:flex;align-items:center;gap:6px">Restriction Enzyme Finder <span style="font-size:9px;font-weight:700;color:#fff;background:#16A34A;padding:2px 7px;border-radius:99px;line-height:1.4">Free</span></a>
+      </div>
+    </div>
+    <div class="drop-wrap">
+      <span class="drop-trigger">Platform ▾</span>
+      <div class="drop-menu">
+        <a href="platform">Overview</a>
+        <a href="architecture">Architecture</a>
+        <a href="problem">Problem</a>
+        <a href="solution">Solution</a>
+        <a href="compare">Compare</a>
+        <a href="roadmap">Roadmap</a>
+        <a href="about/sovereign-ai">Sovereign AI</a>
+        <a href="features/on-premises">On-Premises</a>
+      </div>
+    </div>
+    <a href="/learning-vigyanllm">Learning</a>
+    <a href="academic-partnership">Partnership</a>
+    <a href="pricing">Pricing</a>
+  </div>
+  <div class="nav-right">
+    <div class="nav-btns" id="navBtns">
+      <button type="button" class="nav-login" onclick="openAuthModal()">Sign in</button>
+      <button type="button" class="nav-cta" onclick="openAuthModal()">Get started</button>
+    </div>
+    <div class="nav-profile" id="navProfile" style="display:none">
+      <div class="nav-avatar" id="navAvatar" onclick="toggleUserMenu()">
+        <span class="nav-avatar-letter" id="navAvatarLetter"></span>
+      </div>
+      <div class="user-dropdown" id="userDropdown">
+        <div class="user-dropdown-header">
+          <div class="ud-name" id="udName"></div>
+          <div class="ud-email" id="udEmail"></div>
+          <div class="ud-plan" id="udPlan"></div>
+        </div>
+        <a class="ud-item" href="/dashboard">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+          Saved Reports
+        </a>
+        <a class="ud-item" href="/dashboard#settings">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          Settings
+        </a>
+        <div class="ud-item logout" onclick="logout()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          Logout
+        </div>
+      </div>
+    </div>
+  </div>
+  <button type="button" class="hamburger" id="hamburger" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</div>
+<div class="mobile-menu" id="mobile-menu">
+  <div class="mm-group"><div class="mm-hdr">Products</div>
+    <a href="primer">Primer Design</a>
+    <a href="search">Sequence Search</a>
+    <a href="blast">BLAST</a>
+    <a href="msa">MSA</a>
+    <a href="pcr-analysis">PCR Analysis</a>
+    <a href="tm-calculator">Tm Calculator</a>
+    <a href="gc-calculator">GC Calculator</a>
+    <a href="protein-docking">Protein Docking</a>
+    <a href="/docking">Molecular Docking</a>
+    <a href="/dna-3d">3D DNA Viewer</a>
+    <a href="dna-to-rna">DNA → RNA Converter</a>
+    <a href="reverse-complement">Reverse Complement</a>
+    <a href="dna-to-protein">DNA → Protein</a>
+    <a href="pcr-product-calculator">PCR Product Calculator</a>
+    <a href="cloning-simulator">Cloning Simulator</a>
+    <a href="restriction-enzyme-finder">Restriction Enzyme Finder</a>
+  </div>
+  <div class="mm-group"><div class="mm-hdr">Platform</div>
+    <a href="platform">Overview</a>
+    <a href="architecture">Architecture</a>
+    <a href="problem">Problem</a>
+    <a href="solution">Solution</a>
+    <a href="compare">Compare</a>
+    <a href="roadmap">Roadmap</a>
+    <a href="about/sovereign-ai">Sovereign AI</a>
+    <a href="features/on-premises">On-Premises</a>
+  </div>
+  <div class="mm-group">
+    <a href="/learning-vigyanllm">Learning</a>
+    <a href="academic-partnership">Academic Partnership</a>
+    <a href="pricing">Pricing</a>
+    <a href="mailto:contact@vigyanllm.in">Enterprise Inquiry</a>
+  </div>
+  <a href="#" onclick="closeMobileMenu();return false" class="mm-cta" style="background:transparent;border:1px solid rgba(255,255,255,.25);color:rgba(255,255,255,.8);margin-bottom:8px">Search</a>
+  <a href="#" class="mm-cta" onclick="openAuthModal();return false">Sign in</a>
+</div>
+</nav>
+</header>
+
+<a class="skip-link" href="#main-content">Skip to main content</a>
+
+<main id="main-content">
+<div class="page">
+  <h1 style="font-family:var(--font-h);font-size:clamp(1.6rem,3.5vw,2.2rem);font-weight:700">Molecular Cloning Simulator</h1>
+  <p class="lead">Model the full cloning workflow before you touch a pipette: pick a plasmid vector, choose a gene of interest, digest with restriction enzymes, check compatibility, ligate the insert, view the recombinant circular plasmid map, and run virtual agarose gel electrophoresis — all in your browser.</p>
+
+  <div class="quick-answer">
+    <h2>What this tool does</h2>
+    <p>Select from 10+ common plasmid vectors (or paste your own), choose or paste a gene of interest, pick restriction enzymes, and the simulator computes cut positions, fragment sizes, sticky-end compatibility, and the ligated recombinant plasmid. The circular SVG plasmid maps update live, and the virtual gel shows your predicted bands — no sign-up, no data leaves your browser.</p>
+  </div>
+
+  <div class="step-bar" id="stepBar">
+    <div class="step-pill active" onclick="goToStep(1)">1. Vector</div>
+    <div class="step-pill disabled" onclick="goToStep(2)">2. Gene of Interest</div>
+    <div class="step-pill disabled" onclick="goToStep(3)">3. Digestion</div>
+    <div class="step-pill disabled" onclick="goToStep(4)">4. Ligation</div>
+    <div class="step-pill disabled" onclick="goToStep(5)">5. Virtual Gel</div>
+  </div>
+
+  <!-- STEP 1: VECTOR -->
+  <div class="step-panel active" id="step1">
+    <div class="tool-card">
+      <h2>Step 1 — Select Plasmid Vector</h2>
+      <label>Choose a Vector</label>
+      <div class="vector-grid" id="vectorGrid"></div>
+      <div id="customVectorInput" style="display:none;margin-top:16px">
+        <label>Vector Name</label>
+        <input type="text" class="form-input" id="customVectorName" placeholder="e.g. pMyCustom">
+        <label>Paste Plasmid Sequence (optional — features drawn on a blank circle if empty)</label>
+        <textarea class="form-textarea" id="customVectorSeq" placeholder="Paste full circular plasmid sequence (A, T, G, C)..."></textarea>
+      </div>
+      <div class="plasmid-map-wrap">
+        <svg id="plasmidMap" viewBox="0 0 460 460" role="img" aria-label="Circular plasmid map"></svg>
+        <div class="enzyme-tooltip" id="enzymeTooltip"></div>
+      </div>
+      <div class="feature-legend" id="featureLegend"></div>
+      <div id="vectorInfo" style="margin-top:16px;display:none">
+        <div class="digest-result" id="vectorInfoBody"></div>
+      </div>
+      <div class="tool-row">
+        <button class="btn-primary" onclick="goToStep(2)">Next: Gene of Interest →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 2: GOI -->
+  <div class="step-panel" id="step2">
+    <div class="tool-card">
+      <h2>Step 2 — Gene of Interest (GOI)</h2>
+      <label>Choose from Library or Paste Custom</label>
+      <select class="form-input" id="goiSelect" onchange="selectGOI(this.value)">
+        <option value="">— Choose a gene —</option>
+        <option value="GFP">GFP — Green Fluorescent Protein (720 bp)</option>
+        <option value="mCherry">mCherry (711 bp)</option>
+        <option value="Luciferase">Firefly Luciferase (1,653 bp)</option>
+        <option value="LacZ_alpha">LacZ α-fragment (540 bp)</option>
+        <option value="custom">Custom Sequence</option>
+      </select>
+      <div id="customGOIInput" style="display:none;margin-top:16px">
+        <label>Gene Name</label>
+        <input type="text" class="form-input" id="customGOIName" placeholder="e.g. myGene">
+        <label>Paste GOI Sequence</label>
+        <textarea class="form-textarea" id="customGOISeq" placeholder="Paste your gene coding sequence (A, T, G, C)..."></textarea>
+      </div>
+      <div class="goi-card" id="goiInfo" style="display:none;margin-top:16px">
+        <div class="goi-stat"><div class="goi-stat-value" id="goiLength">—</div><div class="goi-stat-label">Length (bp)</div></div>
+        <div class="goi-stat"><div class="goi-stat-value" id="goiGC">—</div><div class="goi-stat-label">GC %</div></div>
+        <div class="goi-stat"><div class="goi-stat-value" id="goiSites">—</div><div class="goi-stat-label">Restriction Sites</div></div>
+      </div>
+      <div id="goiSitesDetail" style="display:none;margin-top:16px">
+        <label>Internal Restriction Sites in GOI (all 39 enzymes)</label>
+        <table class="frag-table">
+          <thead><tr><th>Enzyme</th><th>Site</th><th>Count</th><th>Positions</th></tr></thead>
+          <tbody id="goiSitesBody"></tbody>
+        </table>
+      </div>
+      <div class="tool-row">
+        <button class="btn-secondary" onclick="goToStep(1)">← Back</button>
+        <button class="btn-primary" onclick="goToStep(3)">Next: Digestion →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 3: DIGESTION -->
+  <div class="step-panel" id="step3">
+    <div class="tool-card">
+      <h2>Step 3 — Restriction Digestion</h2>
+      <label>Select Restriction Enzyme(s) to Cut With</label>
+      <p style="font-size:12px;color:var(--muted);margin:4px 0 8px">Tip: choose the same enzyme (or a compatible pair) for vector and insert so the ends ligate.</p>
+      <div class="enzyme-check-list" id="enzymeCheckList"></div>
+      <div class="tool-row">
+        <button class="btn-primary" onclick="simulateDigestion()">Simulate Digestion</button>
+      </div>
+      <div id="digestResults" style="display:none;margin-top:20px">
+        <h3 style="font-size:14px;font-weight:700;margin:16px 0 4px">Vector digest</h3>
+        <div id="vectorDigestResult" class="digest-result"></div>
+        <h3 style="font-size:14px;font-weight:700;margin:16px 0 4px">GOI digest</h3>
+        <div id="goiDigestResult" class="digest-result"></div>
+        <div class="compat-box" id="compatResult"></div>
+        <h3 style="font-size:14px;font-weight:700;margin:16px 0 4px">Fragment sizes</h3>
+        <table class="frag-table">
+          <thead><tr><th>Source</th><th>Fragment</th><th>Size (bp)</th><th>Ends</th></tr></thead>
+          <tbody id="digestFragsBody"></tbody>
+        </table>
+      </div>
+      <div class="tool-row">
+        <button class="btn-secondary" onclick="goToStep(2)">← Back</button>
+        <button class="btn-primary" id="toLigationBtn" onclick="goToStep(4)" style="display:none">Next: Ligation →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 4: LIGATION -->
+  <div class="step-panel" id="step4">
+    <div class="tool-card">
+      <h2>Step 4 — Ligation &amp; Recombinant Plasmid</h2>
+      <label>Insertion Site on Vector (one of the cut positions)</label>
+      <select class="form-input" id="insertionSiteSelect" onchange="updateInsertionPreview()"></select>
+      <div class="tool-row">
+        <button class="btn-primary" onclick="simulateLigation()">Simulate Ligation</button>
+      </div>
+      <div id="recombinantResult" style="display:none;margin-top:20px">
+        <div class="goi-card">
+          <div class="goi-stat"><div class="goi-stat-value" id="recomSize">—</div><div class="goi-stat-label">Total Size (bp)</div></div>
+          <div class="goi-stat"><div class="goi-stat-value" id="recomInsert">—</div><div class="goi-stat-label">Insert (bp)</div></div>
+          <div class="goi-stat"><div class="goi-stat-value" id="recomVector">—</div><div class="goi-stat-label">Vector (bp)</div></div>
+        </div>
+        <div class="plasmid-map-wrap" style="margin-top:20px">
+          <svg id="recomMap" viewBox="0 0 460 460" role="img" aria-label="Recombinant circular plasmid map"></svg>
+          <div class="enzyme-tooltip" id="recomTooltip"></div>
+        </div>
+        <div class="feature-legend" id="recomLegend"></div>
+        <div id="recomSitesTable" style="margin-top:16px">
+          <label>Predicted digest of the recombinant plasmid (one cut site in the GOI if its enzyme was used)</label>
+          <table class="frag-table">
+            <thead><tr><th>Enzyme</th><th>Position</th><th>Region</th></tr></thead>
+            <tbody id="recomSitesBody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="tool-row">
+        <button class="btn-secondary" onclick="goToStep(3)">← Back</button>
+        <button class="btn-primary" id="toGelBtn" onclick="goToStep(5)" style="display:none">Next: Virtual Gel →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 5: GEL -->
+  <div class="step-panel" id="step5">
+    <div class="tool-card">
+      <h2>Step 5 — Virtual Agarose Gel (1.0%)</h2>
+      <p style="font-size:12px;color:var(--muted);margin-bottom:16px">Predicted band migration on a 1.0% agarose gel (ethidium bromide / SYBR Safe, UV view). Band position follows log₁₀(size); intensity scales with fragment mass. This is a planning aid, not a substitute for running a real gel.</p>
+      <div class="gel-wrap">
+        <svg id="gelSVG" viewBox="0 0 720 420" role="img" aria-label="Virtual agarose gel electrophoresis result"></svg>
+      </div>
+      <div style="margin-top:16px">
+        <table class="frag-table">
+          <thead><tr><th>Lane</th><th>Sample</th><th>Bands (bp)</th></tr></thead>
+          <tbody id="gelLaneBody"></tbody>
+        </table>
+      </div>
+      <div class="tool-row">
+        <button class="btn-secondary" onclick="goToStep(4)">← Back</button>
+        <button class="btn-primary" onclick="resetSimulation()">Start Over</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- EDUCATIONAL CONTENT -->
+  <div class="info-box">
+    <h2>How the cloning simulation works</h2>
+    <p>The simulator mirrors the four steps of a restriction/ligation cloning experiment. <strong>Digestion</strong> finds every occurrence of each selected enzyme's recognition site on the circular vector and the linear insert, then computes fragment sizes (for circular DNA the last fragment wraps around from the final cut to position 1). <strong>Compatibility</strong> compares the sticky-end overhangs: EcoRI leaves 5'-AATT, BamHI and BglII both leave 5'-GATC, so a BamHI-cut vector will ligate an insert cut with BglII, while EcoRI-cut ends will not. <strong>Ligation</strong> splices the insert sequence at the chosen cut position and re-draws every feature (the GOI appears as an orange arc). <strong>Electrophoresis</strong> places bands using a log₁₀(size) migration curve, the standard approximation for linear DNA on agarose.</p>
+  </div>
+  <div class="info-box">
+    <h2>Choosing compatible enzymes</h2>
+    <ul>
+      <li><strong>Same enzyme</strong> for both vector and insert — always compatible (e.g. EcoRI + EcoRI).</li>
+      <li><strong>Isocaudomers</strong> — different enzymes, identical overhang (BamHI/GATC + BglII/GATC, XhoI/TCGA + SalI/TCGA). These ligate but usually destroy both sites.</li>
+      <li><strong>Blunt ends</strong> — SmaI, EcoRV, StuI, HpaI, PvuII all produce blunt ends and can ligate with any other blunt end (at lower efficiency).</li>
+      <li><strong>Incompatible</strong> — different sticky overhangs (EcoRI/AATT vs HindIII/AGCT) cannot ligate without repair.</li>
+      <li>Watch for <strong>internal sites</strong>: if your GOI contains the enzyme's recognition site, the insert will be cut inside the gene — the tool flags this.</li>
+    </ul>
+  </div>
+  <div class="info-box">
+    <h2>Interpreting the virtual gel</h2>
+    <ul>
+      <li><strong>Ladder lane</strong> — 100 bp → 10 kb markers for size calibration.</li>
+      <li><strong>Undigested vector</strong> — supercoiled DNA migrates faster than linear; we draw a compact band plus a faint nicked (open-circle) band.</li>
+      <li><strong>Single digest</strong> — one cut linearizes the plasmid → one band at the full size.</li>
+      <li><strong>Double digest</strong> — two or more cuts → multiple bands whose sizes sum to the plasmid size.</li>
+      <li><strong>Recombinant</strong> — after insertion the total size grows by the GOI length; bands shift accordingly.</li>
+    </ul>
+  </div>
+
+  <div class="faq-section">
+    <h2>Frequently Asked Questions</h2>
+    <div class="faq-item"><h3>What is the difference between single, double and triple digest?</h3><p>A single digest uses one enzyme (one cut site → linearizes the vector). A double digest uses two enzymes simultaneously, producing two fragment ends with distinct overhangs — the standard way to ensure directional cloning. A triple digest cuts at three positions, typically to release an insert from a donor construct.</p></div>
+    <div class="faq-item"><h3>Why does my insert have an internal cut site?</h3><p>If the GOI sequence itself contains the recognition site of the enzyme you chose, digestion will cut inside the gene. The tool shows internal sites in Step 2 so you can pick a different enzyme (or a partial digest strategy) before planning ligation.</p></div>
+    <div class="faq-item"><h3>Can I design primers with overhangs for this?</h3><p>Yes — in real cloning you add 5' tails to PCR primers to introduce restriction sites flanking the insert. You can model the resulting amplicon here by pasting the full PCR product (gene + flanking sites) as the GOI, then digesting it with the matching enzymes.</p></div>
+    <div class="faq-item"><h3>Is the gel prediction exact?</h3><p>No — it is a planning approximation. Real migration depends on buffer, gel density, voltage and DNA conformation. Use the ladder band positions as relative guides only.</p></div>
+    <div class="faq-item"><h3>What does a linearized plasmid look like?</h3><p>A single cut converts the covalently-closed circle into one linear molecule the size of the plasmid. On a gel it appears as a single band between the supercoiled (faster) and nicked (slower) forms of the undigested plasmid.</p></div>
+  </div>
+
+  <div class="watermark">Powered by VigyanLLM — free browser-based molecular biology tools</div>
+</div>
+
+<!-- AUTH MODAL -->
+<div class="auth-overlay" id="auth-overlay" onclick="if(event.target===this)closeAuth()">
+  <div class="auth-modal">
+    <button type="button" class="close-btn" onclick="closeAuth()">✕</button>
+    <div id="auth-content"></div>
+  </div>
+</div>
+</main>
+<footer>
+
+<div class="footer-grid">
+  <div class="footer-col">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+      <img src="logo.png" alt="VigyanLLM Logo" class="site-logo" style="height:36px;width:auto;object-fit:contain" loading="lazy">
+      <span style="font-family:var(--font-h);font-size:13px;font-weight:800;color:#fff">VigyanLLM</span>
+    </div>
+    <p style="font-size:13px;color:rgba(255,255,255,.45);line-height:1.6">Sovereign Healthcare &amp; Life Sciences AI.<br>Built in India. For the world.</p>
+    <a href="mailto:contact@vigyanllm.in" style="color:var(--blue-light);font-size:13px;display:block;margin-top:12px">contact@vigyanllm.in</a>
+    <div class="footer-social">
+      <a href="https://github.com/vigyanllm" rel="me" aria-label="GitHub"><svg fill="#fff" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg></a>
+      <a href="https://www.linkedin.com/company/vigyanllm/" rel="me" aria-label="LinkedIn"><svg fill="#0077B5" viewBox="0 0 24 24"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg></a>
+      <a href="https://www.facebook.com/vigyanllm" rel="me" aria-label="Facebook"><svg fill="#1877F2" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></a>
+      <a href="https://www.youtube.com/@VigyanLLM" rel="me" aria-label="YouTube"><svg fill="#FF0000" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+    </div>
+  </div>
+  <div class="footer-col">
+    <h5>Products</h5>
+    <a href="primer">Primer Design</a>
+    <a href="search">Sequence Search</a>
+    <a href="blast">BLAST</a>
+    <a href="msa">MSA</a>
+    <a href="pcr-analysis">PCR Analysis</a>
+    <a href="crispr-analysis">CRISPR <span style="font-size:12px;font-weight:700;color:#fff;background:#F59E0B;padding:2px 6px;border-radius:99px;line-height:1.3">Coming Soon</span></a>
+    <a href="protein-docking">Docking</a>
+  </div>
+  <div class="footer-col">
+    <h5>Platform</h5>
+    <a href="platform">Overview</a>
+    <a href="architecture">Architecture</a>
+    <a href="problem">Problem</a>
+    <a href="solution">Solution</a>
+    <a href="compare">Compare</a>
+    <a href="roadmap">Roadmap</a>
+    <a href="about/sovereign-ai">Sovereign AI</a>
+    <a href="features/on-premises">On-Premises</a>
+  </div>
+  <div class="footer-col">
+    <h5>Resources</h5>
+    <a href="blog/index">Blog</a>
+    <a href="faq">FAQ</a>
+    <a href="about">About</a>
+    <a href="demo">Demo</a>
+    <a href="/learning-vigyanllm">Learning</a>
+    <a href="academic-partnership">Academic Partnership</a>
+    <a href="pricing">Pricing</a>
+  </div>
+  <div class="footer-col">
+    <h5>Contact</h5>
+    <a href="mailto:contact@vigyanllm.in">contact@vigyanllm.in</a>
+    <a href="privacy">Privacy</a>
+    <a href="terms">Terms</a>
+    <a href="cookies">Cookies</a>
+    <a href="refund">Refund</a>
+    <a href="security">Security</a>
+    <a href="cite-vigyanllm">Cite Us</a>
+  </div>
+</div>
+<div class="footer-bottom"> <span>&copy; <script>document.write(new Date().getFullYear())</script> VigyanLLM Private Limited · Sovereign Research AI</span>
+  <span>WWW.VIGYANLLM.IN</span>
+</div>
+
+
+
+
+
+
+
+
+
+
+</footer>
+<!-- CLONING APP JS -->
+<script>
+var ENZYMES = [
+  {name:"EcoRI",  seq:"GAATTC",   overhang:"AATT", cut:1},
+  {name:"BamHI",  seq:"GGATCC",   overhang:"GATC", cut:1},
+  {name:"BglII",  seq:"AGATCT",   overhang:"GATC", cut:1},
+  {name:"Sau3AI", seq:"GATC",     overhang:"GATC", cut:1},
+  {name:"BclI",   seq:"TGATCA",   overhang:"GATC", cut:1},
+  {name:"SalI",   seq:"GTCGAC",   overhang:"TCGA", cut:1},
+  {name:"XhoI",   seq:"CTCGAG",   overhang:"TCGA", cut:1},
+  {name:"BstBI",  seq:"TTCGAA",   overhang:"CGAA", cut:1},
+  {name:"XbaI",   seq:"TCTAGA",   overhang:"CTAG", cut:1},
+  {name:"SpeI",   seq:"ACTAGT",   overhang:"CTAG", cut:1},
+  {name:"AvrII",  seq:"CCTAGG",   overhang:"CTAG", cut:1},
+  {name:"NheI",   seq:"GCTAGC",   overhang:"CTAG", cut:1},
+  {name:"HindIII",seq:"AAGCTT",   overhang:"AGCT", cut:1},
+  {name:"SacI",   seq:"GAGCTC",   overhang:"AGCT", cut:5},
+  {name:"PstI",   seq:"CTGCAG",   overhang:"TGCA", cut:5},
+  {name:"NsiI",   seq:"ATGCAT",   overhang:"TGCA", cut:5},
+  {name:"SphI",   seq:"GCATGC",   overhang:"CATG", cut:5},
+  {name:"KpnI",   seq:"GGTACC",   overhang:"GTAC", cut:5},
+  {name:"XmaI",   seq:"CCCGGG",   overhang:"CCGG", cut:1},
+  {name:"EagI",   seq:"CGGCCG",   overhang:"CCGG", cut:1},
+  {name:"BstZI",  seq:"CGGCCG",   overhang:"CCGG", cut:1},
+  {name:"NotI",   seq:"GCGGCCGC", overhang:"GGCC", cut:2},
+  {name:"ApaI",   seq:"GGGCCC",   overhang:"GGCC", cut:5},
+  {name:"NdeI",   seq:"CATATG",   overhang:"TA",   cut:2},
+  {name:"NcoI",   seq:"CCATGG",   overhang:"CCAT", cut:1},
+  {name:"SacII",  seq:"CCGCGG",   overhang:"CGCG", cut:4},
+  {name:"SmaI",   seq:"CCCGGG",   overhang:"blunt",cut:3},
+  {name:"EcoRV",  seq:"GATATC",   overhang:"blunt",cut:3},
+  {name:"PvuII",  seq:"CAGCTG",   overhang:"blunt",cut:3},
+  {name:"StuI",   seq:"AGGCCT",   overhang:"blunt",cut:3},
+  {name:"HpaI",   seq:"GTTAAC",   overhang:"blunt",cut:3},
+  {name:"SspI",   seq:"AATATT",   overhang:"blunt",cut:3},
+  {name:"PmeI",   seq:"GTTTAAAC", overhang:"blunt",cut:4},
+  {name:"SrfI",   seq:"GCCCGGGC", overhang:"blunt",cut:4},
+  {name:"FseI",   seq:"GGCCGGCC", overhang:"blunt",cut:6},
+  {name:"NruI",   seq:"TCGCGA",   overhang:"blunt",cut:3},
+  {name:"ScaI",   seq:"AGTACT",   overhang:"blunt",cut:3},
+  {name:"AluI",   seq:"AGCT",     overhang:"blunt",cut:2},
+  {name:"HaeIII", seq:"GGCC",     overhang:"blunt",cut:2},
+  {name:"MfeI",   seq:"CAATTG",   overhang:"AATT", cut:1},
+  {name:"PacI",   seq:"TTAATTAA", overhang:"AATT", cut:5}
+];
+function getEnzyme(name){
+  for(var i=0;i<ENZYMES.length;i++){if(ENZYMES[i].name===name)return ENZYMES[i];}
+  return null;
+}
+function overhangCompatible(a,b){
+  if(!a||!b)return false;
+  if(a===b)return true;
+  return a==="blunt"&&b==="blunt";
+}var VECTORS = {
+  "pUC19":{
+    name:"pUC19", size:2686, host:"E. coli", copy:"High copy",
+    features:[
+      {name:"AmpR (bla)", type:"res", start:1, end:800},
+      {name:"lacZα", type:"marker", start:100, end:500},
+      {name:"pMB1 ori", type:"ori", start:800, end:1400},
+      {name:"MCS", type:"mcs", start:397, end:450}
+    ],
+    sites:[
+      {enzyme:"EcoRI",  pos:397},{enzyme:"SacI", pos:403},{enzyme:"KpnI", pos:409},
+      {enzyme:"SmaI",  pos:414},{enzyme:"BamHI",pos:419},{enzyme:"XbaI", pos:425},
+      {enzyme:"SalI",  pos:431},{enzyme:"PstI", pos:437},{enzyme:"SphI", pos:443},
+      {enzyme:"HindIII",pos:448}
+    ]
+  },
+  "pBR322":{
+    name:"pBR322", size:4361, host:"E. coli", copy:"Low copy (~20/cell)",
+    features:[
+      {name:"tetR", type:"res", start:86, end:1276},
+      {name:"AmpR (bla)", type:"res", start:3293, end:4153},
+      {name:"pMB1 ori", type:"ori", start:2534, end:3122},
+      {name:"rop", type:"tag", start:1915, end:2106}
+    ],
+    sites:[
+      {enzyme:"EcoRI", pos:4361},{enzyme:"HindIII",pos:29},{enzyme:"SalI",  pos:2246},
+      {enzyme:"EcoRV", pos:3065},{enzyme:"ScaI",  pos:3735},{enzyme:"NruI",  pos:1006},
+      {enzyme:"NdeI",  pos:2291},{enzyme:"XmnI",  pos:1834}
+    ]
+  },
+  "pET-28a(+)":{
+    name:"pET-28a(+)", size:5369, host:"E. coli (BL21(DE3))", copy:"Low copy",
+    features:[
+      {name:"KanR", type:"res", start:3995, end:4807},
+      {name:"pBR322 ori", type:"ori", start:3286, end:3800},
+      {name:"T7 promoter", type:"prom", start:370, end:386},
+      {name:"lac operator", type:"prom", start:305, end:325},
+      {name:"T7 terminator", type:"prom", start:26, end:72},
+      {name:"6xHis (N)", type:"tag", start:270, end:287},
+      {name:"Thrombin", type:"tag", start:288, end:305},
+      {name:"T7 gene10 tag", type:"tag", start:207, end:239},
+      {name:"6xHis (C)", type:"tag", start:140, end:157},
+      {name:"MCS", type:"mcs", start:158, end:203}
+    ],
+    sites:[
+      {enzyme:"XhoI", pos:158},{enzyme:"NotI", pos:166},{enzyme:"HindIII",pos:173},
+      {enzyme:"SalI", pos:179},{enzyme:"SacI", pos:190},{enzyme:"EcoRI", pos:192},
+      {enzyme:"BamHI",pos:198},{enzyme:"NheI", pos:231},{enzyme:"NdeI",  pos:238},
+      {enzyme:"NcoI",  pos:296}
+    ]
+  },
+  "pcDNA3.1(+)":{
+    name:"pcDNA3.1(+)", size:5428, host:"Mammalian", copy:"High (in E. coli)",
+    features:[
+      {name:"CMV promoter", type:"prom", start:1, end:600},
+      {name:"AmpR (bla)", type:"res", start:4200, end:5100},
+      {name:"neoR/G418", type:"res", start:2200, end:2800},
+      {name:"pUC ori", type:"ori", start:3600, end:4200},
+      {name:"SV40 ori", type:"ori", start:2800, end:2900},
+      {name:"BGH polyA", type:"prom", start:254, end:310},
+      {name:"MCS", type:"mcs", start:190, end:253}
+    ],
+    sites:[
+      {enzyme:"NheI", pos:191},{enzyme:"PmeI", pos:198},{enzyme:"HindIII",pos:206},
+      {enzyme:"KpnI", pos:213},{enzyme:"BamHI",pos:225},{enzyme:"EcoRI", pos:243},
+      {enzyme:"EcoRV",pos:254},{enzyme:"NotI", pos:260},{enzyme:"XhoI", pos:267},
+      {enzyme:"XbaI", pos:274}
+    ]
+  },
+  "pGEX-4T-1":{
+    name:"pGEX-4T-1", size:4969, host:"E. coli (BL21)", copy:"High copy",
+    features:[
+      {name:"AmpR (bla)", type:"res", start:1377, end:2237},
+      {name:"ColE1 ori", type:"ori", start:2408, end:2996},
+      {name:"tac promoter", type:"prom", start:183, end:211},
+      {name:"lac operator", type:"prom", start:219, end:235},
+      {name:"lacIq promoter", type:"prom", start:3240, end:3317},
+      {name:"GST", type:"tag", start:258, end:911},
+      {name:"Thrombin", type:"tag", start:918, end:935},
+      {name:"MCS", type:"mcs", start:936, end:980}
+    ],
+    sites:[
+      {enzyme:"BamHI",pos:936},{enzyme:"EcoRI",pos:942},{enzyme:"SmaI", pos:948},
+      {enzyme:"SalI", pos:958},{enzyme:"XhoI", pos:964},{enzyme:"NotI", pos:971}
+    ]
+  },
+  "pBAD18":{
+    name:"pBAD18", size:4641, host:"E. coli", copy:"High copy",
+    features:[
+      {name:"AmpR (bla)", type:"res", start:3100, end:4000},
+      {name:"ColE1 ori", type:"ori", start:1, end:600},
+      {name:"araBAD (PBAD)", type:"prom", start:100, end:200},
+      {name:"araC", type:"reg", start:2800, end:3600},
+      {name:"rrnB terminators", type:"prom", start:500, end:600},
+      {name:"MCS", type:"mcs", start:280, end:352}
+    ],
+    sites:[
+      {enzyme:"NheI", pos:280},{enzyme:"NcoI", pos:295},{enzyme:"KpnI", pos:315},
+      {enzyme:"SmaI", pos:320},{enzyme:"BamHI",pos:325},{enzyme:"XbaI", pos:331},
+      {enzyme:"SalI", pos:337},{enzyme:"PstI", pos:343},{enzyme:"SphI", pos:347},
+      {enzyme:"HindIII",pos:352}
+    ]
+  },
+  "pGEM-T Easy":{
+    name:"pGEM-T Easy", size:3015, host:"E. coli", copy:"High copy",
+    features:[
+      {name:"AmpR (bla)", type:"res", start:1337, end:2197},
+      {name:"pMB1/pUC ori", type:"ori", start:1500, end:2200},
+      {name:"T7 promoter", type:"prom", start:2999, end:3015},
+      {name:"SP6 promoter", type:"prom", start:139, end:158},
+      {name:"lacZα", type:"marker", start:180, end:500},
+      {name:"MCS", type:"mcs", start:10, end:64}
+    ],
+    sites:[
+      {enzyme:"NotI", pos:43},{enzyme:"SacII",pos:46},{enzyme:"EcoRI", pos:52},
+      {enzyme:"SpeI", pos:55},{enzyme:"PstI", pos:75},{enzyme:"SalI",  pos:77},
+      {enzyme:"SacI", pos:94},{enzyme:"NdeI", pos:97},{enzyme:"NcoI",  pos:37},
+      {enzyme:"BstZI",pos:31}
+    ]
+  },
+  "pBluescript II KS(+)":{
+    name:"pBluescript II KS(+)", size:2961, host:"E. coli", copy:"High copy",
+    features:[
+      {name:"AmpR (bla)", type:"res", start:1, end:800},
+      {name:"pMB1/pUC ori", type:"ori", start:1213, end:1800},
+      {name:"f1 ori", type:"ori", start:366, end:457},
+      {name:"T7 promoter", type:"prom", start:2832, end:2850},
+      {name:"T3 promoter", type:"prom", start:474, end:492},
+      {name:"lacZα", type:"marker", start:460, end:854},
+      {name:"MCS", type:"mcs", start:510, end:568}
+    ],
+    sites:[
+      {enzyme:"KpnI", pos:510},{enzyme:"SacI", pos:516},{enzyme:"XmaI", pos:522},
+      {enzyme:"EagI", pos:528},{enzyme:"SpeI", pos:534},{enzyme:"BamHI",pos:540},
+      {enzyme:"SrfI", pos:546},{enzyme:"SmaI", pos:546},{enzyme:"PstI", pos:552},
+      {enzyme:"EcoRI",pos:562}
+    ]
+  },
+  "pIRES2-EGFP":{
+    name:"pIRES2-EGFP", size:5300, host:"Mammalian", copy:"Low copy",
+    features:[
+      {name:"CMV promoter", type:"prom", start:1, end:589},
+      {name:"KanR/NeoR", type:"res", start:3100, end:3900},
+      {name:"pUC ori", type:"ori", start:4500, end:5100},
+      {name:"SV40 ori", type:"ori", start:2900, end:3000},
+      {name:"f1 ori", type:"ori", start:4200, end:4400},
+      {name:"EGFP", type:"tag", start:1254, end:1973},
+      {name:"IRES", type:"prom", start:666, end:1250},
+      {name:"MCS", type:"mcs", start:591, end:665}
+    ],
+    sites:[
+      {enzyme:"EcoRI",pos:591},{enzyme:"BamHI",pos:600},{enzyme:"NheI", pos:640},
+      {enzyme:"HindIII",pos:645},{enzyme:"NotI", pos:650},{enzyme:"XhoI", pos:655},
+      {enzyme:"SalI", pos:660},{enzyme:"PstI", pos:665}
+    ]
+  },
+  "pCMV-Tag2B":{
+    name:"pCMV-Tag2B", size:4324, host:"Mammalian", copy:"High (in E. coli)",
+    features:[
+      {name:"CMV promoter", type:"prom", start:371, end:574},
+      {name:"KanR/NeoR", type:"res", start:2226, end:3017},
+      {name:"ColE1/pUC ori", type:"ori", start:3628, end:4216},
+      {name:"f1 ori", type:"ori", start:1246, end:1701},
+      {name:"FLAG", type:"tag", start:682, end:705},
+      {name:"Kozak", type:"tag", start:673, end:682},
+      {name:"SV40 polyA", type:"prom", start:1118, end:1239},
+      {name:"MCS", type:"mcs", start:706, end:773}
+    ],
+    sites:[
+      {enzyme:"BamHI",pos:706},{enzyme:"KpnI", pos:712},{enzyme:"SmaI", pos:718},
+      {enzyme:"ApaI", pos:720},{enzyme:"PstI", pos:726},{enzyme:"EcoRI",pos:732},
+      {enzyme:"EcoRV",pos:738},{enzyme:"HindIII",pos:744},{enzyme:"SalI", pos:756},
+      {enzyme:"XhoI", pos:762}
+    ]
+  }
+};
+var FEATURE_COLORS = {
+  res:"#22C55E", ori:"#3B82F6", prom:"#EF4444", tag:"#F59E0B",
+  marker:"#8B5CF6", reg:"#64748B", mcs:"#94A3B8", goi:"#FB923C"
+};var GOI_LIBRARY = {
+  "GFP": {
+    name: "GFP (eGFP)", size: 720, source: "EGFP CDS, pEGFP-N1 (GenBank U55762; Addgene 2491)",
+    seq: "ATGGTGAGCAAGGGCGAGGAGCTGTTCACCGGGGTGGTGCCCATCCTGGTCGAGCTGGACGGCGACGTAAACGGCCACAAGTTCAGCGTGTCCGGCGAGGGCGAGGGCGATGCCACCTACGGCAAGCTGACCCTGAAGTTCATCTGCACCACCGGCAAGCTGCCCGTGCCCTGGCCCACCCTCGTGACCACCCTGACCTACGGCGTGCAGTGCTTCAGCCGCTACCCCGACCACATGAAGCAGCACGACTTCTTCAAGTCCGCCATGCCCGAAGGCTACGTCCAGGAGCGCACCATCTTCTTCAAGGACGACGGCAACTACAAGACCCGCGCCGAGGTGAAGTTCGAGGGCGACACCCTGGTGAACCGCATCGAGCTGAAGGGCATCGACTTCAAGGAGGACGGCAACATCCTGGGGCACAAGCTGGAGTACAACTACAACAGCCACAACGTCTATATCATGGCCGACAAGCAGAAGAACGGCATCAAGGTGAACTTCAAGATCCGCCACAACATCGAGGACGGCAGCGTGCAGCTCGCCGACCACTACCAGCAGAACACCCCCATCGGCGACGGCCCCGTGCTGCTGCCCGACAACCACTACCTGAGCACCCAGTCCGCCCTGAGCAAAGACCCCAACGAGAAGCGCGATCACATGGTCCTGCTGGAGTTCGTGACCGCCGCCGGGATCACTCTCGGCATGGACGAGCTGTACAAGTAA"
+  },
+  "mCherry": {
+    name: "mCherry", size: 711, source: "mCherry CDS (GenBank AY678264; Addgene 165828)",
+    seq: "ATGGTGAGCAAGGGCGAGGAGGATAACATGGCCATCATCAAGGAGTTCATGCGCTTCAAGGTGCACATGGAGGGCTCCGTGAACGGCCACGAGTTCGAGATCGAGGGCGAGGGCGAGGGCCGCCCCTACGAGGGCACCCAGACCGCCAAGCTGAAGGTGACCAAGGGTGGCCCCCTGCCCTTCGCCTGGGACATCCTGTCCCCTCAGTTCATGTACGGCTCCAAGGCCTACGTGAAGCACCCCGCCGACATCCCCGACTACTTGAAGCTGTCCTTCCCCGAGGGCTTCAAGTGGGAGCGCGTGATGAACTTCGAGGACGGCGGCGTGGTGACCGTGACCCAGGACTCCTCCCTGCAGGACGGCGAGTTCATCTACAAGGTGAAGCTGCGCGGCACCAACTTCCCCTCCGACGGCCCCGTAATGCAGAAGAAGACCATGGGCTGGGAGGCCTCCTCCGAGCGGATGTACCCCGAGGACGGCGCCCTGAAGGGCGAGATCAAGCAGAGGCTGAAGCTGAAGGACGGCGGCCACTACGACGCTGAGGTCAAGACCACCTACAAGGCCAAGAAGCCCGTGCAGCTGCCCGGCGCCTACAACGTCAACATCAAGTTGGACATCACCTCCCACAACGAGGACTACACCATCGTGGAACAGTACGAACGCGCCGAGGGCCGCCACTCCACCGGCGGCATGGACGAGCTGTACAAGTAA"
+  },
+  "Luciferase": {
+    name: "Firefly Luciferase", size: 1653, source: "Photinus pyralis luciferase CDS, assembled from GenBank M15077 (join 304..429,487..694,746..1079,1128..1448,1498..1852,1896..2061,2109..2251); translation AAA29795.1",
+    seq: "ATGGAAGACGCCAAAAACATAAAGAAAGGCCCGGCGCCATTCTATCCTCTAGAGGATGGAACCGCTGGAGAGCAACTGCATAAGGCTATGAAGAGATACGCCCTGGTTCCTGGAACAATTGCTTTTACAGATGCACATATCGAGGTGAACATCACGTACGCGGAATACTTCGAAATGTCCGTTCGGTTGGCAGAAGCTATGAAACGATATGGGCTGAATACAAATCACAGAATCGTCGTATGCAGTGAAAACTCTCTTCAATTCTTTATGCCGGTGTTGGGCGCGTTATTTATCGGAGTTGCAGTTGCGCCCGCGAACGACATTTATAATGAACGTGAATTGCTCAACAGTATGAACATTTCGCAGCCTACCGTAGTGTTTGTTTCCAAAAAGGGGTTGCAAAAAATTTTGAACGTGCAAAAAAAATTACCAATAATCCAGAAAATTATTATCATGGATTCTAAAACGGATTACCAGGGATTTCAGTCGATGTACACGTTCGTCACATCTCATCTACCTCCCGGTTTTAATGAATACGATTTTGTACCAGAGTCCTTTGATCGTGACAAAACAATTGCACTGATAATGAATTCCTCTGGATCTACTGGGTTACCTAAGGGTGTGGCCCTTCCGCATAGAACTGCCTGCGTCAGATTCTCGCATGCCAGAGATCCTATTTTTGGCAATCAAATCATTCCGGATACTGCGATTTTAAGTGTTGTTCCATTCCATCACGGTTTTGGAATGTTTACTACACTCGGATATTTGATATGTGGATTTCGAGTCGTCTTAATGTATAGATTTGAAGAAGAGCTGTTTTTACGATCCCTTCAGGATTACAAAATTCAAAGTGCGTTGCTAGTACCAACCCTATTTTCATTCTTCGCCAAAAGCACTCTGATTGACAAATACGATTTATCTAATTTACACGAAATTGCTTCTGGGGGCGCACCTCTTTCGAAAGAAGTCGGGGAAGCGGTTGCAAAACGCTTCCATCTTCCAGGGATACGACAAGGATATGGGCTCACTGAGACTACATCAGCTATTCTGATTACACCCGAGGGGGATGATAAACCGGGCGCGGTCGGTAAAGTTGTTCCATTTTTTGAAGCGAAGGTTGTGGATCTGGATACCGGGAAAACGCTGGGCGTTAATCAGAGAGGCGAATTATGTGTCAGAGGACCTATGATTATGTCCGGTTATGTAAACAATCCGGAAGCGACCAACGCCTTGATTGACAAGGATGGATGGCTACATTCTGGAGACATAGCTTACTGGGACGAAGACGAACACTTCTTCATAGTTGACCGCTTGAAGTCTTTAATTAAATACAAAGGATATCAGGTGGCCCCCGCTGAATTGGAATCGATATTGTTACAACACCCCAACATCTTCGACGCGGGCGTGGCAGGTCTTCCCGACGATGACGCCGGTGAACTTCCCGCCGCCGTTGTTGTTTTGGAGCACGGAAAGACGATGACGGAAAAAGAGATCGTGGATTACGTCGCCAGTCAAGTAACAACCGCGAAAAAGTTGCGCGGAGGAGTTGTGTTTGTGGACGAAGTACCGAAAGGTCTTACCGGAAAACTCGACGCAAGAAAAATCAGAGAGATCCTCATAAAGGCCAAGAAGGGCGGAAAGTCCAAATTGTAA"
+  },
+  "LacZ_alpha": {
+    name: "LacZ α-fragment", size: 540, source: "E. coli lacZ N-terminal 540 bp (alpha region), lac operon (GenBank J01636)",
+    seq: "ATGACCATGATTACGGATTCACTGGCCGTCGTTTTACAACGTCGTGACTGGGAAAACCCTGGCGTTACCCAACTTAATCGCCTTGCAGCACATCCCCCTTTCGCCAGCTGGCGTAATAGCGAAGAGGCCCGCACCGATCGCCCTTCCCAACAGTTGCGCAGCCTGAATGGCGAATGGCGCTTTGCCTGGTTTCCGGCACCAGAAGCGGTGCCGGAAAGCTGGCTGGAGTGCGATCTTCCTGAGGCCGATACTGTCGTCGTCCCCTCAAACTGGCAGATGCACGGTTACGATGCGCCCATCTACACCAACGTAACCTATCCCATTACGGTCAATCCGCCGTTTGTTCCCACGGAGAATCCGACGGGTTGTTACTCGCTCACATTTAATGTTGATGAAAGCTGGCTACAGGAAGGCCAGACGCGAATTATTTTTGATGGCGTTAACTCGGCGTTTCATCTGTGGTGCAACGGGCGCTGGGTCGGTTACGGCCAGGACAGTCGTTTGCCGTCTGAATTTGACCTGAGCGCATTTTTACGCGCC"
+  }
+};var MAP_CX = 230, MAP_CY = 230;
+var MAP_BACK = 150;
+function bpAngle(bp, size){
+  return (bp - 1) / size * 360 - 90;
+}
+function polar(cx, cy, r, deg){
+  var rad = deg * Math.PI / 180;
+  return [cx + r * Math.cos(rad), cy + r * Math.sin(rad)];
+}
+function arcPath(cx, cy, r, startDeg, endDeg){
+  var s = polar(cx, cy, r, startDeg);
+  var e = polar(cx, cy, r, endDeg);
+  var large = (endDeg - startDeg) > 180 ? 1 : 0;
+  var sweep = 1;
+  if(endDeg < startDeg){ endDeg += 360; }
+  large = (endDeg - startDeg) > 180 ? 1 : 0;
+  return "M " + s[0].toFixed(1) + " " + s[1].toFixed(1) +
+         " A " + r + " " + r + " 0 " + large + " " + sweep + " " + e[0].toFixed(1) + " " + e[1].toFixed(1);
+}
+function renderPlasmid(svg, features, sites, size, opts){
+  opts = opts || {};
+  var ns = "http://www.w3.org/2000/svg";
+  svg.innerHTML = "";
+  var ringR = MAP_BACK;
+  var bg = document.createElementNS(ns, "circle");
+  bg.setAttribute("cx", MAP_CX); bg.setAttribute("cy", MAP_CY);
+  bg.setAttribute("r", ringR); bg.setAttribute("fill", "none");
+  bg.setAttribute("stroke", "#1E293B"); bg.setAttribute("stroke-width", "2");
+  svg.appendChild(bg);
+  var ring = document.createElementNS(ns, "circle");
+  ring.setAttribute("cx", MAP_CX); ring.setAttribute("cy", MAP_CY);
+  ring.setAttribute("r", 140); ring.setAttribute("fill", "none");
+  ring.setAttribute("stroke", "#E2E8F0"); ring.setAttribute("stroke-width", "26");
+  svg.appendChild(ring);
+  var ticks = document.createElementNS(ns, "circle");
+  ticks.setAttribute("cx", MAP_CX); ticks.setAttribute("cy", MAP_CY);
+  ticks.setAttribute("r", 140); ticks.setAttribute("fill", "none");
+  ticks.setAttribute("stroke", "#94A3B8"); ticks.setAttribute("stroke-width", "1");
+  ticks.setAttribute("stroke-dasharray", "1 14"); ticks.setAttribute("opacity", "0.5");
+  svg.appendChild(ticks);
+  var center = document.createElementNS(ns, "text");
+  center.setAttribute("x", MAP_CX); center.setAttribute("y", MAP_CY - 2);
+  center.setAttribute("text-anchor", "middle");
+  center.setAttribute("font-size", "11"); center.setAttribute("font-weight", "700");
+  center.setAttribute("fill", "#475569"); center.textContent = opts.label || "";
+  svg.appendChild(center);
+  var sub = document.createElementNS(ns, "text");
+  sub.setAttribute("x", MAP_CX); sub.setAttribute("y", MAP_CY + 14);
+  sub.setAttribute("text-anchor", "middle");
+  sub.setAttribute("font-size", "9"); sub.setAttribute("fill", "#94A3B8");
+  sub.textContent = (opts.sizeText || "") + " bp";
+  svg.appendChild(sub);
+  if(features){
+    features.forEach(function(f){
+      if(f.start > f.end) return;
+      var st = bpAngle(f.start, size), en = bpAngle(f.end, size);
+      var p = document.createElementNS(ns, "path");
+      p.setAttribute("d", arcPath(MAP_CX, MAP_CY, 140, st, en));
+      p.setAttribute("fill", "none");
+      p.setAttribute("stroke", FEATURE_COLORS[f.type] || "#94A3B8");
+      p.setAttribute("stroke-width", "26");
+      p.setAttribute("opacity", opts.dim && opts.dim !== f.type ? "0.18" : "0.85");
+      p.setAttribute("data-tip", f.name);
+      svg.appendChild(p);
+      var labelDeg = (st + en) / 2;
+      var lr = 198;
+      var lp = polar(MAP_CX, MAP_CY, lr, labelDeg);
+      var l = document.createElementNS(ns, "text");
+      l.setAttribute("x", lp[0]); l.setAttribute("y", lp[1]);
+      l.setAttribute("text-anchor", "middle"); l.setAttribute("font-size", "8.5");
+      l.setAttribute("fill", "#475569");
+      l.textContent = f.name.length > 14 ? f.name.slice(0, 13) + "…" : f.name;
+      svg.appendChild(l);
+    });
+  }
+  if(sites){
+    sites.forEach(function(s){
+      var ang = bpAngle(s.pos, size);
+      var p1 = polar(MAP_CX, MAP_CY, 126, ang);
+      var p2 = polar(MAP_CX, MAP_CY, 152, ang);
+      var line = document.createElementNS(ns, "line");
+      line.setAttribute("x1", p1[0]); line.setAttribute("y1", p1[1]);
+      line.setAttribute("x2", p2[0]); line.setAttribute("y2", p2[1]);
+      line.setAttribute("stroke", "#EF4444"); line.setAttribute("stroke-width", "1.6");
+      line.setAttribute("data-site", s.enzyme); line.setAttribute("data-pos", s.pos);
+      svg.appendChild(line);
+      var lp = polar(MAP_CX, MAP_CY, 158, ang);
+      var lbl = document.createElementNS(ns, "text");
+      lbl.setAttribute("x", lp[0]); lbl.setAttribute("y", lp[1]);
+      lbl.setAttribute("text-anchor", "middle"); lbl.setAttribute("font-size", "7.5");
+      lbl.setAttribute("fill", "#B91C1C");
+      lbl.textContent = s.enzyme;
+      svg.appendChild(lbl);
+    });
+  }
+}
+function bindMapTooltip(svg, tip){
+  var handler = function(ev){
+    var t = ev.target;
+    var hit = t.getAttribute && (t.getAttribute("data-tip") || t.getAttribute("data-site"));
+    if(hit){
+      var pos = t.getAttribute("data-pos");
+      tip.style.display = "block";
+      tip.style.left = (ev.offsetX + 12) + "px";
+      tip.style.top = (ev.offsetY - 10) + "px";
+      tip.textContent = pos ? (hit + " @ " + pos) : hit;
+    } else {
+      tip.style.display = "none";
+    }
+  };
+  svg.addEventListener("mousemove", handler);
+  svg.addEventListener("mouseleave", function(){ tip.style.display = "none"; });
+}var S = { vector: null, vectorName: "", vectorSeq: "", goi: null, goiSeq: "",
+          selected: [], vectorCuts: [], goiCuts: [], insertion: null,
+          recom: null, recomSites: [] };
+
+function $(id){ if(id.charAt(0)==="#"){ id = id.slice(1); } return document.getElementById(id); }
+function esc(s){ return String(s == null ? "" : s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+function initVectorGrid(){
+  var grid = $("vectorGrid");
+  grid.innerHTML = "";
+  Object.keys(VECTORS).forEach(function(k){
+    var v = VECTORS[k];
+    var card = document.createElement("div");
+    card.className = "vector-card";
+    card.innerHTML = "<div class='vc-name'>" + esc(v.name) + "</div>" +
+      "<div class='vc-meta'>" + v.size.toLocaleString() + " bp · " + esc(v.copy) + "</div>" +
+      "<div class='vc-desc'>" + esc(describeVector(v)) + "</div>";
+    card.onclick = function(){ chooseVector(k, null); };
+    grid.appendChild(card);
+  });
+  var card = document.createElement("div");
+  card.className = "vector-card vc-custom";
+  card.innerHTML = "<div class='vc-name'>+ Custom Vector</div><div class='vc-meta'>Paste your own sequence</div>";
+  card.onclick = function(){ $("customVectorInput").style.display = "block"; };
+  grid.appendChild(card);
+  var btn = document.createElement("div");
+  btn.className = "vc-btn";
+  btn.innerHTML = "Use Custom Vector";
+  btn.onclick = function(){ chooseVector("__custom__", $("customVectorName").value || "pCustom"); };
+  grid.appendChild(btn);
+}
+function describeVector(v){
+  var f = v.features.filter(function(x){ return x.type === "res"; });
+  var r = f.map(function(x){ return x.name; });
+  return "Host: " + v.host + (r.length ? " · Markers: " + r.join(", ") : "");
+}
+function chooseVector(key, overrideName){
+  S.vector = key === "__custom__" ? null : VECTORS[key];
+  S.vectorName = key === "__custom__" ? overrideName : key;
+  var seq = $("customVectorSeq").value;
+  S.vectorSeq = key === "__custom__" ? (seq ? seq.replace(/[^ATGCatgc]/g,"").toUpperCase() : "") : "";
+  if(key !== "__custom__"){
+    $("customVectorInput").style.display = "none";
+    $("customVectorName").value = ""; $("customVectorSeq").value = "";
+  }
+  renderVectorInfo();
+  $("stepBar").children[0].classList.add("active");
+}
+function renderVectorInfo(){
+  var size = S.vector ? S.vector.size : (S.vectorSeq ? S.vectorSeq.length : 0);
+  var feats = [];
+  var sites = [];
+  var label = S.vectorName + (S.vectorSeq ? " (custom)" : "");
+  if(S.vector){
+    feats = S.vector.features; sites = S.vector.sites;
+    renderPlasmid($("plasmidMap"), feats, sites, size, { label: label, sizeText: size });
+    bindMapTooltip($("plasmidMap"), $("enzymeTooltip"));
+  } else if(S.vectorSeq){
+    renderPlasmid($("plasmidMap"), [], sites, size, { label: label, sizeText: size });
+    bindMapTooltip($("plasmidMap"), $("enzymeTooltip"));
+  }
+  if(size > 0){
+    $("vectorInfo").style.display = "block";
+    var sb = [];
+    sb.push("<strong style='font-size:13px'>" + esc(S.vectorName) + "</strong>");
+    sb.push("<div class='legend-row' style='margin-top:6px'>Size: <strong>" + size.toLocaleString() + " bp</strong></div>");
+    if(S.vector && S.vector.host) sb.push("<div class='legend-row'>Host: " + esc(S.vector.host) + "</div>");
+    if(S.vector && S.vector.copy) sb.push("<div class='legend-row'>Copy number: " + esc(S.vector.copy) + "</div>");
+    if(S.vector && S.vector.features){
+      sb.push("<div style='margin-top:8px' class='legend-row'><strong>Features:</strong> " +
+        S.vector.features.map(function(f){ return esc(f.name); }).join(" · ") + "</div>");
+    }
+    if(sites && sites.length){
+      sb.push("<div style='margin-top:8px' class='legend-row'><strong>Restriction sites (" + sites.length + "):</strong> " +
+        sites.map(function(s){ return s.enzyme + " (" + s.pos + ")"; }).join(" · ") + "</div>");
+    }
+    $("vectorInfoBody").innerHTML = sb.join("");
+  } else {
+    $("vectorInfo").style.display = "none";
+  }
+}
+
+function selectGOI(v){
+  if(v === "custom"){
+    $("customGOIInput").style.display = "block";
+    $("goiInfo").style.display = "none";
+    $("goiSitesDetail").style.display = "none";
+    return;
+  }
+  $("customGOIInput").style.display = "none";
+  if(!v){
+    $("goiInfo").style.display = "none"; $("goiSitesDetail").style.display = "none";
+    return;
+  }
+  var g = GOI_LIBRARY[v];
+  S.goi = g;
+  S.goiSeq = g.seq;
+  var gc = gcPct(S.goiSeq);
+  $("goiLength").textContent = S.goiSeq.length.toLocaleString();
+  $("goiGC").textContent = gc.toFixed(1) + "%";
+  $("goiInfo").style.display = "block";
+  renderGOISites();
+}
+function gcPct(seq){
+  var c = 0;
+  for(var i=0;i<seq.length;i++){ var b=seq[i]; if(b==="G"||b==="C") c++; }
+  return seq.length ? c/seq.length*100 : 0;
+}
+function renderGOISites(){
+  var hits = [];
+  ENZYMES.forEach(function(en){
+    var pos = findSites(S.goiSeq, en);
+    if(pos.length) hits.push({en: en.name, n: pos.length, pos: pos});
+  });
+  if(hits.length){
+    $("goiSitesDetail").style.display = "block";
+    $("goiSitesBody").innerHTML = hits.map(function(h){
+      return "<tr><td>" + esc(h.en) + "</td><td>" + esc(getEnzyme(h.en).seq) + "</td><td>" + h.n + "</td><td>" +
+        h.pos.slice(0,6).map(function(p){return p+1;}).join(", ") + (h.pos.length>6?" (+"+(h.pos.length-6)+" more)":"") + "</td></tr>";
+    }).join("");
+    $("goiSites").textContent = hits.length;
+  } else {
+    $("goiSitesDetail").style.display = "none";
+    $("goiSites").textContent = "None";
+  }
+}
+function findSites(seq, en){
+  var out = [];
+  var i = seq.indexOf(en.seq);
+  while(i !== -1){ out.push(i + en.cut); i = seq.indexOf(en.seq, i + 1); }
+  return out;
+}
+
+function initEnzymeList(){
+  var wrap = $("enzymeCheckList");
+  wrap.innerHTML = "";
+  ENZYMES.forEach(function(en){
+    var label = document.createElement("label");
+    label.className = "enzyme-check";
+    label.innerHTML = "<input type='checkbox' value='" + esc(en.name) + "' onchange='updateSelected()'>" +
+      "<span class='ec-name'>" + esc(en.name) + "</span><span class='ec-siteseq'>" + esc(en.seq) + "</span>" +
+      "<span class='ec-oh'>" + esc(en.overhang === "blunt" ? "blunt" : en.overhang) + "</span>";
+    wrap.appendChild(label);
+  });
+}
+function updateSelected(){
+  S.selected = [];
+  var boxes = document.querySelectorAll("#enzymeCheckList input:checked");
+  boxes.forEach(function(b){ S.selected.push(getEnzyme(b.value)); });
+}
+
+function simulateDigestion(){
+  if(!S.vector && !S.vectorSeq){
+    alert("Choose a vector in Step 1 first."); goToStep(1); return;
+  }
+  if(!S.selected.length){
+    alert("Select at least one restriction enzyme."); return;
+  }
+  var vsize = S.vector ? S.vector.size : S.vectorSeq.length;
+  var vseq = S.vectorSeq || null;
+  S.vectorCuts = [];
+  S.goiCuts = [];
+  S.selected.forEach(function(en){
+    if(vseq){
+      findSites(vseq, en).forEach(function(c){ S.vectorCuts.push({pos: c % vsize, en: en}); });
+    } else if(S.vector && S.vector.sites){
+      S.vector.sites.forEach(function(si){
+        if(si.enzyme === en.name && si.pos >= 1 && si.pos <= vsize){
+          S.vectorCuts.push({pos: (si.pos + en.cut - 1) % vsize, en: en});
+        }
+      });
+    }
+    if(S.goiSeq){
+      findSites(S.goiSeq, en).forEach(function(c){ S.goiCuts.push({pos: c, en: en}); });
+    }
+  });
+  S.vectorCuts.sort(function(a,b){ return a.pos - b.pos; });
+  S.goiCuts.sort(function(a,b){ return a.pos - b.pos; });
+  var vfrags = circularFragments(vsize, S.vectorCuts.map(function(c){ return c.pos; }));
+  var gfrags = S.goiSeq ? linearFragments(S.goiSeq.length, S.goiCuts.map(function(c){ return c.pos; })) : [];
+  var vNames = uniqueNames(S.vectorCuts);
+  var gNames = uniqueNames(S.goiCuts);
+  var vSingle = vNames.length === 1;
+  var typesBlunt = S.selected.some(function(en){ return en.overhang === "blunt"; });
+
+  var out = $("vectorDigestResult");
+  if(S.vectorCuts.length === 0){
+    out.innerHTML = "<div class='warn'>No selected enzyme cuts this vector (" + vsize.toLocaleString() + " bp) — plasmid remains circular.</div>";
+  } else {
+    out.innerHTML = "<div class='legend-row'>Cuts at: " + S.vectorCuts.map(function(c){ return c.en.name + "@" + (c.pos+1); }).join(" · ") + "</div>" +
+      "<div class='legend-row'>Fragments: " + vfrags.map(function(f){ return f.toLocaleString() + " bp"; }).join(" · ") +
+      (vSingle ? " (linearized)" : "") + "</div>";
+  }
+  $("#digestFragsBody").innerHTML = "";
+  S.vectorFrag = vfrags; S.goiFrag = gfrags;
+  var rows = [];
+  vfrags.forEach(function(f, idx){
+    rows.push("<tr><td>Vector</td><td>" + (vfrags.length > 1 ? "fragment " + (idx+1) : "linearized vector") + "</td><td>" + f.toLocaleString() + "</td><td>" + endsLabelVector(idx) + "</td></tr>");
+  });
+  gfrags.forEach(function(f, idx){
+    rows.push("<tr><td>GOI</td><td>" + (gfrags.length > 1 ? "fragment " + (idx+1) : "uncut insert") + "</td><td>" + f.toLocaleString() + "</td><td>" + endsLabelGOI(idx) + "</td></tr>");
+  });
+  if(!rows.length){
+    rows.push("<tr><td colspan='4' style='color:var(--muted);text-align:center'>No fragments — no cuts detected</td></tr>");
+  }
+  $("digestFragsBody").innerHTML = rows.join("");
+
+  S.vectorNames = vNames; S.goiNames = gNames;
+  renderCompat();
+  $("digestResults").style.display = "block";
+  $("toLigationBtn").style.display = "inline-block";
+  buildInsertionSelect();
+  var gelGoi = $("goiDigestResult");
+  if(S.goiSeq){
+    if(S.goiCuts.length === 0){
+      gelGoi.innerHTML = "<div class='legend-row'>GOI digest: no selected enzyme cuts the insert (" + S.goiSeq.length.toLocaleString() + " bp remains intact).</div>";
+    } else {
+      gelGoi.innerHTML = "<div class='legend-row'>GOI cuts at: " + S.goiCuts.map(function(c){ return c.en.name + "@" + (c.pos+1); }).join(" · ") + "</div>" +
+        "<div class='legend-row'>Fragments: " + gfrags.map(function(f){ return f.toLocaleString() + " bp"; }).join(" · ") + "</div>";
+    }
+  } else {
+    S.goiFrag = [];
+    gelGoi.innerHTML = "<div class='warn'>No gene of interest selected. Add one in Step 2 to model the insert digest.</div>";
+  }
+  $("toGelBtn").style.display = "inline-block";
+}
+function uniqueNames(cuts){
+  var m = {}; cuts.forEach(function(c){ m[c.en.name] = 1; });
+  return Object.keys(m);
+}
+function endsLabelVector(idx){
+  if(!S.vectorCuts.length) return "intact circle";
+  var en = S.vectorCuts[idx].en;
+  var nxt = S.vectorCuts[(idx+1) % S.vectorCuts.length].en;
+  var oh = en.overhang;
+  return (oh === "blunt" ? "blunt" : "5'-" + oh) + "/" + (nxt.overhang === "blunt" ? "blunt" : "5'-" + nxt.overhang);
+}
+function endsLabelGOI(idx){
+  if(!S.goiCuts.length) return "linear insert";
+  var en = S.goiCuts[Math.min(idx, S.goiCuts.length-1)].en;
+  var oh = en.overhang;
+  return (oh === "blunt" ? "blunt" : "5'-" + oh);
+}
+function circularFragments(size, cuts){
+  if(!cuts.length) return [size];
+  var c = cuts.slice().sort(function(a,b){ return a-b; });
+  var out = [];
+  for(var i=0;i<c.length;i++){
+    var next = (i+1 < c.length) ? c[i+1] : c[0] + size;
+    var d = next - c[i];
+    if(d > 0) out.push(d);
+  }
+  if(!c.length || c.length === 1){
+    return [size];
+  }
+  return out;
+}
+function linearFragments(size, cuts){
+  if(!cuts.length) return [size];
+  var c = cuts.slice().sort(function(a,b){ return a-b; });
+  var out = [];
+  var prev = 0;
+  c.forEach(function(p){
+    out.push(p - prev); prev = p;
+  });
+  out.push(size - prev);
+  return out.filter(function(x){ return x > 0; });
+}
+
+function renderCompat(){
+  var box = $("compatResult");
+  var msgs = [];
+  if(S.vectorNames.length && S.goiNames.length){
+    var vEn = S.vectorNames[0], gEn = S.goiNames[0];
+    var vObj = getEnzyme(vEn), gObj = getEnzyme(gEn);
+    if(vEn === gEn){
+      msgs.push("<strong>Same enzyme</strong> (" + vEn + ") — fully compatible; ligation regenerates the site.");
+    } else if(overhangCompatible(vObj.overhang, gObj.overhang)){
+      msgs.push("<strong>Isocaudomer pair</strong> — " + vEn + " (" + vObj.overhang + ") / " + gEn + " (" + gObj.overhang + ") share identical overhangs and will ligate (usually destroying both sites).");
+    } else if(S.vectorNames.some(function(n){ return getEnzyme(n).overhang === "blunt"; }) &&
+              S.goiNames.some(function(n){ return getEnzyme(n).overhang === "blunt"; })){
+      msgs.push("<strong>Blunt-ended</strong> — blunt ends from either pair ligate, but at lower efficiency than sticky ends.");
+    } else {
+      msgs.push("<strong>Incompatible ends</strong> — " + vEn + " leaves 5'-" + vObj.overhang + "-3', " + gEn + " leaves 5'-" + gObj.overhang + "-3'. These will not ligate without end repair.");
+    }
+  } else if(S.vectorNames.length && S.goiSeq){
+    msgs.push("Vector cuts (" + S.vectorNames.join(", ") + "), but the GOI has <strong>no</strong> sites for the selected enzymes — the insert will not be digested, so there is nothing to ligate. Choose an enzyme that also cuts the insert (check Step 2 internal sites), or pick a compatible isocaudomer.");
+  } else if(S.vectorNames.length){
+    msgs.push("Vector will be cut by " + S.vectorNames.join(", ") + ". Add a GOI in Step 2 to check insert compatibility.");
+  }
+  if(S.goiCuts.length){
+    msgs.push("<span class='warn'>⚠ " + S.goiCuts.length + " internal cut(s) in the GOI (" + S.goiCuts.map(function(c){ return c.en.name + "@" + (c.pos+1); }).join(" · ") + ").</span>");
+  }
+  box.innerHTML = "<div class='legend-row'>" + msgs.join("</div><div class='legend-row'>") + "</div>";
+  box.style.display = "block";
+  box.className = "compat-box" + (msgs.some(function(m){ return m.indexOf("Incompatible") !== -1 || m.indexOf("internal cut") !== -1; }) ? " bad" : " ok");
+}
+function buildInsertionSelect(){
+  var sel = $("insertionSiteSelect");
+  sel.innerHTML = "";
+  var seen = {};
+  S.vectorCuts.forEach(function(c){
+    var key = c.en.name + "@" + (c.pos+1);
+    if(!seen[key]){
+      seen[key] = 1;
+      var opt = document.createElement("option");
+      opt.value = c.pos;
+      opt.textContent = c.en.name + " site @ " + (c.pos+1);
+      sel.appendChild(opt);
+    }
+  });
+  if(!sel.options.length){
+    var opt = document.createElement("option");
+    opt.value = 0; opt.textContent = "No cut — pick an enzyme first";
+    sel.appendChild(opt);
+  }
+}
+function updateInsertionPreview(){
+  var sel = $("insertionSiteSelect");
+  S.insertion = parseInt(sel.value, 10) || 0;
+}
+
+function simulateLigation(){
+  if(!S.goiSeq){
+    alert("Choose a gene of interest in Step 2 first."); goToStep(2); return;
+  }
+  updateInsertionPreview();
+  var vsize = S.vector ? S.vector.size : S.vectorSeq.length;
+  var insertLen = S.goiSeq.length;
+  var recomSize = vsize + insertLen;
+  $("recomSize").textContent = recomSize.toLocaleString();
+  $("recomInsert").textContent = insertLen.toLocaleString();
+  $("recomVector").textContent = vsize.toLocaleString();
+  var feats = [];
+  var sites = [];
+  var label;
+  if(S.vector){
+    feats = S.vector.features.map(function(f){
+      var start = f.start >= S.insertion ? f.start + insertLen : f.start;
+      var end = f.end >= S.insertion ? f.end + insertLen : f.end;
+      return { name: f.name, type: f.type, start: start, end: end };
+    });
+    sites = S.vector.sites.map(function(s){
+      return { enzyme: s.enzyme, pos: s.pos >= S.insertion ? s.pos + insertLen : s.pos };
+    });
+    label = S.vectorName;
+  } else {
+    feats = [];
+    sites = [];
+    label = S.vectorName;
+  }
+  var goiStart = S.insertion;
+  feats.push({ name: S.goi.name, type: "goi", start: goiStart, end: goiStart + insertLen });
+  S.compatEnds = { vec: S.vectorNames[0] || "—", goi: S.goiNames[0] || "—" };
+  if(S.goiCuts.length){
+    S.goiCuts.forEach(function(c){
+      sites.push({ enzyme: c.en.name, pos: goiStart + c.pos });
+    });
+  }
+  renderPlasmid($("recomMap"), feats, sites, recomSize, { label: label + " + " + S.goi.name, sizeText: recomSize });
+  bindMapTooltip($("recomMap"), $("recomTooltip"));
+  $("recomLegend").innerHTML = "<div class='legend-row'><span class='legend-swatch' style='background:" + FEATURE_COLORS.goi + "'></span> GOI insert (orange) inserted at position " + (goiStart+1) + "</div>";
+  var siteRows = sites.slice().sort(function(a,b){ return a.pos - b.pos; }).map(function(s){
+    return "<tr><td>" + esc(s.enzyme) + "</td><td>" + (s.pos+1) + "</td><td>" + regionLabel(feats, s.pos) + "</td></tr>";
+  });
+  $("recomSitesBody").innerHTML = siteRows.length ? siteRows.join("") :
+    "<tr><td colspan='3' style='color:var(--muted);text-align:center'>No predicted cut sites</td></tr>";
+  $("recombinantResult").style.display = "block";
+  var storedSites = sites;
+  S.recomSites = sites;
+  S.recomSize = recomSize;
+  S.recomFeats = feats;
+  var tbl = $("recomSitesTable");
+  var oldWarn = tbl && tbl.parentNode.querySelector(".ligation-warn");
+  if(oldWarn){ oldWarn.parentNode.removeChild(oldWarn); }
+  if(S.goiNames && !S.goiNames.length){
+    var warn = document.createElement("div");
+    warn.className = "warn";
+    warn.style.cssText = "margin-top:12px;font-size:12px";
+    warn.textContent = "⚠ Warning: the GOI has no cut sites for the selected enzymes, so no compatible insert ends were generated. This ligation could not happen in a real experiment — re-run Step 3 with an enzyme that also cuts the insert.";
+    var tbl = $("recomSitesTable");
+    if(tbl && !tbl.parentNode.querySelector(".ligation-warn")){
+      warn.className += " ligation-warn";
+      tbl.parentNode.insertBefore(warn, tbl);
+    }
+  }
+}
+function regionLabel(feats, pos){
+  var hit = feats.find(function(f){ return pos >= f.start && pos <= f.end; });
+  return hit ? hit.name : "backbone";
+}
+function resetSimulation(){
+  S = { vector: null, vectorName: "", vectorSeq: "", goi: null, goiSeq: "",
+        selected: [], vectorCuts: [], goiCuts: [], insertion: null, recom: null, recomSites: [] };
+  $("vectorGrid").innerHTML = "";
+  initVectorGrid();
+  $("customVectorInput").style.display = "none";
+  $("customVectorName").value = ""; $("customVectorSeq").value = "";
+  renderPlasmid($("plasmidMap"), [], [], 0, { label: "", sizeText: 0 });
+  $("vectorInfo").style.display = "none";
+  var sel = $("goiSelect"); sel.value = "";
+  $("customGOIInput").style.display = "none"; $("customGOIName").value = ""; $("customGOISeq").value = "";
+  $("goiInfo").style.display = "none"; $("goiSitesDetail").style.display = "none";
+  document.querySelectorAll("#enzymeCheckList input").forEach(function(i){ i.checked = false; });
+  S.selected = [];
+  $("digestResults").style.display = "none";
+  $("recombinantResult").style.display = "none";
+  $("toLigationBtn").style.display = "none";
+  $("toGelBtn").style.display = "none";
+  step = 1;
+  renderSteps();
+}
+
+/* ---- virtual gel ---- */
+var LADDER = [100,200,300,400,500,650,800,1000,1500,2000,3000,4000,5000,7000,10000];
+var GEL_NUM_LANES = 5;
+var GEL_LANE_X = [90, 215, 340, 465, 590];
+var GEL_WELL_Y = 46;
+var GEL_MAX_Y = 372;
+var GEL_MIN_LOG = 2, GEL_MAX_LOG = 4.1;
+function renderGel(){
+  var svg = $("gelSVG"); var ns = "http://www.w3.org/2000/svg";
+  svg.innerHTML = "";
+  svg.appendChild(rectEl(ns, 20, 20, 680, 388, "#0F172A", "none", 0));
+  svg.appendChild(rectEl(ns, 20, 20, 680, 388, "none", "#1E293B", 2));
+  GEL_LANE_X.forEach(function(cx){
+    svg.appendChild(rectEl(ns, cx-46, GEL_WELL_Y, 92, GEL_MAX_Y - GEL_WELL_Y, "rgba(148,163,184,0.06)", "none", 0));
+    svg.appendChild(rectEl(ns, cx-30, GEL_WELL_Y, 60, 10, "#0F172A", "#334155", 1));
+  });
+  var lanes = gelLaneSamples();
+  for(var li=0; li<lanes.length; li++){
+    var cx = GEL_LANE_X[li];
+    lanes[li].forEach(function(band){
+      var y = bandY(band.size);
+      var op = 0.5 + 0.5 * Math.min(1, band.mass / 20000);
+      var el = document.createElementNS(ns, "ellipse");
+      el.setAttribute("cx", cx); el.setAttribute("cy", y);
+      el.setAttribute("rx", 26); el.setAttribute("ry", 7);
+      el.setAttribute("fill", "#34D399"); el.setAttribute("opacity", op);
+      svg.appendChild(el);
+      var t = document.createElementNS(ns, "text");
+      t.setAttribute("x", cx + 30); t.setAttribute("y", y + 3);
+      t.setAttribute("font-size", "8"); t.setAttribute("fill", "#94A3B8");
+      t.textContent = band.size.toLocaleString();
+      svg.appendChild(t);
+    });
+  }
+  var lab = document.createElementNS(ns, "text");
+  lab.setAttribute("x", 60); lab.setAttribute("y", 22);
+  lab.setAttribute("font-size", "9"); lab.setAttribute("fill", "#CBD5E1");
+  lab.textContent = "Ladder";
+  svg.appendChild(lab);
+  var letters = ["1","2","3","4","5"];
+  for(var k=0;k<letters.length;k++){
+    var lt = document.createElementNS(ns, "text");
+    lt.setAttribute("x", GEL_LANE_X[k]); lt.setAttribute("y", 36);
+    lt.setAttribute("text-anchor", "middle"); lt.setAttribute("font-size", "9");
+    lt.setAttribute("fill", "#CBD5E1");
+    lt.textContent = letters[k];
+    svg.appendChild(lt);
+  }
+  var laneNames = ["Ladder (100 bp–10 kb)", "Undigested vector", "Vector digest", "GOI digest", "Recombinant digest"];
+  $("gelLaneBody").innerHTML = laneNames.map(function(nm, i){
+    return "<tr><td>" + nm + "</td><td>" + lanes[i].map(function(b){ return b.size.toLocaleString(); }).join(", ") + "</td></tr>";
+  }).join("");
+  return lanes;
+}
+function rectEl(ns, x, y, w, h, fill, stroke, sw){
+  var r = document.createElementNS(ns, "rect");
+  r.setAttribute("x", x); r.setAttribute("y", y); r.setAttribute("width", w); r.setAttribute("height", h);
+  if(fill !== "none"){ r.setAttribute("fill", fill); } else { r.setAttribute("fill", "none"); }
+  if(stroke){ r.setAttribute("stroke", stroke); r.setAttribute("stroke-width", sw); }
+  return r;
+}
+function bandY(size){
+  var log = Math.log10(size);
+  var frac = (GEL_MAX_LOG - Math.min(GEL_MAX_LOG, Math.max(GEL_MIN_LOG, log))) / (GEL_MAX_LOG - GEL_MIN_LOG);
+  return GEL_WELL_Y + 14 + (GEL_MAX_Y - GEL_WELL_Y - 18) * frac;
+}
+function gelLaneSamples(){
+  var lanes = [];
+  lanes.push(LADDER.map(function(s){ return { size: s, mass: s }; }));
+  var vsize = S.vector ? S.vector.size : (S.vectorSeq ? S.vectorSeq.length : 0);
+  if(S.vectorFrag){
+    lanes.push([{size: vsize, mass: vsize}]);  // supercoiled vector approximations
+  } else if(vsize){
+    lanes.push([{size: vsize, mass: vsize}]);
+  } else {
+    lanes.push([]);
+  }
+  lanes.push((S.vectorFrag || []).map(function(f){ return { size: f, mass: f }; }));
+  lanes.push((S.goiFrag || []).map(function(f){ return { size: f, mass: f }; }));
+  if(S.recomSize){
+    lanes.push([{ size: S.recomSize, mass: S.recomSize }].concat((S.recomSites && S.recomSites.length >= 2 && S.recomSize ? digestRecom() : [])));
+  } else {
+    lanes.push([]);
+  }
+  return lanes;
+}
+function digestRecom(){
+  var cuts = S.recomSites.map(function(s){ return s.pos; }).sort(function(a,b){ return a-b; });
+  return circularFragments(S.recomSize, cuts)
+    .filter(function(f){ return f < S.recomSize; })
+    .map(function(f){ return { size: f, mass: f }; });
+}
+
+/* ---- step navigation ---- */
+var step = 1;
+function goToStep(n){
+  step = n;
+  if(n === 5) renderGel();
+  renderSteps();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+function renderSteps(){
+  var pills = $("stepBar").children;
+  for(var i=0;i<pills.length;i++){
+    var p = pills[i];
+    p.classList.toggle("active", (i+1) === step);
+    p.classList.toggle("disabled", (i+1) !== step);
+  }
+  for(var s=1;s<=5;s++){
+    var panel = $("step" + s);
+    if(panel){
+      panel.classList.toggle("active", s === step);
+    }
+  }
+}
+
+/* ---- DOMContentLoaded ---- */
+document.addEventListener("DOMContentLoaded", function(){
+  initVectorGrid();
+  initEnzymeList();
+  renderPlasmid($("plasmidMap"), [], [], 0, { label: "", sizeText: 0 });
+  bindMapTooltip($("plasmidMap"), $("enzymeTooltip"));
+  var h = document.getElementById("hamburger"), m = document.getElementById("mobile-menu");
+  if(h && m){
+    h.addEventListener("click", function(){ h.classList.toggle("active"); m.classList.toggle("open"); });
+    m.querySelectorAll("a").forEach(function(l){
+      l.addEventListener("click", function(){ m.classList.remove("open"); h.classList.remove("active"); });
+    });
+  }
+  window.closeMobileMenu = function(){ if(m){ m.classList.remove("open"); if(h) h.classList.remove("active"); } };
+});</script>
+<script src="/search-index.js"></script>
+<script src="/auth-shared.js"></script>
+<script src="/cookie-banner.js" defer></script>
+</body>
+</html>
