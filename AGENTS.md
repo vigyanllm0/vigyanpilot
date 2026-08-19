@@ -1,6 +1,24 @@
 # AGENTS.md — Agent Handoff & Tracking
 
 **Session:** Week 2 tool rewrite sprint — COMPLETE (8 pages) → Week 3 blog rewrites — COMPLETE (8/8) + SERP snippet optimization
+
+## Anti-Cannibalization Policy (from 2026-08-19 GSC analysis)
+
+**Context**: 71 blog pages pull 51,325 imps @ 0.25% CTR, cannibalizing tool pages (44,918 imps/month stolen; ~1,258 wasted clicks/mo at 3%). Worst: ncbi-primer-blast-guide 39,444 imps vs /primer 1,583; 41 PCR blogs (7,985 imps) vs /pcr-analysis (84 imps) = 95:1.
+
+**6 rules for ALL blog posts from now on:**
+1. **Blog = informational queries only** ("what is X vs Y", "how does X work"). Tool pages answer tool-intent ("free X tool", "X calculator"). Never write a blog targeting a tool query.
+2. **Above-fold CTA within first 300 words**, visually distinct, linking the tool page. Teal gradient template (0d9488→0f766e) defined in the cloning blog prompt.
+3. **Title passes authority to the tool**: `"[Topic] — Try the Free [Tool Name] | VigyanLLM"` format (cloning post used `"[Topic] | VigyanLLM"`).
+4. **3-5 varied anchor-text links** to the tool page: "try the free [tool]", "design with our [tool]", "open the [tool]", "use the [tool]".
+5. **Blog schema = `Article`**; tool page schema = `SoftwareApplication`. Never mix. `og:type` = article for blogs, website for tools.
+6. **Meta description leads with education, ends with tool**: `"[Educational value]. Try VigyanLLM's free [tool] — [one differentiator]."`
+
+**FAQ rule**: blogs answer conceptual/method questions only — NO "how to use the tool" (that lives on the tool page's own FAQPage schema).
+
+**Funnel CTA backlog (post-Aug 27, by wasted imps):** Tier 2 → pcr-steps(1,211)/pcr-primer-design-rules(1,144)/real-time-pcr-data-analysis(954)→/pcr-analysis, rt-pcr-vs-qpcr(825)→/pcr-analysis, primer-dimer-fix(824)→/primer, digital-pcr-vs-qpcr(641)→/pcr-analysis, primer-design-mrna(554)→/primer, taqman-vs-sybr-green(399)→/pcr-analysis, pcr-troubleshooting-guide(394)→/pcr-analysis, types-of-pcr(322)→/pcr-analysis. Tier 3 → touchdown-pcr-protocol, pcr-protocol-beginners, nested-pcr-primer-design, bisulfite-conversion-pcr-primer-design, ai-primer-design-machine-learning, long-range-pcr-nanopore-sequencing-primer-design. crispr-grna-design-guide→/crispr-analysis DEFERRED (tool not live). Full prompt doc at `/Users/macbookpro/Downloads/cloning-blog-prompt-anti-cannibalization.md`.
+
+
 **Next Sprint:** **Week 3** — Top-10 blog rewrites (Agent 63: Lab Notebook / Middle Mile / Indian Academic) + SERP snippet optimization (Agent 69: title/meta for top-20-by-impressions non-tool pages) → **2026-08-27 Sprint Impact Re-Measurement** below → Phase 2 — credibility (validation benchmark page live; wire faculty outreach next) → design-audit Sprint 2+ → CMS decline-cookie re-verify → **fix 145 pre-existing glossary OG-image 404s** → DB plan/token diff → final sweep
 
 ## 2026-08-27 — Sprint Impact Re-Measurement
