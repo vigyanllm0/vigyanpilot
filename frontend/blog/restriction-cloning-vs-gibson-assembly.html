@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en-IN">
+<head>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('consent', 'default', {
+    'ad_storage': 'denied',
+    'ad_user_data': 'denied',
+    'ad_personalization': 'denied',
+    'analytics_storage': 'denied',
+    'region': ['AT','BE','BG','HR','CY','CZ','DK','EE','FI','FR','DE','GR','HU','IE','IT','LV','LT','LU','MT','NL','PL','PT','RO','SK','SI','ES','SE'],
+    'wait_for_update': 500
+  });
+  gtag('js', new Date());
+  gtag('config', 'G-70DENW1WXB', {
+    'anonymize_ip': true,
+    'allow_google_signals': false,
+    'cookie_flags': 'SameSite=None; Secure'
+  });
+</script>
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-KRP5LLPR');</script>
+<!-- End Google Tag Manager -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  <title>Restriction Cloning vs Gibson Assembly: Which Should You Use?</title>
+  <meta name="description" content="Restriction cloning vs Gibson assembly: primer requirements, fragment length, cost, and fidelity — with a worked example in a free cloning simulator.">
+  <meta name="keywords" content="restriction cloning, gibson assembly, restriction digest, ligation, isothermal assembly, cloning methods, molecular cloning">
+  <meta name="robots" content="index, follow">
+  <meta name="author" content="VigyanLLM Research Team" />
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="VigyanLLM">
+  <meta property="og:title" content="Restriction Cloning vs Gibson Assembly: Which Should You Use?">
+  <meta property="og:description" content="Restriction cloning vs Gibson assembly: primer requirements, fragment length, cost, fidelity, and a step-by-step worked example you can run in a free browser-based cloning simulator.">
+  <meta property="og:url" content="https://www.vigyanllm.in/blog/restriction-cloning-vs-gibson-assembly">
+  <meta property="og:image" content="https://www.vigyanllm.in/poster.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="article:published_time" content="2026-08-19T09:00:00Z">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Restriction Cloning vs Gibson Assembly: Which Should You Use?">
+  <meta name="twitter:description" content="Restriction cloning vs Gibson assembly: primer requirements, fragment length, cost, fidelity, and a step-by-step worked example in a free browser-based cloning simulator.">
+  <meta name="twitter:image" content="https://www.vigyanllm.in/poster.png">
+  <link rel="canonical" href="https://www.vigyanllm.in/blog/restriction-cloning-vs-gibson-assembly">
+  <link rel="alternate" hreflang="en" href="https://www.vigyanllm.in/blog/restriction-cloning-vs-gibson-assembly" />
+  <link rel="icon" href="/favicon.ico" type="image/x-icon">
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://www.vigyanllm.in"},{"@type":"ListItem","position":2,"name":"Blog","item":"https://www.vigyanllm.in/blog"},{"@type":"ListItem","position":3,"name":"Restriction Cloning vs Gibson Assembly","item":"https://www.vigyanllm.in/blog/restriction-cloning-vs-gibson-assembly"}]}
+  </script>
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"Article","headline":"Restriction Cloning vs Gibson Assembly: Which Should You Use?","description":"Restriction cloning vs Gibson assembly: primer requirements, fragment length, cost, and fidelity — with a worked example in a free cloning simulator.","url":"https://www.vigyanllm.in/blog/restriction-cloning-vs-gibson-assembly","mainEntityOfPage":"https://www.vigyanllm.in/blog/restriction-cloning-vs-gibson-assembly","author":{"@type":"Organization","name":"VigyanLLM Research Team","url":"https://www.vigyanllm.in/about","sameAs":["https://github.com/vigyanllm","https://www.linkedin.com/company/vigyanllm/"]},"publisher":{"@type":"Organization","name":"VigyanLLM Private Limited","logo":{"@type":"ImageObject","url":"https://www.vigyanllm.in/logo.png"}},"datePublished":"2026-08-19","dateModified":"2026-08-19"}
+  </script>
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Which is better: restriction cloning or Gibson assembly?","acceptedAnswer":{"@type":"Answer","text":"Neither is universally better. Restriction cloning is the right choice when you have available restriction sites, are cloning a small insert (under 1-2 kb), or already use an enzyme-based pipeline. Gibson assembly is better for larger inserts, scar-free junctions, multi-fragment assemblies, and when sequence constraints forbid adding restriction sites."}},{"@type":"Question","name":"Is Gibson assembly more expensive than restriction cloning?","acceptedAnswer":{"@type":"Answer","text":"Yes, generally. Gibson assembly requires a commercial reaction mix (typically $20-30 per reaction) plus long 20-40 bp overlapping primers. Restriction cloning needs only cheap generic restriction enzymes and standard 18-25 bp primers, though enzymes and digestion cleanup add up over many constructs."}},{"@type":"Question","name":"Can I use restriction cloning for a 5 kb insert?","acceptedAnswer":{"@type":"Answer","text":"You can, but it gets harder above 1-2 kb. Internal cut sites become more likely as inserts get longer, forcing you to redesign primers or search for alternative enzymes. Gibson assembly handles large inserts more gracefully because it only needs short terminal overlaps and is not blocked by internal restriction sites."}},{"@type":"Question","name":"What is the biggest mistake in restriction cloning?","acceptedAnswer":{"@type":"Answer","text":"Picking an enzyme whose recognition site also occurs inside your insert or vector. The digest then cuts your insert itself, producing fragments that cannot ligate correctly. Always scan both sequences for internal cut sites before you order. A cloning simulator shows these internal sites before you commit."}},{"@type":"Question","name":"Why does the Gibson approach use a 5' exonuclease?","acceptedAnswer":{"@type":"Answer","text":"Gibson assembly mixes a 5' exonuclease, a DNA polymerase, and a DNA ligase in one isothermal reaction. The exonuclease chews back 5' ends so the 3' overlaps can anneal; the polymerase fills the gaps; the ligase seals the nicks. The exonuclease is what makes the assembly possible without restriction enzymes."}}]}
+  </script>
+  <link rel="stylesheet" href="/design-tokens.css">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&amp;family=Open+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/content-styles.css">
+  <style>
+  :root{--navy:#0F172A;--navy-light:#1E293B;--blue:#1565C0;--blue-light:#42A5F5;--blue-bg:#E3F2FD;--black:#0A0A0F;--surface:#FFFFFF;--surface-alt:#F5F7FA;--outline:#E2E5EA;--text:#0A0A0F;--text2:#4A4A6A;--muted:#7A7A9A;--bio:#059669;--amber:#D97706;--red:#EF4444;--font-h:'Montserrat',sans-serif;--font-b:'Open Sans',sans-serif;--max-w:1100px}
+  @media (max-width:760px){.article-body{padding:0 8px}.article-body h2{font-size:1.15rem}.article-table{font-size:12.5px}.article-table th,.article-table td{padding:8px 10px}}
+  </style>
+</head>
+<body>
+
+<header>
+<nav aria-label="Main navigation">
+<div class="nav-inner">
+  <a href="/" class="nav-brand">
+    <img src="logo.png" alt="VigyanLLM Logo" class="site-logo" style="height:36px;width:auto;object-fit:contain" loading="lazy">
+    <span>VigyanLLM</span>
+  </a>
+  <div class="nav-links">
+    <div class="drop-wrap">
+      <span class="drop-trigger">Products ▾</span>
+      <div class="drop-menu">
+        <a href="primer">Primer Design</a>
+        <a href="search">Sequence Search</a>
+        <a href="blast">BLAST</a>
+        <a href="msa">MSA</a>
+        <a href="pcr-analysis">PCR Analysis</a>
+        <a href="crispr-analysis">CRISPR Analysis <span style="font-size:12px;font-weight:700;color:#fff;background:#F59E0B;padding:2px 6px;border-radius:99px;line-height:1.3">Coming Soon</span></a>
+        <a href="tm-calculator">Tm Calculator</a>
+        <a href="gc-calculator">GC Calculator</a>
+        <a href="protein-docking">Protein Docking</a>
+        <a href="/docking">Molecular Docking</a>
+        <a href="/dna-3d">3D DNA Viewer</a>
+        <a href="dna-to-rna" style="display:flex;align-items:center;gap:6px">DNA → RNA Converter</a>
+        <a href="reverse-complement" style="display:flex;align-items:center;gap:6px">Reverse Complement <span style="font-size:9px;font-weight:700;color:#fff;background:#16A34A;padding:2px 7px;border-radius:99px;line-height:1.4">Free</span></a>
+        <a href="dna-to-protein" style="display:flex;align-items:center;gap:6px">DNA → Protein <span style="font-size:9px;font-weight:700;color:#fff;background:#16A34A;padding:2px 7px;border-radius:99px;line-height:1.4">Free</span></a>
+        <a href="pcr-product-calculator" style="display:flex;align-items:center;gap:6px">PCR Product Calc <span style="font-size:9px;font-weight:700;color:#fff;background:#16A34A;padding:2px 7px;border-radius:99px;line-height:1.4">Free</span></a>
+        <a href="restriction-enzyme-finder" style="display:flex;align-items:center;gap:6px">Restriction Enzyme Finder <span style="font-size:9px;font-weight:700;color:#fff;background:#16A34A;padding:2px 7px;border-radius:99px;line-height:1.4">Free</span></a>
+      </div>
+    </div>
+    <div class="drop-wrap">
+      <span class="drop-trigger">Platform ▾</span>
+      <div class="drop-menu">
+        <a href="platform">Overview</a>
+        <a href="architecture">Architecture</a>
+        <a href="problem">Problem</a>
+        <a href="solution">Solution</a>
+        <a href="compare">Compare</a>
+        <a href="roadmap">Roadmap</a>
+        <a href="about/sovereign-ai">Sovereign AI</a>
+        <a href="features/on-premises">On-Premises</a>
+      </div>
+    </div>
+    <a href="/learning-vigyanllm">Learning</a>
+    <a href="academic-partnership">Partnership</a>
+    <a href="pricing">Pricing</a>
+  </div>
+  <div class="nav-right">
+    <div class="nav-search-wrap">
+      <input type="text" id="navSearchInput" placeholder="Search tools, learning, blog..." autocomplete="off">
+      <span class="ns-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
+      <div class="nav-search-results" id="navSearchResults"></div>
+    </div>
+    <div class="nav-btns" id="navBtns">
+      <button type="button" class="nav-login" onclick="openAuthModal()">Sign in</button>
+      <button type="button" class="nav-cta" onclick="openAuthModal()">Get started</button>
+    </div>
+    <div class="nav-profile" id="navProfile" style="display:none">
+      <div class="nav-avatar" id="navAvatar" onclick="toggleUserMenu()">
+        <span class="nav-avatar-letter" id="navAvatarLetter"></span>
+      </div>
+      <div class="user-dropdown" id="userDropdown">
+        <div class="user-dropdown-header">
+          <div class="ud-name" id="udName"></div>
+          <div class="ud-email" id="udEmail"></div>
+          <div class="ud-plan" id="udPlan"></div>
+        </div>
+        <a class="ud-item" href="/dashboard">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+          Saved Reports
+        </a>
+        <a class="ud-item" href="/dashboard#settings">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          Settings
+        </a>
+        <div class="ud-item logout" onclick="logout()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          Logout
+        </div>
+      </div>
+    </div>
+  </div>
+    </div>
+  </div>
+  <button type="button" class="hamburger" id="hamburger" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</div>
+<div class="mobile-menu" id="mobile-menu">
+  <div class="mm-group"><div class="mm-hdr">Products</div>
+    <a href="primer">Primer Design</a>
+    <a href="search">Sequence Search</a>
+    <a href="blast">BLAST</a>
+    <a href="msa">MSA</a>
+    <a href="pcr-analysis">PCR Analysis</a>
+    <a href="crispr-analysis">CRISPR Analysis <span style="font-size:12px;font-weight:700;color:#fff;background:#F59E0B;padding:2px 6px;border-radius:99px;line-height:1.3">Coming Soon</span></a>
+    <a href="tm-calculator">Tm Calculator</a>
+    <a href="gc-calculator">GC Calculator</a>
+    <a href="protein-docking">Protein Docking</a>
+    <a href="/docking">Molecular Docking</a>
+        <a href="/dna-3d">3D DNA Viewer</a>
+        <a href="dna-to-rna" style="display:flex;align-items:center;gap:6px">DNA → RNA Converter</a>
+        <a href="reverse-complement">Reverse Complement</a>
+        <a href="dna-to-protein">DNA → Protein</a>
+        <a href="pcr-product-calculator">PCR Product Calculator</a>
+        <a href="restriction-enzyme-finder">Restriction Enzyme Finder</a>
+  </div>
+  <div class="mm-group"><div class="mm-hdr">Platform</div>
+    <a href="platform">Overview</a>
+    <a href="architecture">Architecture</a>
+    <a href="problem">Problem</a>
+    <a href="solution">Solution</a>
+    <a href="compare">Compare</a>
+    <a href="roadmap">Roadmap</a>
+    <a href="about/sovereign-ai">Sovereign AI</a>
+    <a href="features/on-premises">On-Premises</a>
+  </div>
+  <div class="mm-group">
+    <a href="/learning-vigyanllm">Learning</a>
+    <a href="academic-partnership">Academic Partnership</a>
+    <a href="pricing">Pricing</a>
+    <a href="mailto:contact@vigyanllm.in">Enterprise Inquiry</a>
+  </div>
+  <a href="#" onclick="closeMobileMenu();var e=document.getElementById('navSearchInput');if(e){e.focus();e.scrollIntoView({behavior:'smooth',block:'center'})};return false" class="mm-cta" style="background:transparent;border:1px solid rgba(255,255,255,.25);color:rgba(255,255,255,.8);margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:8px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Search</a>
+  <a href="#" class="mm-cta" onclick="openAuthModal();return false">Sign in</a>
+</div>
+</nav>
+</header>
+<a href="#main-content" class="skip-link">Skip to content</a>
+<main id="main-content">
+
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-KRP5LLPR"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+
+  <div style="max-width:var(--max-w);margin:0 auto;padding:0 24px">
+    <header style="padding:50px 0 30px;border-bottom:1px solid var(--border)">
+      <div class="article-meta-bar">
+        <span class="article-tag">Cloning Methods</span>
+        <span class="article-date">Published: August 19, 2026</span>
+        <span class="article-author">By VigyanLLM Research Team</span>
+      </div>
+      <h1>Restriction Cloning vs Gibson Assembly: Which Should You Use?</h1>
+      <p class="subtitle">Two ways to get your gene into a vector. Restriction cloning uses two enzymes and a ligase. Gibson assembly uses one isothermal mix with overlap primers. Here is how to choose, and a step-by-step worked example you can run in a free browser-based simulator.</p>
+
+      <div style="background:linear-gradient(135deg,#0f172a 0%,#1e293b 100%);border-radius:12px;padding:24px 32px;margin:24px 0 32px 0;display:flex;align-items:center;flex-wrap:wrap;gap:16px;border:1px solid #334155;">
+        <div>
+          <p style="color:#94a3b8;font-size:14px;margin:0 0 4px 0;">Want to plan it in your browser first?</p>
+          <p style="color:#f1f5f9;font-size:13px;font-weight:600;margin:0;">Digest, ligate and run a virtual gel free — no login, sequences never leave your device</p>
+        </div>
+        <a href="/cloning-simulator" style="background:#3b82f6;color:#fff;padding:12px 28px;border-radius:8px;font-weight:600;text-decoration:none;white-space:nowrap;">Open Cloning Simulator →</a>
+      </div>
+    </header>
+
+    <article class="article-body">
+      <h2>The One-Line Summary</h2>
+      <p>Restriction cloning = cut with enzymes, paste with ligase. Gibson assembly = overlap the ends, let an exonuclease/polymerase/ligase cocktail sew them together at 50°C. <strong>Restriction cloning</strong> wins for small inserts and when sites already exist. <strong>Gibson</strong> wins for large inserts, scar-free junctions, and multi-fragment assemblies.</p>
+      <div itemscope itemtype="https://schema.org/Question" style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:12px;padding:24px;margin:24px 0 32px">
+        <p style="font-weight:700;font-size:13px;margin-bottom:8px" itemprop="name">Which method should I choose — restriction cloning or Gibson assembly?</p>
+        <div itemprop="acceptedAnswer" itemscope itemtype="https://schema.org/Answer">
+          <p itemprop="text" style="color:#475569;font-size:14px;line-height:1.8;margin:0">Pick restriction cloning when your insert is under ~1-2 kb, you have usable restriction sites that do not appear inside the insert, and you want the cheapest per-reaction cost. Pick Gibson assembly when the insert is larger, you cannot tolerate extra bases at the junction (scar-free cloning), you are assembling two or more fragments at once, or your insert contains internal restriction sites that block the enzyme approach.</p>
+        </div>
+      </div>
+
+      <h2>What Each Method Actually Does</h2>
+      <h3>Restriction cloning</h3>
+      <p>You choose two restriction enzymes, typically one for the 5' end of the insert and another for the 3' end. You <strong>double-digest</strong> the vector and the insert, producing complementary sticky or blunt ends. After a cleanup step, DNA ligase joins the insert into the vector. Because the 5' and 3' enzymes differ, the insert goes in only one orientation — directional cloning.</p>
+      <h3>Gibson assembly</h3>
+      <p>Your forward and reverse PCR primers carry <strong>20-40 bp tails</strong> that overlap the ends of the vector (or of the neighbouring fragment). An isothermal mix at 50°C — T5 exonuclease, Phusion polymerase, and Taq ligase — chews back the 5' ends, anneals the complementary overlaps, fills the gaps, and seals the nicks. No restriction enzymes, no ligation step, no scar if you design the overlaps carefully.</p>
+
+      <h2>Restriction Cloning vs Gibson Assembly — Head to Head</h2>
+      <div class="article-table-wrap">
+      <table class="article-table">
+        <thead><tr><th>Factor</th><th>Restriction Cloning</th><th>Gibson Assembly</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Enzymes needed</strong></td><td>2 restriction enzymes + DNA ligase</td><td>None — proprietary isothermal mix</td></tr>
+          <tr><td><strong>Primers</strong></td><td>Standard 18-25 bp PCR primers</td><td>Long primers with 20-40 bp overlaps</td></tr>
+          <tr><td><strong>Junction scar</strong></td><td>Leaves restriction-site bases</td><td>Scar-free with designed overlaps</td></tr>
+          <tr><td><strong>Best insert size</strong></td><td>0.1-2 kb</td><td>0.5-10 kb class</td></tr>
+          <tr><td><strong>Multi-fragment</strong></td><td>Hard — one ligation junction type at a time</td><td>Yes — 2+ fragments in one reaction</td></tr>
+          <tr><td><strong>Internal cut sites</strong></td><td>Blocked if insert contains the enzyme site</td><td>Not an issue — no restriction sites used</td></tr>
+          <tr><td><strong>Per-reaction cost</strong></td><td>Low (enzymes reusable across constructs)</td><td>Higher ($20-30 / reaction mix)</td></tr>
+          <tr><td><strong>Hands-on time</strong></td><td>2-3 h (digest, cleanup, ligate, transform)</td><td>~1 h (PCR, DpnI, single incubation)</td></tr>
+          <tr><td><strong>Fidelity</strong></td><td>High — fewer amplification steps</td><td>Requires proofreading PCR</td></tr>
+        </tbody>
+      </table>
+      </div>
+
+      <h2>When to Use Each — Decision Guide</h2>
+      <ul>
+        <li><strong>Use restriction cloning when:</strong> your lab already has enzyme stocks; the insert is small; suitable sites exist and are absent from the insert; you want to reuse the same vector backbone for many inserts; you need directional cloning and the paired sites give it.</li>
+        <li><strong>Use Gibson when:</strong> the insert has internal cut sites for every enzyme pair you tried; you are assembling two or more fragments; junctions must be scar-free (for protein fusion or precise promoters); the insert is large; you want one-tube simplicity.</li>
+        <li><strong>Neither — use a ligase-independent approach when:</strong> you need the cheapest possible cloning with no PCR (e.g., TOPO) or want seamless multi-fragment work at scale (Golden Gate with type IIS enzymes).</li>
+      </ul>
+
+      <h2>Worked Example: Cloning GFP into pUC19</h2>
+      <p>Let us clone the 720 bp <strong>eGFP</strong> open reading frame (the EGFP CDS from pEGFP-N1, GenBank U55762, already in the simulator's gene library) into <strong>pUC19</strong> (2,686 bp). The MCS of pUC19 contains unique sites for <strong>HindIII</strong> and <strong>EcoRI</strong>, and we verified neither site appears inside the eGFP ORF. This is a textbook restriction cloning case — let us walk it inside the simulator so you see exactly what the lab results should show.</p>
+      <h3>Step 1 — Paste the vector</h3>
+      <p>In the <a href="/cloning-simulator">cloning simulator</a>, pick <strong>pUC19</strong> from the vector library (it ships with the tool) or paste the full 2,686 bp sequence.</p>
+      <h3>Step 2 — Add the insert</h3>
+      <p>Paste the 720 bp eGFP ORF into the <strong>gene of interest</strong> field. The tool immediately scans for internal cut sites across all 41 enzymes in its database.</p>
+      <h3>Step 3 — Choose the enzymes</h3>
+      <p>Select <strong>HindIII</strong> and <strong>EcoRI</strong> for the double digest. The simulator computes cut positions on both sequences. pUC19 opens at the MCS; the eGFP ORF stays intact because we confirmed no internal HindIII/EcoRI sites upstream.</p>
+      <h3>Step 4 — Check compatibility and ligate</h3>
+      <p>The tool checks that the sticky ends are complementary (HindIII leaves A-GCTT overhangs matching the insert's HindIII end; EcoRI leaves AATT-matching overhangs). Because the 5' and 3' enzymes are different, the insert can only ligate in the forward orientation. Hit <strong>ligate</strong> and the simulator draws the recombinant <strong>circular plasmid map</strong>: pUC19 backbone + eGFP at the MCS.</p>
+      <h3>Step 5 — Run the virtual gel</h3>
+      <p>Simulate the confirmatory double digest (HindIII + EcoRI) of the clone. The expected bands:</p>
+      <ul>
+        <li><strong>2,686 bp</strong> — linearized pUC19 backbone</li>
+        <li><strong>720 bp</strong> — the released eGFP insert</li>
+      </ul>
+      <p>The virtual gel shows both bands with the correct relative migration. In the lab you would verify the same two bands on a 1% agarose gel and confirm with Sanger sequencing across the MCS. That plan-first workflow is exactly why you run the <a href="/cloning-simulator">simulator before ordering primers</a> — it predicts band sizes and catches internal cut sites before you spend on reagents.</p>
+
+      <h2>Why the Same Example Would Be Different in Gibson</h2>
+      <p>To build the same pUC19-eGFP construct by Gibson, you would order forward/reverse primers with <strong>~25 bp overlaps</strong> matching the pUC19 MCS flanking sequence, PCR-amplify eGFP, treat the vector with DpnI, and incubate everything in one Gibson mix for 60 minutes at 50°C. No restriction sites are checked at all, so internal EcoRI/HindIII sites would not matter. The cost trade-off is the Gibson master mix per reaction versus the cheap, reusable restriction enzymes — for a single construct, Gibson is often faster bench time; for a dozen constructs against the same backbone, restriction cloning amortizes better.</p>
+
+      <h2>Frequently Asked Questions</h2>
+      <div itemscope itemtype="https://schema.org/FAQPage">
+        <div itemscope itemprop="mainEntity" itemtype="https://schema.org/Question" style="margin-bottom:16px">
+          <h3 itemprop="name">Which is better: restriction cloning or Gibson assembly?</h3>
+          <div itemprop="acceptedAnswer" itemscope itemtype="https://schema.org/Answer">
+            <p itemprop="text" style="color:#475569">Neither is universally better. Restriction cloning is the right choice when you have available restriction sites, are cloning a small insert (under 1-2 kb), or already use an enzyme-based pipeline. Gibson assembly is better for larger inserts, scar-free junctions, multi-fragment assemblies, and when sequence constraints forbid adding restriction sites.</p>
+          </div>
+        </div>
+        <div itemscope itemprop="mainEntity" itemtype="https://schema.org/Question" style="margin-bottom:16px">
+          <h3 itemprop="name">Is Gibson assembly more expensive than restriction cloning?</h3>
+          <div itemprop="acceptedAnswer" itemscope itemtype="https://schema.org/Answer">
+            <p itemprop="text" style="color:#475569">Yes, generally. Gibson assembly requires a commercial reaction mix (typically $20-30 per reaction) plus long 20-40 bp overlapping primers. Restriction cloning needs only cheap generic restriction enzymes and standard 18-25 bp primers, though enzymes and digestion cleanup add up over many constructs.</p>
+          </div>
+        </div>
+        <div itemscope itemprop="mainEntity" itemtype="https://schema.org/Question" style="margin-bottom:16px">
+          <h3 itemprop="name">Can I use restriction cloning for a 5 kb insert?</h3>
+          <div itemprop="acceptedAnswer" itemscope itemtype="https://schema.org/Answer">
+            <p itemprop="text" style="color:#475569">You can, but it gets harder above 1-2 kb. Internal cut sites become more likely as inserts get longer, forcing you to redesign primers or search for alternative enzymes. Gibson assembly handles large inserts more gracefully because it only needs short terminal overlaps and is not blocked by internal restriction sites.</p>
+          </div>
+        </div>
+        <div itemscope itemprop="mainEntity" itemtype="https://schema.org/Question" style="margin-bottom:16px">
+          <h3 itemprop="name">What is the biggest mistake in restriction cloning?</h3>
+          <div itemprop="acceptedAnswer" itemscope itemtype="https://schema.org/Answer">
+            <p itemprop="text" style="color:#475569">Picking an enzyme whose recognition site also occurs inside your insert or vector. The digest then cuts your insert itself, producing fragments that cannot ligate correctly. Always scan both sequences for internal cut sites before you order. A cloning simulator shows these internal sites before you commit.</p>
+          </div>
+        </div>
+        <div itemscope itemprop="mainEntity" itemtype="https://schema.org/Question" style="margin-bottom:16px">
+          <h3 itemprop="name">Why does the Gibson approach use a 5' exonuclease?</h3>
+          <div itemprop="acceptedAnswer" itemscope itemtype="https://schema.org/Answer">
+            <p itemprop="text" style="color:#475569">Gibson assembly mixes a 5' exonuclease, a DNA polymerase, and a DNA ligase in one isothermal reaction. The exonuclease chews back 5' ends so the 3' overlaps can anneal; the polymerase fills the gaps; the ligase seals the nicks. The exonuclease is what makes the assembly possible without restriction enzymes.</p>
+          </div>
+        </div>
+      </div>
+
+      <div itemscope itemtype="https://schema.org/Question" style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:12px;padding:24px;margin:24px 0 32px">
+        <p style="font-weight:700;font-size:13px;margin-bottom:8px" itemprop="name">Where do I actually run this digestion?</p>
+        <div itemprop="acceptedAnswer" itemscope itemtype="https://schema.org/Answer">
+          <p itemprop="text" style="color:#475569;font-size:14px;line-height:1.8;margin:0">Right in your browser. The <a href="/cloning-simulator">VigyanLLM cloning simulator</a> loads 10+ common vectors (pUC19, pBR322, pET-28a(+), pcDNA3.1(+) and more), pastes in your gene of interest, scans 41 restriction enzymes for internal cut sites, double-digests, checks sticky-end compatibility, ligates the recombinant plasmid, and draws the circular map plus a virtual agarose gel — all client-side, with no login and no data leaving your device.</p>
+        </div>
+      </div>
+    </article>
+
+    </div>
+
+</main>
+<footer>
+
+<div class="footer-grid">
+  <div class="footer-col">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+      <img src="logo.png" alt="VigyanLLM Logo" class="site-logo" style="height:36px;width:auto;object-fit:contain" loading="lazy">
+      <span style="font-family:var(--font-h);font-size:13px;font-weight:800;color:#fff">VigyanLLM</span>
+    </div>
+    <p style="font-size:13px;color:rgba(255,255,255,.45);line-height:1.6">Sovereign Healthcare &amp; Life Sciences AI.<br>Built in India. For the world.</p>
+    <a href="mailto:contact@vigyanllm.in" style="color:var(--blue-light);font-size:13px;display:block;margin-top:12px">contact@vigyanllm.in</a>
+    <div class="footer-social">
+      <a href="https://github.com/vigyanllm" rel="me" aria-label="GitHub"><svg fill="#fff" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg></a>
+      <a href="https://www.linkedin.com/company/vigyanllm/" rel="me" aria-label="LinkedIn"><svg fill="#0077B5" viewBox="0 0 24 24"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg></a>
+      <a href="https://www.facebook.com/vigyanllm" rel="me" aria-label="Facebook"><svg fill="#1877F2" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></a>
+      <a href="https://www.youtube.com/@VigyanLLM" rel="me" aria-label="YouTube"><svg fill="#FF0000" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+    </div>
+  </div>
+  <div class="footer-col">
+    <h5>Products</h5>
+    <a href="primer">Primer Design</a>
+    <a href="search">Sequence Search</a>
+    <a href="blast">BLAST</a>
+    <a href="msa">MSA</a>
+    <a href="pcr-analysis">PCR Analysis</a>
+    <a href="crispr-analysis">CRISPR <span style="font-size:12px;font-weight:700;color:#fff;background:#F59E0B;padding:2px 6px;border-radius:99px;line-height:1.3">Coming Soon</span></a>
+    <a href="protein-docking">Docking</a>
+  </div>
+  <div class="footer-col">
+    <h5>Platform</h5>
+    <a href="platform">Overview</a>
+    <a href="architecture">Architecture</a>
+    <a href="problem">Problem</a>
+    <a href="solution">Solution</a>
+    <a href="compare">Compare</a>
+    <a href="roadmap">Roadmap</a>
+    <a href="about/sovereign-ai">Sovereign AI</a>
+    <a href="features/on-premises">On-Premises</a>
+  </div>
+  <div class="footer-col">
+    <h5>Resources</h5>
+    <a href="blog/index">Blog</a>
+    <a href="faq">FAQ</a>
+    <a href="about">About</a>
+    <a href="demo">Demo</a>
+    <a href="/learning-vigyanllm">Learning</a>
+    <a href="academic-partnership">Academic Partnership</a>
+    <a href="pricing">Pricing</a>
+  </div>
+  <div class="footer-col">
+    <h5>Contact</h5>
+    <a href="mailto:contact@vigyanllm.in">contact@vigyanllm.in</a>
+    <a href="privacy">Privacy</a>
+    <a href="terms">Terms</a>
+    <a href="cookies">Cookies</a>
+    <a href="refund">Refund</a>
+    <a href="security">Security</a>
+    <a href="cite-vigyanllm">Cite Us</a>
+  </div>
+</div>
+<div class="footer-bottom"> <span>&copy; <script>document.write(new Date().getFullYear())</script> VigyanLLM Private Limited · Sovereign Research AI</span>
+  <span>WWW.VIGYANLLM.IN</span>
+</div>
+
+
+
+
+
+
+
+
+
+
+</footer>
+</body>
+</html>
