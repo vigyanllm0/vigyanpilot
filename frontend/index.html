@@ -80,10 +80,9 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <noscript><link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
-<script src="/amcharts-index.js"></script>
-<script src="/amcharts-map.js"></script>
-<script src="/amcharts-worldLow.js"></script>
-<script src="/amcharts-worldIndiaLow.js"></script>
+<script src="/amcharts4-core.js"></script>
+<script src="/amcharts4-maps.js"></script>
+<script src="/amcharts4-worldIndiaLow.js"></script>
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
 <script src="https://accounts.google.com/gsi/client?hl=en" async defer></script>
 <style>
@@ -851,7 +850,7 @@ document.addEventListener('DOMContentLoaded', function(){
   }
 });
 
-// ── Geo Map (amCharts choropleth) ──
+// ── Geo Map (amCharts v4 choropleth) ──
 try {
 (function(){
   var API_GEO = window.VIGYAN_BACKEND_URL || '';
@@ -903,58 +902,47 @@ try {
     }
   }
 
-  am5.ready(function() {
-    var root = am5.Root.new('chartdiv');
+  var chart = am4core.create('chartdiv', am4maps.MapChart);
+  chart.projection = new am4maps.projections.Mercator();
+  chart.geodata = am4geodata_worldIndiaLow;
 
-    var chart = root.container.children.push(
-      am5map.MapChart.new(root, {
-        panX: 'none', panY: 'none',
-        wheelY: 'none', projection: am5map.geoMercator()
-      })
-    );
+  var worldSeries = chart.series.push(new am4maps.MapPolygonSeries());
+  worldSeries.geodata = am4geodata_worldIndiaLow;
+  worldSeries.exclude = ['AQ'];
+  worldSeries.useGeodata = true;
+  worldSeries.nonScalingStroke = true;
+  worldSeries.strokeWidth = 0.5;
+  worldSeries.stroke = am4core.color('#ffffff');
+  worldSeries.fill = am4core.color(NO_DATA);
 
-    var polygonSeries = chart.series.push(
-      am5map.MapPolygonSeries.new(root, {
-        geoData: am5geodata_worldIndiaLow,
-        fill: am5.color(NO_DATA),
-        stroke: am5.color('#ffffff'),
-        strokeWidth: 0.5
-      })
-    );
+  var polygonTemplate = worldSeries.mapPolygons.template;
+  polygonTemplate.tooltipText = '{name}';
+  polygonTemplate.fill = am4core.color(NO_DATA);
+  polygonTemplate.stroke = am4core.color('#ffffff');
+  polygonTemplate.strokeWidth = 0.5;
+  polygonTemplate.cursorOverStyle = am4core.MouseCursorStyle.pointer;
 
-    polygonSeries.mapPolygons.template.setAll({
-      tooltipText: '{name}',
-      fill: am5.color(NO_DATA),
-      stroke: am5.color('#ffffff'),
-      strokeWidth: 0.5,
-      cursorOverStyle: 'pointer',
-      toggleKey: 'active'
-    });
+  var hoverState = polygonTemplate.states.create('hover');
+  hoverState.properties.fill = am4core.color('#1565C0');
+  hoverState.properties.stroke = am4core.color('#0d4a8a');
+  hoverState.properties.strokeWidth = 1.5;
 
-    polygonSeries.mapPolygons.template.states.create('hover', {
-      fill: am5.color('#1565C0'),
-      stroke: am5.color('#0d4a8a'),
-      strokeWidth: 1.5,
-      scale: 1.04
-    });
+  window._vlWorldSeries = worldSeries;
 
-    window._vlPolygonSeries = polygonSeries;
+  fetch(API_GEO + '/api/stats/geo', { credentials: 'same-origin' })
+    .then(function(r) { return r.ok ? r.json() : null; })
+    .then(function(d) { if (d && d.countries) applyGeoData(d); })
+    .catch(function() {});
 
+  setInterval(function() {
     fetch(API_GEO + '/api/stats/geo', { credentials: 'same-origin' })
       .then(function(r) { return r.ok ? r.json() : null; })
       .then(function(d) { if (d && d.countries) applyGeoData(d); })
       .catch(function() {});
-
-    setInterval(function() {
-      fetch(API_GEO + '/api/stats/geo', { credentials: 'same-origin' })
-        .then(function(r) { return r.ok ? r.json() : null; })
-        .then(function(d) { if (d && d.countries) applyGeoData(d); })
-        .catch(function() {});
-    }, 300000);
-  });
+  }, 300000);
 
   function applyGeoData(data) {
-    var series = window._vlPolygonSeries;
+    var series = window._vlWorldSeries;
     if (!series || !data || !data.countries) return;
 
     var totalC = data.total_countries || 0;
@@ -975,11 +963,11 @@ try {
       else tierMap[c.code] = 4;
     });
 
-    series.dataItems.each(function(di) {
-      var id = di.get('id');
+    series.mapPolygons.each(function(polygon) {
+      var id = polygon.dataItem.dataContext.id;
       var tier = tierMap[id];
       var color = (tier !== undefined) ? TIER_COLORS[tier] : NO_DATA;
-      di.set('fill', am5.color(color));
+      polygon.fill = am4core.color(color);
     });
 
     renderTop5(data);
