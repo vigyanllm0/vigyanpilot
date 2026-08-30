@@ -62,7 +62,31 @@ COUNTRY_GEO = {
     "JO": (36.23, 30.58), "LB": (35.86, 33.85), "PH": (121.77, 12.87),
     "TW": (120.96, 23.69), "HK": (114.17, 22.39), "BD": (90.35, 23.68),
     "PR": (-66.58, 18.22), "NG": (8.67, 9.08),
+    "NZ": (174.88, -40.90), "OM": (57.00, 21.47),
+    "CR": (-83.75, 9.75), "PY": (-58.44, -23.44),
 }
+
+# ── GA4 Seed Data (Aug 2026 baseline) ────────────────────────────────────────
+# Seeded once on first table creation so the map shows real data immediately.
+# Real visitor tracking adds on top via upsert; never overwrites this seed.
+_GA4_SEED = [
+    ("US", "United States", 283), ("IN", "India", 240), ("SG", "Singapore", 54),
+    ("CN", "China", 48), ("BR", "Brazil", 17), ("VN", "Vietnam", 17),
+    ("HK", "Hong Kong", 14), ("JP", "Japan", 12), ("PH", "Philippines", 12),
+    ("AR", "Argentina", 10), ("AU", "Australia", 9), ("PK", "Pakistan", 7),
+    ("ZA", "South Africa", 7), ("CA", "Canada", 6), ("IR", "Iran", 6),
+    ("MX", "Mexico", 6), ("KR", "South Korea", 6), ("RU", "Russia", 5),
+    ("UA", "Ukraine", 5), ("EG", "Egypt", 4), ("ID", "Indonesia", 4),
+    ("KE", "Kenya", 4), ("TW", "Taiwan", 4), ("BD", "Bangladesh", 3),
+    ("CO", "Colombia", 3), ("IQ", "Iraq", 3), ("NZ", "New Zealand", 3),
+    ("NG", "Nigeria", 3), ("TH", "Thailand", 3), ("TR", "Türkiye", 3),
+    ("ET", "Ethiopia", 2), ("IL", "Israel", 2), ("AE", "United Arab Emirates", 2),
+    ("VE", "Venezuela", 2), ("AZ", "Azerbaijan", 1), ("BG", "Bulgaria", 1),
+    ("CR", "Costa Rica", 1), ("CI", "Côte d'Ivoire", 1), ("DE", "Germany", 1),
+    ("IE", "Ireland", 1), ("KZ", "Kazakhstan", 1), ("LB", "Lebanon", 1),
+    ("MA", "Morocco", 1), ("OM", "Oman", 1), ("PY", "Paraguay", 1),
+    ("PE", "Peru", 1), ("UY", "Uruguay", 1),
+]
 
 
 def _hash_ip(ip: str) -> str:
@@ -104,6 +128,16 @@ def _get_visitor_db():
         CREATE INDEX IF NOT EXISTS idx_visitor_country
         ON visitor_locations(country_code)
     """)
+    # Seed GA4 baseline on first run (empty table)
+    row = db.execute("SELECT COUNT(*) FROM visitor_locations").fetchone()
+    if row[0] == 0:
+        now = time.time()
+        db.executemany(
+            "INSERT INTO visitor_locations (country_code, country_name, ip_hash, visit_count, last_seen) "
+            "VALUES (?, ?, ?, ?, ?)",
+            [(code, name, f"__ga4_seed_{code}__", count, now) for code, name, count in _GA4_SEED]
+        )
+        logger.info("Seeded %d countries from GA4 baseline", len(_GA4_SEED))
     db.commit()
     return db
 
@@ -132,16 +166,22 @@ def stats_geo():
 
     try:
         db = _get_visitor_db()
+        # Per-country totals
         rows = db.execute("""
             SELECT country_code, country_name, SUM(visit_count) as total
             FROM visitor_locations
             GROUP BY country_code
             ORDER BY total DESC
         """).fetchall()
+        # Seed baseline sum
+        seed_row = db.execute(
+            "SELECT COALESCE(SUM(visit_count),0) FROM visitor_locations WHERE ip_hash LIKE '__ga4_seed_%'"
+        ).fetchone()
         db.close()
     except Exception as e:
         logger.warning("visitor geo query failed: %s", e)
         rows = []
+        seed_row = (0,)
 
     countries = []
     total_visitors = 0
@@ -152,6 +192,8 @@ def stats_geo():
     result = {
         "total_countries": len(countries),
         "total_visitors": total_visitors,
+        "seed_total": seed_row[0],
+        "new_visitors": total_visitors - seed_row[0],
         "countries": countries,
     }
     _geo_cache["data"] = result

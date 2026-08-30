@@ -870,6 +870,14 @@ document.addEventListener('DOMContentLoaded', function(){
     // Update country count inline
     var elC = document.getElementById('geo-countries');
     if (elC) elC.textContent = totalC;
+    // Show visitor breakdown: seed + new
+    var elV = document.getElementById('geo-visitors');
+    if (elV && data.new_visitors !== undefined) {
+      elV.textContent = data.total_visitors.toLocaleString();
+      if (data.new_visitors > 0) {
+        elV.title = data.seed_total.toLocaleString() + ' baseline + ' + data.new_visitors.toLocaleString() + ' new';
+      }
+    }
 
     // Country centroid mapping (lon, lat) → SVG(x, y) using Mercator
     var CENTROIDS = {
@@ -891,7 +899,8 @@ document.addEventListener('DOMContentLoaded', function(){
       CI:[-5.54,7.53],MU:[57.55,-20.34],MM:[95.95,21.91],KH:[104.99,12.56],
       MN:[103.84,46.86],KZ:[66.92,48.01],IQ:[43.67,33.22],IR:[53.68,32.42],
       IL:[34.85,31.04],JO:[36.23,30.58],TW:[120.96,23.69],HK:[114.17,22.39],
-      PR:[-66.58,18.22],BG:[25.48,42.73],HR:[15.20,45.10],SK:[19.69,48.66],
+      PR:[-66.58,18.22],NZ:[174.88,-40.90],OM:[57.00,21.47],
+      CR:[-83.75,9.75],PY:[-58.44,-23.44],CI:[-5.54,7.53],BG:[25.48,42.73],HR:[15.20,45.10],SK:[19.69,48.66],
       LT:[23.88,55.16],LV:[24.10,56.87],EE:[25.01,58.60],CY:[33.42,35.12],
       MT:[14.37,35.93],IS:[-19.01,64.96],LI:[9.55,47.16],BY:[27.95,53.70],
       RS:[20.93,44.01],BA:[17.68,43.91],AL:[20.16,41.15],MK:[21.74,41.51],
