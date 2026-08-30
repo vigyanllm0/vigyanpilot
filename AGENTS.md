@@ -777,6 +777,12 @@ Choropleth world map on homepage went through 3 iterations:
 - pytest: 9 passed
 - Pushed: `881ecb16`
 
+### CSP Fix — `def2e4f0`
+- **Problem**: `cdn.amcharts.com` was blocked by Content-Security-Policy → amCharts scripts failed to load → `am5 is not defined` → map invisible + JS error broke DNA animation
+- **Fix**: Added `https://cdn.amcharts.com` to `script-src` in homepage CSP (vercel.json line 618)
+- **Robustness**: Wrapped amCharts IIFE in `try-catch` so DNA animation (`initDNAAnim`) still works if amCharts fails
+- Pushed: `def2e4f0`
+
 ---
 
 ## Registration-Wall Restructure — Guest Mode (Aug 5 2026)
