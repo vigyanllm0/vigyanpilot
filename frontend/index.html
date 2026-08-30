@@ -851,6 +851,7 @@ document.addEventListener('DOMContentLoaded', function(){
 });
 
 // ── Geo Map (amCharts choropleth) ──
+try {
 (function(){
   var API_GEO = window.VIGYAN_BACKEND_URL || '';
   var TIER_COLORS = ['#0d4a8a','#1a6fb5','#2b6f9e','#5a94b8','#93b8d0'];
@@ -984,6 +985,7 @@ document.addEventListener('DOMContentLoaded', function(){
     renderTop5(data);
   }
 })();
+} catch(e) { console.warn('amCharts map unavailable:', e); }
 
 function initDNAAnim(){
   var el=document.getElementById('protein-stage');
