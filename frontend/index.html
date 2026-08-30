@@ -480,9 +480,6 @@ footer{background:var(--black);color:rgba(255,255,255,.8);padding:56px 0 24px}
       <g id="world-outlines" shape-rendering="crispEdges">
         <!-- Country outlines injected by JS from /api/stats/geo -->
       </g>
-      <g id="visitor-dots">
-        <!-- Visitor dots injected by JS -->
-      </g>
     </svg>
     <div style="position:absolute;bottom:8px;right:8px;display:flex;align-items:center;gap:6px;font-size:10px;color:var(--muted)">
       <span>Fewer</span>
@@ -858,10 +855,10 @@ document.addEventListener('DOMContentLoaded', function(){
   }
 });
 
-// ── Geo Map Renderer (world outlines + visitor dots) ──
+// ── Geo Map Renderer (choropleth fill) ──
 (function(){
-  var GEO_NO_DATA = '#dce4ec';
-  var GEO_HAS_DATA = ['#c7dcef','#7fadcf','#4a90c4','#1a6fb5','#0d4a8a'];
+  var GEO_NO_DATA = '#e8edf2';
+  var GEO_HAS_DATA = ['#c7dcef','#93b8d0','#5a94b8','#2b6f9e','#0d4a8a'];
   var API_GEO = window.VIGYAN_BACKEND_URL || '';
   var ns = 'http://www.w3.org/2000/svg';
   var rendered = false;
@@ -879,7 +876,6 @@ document.addEventListener('DOMContentLoaded', function(){
   function renderWorldOutlines() {
     var outlines = document.getElementById('world-outlines');
     if (!outlines || !window.WORLD_PATHS) return;
-    // Clear existing
     while (outlines.firstChild) outlines.removeChild(outlines.firstChild);
     var codes = Object.keys(window.WORLD_PATHS);
     for (var i = 0; i < codes.length; i++) {
@@ -888,8 +884,8 @@ document.addEventListener('DOMContentLoaded', function(){
       path.setAttribute('d', window.WORLD_PATHS[iso]);
       path.setAttribute('data-iso', iso);
       path.setAttribute('fill', GEO_NO_DATA);
-      path.setAttribute('stroke', '#f0f4f8');
-      path.setAttribute('stroke-width', '0.5');
+      path.setAttribute('stroke', '#fff');
+      path.setAttribute('stroke-width', '0.4');
       path.setAttribute('shape-rendering', 'crispEdges');
       outlines.appendChild(path);
     }
@@ -901,135 +897,38 @@ document.addEventListener('DOMContentLoaded', function(){
     var maxCount = Math.max.apply(null, data.countries.map(function(c){ return c.count; }));
     var totalC = data.total_countries || 0;
 
-    // Update country count
     var elC = document.getElementById('geo-countries');
     if (elC) elC.textContent = totalC;
 
-    // Render world outlines on first load
     if (!rendered) {
       renderWorldOutlines();
       rendered = true;
     }
 
-    // Build lookup: ISO → count
     var codeMap = {};
     data.countries.forEach(function(c){ codeMap[c.code] = c.count; });
 
-    // Color countries with data
     var outlines = document.getElementById('world-outlines');
     if (outlines) {
       var paths = outlines.querySelectorAll('path');
       for (var i = 0; i < paths.length; i++) {
         var iso = paths[i].getAttribute('data-iso');
         var count = codeMap[iso] || 0;
-        paths[i].setAttribute('fill', getColor(count, maxCount));
+        var color = getColor(count, maxCount);
+        paths[i].setAttribute('fill', color);
+        if (count > 0) {
+          paths[i].setAttribute('stroke', '#dde5ed');
+          paths[i].setAttribute('stroke-width', '0.6');
+        }
       }
     }
-
-    // Clear existing dots
-    var dotsGroup = document.getElementById('visitor-dots');
-    if (dotsGroup) {
-      while (dotsGroup.firstChild) dotsGroup.removeChild(dotsGroup.firstChild);
-    }
-
-    // Centroid lookup for dot placement
-    var CENTROIDS = {
-      IN:[78.96,20.59],US:[-95.71,37.09],CN:[104.19,35.86],BR:[-51.92,-14.23],
-      GB:[-3.43,55.37],DE:[10.45,51.16],CA:[-106.35,56.13],AU:[133.77,-25.27],
-      FR:[2.21,46.22],JP:[138.25,36.20],KR:[127.76,35.91],IT:[12.56,41.87],
-      ES:[-3.70,40.46],RU:[105.31,61.52],MX:[-102.55,23.63],NL:[5.29,52.13],
-      SG:[103.81,1.35],SA:[45.07,23.88],AE:[53.84,23.42],ZA:[22.93,-30.55],
-      NG:[8.67,9.08],KE:[37.90,1.29],EG:[30.80,26.82],MA:[-7.09,31.79],
-      PK:[69.34,30.37],BD:[90.35,23.68],TH:[100.99,15.87],VN:[108.27,14.05],
-      PH:[121.77,12.87],ID:[113.92,-0.78],TR:[35.24,38.96],UA:[31.16,48.37],
-      AR:[-63.61,-38.41],CL:[-71.54,-35.67],CO:[-74.29,4.57],PE:[-75.01,-9.18],
-      ET:[40.48,9.14],TZ:[34.88,-6.36],IR:[53.68,32.42],IQ:[43.67,33.22],
-      IL:[34.85,31.04],LB:[35.86,33.85],JO:[36.23,30.58],OM:[57.00,21.47],
-      KZ:[66.92,48.01],UZ:[64.58,41.37],AZ:[47.57,40.14],GE:[43.35,42.31],
-      AM:[45.03,40.06],BY:[27.95,53.70],MD:[28.37,47.41],BG:[25.48,42.73],
-      RS:[20.93,44.01],HR:[15.20,45.10],SI:[14.99,46.15],SK:[19.69,48.66],
-      CZ:[15.47,49.81],HU:[19.50,47.16],RO:[24.96,45.94],PL:[19.14,51.91],
-      LT:[23.88,55.16],LV:[24.10,56.87],EE:[25.01,58.60],FI:[25.74,61.92],
-      SE:[18.64,60.12],NO:[8.46,60.47],DK:[9.50,56.26],IE:[-8.24,53.41],
-      PT:[-8.22,39.39],GR:[21.82,39.07],AT:[14.55,47.51],CH:[8.22,46.81],
-      BE:[4.46,50.50],IS:[-19.01,64.96],LU:[6.13,49.82],
-      CY:[33.42,35.12],MT:[14.37,35.93],AL:[20.16,41.15],MK:[21.74,41.51],
-      BA:[17.68,43.91],ME:[19.37,42.70],XK:[20.90,42.58],
-      NP:[84.12,28.39],LK:[80.77,7.87],BT:[90.37,27.51],MV:[73.50,3.20],
-      MM:[95.95,21.91],KH:[104.99,12.56],LA:[102.49,19.85],MY:[109.64,4.21],
-      BN:[114.94,4.53],MN:[103.84,46.86],KG:[74.56,41.20],TJ:[71.27,38.86],
-      TM:[59.55,38.96],AF:[67.70,33.93],HK:[114.17,22.39],TW:[120.96,23.69],
-      NZ:[174.88,-40.90],FJ:[179.41,-17.71],PG:[147.18,-6.31],
-      CU:[-77.78,21.52],JM:[-77.29,18.10],DO:[-70.16,18.73],HT:[-72.17,18.97],
-      PR:[-66.58,18.22],TT:[-61.21,10.69],GY:[-58.87,4.86],SR:[-56.03,3.91],
-      EC:[-78.18,-1.83],BO:[-63.58,-17.05],PY:[-58.44,-23.44],UY:[-55.76,-32.52],
-      VE:[-66.58,6.42],CR:[-83.75,9.75],PA:[-80.78,8.54],HN:[-87.23,15.20],
-      GT:[-90.23,15.78],SV:[-88.90,13.79],NI:[-85.21,12.87],BZ:[-88.50,17.19],
-      CM:[12.35,7.36],CI:[-5.54,7.53],SN:[-14.49,14.49],GH:[-1.02,7.94],
-      UG:[32.29,1.37],TZ:[34.88,-6.36],ET:[40.48,9.14],SO:[46.19,5.15],
-      DJ:[42.59,11.59],ER:[39.78,15.17],SS:[29.86,6.88],SD:[30.22,12.86],
-      TD:[18.73,15.45],NE:[8.08,17.61],ML:[-3.99,17.57],BF:[-1.56,12.37],
-      GN:[-11.72,9.95],SL:[-11.78,8.46],LR:[-9.42,6.43],TG:[1.21,8.62],
-      BJ:[2.32,9.31],MW:[34.30,-13.25],MZ:[35.52,-18.66],ZM:[28.30,-13.13],
-      ZW:[29.15,-19.01],BW:[24.67,-22.33],NA:[18.49,-22.55],MG:[46.86,-18.76],
-      AO:[17.87,-11.20],CG:[15.83,-0.23],CD:[23.64,-3.54],
-      GA:[11.61,-0.80],GQ:[10.28,1.65],ST:[6.61,0.19],
-      LU:[6.13,49.82],AD:[1.52,42.55],MC:[7.42,43.73],LI:[9.55,47.16],
-      SM:[12.46,43.94],VA:[12.45,41.90],
-      NC:[165.61,-20.90],PF:[-149.40,-17.68],RE:[55.53,-21.11]
-    };
-
-    function project(lon, lat) {
-      var x = (lon + 180) * (1000 / 360);
-      var latRad = lat * Math.PI / 180;
-      var mercN = Math.log(Math.tan((Math.PI / 4) + (latRad / 2)));
-      var y = 250 - (mercN * 250 / Math.PI);
-      return [Math.round(x * 10) / 10, Math.round(y * 10) / 10];
-    }
-
-    // Draw dots for countries with data
-    if (!dotsGroup) return;
-    data.countries.forEach(function(c) {
-      var coords = CENTROIDS[c.code];
-      if (!coords) return;
-      var pos = project(coords[0], coords[1]);
-      var color = getColor(c.count, maxCount);
-      var radius = Math.max(2.5, Math.min(10, 2.5 + (c.count / maxCount) * 7.5));
-
-      // Glow circle
-      var glow = document.createElementNS(ns, 'circle');
-      glow.setAttribute('cx', pos[0]);
-      glow.setAttribute('cy', pos[1]);
-      glow.setAttribute('r', radius + 2.5);
-      glow.setAttribute('fill', color);
-      glow.setAttribute('opacity', '0.25');
-      glow.setAttribute('shape-rendering', 'geometricPrecision');
-      dotsGroup.appendChild(glow);
-
-      // Main dot
-      var dot = document.createElementNS(ns, 'circle');
-      dot.setAttribute('cx', pos[0]);
-      dot.setAttribute('cy', pos[1]);
-      dot.setAttribute('r', radius);
-      dot.setAttribute('fill', color);
-      dot.setAttribute('shape-rendering', 'geometricPrecision');
-      dot.style.transition = 'r 0.3s ease';
-
-      // Tooltip
-      var title = document.createElementNS(ns, 'title');
-      title.textContent = c.name + ': ' + c.count.toLocaleString() + ' visitors';
-      dot.appendChild(title);
-      dotsGroup.appendChild(dot);
-    });
   }
 
-  // Fetch and render
   fetch(API_GEO + '/api/stats/geo', { credentials: 'same-origin' })
     .then(function(r) { return r.ok ? r.json() : null; })
     .then(function(d) { if (d && d.countries) renderMap(d); })
     .catch(function() {});
 
-  // Auto-refresh every 5 minutes
   setInterval(function() {
     fetch(API_GEO + '/api/stats/geo', { credentials: 'same-origin' })
       .then(function(r) { return r.ok ? r.json() : null; })
