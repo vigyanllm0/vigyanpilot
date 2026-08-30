@@ -80,6 +80,9 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <noscript><link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
+<script src="https://cdn.amcharts.com/lib/5/index.js"></script>
+<script src="https://cdn.amcharts.com/lib/5/maps.js"></script>
+<script src="https://cdn.amcharts.com/lib/5/geodata/worldLow.js"></script>
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
 <script src="https://accounts.google.com/gsi/client?hl=en" async defer></script>
 <style>
@@ -463,42 +466,24 @@ footer{background:var(--black);color:rgba(255,255,255,.8);padding:56px 0 24px}
   </div>
 </section>
 
-<!-- Visitor Map — world map choropleth from /api/stats/geo -->
+<!-- Visitor Map — amCharts world choropleth -->
 <style>
-  #world-outlines path { transition: transform 0.3s ease, filter 0.3s ease, fill 0.3s ease; transform-origin: center; }
-  #world-outlines path.vl-has-users { cursor: pointer; }
-  #world-outlines path.vl-has-users:hover { transform: scale(1.04); filter: drop-shadow(0 2px 6px rgba(13,74,138,0.35)); z-index: 10; }
+  #chartdiv { width: 100%; height: 420px; }
   .vl-top-list { list-style: none; margin: 0; padding: 0; }
-  .vl-top-list li { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--border, #e8edf2); font-size: var(--font-sm, 14px); color: var(--text, #1e293b); }
+  .vl-top-list li { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border, #e8edf2); font-size: var(--font-sm, 14px); color: var(--text, #1e293b); }
   .vl-top-list li:last-child { border-bottom: none; }
-  .vl-rank { width: 22px; height: 22px; border-radius: 50%; background: #0d4a8a; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; }
-  .vl-bar { height: 6px; border-radius: 3px; background: #c7dcef; flex: 1; max-width: 120px; overflow: hidden; }
-  .vl-bar-fill { height: 100%; border-radius: 3px; background: #0d4a8a; transition: width 0.6s ease; }
+  .vl-rank { width: 26px; height: 26px; border-radius: 50%; background: #0d4a8a; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; }
+  .vl-country-name { font-weight: 600; }
+  #geo-top5 .vl-subtitle { font-size: 11px; color: var(--muted); margin: 0 0 12px; text-transform: uppercase; letter-spacing: .06em; font-weight: 700; }
 </style>
 <section style="padding:0 0 16px;max-width:var(--max-w);margin:0 auto">
-  <div style="text-align:center;margin-bottom:16px">
+  <div style="text-align:center;margin-bottom:12px">
     <p style="font-size:var(--font-sm);color:var(--muted);letter-spacing:.02em">Researchers from <span id="geo-countries" style="font-weight:700;color:var(--text)">—</span> countries use VigyanLLM</p>
   </div>
-  <div style="display:flex;gap:20px;align-items:flex-start;max-width:960px;margin:0 auto;flex-wrap:wrap">
-    <!-- Map -->
-    <div style="position:relative;flex:1;min-width:0">
-      <svg id="geo-map" viewBox="0 0 960 500" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="World map showing visitor locations" style="display:block;width:100%;height:auto;background:transparent">
-        <g id="world-outlines" style="shape-rendering:geometricPrecision">
-        </g>
-      </svg>
-      <div style="position:absolute;bottom:4px;right:4px;display:flex;align-items:center;gap:4px;font-size:9px;color:var(--muted)">
-        <span>Less</span>
-        <span style="display:inline-block;width:10px;height:8px;background:#e8edf2;border-radius:1px"></span>
-        <span style="display:inline-block;width:10px;height:8px;background:#c7dcef;border-radius:1px"></span>
-        <span style="display:inline-block;width:10px;height:8px;background:#93b8d0;border-radius:1px"></span>
-        <span style="display:inline-block;width:10px;height:8px;background:#5a94b8;border-radius:1px"></span>
-        <span style="display:inline-block;width:10px;height:8px;background:#0d4a8a;border-radius:1px"></span>
-        <span>More</span>
-      </div>
-    </div>
-    <!-- Top 5 sidebar -->
-    <div id="geo-top5" style="width:200px;flex-shrink:0;padding-top:10px">
-      <p style="font-size:11px;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:.06em;margin:0 0 10px">Top Countries</p>
+  <div style="display:flex;gap:24px;align-items:flex-start;max-width:1060px;margin:0 auto;flex-wrap:wrap">
+    <div id="chartdiv" style="flex:1;min-width:0"></div>
+    <div id="geo-top5" style="width:200px;flex-shrink:0;padding-top:40px">
+      <p class="vl-subtitle">Top Countries</p>
       <ul class="vl-top-list" id="geo-top5-list"></ul>
     </div>
   </div>
@@ -814,7 +799,6 @@ footer{background:var(--black);color:rgba(255,255,255,.8);padding:56px 0 24px}
 
 </footer>
 
-<script src="/world-map-data.js"></script>
 <script>
 var API = window.VIGYAN_BACKEND_URL || '';
 
@@ -866,89 +850,38 @@ document.addEventListener('DOMContentLoaded', function(){
   }
 });
 
-// ── Geo Map Renderer (choropleth + hover + top-5 sidebar) ──
+// ── Geo Map (amCharts choropleth) ──
 (function(){
-  var GEO_NO_DATA = '#e8edf2';
-  var GEO_HAS_DATA = ['#c7dcef','#93b8d0','#5a94b8','#2b6f9e','#0d4a8a'];
-  var GEO_LOW_THRESHOLD = 50;
   var API_GEO = window.VIGYAN_BACKEND_URL || '';
-  var ns = 'http://www.w3.org/2000/svg';
-  var rendered = false;
-  var lastData = null;
-
-  function getColor(count, max) {
-    if (count <= 0 || max <= 0) return GEO_NO_DATA;
-    var ratio = count / max;
-    if (ratio > 0.6) return GEO_HAS_DATA[4];
-    if (ratio > 0.35) return GEO_HAS_DATA[3];
-    if (ratio > 1.0/6) return GEO_HAS_DATA[2];
-    if (ratio > 0.05) return GEO_HAS_DATA[1];
-    return GEO_HAS_DATA[0];
-  }
-
-  function fmtCount(n) {
-    return n >= GEO_LOW_THRESHOLD ? n.toLocaleString() : '50+';
-  }
-
+  var TIER_COLORS = ['#0d4a8a','#1a6fb5','#2b6f9e','#5a94b8','#93b8d0'];
+  var NO_DATA = '#e8edf2';
   var COUNTRY_NAMES = {
-    AF:'Afghanistan',AL:'Albania',DZ:'Algeria',AD:'Andorra',AO:'Angola',
-    AG:'Antigua & Barbuda',AR:'Argentina',AM:'Armenia',AU:'Australia',AT:'Austria',
-    AZ:'Azerbaijan',BS:'Bahamas',BH:'Bahrain',BD:'Bangladesh',BB:'Barbados',
-    BY:'Belarus',BE:'Belgium',BZ:'Belize',BJ:'Bhutan',BO:'Bolivia',
-    BA:'Bosnia & Herzegovina',BW:'Botswana',BR:'Brazil',BN:'Brunei',BG:'Bulgaria',
-    BF:'Burkina Faso',BI:'Burundi',KH:'Cambodia',CM:'Cameroon',CA:'Canada',
-    CV:'Cape Verde',CF:'Central African Rep.',TD:'Chad',CL:'Chile',CN:'China',
-    CO:'Colombia',KM:'Comoros',CG:'Congo',CR:'Costa Rica',HR:'Croatia',
-    CU:'Cuba',CY:'Cyprus',CZ:'Czechia',DK:'Denmark',DJ:'Djibouti',
-    DM:'Dominica',DO:'Dominican Rep.',EC:'Ecuador',EG:'Egypt',SV:'El Salvador',
-    GQ:'Equatorial Guinea',ER:'Eritrea',EE:'Estonia',SZ:'Eswatini',ET:'Ethiopia',
-    FJ:'Fiji',FI:'Finland',FR:'France',GA:'Gabon',GM:'Gambia',
-    GE:'Georgia',DE:'Germany',GH:'Ghana',GR:'Greece',GD:'Grenada',
-    GT:'Guatemala',GN:'Guinea',GW:'Guinea-Bissau',GY:'Guyana',HT:'Haiti',
-    HN:'Honduras',HU:'Hungary',IS:'Iceland',IN:'India',ID:'Indonesia',
-    IR:'Iran',IQ:'Iraq',IE:'Ireland',IL:'Israel',IT:'Italy',
-    JM:'Jamaica',JP:'Japan',JO:'Jordan',KZ:'Kazakhstan',KE:'Kenya',
-    KI:'Kiribati',KP:'North Korea',KR:'South Korea',KW:'Kuwait',KG:'Kyrgyzstan',
-    LA:'Laos',LV:'Latvia',LB:'Lebanon',LS:'Lesotho',LR:'Liberia',
-    LY:'Libya',LI:'Liechtenstein',LT:'Lithuania',LU:'Luxembourg',MG:'Madagascar',
-    MW:'Malawi',MY:'Malaysia',MV:'Maldives',ML:'Mali',MT:'Malta',
-    MH:'Marshall Islands',MR:'Mauritania',MU:'Mauritius',MX:'Mexico',FM:'Micronesia',
-    MD:'Moldova',MC:'Monaco',MN:'Mongolia',ME:'Montenegro',MA:'Morocco',
-    MZ:'Mozambique',MM:'Myanmar',NA:'Namibia',NR:'Nauru',NP:'Nepal',
-    NL:'Netherlands',NZ:'New Zealand',NI:'Nicaragua',NE:'Niger',NG:'Nigeria',
-    MK:'North Macedonia',NO:'Norway',OM:'Oman',PK:'Pakistan',PW:'Palau',
-    PA:'Panama',PG:'Papua New Guinea',PY:'Paraguay',PE:'Peru',PH:'Philippines',
-    PL:'Poland',PT:'Portugal',QA:'Qatar',RO:'Romania',RU:'Russia',
-    RW:'Rwanda',KN:'St Kitts & Nevis',LC:'St Lucia',VC:'St Vincent',
-    WS:'Samoa',SM:'San Marino',ST:'São Tomé & Príncipe',SA:'Saudi Arabia',
-    SN:'Senegal',RS:'Serbia',SC:'Seychelles',SL:'Sierra Leone',SG:'Singapore',
-    SK:'Slovakia',SI:'Slovenia',SB:'Solomon Islands',SO:'Somalia',ZA:'South Africa',
-    SS:'South Sudan',ES:'Spain',LK:'Sri Lanka',SD:'Sudan',SR:'Suriname',
-    SE:'Sweden',CH:'Switzerland',SY:'Syria',TW:'Taiwan',TJ:'Tajikistan',
-    TZ:'Tanzania',TH:'Thailand',TL:'Timor-Leste',TG:'Togo',TO:'Tonga',
-    TT:'Trinidad & Tobago',TN:'Tunisia',TR:'Turkey',TM:'Turkmenistan',
-    TV:'Tuvalu',UG:'Uganda',UA:'Ukraine',AE:'United Arab Emirates',
-    GB:'United Kingdom',US:'United States',UY:'Uruguay',UZ:'Uzbekistan',
-    VU:'Vanuatu',VA:'Vatican',VE:'Venezuela',VN:'Vietnam',YE:'Yemen',
-    ZM:'Zambia',ZW:'Zimbabwe',XK:'Kosovo'
+    AF:'Afghanistan',AL:'Albania',DZ:'Algeria',AO:'Angola',AR:'Argentina',
+    AM:'Armenia',AU:'Australia',AT:'Austria',AZ:'Azerbaijan',BD:'Bangladesh',
+    BY:'Belarus',BE:'Belgium',BO:'Bolivia',BA:'Bosnia & Herzegovina',BW:'Botswana',
+    BR:'Brazil',BG:'Bulgaria',KH:'Cambodia',CM:'Cameroon',CA:'Canada',
+    CL:'Chile',CN:'China',CO:'Colombia',CR:'Costa Rica',HR:'Croatia',
+    CU:'Cuba',CY:'Cyprus',CZ:'Czechia',DK:'Denmark',DO:'Dominican Rep.',
+    EC:'Ecuador',EG:'Egypt',SV:'El Salvador',EE:'Estonia',ET:'Ethiopia',
+    FI:'Finland',FR:'France',GE:'Georgia',DE:'Germany',GH:'Ghana',
+    GR:'Greece',GT:'Guatemala',HN:'Honduras',HU:'Hungary',IS:'Iceland',
+    IN:'India',ID:'Indonesia',IR:'Iran',IQ:'Iraq',IE:'Ireland',
+    IL:'Israel',IT:'Italy',JM:'Jamaica',JP:'Japan',JO:'Jordan',
+    KZ:'Kazakhstan',KE:'Kenya',KR:'South Korea',KW:'Kuwait',KG:'Kyrgyzstan',
+    LA:'Laos',LV:'Latvia',LB:'Lebanon',LT:'Lithuania',LU:'Luxembourg',
+    MG:'Madagascar',MY:'Malaysia',MX:'Mexico',MD:'Moldova',MN:'Mongolia',
+    MA:'Morocco',MZ:'Mozambique',MM:'Myanmar',NA:'Namibia',NP:'Nepal',
+    NL:'Netherlands',NZ:'New Zealand',NI:'Nicaragua',NG:'Nigeria',NO:'Norway',
+    OM:'Oman',PK:'Pakistan',PA:'Panama',PG:'Papua New Guinea',PY:'Paraguay',
+    PE:'Peru',PH:'Philippines',PL:'Poland',PT:'Portugal',QA:'Qatar',
+    RO:'Romania',RU:'Russia',SA:'Saudi Arabia',SN:'Senegal',RS:'Serbia',
+    SG:'Singapore',SK:'Slovakia',SI:'Slovenia',SO:'Somalia',ZA:'South Africa',
+    ES:'Spain',LK:'Sri Lanka',SD:'Sudan',SE:'Sweden',CH:'Switzerland',
+    SY:'Syria',TW:'Taiwan',TZ:'Tanzania',TH:'Thailand',TG:'Togo',
+    TN:'Tunisia',TR:'Turkey',TM:'Turkmenistan',UG:'Uganda',UA:'Ukraine',
+    AE:'United Arab Emirates',GB:'United Kingdom',US:'United States',UY:'Uruguay',
+    UZ:'Uzbekistan',VE:'Venezuela',VN:'Vietnam',YE:'Yemen',ZM:'Zambia',ZW:'Zimbabwe'
   };
-
-  function renderWorldOutlines() {
-    var outlines = document.getElementById('world-outlines');
-    if (!outlines || !window.WORLD_PATHS) return;
-    while (outlines.firstChild) outlines.removeChild(outlines.firstChild);
-    var codes = Object.keys(window.WORLD_PATHS);
-    for (var i = 0; i < codes.length; i++) {
-      var iso = codes[i];
-      var path = document.createElementNS(ns, 'path');
-      path.setAttribute('d', window.WORLD_PATHS[iso]);
-      path.setAttribute('data-iso', iso);
-      path.setAttribute('fill', GEO_NO_DATA);
-      path.setAttribute('stroke', '#fff');
-      path.setAttribute('stroke-width', '0.5');
-      outlines.appendChild(path);
-    }
-  }
 
   function renderTop5(data) {
     var list = document.getElementById('geo-top5-list');
@@ -958,73 +891,98 @@ document.addEventListener('DOMContentLoaded', function(){
       .sort(function(a,b){ return b.count - a.count; }).slice(0, 5);
     if (sorted.length === 0) { sidebar.style.display = 'none'; return; }
     sidebar.style.display = '';
-    var maxC = sorted[0].count;
     list.innerHTML = '';
     for (var i = 0; i < sorted.length; i++) {
       var c = sorted[i];
       var li = document.createElement('li');
       li.innerHTML = '<span class="vl-rank">' + (i+1) + '</span>' +
-        '<span style="flex:1">' + (COUNTRY_NAMES[c.code] || c.code) + ' <span style="color:var(--muted);font-size:12px">' + fmtCount(c.count) + '</span></span>' +
-        '<span class="vl-bar"><span class="vl-bar-fill" style="width:' + Math.round(c.count/maxC*100) + '%"></span></span>';
+        '<span class="vl-country-name">' + (COUNTRY_NAMES[c.code] || c.code) + '</span>';
       list.appendChild(li);
     }
   }
 
-  function renderMap(data) {
-    var svg = document.getElementById('geo-map');
-    if (!svg || !data || !data.countries) return;
-    lastData = data;
-    var counts = data.countries.map(function(c){ return c.count; });
-    var maxCount = Math.max.apply(null, counts.length ? counts : [0]);
-    var totalC = data.total_countries || 0;
+  am5.ready(function() {
+    var root = am5.Root.new('chartdiv');
+    root.setThemes([am5themes_Animation.new(root)]);
 
+    var chart = root.container.children.push(
+      am5map.MapChart.new(root, {
+        panX: 'none', panY: 'none',
+        wheelY: 'none', projection: am5map.geoMercator()
+      })
+    );
+
+    var polygonSeries = chart.series.push(
+      am5map.MapPolygonSeries.new(root, {
+        geoData: am5geodata_worldLow,
+        fill: am5.color(NO_DATA),
+        stroke: am5.color('#ffffff'),
+        strokeWidth: 0.5
+      })
+    );
+
+    polygonSeries.mapPolygons.template.setAll({
+      tooltipText: '{name}',
+      fill: am5.color(NO_DATA),
+      stroke: am5.color('#ffffff'),
+      strokeWidth: 0.5,
+      cursorOverStyle: 'pointer',
+      toggleKey: 'active'
+    });
+
+    polygonSeries.mapPolygons.template.states.create('hover', {
+      fill: am5.color('#1565C0'),
+      stroke: am5.color('#0d4a8a'),
+      strokeWidth: 1.5,
+      scale: 1.04
+    });
+
+    window._vlPolygonSeries = polygonSeries;
+
+    fetch(API_GEO + '/api/stats/geo', { credentials: 'same-origin' })
+      .then(function(r) { return r.ok ? r.json() : null; })
+      .then(function(d) { if (d && d.countries) applyGeoData(d); })
+      .catch(function() {});
+
+    setInterval(function() {
+      fetch(API_GEO + '/api/stats/geo', { credentials: 'same-origin' })
+        .then(function(r) { return r.ok ? r.json() : null; })
+        .then(function(d) { if (d && d.countries) applyGeoData(d); })
+        .catch(function() {});
+    }, 300000);
+  });
+
+  function applyGeoData(data) {
+    var series = window._vlPolygonSeries;
+    if (!series || !data || !data.countries) return;
+
+    var totalC = data.total_countries || 0;
     var elC = document.getElementById('geo-countries');
     if (elC) elC.textContent = totalC;
 
-    if (!rendered) {
-      renderWorldOutlines();
-      rendered = true;
-    }
+    var sorted = data.countries.filter(function(c){ return c.count > 0; })
+      .sort(function(a,b){ return b.count - a.count; });
 
-    var codeMap = {};
-    data.countries.forEach(function(c){ codeMap[c.code] = c.count; });
+    var tierMap = {};
+    var len = sorted.length;
+    sorted.forEach(function(c, i) {
+      var ratio = len <= 1 ? 0 : i / (len - 1);
+      if (ratio < 0.2) tierMap[c.code] = 0;
+      else if (ratio < 0.4) tierMap[c.code] = 1;
+      else if (ratio < 0.6) tierMap[c.code] = 2;
+      else if (ratio < 0.8) tierMap[c.code] = 3;
+      else tierMap[c.code] = 4;
+    });
 
-    var outlines = document.getElementById('world-outlines');
-    if (outlines) {
-      var paths = outlines.querySelectorAll('path');
-      for (var i = 0; i < paths.length; i++) {
-        var iso = paths[i].getAttribute('data-iso');
-        var count = codeMap[iso] || 0;
-        var color = getColor(count, maxCount);
-        paths[i].setAttribute('fill', color);
-        if (count > 0) {
-          paths[i].setAttribute('stroke', '#b0c4d8');
-          paths[i].setAttribute('stroke-width', '0.7');
-          paths[i].classList.add('vl-has-users');
-          paths[i].setAttribute('data-count', fmtCount(count));
-          var name = COUNTRY_NAMES[iso] || iso;
-          paths[i].innerHTML = '<title>' + name + ': ' + fmtCount(count) + ' researchers</title>';
-        } else {
-          paths[i].classList.remove('vl-has-users');
-          paths[i].removeAttribute('data-count');
-          paths[i].innerHTML = '';
-        }
-      }
-    }
+    series.dataItems.each(function(di) {
+      var id = di.get('id');
+      var tier = tierMap[id];
+      var color = (tier !== undefined) ? TIER_COLORS[tier] : NO_DATA;
+      di.set('fill', am5.color(color));
+    });
+
     renderTop5(data);
   }
-
-  fetch(API_GEO + '/api/stats/geo', { credentials: 'same-origin' })
-    .then(function(r) { return r.ok ? r.json() : null; })
-    .then(function(d) { if (d && d.countries) renderMap(d); })
-    .catch(function() {});
-
-  setInterval(function() {
-    fetch(API_GEO + '/api/stats/geo', { credentials: 'same-origin' })
-      .then(function(r) { return r.ok ? r.json() : null; })
-      .then(function(d) { if (d && d.countries) renderMap(d); })
-      .catch(function() {});
-  }, 300000);
 })();
 
 function initDNAAnim(){
