@@ -475,21 +475,18 @@ footer{background:var(--black);color:rgba(255,255,255,.8);padding:56px 0 24px}
   .vl-bar { height: 6px; border-radius: 3px; background: #c7dcef; flex: 1; max-width: 120px; overflow: hidden; }
   .vl-bar-fill { height: 100%; border-radius: 3px; background: #0d4a8a; transition: width 0.6s ease; }
 </style>
-<section style="padding:0 0 32px;max-width:var(--max-w);margin:0 auto">
-  <div style="text-align:center;margin-bottom:20px">
+<section style="padding:0 0 16px;max-width:var(--max-w);margin:0 auto">
+  <div style="text-align:center;margin-bottom:16px">
     <p style="font-size:var(--font-sm);color:var(--muted);letter-spacing:.02em">Researchers from <span id="geo-countries" style="font-weight:700;color:var(--text)">—</span> countries use VigyanLLM</p>
   </div>
   <div style="display:flex;gap:20px;align-items:flex-start;max-width:960px;margin:0 auto;flex-wrap:wrap">
     <!-- Map -->
     <div style="position:relative;flex:1;min-width:0">
-      <svg id="geo-map" viewBox="0 0 960 500" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="World map showing visitor locations" style="display:block;width:100%;height:auto">
-        <rect width="960" height="500" fill="transparent"/>
+      <svg id="geo-map" viewBox="0 0 960 500" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="World map showing visitor locations" style="display:block;width:100%;height:auto;background:transparent">
         <g id="world-outlines" style="shape-rendering:geometricPrecision">
         </g>
-        <!-- POK overlay (part of India per Survey of India) -->
-        <path id="pok-overlay" d="M671,174 L676,168 L684,163 L692,161 L698,164 L703,170 L706,178 L704,186 L698,192 L690,195 L682,193 L675,188 Z" fill="none" stroke="none" shape-rendering="geometricPrecision"/>
       </svg>
-      <div style="position:absolute;bottom:6px;right:6px;display:flex;align-items:center;gap:5px;font-size:9px;color:var(--muted)">
+      <div style="position:absolute;bottom:4px;right:4px;display:flex;align-items:center;gap:4px;font-size:9px;color:var(--muted)">
         <span>Less</span>
         <span style="display:inline-block;width:10px;height:8px;background:#e8edf2;border-radius:1px"></span>
         <span style="display:inline-block;width:10px;height:8px;background:#c7dcef;border-radius:1px"></span>
@@ -500,7 +497,7 @@ footer{background:var(--black);color:rgba(255,255,255,.8);padding:56px 0 24px}
       </div>
     </div>
     <!-- Top 5 sidebar -->
-    <div id="geo-top5" style="width:200px;flex-shrink:0;padding-top:20px">
+    <div id="geo-top5" style="width:200px;flex-shrink:0;padding-top:10px">
       <p style="font-size:11px;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:.06em;margin:0 0 10px">Top Countries</p>
       <ul class="vl-top-list" id="geo-top5-list"></ul>
     </div>
@@ -953,15 +950,6 @@ document.addEventListener('DOMContentLoaded', function(){
     }
   }
 
-  function renderPOK(indiaColor) {
-    var pok = document.getElementById('pok-overlay');
-    if (pok) {
-      pok.setAttribute('fill', indiaColor || GEO_NO_DATA);
-      pok.setAttribute('stroke', '#fff');
-      pok.setAttribute('stroke-width', '0.5');
-    }
-  }
-
   function renderTop5(data) {
     var list = document.getElementById('geo-top5-list');
     var sidebar = document.getElementById('geo-top5');
@@ -1001,7 +989,6 @@ document.addEventListener('DOMContentLoaded', function(){
     var codeMap = {};
     data.countries.forEach(function(c){ codeMap[c.code] = c.count; });
 
-    var indiaColor = GEO_NO_DATA;
     var outlines = document.getElementById('world-outlines');
     if (outlines) {
       var paths = outlines.querySelectorAll('path');
@@ -1022,10 +1009,8 @@ document.addEventListener('DOMContentLoaded', function(){
           paths[i].removeAttribute('data-count');
           paths[i].innerHTML = '';
         }
-        if (iso === 'IN') indiaColor = color;
       }
     }
-    renderPOK(indiaColor);
     renderTop5(data);
   }
 
