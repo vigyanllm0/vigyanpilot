@@ -704,6 +704,10 @@ def create_app() -> Flask:
         from primerforge.reports_routes import reports_bp
         app.register_blueprint(reports_bp)
 
+        # Register visitor geo tracking
+        from primerforge.visitor_routes import visitor_bp
+        app.register_blueprint(visitor_bp)
+
         with app.app_context():
             try:
                 ensure_admin_exists()
@@ -744,6 +748,11 @@ def create_app() -> Flask:
             logger.info("Reports/academic/referral routes registered (SQLite)")
         except ImportError as exc:
             logger.warning("Reports routes disabled: %s", exc)
+        try:
+            from primerforge.visitor_routes import visitor_bp
+            app.register_blueprint(visitor_bp)
+        except ImportError as exc:
+            logger.warning("Visitor tracking disabled: %s", exc)
         consume_token = None
         consume_docking_token = None
         record_operation_cost = None
