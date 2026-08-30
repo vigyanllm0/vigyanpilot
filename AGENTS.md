@@ -783,6 +783,13 @@ Choropleth world map on homepage went through 3 iterations:
 - **Robustness**: Wrapped amCharts IIFE in `try-catch` so DNA animation (`initDNAAnim`) still works if amCharts fails
 - Pushed: `def2e4f0`
 
+### Root Cause Fix — `eb9a69fa`
+- **Root cause**: `maps.js` (plural) returns **404** on amCharts CDN. The correct file is `map.js` (singular).
+- **Fix**: Downloaded all 4 amCharts files locally (`amcharts-index.js`, `amcharts-map.js`, `amcharts-worldLow.js`, `amcharts-worldIndiaLow.js`), served from `/` instead of CDN.
+- **India/POK**: Using `am5geodata_worldIndiaLow` (India-specific world map with POK as part of India per Survey of India).
+- **CSP cleanup**: Removed `cdn.amcharts.com` from `script-src` and `connect-src` (no longer needed — local files).
+- Pushed: `eb9a69fa`
+
 ---
 
 ## Registration-Wall Restructure — Guest Mode (Aug 5 2026)
