@@ -748,6 +748,34 @@ Added "Scientific References" sections with proper citations to 8 tool pages:
 - Follow existing blog post HTML patterns for new content (nav, footer, auth, schema, styling)
 - Headless-Chrome verification: `"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless=new --remote-debugging-port=9222 --remote-allow-origins='*' --user-data-dir=<tmp> <url>` then drive via Python `websocket-client` CDP (use `--remote-allow-origins=*` on Chrome 150+, else 403)
 
+## World Map Improvements — Aug 30 2026 (commit `5ef6502d`)
+
+### What & Why
+Choropleth world map on homepage had issues: no hover animation, no POK coverage, jagged edges (crispEdges), no country list, exact small numbers. Fixed all.
+
+### Changes
+- **POK overlay**: SVG path for Pakistan-occupied Kashmir overlaid on India, filled with India's choropleth color (Survey of India data: POK = part of India).
+- **Hover animation**: Countries with users get `vl-has-users` class → CSS `scale(1.04)` + drop-shadow on hover (3D lift effect).
+- **Top-5 sidebar**: New sidebar panel listing top 5 countries with rank badges, visitor counts, and mini bar charts.
+- **50+ format**: `fmtCount()` shows "50+" instead of exact small numbers for privacy/display.
+- **geometricPrecision rendering**: Replaced `crispEdges` with `geometricPrecision` on SVG `<g>` and `<path>` elements — eliminates jagged edges on Americas, Europe, Russia.
+- **Country name tooltips**: `<title>` elements on each country path show "Country: 50+ researchers" on hover.
+- **Country name lookup**: Full 177-country `COUNTRY_NAMES` map for tooltips and sidebar labels.
+- **Legend cleanup**: Reduced from 10px squares to 10×8px with tighter spacing.
+
+### Files Changed
+| File | Change |
+|------|--------|
+| `frontend/index.html` | POK SVG overlay, top-5 sidebar HTML, CSS hover/lift styles, geometricPrecision rendering, JS `renderPOK()`, `renderTop5()`, `fmtCount()`, `COUNTRY_NAMES` map, title tooltips on paths |
+
+### Verification
+- HTML parses OK (91,393 bytes)
+- Flask test client: `index.html` serves 200, all 9 feature markers present
+- pytest: 9 passed (guest_mode + http_only_cookie_auth)
+- Pushed: `5ef6502d`
+
+---
+
 ## Registration-Wall Restructure — Guest Mode (Aug 5 2026)
 
 ### Decision
