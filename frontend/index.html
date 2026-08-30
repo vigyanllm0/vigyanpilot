@@ -464,31 +464,45 @@ footer{background:var(--black);color:rgba(255,255,255,.8);padding:56px 0 24px}
 </section>
 
 <!-- Visitor Map — world map choropleth from /api/stats/geo -->
+<style>
+  #world-outlines path { transition: transform 0.3s ease, filter 0.3s ease, fill 0.3s ease; transform-origin: center; }
+  #world-outlines path.vl-has-users { cursor: pointer; }
+  #world-outlines path.vl-has-users:hover { transform: scale(1.04); filter: drop-shadow(0 2px 6px rgba(13,74,138,0.35)); z-index: 10; }
+  .vl-top-list { list-style: none; margin: 0; padding: 0; }
+  .vl-top-list li { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--border, #e8edf2); font-size: var(--font-sm, 14px); color: var(--text, #1e293b); }
+  .vl-top-list li:last-child { border-bottom: none; }
+  .vl-rank { width: 22px; height: 22px; border-radius: 50%; background: #0d4a8a; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; }
+  .vl-bar { height: 6px; border-radius: 3px; background: #c7dcef; flex: 1; max-width: 120px; overflow: hidden; }
+  .vl-bar-fill { height: 100%; border-radius: 3px; background: #0d4a8a; transition: width 0.6s ease; }
+</style>
 <section style="padding:0 0 32px;max-width:var(--max-w);margin:0 auto">
-  <div style="text-align:center;margin-bottom:24px">
+  <div style="text-align:center;margin-bottom:20px">
     <p style="font-size:var(--font-sm);color:var(--muted);letter-spacing:.02em">Researchers from <span id="geo-countries" style="font-weight:700;color:var(--text)">—</span> countries use VigyanLLM</p>
   </div>
-  <div style="position:relative;max-width:960px;margin:0 auto">
-    <svg id="geo-map" viewBox="0 0 960 500" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="World map showing visitor locations" style="display:block;width:100%;height:auto" shape-rendering="crispEdges">
-      <defs>
-        <filter id="dot-glow" x="-50%" y="-50%" width="200%" height="200%">
-          <feGaussianBlur in="SourceGraphic" stdDeviation="2" result="blur"/>
-          <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-        </filter>
-      </defs>
-      <rect width="1000" height="500" fill="transparent"/>
-      <g id="world-outlines" shape-rendering="crispEdges">
-        <!-- Country outlines injected by JS from /api/stats/geo -->
-      </g>
-    </svg>
-    <div style="position:absolute;bottom:8px;right:8px;display:flex;align-items:center;gap:6px;font-size:10px;color:var(--muted)">
-      <span>Fewer</span>
-      <span style="display:inline-block;width:10px;height:10px;background:#c7dcef;border-radius:2px"></span>
-      <span style="display:inline-block;width:10px;height:10px;background:#7fadcf;border-radius:2px"></span>
-      <span style="display:inline-block;width:10px;height:10px;background:#4a90c4;border-radius:2px"></span>
-      <span style="display:inline-block;width:10px;height:10px;background:#1a6fb5;border-radius:2px"></span>
-      <span style="display:inline-block;width:10px;height:10px;background:#0d4a8a;border-radius:2px"></span>
-      <span>More</span>
+  <div style="display:flex;gap:20px;align-items:flex-start;max-width:960px;margin:0 auto;flex-wrap:wrap">
+    <!-- Map -->
+    <div style="position:relative;flex:1;min-width:0">
+      <svg id="geo-map" viewBox="0 0 960 500" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="World map showing visitor locations" style="display:block;width:100%;height:auto">
+        <rect width="960" height="500" fill="transparent"/>
+        <g id="world-outlines" style="shape-rendering:geometricPrecision">
+        </g>
+        <!-- POK overlay (part of India per Survey of India) -->
+        <path id="pok-overlay" d="M671,174 L676,168 L684,163 L692,161 L698,164 L703,170 L706,178 L704,186 L698,192 L690,195 L682,193 L675,188 Z" fill="none" stroke="none" shape-rendering="geometricPrecision"/>
+      </svg>
+      <div style="position:absolute;bottom:6px;right:6px;display:flex;align-items:center;gap:5px;font-size:9px;color:var(--muted)">
+        <span>Less</span>
+        <span style="display:inline-block;width:10px;height:8px;background:#e8edf2;border-radius:1px"></span>
+        <span style="display:inline-block;width:10px;height:8px;background:#c7dcef;border-radius:1px"></span>
+        <span style="display:inline-block;width:10px;height:8px;background:#93b8d0;border-radius:1px"></span>
+        <span style="display:inline-block;width:10px;height:8px;background:#5a94b8;border-radius:1px"></span>
+        <span style="display:inline-block;width:10px;height:8px;background:#0d4a8a;border-radius:1px"></span>
+        <span>More</span>
+      </div>
+    </div>
+    <!-- Top 5 sidebar -->
+    <div id="geo-top5" style="width:200px;flex-shrink:0;padding-top:20px">
+      <p style="font-size:11px;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:.06em;margin:0 0 10px">Top Countries</p>
+      <ul class="vl-top-list" id="geo-top5-list"></ul>
     </div>
   </div>
 </section>
@@ -855,13 +869,15 @@ document.addEventListener('DOMContentLoaded', function(){
   }
 });
 
-// ── Geo Map Renderer (choropleth fill) ──
+// ── Geo Map Renderer (choropleth + hover + top-5 sidebar) ──
 (function(){
   var GEO_NO_DATA = '#e8edf2';
   var GEO_HAS_DATA = ['#c7dcef','#93b8d0','#5a94b8','#2b6f9e','#0d4a8a'];
+  var GEO_LOW_THRESHOLD = 50;
   var API_GEO = window.VIGYAN_BACKEND_URL || '';
   var ns = 'http://www.w3.org/2000/svg';
   var rendered = false;
+  var lastData = null;
 
   function getColor(count, max) {
     if (count <= 0 || max <= 0) return GEO_NO_DATA;
@@ -872,6 +888,53 @@ document.addEventListener('DOMContentLoaded', function(){
     if (ratio > 0.05) return GEO_HAS_DATA[1];
     return GEO_HAS_DATA[0];
   }
+
+  function fmtCount(n) {
+    return n >= GEO_LOW_THRESHOLD ? n.toLocaleString() : '50+';
+  }
+
+  var COUNTRY_NAMES = {
+    AF:'Afghanistan',AL:'Albania',DZ:'Algeria',AD:'Andorra',AO:'Angola',
+    AG:'Antigua & Barbuda',AR:'Argentina',AM:'Armenia',AU:'Australia',AT:'Austria',
+    AZ:'Azerbaijan',BS:'Bahamas',BH:'Bahrain',BD:'Bangladesh',BB:'Barbados',
+    BY:'Belarus',BE:'Belgium',BZ:'Belize',BJ:'Bhutan',BO:'Bolivia',
+    BA:'Bosnia & Herzegovina',BW:'Botswana',BR:'Brazil',BN:'Brunei',BG:'Bulgaria',
+    BF:'Burkina Faso',BI:'Burundi',KH:'Cambodia',CM:'Cameroon',CA:'Canada',
+    CV:'Cape Verde',CF:'Central African Rep.',TD:'Chad',CL:'Chile',CN:'China',
+    CO:'Colombia',KM:'Comoros',CG:'Congo',CR:'Costa Rica',HR:'Croatia',
+    CU:'Cuba',CY:'Cyprus',CZ:'Czechia',DK:'Denmark',DJ:'Djibouti',
+    DM:'Dominica',DO:'Dominican Rep.',EC:'Ecuador',EG:'Egypt',SV:'El Salvador',
+    GQ:'Equatorial Guinea',ER:'Eritrea',EE:'Estonia',SZ:'Eswatini',ET:'Ethiopia',
+    FJ:'Fiji',FI:'Finland',FR:'France',GA:'Gabon',GM:'Gambia',
+    GE:'Georgia',DE:'Germany',GH:'Ghana',GR:'Greece',GD:'Grenada',
+    GT:'Guatemala',GN:'Guinea',GW:'Guinea-Bissau',GY:'Guyana',HT:'Haiti',
+    HN:'Honduras',HU:'Hungary',IS:'Iceland',IN:'India',ID:'Indonesia',
+    IR:'Iran',IQ:'Iraq',IE:'Ireland',IL:'Israel',IT:'Italy',
+    JM:'Jamaica',JP:'Japan',JO:'Jordan',KZ:'Kazakhstan',KE:'Kenya',
+    KI:'Kiribati',KP:'North Korea',KR:'South Korea',KW:'Kuwait',KG:'Kyrgyzstan',
+    LA:'Laos',LV:'Latvia',LB:'Lebanon',LS:'Lesotho',LR:'Liberia',
+    LY:'Libya',LI:'Liechtenstein',LT:'Lithuania',LU:'Luxembourg',MG:'Madagascar',
+    MW:'Malawi',MY:'Malaysia',MV:'Maldives',ML:'Mali',MT:'Malta',
+    MH:'Marshall Islands',MR:'Mauritania',MU:'Mauritius',MX:'Mexico',FM:'Micronesia',
+    MD:'Moldova',MC:'Monaco',MN:'Mongolia',ME:'Montenegro',MA:'Morocco',
+    MZ:'Mozambique',MM:'Myanmar',NA:'Namibia',NR:'Nauru',NP:'Nepal',
+    NL:'Netherlands',NZ:'New Zealand',NI:'Nicaragua',NE:'Niger',NG:'Nigeria',
+    MK:'North Macedonia',NO:'Norway',OM:'Oman',PK:'Pakistan',PW:'Palau',
+    PA:'Panama',PG:'Papua New Guinea',PY:'Paraguay',PE:'Peru',PH:'Philippines',
+    PL:'Poland',PT:'Portugal',QA:'Qatar',RO:'Romania',RU:'Russia',
+    RW:'Rwanda',KN:'St Kitts & Nevis',LC:'St Lucia',VC:'St Vincent',
+    WS:'Samoa',SM:'San Marino',ST:'São Tomé & Príncipe',SA:'Saudi Arabia',
+    SN:'Senegal',RS:'Serbia',SC:'Seychelles',SL:'Sierra Leone',SG:'Singapore',
+    SK:'Slovakia',SI:'Slovenia',SB:'Solomon Islands',SO:'Somalia',ZA:'South Africa',
+    SS:'South Sudan',ES:'Spain',LK:'Sri Lanka',SD:'Sudan',SR:'Suriname',
+    SE:'Sweden',CH:'Switzerland',SY:'Syria',TW:'Taiwan',TJ:'Tajikistan',
+    TZ:'Tanzania',TH:'Thailand',TL:'Timor-Leste',TG:'Togo',TO:'Tonga',
+    TT:'Trinidad & Tobago',TN:'Tunisia',TR:'Turkey',TM:'Turkmenistan',
+    TV:'Tuvalu',UG:'Uganda',UA:'Ukraine',AE:'United Arab Emirates',
+    GB:'United Kingdom',US:'United States',UY:'Uruguay',UZ:'Uzbekistan',
+    VU:'Vanuatu',VA:'Vatican',VE:'Venezuela',VN:'Vietnam',YE:'Yemen',
+    ZM:'Zambia',ZW:'Zimbabwe',XK:'Kosovo'
+  };
 
   function renderWorldOutlines() {
     var outlines = document.getElementById('world-outlines');
@@ -885,16 +948,46 @@ document.addEventListener('DOMContentLoaded', function(){
       path.setAttribute('data-iso', iso);
       path.setAttribute('fill', GEO_NO_DATA);
       path.setAttribute('stroke', '#fff');
-      path.setAttribute('stroke-width', '0.4');
-      path.setAttribute('shape-rendering', 'crispEdges');
+      path.setAttribute('stroke-width', '0.5');
       outlines.appendChild(path);
+    }
+  }
+
+  function renderPOK(indiaColor) {
+    var pok = document.getElementById('pok-overlay');
+    if (pok) {
+      pok.setAttribute('fill', indiaColor || GEO_NO_DATA);
+      pok.setAttribute('stroke', '#fff');
+      pok.setAttribute('stroke-width', '0.5');
+    }
+  }
+
+  function renderTop5(data) {
+    var list = document.getElementById('geo-top5-list');
+    var sidebar = document.getElementById('geo-top5');
+    if (!list || !sidebar || !data || !data.countries) return;
+    var sorted = data.countries.filter(function(c){ return c.count > 0; })
+      .sort(function(a,b){ return b.count - a.count; }).slice(0, 5);
+    if (sorted.length === 0) { sidebar.style.display = 'none'; return; }
+    sidebar.style.display = '';
+    var maxC = sorted[0].count;
+    list.innerHTML = '';
+    for (var i = 0; i < sorted.length; i++) {
+      var c = sorted[i];
+      var li = document.createElement('li');
+      li.innerHTML = '<span class="vl-rank">' + (i+1) + '</span>' +
+        '<span style="flex:1">' + (COUNTRY_NAMES[c.code] || c.code) + ' <span style="color:var(--muted);font-size:12px">' + fmtCount(c.count) + '</span></span>' +
+        '<span class="vl-bar"><span class="vl-bar-fill" style="width:' + Math.round(c.count/maxC*100) + '%"></span></span>';
+      list.appendChild(li);
     }
   }
 
   function renderMap(data) {
     var svg = document.getElementById('geo-map');
     if (!svg || !data || !data.countries) return;
-    var maxCount = Math.max.apply(null, data.countries.map(function(c){ return c.count; }));
+    lastData = data;
+    var counts = data.countries.map(function(c){ return c.count; });
+    var maxCount = Math.max.apply(null, counts.length ? counts : [0]);
     var totalC = data.total_countries || 0;
 
     var elC = document.getElementById('geo-countries');
@@ -908,6 +1001,7 @@ document.addEventListener('DOMContentLoaded', function(){
     var codeMap = {};
     data.countries.forEach(function(c){ codeMap[c.code] = c.count; });
 
+    var indiaColor = GEO_NO_DATA;
     var outlines = document.getElementById('world-outlines');
     if (outlines) {
       var paths = outlines.querySelectorAll('path');
@@ -917,11 +1011,22 @@ document.addEventListener('DOMContentLoaded', function(){
         var color = getColor(count, maxCount);
         paths[i].setAttribute('fill', color);
         if (count > 0) {
-          paths[i].setAttribute('stroke', '#dde5ed');
-          paths[i].setAttribute('stroke-width', '0.6');
+          paths[i].setAttribute('stroke', '#b0c4d8');
+          paths[i].setAttribute('stroke-width', '0.7');
+          paths[i].classList.add('vl-has-users');
+          paths[i].setAttribute('data-count', fmtCount(count));
+          var name = COUNTRY_NAMES[iso] || iso;
+          paths[i].innerHTML = '<title>' + name + ': ' + fmtCount(count) + ' researchers</title>';
+        } else {
+          paths[i].classList.remove('vl-has-users');
+          paths[i].removeAttribute('data-count');
+          paths[i].innerHTML = '';
         }
+        if (iso === 'IN') indiaColor = color;
       }
     }
+    renderPOK(indiaColor);
+    renderTop5(data);
   }
 
   fetch(API_GEO + '/api/stats/geo', { credentials: 'same-origin' })
