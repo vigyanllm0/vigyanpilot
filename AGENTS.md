@@ -748,31 +748,34 @@ Added "Scientific References" sections with proper citations to 8 tool pages:
 - Follow existing blog post HTML patterns for new content (nav, footer, auth, schema, styling)
 - Headless-Chrome verification: `"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless=new --remote-debugging-port=9222 --remote-allow-origins='*' --user-data-dir=<tmp> <url>` then drive via Python `websocket-client` CDP (use `--remote-allow-origins=*` on Chrome 150+, else 403)
 
-## World Map Improvements — Aug 30 2026 (commit `5ef6502d`)
+## World Map Improvements — Aug 30 2026 (commits `5ef6502d`, `1c84a9a5`, `881ecb16`)
 
 ### What & Why
-Choropleth world map on homepage had issues: no hover animation, no POK coverage, jagged edges (crispEdges), no country list, exact small numbers. Fixed all.
+Choropleth world map on homepage went through 3 iterations:
+1. Custom SVG paths from TopoJSON — jagged edges, no POK, pixelated Russia/Americas
+2. POK overlay patch — visible white border seam, still pixelated
+3. **amCharts MapChart** (final) — smooth vector paths, proper POK via `worldLow` geodata, 3D hover, no visitor counts
 
-### Changes
-- **POK overlay**: SVG path for Pakistan-occupied Kashmir overlaid on India, filled with India's choropleth color (Survey of India data: POK = part of India).
-- **Hover animation**: Countries with users get `vl-has-users` class → CSS `scale(1.04)` + drop-shadow on hover (3D lift effect).
-- **Top-5 sidebar**: New sidebar panel listing top 5 countries with rank badges, visitor counts, and mini bar charts.
-- **50+ format**: `fmtCount()` shows "50+" instead of exact small numbers for privacy/display.
-- **geometricPrecision rendering**: Replaced `crispEdges` with `geometricPrecision` on SVG `<g>` and `<path>` elements — eliminates jagged edges on Americas, Europe, Russia.
-- **Country name tooltips**: `<title>` elements on each country path show "Country: 50+ researchers" on hover.
-- **Country name lookup**: Full 177-country `COUNTRY_NAMES` map for tooltips and sidebar labels.
-- **Legend cleanup**: Reduced from 10px squares to 10×8px with tighter spacing.
+### Final Implementation
+- **amCharts v5 MapChart** with `am5geodata_worldLow` — proper world map with POK as part of India
+- Single `MapPolygonSeries` — all countries rendered as one series, colored by tier
+- 5-tier choropleth: `#0d4a8a` → `#1a6fb5` → `#2b6f9e` → `#5a94b8` → `#93b8d0` (light→dark blue)
+- **Hover 3D effect**: `scale: 1.04` + `fill: #1565C0` + drop-shadow on hover via amCharts states
+- **Top 5 sidebar**: country names only (no visitor counts), ranked with numbered badges
+- No visitor counts displayed anywhere — just country names
+- `world-map-data.js` removed (amCharts provides its own geodata)
 
 ### Files Changed
 | File | Change |
 |------|--------|
-| `frontend/index.html` | POK SVG overlay, top-5 sidebar HTML, CSS hover/lift styles, geometricPrecision rendering, JS `renderPOK()`, `renderTop5()`, `fmtCount()`, `COUNTRY_NAMES` map, title tooltips on paths |
+| `frontend/index.html` | amCharts CDN scripts, div#chartdiv, amCharts IIFE, removed SVG/custom-path renderer |
+| `frontend/world-map-data.js` | No longer loaded (still exists in repo but unused) |
 
 ### Verification
-- HTML parses OK (91,393 bytes)
-- Flask test client: `index.html` serves 200, all 9 feature markers present
-- pytest: 9 passed (guest_mode + http_only_cookie_auth)
-- Pushed: `5ef6502d`
+- HTML parses OK (87,288 bytes)
+- Flask test client: `index.html` serves 200, amCharts refs verified
+- pytest: 9 passed
+- Pushed: `881ecb16`
 
 ---
 
