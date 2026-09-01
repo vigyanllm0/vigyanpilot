@@ -1,21 +1,253 @@
 <!DOCTYPE html>
 <html lang="en-IN">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GC clamp — Moved to VigyanLLM</title>
-<link rel="canonical" href="https://www.vigyanllm.in/glossary/primer-design">
-<meta name="robots" content="noindex">
-<meta http-equiv="refresh" content="0;url=/glossary/primer-design">
-<link rel="icon" type="image/png" href="/logo.png">
-<style>
-body{font-family:'Open Sans',sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;background:#F8FAFC;color:#0F172A}
-.card{max-width:480px;padding:40px;background:#fff;border-radius:16px;box-shadow:0 4px 24px rgba(0,0,0,.08);text-align:center}
-h1{font-size:13px;margin-bottom:8px}
-p{font-size:14px;color:#475569;margin-bottom:20px}
-a{color:#1565C0;font-weight:600;text-decoration:none}
-a:hover{text-decoration:underline}
-</style>
+<!-- Google tag (gtag.js) -->
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('consent', 'default', {
+    'ad_storage': 'denied',
+    'ad_user_data': 'denied',
+    'ad_personalization': 'denied',
+    'analytics_storage': 'denied',
+    'region': ['AT','BE','BG','HR','CY','CZ','DK','EE','FI','FR','DE','GR','HU','IE','IT','LV','LT','LU','MT','NL','PL','PT','RO','SK','SI','ES','SE','IS','LI','NO','GB','CH']
+  });
+  try {
+    var vlcs = JSON.parse(localStorage.getItem('vigyanllm_cookie_consent') || 'null');
+    if (vlcs && vlcs.consent === 'accepted') {
+      gtag('consent', 'update', { 'ad_storage': 'granted', 'ad_user_data': 'granted', 'ad_personalization': 'granted', 'analytics_storage': 'granted' });
+    } else if (vlcs && vlcs.consent === 'declined') {
+      gtag('consent', 'update', { 'ad_storage': 'denied', 'ad_user_data': 'denied', 'ad_personalization': 'denied', 'analytics_storage': 'denied' });
+    }
+  } catch (e) {}
+  gtag('set', 'ads_data_redaction', true);
+</script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PB0XMF4GEH"></script>
+<script>
+  gtag('js', new Date());
+  gtag('config', 'G-PB0XMF4GEH');
+</script>
+
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-KRP5LLPR');</script>
+<!-- End Google Tag Manager -->
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GC Clamp: Definition, Role in Primer Stability &amp; Design</title>
+  <link rel="stylesheet" href="/design-tokens.css">
+<link rel="manifest" href="/manifest.json" />
+<link rel="sitemap" type="application/xml" href="/sitemap.xml" />
+<link rel="alternate" type="application/rss+xml" title="VigyanLLM Blog RSS" href="/blog/rss.xml" />
+<meta name="theme-color" content="#0F172A" />
+  <meta name="keywords" content="GC clamp, GC clamps, primer design, PCR primer, melting temperature, primer stability, 3 prime GC, guanine cytosine clamp, annealing temperature, primer optimization" />
+<meta name="robots" content="index, follow" />
+<meta name="author" content="VigyanLLM Private Limited" />
+<meta name="description" content="A GC clamp is a stretch of G or C bases at the 3' end of a PCR primer that stabilizes binding. Learn how GC clamps affect Tm and primer specificity.">
+  <link rel="canonical" href="https://www.vigyanllm.in/glossary/gc-clamp">
+<link rel="alternate" hreflang="en" href="https://www.vigyanllm.in/glossary/gc-clamp" />
+<link rel="alternate" hreflang="en-IN" href="https://www.vigyanllm.in/glossary/gc-clamp" />
+<link rel="alternate" hreflang="x-default" href="https://www.vigyanllm.in/glossary/gc-clamp" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="GC Clamp: Definition, Role in Primer Stability & Design">
+  <meta property="og:description" content="A GC clamp is a stretch of G or C bases at the 3' end of a PCR primer that stabilizes binding. Learn how GC clamps affect Tm and primer specificity.">
+  <meta property="og:url" content="https://www.vigyanllm.in/glossary/gc-clamp">
+  <meta property="og:image" content="https://www.vigyanllm.in/og-glossary-gc-clamp.png">
+  <meta property="og:site_name" content="VigyanLLM">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="GC Clamp: Definition, Role in Primer Stability & Design">
+  <meta name="twitter:description" content="A GC clamp is a stretch of G or C bases at the 3' end of a PCR primer that stabilizes binding. Learn how GC clamps affect Tm and primer specificity.">
+  <meta name="twitter:image" content="https://www.vigyanllm.in/og-glossary-gc-clamp.png">
+
+  <!-- JSON-LD: DefinedTerm -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "DefinedTerm",
+    "name": "GC clamp",
+    "description": "A GC clamp is a short stretch of guanine (G) or cytosine (C) nucleotides at the 3' end of a PCR primer that increases binding stability through stronger hydrogen bonding (three bonds per G-C pair vs. two for A-T).",
+    "url": "https://www.vigyanllm.in/glossary/gc-clamp",
+    "inLanguage": "en",
+    "alternateName": ["GC clamps", "G-C clamp", "guanine-cytosine clamp"],
+    "termCode": "3' GC clamp",
+    "definedTermSet": {
+      "@type": "DefinedTermSet",
+      "name": "VigyanLLM Molecular Biology Glossary",
+      "url": "https://www.vigyanllm.in/glossary"
+    }
+  }
+  </script>
+
+  <!-- JSON-LD: BreadcrumbList -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.vigyanllm.in"},
+      {"@type": "ListItem", "position": 2, "name": "Glossary", "item": "https://www.vigyanllm.in/glossary"},
+      {"@type": "ListItem", "position": 3, "name": "GC Clamp", "item": "https://www.vigyanllm.in/glossary/gc-clamp"}
+    ]
+  }
+  </script>
+
+  <!-- JSON-LD: FAQPage -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is a GC clamp in PCR primer design?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A GC clamp is a short sequence of guanine (G) or cytosine (C) nucleotides placed at the 3' end of a PCR primer. Because G-C base pairs form three hydrogen bonds (compared to two for A-T), a GC clamp anchors the primer's 3' end to the template, improving binding stability and reducing the chance of primer slippage during thermal cycling."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How many G or C bases should a GC clamp contain?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A typical GC clamp contains 1–3 G or C bases at the 3' end. Two G/C bases are sufficient for most standard PCR applications. More than three can over-stabilize the 3' end, making the primer less tolerant of mismatches and potentially increasing non-specific binding. The optimal number depends on the overall primer Tm and the GC content of the target region."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does a GC clamp affect melting temperature (Tm)?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. Each G-C base pair contributes approximately 4°C to the primer's melting temperature via the nearest-neighbor model, compared to roughly 2°C for each A-T pair. Adding a two-base GC clamp at the 3' end can raise Tm by 4–8°C depending on the flanking sequence context. This is why VigyanLLM's Tm calculator reports the effect of terminal G/C bases separately."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Should every primer have a GC clamp?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Not necessarily. A GC clamp is recommended when the 3' end of the primer has low intrinsic stability (e.g., ends with A or T). If the 3' region already contains G/C bases naturally, adding an extra clamp may over-stabilize the primer. For multiplex PCR, consistent GC clamp presence across all primer pairs helps harmonize annealing behavior. VigyanLLM's auto-design pipeline automatically evaluates whether a GC clamp improves or harms each candidate primer."
+        }
+      }
+    ]
+  }
+  </script>
+
+  <style>
+    html { overflow-x: hidden; }
+    *{box-sizing:border-box;margin:0;padding:0}
+    :root {
+      --navy: #0F172A;
+      --navy-light: #1E293B;
+      --white: #FFFFFF;
+      --slate: #F8FAFC;
+      --slate-border: #E2E8F0;
+      --text: #0F172A;
+      --text2: #475569;
+      --muted: #94A3B8;
+      --primary: #2563EB;
+      --bio: #059669;
+      --amber: #D97706;
+      --accent: #22D3EE;
+      --font-h: 'Montserrat', sans-serif;
+      --font-b: 'Open Sans', sans-serif;
+      --bg: #FFFFFF;
+      --border: #E2E8F0;
+      --surface: #F8FAFC;
+      --blue: #1565C0;
+      --blue-light: #42A5F5;
+      --blue-bg: #E3F2FD;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{background:var(--surface);color:var(--text);font-family:var(--font-b);line-height:1.65;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+    a{text-decoration:none;color:inherit}
+    img{max-width:100%}
+
+    nav{position:sticky;top:0;background:var(--navy);z-index:1000;height:80px;border-bottom:1px solid rgba(255,255,255,.08)}
+    .nav-inner{display:flex;align-items:center;height:100%;max-width:1100px;margin:0 auto;padding:0 16px}
+    .nav-brand{display:flex;align-items:center;gap:12px;color:#fff;font-family:var(--font-h);font-size:13px;font-weight:800;flex-shrink:0}
+    .nav-brand img{height:36px;width:auto;object-fit:contain}
+    .nav-links{display:flex;gap:8px;align-items:center;margin-left:24px}
+    .nav-links>a,.drop-trigger{font-family:var(--font-h);font-size:14px;color:rgba(255,255,255,.85);font-weight:700;cursor:pointer;padding:8px 14px;text-transform:uppercase;letter-spacing:.05em;transition:color .15s;white-space:nowrap;border-radius:6px}
+    .nav-links>a:hover,.drop-trigger:hover{color:#fff;background:rgba(255,255,255,.08)}
+    .drop-wrap{position:relative;display:inline-block}
+    .drop-menu{display:none;position:absolute;top:100%;left:-16px;background:#fff;border:1px solid #E2E5EA;border-radius:12px;min-width:240px;padding:8px;z-index:1001;box-shadow:0 12px 40px rgba(0,0,0,.12);opacity:0;transform:translateY(4px);transition:opacity .2s,transform .2s}
+    .drop-wrap:hover .drop-menu{display:block;opacity:1;transform:translateY(0)}
+    .drop-menu a{display:block;padding:10px 16px;font-size:13px;color:var(--text2);border-radius:8px;font-weight:500;transition:all .12s}
+    .drop-menu a:hover{background:var(--slate);color:var(--text)}
+    .nav-right{display:flex;align-items:center;gap:12px;margin-left:auto}
+    .nav-login{padding:8px 20px;border:1px solid rgba(255,255,255,.25);border-radius:8px;color:#fff;font-family:var(--font-h);font-size:13px;font-weight:700;cursor:pointer;background:transparent;transition:all .2s}
+    .nav-login:hover{background:rgba(255,255,255,.1)}
+    .nav-cta{padding:8px 24px;background:#fff;color:var(--navy);border:none;border-radius:8px;font-family:var(--font-h);font-size:13px;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:.06em;transition:all .2s;line-height:1.3}
+    .nav-cta:hover{background:var(--blue-light);color:#fff;box-shadow:0 4px 16px rgba(21,101,192,.3)}
+    .hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;background:none;border:none;padding:4px;z-index:1001}
+    .hamburger span{display:block;width:24px;height:2px;background:#fff;transition:all .3s}
+    @media(max-width:768px){.nav-links{display:none}.hamburger{display:flex}}
+
+    .glossary-hero{background:linear-gradient(135deg,#0F172A 0%,#1E293B 100%);padding:80px 24px 60px;text-align:center}
+    .glossary-hero h1{font-family:var(--font-h);font-size:clamp(28px,5vw,42px);font-weight:800;color:#fff;margin-bottom:12px;line-height:1.2}
+    .glossary-hero .subtitle{font-size:18px;color:rgba(255,255,255,.7);max-width:640px;margin:0 auto}
+    .breadcrumb{display:flex;gap:8px;align-items:center;justify-content:center;margin-bottom:24px;font-size:13px;color:rgba(255,255,255,.5)}
+    .breadcrumb a{color:rgba(255,255,255,.7);transition:color .15s}
+    .breadcrumb a:hover{color:#fff}
+
+    .content-wrap{max-width:800px;margin:0 auto;padding:48px 24px 80px}
+    .content-wrap h2{font-family:var(--font-h);font-size:22px;font-weight:700;color:var(--text);margin:40px 0 16px;padding-top:16px;border-top:1px solid var(--border)}
+    .content-wrap h3{font-family:var(--font-h);font-size:18px;font-weight:700;color:var(--text);margin:28px 0 12px}
+    .content-wrap p{margin-bottom:16px;color:var(--text2);font-size:16px;line-height:1.7}
+    .content-wrap ul,.content-wrap ol{margin:0 0 16px 24px;color:var(--text2);font-size:16px;line-height:1.7}
+    .content-wrap li{margin-bottom:8px}
+    .content-wrap strong{color:var(--text)}
+    .content-wrap code{background:var(--blue-bg);padding:2px 6px;border-radius:4px;font-size:14px;color:var(--blue)}
+
+    .cta-box{background:linear-gradient(135deg,#0d9488,#0f766e);border-radius:16px;padding:36px 40px;text-align:center;margin:40px 0;color:#fff}
+    .cta-box h3{font-family:var(--font-h);font-size:20px;font-weight:700;margin-bottom:8px}
+    .cta-box p{color:rgba(255,255,255,.85);margin-bottom:20px;font-size:15px}
+    .cta-box a{display:inline-block;padding:14px 32px;background:#fff;color:#0f766e;border-radius:8px;font-weight:700;font-size:14px;text-decoration:none;transition:all .2s}
+    .cta-box a:hover{background:var(--slate);box-shadow:0 4px 16px rgba(0,0,0,.2)}
+
+    .tip-card{background:var(--blue-bg);border-left:4px solid var(--blue);border-radius:0 8px 8px 0;padding:16px 20px;margin:20px 0}
+    .tip-card strong{color:var(--blue)}
+
+    .warn-card{background:#FEF3C7;border-left:4px solid var(--amber);border-radius:0 8px 8px 0;padding:16px 20px;margin:20px 0}
+    .warn-card strong{color:var(--amber)}
+
+    .compare-table{width:100%;border-collapse:collapse;margin:20px 0;font-size:14px}
+    .compare-table th{background:var(--navy);color:#fff;padding:12px 16px;text-align:left;font-family:var(--font-h);font-weight:600}
+    .compare-table td{padding:12px 16px;border-bottom:1px solid var(--border)}
+    .compare-table tr:nth-child(even) td{background:var(--slate)}
+
+    .faq-section{margin-top:48px}
+    .faq-section h2{border-top:2px solid var(--border);padding-top:24px}
+    details{background:#fff;border:1px solid var(--border);border-radius:12px;margin-bottom:12px;overflow:hidden}
+    details summary{padding:16px 20px;cursor:pointer;font-family:var(--font-h);font-weight:600;font-size:15px;color:var(--text);list-style:none;display:flex;align-items:center;justify-content:space-between}
+    details summary::after{content:"▸";font-size:14px;color:var(--muted);transition:transform .2s}
+    details[open] summary::after{transform:rotate(90deg)}
+    details .faq-answer{padding:0 20px 16px;color:var(--text2);font-size:15px;line-height:1.7}
+
+    .vigyanllm-section{background:var(--navy);border-radius:16px;padding:36px 40px;margin:40px 0;color:#fff}
+    .vigyanllm-section h3{font-family:var(--font-h);font-size:20px;font-weight:700;margin-bottom:12px}
+    .vigyanllm-section p{color:rgba(255,255,255,.8);font-size:15px;line-height:1.7;margin-bottom:16px}
+    .vigyanllm-section a{color:var(--accent);font-weight:600;transition:color .15s}
+    .vigyanllm-section a:hover{color:#fff}
+
+    footer{background:var(--navy);padding:60px 24px 30px;color:rgba(255,255,255,.6)}
+    .footer-grid{display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr 1fr;gap:32px;max-width:1100px;margin:0 auto}
+    .footer-col h5{font-family:var(--font-h);font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.4);margin-bottom:16px}
+    .footer-col a{display:block;font-size:13px;color:rgba(255,255,255,.6);margin-bottom:8px;transition:color .15s}
+    .footer-col a:hover{color:#fff}
+    .footer-bottom{display:flex;justify-content:space-between;align-items:center;max-width:1100px;margin:30px auto 0;padding-top:20px;border-top:1px solid rgba(255,255,255,.08);font-size:12px;color:rgba(255,255,255,.35)}
+    @media(max-width:768px){.footer-grid{grid-template-columns:1fr 1fr}.glossary-hero{padding:60px 16px 40px}.content-wrap{padding:32px 16px 60px}.cta-box,.vigyanllm-section{padding:24px 20px}}
+  </style>
 </head>
 <body>
 
@@ -30,129 +262,174 @@ a:hover{text-decoration:underline}
     <div class="drop-wrap">
       <span class="drop-trigger">Products ▾</span>
       <div class="drop-menu">
-        <a href="primer">Primer Design</a>
-        <a href="search">Sequence Search</a>
-        <a href="blast">BLAST</a>
-        <a href="msa">MSA</a>
-        <a href="pcr-analysis">PCR Analysis</a>
-        <a href="crispr-analysis">CRISPR Analysis <span style="font-size:12px;font-weight:700;color:#fff;background:#F59E0B;padding:2px 6px;border-radius:99px;line-height:1.3">Coming Soon</span></a>
-        <a href="tm-calculator">Tm Calculator</a>
-        <a href="gc-calculator">GC Calculator</a>
-        <a href="protein-docking">Protein Docking</a>
+        <a href="/primer">Primer Design</a>
+        <a href="/blast">BLAST</a>
+        <a href="/msa">MSA</a>
+        <a href="/pcr-analysis">PCR Analysis</a>
+        <a href="/tm-calculator">Tm Calculator</a>
+        <a href="/gc-calculator">GC Calculator</a>
         <a href="/docking">Molecular Docking</a>
-        <a href="/dna-3d">3D DNA Viewer</a>
-        <a href="dna-to-rna" style="display:flex;align-items:center;gap:6px">DNA → RNA Converter</a>
-        <a href="reverse-complement" style="display:flex;align-items:center;gap:6px">Reverse Complement <span style="font-size:9px;font-weight:700;color:#fff;background:#16A34A;padding:2px 7px;border-radius:99px;line-height:1.4">Free</span></a>
-        <a href="dna-to-protein" style="display:flex;align-items:center;gap:6px">DNA → Protein <span style="font-size:9px;font-weight:700;color:#fff;background:#16A34A;padding:2px 7px;border-radius:99px;line-height:1.4">Free</span></a>
-        <a href="pcr-product-calculator" style="display:flex;align-items:center;gap:6px">PCR Product Calc <span style="font-size:9px;font-weight:700;color:#fff;background:#16A34A;padding:2px 7px;border-radius:99px;line-height:1.4">Free</span></a>
-        <a href="restriction-enzyme-finder" style="display:flex;align-items:center;gap:6px">Restriction Enzyme Finder <span style="font-size:9px;font-weight:700;color:#fff;background:#16A34A;padding:2px 7px;border-radius:99px;line-height:1.4">Free</span></a>
+        <a href="/dna-to-rna">DNA → RNA Converter</a>
       </div>
     </div>
     <div class="drop-wrap">
       <span class="drop-trigger">Platform ▾</span>
       <div class="drop-menu">
-        <a href="platform">Overview</a>
-        <a href="architecture">Architecture</a>
-        <a href="problem">Problem</a>
-        <a href="solution">Solution</a>
-        <a href="compare">Compare</a>
-        <a href="roadmap">Roadmap</a>
-        <a href="about/sovereign-ai">Sovereign AI</a>
-        <a href="features/on-premises">On-Premises</a>
+        <a href="/platform">Overview</a>
+        <a href="/architecture">Architecture</a>
+        <a href="/compare">Compare</a>
+        <a href="/roadmap">Roadmap</a>
       </div>
     </div>
     <a href="/learning-vigyanllm">Learning</a>
     <a href="/academic-partnership">Partnership</a>
-    <a href="pricing">Pricing</a>
+    <a href="/pricing">Pricing</a>
   </div>
   <div class="nav-right">
-    <div class="nav-search-wrap">
-      <input type="text" id="navSearchInput" placeholder="Search tools, learning, blog..." autocomplete="off">
-      <span class="ns-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
-      <div class="nav-search-results" id="navSearchResults"></div>
-    </div>
-    <div class="nav-btns" id="navBtns">
-      <button type="button" class="nav-login" onclick="openAuthModal()">Sign in</button>
-      <button type="button" class="nav-cta" onclick="openAuthModal()">Get started</button>
-    </div>
-    <div class="nav-profile" id="navProfile" style="display:none">
-      <div class="nav-avatar" id="navAvatar" onclick="toggleUserMenu()">
-        <span class="nav-avatar-letter" id="navAvatarLetter"></span>
-      </div>
-      <div class="user-dropdown" id="userDropdown">
-        <div class="user-dropdown-header">
-          <div class="ud-name" id="udName"></div>
-          <div class="ud-email" id="udEmail"></div>
-          <div class="ud-plan" id="udPlan"></div>
-        </div>
-        <a class="ud-item" href="/dashboard">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
-          Saved Reports
-        </a>
-        <a class="ud-item" href="/dashboard#settings">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-          Settings
-        </a>
-        <div class="ud-item logout" onclick="logout()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-          Logout
-        </div>
-      </div>
-    </div>
-  </div>
-    </div>
+    <button type="button" class="nav-login" onclick="openAuthModal()">Sign in</button>
+    <button type="button" class="nav-cta" onclick="openAuthModal()">Get started</button>
   </div>
   <button type="button" class="hamburger" id="hamburger" aria-label="Menu">
     <span></span><span></span><span></span>
   </button>
 </div>
-<div class="mobile-menu" id="mobile-menu">
-  <div class="mm-group"><div class="mm-hdr">Products</div>
-    <a href="primer">Primer Design</a>
-    <a href="search">Sequence Search</a>
-    <a href="blast">BLAST</a>
-    <a href="msa">MSA</a>
-    <a href="pcr-analysis">PCR Analysis</a>
-    <a href="crispr-analysis">CRISPR Analysis <span style="font-size:12px;font-weight:700;color:#fff;background:#F59E0B;padding:2px 6px;border-radius:99px;line-height:1.3">Coming Soon</span></a>
-    <a href="tm-calculator">Tm Calculator</a>
-    <a href="gc-calculator">GC Calculator</a>
-    <a href="protein-docking">Protein Docking</a>
-    <a href="/docking">Molecular Docking</a>
-        <a href="/dna-3d">3D DNA Viewer</a>
-        <a href="dna-to-rna" style="display:flex;align-items:center;gap:6px">DNA → RNA Converter</a>
-        <a href="reverse-complement">Reverse Complement</a>
-        <a href="dna-to-protein">DNA → Protein</a>
-        <a href="pcr-product-calculator">PCR Product Calculator</a>
-        <a href="restriction-enzyme-finder">Restriction Enzyme Finder</a>
-  </div>
-  <div class="mm-group"><div class="mm-hdr">Platform</div>
-    <a href="platform">Overview</a>
-    <a href="architecture">Architecture</a>
-    <a href="problem">Problem</a>
-    <a href="solution">Solution</a>
-    <a href="compare">Compare</a>
-    <a href="roadmap">Roadmap</a>
-    <a href="about/sovereign-ai">Sovereign AI</a>
-    <a href="features/on-premises">On-Premises</a>
-  </div>
-  <div class="mm-group">
-    <a href="/learning-vigyanllm">Learning</a>
-    <a href="/academic-partnership">Academic Partnership</a>
-    <a href="pricing">Pricing</a>
-    <a href="mailto:contact@vigyanllm.in">Enterprise Inquiry</a>
-  </div>
-  <a href="#" onclick="closeMobileMenu();var e=document.getElementById('navSearchInput');if(e){e.focus();e.scrollIntoView({behavior:'smooth',block:'center'})};return false" class="mm-cta" style="background:transparent;border:1px solid rgba(255,255,255,.25);color:rgba(255,255,255,.8);margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:8px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Search</a>
-  <a href="#" class="mm-cta" onclick="openAuthModal();return false">Sign in</a>
-</div>
 </nav>
 </header>
-<div class="card">
-<h1>GC clamp</h1>
-<p>This term has been merged into <a href="/glossary/primer-design">Primer Design</a>.</p>
-<p style="font-size:12px;color:#94A3B8">Redirecting automatically...</p>
-</div>
-<footer>
 
+<section class="glossary-hero">
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="/">Home</a> / <a href="/glossary">Glossary</a> / <span>GC Clamp</span>
+  </nav>
+  <h1>GC Clamp</h1>
+  <p class="subtitle">A short stretch of G or C bases at the 3' end of a PCR primer that stabilizes template binding through stronger hydrogen bonding.</p>
+</section>
+
+<main class="content-wrap">
+
+<h2>What Is a GC Clamp?</h2>
+<p>A <strong>GC clamp</strong> is a deliberate placement of one or more guanine (G) or cytosine (C) nucleotides at the 3' end of a PCR primer. The term "clamp" reflects the stabilizing function: G-C base pairs form <strong>three hydrogen bonds</strong> (compared to two for A-T pairs), creating a stronger anchor at the primer's binding edge.</p>
+<p>In practical terms, a GC clamp ensures that the 3' terminus — the exact position where <a href="https://en.wikipedia.org/wiki/DNA_polymerase" target="_blank" rel="noopener">DNA polymerase</a> begins extending the new strand — is firmly hybridised to the template. This reduces the risk of primer slippage, mispriming, and failed amplification, particularly in AT-rich target regions where the 3' end would otherwise have weak intrinsic stability.</p>
+
+<h2>Why the 3' End Matters</h2>
+<p>DNA polymerase requires a stably hybridised 3' hydroxyl group to initiate nucleotide addition. If the 3' end of a primer is weakly bound (e.g., ending with A or T in an AT-rich context), the enzyme may dissociate before extension begins, or the primer may transiently misalign to a non-target site. The 3' end is therefore the <strong>most sequence-critical region</strong> of any PCR primer.</p>
+<p>Rule of thumb for primer design:</p>
+<ul>
+  <li><strong>Ideally end with G or C</strong> — one or two G/C bases at the 3' terminus provide a stable anchor.</li>
+  <li><strong>Avoid runs of A or T</strong> at the 3' end — these weaken binding and increase the chance of slippage.</li>
+  <li><strong>Avoid more than 3 consecutive G/C</strong> at the 3' end — over-stabilisation can reduce mismatch discrimination.</li>
+</ul>
+
+<div class="tip-card">
+  <strong>Practical tip:</strong> In VigyanLLM's auto-design pipeline, every candidate primer is evaluated for 3' stability. If the 3' end lacks a natural G/C, the algorithm tests whether adding a terminal G or C improves the predicted success rate — without overshooting the target Tm.
+</div>
+
+<h2>How GC Clamps Affect Melting Temperature</h2>
+<p>The <a href="/glossary/melting-temperature">melting temperature (Tm)</a> of a primer is the temperature at which 50% of the primer-template duplex is hybridised. G-C pairs contribute roughly <strong>twice the thermal stability</strong> of A-T pairs in the nearest-neighbor thermodynamic model:</p>
+
+<table class="compare-table">
+  <thead>
+    <tr><th>Base Pair</th><th>Hydrogen Bonds</th><th>Approx. ΔG Contribution</th><th>Effect on Tm</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>A-T</td><td>2</td><td>~1.0 kcal/mol</td><td>~2°C per pair</td></tr>
+    <tr><td>G-C</td><td>3</td><td>~1.8 kcal/mol</td><td>~4°C per pair</td></tr>
+  </tbody>
+</table>
+
+<p>Adding a two-base GC clamp (e.g., ...CC-3' or ...GG-3') at the 3' end can raise the primer's Tm by <strong>4–8°C</strong> depending on the flanking sequence. This is significant: a primer designed with a target Tm of 60°C might jump to 64–68°C with a GC clamp, pushing it outside the optimal annealing range for standard PCR protocols.</p>
+<p>This is why GC clamp addition must be evaluated in context — the calculator at <a href="/gc-calculator">vigyanllm.in/gc-calculator</a> shows the exact GC% and predicted Tm impact for any sequence.</p>
+
+<h2>When to Use a GC Clamp</h2>
+<h3>Use a GC clamp when:</h3>
+<ul>
+  <li>The 3' end of the primer falls in an <strong>AT-rich region</strong> (template has consecutive A/T bases near the binding site).</li>
+  <li>The primer is for <strong>multiplex PCR</strong> — consistent GC clamps across all pairs help harmonise annealing temperatures.</li>
+  <li>You observe <strong>primer slippage artifacts</strong> (stutter bands) on gel electrophoresis.</li>
+  <li>The primer is for <strong>qPCR/TaqMan assays</strong> where reliable 3' extension is critical for fluorescent signal generation.</li>
+</ul>
+
+<h3>Skip the GC clamp when:</h3>
+<ul>
+  <li>The 3' end already contains G/C bases naturally — adding more may over-stabilise.</li>
+  <li>The primer targets a <strong>high-GC region</strong> (>65% GC) — additional G/C bases push Tm too high and may cause secondary structure issues.</li>
+  <li>You need <strong>mismatch sensitivity</strong> (e.g., allele-specific PCR) — an over-stabilised 3' end tolerates mismatches, reducing specificity.</li>
+</ul>
+
+<h2>GC Clamp vs. Overall GC Content</h2>
+<p>It is important to distinguish between two related but different concepts:</p>
+<ul>
+  <li><strong>Overall GC content</strong> — the percentage of G and C bases across the entire primer length (typically 40–60% is optimal). This affects the primer's overall Tm and solubility.</li>
+  <li><strong>GC clamp</strong> — specifically the G/C bases at the <strong>3' terminal position</strong>. This affects binding stability at the extension initiation site.</li>
+</ul>
+<p>A primer can have ideal overall GC content (e.g., 50%) but still lack a GC clamp if it ends with A or T. Conversely, a primer with a GC clamp may have suboptimal overall GC% if the rest of the sequence is AT-rich. Both parameters should be evaluated independently.</p>
+
+<div class="warn-card">
+  <strong>Common mistake:</strong> Designing primers with more than 3 consecutive G/C at the 3' end. This creates a "GC lock" that reduces the primer's ability to discriminate between perfect and mismatched targets — the opposite of what specificity checking aims to achieve.
+</div>
+
+<h2>GC Clamp in Multiplex PCR</h2>
+<p>In multiplex PCR, multiple primer pairs amplify different targets in a single reaction. The GC clamp becomes especially important because:</p>
+<ol>
+  <li><strong>Uniform annealing</strong> — all primer pairs must anneal at the same temperature. Consistent GC clamp presence (or absence) across pairs reduces Tm variation.</li>
+  <li><strong>Cross-dimer prevention</strong> — a GC clamp on one primer can form stable dimers with another primer's 3' end. VigyanLLM's multiplex pipeline checks for this.</li>
+  <li><strong>Balance</strong> — primers with strong GC clamps amplify more efficiently, potentially overwhelming weaker targets. The concentration balancing step accounts for this.</li>
+</ol>
+
+<h2>Checking Your Primer's GC Clamp</h2>
+<p>To evaluate whether your primer has an appropriate GC clamp:</p>
+<ol>
+  <li>Examine the <strong>last 3 bases</strong> of the 3' end (5'→3' direction).</li>
+  <li>Count how many are G or C.</li>
+  <li>If 0–1: consider whether the 3' region is AT-rich and whether adding a G/C would help.</li>
+  <li>If 2: generally optimal for standard PCR.</li>
+  <li>If 3+: evaluate whether over-stabilisation is reducing your specificity.</li>
+</ol>
+
+<div class="cta-box">
+  <h3>Check Your Primer's GC Content and Tm</h3>
+  <p>Enter any primer sequence to calculate GC%, melting temperature, and 3' stability — instantly, for free.</p>
+  <a href="/gc-calculator">Open the GC Calculator →</a>
+</div>
+
+<div class="vigyanllm-section">
+  <h3>How VigyanLLM Handles GC Clamps</h3>
+  <p>VigyanLLM's 24-step primer design pipeline automatically evaluates 3' stability at step 18 (thermodynamic scoring). The algorithm:</p>
+  <ul style="margin-left:20px;margin-bottom:16px">
+    <li>Checks whether the 3' end has ≥1 G/C base — if not, tests adding a terminal G or C.</li>
+    <li>Recalculates Tm with the proposed clamp using SantaLucia 1998 nearest-neighbor parameters.</li>
+    <li>Verifies the clamped Tm stays within the user's specified range (default 57–63°C).</li>
+    <li>Cross-checks the clamped 3' end against the genome for off-target binding (Primer-BLAST integration).</li>
+  </ul>
+  <p>You can also check any existing primer manually with our free <a href="/gc-calculator">GC Calculator</a> or design new primers with the <a href="/primer">Primer Design Tool</a>.</p>
+</div>
+
+<section class="faq-section">
+<h2>Frequently Asked Questions</h2>
+
+<details>
+  <summary>What is a GC clamp in PCR primer design?</summary>
+  <div class="faq-answer">A GC clamp is a short sequence of guanine (G) or cytosine (C) nucleotides placed at the 3' end of a PCR primer. Because G-C base pairs form three hydrogen bonds (compared to two for A-T), a GC clamp anchors the primer's 3' end to the template, improving binding stability and reducing the chance of primer slippage during thermal cycling.</div>
+</details>
+
+<details>
+  <summary>How many G or C bases should a GC clamp contain?</summary>
+  <div class="faq-answer">A typical GC clamp contains 1–3 G or C bases at the 3' end. Two G/C bases are sufficient for most standard PCR applications. More than three can over-stabilise the 3' end, making the primer less tolerant of mismatches and potentially increasing non-specific binding. The optimal number depends on the overall primer Tm and the GC content of the target region.</div>
+</details>
+
+<details>
+  <summary>Does a GC clamp affect melting temperature (Tm)?</summary>
+  <div class="faq-answer">Yes. Each G-C base pair contributes approximately 4°C to the primer's melting temperature via the nearest-neighbor model, compared to roughly 2°C for each A-T pair. Adding a two-base GC clamp at the 3' end can raise Tm by 4–8°C depending on the flanking sequence context. This is why VigyanLLM's Tm calculator reports the effect of terminal G/C bases separately.</div>
+</details>
+
+<details>
+  <summary>Should every primer have a GC clamp?</summary>
+  <div class="faq-answer">Not necessarily. A GC clamp is recommended when the 3' end of the primer has low intrinsic stability (e.g., ends with A or T). If the 3' region already contains G/C bases naturally, adding an extra clamp may over-stabilise the primer. For multiplex PCR, consistent GC clamp presence across all primer pairs helps harmonise annealing behaviour. VigyanLLM's auto-design pipeline automatically evaluates whether a GC clamp improves or harms each candidate primer.</div>
+</details>
+</section>
+
+</main>
+
+<footer>
 <div class="footer-grid">
   <div class="footer-col">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
@@ -161,68 +438,47 @@ a:hover{text-decoration:underline}
     </div>
     <p style="font-size:13px;color:rgba(255,255,255,.45);line-height:1.6">Sovereign Healthcare &amp; Life Sciences AI.<br>Built in India. For the world.</p>
     <a href="mailto:contact@vigyanllm.in" style="color:var(--blue-light);font-size:13px;display:block;margin-top:12px">contact@vigyanllm.in</a>
-    <div class="footer-social">
-      <a href="https://github.com/vigyanllm" rel="me" aria-label="GitHub"><svg fill="#fff" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg></a>
-      <a href="https://www.linkedin.com/company/vigyanllm/" rel="me" aria-label="LinkedIn"><svg fill="#0077B5" viewBox="0 0 24 24"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg></a>
-      <a href="https://www.facebook.com/vigyanllm" rel="me" aria-label="Facebook"><svg fill="#1877F2" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></a>
-      <a href="https://www.youtube.com/@VigyanLLM" rel="me" aria-label="YouTube"><svg fill="#FF0000" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
-    </div>
   </div>
   <div class="footer-col">
     <h5>Products</h5>
-    <a href="primer">Primer Design</a>
-    <a href="search">Sequence Search</a>
-    <a href="blast">BLAST</a>
-    <a href="msa">MSA</a>
-    <a href="pcr-analysis">PCR Analysis</a>
-    <a href="crispr-analysis">CRISPR <span style="font-size:12px;font-weight:700;color:#fff;background:#F59E0B;padding:2px 6px;border-radius:99px;line-height:1.3">Coming Soon</span></a>
-    <a href="protein-docking">Docking</a>
+    <a href="/primer">Primer Design</a>
+    <a href="/blast">BLAST</a>
+    <a href="/msa">MSA</a>
+    <a href="/pcr-analysis">PCR Analysis</a>
+    <a href="/docking">Docking</a>
   </div>
   <div class="footer-col">
     <h5>Platform</h5>
-    <a href="platform">Overview</a>
-    <a href="architecture">Architecture</a>
-    <a href="problem">Problem</a>
-    <a href="solution">Solution</a>
-    <a href="compare">Compare</a>
-    <a href="roadmap">Roadmap</a>
-    <a href="about/sovereign-ai">Sovereign AI</a>
-    <a href="features/on-premises">On-Premises</a>
+    <a href="/platform">Overview</a>
+    <a href="/architecture">Architecture</a>
+    <a href="/compare">Compare</a>
+    <a href="/roadmap">Roadmap</a>
   </div>
   <div class="footer-col">
     <h5>Resources</h5>
-    <a href="blog/index">Blog</a>
-    <a href="faq">FAQ</a>
-    <a href="about">About</a>
-    <a href="demo">Demo</a>
+    <a href="/blog/index">Blog</a>
+    <a href="/faq">FAQ</a>
+    <a href="/about">About</a>
     <a href="/learning-vigyanllm">Learning</a>
     <a href="/academic-partnership">Academic Partnership</a>
-    <a href="pricing">Pricing</a>
   </div>
   <div class="footer-col">
     <h5>Contact</h5>
     <a href="mailto:contact@vigyanllm.in">contact@vigyanllm.in</a>
-    <a href="privacy">Privacy</a>
-    <a href="terms">Terms</a>
-    <a href="cookies">Cookies</a>
-    <a href="refund">Refund</a>
-    <a href="security">Security</a>
-    <a href="cite-vigyanllm">Cite Us</a>
+    <a href="/privacy">Privacy</a>
+    <a href="/terms">Terms</a>
+    <a href="/cookies">Cookies</a>
+    <a href="/cite-vigyanllm">Cite Us</a>
   </div>
 </div>
-<div class="footer-bottom"> <span>&copy; <script>document.write(new Date().getFullYear())</script> VigyanLLM Private Limited · Sovereign Research AI</span>
+<div class="footer-bottom">
+  <span>&copy; <script>document.write(new Date().getFullYear())</script> VigyanLLM Private Limited · Sovereign Research AI</span>
   <span>WWW.VIGYANLLM.IN</span>
 </div>
-
-
-
-
-
-
-
-
-
-
 </footer>
+
+<script src="/cookie-banner.js" defer></script>
+<script src="/auth-shared.js" defer></script>
+<script src="/search-index.js" defer></script>
 </body>
 </html>
