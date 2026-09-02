@@ -160,7 +160,7 @@ nav{position:sticky;top:0;background:var(--navy);z-index:1000;height:80px;border
 .user-popup-logout:hover{background:#FEF2F2;color:#DC2626}
 
 .nav-cta{padding:8px 24px;background:#fff;color:var(--navy);border:none;border-radius:8px;font-family:var(--font-h);font-size:13px;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:.06em;transition:all .2s;line-height:1.3}.nav-btns{gap:3px}.nav-links{display:flex;gap:8px;align-items:center;margin-left:24px}.hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;background:none;border:none;padding:4px;z-index:1001}}
-@media(max-width:480px){.nav-inner{padding:0 8px}.nav-right{gap:14px;margin-left:auto}.nav-login{padding:4px 10px;font-size:12px;border-width:1px}.nav-cta{padding:4px 12px;font-size:12px}.nav-btns{gap:5px}.nav-links{display:none}}
+@media(max-width:480px){.nav-inner{padding:0 8px}.nav-right{gap:14px;margin-left:auto}.nav-login{padding:4px 10px;font-size:12px;border-width:1px}.nav-cta{padding:4px 12px;font-size:12px}.nav-btns{gap:5px}}
 .nav-cta{padding:8px 24px;background:#fff;color:var(--navy);border:none;border-radius:8px;font-family:var(--font-h);font-size:13px;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:.06em;transition:all .2s;line-height:1.3}
 .nav-cta:hover{background:var(--blue-light);color:#fff;box-shadow:0 4px 16px rgba(21,101,192,.3)}
 .nav-login{padding:8px 20px;background:transparent;color:rgba(255,255,255,.8);border:1.5px solid rgba(255,255,255,.25);border-radius:8px;font-family:var(--font-b);font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;line-height:1.3;white-space:nowrap}
@@ -170,7 +170,7 @@ nav{position:sticky;top:0;background:var(--navy);z-index:1000;height:80px;border
 .hamburger.active span:nth-child(1){transform:rotate(45deg) translate(5px,5px)}
 .hamburger.active span:nth-child(2){opacity:0}
 .hamburger.active span:nth-child(3){transform:rotate(-45deg) translate(5px,-5px)}
-.article-body { padding: 40px 0; max-width: 800px; margin: 0 auto; }
+.article-body { padding: 40px 0; max-width: 720px; margin: 0 auto; }
     .article-body h1 { font-family: var(--font-b); font-size: clamp(2rem,4vw,2.8rem); font-weight: 400; line-height: 1.1; margin-bottom: 16px; }
     .article-body h2 { font-size: 24px; font-weight: 600; color: var(--text); margin: 40px 0 16px; }
     .article-body h3 { font-size: 18px; font-weight: 600; color: var(--text); margin: 28px 0 12px; }
@@ -235,6 +235,13 @@ footer{background:var(--black);color:rgba(255,255,255,.8);padding:56px 0 24px}
 .mobile-menu{display:none;position:fixed;top:72px;left:0;right:0;background:var(--navy);padding:20px 24px;z-index:999;border-bottom:1px solid rgba(255,255,255,.08);max-height:calc(100vh-72px);overflow-y:auto}.mobile-menu.open{display:block}.mobile-menu .mm-group{margin-bottom:16px}.mobile-menu .mm-hdr{font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.4);font-weight:700;padding:8px 0 4px}.mobile-menu a{display:block;color:rgba(255,255,255,.7);font-size:14px;padding:10px 0;font-weight:500}.mobile-menu .mm-cta{display:block;margin-top:8px;padding:12px;background:#fff;color:var(--navy);border-radius:8px;text-align:center;font-weight:700;font-size:13px}
 
 @media(max-width:768px){.nav-links{display:none}.nav-inner{padding:0 12px}.hamburger{display:flex}}
+
+.toc{background:var(--surface,#F8FAFC);border:1px solid var(--outline,#E2E5EA);border-radius:12px;padding:24px;margin:30px 0}
+.toc h3{font-size:16px;color:var(--text,#0F172A);margin-bottom:14px;margin-top:0;font-weight:600}
+.toc ul{margin-left:0;list-style:none}
+.toc li{margin-bottom:6px}
+.toc a{color:var(--text2,#475569);text-decoration:none;font-size:14px}
+.toc a:hover{color:var(--primary,#2563EB)}
 </style>
   
   <link rel="icon" type="image/png" href="/logo.png">
@@ -395,7 +402,30 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <span class="article-author">By Hemant Sharma, Founder, VigyanLLM</span>
       </div>
       <h1>7 PCR Primer Design Rules — When to Break Each One</h1>
+      <div class="toc">
+  <h3>Table of Contents</h3>
+  <ul>
+    <li><a href="#why-primer-design-rules-matter">Why Primer Design Rules Matter</a></li>
+    <li><a href="#the-7-essential-pcr-primer-design-parameters">The 7 Essential PCR Primer Design Parameters</a></li>
+    <li><a href="#rule-1-melting-temperature-tm">Rule 1: Melting Temperature (Tm)</a></li>
+    <li><a href="#rule-2-gc-content">Rule 2: GC Content</a></li>
+    <li><a href="#rule-3-amplicon-size">Rule 3: Amplicon Size</a></li>
+    <li><a href="#rule-4-hairpin-avoidance">Rule 4: Hairpin Avoidance</a></li>
+    <li><a href="#rule-5-primer-dimer-prevention">Rule 5: Primer Dimer Prevention</a></li>
+    <li><a href="#rule-6-specificity-blast-check">Rule 6: Specificity (BLAST Check)</a></li>
+    <li><a href="#rule-7-repeat-masking">Rule 7: Repeat Masking</a></li>
+    <li><a href="#the-primer-design-decision-workflow">The Primer Design Decision Workflow</a></li>
+    <li><a href="#worked-example-seven-rules-on-one-real-pair">Worked Example: Seven Rules on One Real Pair</a></li>
+  </ul>
+</div>
+
       <p class="subtitle">A poorly designed primer is the most common cause of PCR failure. Here are the 7 essential parameters you must check before ordering primers — with practical guidelines, acceptable ranges, and troubleshooting tips.</p>
+
+<div style="background:linear-gradient(135deg,#0d9488,#0f766e);border-radius:12px;padding:20px 24px;margin:24px 0;text-align:center">
+  <p style="color:#fff;font-size:14px;margin:0 0 12px">Design primers that follow all 7 rules — automated thermodynamic validation.</p>
+  <a href="/primer" style="display:inline-block;background:#fff;color:#0f766e;padding:10px 24px;border-radius:8px;font-weight:700;font-size:13px;text-decoration:none">Try the Free Primer Tool →</a>
+</div>
+
     
 
     <article class="article-body">
@@ -406,11 +436,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         </div>
       </div>
 
-      <h2>Why Primer Design Rules Matter</h2>
+      <h2 id="why-primer-design-rules-matter">Why Primer Design Rules Matter</h2>
       <p>PCR is remarkably robust, but its success hinges on <a href="/primer">primer</a> quality. A single primer with a 3′ mismatch, a self-complementary stretch, or an off-temperature Tm can produce failed amplification, spurious bands, or <a href="/glossary/primer-dimer">primer dimers</a>. These seven rules exist because each one maps to a real biochemical failure mode — not because checking boxes is fashionable. This is a decision guide: for each rule I’ll give the target, the <em>why</em> behind it, and how to verify it, then apply all seven to one real primer pair so you can see them working at once.</p>
       <p>Throughout, I’ll use a widely cited human <strong>GAPDH</strong> qPCR pair (OriGene HP205798, 131 bp amplicon, NM_002046) that we also verify in our <a href="/validation">validation benchmarks</a>. Every number here is reproducible — you can run the same checks yourself.</p>
 
-      <h2>The 7 Essential PCR Primer Design Parameters</h2>
+      <h2 id="the-7-essential-pcr-primer-design-parameters">The 7 Essential PCR Primer Design Parameters</h2>
       <table class="param-table">
         <tr><th>Parameter</th><th>Ideal Range</th><th>Why It Matters</th></tr>
         <tr><td>1. Melting Temperature (Tm)</td><td>52–65°C, within 2–5°C between primers</td><td>Determines annealing temperature; mismatch causes no amplification</td></tr>
@@ -422,7 +452,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <tr><td>7. Repeat Masking</td><td>Avoid mono-nucleotide runs &gt;4 bp</td><td>Repeats cause slippage and primer mismatch</td></tr>
       </table>
 
-      <h2>Rule 1: Melting Temperature (Tm)</h2>
+      <h2 id="rule-1-melting-temperature-tm">Rule 1: Melting Temperature (Tm)</h2>
       <p>The <a href="/tm-calculator">melting temperature</a> is where 50% of the primer–template duplex is dissociated. You want both primers in the 52–65°C band and within 2–5°C of each other, because the thermocycler uses one <a href="/glossary/annealing-temperature">annealing temperature</a> for both — a wide Tm gap means one primer anneals poorly while the other anneals too loosely.</p>
       <p>The quick estimate is the Wallace formula:</p>
       <p style="text-align:center;padding:12px;background:var(--surface);border-radius:8px;font-family:Courier New,monospace;font-size:13px;color:var(--primary);margin:16px 0"><strong>Tm (°C) = 2(A+T) + 4(G+C)</strong></p>
@@ -432,7 +462,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <p>If the two primers differ by more than 5°C, switch to touch-down PCR or redesign the lower-Tm primer. Whatever method you use, check it against the salt conditions of your buffer, since Mg²⁺ adds roughly 1–2°C to effective Tm per millimolar.</p>
       </div>
 
-      <h2>Rule 2: GC Content</h2>
+      <h2 id="rule-2-gc-content">Rule 2: GC Content</h2>
       <p>Primers in the 40–60% <a href="/gc-calculator">GC content</a> band work well across the board. GC-rich primers have a higher Tm but also form more stable secondary structures; GC-poor primers bind too loosely. The GAPDH forward <code>GTCTCCTCTGACTTCAACAGCG</code> has 54.5% GC and an optical absorbance-derived figure matching the ideal band; the reverse <code>ACCACCCTGTTGCTGTAGCCAA</code> is also 54.5%.</p>
       <ul>
         <li><strong>AT-rich genomes</strong> (Plasmodium, some fungi): acceptable to drop to 30–40% GC. Use longer primers (25–30 nt) to compensate.</li>
@@ -440,14 +470,20 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <li><strong>Bisulfite-converted DNA:</strong> unmethylated cytosines become uracils, leaving A, T, G; expect GC to fall to 20–35%.</li>
       </ul>
 
-      <h2>Rule 3: Amplicon Size</h2>
+      <h2 id="rule-3-amplicon-size">Rule 3: Amplicon Size</h2>
       <p>For quantitative PCR (<a href="/glossary/qpcr">qPCR</a>), aim for 70–150 bp (ideal) or up to 200 bp. Short amplicons amplify efficiently and are less affected by template structure. Standard endPCR uses 200–1000 bp; long-range systems push beyond. Our GAPDH pair produces a 131 bp amplicon — squarely in the qPCR sweet spot — which is one reason this published pair is so widely used as a reference.</p>
 
-      <h2>Rule 4: Hairpin Avoidance</h2>
+      <h2 id="rule-4-hairpin-avoidance">Rule 4: Hairpin Avoidance</h2>
       <p>A <a href="/glossary/hairpin">hairpin</a> forms when a primer folds back onto an internal complementary region, especially at the 3′ end. Stability is quantified by <a href="/glossary/delta-g">delta-G</a>; below −5.0 kcal/mol a hairpin is stable enough to tie up the primer and starve the reaction. The forward primer here has a hairpin Tm near 35.9°C with a negligible delta-G (+0.1) — far above the −5.0 threshold, so it binds almost exclusively to the template. Routine checks flag any hairpin with delta-G below the cut-off, at which point the fix is usually to redesign that flanking region so the self-complement was broken.</p>
 
-      <h2>Rule 5: Primer Dimer Prevention</h2>
+      <h2 id="rule-5-primer-dimer-prevention">Rule 5: Primer Dimer Prevention</h2>
       <p>Cross-dimers (<a href="/glossary/forward-primer">forward</a> binding to <a href="/glossary/reverse-primer">reverse</a>) and self-dimers are the most common artefact. The danger zone is the <strong>3′-terminal 3–4 bases</strong>: if those pair, <a href="/glossary/dna-polymerase">DNA polymerase</a> extends the dimer into a short product that amplifies exponentially.</p>
+
+<div style="background:linear-gradient(135deg,#0d9488,#0f766e);border-radius:12px;padding:20px 24px;margin:28px 0;text-align:center">
+  <p style="color:#fff;font-size:14px;margin:0 0 12px">Check your primers for dimer formation before you order.</p>
+  <a href="/primer" style="display:inline-block;background:#fff;color:#0f766e;padding:10px 24px;border-radius:8px;font-weight:700;font-size:13px;text-decoration:none">Analyze Primer Dimer Risk →</a>
+</div>
+
       <ul>
         <li>No more than 2 consecutive complementary bases at the 3′ ends</li>
         <li>No 3′ terminal complementarity (the last base should not pair)</li>
@@ -455,7 +491,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       </ul>
       <p>Our GAPDH reverse primer has a self-dimer delta-G of −1.1 kcal/mol and the pair’s cross-dimer delta-G is −5.1 — borderline but acceptable, and the 3′ ends are not complementary, so it’s not a concern. This is a case where delta-G alone is not enough: you have to weight the 3′-end geometry most heavily.</p>
 
-      <h2>Rule 6: Specificity (BLAST Check)</h2>
+      <h2 id="rule-6-specificity-blast-check">Rule 6: Specificity (BLAST Check)</h2>
       <p>Always <a href="/glossary/blast">BLAST</a> both primers against the target and host genome. A specific primer should have:</p>
       <ul>
         <li>At least 2 mismatches at the 3′ end to any off-target</li>
@@ -464,7 +500,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       </ul>
       <p>The GAPDH pair was designed against NM_002046 and is the reference used in scores of publications; a BLAST of the forward primer against the human genome returns the GAPDH target (and, importantly, little else in the 3′ 15 nt — the region that determines extension). Document any cosmetic off-target matches with ≥2 end mismatches and treat them as noise.</p>
 
-      <h2>Rule 7: Repeat Masking</h2>
+      <h2 id="rule-7-repeat-masking">Rule 7: Repeat Masking</h2>
       <p>Avoid mononucleotide runs (AAAAA, TTTTT) longer than 4 bases:</p>
       <ul>
         <li><strong>Polymerase slippage:</strong> the enzyme stutters on repeats, producing a smear</li>
@@ -473,7 +509,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       </ul>
       <p>If repeats are unavoidable in the target region, extend the primer past the repeat. Neither GAPDH primer carries a &gt;4 base homopolymer run, and the 3′-most hexamers are free of low-complexity sequence — passing this rule by inspection.</p>
 
-      <h2>The Primer Design Decision Workflow</h2>
+      <h2 id="the-primer-design-decision-workflow">The Primer Design Decision Workflow</h2>
       <p>Apply the seven rules in this order, because each one filters the pool cheaply first:</p>
       <ol>
         <li>Bind the target sequence and set the PCR type (standard, qPCR, multiplex)</li>
@@ -485,7 +521,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       </ol>
       <p>Most <a href="/primer">primer design</a> failures happen because one step is skipped. A quick way to de-risk: pick one validated reference pair (say, GAPDH) and let the same seven checks run on your own target. If every rule passes on the reference and your candidate, you can be confident the differences are your biology, not your primers.</p>
 
-      <h2>Worked Example: Seven Rules on One Real Pair</h2>
+      <h2 id="worked-example-seven-rules-on-one-real-pair">Worked Example: Seven Rules on One Real Pair</h2>
       <p>Here is the complete scorecard for the GAPDH pair (OriGene HP205798), computed with the same salt-corrected nearest-neighbor thermodynamics and primer\u2013primer geometry you would get from any rigorous checker. This is exactly what the scorecard should look like before you place an order:</p>
       <table>
         <tr><th>Rule</th><th>Forward <code>GTCTCCTCTGACTTCAACAGCG</code></th><th>Reverse <code>ACCACCCTGTTGCTGTAGCCAA</code></th><th>Status</th></tr>
@@ -505,7 +541,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <p><strong>Tm:</strong> using a single-aggregate Tm with wrong salt. <strong>GC:</strong> chasing exactly 50% in an AT-rich genome. <strong>Amplicon:</strong> 400 bp in a qPCR with SYBR. <strong>Hairpin:</strong> only checking the 5′ end. <strong>Dimer:</strong> reading total delta-G and ignoring the 3′ tail. <strong>Specificity:</strong> BLASTing only the full-length primer instead of the 3′ 15-mer. <strong>Repeats:</strong> overlooking a homopolymer that curls the Tm. Each is a one-line fix once you know it exists.</p>
       </div>
 
-      <h2>Frequently Asked Questions</h2>
+      <h2 id="frequently-asked-questions">Frequently Asked Questions</h2>
       <div itemscope itemtype="https://schema.org/FAQPage">
         <div itemscope itemprop="mainEntity" itemtype="https://schema.org/Question" style="margin-bottom:16px">
           <h3 itemprop="name">What is the ideal melting temperature for PCR primers?</h3>
@@ -547,7 +583,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
    </article>
 
     <section class="references">
-      <h2>References</h2>
+      <h2 id="references">References</h2>
       <ol>
         <li>Dieffenbach C.W. et al. (1993). General concepts for PCR primer design. <em>PCR Methods and Applications</em>, 3(5), S30-S37.</li>
         <li>SantaLucia J. (1998). A unified view of polymer, dumbbell, and oligonucleotide DNA nearest-neighbor thermodynamics. <em>PNAS</em>, 95(4), 1460-1465.</li>

@@ -160,7 +160,7 @@ nav{position:sticky;top:0;background:var(--navy);z-index:1000;height:80px;border
 .user-popup-logout:hover{background:#FEF2F2;color:#DC2626}
 
 .nav-cta{padding:8px 24px;background:#fff;color:var(--navy);border:none;border-radius:8px;font-family:var(--font-h);font-size:13px;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:.06em;transition:all .2s;line-height:1.3}.nav-btns{gap:3px}.nav-links{display:flex;gap:8px;align-items:center;margin-left:24px}.hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;background:none;border:none;padding:4px;z-index:1001}}
-@media(max-width:480px){.nav-inner{padding:0 8px}.nav-right{gap:14px;margin-left:auto}.nav-login{padding:4px 10px;font-size:12px;border-width:1px}.nav-cta{padding:4px 12px;font-size:12px}.nav-btns{gap:5px}.nav-links{display:none}}
+@media(max-width:480px){.nav-inner{padding:0 8px}.nav-right{gap:14px;margin-left:auto}.nav-login{padding:4px 10px;font-size:12px;border-width:1px}.nav-cta{padding:4px 12px;font-size:12px}.nav-btns{gap:5px}}
 .nav-cta{padding:8px 24px;background:#fff;color:var(--navy);border:none;border-radius:8px;font-family:var(--font-h);font-size:13px;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:.06em;transition:all .2s;line-height:1.3}
 .nav-cta:hover{background:var(--blue-light);color:#fff;box-shadow:0 4px 16px rgba(21,101,192,.3)}
 .nav-login{padding:8px 20px;background:transparent;color:rgba(255,255,255,.8);border:1.5px solid rgba(255,255,255,.25);border-radius:8px;font-family:var(--font-b);font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;line-height:1.3;white-space:nowrap}
@@ -170,7 +170,7 @@ nav{position:sticky;top:0;background:var(--navy);z-index:1000;height:80px;border
 .hamburger.active span:nth-child(1){transform:rotate(45deg) translate(5px,5px)}
 .hamburger.active span:nth-child(2){opacity:0}
 .hamburger.active span:nth-child(3){transform:rotate(-45deg) translate(5px,-5px)}
-.article-body { padding: 40px 0; max-width: 800px; margin: 0 auto; }
+.article-body { padding: 40px 0; max-width: 720px; margin: 0 auto; }
     .article-body h1 { font-family: var(--font-b); font-size: clamp(2rem,4vw,2.8rem); font-weight: 400; line-height: 1.1; margin-bottom: 16px; }
     .article-body h2 { font-size: 24px; font-weight: 600; color: var(--text); margin: 40px 0 16px; }
     .article-body h3 { font-size: 18px; font-weight: 600; color: var(--text); margin: 28px 0 12px; }
@@ -246,6 +246,13 @@ footer{background:var(--black);color:rgba(255,255,255,.8);padding:56px 0 24px}
 .mobile-menu{display:none;position:fixed;top:72px;left:0;right:0;background:var(--navy);padding:20px 24px;z-index:999;border-bottom:1px solid rgba(255,255,255,.08);max-height:calc(100vh-72px);overflow-y:auto}.mobile-menu.open{display:block}.mobile-menu .mm-group{margin-bottom:16px}.mobile-menu .mm-hdr{font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.4);font-weight:700;padding:8px 0 4px}.mobile-menu a{display:block;color:rgba(255,255,255,.7);font-size:14px;padding:10px 0;font-weight:500}.mobile-menu .mm-cta{display:block;margin-top:8px;padding:12px;background:#fff;color:var(--navy);border-radius:8px;text-align:center;font-weight:700;font-size:13px}
 
 @media(max-width:768px){.nav-links{display:none}.nav-inner{padding:0 12px}.hamburger{display:flex}}
+
+.toc{background:var(--surface,#F8FAFC);border:1px solid var(--outline,#E2E5EA);border-radius:12px;padding:24px;margin:30px 0}
+.toc h3{font-size:16px;color:var(--text,#0F172A);margin-bottom:14px;margin-top:0;font-weight:600}
+.toc ul{margin-left:0;list-style:none}
+.toc li{margin-bottom:6px}
+.toc a{color:var(--text2,#475569);text-decoration:none;font-size:14px}
+.toc a:hover{color:var(--primary,#2563EB)}
 </style>
   
   <link rel="icon" type="image/png" href="/logo.png">
@@ -406,24 +413,50 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <span class="article-author">By VigyanLLM Research Team</span>
       </div>
       <h1>qPCR Data Analysis: From Raw Cq Values to Fold Change</h1>
+      <div class="toc">
+  <h3>Table of Contents</h3>
+  <ul>
+    <li><a href="#start-with-a-question-then-a-plate">Start With a Question, Then a Plate</a></li>
+    <li><a href="#step-1-check-the-amplification-curves-before-trusting-a-single-cq">Step 1: Check the Amplification Curves Before Trusting a Single Cq</a></li>
+    <li><a href="#step-2-confirm-the-reaction-runs-at-100-efficiency">Step 2: Confirm the Reaction Runs at ~100% Efficiency</a></li>
+    <li><a href="#step-3-calculate-cq-target-vs-reference-within-each-sample">Step 3: Calculate ΔCq — Target vs Reference Within Each Sample</a></li>
+    <li><a href="#step-4-calculate-cq-treated-vs-control">Step 4: Calculate ΔΔCq — Treated vs Control</a></li>
+    <li><a href="#step-5-convert-to-fold-change-and-add-the-error">Step 5: Convert to Fold Change, and Add the Error</a></li>
+    <li><a href="#what-the-melt-curve-adds-in-sybr-green-runs">What the Melt Curve Adds in SYBR Green Runs</a></li>
+    <li><a href="#common-ways-qpcr-analysis-goes-wrong">Common Ways qPCR Analysis Goes Wrong</a></li>
+  </ul>
+</div>
+
       <p class="subtitle">A worked example takes qPCR data from raw amplification curves, through baseline and threshold, to efficiency correction, ΔΔCq normalisation, and a final fold-change with confidence. Every number below is real arithmetic you can reproduce on a spreadsheet.</p>
+
+<div style="background:linear-gradient(135deg,#0d9488,#0f766e);border-radius:12px;padding:20px 24px;margin:24px 0;text-align:center">
+  <p style="color:#fff;font-size:14px;margin:0 0 12px">Design validated qPCR primers and probes with automated Tm matching.</p>
+  <a href="/primer" style="display:inline-block;background:#fff;color:#0f766e;padding:10px 24px;border-radius:8px;font-weight:700;font-size:13px;text-decoration:none">Try the Free Primer Tool →</a>
+</div>
+
     
 
     <article class="article-body">
-      <h2>Start With a Question, Then a Plate</h2>
+      <h2 id="start-with-a-question-then-a-plate">Start With a Question, Then a Plate</h2>
       <p>Suppose you want to know whether a candidate drug changes BRCA1 expression in a breast-cancer cell line. You design an assay for BRCA1 and a stable reference gene such as <a href="/glossary/gapdh">GAPDH</a>, run three biological replicates in technical triplicate, and the instrument hands you a table of Cq values. The question you actually want answered is not "what is the Cq" — it is "how many times is BRCA1 changed, and how confident am I?"</p>
       <p>This guide walks the analysis from the raw curves to that number. The five steps are the same ones in the <a href="/glossary/miqe">MIQE</a> playbook, and they apply whether your instrument software computes them or you do them by hand.</p>
 
-      <h2>Step 1: Check the Amplification Curves Before Trusting a Single Cq</h2>
+      <h2 id="step-1-check-the-amplification-curves-before-trusting-a-single-cq">Step 1: Check the Amplification Curves Before Trusting a Single Cq</h2>
       <p>Before any arithmetic, look at the raw amplification plot. A good reaction shows a smooth exponential rise, a clear plateau, and parallel slopes across replicates. A curve that is flat, jagged, or shifts dramatically between wells is telling you the data is not trustworthy yet. I set the baseline and threshold from the linear phase, not the plateau, and I always confirm the no-template control (NTC) stays flat — an NTC that rises is contamination or primer-dimer, and the whole plate should be re-run rather than "corrected".</p>
 
-      <h2>Step 2: Confirm the Reaction Runs at ~100% Efficiency</h2>
+      <h2 id="step-2-confirm-the-reaction-runs-at-100-efficiency">Step 2: Confirm the Reaction Runs at ~100% Efficiency</h2>
       <p>Efficiency converts Cq into a quantity, so it must be measured, not assumed. Dilute your standard (or a representative cDNA) over at least five orders of magnitude, plot Cq against log<sub>10</sub> of the input, and fit a line. The slope gives efficiency directly:</p>
       <p style="text-align:center"><code>E = 10<sup>(−1/slope)</sup> − 1</code></p>
       <p>A slope around −3.3 gives E ≈ 1.00, which is reported as 100%. Acceptable is 90–110% (slope between −3.58 and −3.10). If your target and reference reactions are within 10% of each other in efficiency, the standard ΔΔCq shortcut holds. If they are not, you must use the efficiency-corrected Pfaffl method instead of pretending the difference does not matter.</p>
 
-      <h2>Step 3: Calculate ΔCq — Target vs Reference Within Each Sample</h2>
+      <h2 id="step-3-calculate-cq-target-vs-reference-within-each-sample">Step 3: Calculate ΔCq — Target vs Reference Within Each Sample</h2>
       <p>This is where normalisation happens. For each sample, subtract the reference Cq from the target Cq. Use the mean of your technical replicates; keep the standard deviation for later. Here are the numbers from our worked example, using the mean of three technical replicates per biological sample:</p>
+
+<div style="background:linear-gradient(135deg,#0d9488,#0f766e);border-radius:12px;padding:20px 24px;margin:28px 0;text-align:center">
+  <p style="color:#fff;font-size:14px;margin:0 0 12px">Calculate delta-Cq with properly matched primer pairs.</p>
+  <a href="/primer" style="display:inline-block;background:#fff;color:#0f766e;padding:10px 24px;border-radius:8px;font-weight:700;font-size:13px;text-decoration:none">Design Matched Primer Pairs →</a>
+</div>
+
       <table>
         <thead><tr><th>Sample</th><th>BRCA1 Cq (mean ± SD)</th><th>GAPDH Cq (mean ± SD)</th><th>ΔCq</th></tr></thead>
         <tbody>
@@ -437,12 +470,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       </table>
       <p>A reference Cq that moves around by more than ~1.5 cycles across samples is a red flag that GAPDH is not stable in this system and a geNorm/NormFinder pass across two or three candidate references is needed.</p>
 
-      <h2>Step 4: Calculate ΔΔCq — Treated vs Control</h2>
+      <h2 id="step-4-calculate-cq-treated-vs-control">Step 4: Calculate ΔΔCq — Treated vs Control</h2>
       <p>Now normalise across conditions. Take the mean ΔCq of the controls as the calibrator (6.23 here) and subtract it from each treated ΔCq:</p>
       <p style="text-align:center"><code>ΔΔCq = ΔCq(treated) − mean ΔCq(control)</code></p>
       <p>For the treated samples: 3.8 − 6.23 = −2.43, and the triplicates give −2.33 and −2.43. A negative ΔΔCq means the target appears at a lower Cq relative to the reference than in the control — in other words, more starting BRCA1 template.</p>
 
-      <h2>Step 5: Convert to Fold Change, and Add the Error</h2>
+      <h2 id="step-5-convert-to-fold-change-and-add-the-error">Step 5: Convert to Fold Change, and Add the Error</h2>
       <p>Fold change assumes perfect doubling per cycle, which is why Step 2 mattered:</p>
       <p style="text-align:center"><code>Fold change = 2<sup>−ΔΔCq</sup></code></p>
       <p>With ΔΔCq = −2.43, fold change = 2<sup>2.43</sup> ≈ <strong>5.4×</strong> — BRCA1 is about 5.4-fold higher in the treated cells relative to control, after GAPDH normalisation.</p>
@@ -450,10 +483,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <p>For significance, run an unpaired t-test on the three treated ΔCq values versus the three control ΔCq values (each n = 3). With our tight spreads, the two groups separate cleanly — a t-test on the ΔCq values returns p &lt; 0.01 — but with wider replicates the same fold change might not reach significance. Always let the statistics decide, and always present effect size, confidence interval, and p-value together.</p>
       <p>This is why qPCR papers that report only "2.5-fold upregulation" are hard to trust: without the confidence interval and a statistical test, a fold change is just an arithmetic artefact. The five steps in this walkthrough are the minimum set that turns a Cq table into a defensible biological claim.</p>
 
-      <h2>What the Melt Curve Adds in SYBR Green Runs</h2>
+      <h2 id="what-the-melt-curve-adds-in-sybr-green-runs">What the Melt Curve Adds in SYBR Green Runs</h2>
       <p>For dye-based chemistry, run a melt (dissociation) step after cycling. One sharp peak at the expected product Tm means a single amplicon. A second, lower peak near 75–80&nbsp;<span style="white-space:nowrap">°C</span> is a <a href="/glossary/primer-dimer">primer-dimer</a>, and a broad or shoulder peak means more than one product. The melt check is what lets you trust that the fluorescence you quantified was actually your amplicon — see the <a href="/blog/primer-dimer-fix">primer-dimer guide</a> for the fixes if you see it.</p>
 
-      <h2>Common Ways qPCR Analysis Goes Wrong</h2>
+      <h2 id="common-ways-qpcr-analysis-goes-wrong">Common Ways qPCR Analysis Goes Wrong</h2>
       <ul>
         <li><strong>Reporting raw Cq as expression:</strong> Cq is not a quantity until you normalise. Always present ΔCq or fold change.</li>
         <li><strong>Ignoring efficiency differences:</strong> If target and reference differ by more than 10%, the plain ΔΔCq shortcut is wrong; switch to Pfaffl.</li>
@@ -481,7 +514,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <p style="font-size:12px;color:#94A3B8;margin-top:4px">References: MIQE guidelines (Bustin et al.); SantaLucia 1998 nearest-neighbour thermodynamics; Livak &amp; Schmittgen 2001 for ΔΔCq; Pfaffl 2001 for efficiency correction. Reviewed by the VigyanLLM Scientific Advisory Board.</p>
 
     
-      <h2>Frequently Asked Questions</h2>
+      <h2 id="frequently-asked-questions">Frequently Asked Questions</h2>
       <div itemscope itemtype="https://schema.org/FAQPage">
         <div itemscope itemprop="mainEntity" itemtype="https://schema.org/Question" style="margin-bottom:16px">
           <h3 itemprop="name">My reference gene Cq varies by 1.5 cycles between samples. Is that okay?</h3>
@@ -515,9 +548,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         </div>
       </div>
 
-      <h2>Why This Matters</h2>
+      <h2 id="why-this-matters">Why This Matters</h2>
       <p>qPCR analysis is where biological signal becomes a published number. A Cq value normalised against an unstable reference, or a fold change reported without confidence, can look precise and be wrong. The five steps above — curves, efficiency, ΔCq, ΔΔCq, and fold change with error — are the minimum a defensible result needs, and they are the same logic a validated primer-design pipeline applies upstream.</p>
-      <h2>Related Articles</h2>
+      <h2 id="related-articles">Related Articles</h2>
       <div class="related-grid">
         <div class="related-card">
           <h3><a href="/blog/pcr-multiplex-optimization">PCR Multiplex Optimisation</a></h3>
@@ -535,7 +568,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </section>
 
     <section class="references">
-      <h2>References</h2>
+      <h2 id="references">References</h2>
       <ol>
         <li>VigyanLLM Research Team. (2026). Primer Design Best Practices. <em>VigyanLLM Technical Reports</em>.</li>
         <li>Global Molecular Biology Standards Committee. (2025). Guidelines for PCR Assay Development and Validation.</li>
