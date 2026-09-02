@@ -78,18 +78,47 @@ De-branded, de-ChatGPT'd, and re-scoped 8 blog posts with real worked examples. 
 | pcr-troubleshooting-guide | `5d62d61a` | ~1,400 | 1 | Lab Notebook |
 | types-of-pcr | `a246b9cc` | ~1,536 | 2 | Decision Guide |
 
-## Current Board State — 2026-08-08
+## GSC Issues Fix Batch — Sep 1 2026 (commit `34282892`, pushed)
+
+### What & Why
+12-issue GSC fix plan targeting growth from ~326 clicks/mo to 1,000–1,500 clicks/mo over 90 days. Based on Aug 28 GSC export data.
+
+### Fixes Applied
+| Fix | Scope | Commit |
+|-----|-------|--------|
+| #1: www/non-www redirect | vercel.json reversed (was sending www→non-www) | `34282892` |
+| #7a: academic-partnership href | Added leading `/` across 449 files | `34282892` |
+| #3: Top 10 meta rewrites | 6 blog/landing pages titles ≤60 chars + truncated meta fixed | `34282892` |
+| #5: SoftwareApplication schema | Added to all 27 landing pages | `34282892` |
+| Landing page titles | 10 additional titles shortened to ≤60 chars | `34282892` |
+| #9: Canonical verification | All verified (www.vigyanllm.in) | verified |
+
+### Skipped (need user decision)
+- **Fix #8**: AI primer design landing page (2,717 imp) — repurpose `/primer-design` or create new `/free-primer-design-tool`?
+- **Fix #6**: Glossary expansion — start with gc-clamp page (pos 9.2, 452 imp, 0 clicks)
+
+### Sep 5–10 GSC Measurement Plan
+| Metric | Before (Aug 28) | Signal of Success |
+|--------|-----------------|-------------------|
+| Non-www impressions | ~8,920/mo | Should drop 80%+ within 2 weeks |
+| NCBI guide CTR | 0.16% | Should tick up if Google re-renders the title |
+| "Page with redirect" errors | 239 | Should start resolving |
+| Overall CTR | 0.44% | Small lift from title improvements |
+
+## Current Board State — 2026-09-01
 
 | Status | Item |
 |--------|------|
 | ✅ DONE | Gene-prefers validated fix, glossary bugs, rs verification, E-E-A-T blocker, BLAST E-value, all 8 tool rewrites |
 | ✅ DONE | **Week 3: Blog rewrites** (Agent 63 — **8/8 complete**) — pcr-steps `ffea1ea2`, pcr-primer-design-rules `62626eeb`, rt-pcr-vs-qpcr `1385cbe2`, primer-dimer-fix `aa401e5b`, real-time-pcr-data-analysis `6775a624`, digital-pcr-vs-qpcr `061ea5ee`, pcr-troubleshooting-guide `5d62d61a`, types-of-pcr `a246b9cc` |
-| ⏳ READY | **Week 3: SERP snippet optimization** (Agent 69 — top 20 pages by impressions) |
+| ✅ DONE | **GSC fixes batch** (`34282892`) — www redirect, academic href, 10 title rewrites, 27 SoftwareApplication schemas |
+| ⏳ READY | **Fix #8**: AI primer design landing page (2,717 imp, 0 clicks) — needs decision: repurpose or new page |
+| ⏳ READY | **Fix #6**: Glossary gc-clamp expansion (pos 9.2, 452 imp, 0 clicks) — add content + link to GC calculator |
 | ⏳ READY | **Functional testing** (Agents 73-80 — buttons, forms, APIs, links, JS errors on live site) |
 | 🕐 DEFERRED | Pruning 130+ thin pages (past 08-27 measurement window) |
 | 🕐 DEFERRED | Primer BLAST verification, gene-specific param tuning |
 
-**Recommendation:** 08-27 measurement window ~19 days out. Blog rewrites + snippet optimization are the two CTR levers for that window. Functional testing (Agents 73-80) is a QA pass, not a CTR lever. Note: several DONE items above (gene-prefers fix, glossary bugs, rs verification, E-E-A-T blocker, BLAST E-value) predate this AGENTS.md and lack commit records here — to be traced if verification needed.
+**Next measurement**: Sep 5–10 GSC export. Expected gain from this batch: +400–750 clicks/mo (www redirect + title improvements).
 
 ## Overnight P0 CTR Sprint — Aug 6 2026 (6 tasks, 6 commits, all pushed)
 
