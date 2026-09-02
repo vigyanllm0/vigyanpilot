@@ -56,18 +56,20 @@
   function inject() {
     var css = document.createElement('style');
     css.textContent = [
-      '.vl-cookie-banner{position:fixed;left:16px;right:16px;bottom:16px;z-index:99999;max-width:520px;background:#0F172A;color:#E2E8F0;border:1px solid rgba(148,163,184,.25);border-radius:14px;padding:18px 20px;box-shadow:0 18px 50px rgba(0,0,0,.35);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;font-size:13px;line-height:1.55;display:flex;flex-direction:column;gap:12px;transition:transform .25s ease,opacity .25s ease}',
-      '.vl-cookie-banner.vl-hidden{transform:translateY(24px);opacity:0;pointer-events:none}',
-      '.vl-cookie-title{font-size:14px;font-weight:700;color:#fff;margin:0}',
-      '.vl-cookie-text{margin:0;color:#CBD5E1}',
-      '.vl-cookie-text a{color:#7DD3FC;text-decoration:underline}',
-      '.vl-cookie-actions{display:flex;gap:10px;flex-wrap:wrap}',
-      '.vl-cookie-btn{border:none;border-radius:8px;padding:9px 16px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}',
+      '.vl-cookie-banner{position:fixed;left:0;right:0;bottom:0;z-index:99999;background:#0F172A;color:#E2E8F0;border-top:1px solid rgba(148,163,184,.2);padding:12px 24px;font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;font-size:13px;line-height:1.5;display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;transition:transform .25s ease,opacity .25s ease}',
+      '.vl-cookie-banner.vl-hidden{transform:translateY(100%);opacity:0;pointer-events:none}',
+      '.vl-cookie-text{margin:0;color:#CBD5E1;white-space:nowrap}',
+      '.vl-cookie-actions{display:flex;align-items:center;gap:8px;flex-wrap:nowrap}',
+      '.vl-cookie-btn{border:none;border-radius:6px;padding:8px 16px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;min-height:36px;min-width:44px}',
       '.vl-cookie-accept{background:#2563EB;color:#fff}',
       '.vl-cookie-accept:hover{background:#1D4ED8}',
-      '.vl-cookie-decline{background:transparent;color:#94A3B8;border:1px solid rgba(148,163,184,.4)}',
-      '.vl-cookie-decline:hover{color:#E2E8F0;border-color:rgba(148,163,184,.7)}',
-      '@media(min-width:600px){.vl-cookie-banner{left:24px;right:auto;bottom:24px}}'
+      '.vl-cookie-decline{background:transparent;color:#E2E8F0;border:1px solid rgba(148,163,184,.4)}',
+      '.vl-cookie-decline:hover{color:#fff;border-color:rgba(148,163,184,.7)}',
+      '.vl-cookie-link{color:#7DD3FC;text-decoration:none;font-size:13px;white-space:nowrap;padding:8px 4px;min-height:36px;display:inline-flex;align-items:center}',
+      '.vl-cookie-link:hover{text-decoration:underline}',
+      '.vl-cookie-close{position:absolute;top:8px;right:12px;background:none;border:none;color:rgba(255,255,255,.4);font-size:18px;cursor:pointer;padding:4px 8px;line-height:1;min-width:36px;min-height:36px;display:flex;align-items:center;justify-content:center}',
+      '.vl-cookie-close:hover{color:#fff}',
+      '@media(max-width:600px){.vl-cookie-banner{flex-direction:column;gap:8px;padding:12px 16px 16px;text-align:center}.vl-cookie-actions{justify-content:center}.vl-cookie-text{white-space:normal}}'
     ].join('\n');
     document.head.appendChild(css);
 
@@ -76,14 +78,18 @@
     banner.setAttribute('role', 'dialog');
     banner.setAttribute('aria-label', 'Cookie consent');
     banner.innerHTML =
-      '<p class="vl-cookie-title">We value your privacy</p>' +
-      '<p class="vl-cookie-text">We use cookies and local storage to keep our tools working, remember your preferences, and understand how the platform is used. You can withdraw consent anytime by clicking the cookie settings in our <a href="/cookies" target="_blank" rel="noopener">Cookie Policy</a>. Data is retained for up to 365 days. For questions, contact <a href="mailto:privacy@vigyanllm.in">privacy@vigyanllm.in</a>. Read our <a href="/privacy" target="_blank" rel="noopener">Privacy Policy</a> for details.</p>' +
+      '<button type="button" class="vl-cookie-close" aria-label="Dismiss">&times;</button>' +
+      '<p class="vl-cookie-text">We use cookies to improve your experience.</p>' +
       '<div class="vl-cookie-actions">' +
-      '<button type="button" class="vl-cookie-btn vl-cookie-accept" data-action="accept">Accept all</button>' +
-      '<button type="button" class="vl-cookie-btn vl-cookie-decline" data-action="decline">Decline optional</button>' +
+      '<button type="button" class="vl-cookie-btn vl-cookie-accept" data-action="accept">Accept All</button>' +
+      '<button type="button" class="vl-cookie-btn vl-cookie-decline" data-action="decline">Decline Optional</button>' +
+      '<a class="vl-cookie-link" href="/cookies" target="_blank" rel="noopener">Privacy Policy →</a>' +
       '</div>';
     document.body.appendChild(banner);
 
+    banner.querySelector('.vl-cookie-close').addEventListener('click', function () {
+      hideBanner(banner);
+    });
     banner.querySelector('[data-action="accept"]').addEventListener('click', function () {
       recordConsent('accepted');
       setCookie('vigyanllm_consent', 'accepted', 365);
@@ -126,7 +132,6 @@
       updateConsent(state === 'accepted' ? GRANTED : DENIED);
       return;
     }
-    // only inject once DOM body is available
     if (document.body) {
       inject();
     } else {
