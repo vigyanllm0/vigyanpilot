@@ -242,6 +242,8 @@ footer{background:var(--black);color:rgba(255,255,255,.8);padding:56px 0 24px}
 .toc li{margin-bottom:6px}
 .toc a{color:var(--text2,#475569);text-decoration:none;font-size:14px}
 .toc a:hover{color:var(--primary,#2563EB)}
+
+.dna-seq{font-family:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;font-size:13px;letter-spacing:1.5px;background:#f0fdf4;border:1px solid #bbf7d0;padding:2px 6px;border-radius:4px;color:#166534;word-break:break-all}
 </style>
   
   <link rel="icon" type="image/png" href="/logo.png">
@@ -463,7 +465,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       </div>
 
       <h2 id="rule-2-gc-content">Rule 2: GC Content</h2>
-      <p>Primers in the 40–60% <a href="/gc-calculator">GC content</a> band work well across the board. GC-rich primers have a higher Tm but also form more stable secondary structures; GC-poor primers bind too loosely. The GAPDH forward <code>GTCTCCTCTGACTTCAACAGCG</code> has 54.5% GC and an optical absorbance-derived figure matching the ideal band; the reverse <code>ACCACCCTGTTGCTGTAGCCAA</code> is also 54.5%.</p>
+      <p>Primers in the 40–60% <a href="/gc-calculator">GC content</a> band work well across the board. GC-rich primers have a higher Tm but also form more stable secondary structures; GC-poor primers bind too loosely. The GAPDH forward <code class="dna-seq">GTCTCCTCTGACTTCAACAGCG</code> has 54.5% GC and an optical absorbance-derived figure matching the ideal band; the reverse <code class="dna-seq">ACCACCCTGTTGCTGTAGCCAA</code> is also 54.5%.</p>
       <ul>
         <li><strong>AT-rich genomes</strong> (Plasmodium, some fungi): acceptable to drop to 30–40% GC. Use longer primers (25–30 nt) to compensate.</li>
         <li><strong>GC-rich templates</strong> (&gt;65% GC): add DMSO (3–5%) or betaine (1 M) to destabilise template secondary structure.</li>
@@ -524,7 +526,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <h2 id="worked-example-seven-rules-on-one-real-pair">Worked Example: Seven Rules on One Real Pair</h2>
       <p>Here is the complete scorecard for the GAPDH pair (OriGene HP205798), computed with the same salt-corrected nearest-neighbor thermodynamics and primer\u2013primer geometry you would get from any rigorous checker. This is exactly what the scorecard should look like before you place an order:</p>
       <table>
-        <tr><th>Rule</th><th>Forward <code>GTCTCCTCTGACTTCAACAGCG</code></th><th>Reverse <code>ACCACCCTGTTGCTGTAGCCAA</code></th><th>Status</th></tr>
+        <tr><th>Rule</th><th>Forward <code class="dna-seq">GTCTCCTCTGACTTCAACAGCG</code></th><th>Reverse <code class="dna-seq">ACCACCCTGTTGCTGTAGCCAA</code></th><th>Status</th></tr>
         <tr><td>1. Tm (nearest-neighbor)</td><td>61.6\u00b0C</td><td>65.1\u00b0C</td><td>Pass \u2014 3.5\u00b0C gap, Ta 58.3\u00b0C</td></tr>
         <tr><td>2. GC content</td><td>54.5%</td><td>54.5%</td><td>Pass</td></tr>
         <tr><td>3. Amplicon size</td><td colspan="2">131 bp (qPCR ideal)</td><td>Pass</td></tr>

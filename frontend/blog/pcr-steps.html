@@ -253,6 +253,8 @@ footer{background:var(--black);color:rgba(255,255,255,.8);padding:56px 0 24px}
 .toc li{margin-bottom:6px}
 .toc a{color:var(--text2,#475569);text-decoration:none;font-size:14px}
 .toc a:hover{color:var(--primary,#2563EB)}
+
+.dna-seq{font-family:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;font-size:13px;letter-spacing:1.5px;background:#f0fdf4;border:1px solid #bbf7d0;padding:2px 6px;border-radius:4px;color:#166534;word-break:break-all}
 </style>
   
   <link rel="icon" type="image/png" href="/logo.png">
@@ -457,7 +459,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <tr><td>2. Annealing</td><td>50–65°C</td><td>15–60 s</td><td>Primers bind to complementary target sequences</td></tr>
         <tr><td>3. Extension</td><td>68–72°C</td><td>30 s–2 min</td><td>Polymerase synthesises new DNA strands</td></tr>
       </table>
-      <p>The rest of this article goes through each step the way a PI would think about it: what the molecules are doing, why the numbers matter, and how to know you have it right. To keep things concrete we'll follow one real target throughout — a 131 bp fragment of human <strong>GAPDH</strong> amplified with the widely used OriGene qPCR pair HP205798 (forward <code>GTCTCCTCTGACTTCAACAGCG</code>, reverse <code>ACCACCCTGTTGCTGTAGCCAA</code>, melting temperatures 61.6°C and 65.1°C by the SantaLucia nearest-neighbour model). We use it in our <a href="/validation">validation benchmarks</a>, so every number below is reproducible.</p>
+      <p>The rest of this article goes through each step the way a PI would think about it: what the molecules are doing, why the numbers matter, and how to know you have it right. To keep things concrete we'll follow one real target throughout — a 131 bp fragment of human <strong>GAPDH</strong> amplified with the widely used OriGene qPCR pair HP205798 (forward <code class="dna-seq">GTCTCCTCTGACTTCAACAGCG</code>, reverse <code class="dna-seq">ACCACCCTGTTGCTGTAGCCAA</code>, melting temperatures 61.6°C and 65.1°C by the SantaLucia nearest-neighbour model). We use it in our <a href="/validation">validation benchmarks</a>, so every number below is reproducible.</p>
 
       <h2 id="step-1-denaturation-9498c">Step 1: Denaturation (94–98°C)</h2>
       <p>Denaturation is where the double helix comes apart. Two forces hold the strands together: <strong>hydrogen bonds</strong> between paired bases (two for each A–T pair, three for each G–C pair) and <strong>base stacking</strong> between neighbouring bases on the same strand. Neither is a covalent bond — they are individually weak and are constantly breaking and re-forming even at room temperature. Nuclear magnetic resonance studies measure the lifetime of a closed A–T base pair at roughly 1–30 ms and a G–C pair at 10–50 ms at physiological temperature: the helix is always "breathing," with bases flicking open and closed.</p>

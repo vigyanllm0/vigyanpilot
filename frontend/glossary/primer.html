@@ -487,6 +487,9 @@ footer{background:var(--black);color:rgba(255,255,255,.8);padding:56px 0 24px}
   <script src="https://accounts.google.com/gsi/client?hl=en" async defer></script>
 <script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.vigyanllm.in"}, {"@type": "ListItem", "position": 2, "name": "Glossary", "item": "https://www.vigyanllm.in/glossary"}, {"@type": "ListItem", "position": 3, "name": "Primer", "item": "https://www.vigyanllm.in/glossary/primer"}]}</script>
 <script src="/cookie-banner.js" defer></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
 </head>
 <body>
 
@@ -658,7 +661,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
     <section class="section" id="parameters">
       <h2>Key Parameters / Variables</h2>
-      <p>Primer quality parameters include length (18–25 nt for standard PCR, 15–20 nt for allele-specific PCR); Tm (52–58 °C, calculated via nearest-neighbor model); pyrimidine/purine balance; absence of 3' complementarity; GC content (40–60%); maximum repeat length (mononucleotide runs <4, dinucleotide repeats <4); secondary structure ΔG (> −3 kcal/mol for hairpins,> −5 kcal/mol for self-dimers); specificity (BLAST E-value threshold < 0.01); and synthesis purity (>90% full-length product for desalted primers,>95% for HPLC-purified). Primer working concentration in PCR is typically 0.1–1 μM per primer. For multiplex PCR, each primer's concentration may be adjusted by 0.5–2 × the standard to balance amplification across targets.</p>
+      <p>Primer quality parameters include length (18–25 nt for standard PCR, 15–20 nt for allele-specific PCR); Tm (52–58 °C, calculated via nearest-neighbor model); pyrimidine/purine balance; absence of 3' complementarity; GC content (40–60%); maximum repeat length (mononucleotide runs <4, dinucleotide repeats <4); secondary structure \( \Delta G \) (> \(-3\) kcal/mol for hairpins,> −5 kcal/mol for self-dimers); specificity (BLAST E-value threshold < 0.01); and synthesis purity (>90% full-length product for desalted primers,>95% for HPLC-purified). Primer working concentration in PCR is typically 0.1–1 μM per primer. For multiplex PCR, each primer's concentration may be adjusted by 0.5–2 × the standard to balance amplification across targets.</p>
     </section>
 
     <section class="section" id="mistakes">
@@ -674,7 +677,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <ul class="practice-list">
         <li><strong>Length and Tm balance:</strong> Standard primers are 18–25 nt with Tm of 55–65°C. Forward and reverse primers should have Tm values within 3–5°C of each other to ensure both anneal efficiently at the same cycling temperature. The Tm difference is the single most common cause of failed PCR — use nearest-neighbour thermodynamics (not the Wallace rule) for accurate calculation. <a href="/primer" class="tool-inline-link" style="display:inline-block;margin-top:8px;padding:6px 14px;background:#EBF5FF;border-radius:6px;font-size:14px;color:#2563EB;font-weight:500">Try Primer and Probe Design in 22 Checks →</a></li>
         <li><strong>3' end specificity:</strong> The 3' terminal nucleotide is the most critical position for extension. A single mismatch at the 3' end reduces amplification efficiency 100–1000-fold, while mismatches in the middle or 5' region are tolerated. For allele-specific PCR, place the discriminating mismatch at the 3' terminus of the primer.</li>
-        <li><strong>Secondary structure screening:</strong> Before ordering, check each primer for hairpin formation (ΔG should be more positive than −3 kcal/mol) and self-dimer formation (ΔG more positive than −5 kcal/mol). Cross-dimers between forward and reverse primers are less problematic than self-dimers but still reduce effective primer concentration.</li>
+        <li><strong>Secondary structure screening:</strong> Before ordering, check each primer for hairpin formation (ΔG should be more positive than −3 kcal/mol) and self-dimer formation (\( \Delta G \) more positive than \(-5\) kcal/mol). Cross-dimers between forward and reverse primers are less problematic than self-dimers but still reduce effective primer concentration.</li>
         <li><strong>Ordering and storage:</strong> Desalted primers are sufficient for routine PCR. For qPCR probes, FAM/BHEC modifications require HPLC purification. Resuspend lyophilised primers to 100 µM stock in TE buffer, aliquot, and store at −20°C. Working dilutions (10 µM) should be kept at 4°C and used within 3 months.</li>
       </ul>
     </section>
@@ -872,5 +875,15 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
 
 </footer>
+<script>
+document.addEventListener('DOMContentLoaded',function(){
+  if(typeof renderMathInElement==='function'){
+    renderMathInElement(document.body,{delimiters:[
+      {left:'$$',right:'$$',display:true},
+      {left:'\\(',right:'\\)',display:false}
+    ]});
+  }
+});
+</script>
 </body>
 </html>
