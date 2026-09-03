@@ -421,6 +421,15 @@ footer{background:var(--black);color:rgba(255,255,255,.8);padding:56px 0 24px}
 </header>
 <main id="main-content">
 
+<div id="trial-banner" style="display:none;background:linear-gradient(135deg,#1565C0,#0d47a1);color:#fff;padding:12px 16px;text-align:center;font-size:14px;font-family:var(--font-h)">
+  <span id="trial-banner-text"></span>
+  <a id="trial-banner-link" href="/primer" style="color:#fff;font-weight:700;text-decoration:underline;margin-left:8px">Start Using Tools →</a>
+</div>
+<div id="trial-converted-banner" style="display:none;background:linear-gradient(135deg,#16A34A,#15803D);color:#fff;padding:12px 16px;text-align:center;font-size:14px;font-family:var(--font-h)">
+  🎉 <strong>Your free trial is over and your Pro version has started!</strong>
+  <a href="/primer" style="color:#fff;font-weight:700;text-decoration:underline;margin-left:8px">Start Using Tools →</a>
+</div>
+
 
 <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-KRP5LLPR" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript><noscript><div style="background:#FEF3C7;border-bottom:1px solid #FDE68A;padding:12px 24px;text-align:center;font-size:var(--font-sm);color:#92400E;font-weight:600;font-family:var(--font-b,Open Sans),sans-serif">This tool requires JavaScript to run analyses. Please enable JavaScript in your browser to use VigyanLLM.</div></noscript>
 
@@ -1007,5 +1016,28 @@ else initDNAAnim();
 <script defer src="/auth-shared.js"></script>
 <script defer src="/search-index.js"></script>
 <script defer src="/track-visit.js"></script>
+<script>
+(function(){
+  var API = window.VIGYAN_BACKEND_URL || '';
+  var pfUser = sessionStorage.getItem('pf_user');
+  if (!pfUser) return;
+  try {
+    fetch(API + '/api/trial/status', { credentials: 'same-origin' })
+      .then(function(r) { return r.ok ? r.json() : null; })
+      .then(function(d) {
+        if (!d) return;
+        if (d.status === 'active' && d.days_remaining > 0) {
+          var banner = document.getElementById('trial-banner');
+          var text = document.getElementById('trial-banner-text');
+          text.textContent = '🎓 Trial Day ' + (d.trial_days - d.days_remaining) + ' of ' + d.trial_days + ' — ' + d.days_remaining + ' days left. You have ' + (d.daily_analyses || 50) + ' analyses/day.';
+          banner.style.display = 'block';
+        } else if (d.status === 'expired' && d.plan === 'trial') {
+          document.getElementById('trial-converted-banner').style.display = 'block';
+        }
+      })
+      .catch(function(){});
+  } catch(e) {}
+})();
+</script>
 </body>
 </html>

@@ -212,8 +212,8 @@ function openAuthModal(){isRegister=false;showAuth()}
     .then(function(st){
       if (!st || !st.plan) return;
       var plan = st.plan;
-      var labels = {free:'Free',pro:'Pro',lab:'Lab',enterprise:'Enterprise'};
-      var colors = {free:['#F1F5F9','#64748B'],pro:['#DBEAFE','#1D4ED8'],lab:['#EDE9FE','#6D28D9'],enterprise:['#FEF3C7','#92400E']};
+      var labels = {free:'Free',trial:'Trial',pro:'Pro',lab:'Lab',enterprise:'Enterprise'};
+      var colors = {free:['#F1F5F9','#64748B'],trial:['#DBEAFE','#1565C0'],pro:['#DBEAFE','#1D4ED8'],lab:['#EDE9FE','#6D28D9'],enterprise:['#FEF3C7','#92400E']};
       var c = colors[plan] || colors.free;
       var badge = document.getElementById('udPlan');
       if (badge) {
