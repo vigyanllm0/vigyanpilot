@@ -21,11 +21,14 @@ window.showSection = function(name){
   document.querySelectorAll('.section').forEach(s=>s.style.display='none');
   $('sec-'+name).style.display='';
   document.querySelectorAll('.actions .btn').forEach(b=>{b.classList.remove('active')});
-  if(event && event.target) event.target.classList.add('active');
+  var tabBtn=$('tab-'+name);
+  if(tabBtn)tabBtn.classList.add('active');
   if(name==='users')loadUsers();
   if(name==='errors')loadErrors();
   if(name==='bans')loadBans();
   if(name==='blog')loadBlogPosts();
+  if(name==='promos')loadPromos();
+  if(name==='accounts')loadExpenses();
 }
 
 // Data loading
@@ -129,6 +132,108 @@ async function runBaseline(){const d=await api('/api/admin/scanner/baseline','PO
 async function unbanIp(ip){await api('/api/admin/threats/unban','POST',{ip});loadBans();refreshAll()}
 async function banIp(){const ip=$('ban-ip-input').value.trim();if(!ip)return;await api('/api/admin/threats/ban','POST',{ip,duration:3600});$('ban-ip-input').value='';loadBans();refreshAll()}
 
+// ── PROMO CODES ──
+async function loadPromos(){
+  const d=await api('/api/admin/promo/list');if(!d)return;
+  const s=d.summary||{};
+  $('promo-total').textContent=s.total_codes||0;
+  $('promo-used').textContent=s.total_used||0;
+  $('promo-unused').textContent=s.total_unused||0;
+  $('promo-value').textContent='₹'+(s.total_trial_value_inr||0).toLocaleString('en-IN');
+
+  const codes=d.codes||[];
+  const tbody=$('tbl-promos');
+  if(!codes.length){tbody.innerHTML='<tr><td colspan="9" style="text-align:center;color:var(--green);padding:1.5rem">No promo codes yet. Generate some above.</td></tr>';return}
+  tbody.innerHTML=codes.map(c=>{
+    const created=c.created_at?new Date(c.created_at*1000).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'—';
+    const expired=c.expires_at&&c.expires_at>0&&c.expires_at<Date.now()/1000;
+    const fully_used=c.used_count>=c.max_uses;
+    const statusClass=expired?'pill-red':fully_used?'pill-orange':'pill-green';
+    return`<tr style="${expired||fully_used?'opacity:.6':''}"><td class="mono" style="font-size:.75rem;font-weight:600">${c.code}</td><td><span class="pill pill-blue">${c.tier}</span></td><td>${c.trial_days}d</td><td>${c.daily_analyses}</td><td>${c.batch_max}</td><td>₹${c.price_inr}</td><td><span class="pill ${statusClass}">${c.used_count}/${c.max_uses}</span></td><td>${c.has_export?'✓':'✗'}</td><td style="font-size:.7rem">${created}</td></tr>`;
+  }).join('');
+}
+
+async function generatePromos(){
+  const btn=$('btn-gen-promo');const status=$('promo-gen-status');
+  btn.disabled=true;btn.textContent='Generating...';status.textContent='';
+
+  const expires=$('promo-expires').value;
+  const body={
+    prefix:($('promo-prefix').value||'TRIAL').toUpperCase().replace(/[^A-Z0-9]/g,''),
+    count:parseInt($('promo-count').value)||10,
+    trial_days:parseInt($('promo-days').value)||30,
+    tier:$('promo-tier').value,
+    daily_analyses:parseInt($('promo-daily').value)||50,
+    batch_max:parseInt($('promo-batch').value)||20,
+    price_inr:parseInt($('promo-price').value)||699,
+    currency:$('promo-currency').value,
+    max_uses:parseInt($('promo-maxuses').value)||1,
+    has_export:parseInt($('promo-export').value)||1,
+    expires_at:expires?new Date(expires).getTime()/1000:0
+  };
+
+  if(!body.prefix||body.prefix.length<2){status.textContent='Prefix must be at least 2 characters';status.style.color='var(--red)';btn.disabled=false;btn.textContent='Generate Codes';return}
+
+  const d=await api('/api/admin/promo/create','POST',body);
+  btn.disabled=false;btn.textContent='Generate Codes';
+
+  if(!d||d.error){status.textContent=d?.error||'Failed to generate';status.style.color='var(--red)';return}
+
+  status.textContent=`✓ ${d.count} codes generated with prefix ${d.prefix}`;status.style.color='var(--green)';
+
+  // Show generated codes
+  const output=$('promo-gen-output');output.style.display='block';
+  $('promo-gen-codes').textContent=(d.codes||[]).join('\n');
+
+  loadPromos();
+}
+
+// ── EXPENSES / ACCOUNTS ──
+async function loadExpenses(){
+  const d=await api('/api/admin/expenses');if(!d)return;
+  const s=d.summary||{};
+  $('exp-total').textContent='₹'+(s.grand_total_inr||0).toLocaleString('en-IN');
+  const cats=s.by_category||{};
+  $('exp-verify').textContent='₹'+(cats.verification_charge?.total_inr||0).toLocaleString('en-IN');
+  $('exp-trial').textContent='₹'+(cats.trial_service?.total_inr||0).toLocaleString('en-IN');
+  const otherTotal=Object.keys(cats).filter(k=>!['verification_charge','trial_service'].includes(k)).reduce((a,k)=>a+cats[k].total_inr,0);
+  $('exp-other').textContent='₹'+otherTotal.toLocaleString('en-IN');
+
+  const expenses=d.expenses||[];
+  const tbody=$('tbl-expenses');
+  if(!expenses.length){tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--green);padding:1.5rem">No expenses recorded yet.</td></tr>';return}
+  tbody.innerHTML=expenses.map(e=>{
+    const date=e.created_at?new Date(e.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'—';
+    const catColors={verification_charge:'pill-orange',trial_service:'pill-blue',promo_trial:'pill-blue',infrastructure:'pill-red',marketing:'pill-purple',other:'pill-green'};
+    return`<tr><td style="font-size:.7rem">${date}</td><td><span class="pill ${catColors[e.category]||'pill-green'}">${e.category}</span></td><td style="max-width:250px;overflow:hidden;text-overflow:ellipsis;font-size:.8rem">${e.description}</td><td class="mono" style="color:var(--orange);font-weight:600">₹${parseFloat(e.amount_inr).toFixed(2)}</td><td class="mono" style="font-size:.7rem">${e.promo_code||'—'}</td><td style="font-size:.7rem">${e.user_email||'—'}</td></tr>`;
+  }).join('');
+}
+
+async function recordExpense(){
+  const btn=$('btn-record-exp');const status=$('exp-record-status');
+  btn.disabled=true;btn.textContent='Recording...';status.textContent='';
+
+  const body={
+    category:$('exp-cat').value,
+    description:$('exp-desc').value.trim(),
+    amount_inr:parseFloat($('exp-amount').value)||0,
+    promo_code:$('exp-promo').value.trim(),
+    user_email:$('exp-email').value.trim()
+  };
+
+  if(!body.description){status.textContent='Description is required';status.style.color='var(--red)';btn.disabled=false;btn.textContent='Record Expense';return}
+  if(body.amount_inr<=0){status.textContent='Amount must be > 0';status.style.color='var(--red)';btn.disabled=false;btn.textContent='Record Expense';return}
+
+  const d=await api('/api/admin/expenses/record','POST',body);
+  btn.disabled=false;btn.textContent='Record Expense';
+
+  if(!d||d.error){status.textContent=d?.error||'Failed to record';status.style.color='var(--red)';return}
+
+  status.textContent='✓ Expense recorded';status.style.color='var(--green)';
+  $('exp-desc').value='';$('exp-amount').value='';$('exp-promo').value='';$('exp-email').value='';
+  loadExpenses();
+}
+
 // Blog / CMS
 async function loadBlogPosts(){
   const el=$('blog-list');if(!el)return;
@@ -168,7 +273,11 @@ document.addEventListener('DOMContentLoaded', () => {
   $('tab-errors')?.addEventListener('click', () => window.showSection('errors'));
   $('tab-bans')?.addEventListener('click', () => window.showSection('bans'));
   $('tab-blog')?.addEventListener('click', () => window.showSection('blog'));
+  $('tab-promos')?.addEventListener('click', () => window.showSection('promos'));
+  $('tab-accounts')?.addEventListener('click', () => window.showSection('accounts'));
   $('btn-refresh')?.addEventListener('click', refreshAll);
+  $('btn-gen-promo')?.addEventListener('click', generatePromos);
+  $('btn-record-exp')?.addEventListener('click', recordExpense);
   
   // Scanner
   $('btn-scan')?.addEventListener('click', runScan);

@@ -273,6 +273,19 @@ def init_db():
             status TEXT DEFAULT 'trial',
             created_at REAL DEFAULT (strftime('%s','now'))
         );
+
+        CREATE TABLE IF NOT EXISTS expense_log (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            category TEXT NOT NULL DEFAULT 'promo_trial',
+            description TEXT NOT NULL DEFAULT '',
+            amount_inr REAL NOT NULL DEFAULT 0,
+            promo_code TEXT DEFAULT '',
+            user_email TEXT DEFAULT '',
+            subscription_id TEXT DEFAULT '',
+            metadata TEXT DEFAULT '{}',
+            created_by TEXT DEFAULT 'system',
+            created_at REAL DEFAULT (strftime('%s','now'))
+        );
     """)
 
     # Backfill plan columns for existing users (if missing in older schema)

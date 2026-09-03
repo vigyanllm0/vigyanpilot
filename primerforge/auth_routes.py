@@ -357,9 +357,24 @@ def google_auth():
 @require_admin
 def admin_users():
     db = get_db()
-    rows = db.execute("SELECT id, email, name, role, run_count, paid_runs, created_at, last_login FROM users ORDER BY created_at DESC").fetchall()
+    try:
+        rows = db.execute(
+            """SELECT u.id, u.email, u.name, u.role, u.run_count, u.paid_runs,
+                      u.created_at, u.last_login,
+                      COALESCE(tb.balance, 0) AS balance,
+                      COALESCE(tb.total_purchased, 0) AS total_purchased,
+                      COALESCE(tb.total_consumed, 0) AS total_consumed
+               FROM users u
+               LEFT JOIN token_balances tb ON tb.user_id = u.id
+               ORDER BY u.created_at DESC"""
+        ).fetchall()
+    except Exception:
+        rows = db.execute(
+            "SELECT id, email, name, role, run_count, paid_runs, created_at, last_login "
+            "FROM users ORDER BY created_at DESC"
+        ).fetchall()
     users = [dict(r) for r in rows]
-    return jsonify({"users": users, "total": len(users)}), 200
+    return jsonify({"users": users, "count": len(users)}), 200
 
 
 @auth_bp.route('/api/admin/logs', methods=['GET'])

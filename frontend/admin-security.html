@@ -174,6 +174,64 @@ footer{background:var(--black);color:rgba(255,255,255,.8);padding:56px 0 24px}
 @media(max-width:768px){.nav-links{display:none}.nav-inner{padding:0 12px}.hamburger{display:flex}}
 
 .skip-link{position:absolute;top:-100%;left:50%;transform:translateX(-50%);padding:8px 14px;background:#667eea;color:#fff;z-index:10000;border-radius:0 0 8px 8px;font-weight:600;text-decoration:none;font-size:14px}.skip-link:focus{top:0;outline:none}
+
+/* Admin panel component styles */
+.input{padding:8px 12px;border:1px solid var(--outline);border-radius:8px;font-family:var(--font-b);font-size:13px;color:var(--text);background:#fff;transition:border-color .15s}
+.input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(21,101,192,.1)}
+select.input{cursor:pointer;appearance:auto}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;font-family:var(--font-h);font-size:13px;font-weight:600;cursor:pointer;border:1px solid var(--outline);background:var(--surface);color:var(--text);transition:all .15s;white-space:nowrap}
+.btn:hover{background:var(--surface-alt);border-color:var(--blue)}
+.btn.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+.btn-sm{padding:5px 12px;font-size:12px}
+.pill{display:inline-block;font-size:11px;font-weight:600;padding:3px 10px;border-radius:99px;line-height:1.3}
+.pill-red{background:#FEE2E2;color:#DC2626}
+.pill-green{background:#D1FAE5;color:#059669}
+.pill-blue{background:#DBEAFE;color:#2563EB}
+.pill-orange{background:#FEF3C7;color:#D97706}
+.pill-purple{background:#EDE9FE;color:#7C3AED}
+.stat{background:var(--surface);border:1px solid var(--outline);border-radius:12px;padding:1rem 1.25rem;min-width:0}
+.stat-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:4px}
+.stat-val{font-family:var(--font-h);font-size:1.5rem;font-weight:800;color:var(--text);line-height:1.2}
+.stat-val.green{color:var(--green)}
+.stat-val.orange{color:var(--orange)}
+.stat-val.red{color:var(--red)}
+.stat-val.cyan{color:var(--accent)}
+.stat-sub{font-size:11px;color:var(--muted);margin-top:2px}
+.stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:1rem}
+.tbl-wrap{overflow-x:auto;border:1px solid var(--outline);border-radius:12px}
+.tbl-wrap table{width:100%;border-collapse:collapse;font-size:.8rem}
+.tbl-wrap th{text-align:left;padding:10px 12px;background:var(--surface-alt);font-weight:600;color:var(--text2);border-bottom:1px solid var(--outline);font-size:.75rem;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}
+.tbl-wrap td{padding:8px 12px;border-bottom:1px solid var(--outline);vertical-align:middle}
+.tbl-wrap tr:last-child td{border-bottom:none}
+.tbl-wrap tr:hover td{background:var(--surface-alt)}
+.mono{font-family:'SF Mono',Consolas,'Liberation Mono',Menlo,monospace}
+.container{max-width:var(--max-w);margin:0 auto;padding:0 16px}
+.charts{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem;margin-bottom:1.5rem}
+.chart-card{background:var(--surface);border:1px solid var(--outline);border-radius:12px;padding:1rem}
+.chart-title{font-family:var(--font-h);font-size:13px;font-weight:700;margin-bottom:.75rem;color:var(--text2)}
+.bar-chart{display:flex;align-items:flex-end;gap:4px;height:100px}
+.bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px}
+.bar{width:100%;border-radius:4px 4px 0 0;min-height:4px;transition:height .3s}
+.bar-label{font-size:9px;color:var(--muted);text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
+.donut-wrap{display:flex;align-items:center;gap:1rem}
+.donut{width:80px;height:80px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.donut-center{font-family:var(--font-h);font-size:16px;font-weight:800;color:var(--text)}
+.donut-legend{display:flex;flex-direction:column;gap:4px}
+.legend-item{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text2)}
+.legend-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.section{margin-bottom:1.5rem}
+.section-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem}
+.section-title{font-family:var(--font-h);font-size:1rem;font-weight:700}
+.actions{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1.5rem;padding:0 0 .5rem;border-bottom:1px solid var(--outline)}
+.login-wrap{display:flex;align-items:center;justify-content:center;min-height:60vh;padding:24px}
+.login-card{background:var(--surface);border:1px solid var(--outline);border-radius:16px;padding:2rem;width:100%;max-width:380px;box-shadow:0 8px 32px rgba(0,0,0,.08);text-align:center}
+.login-card h2{font-family:var(--font-h);font-size:1.2rem;margin-bottom:4px}
+.login-card p{font-size:13px;color:var(--muted);margin-bottom:1.5rem}
+.login-card .input{width:100%;margin-bottom:.75rem;padding:10px 14px}
+.login-card .btn{width:100%;justify-content:center;padding:12px}
+.login-err{color:var(--red);font-size:12px;margin-top:8px;min-height:18px}
+.shell{display:none}
+.orange{color:var(--orange)}
 </style>
 <link rel="manifest" href="/manifest.json">
 <script>if('serviceWorker'in navigator)navigator.serviceWorker.register('/sw.js')</script>
@@ -388,6 +446,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <button type="button" class="btn" id="tab-errors">🐛 Errors</button>
     <button type="button" class="btn" id="tab-bans">🚫 IP Bans</button>
     <button type="button" class="btn" id="tab-blog">📝 Blog</button>
+    <button type="button" class="btn" id="tab-promos">🎟️ Promos</button>
+    <button type="button" class="btn" id="tab-accounts">💰 Accounts</button>
     <button type="button" class="btn" id="btn-refresh">↻ Refresh</button>
   </div>
 
@@ -433,11 +493,151 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <div class="section-hdr">
       <div class="section-title">📝 Blog Posts</div>
       <div>
-        <a<a href="/cms-editor?type=blog" target="_blank" class="btn btn-sm" style="background:var(--primary);color:#fff;text-decoration:none;display:inline-block">+ New Post</a>
-        <a<a href="/cms-admin?type=blog" target="_blank" class="btn btn-sm" style="background:var(--surface2);color:var(--text);text-decoration:none;display:inline-block;border:1px solid var(--border)">Manage All</a>
+        <a href="/cms-editor?type=blog" target="_blank" class="btn btn-sm" style="background:var(--primary);color:#fff;text-decoration:none;display:inline-block">+ New Post</a>
+        <a href="/cms-admin?type=blog" target="_blank" class="btn btn-sm" style="background:var(--surface2);color:var(--text);text-decoration:none;display:inline-block;border:1px solid var(--border)">Manage All</a>
       </div>
     </div>
     <div id="blog-list" style="font-size:.8rem;color:var(--muted)">Loading blog posts...</div>
+  </div>
+
+  <!-- PROMO CODES -->
+  <div class="section" id="sec-promos" style="display:none">
+    <!-- Summary cards -->
+    <div class="stats" style="margin-bottom:1.5rem">
+      <div class="stat"><div class="stat-label">Total Codes</div><div class="stat-val" id="promo-total">—</div></div>
+      <div class="stat"><div class="stat-label">Used</div><div class="stat-val orange" id="promo-used">—</div></div>
+      <div class="stat"><div class="stat-label">Unused</div><div class="stat-val green" id="promo-unused">—</div></div>
+      <div class="stat"><div class="stat-label">Trial Value</div><div class="stat-val cyan" id="promo-value">—</div></div>
+    </div>
+
+    <!-- Generator form -->
+    <div style="background:var(--surface-alt);border:1px solid var(--outline);border-radius:12px;padding:1.5rem;margin-bottom:1.5rem">
+      <div style="font-family:var(--font-h);font-weight:700;font-size:1rem;margin-bottom:1rem">🎟️ Generate Promo Codes</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:1rem">
+        <div>
+          <label style="display:block;font-size:.75rem;font-weight:600;margin-bottom:4px;color:var(--text2)">Prefix</label>
+          <input class="input" id="promo-prefix" placeholder="IITB" style="width:100%;margin:0;padding:.5rem .7rem;font-size:.85rem">
+        </div>
+        <div>
+          <label style="display:block;font-size:.75rem;font-weight:600;margin-bottom:4px;color:var(--text2)">Count</label>
+          <input class="input" id="promo-count" type="number" value="10" min="1" max="500" style="width:100%;margin:0;padding:.5rem .7rem;font-size:.85rem">
+        </div>
+        <div>
+          <label style="display:block;font-size:.75rem;font-weight:600;margin-bottom:4px;color:var(--text2)">Trial Days</label>
+          <input class="input" id="promo-days" type="number" value="30" min="1" max="365" style="width:100%;margin:0;padding:.5rem .7rem;font-size:.85rem">
+        </div>
+        <div>
+          <label style="display:block;font-size:.75rem;font-weight:600;margin-bottom:4px;color:var(--text2)">Tier</label>
+          <select class="input" id="promo-tier" style="width:100%;margin:0;padding:.5rem .7rem;font-size:.85rem">
+            <option value="pro" selected>Pro</option>
+            <option value="lab">Lab</option>
+          </select>
+        </div>
+        <div>
+          <label style="display:block;font-size:.75rem;font-weight:600;margin-bottom:4px;color:var(--text2)">Daily Analyses</label>
+          <input class="input" id="promo-daily" type="number" value="50" min="1" max="500" style="width:100%;margin:0;padding:.5rem .7rem;font-size:.85rem">
+        </div>
+        <div>
+          <label style="display:block;font-size:.75rem;font-weight:600;margin-bottom:4px;color:var(--text2)">Batch Max</label>
+          <input class="input" id="promo-batch" type="number" value="20" min="1" max="100" style="width:100%;margin:0;padding:.5rem .7rem;font-size:.85rem">
+        </div>
+        <div>
+          <label style="display:block;font-size:.75rem;font-weight:600;margin-bottom:4px;color:var(--text2)">Price (₹/mo after trial)</label>
+          <input class="input" id="promo-price" type="number" value="699" min="0" max="99999" style="width:100%;margin:0;padding:.5rem .7rem;font-size:.85rem">
+        </div>
+        <div>
+          <label style="display:block;font-size:.75rem;font-weight:600;margin-bottom:4px;color:var(--text2)">Currency</label>
+          <select class="input" id="promo-currency" style="width:100%;margin:0;padding:.5rem .7rem;font-size:.85rem">
+            <option value="INR" selected>INR (₹)</option>
+            <option value="USD">USD ($)</option>
+          </select>
+        </div>
+        <div>
+          <label style="display:block;font-size:.75rem;font-weight:600;margin-bottom:4px;color:var(--text2)">Max Uses per Code</label>
+          <input class="input" id="promo-maxuses" type="number" value="1" min="1" max="10000" style="width:100%;margin:0;padding:.5rem .7rem;font-size:.85rem">
+        </div>
+        <div>
+          <label style="display:block;font-size:.75rem;font-weight:600;margin-bottom:4px;color:var(--text2)">Export Access</label>
+          <select class="input" id="promo-export" style="width:100%;margin:0;padding:.5rem .7rem;font-size:.85rem">
+            <option value="1" selected>Yes</option>
+            <option value="0">No</option>
+          </select>
+        </div>
+        <div>
+          <label style="display:block;font-size:.75rem;font-weight:600;margin-bottom:4px;color:var(--text2)">Expiry (optional)</label>
+          <input class="input" id="promo-expires" type="date" style="width:100%;margin:0;padding:.5rem .7rem;font-size:.85rem">
+        </div>
+      </div>
+      <div style="margin-top:1rem;display:flex;gap:.75rem;align-items:center">
+        <button type="button" class="btn btn-sm" id="btn-gen-promo" style="background:var(--primary);color:#fff;padding:.6rem 1.5rem;font-weight:700">Generate Codes</button>
+        <span id="promo-gen-status" style="font-size:.8rem;color:var(--muted)"></span>
+      </div>
+      <!-- Generated codes output -->
+      <div id="promo-gen-output" style="display:none;margin-top:1rem;background:var(--surface);border:1px solid var(--outline);border-radius:8px;padding:1rem">
+        <div style="font-weight:600;font-size:.85rem;margin-bottom:.5rem">Generated Codes:</div>
+        <pre id="promo-gen-codes" style="font-size:.75rem;max-height:200px;overflow-y:auto;white-space:pre-wrap;background:var(--navy);color:#fff;padding:.75rem;border-radius:6px"></pre>
+        <button type="button" class="btn btn-sm" onclick="navigator.clipboard.writeText(document.getElementById('promo-gen-codes').textContent);this.textContent='Copied!'" style="margin-top:.5rem;background:var(--surface2);color:var(--text);border:1px solid var(--border)">Copy All</button>
+      </div>
+    </div>
+
+    <!-- Promo codes list -->
+    <div class="section-hdr"><div class="section-title">All Promo Codes</div></div>
+    <div class="tbl-wrap"><table><thead><tr><th>Code</th><th>Tier</th><th>Days</th><th>Daily</th><th>Batch</th><th>Price</th><th>Uses</th><th>Export</th><th>Created</th></tr></thead><tbody id="tbl-promos"><tr><td colspan="9" style="text-align:center;color:var(--muted);padding:2rem">Loading...</td></tr></tbody></table></div>
+  </div>
+
+  <!-- ACCOUNTS / EXPENSES -->
+  <div class="section" id="sec-accounts" style="display:none">
+    <!-- Summary cards -->
+    <div class="stats" style="margin-bottom:1.5rem">
+      <div class="stat"><div class="stat-label">Total Expenses</div><div class="stat-val orange" id="exp-total">—</div></div>
+      <div class="stat"><div class="stat-label">Verification Charges</div><div class="stat-val" id="exp-verify">—</div></div>
+      <div class="stat"><div class="stat-label">Trial Services</div><div class="stat-val cyan" id="exp-trial">—</div></div>
+      <div class="stat"><div class="stat-label">Other</div><div class="stat-val" id="exp-other">—</div></div>
+    </div>
+
+    <!-- Record expense form -->
+    <div style="background:var(--surface-alt);border:1px solid var(--outline);border-radius:12px;padding:1.5rem;margin-bottom:1.5rem">
+      <div style="font-family:var(--font-h);font-weight:700;font-size:1rem;margin-bottom:1rem">📝 Record Expense</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:1rem">
+        <div>
+          <label style="display:block;font-size:.75rem;font-weight:600;margin-bottom:4px;color:var(--text2)">Category</label>
+          <select class="input" id="exp-cat" style="width:100%;margin:0;padding:.5rem .7rem;font-size:.85rem">
+            <option value="promo_trial">Promo / Trial</option>
+            <option value="verification_charge">Verification Charge</option>
+            <option value="trial_service">Trial Service Cost</option>
+            <option value="infrastructure">Infrastructure</option>
+            <option value="saas_tools">SaaS Tools</option>
+            <option value="domain_ssl">Domain / SSL</option>
+            <option value="marketing">Marketing</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div style="grid-column:span 2">
+          <label style="display:block;font-size:.75rem;font-weight:600;margin-bottom:4px;color:var(--text2)">Description</label>
+          <input class="input" id="exp-desc" placeholder="e.g. Razorpay monthly fee, domain renewal" style="width:100%;margin:0;padding:.5rem .7rem;font-size:.85rem">
+        </div>
+        <div>
+          <label style="display:block;font-size:.75rem;font-weight:600;margin-bottom:4px;color:var(--text2)">Amount (₹)</label>
+          <input class="input" id="exp-amount" type="number" step="0.01" min="0" placeholder="0.00" style="width:100%;margin:0;padding:.5rem .7rem;font-size:.85rem">
+        </div>
+        <div>
+          <label style="display:block;font-size:.75rem;font-weight:600;margin-bottom:4px;color:var(--text2)">Promo Code (optional)</label>
+          <input class="input" id="exp-promo" placeholder="IITB-ABC123" style="width:100%;margin:0;padding:.5rem .7rem;font-size:.85rem">
+        </div>
+        <div>
+          <label style="display:block;font-size:.75rem;font-weight:600;margin-bottom:4px;color:var(--text2)">User Email (optional)</label>
+          <input class="input" id="exp-email" placeholder="user@univ.ac.in" style="width:100%;margin:0;padding:.5rem .7rem;font-size:.85rem">
+        </div>
+      </div>
+      <div style="margin-top:1rem;display:flex;gap:.75rem;align-items:center">
+        <button type="button" class="btn btn-sm" id="btn-record-exp" style="background:var(--orange);color:#fff;padding:.6rem 1.5rem;font-weight:700">Record Expense</button>
+        <span id="exp-record-status" style="font-size:.8rem;color:var(--muted)"></span>
+      </div>
+    </div>
+
+    <!-- Expense log -->
+    <div class="section-hdr"><div class="section-title">Expense Log</div></div>
+    <div class="tbl-wrap"><table><thead><tr><th>Date</th><th>Category</th><th>Description</th><th>Amount</th><th>Promo</th><th>User</th></tr></thead><tbody id="tbl-expenses"><tr><td colspan="6" style="text-align:center;color:var(--muted);padding:2rem">Loading...</td></tr></tbody></table></div>
   </div>
 
 </div>

@@ -731,6 +731,16 @@ def apply_promo():
     log_action(email, "trial_activated",
                f"Promo {code}, {row['trial_days']}d trial, sub {sub_id}")
 
+    # Log company expenses: ₹1 verification charge + estimated trial service cost
+    _log_expense("verification_charge", f"Razorpay verification charge for promo {code}",
+                 1.0, promo_code=code, user_email=email, subscription_id=sub_id,
+                 metadata={"razorpay_payment_id": rz_payment_id, "razorpay_order_id": rz_order_id})
+    estimated_trial_cost = row["daily_analyses"] * row["trial_days"] * 0.50  # ~₹0.50 per analysis infra cost
+    _log_expense("trial_service", f"Estimated {row['trial_days']}d trial service cost ({row['daily_analyses']} analyses/day)",
+                 estimated_trial_cost, promo_code=code, user_email=email, subscription_id=sub_id,
+                 metadata={"daily_analyses": row["daily_analyses"], "trial_days": row["trial_days"],
+                           "price_inr": row["price_inr"], "estimated": True})
+
     return jsonify({
         "success": True,
         "message": f"Your {row['trial_days']}-day trial is active!",
@@ -866,6 +876,221 @@ def admin_create_promo():
         "trial_days": trial_days,
         "tier": tier,
     }), 200
+
+
+# ══════════════════════════════════════════════════════════════════════════
+# ADMIN: LIST PROMO CODES
+# ══════════════════════════════════════════════════════════════════════════
+
+@payment_bp.route('/api/admin/promo/list', methods=['GET'])
+def admin_list_promos():
+    """List all promo codes with usage stats. Admin-only."""
+    from .auth import get_current_user
+    user = get_current_user()
+    if not user or user.get("role") != "admin":
+        return jsonify({"error": "Admin access required"}), 403
+
+    db = get_db()
+    rows = db.execute(
+        """SELECT code, tier, daily_analyses, batch_max, has_export, trial_days,
+                  price_inr, currency, razorpay_plan_id, max_uses, used_count,
+                  created_by, created_at, expires_at
+           FROM promo_codes ORDER BY created_at DESC LIMIT 500"""
+    ).fetchall()
+
+    codes = []
+    for r in rows:
+        codes.append({
+            "code": r["code"],
+            "tier": r["tier"],
+            "daily_analyses": r["daily_analyses"],
+            "batch_max": r["batch_max"],
+            "has_export": bool(r["has_export"]),
+            "trial_days": r["trial_days"],
+            "price_inr": r["price_inr"],
+            "currency": r["currency"],
+            "razorpay_plan_id": r["razorpay_plan_id"],
+            "max_uses": r["max_uses"],
+            "used_count": r["used_count"],
+            "created_by": r["created_by"],
+            "created_at": r["created_at"],
+            "expires_at": r["expires_at"],
+        })
+
+    # Summary stats
+    total = len(codes)
+    total_used = sum(c["used_count"] for c in codes)
+    total_value = sum(c["used_count"] * c["price_inr"] for c in codes)
+
+    return jsonify({
+        "codes": codes,
+        "summary": {
+            "total_codes": total,
+            "total_used": total_used,
+            "total_unused": total - total_used,
+            "total_trial_value_inr": total_value,
+        }
+    }), 200
+
+
+# ══════════════════════════════════════════════════════════════════════════
+# ADMIN: EXPENSE LOG
+# ══════════════════════════════════════════════════════════════════════════
+
+@payment_bp.route('/api/admin/expenses', methods=['GET'])
+def admin_list_expenses():
+    """List expense log entries. Admin-only."""
+    from .auth import get_current_user
+    user = get_current_user()
+    if not user or user.get("role") != "admin":
+        return jsonify({"error": "Admin access required"}), 403
+
+    db = get_db()
+    limit = min(int(request.args.get("limit", 200)), 1000)
+    category = request.args.get("category", "")
+
+    if category:
+        rows = db.execute(
+            """SELECT id, category, description, amount_inr, promo_code,
+                      user_email, subscription_id, metadata, created_by, created_at
+               FROM expense_log WHERE category=? ORDER BY created_at DESC LIMIT ?""",
+            (category, limit)
+        ).fetchall()
+    else:
+        rows = db.execute(
+            """SELECT id, category, description, amount_inr, promo_code,
+                      user_email, subscription_id, metadata, created_by, created_at
+               FROM expense_log ORDER BY created_at DESC LIMIT ?""",
+            (limit,)
+        ).fetchall()
+
+    expenses = [dict(r) for r in rows]
+
+    # Summary by category
+    cat_rows = db.execute(
+        """SELECT category, COUNT(*) as count, SUM(amount_inr) as total_inr
+           FROM expense_log GROUP BY category"""
+    ).fetchall()
+    by_category = {r["category"]: {"count": r["count"], "total_inr": round(r["total_inr"], 2)} for r in cat_rows}
+
+    grand_total = sum(v["total_inr"] for v in by_category.values())
+
+    return jsonify({
+        "expenses": expenses,
+        "summary": {
+            "by_category": by_category,
+            "grand_total_inr": round(grand_total, 2),
+            "total_entries": len(expenses),
+        }
+    }), 200
+
+
+@payment_bp.route('/api/admin/expenses/record', methods=['POST'])
+def admin_record_expense():
+    """Manually record an expense. Admin-only."""
+    from .auth import get_current_user
+    user = get_current_user()
+    if not user or user.get("role") != "admin":
+        return jsonify({"error": "Admin access required"}), 403
+
+    data = request.get_json(silent=True) or {}
+    category = (data.get("category") or "other").strip()
+    description = (data.get("description") or "").strip()
+    amount_inr = float(data.get("amount_inr", 0))
+    promo_code = (data.get("promo_code") or "").strip()
+    user_email = (data.get("user_email") or "").strip()
+    subscription_id = (data.get("subscription_id") or "").strip()
+    metadata = json.dumps(data.get("metadata", {}))
+
+    if not description:
+        return jsonify({"error": "Description is required"}), 400
+    if amount_inr < 0:
+        return jsonify({"error": "Amount cannot be negative"}), 400
+
+    db = get_db()
+    db.execute(
+        """INSERT INTO expense_log
+           (category, description, amount_inr, promo_code, user_email,
+            subscription_id, metadata, created_by)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+        (category, description, amount_inr, promo_code, user_email,
+         subscription_id, metadata, user["email"])
+    )
+    db.commit()
+
+    return jsonify({"success": True, "message": "Expense recorded"}), 201
+
+
+# ══════════════════════════════════════════════════════════════════════════
+# ADMIN: REVENUE STATS (SQLite — mirrors PG endpoint for admin dashboard)
+# ══════════════════════════════════════════════════════════════════════════
+
+@payment_bp.route('/api/payments/revenue-stats', methods=['GET'])
+def revenue_stats():
+    """Admin-only: Revenue vs cost breakdown for the dashboard stats cards."""
+    from .auth import get_current_user
+    user = get_current_user()
+    if not user or user.get("role") != "admin":
+        return jsonify({"error": "Admin access required"}), 403
+
+    db = get_db()
+
+    # Revenue: from payments table
+    try:
+        rev = db.execute(
+            "SELECT COALESCE(SUM(amount),0) AS total, COUNT(*) AS cnt "
+            "FROM payments WHERE status='captured'"
+        ).fetchone()
+    except Exception:
+        rev = {"total": 0, "cnt": 0}
+
+    # Cost: from cost_ledger if it exists
+    try:
+        cost = db.execute(
+            "SELECT COALESCE(SUM(total_cogs_inr),0) AS total FROM cost_ledger"
+        ).fetchone()
+    except Exception:
+        cost = {"total": 0}
+
+    total_rev = float(rev["total"]) if rev else 0
+    total_cost = float(cost["total"]) if cost else 0
+    margin = total_rev - total_cost
+
+    return jsonify({
+        "revenue": {
+            "total_inr": total_rev,
+            "payments_count": rev["cnt"] if rev else 0,
+            "tokens_sold": 0,
+        },
+        "cost": {
+            "total_inr": total_cost,
+            "operations_count": 0,
+            "paid_user_cost_inr": total_cost,
+            "admin_free_cost_inr": 0,
+        },
+        "margin": {
+            "gross_profit_inr": margin,
+            "margin_percent": round(margin / total_rev * 100, 1) if total_rev > 0 else 0,
+        }
+    }), 200
+
+
+def _log_expense(category, description, amount_inr, promo_code="", user_email="",
+                 subscription_id="", metadata=None, created_by="system"):
+    """Internal helper: write an expense_log row (SQLite path)."""
+    try:
+        db = get_db()
+        db.execute(
+            """INSERT INTO expense_log
+               (category, description, amount_inr, promo_code, user_email,
+                subscription_id, metadata, created_by)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+            (category, description, amount_inr, promo_code, user_email,
+             subscription_id, json.dumps(metadata or {}), created_by)
+        )
+        db.commit()
+    except Exception:
+        logger.warning("Failed to log expense: %s %s %.2f", category, description, amount_inr)
 
 
 @payment_bp.route('/api/payment/callback', methods=['GET'])
