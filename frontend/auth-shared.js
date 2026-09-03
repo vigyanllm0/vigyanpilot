@@ -236,4 +236,6 @@ function openAuthModal(){isRegister=false;showAuth()}
       closeUserMenu();
     }
   });
+  // Listen for storage events from primer-app.js (both scripts run on /primer)
+  window.addEventListener('storage', function(){ updateAuthUI(); });
 })();
