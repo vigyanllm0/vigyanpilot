@@ -3,19 +3,19 @@ var FG_CACHE = null;
 var FG_CACHE_TIME = 0;
 
 var FEATURE_TIER = {
-  batch: { tier: 'pro', label: 'Pro', desc: 'Batch processing requires a Pro subscription or higher. Upgrade to analyze multiple sequences at once.' },
-  export_pdf: { tier: 'pro', label: 'Pro', desc: 'PDF export requires a Pro subscription or higher. Upgrade to download professional reports.' },
+  batch: { tier: 'trial', label: 'Trial', desc: 'Batch processing requires an active trial or Pro subscription. Start your free trial to analyze multiple sequences at once.' },
+  export_pdf: { tier: 'trial', label: 'Trial', desc: 'PDF export requires an active trial or Pro subscription. Start your free trial to download professional reports.' },
   export_ppt: { tier: 'pro', label: 'Pro', desc: 'PPT export requires a Pro subscription or higher. Upgrade to create presentation-ready slides.' },
-  saved_results: { tier: 'pro', label: 'Pro', desc: 'Saved workspaces require a Pro subscription or higher. Upgrade to store and revisit your analyses.' },
-  advanced_docking: { tier: 'pro', label: 'Pro', desc: 'Advanced docking requires a Pro subscription or higher.' },
-  large_msa: { tier: 'pro', label: 'Pro', desc: 'Large MSA requires a Pro subscription or higher.' },
+  saved_results: { tier: 'trial', label: 'Trial', desc: 'Saved workspaces require an active trial or Pro subscription. Start your free trial to store and revisit your analyses.' },
+  advanced_docking: { tier: 'trial', label: 'Trial', desc: 'Advanced docking requires an active trial or Pro subscription.' },
+  large_msa: { tier: 'trial', label: 'Trial', desc: 'Large MSA requires an active trial or Pro subscription.' },
   crispr_offtarget: { tier: 'pro', label: 'Pro', desc: 'CRISPR off-target analysis requires a Pro subscription or higher.' },
   api_access: { tier: 'pro', label: 'Pro', desc: 'API access requires a Pro subscription or higher. Generate API keys from your dashboard.' },
   collaboration: { tier: 'lab', label: 'Lab', desc: 'Team collaboration requires a Lab subscription or higher. Invite your research team.' },
   admin_panel: { tier: 'lab', label: 'Lab', desc: 'Admin panel requires a Lab subscription or higher.' },
 };
 
-var TIER_ORDER = ['free', 'pro', 'lab', 'enterprise'];
+var TIER_ORDER = ['free', 'trial', 'pro', 'lab', 'enterprise'];
 
 function fgToken() { return ''; }
 

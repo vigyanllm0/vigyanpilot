@@ -26,6 +26,7 @@ class BillingCycle(Enum):
 
 class PlanTier(Enum):
     FREE = "free"
+    TRIAL = "trial"
     PRO = "pro"
     LAB = "lab"
     ENTERPRISE = "enterprise"
@@ -241,7 +242,56 @@ PLAN_REGISTRY: dict[str, PlanConfig] = {
         period="custom",
         description="Unlimited everything, SSO, SLA, on-premise, dedicated support"
     ),
+    # ── Academic Trial ─────────────────────────────────────────────────────
+    # Configurable per promo code — limits set dynamically at activation
+    # This is a template; actual daily_analyses/batch_max come from promo_codes table
+    "trial": PlanConfig(
+        plan_id="trial",
+        tier=PlanTier.TRIAL,
+        display_name="Academic Trial",
+        billing=BillingCycle.CUSTOM,
+        price_inr=0,
+        daily_analyses=50,
+        batch_max_seq=20,
+        api_calls_per_month=0,
+        max_seats=1,
+        has_export_pdf=True,
+        has_export_ppt=False,
+        has_saved_results=True,
+        has_advanced_docking=True,
+        has_msa_large=True,
+        has_crispr_offtarget=False,
+        has_collaboration=False,
+        has_admin_panel=False,
+        has_lims_hooks=False,
+        has_custom_branding=False,
+        has_sso=False,
+        has_on_premise=False,
+        has_dedicated_support=False,
+        has_sla=False,
+        has_custom_tool_dev=False,
+        period="trial",
+        description="30-day Pro trial with autopay — verify with ₹1, cancel anytime"
+    ),
 }
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# TRIAL CONFIG — dynamic per promo code
+# ═══════════════════════════════════════════════════════════════════════════
+
+@dataclass(frozen=True)
+class TrialConfig:
+    """Configuration for a trial promo code."""
+    code: str
+    tier: str = "pro"            # tier to grant AFTER trial ends
+    daily_analyses: int = 50     # trial-period daily limit
+    batch_max: int = 20          # trial-period batch limit
+    has_export: bool = True
+    trial_days: int = 30         # configurable per code
+    price_inr: int = 699         # recurring price after trial
+    currency: str = "INR"        # INR/USD/EUR/GBP
+    max_uses: int = 1            # single-use enforcement
 
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -264,6 +314,11 @@ TIER_LIMITS: dict[str, dict] = {
     "free": {
         "daily_analyses": 5,
         "batch_max_seq": 1,
+        "api_calls_per_month": 0,
+    },
+    "trial": {
+        "daily_analyses": 50,
+        "batch_max_seq": 20,
         "api_calls_per_month": 0,
     },
     "pro": {

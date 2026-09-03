@@ -242,6 +242,37 @@ def init_db():
             page_url TEXT DEFAULT '',
             accepted_at REAL NOT NULL DEFAULT (strftime('%s','now'))
         );
+
+        CREATE TABLE IF NOT EXISTS promo_codes (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            code TEXT UNIQUE NOT NULL,
+            tier TEXT NOT NULL DEFAULT 'pro',
+            daily_analyses INTEGER DEFAULT 50,
+            batch_max INTEGER DEFAULT 20,
+            has_export INTEGER DEFAULT 1,
+            trial_days INTEGER NOT NULL DEFAULT 30,
+            price_inr INTEGER NOT NULL DEFAULT 699,
+            currency TEXT DEFAULT 'INR',
+            razorpay_plan_id TEXT DEFAULT '',
+            max_uses INTEGER DEFAULT 1,
+            used_count INTEGER DEFAULT 0,
+            created_by TEXT DEFAULT 'admin',
+            created_at REAL DEFAULT (strftime('%s','now')),
+            expires_at REAL DEFAULT 0
+        );
+
+        CREATE TABLE IF NOT EXISTS trial_subscriptions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_email TEXT NOT NULL,
+            promo_code TEXT NOT NULL,
+            razorpay_subscription_id TEXT UNIQUE NOT NULL,
+            razorpay_plan_id TEXT NOT NULL,
+            trial_days INTEGER NOT NULL,
+            trial_started_at REAL NOT NULL,
+            trial_ends_at REAL NOT NULL,
+            status TEXT DEFAULT 'trial',
+            created_at REAL DEFAULT (strftime('%s','now'))
+        );
     """)
 
     # Backfill plan columns for existing users (if missing in older schema)
@@ -275,6 +306,22 @@ def init_db():
         pass
     try:
         db.execute("ALTER TABLE users ADD COLUMN google_id TEXT DEFAULT ''")
+    except sqlite3.OperationalError:
+        pass
+    try:
+        db.execute("ALTER TABLE users ADD COLUMN trial_ends_at REAL DEFAULT 0")
+    except sqlite3.OperationalError:
+        pass
+    try:
+        db.execute("ALTER TABLE users ADD COLUMN promo_code_used TEXT DEFAULT ''")
+    except sqlite3.OperationalError:
+        pass
+    try:
+        db.execute("ALTER TABLE users ADD COLUMN razorpay_subscription_id TEXT DEFAULT ''")
+    except sqlite3.OperationalError:
+        pass
+    try:
+        db.execute("ALTER TABLE users ADD COLUMN razorpay_customer_id TEXT DEFAULT ''")
     except sqlite3.OperationalError:
         pass
     # Backfill auth_provider for existing Google users (detected via audit log).
@@ -508,13 +555,25 @@ def log_action(email: str, action: str, details: str = ""):
 def get_user_plan(email: str) -> str:
     """Get the user's current plan tier. Returns 'free' as default."""
     db = get_db()
-    row = db.execute("SELECT plan, plan_expires_at FROM users WHERE email=?", (email,)).fetchone()
+    row = db.execute("SELECT plan, plan_expires_at, trial_ends_at FROM users WHERE email=?", (email,)).fetchone()
     if not row:
         return "free"
     plan = row["plan"] or "free"
     expires_at = row["plan_expires_at"] or 0
-    # If plan has expired, fall back to free
+    trial_ends_at = row["trial_ends_at"] or 0
     now = time.time()
+
+    # Handle trial tier — active until trial_ends_at
+    if plan == "trial":
+        if trial_ends_at > 0 and now < trial_ends_at:
+            return "trial"  # trial still active
+        elif trial_ends_at > 0 and now >= trial_ends_at:
+            # Trial expired — waiting for Razorpay webhook to confirm subscription activation
+            # Keep as 'trial' until webhook confirms payment
+            return "trial"
+        return "free"
+
+    # Handle paid plans — check expiry
     if plan != "free" and expires_at > 0 and expires_at < now:
         return "free"
     return plan
