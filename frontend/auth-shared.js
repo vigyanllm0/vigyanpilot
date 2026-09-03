@@ -105,7 +105,9 @@ function handleGoogleCredential(res){
   }).then(function(r){return r.json().then(function(d){return{ok:r.ok,data:d}})})
     .then(function(res){
       if(res&&res.ok&&res.data){
-        sessionStorage.setItem('pf_user',JSON.stringify(res.data.user||{}));
+        var u=JSON.stringify(res.data.user||{});
+        sessionStorage.setItem('pf_user',u);
+        localStorage.setItem('pf_user',u);
         closeAuth();
         updateAuthUI();
       }else if(res.ok){
@@ -147,7 +149,9 @@ function submitAuth(){
         return;
       }
       if(res&&res.ok&&res.data&&res.data.user){
-        sessionStorage.setItem('pf_user',JSON.stringify(res.data.user||{email:email}));
+        var u=JSON.stringify(res.data.user||{email:email});
+        sessionStorage.setItem('pf_user',u);
+        localStorage.setItem('pf_user',u);
         closeAuth();
         updateAuthUI();
       }else if(res&&res.ok){
