@@ -70,22 +70,23 @@ COUNTRY_GEO = {
 # Seeded once on first table creation so the map shows real data immediately.
 # Real visitor tracking adds on top via upsert; never overwrites this seed.
 _GA4_SEED = [
-    ("US", "United States", 283), ("IN", "India", 240), ("SG", "Singapore", 54),
-    ("CN", "China", 48), ("BR", "Brazil", 17), ("VN", "Vietnam", 17),
-    ("HK", "Hong Kong", 14), ("JP", "Japan", 12), ("PH", "Philippines", 12),
-    ("AR", "Argentina", 10), ("AU", "Australia", 9), ("PK", "Pakistan", 7),
-    ("ZA", "South Africa", 7), ("CA", "Canada", 6), ("IR", "Iran", 6),
-    ("MX", "Mexico", 6), ("KR", "South Korea", 6), ("RU", "Russia", 5),
-    ("UA", "Ukraine", 5), ("EG", "Egypt", 4), ("ID", "Indonesia", 4),
-    ("KE", "Kenya", 4), ("TW", "Taiwan", 4), ("BD", "Bangladesh", 3),
-    ("CO", "Colombia", 3), ("IQ", "Iraq", 3), ("NZ", "New Zealand", 3),
-    ("NG", "Nigeria", 3), ("TH", "Thailand", 3), ("TR", "Türkiye", 3),
+    ("US", "United States", 322), ("IN", "India", 283), ("SG", "Singapore", 64),
+    ("CN", "China", 61), ("BR", "Brazil", 24), ("VN", "Vietnam", 20),
+    ("HK", "Hong Kong", 16), ("JP", "Japan", 14), ("AR", "Argentina", 12),
+    ("PH", "Philippines", 12), ("AU", "Australia", 9), ("PK", "Pakistan", 9),
+    ("ZA", "South Africa", 9), ("KR", "South Korea", 9), ("CA", "Canada", 7),
+    ("IR", "Iran", 7), ("MX", "Mexico", 7), ("RU", "Russia", 7),
+    ("UA", "Ukraine", 6), ("BD", "Bangladesh", 5), ("CO", "Colombia", 5),
+    ("ID", "Indonesia", 5), ("NZ", "New Zealand", 5), ("TH", "Thailand", 5),
+    ("EG", "Egypt", 4), ("IQ", "Iraq", 4), ("KE", "Kenya", 4),
+    ("NG", "Nigeria", 4), ("TW", "Taiwan", 4), ("TR", "Türkiye", 3),
     ("ET", "Ethiopia", 2), ("IL", "Israel", 2), ("AE", "United Arab Emirates", 2),
     ("VE", "Venezuela", 2), ("AZ", "Azerbaijan", 1), ("BG", "Bulgaria", 1),
     ("CR", "Costa Rica", 1), ("CI", "Côte d'Ivoire", 1), ("DE", "Germany", 1),
-    ("IE", "Ireland", 1), ("KZ", "Kazakhstan", 1), ("LB", "Lebanon", 1),
-    ("MA", "Morocco", 1), ("OM", "Oman", 1), ("PY", "Paraguay", 1),
-    ("PE", "Peru", 1), ("UY", "Uruguay", 1),
+    ("IE", "Ireland", 1), ("JO", "Jordan", 1), ("KZ", "Kazakhstan", 1),
+    ("LB", "Lebanon", 1), ("MY", "Malaysia", 1), ("MA", "Morocco", 1),
+    ("OM", "Oman", 1), ("PY", "Paraguay", 1), ("PE", "Peru", 1),
+    ("SC", "Seychelles", 1), ("SY", "Syria", 1), ("UY", "Uruguay", 1),
 ]
 
 

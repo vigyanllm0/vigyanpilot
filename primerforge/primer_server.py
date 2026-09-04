@@ -1208,7 +1208,7 @@ def create_app() -> Flask:
 
     @app.route("/")
     def serve_index():
-        return send_from_directory(STATIC_DIR, "primer.html")
+        return send_from_directory(STATIC_DIR, "index.html")
 
     @app.route("/primer")
     def serve_primer():
@@ -1655,6 +1655,9 @@ def create_app() -> Flask:
                                 "description": r["description"], "length": r["length"],
                                 "source": "ncbi", "features": r.get("features", []),
                                 "molecule_type": r.get("molecule_type", "DNA"),
+                                "organism": r.get("organism", ""),
+                                "taxonomy": r.get("taxonomy", []),
+                                "gc_content": r.get("gc_content", 0),
                                 "unit": "bp", **usable}), 200
             elif re.match(r"^ENS[GT]", accession, re.I):
                 seq_type = "cdna" if accession.upper().startswith("ENST") else "genomic"
@@ -1723,6 +1726,9 @@ def create_app() -> Flask:
                                 "description": r["description"], "length": r["length"],
                                 "source": "ncbi", "gene_info": genes[0],
                                 "molecule_type": r.get("molecule_type", "DNA"),
+                                "organism": r.get("organism", ""),
+                                "taxonomy": r.get("taxonomy", []),
+                                "gc_content": r.get("gc_content", 0),
                                 "unit": "bp", **usable}), 200
         except Exception as exc:
             logger.error("Fetch error: %s", exc, exc_info=True)
