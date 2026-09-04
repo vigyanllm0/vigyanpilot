@@ -207,6 +207,10 @@ function openAuthModal(){isRegister=false;showAuth()}
   });
   if (user) {
     document.querySelectorAll('[data-auth-show]').forEach(function(el) { el.style.display = ''; });
+    // Admin-only elements: only show if user role is admin
+    document.querySelectorAll('[data-admin-show]').forEach(function(el) {
+      if (user.role === 'admin') { el.style.display = ''; }
+    });
   }
   // Fetch plan for badge
   if (user) {
