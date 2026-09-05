@@ -25,5 +25,5 @@ export default function middleware(request) {
 }
 
 export const config = {
-  matcher: [],
+  matcher: ['/((?!api/|_next/|assets/|partials/).*)'],
 };
