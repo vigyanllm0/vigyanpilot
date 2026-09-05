@@ -305,7 +305,7 @@ function showLoading(show) { var el = document.getElementById('pay-loading'); if
 
 async function loadPlanDetails(planId) {
   try {
-    var r = await fetch(API + '/api/payments/pricing');
+    var r = await fetch(API + '/payments/pricing');
     var data = await r.json();
     if (!r.ok) throw new Error(data.error || 'Failed to load pricing');
     var plan = data.plans.find(function(p) { return p.plan_id === planId; });
@@ -332,7 +332,7 @@ function renderOrder(plan, pricing) {
 
   // Show academic verify section for non-academic users
   if (loggedIn) {
-    fetch(API + '/api/payments/status', { credentials: 'same-origin' })
+    fetch(API + '/payments/status', { credentials: 'same-origin' })
       .then(function(r) { return r.json(); })
       .then(function(s) {
         if (!s.is_academic) {
@@ -343,7 +343,7 @@ function renderOrder(plan, pricing) {
 
   // Check for academic discount
   if (loggedIn) {
-    fetch(API + '/api/payments/status', { credentials: 'same-origin' })
+    fetch(API + '/payments/status', { credentials: 'same-origin' })
       .then(function(r) { return r.json(); })
       .then(function(status) {
         if (status.is_academic && plan.price_inr > 0) {
@@ -366,7 +366,7 @@ async function verifyAcademic() {
   var res = document.getElementById('verify-acad-result');
   btn.disabled = true; txt.textContent = 'Verifying...';
   try {
-    var r = await fetch(API + '/api/auth/verify-academic', {
+    var r = await fetch(API + '/auth/verify-academic', {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'same-origin'
     });
     var d = await r.json();
@@ -421,7 +421,7 @@ async function applyPromoCode() {
     var token = sessionStorage.getItem('pf_token') || '';
     var headers = { 'Content-Type': 'application/json' };
     if (token) headers['Authorization'] = 'Bearer ' + token;
-    var r = await fetch(API + '/api/promo/validate', {
+    var r = await fetch(API + '/promo/validate', {
       method: 'POST', headers: headers, credentials: 'same-origin',
       body: JSON.stringify({ code: code })
     });
@@ -506,7 +506,7 @@ async function proceedCheckout() {
     var orderBody = { plan_id: CHECKOUT_PLAN };
     if (CHECKOUT_ACADEMIC) orderBody.discount = 30;
     if (CHECKOUT_PROMO_CODE) orderBody.promo_code = CHECKOUT_PROMO_CODE;
-    var r = await fetch(API + '/api/payments/create-order', {
+    var r = await fetch(API + '/payments/create-order', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' }, credentials: 'same-origin',
       body: JSON.stringify(orderBody)
@@ -534,7 +534,7 @@ async function openRazorpayCheckout(order) {
     config: { display: { blocks: { upi: { name: 'Pay using UPI', instruments: [{method: 'upi'}] }, card: { name: 'Pay using Card', instruments: [{method: 'card'}] }, netbanking: { name: 'Pay using Netbanking', instruments: [{method: 'netbanking'}] } }, sequence: ['block.upi', 'block.card', 'block.netbanking'], preferences: { show_default_blocks: true } } },
     handler: async function(response) {
       try {
-        var vr = await fetch(API + '/api/payments/verify-payment', {
+        var vr = await fetch(API + '/payments/verify-payment', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' }, credentials: 'same-origin',
           body: JSON.stringify({ razorpay_payment_id: response.razorpay_payment_id, razorpay_order_id: response.razorpay_order_id, razorpay_signature: response.razorpay_signature })

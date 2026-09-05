@@ -552,7 +552,7 @@ async function purchasePlan(planId) {
   }
   showLoading(true);
   try {
-    var r = await fetch(API + '/api/payments/create-order', {
+    var r = await fetch(API + '/payments/create-order', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' }, credentials: 'same-origin',
       body: JSON.stringify({ plan_id: planId })
@@ -600,7 +600,7 @@ async function openRazorpayCheckout(order) {
     },
     handler: async function(response) {
       try {
-        var vr = await fetch(API + '/api/payments/verify-payment', {
+        var vr = await fetch(API + '/payments/verify-payment', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' }, credentials: 'same-origin',
           body: JSON.stringify({

@@ -23,7 +23,7 @@ async function fgFetchStatus() {
   var now = Date.now();
   if (FG_CACHE && (now - FG_CACHE_TIME) < 60000) return FG_CACHE;
   try {
-    var r = await fetch(FG_API + '/api/payments/status', { credentials: 'same-origin' });
+    var r = await fetch(FG_API + '/payments/status', { credentials: 'same-origin' });
     if (!r.ok) return null;
     FG_CACHE = await r.json();
     FG_CACHE_TIME = now;

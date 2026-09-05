@@ -1,4 +1,4 @@
-const API=window.location.origin;
+var API = window.location.origin;
 
 function $(id){return document.getElementById(id)}
 function authH(){const t=sessionStorage.getItem('pf_token')||'';return t?{'Content-Type':'application/json','Authorization':'Bearer '+t}:{'Content-Type':'application/json'}}

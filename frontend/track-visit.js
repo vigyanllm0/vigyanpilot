@@ -15,7 +15,7 @@
       var consent = JSON.parse(localStorage.getItem('vigyanllm_cookie_consent') || 'null');
       if (!consent || consent.consent !== 'accepted') return;
       if (navigator.doNotTrack === '1') return;
-      fetch(API + '/api/track-visit', {
+      fetch(API + '/track-visit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'same-origin'
@@ -25,7 +25,7 @@
 
   // ── Fetch Geo Stats ──
   function fetchGeoStats(callback) {
-    fetch(API + '/api/stats/geo', { credentials: 'same-origin' })
+    fetch(API + '/stats/geo', { credentials: 'same-origin' })
       .then(function(r) { return r.ok ? r.json() : null; })
       .then(function(d) { if (d) callback(d); })
       .catch(function() {});

@@ -252,7 +252,7 @@ var promoData = null;
 
 async function checkExistingTrial() {
   try {
-    var r = await fetch(API + '/api/trial/status', { credentials: 'same-origin' });
+    var r = await fetch(API + '/trial/status', { credentials: 'same-origin' });
     if (!r.ok) return;
     var d = await r.json();
     if (d.status === 'active') {
@@ -289,7 +289,7 @@ async function validateCode() {
   btn.textContent = 'Checking...';
 
   try {
-    var r = await fetch(API + '/api/promo/validate', {
+    var r = await fetch(API + '/promo/validate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'same-origin',
@@ -358,7 +358,7 @@ async function openCheckout() {
 
   try {
     // Create ₹1 verification order
-    var orderR = await fetch(API + '/api/promo/apply', {
+    var orderR = await fetch(API + '/promo/apply', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'same-origin',
@@ -427,7 +427,7 @@ async function verifyAndActivate(rzResponse) {
   btn.textContent = 'Verifying...';
 
   try {
-    var r = await fetch(API + '/api/promo/apply', {
+    var r = await fetch(API + '/promo/apply', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'same-origin',
@@ -465,7 +465,7 @@ async function activateAcademic() {
   hideError('pay-error');
 
   try {
-    var r = await fetch(API + '/api/promo/apply', {
+    var r = await fetch(API + '/promo/apply', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'same-origin',
