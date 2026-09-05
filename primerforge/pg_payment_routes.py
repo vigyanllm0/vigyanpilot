@@ -288,6 +288,25 @@ def create_order():
         discount = min(int(discount), ACADEMIC_DISCOUNT_PCT)
         amount_paise = int(amount_paise * (100 - discount) / 100)
 
+    # Apply promo code discount if provided
+    promo_code = data.get("promo_code", "").strip().upper()
+    promo_discount_pct = 0
+    if promo_code:
+        promo_row = fetch_one(
+            "SELECT * FROM promo_codes WHERE code = %s", (promo_code,)
+        )
+        if not promo_row:
+            return jsonify({"error": "Invalid promo code."}), 400
+        from datetime import datetime, timezone
+        now = datetime.now(timezone.utc)
+        if promo_row.get("expires_at") and promo_row["expires_at"] > 0 and promo_row["expires_at"] < now.timestamp():
+            return jsonify({"error": "This promo code has expired."}), 400
+        if promo_row.get("max_uses", 1) > 0 and (promo_row.get("used_count", 0) or 0) >= promo_row["max_uses"]:
+            return jsonify({"error": "This promo code has been fully redeemed."}), 400
+        promo_discount_pct = min(int(promo_row.get("discount_pct", 0) or 0), 50)
+        if promo_discount_pct > 0:
+            amount_paise = int(amount_paise * (100 - promo_discount_pct) / 100)
+
     # Determine designs to credit for display
     designs = get_designs_for_product(product_id, quantity)
 
@@ -318,6 +337,7 @@ def create_order():
                 "product_id": product_id,
                 "quantity": str(quantity),
                 "designs": str(designs),
+                "promo_code": promo_code or "",
             }
         })
     except Exception as e:
@@ -331,7 +351,7 @@ def create_order():
                (user_id, gateway_order_id, amount, currency, status, product_type, tokens_purchased, metadata)
                VALUES (%s, %s, %s, 'INR', 'initiated', %s, %s, %s)""",
             (user_id, rz_order["id"], amount_paise / 100, product_id, designs,
-             json.dumps({"quantity": quantity, "receipt": receipt}))
+             json.dumps({"quantity": quantity, "receipt": receipt, "promo_code": promo_code or None, "discount_pct": promo_discount_pct}))
         )
     except Exception:
         logger.warning("Failed to persist payment order (table may not exist)")
@@ -347,6 +367,9 @@ def create_order():
         "product_id": product_id,
         "tokens": designs,
         "description": f"VigyanLLM: {designs} design(s)",
+        "original_amount": amount_paise // (100 - promo_discount_pct) * 100 if promo_discount_pct > 0 else amount_paise,
+        "discount_pct": promo_discount_pct,
+        "promo_code": promo_code or None,
         "theme": {"color": "#2563EB"},
         "prefill": {
             "name": user_name,
@@ -1365,6 +1388,7 @@ def admin_create_promo():
     currency = data.get("currency", "INR") if promo_type != "academic" else "INR"
     max_uses = int(data.get("max_uses", 1))
     expires_at = float(data.get("expires_at", 0))
+    discount_pct = int(data.get("discount_pct", 0)) if promo_type == "discount" else 0
 
     import secrets, string
     codes = []
@@ -1374,10 +1398,10 @@ def admin_create_promo():
             code = f"{prefix}-{suffix}"
             try:
                 execute("""INSERT INTO promo_codes (code, promo_type, tier, daily_analyses, batch_max, has_export,
-                           trial_days, price_inr, currency, max_uses, created_by, expires_at)
-                           VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)""",
+                           trial_days, price_inr, currency, max_uses, created_by, expires_at, discount_pct)
+                           VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)""",
                         code, promo_type, tier, daily_analyses, batch_max, has_export, trial_days,
-                        price_inr, currency, max_uses, user["email"], expires_at)
+                        price_inr, currency, max_uses, user["email"], expires_at, discount_pct)
                 codes.append(code)
                 break
             except Exception:

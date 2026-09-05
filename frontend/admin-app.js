@@ -182,6 +182,7 @@ async function generatePromos(){
     currency:$('promo-currency').value,
     max_uses:parseInt($('promo-maxuses').value)||1,
     has_export:parseInt($('promo-export').value)||1,
+    discount_pct:parseInt($('promo-discount-pct').value)||0,
     expires_at:expires?new Date(expires).getTime()/1000:0
   };
 
@@ -211,10 +212,12 @@ async function revokePromo(code){
 // ── PROMO TYPE TOGGLE ──
 window.togglePromoType = function(){
   const isAcademic=$('promo-type').value==='academic';
+  const isDiscount=$('promo-type').value==='discount';
   $('promo-price').disabled=isAcademic;
   $('promo-currency').disabled=isAcademic;
-  if(isAcademic){$('promo-price').value=0;$('promo-prefix').placeholder='ACAD'}
-  else{$('promo-price').value=699;$('promo-prefix').placeholder='IITB'}
+  if(isAcademic){$('promo-price').value=0;$('promo-prefix').placeholder='ACAD';$('promo-discount-pct').value=0}
+  else if(isDiscount){$('promo-price').value=699;$('promo-prefix').placeholder='DISC';$('promo-discount-pct').placeholder='e.g. 10, 20, 30'}
+  else{$('promo-price').value=699;$('promo-prefix').placeholder='IITB';$('promo-discount-pct').value=0}
 }
 
 // ── ACADEMIC CLAIMS ──

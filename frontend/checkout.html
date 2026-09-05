@@ -68,6 +68,25 @@ body{background:var(--surface-alt);color:var(--text);font-family:var(--font-b);-
 .security-note{text-align:center;font-size:11px;color:var(--muted);margin-top:16px;display:flex;align-items:center;justify-content:center;gap:6px}
 .back-link{display:block;text-align:center;margin-top:20px;font-size:13px;color:var(--muted);text-decoration:none}
 .back-link:hover{color:var(--blue)}
+.promo-section{margin-bottom:16px}
+.promo-toggle{font-size:13px;color:var(--blue);cursor:pointer;text-align:center;padding:8px 0;font-weight:600;user-select:none}
+.promo-toggle:hover{text-decoration:underline}
+.promo-form{display:none;background:var(--surface-alt);border-radius:12px;padding:16px;margin-top:8px}
+.promo-form.show{display:block}
+.promo-row{display:flex;gap:8px;align-items:center}
+.promo-input{flex:1;padding:10px 14px;border:1px solid var(--outline);border-radius:8px;font-family:var(--font-b);font-size:13px;text-transform:uppercase;letter-spacing:.5px}
+.promo-input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(21,101,192,.1)}
+.promo-apply{padding:10px 16px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-family:var(--font-b);font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap}
+.promo-apply:hover{opacity:.9}
+.promo-apply:disabled{opacity:.5;cursor:not-allowed}
+.promo-msg{font-size:12px;margin-top:8px;min-height:18px}
+.promo-msg.success{color:#16A34A}
+.promo-msg.error{color:#DC2626}
+.promo-discount-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px dashed var(--outline)}
+.promo-discount-row .label{font-size:13px;color:#16A34A;font-weight:600}
+.promo-discount-row .value{font-size:13px;color:#16A34A;font-weight:700}
+.price-original{text-decoration:line-through;color:var(--muted);font-size:13px}
+.price-discounted{color:#16A34A;font-weight:800}
 </style>
 <script src="/cookie-banner.js" defer></script>
 </head>
@@ -228,6 +247,22 @@ body{background:var(--surface-alt);color:var(--text);font-family:var(--font-b);-
           <div id="verify-acad-result" style="font-size:12px;margin-top:8px"></div>
         </div>
       </div>
+      <div class="promo-section" id="promo-section">
+        <div class="promo-toggle" id="promo-toggle" onclick="togglePromo()">Have a promo code?</div>
+        <div class="promo-form" id="promo-form">
+          <div class="promo-row">
+            <input type="text" class="promo-input" id="promo-code-input" placeholder="Enter promo code" maxlength="20" autocomplete="off">
+            <button type="button" class="promo-apply" id="promo-apply-btn" onclick="applyPromoCode()">Apply</button>
+          </div>
+          <div class="promo-msg" id="promo-msg"></div>
+        </div>
+        <div id="promo-discount-display" style="display:none">
+          <div class="promo-discount-row">
+            <span class="label" id="promo-discount-label">Promo discount</span>
+            <span class="value" id="promo-discount-value"></span>
+          </div>
+        </div>
+      </div>
       <button type="button" class="btn-proceed" id="btn-proceed" onclick="proceedCheckout()">Proceed to Payment</button>
       <div class="security-note">&#128274; Secured by Razorpay &middot; PCI-DSS compliant</div>
       <a href="/pricing" class="back-link">&larr; Back to pricing</a>
@@ -246,6 +281,9 @@ var API = window.VIGYAN_BACKEND_URL || '/api';
 var CHECKOUT_PLAN = null;
 var CHECKOUT_DATA = null;
 var CHECKOUT_ACADEMIC = false;
+var CHECKOUT_PROMO_CODE = null;
+var CHECKOUT_PROMO_DISCOUNT = 0;
+var CHECKOUT_BASE_AMOUNT = 0;
 
 // Auth is carried by the HttpOnly pf_token cookie (same-origin). 'pf_user'
 // is a non-sensitive profile marker used only for UI/login-state decisions.
@@ -289,6 +327,7 @@ function renderOrder(plan, pricing) {
   document.getElementById('display-api').textContent = plan.api_calls_per_month > 0 ? plan.api_calls_per_month.toLocaleString() + ' / month' : 'Not included';
 
   var amount = plan.price_inr;
+  CHECKOUT_BASE_AMOUNT = amount;
   var period = plan.billing === 'yearly' ? '/year' : '/month';
 
   // Show academic verify section for non-academic users
@@ -309,19 +348,11 @@ function renderOrder(plan, pricing) {
       .then(function(status) {
         if (status.is_academic && plan.price_inr > 0) {
           CHECKOUT_ACADEMIC = true;
-          var discounted = Math.round(plan.price_inr * 0.7);
-          document.getElementById('price-amount').innerHTML = '<span style="text-decoration:line-through;color:var(--muted);font-size:13px">&#8377;' + plan.price_inr + '</span> &#8377;' + discounted;
-          document.getElementById('price-period').textContent = period;
           document.getElementById('academic-discount-info').style.display = 'inline-flex';
-        } else {
-          document.getElementById('price-amount').textContent = amount;
-          document.getElementById('price-period').textContent = period;
         }
+        updatePriceDisplay();
       })
-      .catch(function() {
-        document.getElementById('price-amount').textContent = amount;
-        document.getElementById('price-period').textContent = period;
-      });
+      .catch(function() { updatePriceDisplay(); });
   } else {
     document.getElementById('price-amount').textContent = amount;
     document.getElementById('price-period').textContent = period;
@@ -342,8 +373,8 @@ async function verifyAcademic() {
     if (d.is_academic) {
       res.innerHTML = '<span style="color:#16A34A;font-weight:600">&#10003; Academic email verified! 30% discount applied.</span>';
       document.getElementById('academic-verify-section').style.display = 'none';
-      // Re-render with discount
-      if (CHECKOUT_DATA) renderOrder(CHECKOUT_DATA, CHECKOUT_DATA._pricing);
+      CHECKOUT_ACADEMIC = true;
+      updatePriceDisplay();
     } else {
       res.innerHTML = '<span style="color:var(--text2);font-size:12px">' + (d.message || 'Not recognized as academic. Contact support if you believe this is an error.') + '</span>';
       btn.disabled = false; txt.textContent = 'Try again';
@@ -365,6 +396,105 @@ function loadRazorpaySdk() {
   });
 }
 
+function togglePromo() {
+  var form = document.getElementById('promo-form');
+  var toggle = document.getElementById('promo-toggle');
+  if (form.classList.contains('show')) {
+    form.classList.remove('show');
+    toggle.textContent = 'Have a promo code?';
+  } else {
+    form.classList.add('show');
+    toggle.textContent = 'Hide promo code';
+    document.getElementById('promo-code-input').focus();
+  }
+}
+
+async function applyPromoCode() {
+  var code = document.getElementById('promo-code-input').value.trim();
+  var msg = document.getElementById('promo-msg');
+  var btn = document.getElementById('promo-apply-btn');
+  if (!code) { msg.className = 'promo-msg error'; msg.textContent = 'Please enter a code'; return; }
+
+  btn.disabled = true; btn.textContent = 'Checking...'; msg.textContent = '';
+
+  try {
+    var token = sessionStorage.getItem('pf_token') || '';
+    var headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = 'Bearer ' + token;
+    var r = await fetch(API + '/api/promo/validate', {
+      method: 'POST', headers: headers, credentials: 'same-origin',
+      body: JSON.stringify({ code: code })
+    });
+    var d = await r.json();
+    if (!r.ok || d.error) {
+      msg.className = 'promo-msg error'; msg.textContent = d.error || 'Invalid code';
+      btn.disabled = false; btn.textContent = 'Apply'; return;
+    }
+
+    var discountPct = parseInt(d.discount_pct || 0);
+    if (discountPct <= 0) {
+      msg.className = 'promo-msg error'; msg.textContent = 'This code does not offer a checkout discount. Try it on the trial page instead.';
+      btn.disabled = false; btn.textContent = 'Apply'; return;
+    }
+
+    CHECKOUT_PROMO_CODE = code.toUpperCase();
+    CHECKOUT_PROMO_DISCOUNT = discountPct;
+    msg.className = 'promo-msg success';
+    msg.textContent = 'Promo applied! ' + discountPct + '% discount.';
+
+    // Update display
+    updatePriceDisplay();
+
+    // Collapse form
+    document.getElementById('promo-form').classList.remove('show');
+    document.getElementById('promo-toggle').textContent = code.toUpperCase() + ' applied';
+    document.getElementById('promo-toggle').style.color = '#16A34A';
+    document.getElementById('promo-section').querySelector('.promo-toggle').onclick = function() { removePromo(); };
+  } catch (e) {
+    msg.className = 'promo-msg error'; msg.textContent = 'Network error. Try again.';
+  }
+  btn.disabled = false; btn.textContent = 'Apply';
+}
+
+function removePromo() {
+  CHECKOUT_PROMO_CODE = null;
+  CHECKOUT_PROMO_DISCOUNT = 0;
+  document.getElementById('promo-discount-display').style.display = 'none';
+  document.getElementById('promo-code-input').value = '';
+  document.getElementById('promo-msg').textContent = '';
+  var toggle = document.getElementById('promo-toggle');
+  toggle.textContent = 'Have a promo code?';
+  toggle.style.color = '';
+  toggle.onclick = function() { togglePromo(); };
+  updatePriceDisplay();
+}
+
+function updatePriceDisplay() {
+  if (!CHECKOUT_BASE_AMOUNT || !CHECKOUT_DATA) return;
+  var amount = CHECKOUT_BASE_AMOUNT;
+  var period = CHECKOUT_DATA.billing === 'yearly' ? '/year' : '/month';
+  var totalDiscount = 0;
+
+  if (CHECKOUT_ACADEMIC) totalDiscount += 30;
+  if (CHECKOUT_PROMO_DISCOUNT > 0) totalDiscount += CHECKOUT_PROMO_DISCOUNT;
+  totalDiscount = Math.min(totalDiscount, 50);
+
+  if (totalDiscount > 0) {
+    var discounted = Math.round(amount * (100 - totalDiscount) / 100);
+    document.getElementById('price-amount').innerHTML = '<span class="price-original">&#8377;' + amount + '</span> <span class="price-discounted">&#8377;' + discounted + '</span>';
+    document.getElementById('price-period').textContent = period;
+    if (CHECKOUT_PROMO_DISCOUNT > 0) {
+      document.getElementById('promo-discount-display').style.display = 'block';
+      document.getElementById('promo-discount-label').textContent = CHECKOUT_PROMO_CODE + ' (' + CHECKOUT_PROMO_DISCOUNT + '% off)';
+      document.getElementById('promo-discount-value').textContent = '-₹' + Math.round(amount * CHECKOUT_PROMO_DISCOUNT / 100);
+    }
+  } else {
+    document.getElementById('price-amount').textContent = amount;
+    document.getElementById('price-period').textContent = period;
+    document.getElementById('promo-discount-display').style.display = 'none';
+  }
+}
+
 async function proceedCheckout() {
   if (!isLoggedIn()) {
     if (typeof openAuthModal === 'function') openAuthModal();
@@ -375,6 +505,7 @@ async function proceedCheckout() {
   try {
     var orderBody = { plan_id: CHECKOUT_PLAN };
     if (CHECKOUT_ACADEMIC) orderBody.discount = 30;
+    if (CHECKOUT_PROMO_CODE) orderBody.promo_code = CHECKOUT_PROMO_CODE;
     var r = await fetch(API + '/api/payments/create-order', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' }, credentials: 'same-origin',

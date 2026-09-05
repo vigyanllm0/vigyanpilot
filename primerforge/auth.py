@@ -165,6 +165,7 @@ def init_db():
             product_type TEXT DEFAULT 'top_up',
             plan_id TEXT DEFAULT '',
             billing_cycle TEXT DEFAULT 'monthly',
+            metadata TEXT DEFAULT '{}',
             created_at REAL DEFAULT (strftime('%s','now')),
             verified_at REAL DEFAULT 0
         );
@@ -260,7 +261,8 @@ def init_db():
             used_count INTEGER DEFAULT 0,
             created_by TEXT DEFAULT 'admin',
             created_at REAL DEFAULT (strftime('%s','now')),
-            expires_at REAL DEFAULT 0
+            expires_at REAL DEFAULT 0,
+            discount_pct INTEGER DEFAULT 0
         );
 
         CREATE TABLE IF NOT EXISTS trial_subscriptions (
@@ -347,6 +349,10 @@ def init_db():
         db.execute("ALTER TABLE promo_codes ADD COLUMN promo_type TEXT DEFAULT 'trial'")
     except sqlite3.OperationalError:
         pass
+    try:
+        db.execute("ALTER TABLE promo_codes ADD COLUMN discount_pct INTEGER DEFAULT 0")
+    except sqlite3.OperationalError:
+        pass
     # Backfill auth_provider for existing Google users (detected via audit log).
     # Safe to run on every init: only touches rows still marked 'email'.
     try:
@@ -359,6 +365,10 @@ def init_db():
               )
             """
         )
+    except sqlite3.OperationalError:
+        pass
+    try:
+        db.execute("ALTER TABLE payments ADD COLUMN metadata TEXT DEFAULT '{}'")
     except sqlite3.OperationalError:
         pass
     db.commit()

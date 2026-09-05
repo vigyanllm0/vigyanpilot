@@ -126,6 +126,24 @@ def create_order():
 
     # Get user info for prefill
     db = get_db()
+
+    # Apply promo code discount if provided
+    promo_code = data.get("promo_code", "").strip().upper()
+    promo_discount_pct = 0
+    if promo_code:
+        promo_row = db.execute("SELECT * FROM promo_codes WHERE code=?", (promo_code,)).fetchone()
+        if not promo_row:
+            return jsonify({"error": "Invalid promo code."}), 400
+        import time as _time
+        now = _time.time()
+        if promo_row["expires_at"] and promo_row["expires_at"] > 0 and promo_row["expires_at"] < now:
+            return jsonify({"error": "This promo code has expired."}), 400
+        if promo_row["max_uses"] > 0 and promo_row["used_count"] >= promo_row["max_uses"]:
+            return jsonify({"error": "This promo code has been fully redeemed."}), 400
+        promo_discount_pct = min(int(promo_row["discount_pct"] or 0), 50)
+        if promo_discount_pct > 0:
+            amount = int(amount * (100 - promo_discount_pct) / 100)
+
     user_row = db.execute("SELECT name, email, is_academic FROM users WHERE email=?",
                           (g.user['email'],)).fetchone()
     raw_name = (user_row['name'] if user_row and user_row['name'] else
@@ -143,7 +161,9 @@ def create_order():
                 "plan_id": plan_id,
                 "plan_name": plan.display_name,
                 "tier": plan.tier.value,
-                "product": "VigyanLLM Subscription"
+                "product": "VigyanLLM Subscription",
+                "promo_code": promo_code or "",
+                "promo_discount_pct": str(promo_discount_pct),
             }
         })
     except razorpay.errors.BadRequestError as e:
@@ -154,10 +174,11 @@ def create_order():
         return jsonify({"error": "Payment service unavailable."}), 500
 
     # Store order in DB
+    metadata_json = json.dumps({"promo_code": promo_code or None, "promo_discount_pct": promo_discount_pct})
     db.execute(
-        """INSERT INTO payments (user_email, amount, upi_ref, status, runs_purchased, product_type, plan_id, billing_cycle)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
-        (user_email, amount // 100, order['id'], "created", 0, "subscription", plan_id, plan.billing.value)
+        """INSERT INTO payments (user_email, amount, upi_ref, status, runs_purchased, product_type, plan_id, billing_cycle, metadata)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+        (user_email, amount // 100, order['id'], "created", 0, "subscription", plan_id, plan.billing.value, metadata_json)
     )
     db.commit()
 
@@ -174,6 +195,8 @@ def create_order():
         "tier": plan.tier.value,
         "billing": plan.billing.value,
         "description": f"VigyanLLM {plan.display_name} ({plan.billing.value})",
+        "discount_pct": promo_discount_pct,
+        "promo_code": promo_code or None,
         "prefill": {
             "name": user_name,
             "email": user_email,
@@ -906,6 +929,7 @@ def admin_create_promo():
     currency = data.get("currency", "INR") if promo_type != "academic" else "INR"
     max_uses = int(data.get("max_uses", 1))
     expires_at = float(data.get("expires_at", 0))
+    discount_pct = int(data.get("discount_pct", 0)) if promo_type == "discount" else 0
 
     import secrets
     import string
@@ -920,10 +944,10 @@ def admin_create_promo():
                 db.execute(
                     """INSERT INTO promo_codes
                        (code, promo_type, tier, daily_analyses, batch_max, has_export, trial_days,
-                        price_inr, currency, max_uses, created_by, expires_at)
-                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                        price_inr, currency, max_uses, created_by, expires_at, discount_pct)
+                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
                     (code, promo_type, tier, daily_analyses, batch_max, has_export, trial_days,
-                     price_inr, currency, max_uses, user["email"], expires_at)
+                     price_inr, currency, max_uses, user["email"], expires_at, discount_pct)
                 )
                 codes.append(code)
                 break
