@@ -14,8 +14,6 @@
 const MALICIOUS_CRAWLERS = /(ahrefsbot|semrushbot|mj12bot|dotbot|majestic|meanpath|rogerbot|xovi)/i;
 
 export default function middleware(request) {
-  const url = new URL(request.url);
-
   // Block malicious crawlers at the edge
   const ua = request.headers.get('user-agent') || '';
   if (MALICIOUS_CRAWLERS.test(ua)) {
@@ -27,5 +25,5 @@ export default function middleware(request) {
 }
 
 export const config = {
-  matcher: ['/admin-security.html', '/admin-security'],
+  matcher: [],
 };
