@@ -1,7 +1,7 @@
 const API=window.location.origin;
 
 function $(id){return document.getElementById(id)}
-function authH(){return{'Content-Type':'application/json'}}
+function authH(){const t=sessionStorage.getItem('pf_token')||'';return t?{'Content-Type':'application/json','Authorization':'Bearer '+t}:{'Content-Type':'application/json'}}
 async function api(p,m='GET',b=null){const o={method:m,headers:authH(),credentials:'include'};if(b)o.body=JSON.stringify(b);const r=await fetch(API+p,o);if(r.status===401){doLogout();return null}const txt=await r.text();try{return JSON.parse(txt)}catch(e){console.error('API non-JSON response from',p,txt.slice(0,200));return null}}
 
 // Auth
