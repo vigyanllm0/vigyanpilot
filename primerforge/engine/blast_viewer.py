@@ -152,12 +152,6 @@ def run_remote_blast(
                         continue
                 else:
                     data = status_resp.json()
-                    if not data:
-                        logger.warning("BLAST ZIP: no BlastOutput2 found in %s", zf.namelist())
-                        time.sleep(2)
-                        continue
-                else:
-                    data = status_resp.json()
             except Exception:
                 time.sleep(2)
                 continue
