@@ -156,3 +156,57 @@ def test_admin_revenue_stats(admin_client):
     assert "total_inr" in d["revenue"]
     assert "total_inr" in d["cost"]
     assert "margin_percent" in d["margin"]
+
+
+def test_admin_can_create_academic_promo_codes(admin_client):
+    """Academic promo codes should be created with promo_type='academic' and price_inr=0."""
+    r = admin_client.post("/api/admin/promo/create", json={
+        "prefix": "ACAD", "count": 2, "trial_days": 90, "tier": "pro",
+        "promo_type": "academic", "daily_analyses": 100, "batch_max": 50,
+        "max_uses": 1, "has_export": 1,
+    })
+    assert r.status_code == 200
+    d = r.get_json()
+    assert d["success"] is True
+    assert d["count"] == 2
+    assert all(c.startswith("ACAD-") for c in d["codes"])
+
+    # Verify in list
+    r2 = admin_client.get("/api/admin/promo/list")
+    d2 = r2.get_json()
+    acad_codes = [c for c in d2["codes"] if c["promo_type"] == "academic"]
+    assert len(acad_codes) >= 2
+    assert all(c["price_inr"] == 0 for c in acad_codes)
+
+
+def test_admin_can_revoke_promo_code(admin_client):
+    """Revoking a promo code should set max_uses = used_count."""
+    # Create a code
+    r = admin_client.post("/api/admin/promo/create", json={
+        "prefix": "RVK", "count": 1, "trial_days": 30, "max_uses": 5,
+    })
+    code = r.get_json()["codes"][0]
+
+    # Revoke it
+    r2 = admin_client.post("/api/admin/promo/revoke", json={"code": code})
+    assert r2.status_code == 200
+    assert r2.get_json()["success"] is True
+
+    # Verify it's revoked in list
+    r3 = admin_client.get("/api/admin/promo/list")
+    codes = r3.get_json()["codes"]
+    revoked = [c for c in codes if c["code"] == code]
+    assert len(revoked) == 1
+    assert revoked[0]["used_count"] >= revoked[0]["max_uses"]
+
+
+def test_admin_revoke_nonexistent_code(admin_client):
+    """Revoking a nonexistent code should return 404."""
+    r = admin_client.post("/api/admin/promo/revoke", json={"code": "FAKE-CODE"})
+    assert r.status_code == 404
+
+
+def test_non_admin_blocked_from_revoke(client):
+    """Non-admin should be blocked from revoking promo codes."""
+    r = client.post("/api/admin/promo/revoke", json={"code": "FAKE"})
+    assert r.status_code in (401, 403)

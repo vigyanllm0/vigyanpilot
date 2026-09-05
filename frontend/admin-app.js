@@ -28,6 +28,7 @@ window.showSection = function(name){
   if(name==='bans')loadBans();
   if(name==='blog')loadBlogPosts();
   if(name==='promos')loadPromos();
+  if(name==='academic')loadAcademic();
   if(name==='accounts')loadExpenses();
 }
 
@@ -108,7 +109,12 @@ async function loadUsers(){
   const d=await api('/api/admin/users');if(!d)return;
   $('tbl-users').innerHTML=(d.users||[]).map(u=>{
     const rev=parseFloat(u.lifetime_revenue_inr||0);const cog=parseFloat(u.lifetime_cogs_inr||0);const mg=rev-cog;
-    return`<tr><td>${u.email}</td><td><span class="pill ${u.role==='admin'?'pill-blue':'pill-green'}">${u.role}</span></td><td class="mono">${u.balance??0}</td><td class="mono" style="color:var(--green)">₹${Math.round(rev)}</td><td class="mono" style="color:var(--orange)">₹${Math.round(cog)}</td><td class="mono" style="color:${mg>=0?'var(--green)':'var(--red)'}">₹${Math.round(mg)}</td><td style="font-size:.7rem">${u.created_at?new Date(u.created_at).toLocaleDateString():''}</td></tr>`;
+    const plan=u.plan||'free';
+    const planClass=plan==='pro'||plan==='trial'?'pill-green':plan==='lab'?'pill-purple':'pill-blue';
+    const activated=u.plan_activated_at?new Date(u.plan_activated_at*1000).toLocaleDateString('en-US',{month:'short',day:'numeric'}):'—';
+    const promo=u.promo_code_used||'—';
+    const academic=u.is_academic?'✓':'';
+    return`<tr><td>${u.email}</td><td><span class="pill ${u.role==='admin'?'pill-blue':'pill-green'}">${u.role}</span></td><td><span class="pill ${planClass}">${plan}</span></td><td style="font-size:.7rem">${activated}</td><td class="mono" style="font-size:.7rem">${promo}</td><td>${academic}</td><td class="mono">${u.balance??0}</td><td class="mono" style="color:var(--green)">₹${Math.round(rev)}</td><td class="mono" style="color:var(--orange)">₹${Math.round(cog)}</td><td class="mono" style="color:${mg>=0?'var(--green)':'var(--red)'}">₹${Math.round(mg)}</td><td style="font-size:.7rem">${u.created_at?new Date(u.created_at).toLocaleDateString():''}</td></tr>`;
   }).join('');
 }
 
@@ -143,13 +149,15 @@ async function loadPromos(){
 
   const codes=d.codes||[];
   const tbody=$('tbl-promos');
-  if(!codes.length){tbody.innerHTML='<tr><td colspan="9" style="text-align:center;color:var(--green);padding:1.5rem">No promo codes yet. Generate some above.</td></tr>';return}
+  if(!codes.length){tbody.innerHTML='<tr><td colspan="11" style="text-align:center;color:var(--green);padding:1.5rem">No promo codes yet. Generate some above.</td></tr>';return}
   tbody.innerHTML=codes.map(c=>{
     const created=c.created_at?new Date(c.created_at*1000).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'—';
     const expired=c.expires_at&&c.expires_at>0&&c.expires_at<Date.now()/1000;
     const fully_used=c.used_count>=c.max_uses;
     const statusClass=expired?'pill-red':fully_used?'pill-orange':'pill-green';
-    return`<tr style="${expired||fully_used?'opacity:.6':''}"><td class="mono" style="font-size:.75rem;font-weight:600">${c.code}</td><td><span class="pill pill-blue">${c.tier}</span></td><td>${c.trial_days}d</td><td>${c.daily_analyses}</td><td>${c.batch_max}</td><td>₹${c.price_inr}</td><td><span class="pill ${statusClass}">${c.used_count}/${c.max_uses}</span></td><td>${c.has_export?'✓':'✗'}</td><td style="font-size:.7rem">${created}</td></tr>`;
+    const typeClass=c.promo_type==='academic'?'pill-purple':'pill-blue';
+    const canRevoke=!expired&&!fully_used&&c.used_count<c.max_uses;
+    return`<tr style="${expired||fully_used?'opacity:.6':''}"><td class="mono" style="font-size:.75rem;font-weight:600">${c.code}</td><td><span class="pill ${typeClass}">${c.promo_type||'trial'}</span></td><td><span class="pill pill-blue">${c.tier}</span></td><td>${c.trial_days}d</td><td>${c.daily_analyses}</td><td>${c.batch_max}</td><td>₹${c.price_inr}</td><td><span class="pill ${statusClass}">${c.used_count}/${c.max_uses}</span></td><td>${c.has_export?'✓':'✗'}</td><td style="font-size:.7rem">${created}</td><td>${canRevoke?`<button class="btn btn-sm" onclick="revokePromo('${c.code}')" style="background:var(--red);color:#fff;font-size:.65rem;padding:.2rem .5rem">Revoke</button>`:''}</td></tr>`;
   }).join('');
 }
 
@@ -158,14 +166,16 @@ async function generatePromos(){
   btn.disabled=true;btn.textContent='Generating...';status.textContent='';
 
   const expires=$('promo-expires').value;
+  const promoType=$('promo-type').value;
   const body={
+    promo_type:promoType,
     prefix:($('promo-prefix').value||'TRIAL').toUpperCase().replace(/[^A-Z0-9]/g,''),
     count:parseInt($('promo-count').value)||10,
     trial_days:parseInt($('promo-days').value)||30,
     tier:$('promo-tier').value,
     daily_analyses:parseInt($('promo-daily').value)||50,
     batch_max:parseInt($('promo-batch').value)||20,
-    price_inr:parseInt($('promo-price').value)||699,
+    price_inr:promoType==='academic'?0:parseInt($('promo-price').value)||699,
     currency:$('promo-currency').value,
     max_uses:parseInt($('promo-maxuses').value)||1,
     has_export:parseInt($('promo-export').value)||1,
@@ -186,6 +196,54 @@ async function generatePromos(){
   $('promo-gen-codes').textContent=(d.codes||[]).join('\n');
 
   loadPromos();
+}
+
+// ── REVOKE PROMO ──
+async function revokePromo(code){
+  if(!confirm('Revoke promo code '+code+'? This cannot be undone.'))return;
+  const d=await api('/api/admin/promo/revoke','POST',{code});
+  if(d&&d.success){loadPromos()}else{alert(d?.error||'Failed to revoke')}
+}
+
+// ── PROMO TYPE TOGGLE ──
+window.togglePromoType = function(){
+  const isAcademic=$('promo-type').value==='academic';
+  $('promo-price').disabled=isAcademic;
+  $('promo-currency').disabled=isAcademic;
+  if(isAcademic){$('promo-price').value=0;$('promo-prefix').placeholder='ACAD'}
+  else{$('promo-price').value=699;$('promo-prefix').placeholder='IITB'}
+}
+
+// ── ACADEMIC CLAIMS ──
+async function loadAcademic(){
+  const d=await api('/api/admin/academic/list');if(!d)return;
+  const claims=d.claims||[];
+  const pending=claims.filter(c=>c.status==='pending');
+  const approved=claims.filter(c=>c.status==='approved');
+  const rejected=claims.filter(c=>c.status==='rejected');
+  $('acad-total').textContent=claims.length;
+  $('acad-pending').textContent=pending.length;
+  $('acad-approved').textContent=approved.length;
+  $('acad-rejected').textContent=rejected.length;
+
+  const ptbl=$('tbl-academic-pending');
+  if(!pending.length){ptbl.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--green);padding:1.5rem">No pending claims</td></tr>'}
+  else{ptbl.innerHTML=pending.map(c=>{
+    const date=c.created_at?new Date(c.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric'}):'—';
+    return`<tr><td style="font-size:.8rem">${c.user_email||c.email||'—'}</td><td style="font-size:.8rem">${c.institution||'—'}</td><td style="font-size:.8rem">${c.department||'—'}</td><td style="font-size:.8rem">${c.research_area||'—'}</td><td><span class="pill ${c.proof_method==='email'?'pill-green':'pill-orange'}">${c.proof_method||'—'}</span></td><td style="font-size:.7rem">${date}</td><td><button class="btn btn-sm" onclick="reviewAcademic(${c.id},'approved')" style="background:var(--green);color:#fff;font-size:.65rem;padding:.2rem .5rem">Approve</button> <button class="btn btn-sm" onclick="reviewAcademic(${c.id},'rejected')" style="background:var(--red);color:#fff;font-size:.65rem;padding:.2rem .5rem">Reject</button></td></tr>`;
+  }).join('')}
+
+  const atbl=$('tbl-academic-approved');
+  if(!approved.length){atbl.innerHTML='<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:1.5rem">No approved claims</td></tr>'}
+  else{atbl.innerHTML=approved.map(c=>{
+    const date=c.reviewed_at?new Date(c.reviewed_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'—';
+    return`<tr><td style="font-size:.8rem">${c.user_email||c.email||'—'}</td><td style="font-size:.8rem">${c.institution||'—'}</td><td style="font-size:.7rem">${date}</td><td class="mono">${c.tokens_granted||0}</td></tr>`;
+  }).join('')}
+}
+
+async function reviewAcademic(id,status){
+  const d=await api('/api/admin/academic/review','POST',{claim_id:id,status:status,tokens_granted:status==='approved'?10:0});
+  if(d&&d.success){loadAcademic()}else{alert(d?.error||'Failed to review')}
 }
 
 // ── EXPENSES / ACCOUNTS ──
@@ -274,6 +332,7 @@ document.addEventListener('DOMContentLoaded', () => {
   $('tab-bans')?.addEventListener('click', () => window.showSection('bans'));
   $('tab-blog')?.addEventListener('click', () => window.showSection('blog'));
   $('tab-promos')?.addEventListener('click', () => window.showSection('promos'));
+  $('tab-academic')?.addEventListener('click', () => window.showSection('academic'));
   $('tab-accounts')?.addEventListener('click', () => window.showSection('accounts'));
   $('btn-refresh')?.addEventListener('click', refreshAll);
   $('btn-gen-promo')?.addEventListener('click', generatePromos);

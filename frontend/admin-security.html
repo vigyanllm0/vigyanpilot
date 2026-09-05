@@ -448,6 +448,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <button type="button" class="btn" id="tab-bans">🚫 IP Bans</button>
     <button type="button" class="btn" id="tab-blog">📝 Blog</button>
     <button type="button" class="btn" id="tab-promos">🎟️ Promos</button>
+    <button type="button" class="btn" id="tab-academic">🎓 Academic</button>
     <button type="button" class="btn" id="tab-accounts">💰 Accounts</button>
     <button type="button" class="btn" id="btn-refresh">↻ Refresh</button>
   </div>
@@ -461,7 +462,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <!-- USERS -->
   <div class="section" id="sec-users" style="display:none">
     <div class="section-hdr"><div class="section-title">All Users</div></div>
-    <div class="tbl-wrap"><table><thead><tr><th>Email</th><th>Role</th><th>Tokens</th><th>Paid (₹)</th><th>Infra Cost (₹)</th><th>Profit</th><th>Joined</th></tr></thead><tbody id="tbl-users"></tbody></table></div>
+    <div class="tbl-wrap"><table><thead><tr><th>Email</th><th>Role</th><th>Plan</th><th>Activated</th><th>Promo Used</th><th>Academic</th><th>Tokens</th><th>Paid (₹)</th><th>Infra Cost (₹)</th><th>Profit</th><th>Joined</th></tr></thead><tbody id="tbl-users"></tbody></table></div>
   </div>
 
   <!-- SCANNER -->
@@ -515,6 +516,13 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <div style="background:var(--surface-alt);border:1px solid var(--outline);border-radius:12px;padding:1.5rem;margin-bottom:1.5rem">
       <div style="font-family:var(--font-h);font-weight:700;font-size:1rem;margin-bottom:1rem">🎟️ Generate Promo Codes</div>
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:1rem">
+        <div>
+          <label style="display:block;font-size:.75rem;font-weight:600;margin-bottom:4px;color:var(--text2)">Promo Type</label>
+          <select class="input" id="promo-type" style="width:100%;margin:0;padding:.5rem .7rem;font-size:.85rem" onchange="togglePromoType()">
+            <option value="trial" selected>Trial (₹1 → auto-debit)</option>
+            <option value="academic">Academic (Free Pro access)</option>
+          </select>
+        </div>
         <div>
           <label style="display:block;font-size:.75rem;font-weight:600;margin-bottom:4px;color:var(--text2)">Prefix</label>
           <input class="input" id="promo-prefix" placeholder="IITB" style="width:100%;margin:0;padding:.5rem .7rem;font-size:.85rem">
@@ -583,7 +591,40 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
     <!-- Promo codes list -->
     <div class="section-hdr"><div class="section-title">All Promo Codes</div></div>
-    <div class="tbl-wrap"><table><thead><tr><th>Code</th><th>Tier</th><th>Days</th><th>Daily</th><th>Batch</th><th>Price</th><th>Uses</th><th>Export</th><th>Created</th></tr></thead><tbody id="tbl-promos"><tr><td colspan="9" style="text-align:center;color:var(--muted);padding:2rem">Loading...</td></tr></tbody></table></div>
+    <div class="tbl-wrap"><table><thead><tr><th>Code</th><th>Type</th><th>Tier</th><th>Days</th><th>Daily</th><th>Batch</th><th>Price</th><th>Uses</th><th>Export</th><th>Created</th><th>Action</th></tr></thead><tbody id="tbl-promos"><tr><td colspan="11" style="text-align:center;color:var(--muted);padding:2rem">Loading...</td></tr></tbody></table></div>
+
+    <!-- Tools Coverage Matrix -->
+    <div style="background:var(--surface-alt);border:1px solid var(--outline);border-radius:12px;padding:1.5rem;margin-top:1.5rem">
+      <div style="font-family:var(--font-h);font-weight:700;font-size:1rem;margin-bottom:1rem">Tools Coverage by Plan</div>
+      <div class="tbl-wrap"><table><thead><tr><th>Feature</th><th>Free</th><th>Pro (₹699/mo)</th><th>Lab (₹3,999/mo)</th></tr></thead><tbody>
+        <tr><td>All 10 Bioinformatics Tools</td><td>✅</td><td>✅</td><td>✅</td></tr>
+        <tr><td>Daily Analyses</td><td>5</td><td>100</td><td>500</td></tr>
+        <tr><td>Batch Processing</td><td>1 seq</td><td>50 seq</td><td>200 seq</td></tr>
+        <tr><td>PDF/PPT Export</td><td>❌</td><td>✅</td><td>✅</td></tr>
+        <tr><td>Saved Results</td><td>❌</td><td>✅</td><td>✅</td></tr>
+        <tr><td>Advanced Docking</td><td>❌</td><td>✅</td><td>✅</td></tr>
+        <tr><td>Large MSA (10+ seqs)</td><td>❌</td><td>✅</td><td>✅</td></tr>
+        <tr><td>CRISPR Off-target</td><td>❌</td><td>✅</td><td>✅</td></tr>
+        <tr><td>API Access</td><td>❌</td><td>1,000/mo</td><td>10,000/mo</td></tr>
+        <tr><td>Team Collaboration</td><td>❌</td><td>❌</td><td>✅ (5 seats)</td></tr>
+        <tr><td>Admin Panel</td><td>❌</td><td>❌</td><td>✅</td></tr>
+        <tr><td>LIMS Webhooks</td><td>❌</td><td>❌</td><td>✅</td></tr>
+      </tbody></table></div>
+    </div>
+  </div>
+
+  <!-- ACADEMIC -->
+  <div class="section" id="sec-academic" style="display:none">
+    <div class="stats" style="margin-bottom:1.5rem">
+      <div class="stat"><div class="stat-label">Total Claims</div><div class="stat-val" id="acad-total">—</div></div>
+      <div class="stat"><div class="stat-label">Pending</div><div class="stat-val orange" id="acad-pending">—</div></div>
+      <div class="stat"><div class="stat-label">Approved</div><div class="stat-val green" id="acad-approved">—</div></div>
+      <div class="stat"><div class="stat-label">Rejected</div><div class="stat-val red" id="acad-rejected">—</div></div>
+    </div>
+    <div class="section-hdr"><div class="section-title">Pending Academic Claims</div></div>
+    <div class="tbl-wrap"><table><thead><tr><th>Email</th><th>Institution</th><th>Department</th><th>Research Area</th><th>Proof</th><th>Date</th><th>Action</th></tr></thead><tbody id="tbl-academic-pending"><tr><td colspan="7" style="text-align:center;color:var(--muted);padding:2rem">Loading...</td></tr></tbody></table></div>
+    <div class="section-hdr" style="margin-top:1.5rem"><div class="section-title">Approved Claims</div></div>
+    <div class="tbl-wrap"><table><thead><tr><th>Email</th><th>Institution</th><th>Approved</th><th>Tokens</th></tr></thead><tbody id="tbl-academic-approved"><tr><td colspan="4" style="text-align:center;color:var(--muted);padding:2rem">Loading...</td></tr></tbody></table></div>
   </div>
 
   <!-- ACCOUNTS / EXPENSES -->

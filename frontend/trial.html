@@ -183,16 +183,29 @@ footer{background:var(--navy);color:rgba(255,255,255,.6);text-align:center;paddi
       <button id="btn-proceed" class="btn-start" style="display:none" onclick="goToStep2()">Proceed to Payment →</button>
     </div>
 
-    <!-- Step 2: Razorpay checkout -->
+    <!-- Step 2: Razorpay checkout (trial) OR direct activation (academic) -->
     <div id="step2" class="step">
-      <div class="step-label">Step 2 of 2</div>
-      <h2 class="step-title">Verify your card</h2>
-      <p style="font-size:13px;color:var(--text2);margin-bottom:16px">We'll charge ₹1 to verify your card. This is non-refundable. After your trial ends, you'll be automatically billed <strong id="step2-price">₹699/month</strong>.</p>
-      <div id="rzpay-container"></div>
-      <button class="btn-start" onclick="openCheckout()" id="btn-pay" style="background:var(--green)">
-        Pay ₹1 & Start Trial →
-      </button>
-      <p style="font-size:11px;color:var(--muted);text-align:center;margin-top:12px">🔒 Secured by Razorpay. Cancel anytime before trial ends.</p>
+      <!-- Trial: Razorpay checkout -->
+      <div id="step2-trial" style="display:none">
+        <div class="step-label">Step 2 of 2</div>
+        <h2 class="step-title">Verify your card</h2>
+        <p style="font-size:13px;color:var(--text2);margin-bottom:16px">We'll charge ₹1 to verify your card. This is non-refundable. After your trial ends, you'll be automatically billed <strong id="step2-price">₹699/month</strong>.</p>
+        <div id="rzpay-container"></div>
+        <button class="btn-start" onclick="openCheckout()" id="btn-pay" style="background:var(--green)">
+          Pay ₹1 & Start Trial →
+        </button>
+        <p style="font-size:11px;color:var(--muted);text-align:center;margin-top:12px">🔒 Secured by Razorpay. Cancel anytime before trial ends.</p>
+      </div>
+      <!-- Academic: direct activation -->
+      <div id="step2-academic" style="display:none">
+        <div class="step-label">Step 2 of 2</div>
+        <h2 class="step-title">Activate Pro Access</h2>
+        <p style="font-size:13px;color:var(--text2);margin-bottom:16px">No payment required. Your Pro access will be activated immediately and will expire automatically after the trial period.</p>
+        <button class="btn-start" onclick="activateAcademic()" id="btn-activate-academic" style="background:var(--green)">
+          Activate Pro Access
+        </button>
+        <p style="font-size:11px;color:var(--muted);text-align:center;margin-top:12px">🔒 This is a one-time academic promo code.</p>
+      </div>
       <div id="pay-error" class="error-msg"></div>
     </div>
 
@@ -297,10 +310,17 @@ async function validateCode() {
     document.getElementById('td-daily').textContent = d.daily_analyses + '/day';
     document.getElementById('td-batch').textContent = d.batch_max + ' sequences';
     document.getElementById('td-export').textContent = d.has_export ? 'Included' : 'Not included';
-    document.getElementById('td-verify').textContent = '₹1 (non-refundable)';
-    document.getElementById('td-price').textContent = '₹' + d.price_inr + '/month (autopay)';
-    document.getElementById('td-now').textContent = '₹1';
-    document.getElementById('step2-price').textContent = '₹' + d.price_inr + '/month';
+
+    if (d.promo_type === 'academic') {
+      document.getElementById('td-verify').textContent = 'Free (no payment)';
+      document.getElementById('td-price').textContent = 'Expires after ' + d.trial_days + ' days';
+      document.getElementById('td-now').textContent = 'Free';
+    } else {
+      document.getElementById('td-verify').textContent = '₹1 (non-refundable)';
+      document.getElementById('td-price').textContent = '₹' + d.price_inr + '/month (autopay)';
+      document.getElementById('td-now').textContent = '₹1';
+      document.getElementById('step2-price').textContent = '₹' + d.price_inr + '/month';
+    }
 
     document.getElementById('trial-details').style.display = 'block';
     document.getElementById('btn-proceed').style.display = 'block';
@@ -316,7 +336,17 @@ async function validateCode() {
 
 function goToStep2() {
   if (!promoData) return;
-  showStep('step2');
+  if (promoData.promo_type === 'academic') {
+    // Academic: no Razorpay, direct activation
+    showStep('step2');
+    document.getElementById('step2-trial').style.display = 'none';
+    document.getElementById('step2-academic').style.display = 'block';
+  } else {
+    // Trial: Razorpay checkout
+    showStep('step2');
+    document.getElementById('step2-trial').style.display = 'block';
+    document.getElementById('step2-academic').style.display = 'none';
+  }
 }
 
 async function openCheckout() {
@@ -424,6 +454,39 @@ async function verifyAndActivate(rzResponse) {
     showError('pay-error', 'Network error. Contact support.');
     btn.disabled = false;
     btn.textContent = 'Pay ₹1 & Start Trial →';
+  }
+}
+
+async function activateAcademic() {
+  if (!promoData) return;
+  var btn = document.getElementById('btn-activate-academic');
+  btn.disabled = true;
+  btn.textContent = 'Activating...';
+  hideError('pay-error');
+
+  try {
+    var r = await fetch(API + '/api/promo/apply', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      body: JSON.stringify({ code: promoData.code })
+    });
+    var d = await r.json();
+
+    if (!r.ok) {
+      showError('pay-error', d.error || 'Activation failed.');
+      btn.disabled = false;
+      btn.textContent = 'Activate Pro Access';
+      return;
+    }
+
+    document.getElementById('success-msg').textContent =
+      d.trial_days + ' days of Pro access (' + d.daily_analyses + ' analyses/day, batch ' + d.batch_max + '). No payment required. Access expires automatically after ' + d.trial_days + ' days.';
+    showStep('step3');
+  } catch (e) {
+    showError('pay-error', 'Network error. Contact support.');
+    btn.disabled = false;
+    btn.textContent = 'Activate Pro Access';
   }
 }
 </script>

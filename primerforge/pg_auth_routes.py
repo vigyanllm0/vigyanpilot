@@ -861,6 +861,7 @@ def list_users():
     """Admin: List all users with balance info."""
     users = fetch_all(
         """SELECT u.id, u.email, u.full_name, u.role, u.status, u.created_at, u.last_active_at,
+                  u.plan, u.plan_activated_at, u.promo_code_used, u.is_academic,
                   tb.balance, tb.total_purchased, tb.total_consumed,
                   tb.lifetime_revenue_inr, tb.lifetime_cogs_inr
            FROM users u

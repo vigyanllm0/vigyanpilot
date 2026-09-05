@@ -1151,6 +1151,7 @@ def validate_promo():
 
     return jsonify({
         "valid": True, "code": code,
+        "promo_type": row.get("promo_type") or "trial",
         "trial_days": row["trial_days"], "daily_analyses": row["daily_analyses"],
         "batch_max": row["batch_max"], "has_export": bool(row["has_export"]),
         "price_inr": row["price_inr"], "currency": row["currency"], "tier": row["tier"],
@@ -1181,6 +1182,31 @@ def apply_promo():
     if user_row and user_row.get("promo_code_used"):
         return jsonify({"error": "You have already used a promo code."}), 409
 
+    promo_type = row.get("promo_type") or "trial"
+
+    # ── Academic promo: no payment, direct Pro activation ──
+    if promo_type == "academic":
+        result = execute("UPDATE promo_codes SET used_count = used_count + 1 WHERE code=$1 AND used_count < max_uses", code)
+        if result == 0:
+            return jsonify({"error": "Code was just claimed by another user."}), 410
+
+        pro_expires_at = int(time.time()) + (row["trial_days"] * 86400)
+        execute("""UPDATE users SET plan='pro', pro_expires_at=$1, promo_code_used=$2,
+                   plan_activated_at=$3, is_academic=1 WHERE email=$4""",
+                pro_expires_at, code, int(time.time()), email)
+        log_action(email, "academic_pro_activated",
+                   f"Promo {code}, {row['trial_days']}d Pro access, no payment")
+        _log_expense("trial_service", f"Academic promo {code} — {row['trial_days']}d Pro access",
+                     0, promo_code=code, user_email=email,
+                     metadata={"daily_analyses": row["daily_analyses"],
+                               "trial_days": row["trial_days"], "promo_type": "academic"})
+        return jsonify({"success": True, "promo_type": "academic",
+                        "message": f"Your {row['trial_days']}-day Pro access is active!",
+                        "trial_days": row["trial_days"], "pro_expires_at": pro_expires_at,
+                        "daily_analyses": row["daily_analyses"],
+                        "batch_max": row["batch_max"], "price_inr": row["price_inr"]}), 200
+
+    # ── Trial promo: Rs.1 Razorpay verification → trial → auto-debit ──
     # Step 1: Create ₹1 order
     if step == "create_order":
         if not _current_client():
@@ -1281,7 +1307,20 @@ def trial_status():
     email = g.user['email']
     user = fetch_one("SELECT plan, trial_ends_at, promo_code_used, razorpay_subscription_id FROM users WHERE email=$1", email)
     if not user or user["plan"] != "trial":
-        return jsonify({"status": "none", "plan": user["plan"] if user else "free"}), 200
+        plan = user["plan"] if user else "free"
+        # Check if academic Pro has expired
+        if plan == "pro":
+            pro_expires = fetch_one("SELECT pro_expires_at FROM users WHERE email=$1", email)
+            if pro_expires and pro_expires.get("pro_expires_at") and pro_expires["pro_expires_at"] > 0:
+                if time.time() > pro_expires["pro_expires_at"]:
+                    execute("UPDATE users SET plan='free', pro_expires_at=0 WHERE email=$1", email)
+                    return jsonify({"status": "expired", "plan": "free"}), 200
+                else:
+                    days_left = int((pro_expires["pro_expires_at"] - time.time()) / 86400)
+                    return jsonify({"status": "active", "plan": "pro", "promo_type": "academic",
+                                    "pro_expires_at": pro_expires["pro_expires_at"],
+                                    "days_remaining": days_left}), 200
+        return jsonify({"status": "none", "plan": plan}), 200
 
     now = time.time()
     trial_ends = user["trial_ends_at"] or 0
@@ -1316,13 +1355,14 @@ def admin_create_promo():
     data = request.get_json(silent=True) or {}
     count = min(int(data.get("count", 1)), 1000)
     prefix = (data.get("prefix") or "TRIAL").upper().replace(" ", "")
+    promo_type = data.get("promo_type", "trial")
     tier = data.get("tier", "pro")
     daily_analyses = int(data.get("daily_analyses", 50))
     batch_max = int(data.get("batch_max", 20))
     has_export = int(data.get("has_export", 1))
     trial_days = int(data.get("trial_days", 30))
-    price_inr = int(data.get("price_inr", 699))
-    currency = data.get("currency", "INR")
+    price_inr = int(data.get("price_inr", 699)) if promo_type != "academic" else 0
+    currency = data.get("currency", "INR") if promo_type != "academic" else "INR"
     max_uses = int(data.get("max_uses", 1))
     expires_at = float(data.get("expires_at", 0))
 
@@ -1333,10 +1373,10 @@ def admin_create_promo():
             suffix = ''.join(secrets.choice(string.ascii_uppercase + string.digits) for _ in range(6))
             code = f"{prefix}-{suffix}"
             try:
-                execute("""INSERT INTO promo_codes (code, tier, daily_analyses, batch_max, has_export,
+                execute("""INSERT INTO promo_codes (code, promo_type, tier, daily_analyses, batch_max, has_export,
                            trial_days, price_inr, currency, max_uses, created_by, expires_at)
-                           VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)""",
-                        code, tier, daily_analyses, batch_max, has_export, trial_days,
+                           VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)""",
+                        code, promo_type, tier, daily_analyses, batch_max, has_export, trial_days,
                         price_inr, currency, max_uses, user["email"], expires_at)
                 codes.append(code)
                 break
@@ -1359,7 +1399,7 @@ def admin_list_promos():
         return jsonify({"error": "Admin access required"}), 403
 
     rows = fetch_all(
-        """SELECT code, tier, daily_analyses, batch_max, has_export, trial_days,
+        """SELECT code, promo_type, tier, daily_analyses, batch_max, has_export, trial_days,
                   price_inr, currency, razorpay_plan_id, max_uses, used_count,
                   created_by, created_at, expires_at
            FROM promo_codes ORDER BY created_at DESC LIMIT 500"""
@@ -1369,6 +1409,7 @@ def admin_list_promos():
     for r in (rows or []):
         codes.append({
             "code": r["code"],
+            "promo_type": r.get("promo_type") or "trial",
             "tier": r["tier"],
             "daily_analyses": r["daily_analyses"],
             "batch_max": r["batch_max"],
@@ -1397,6 +1438,33 @@ def admin_list_promos():
             "total_trial_value_inr": total_value,
         }
     }), 200
+
+
+# ══════════════════════════════════════════════════════════════════════════
+# ADMIN: REVOKE PROMO CODE
+# ══════════════════════════════════════════════════════════════════════════
+
+@payment_bp.route('/api/admin/promo/revoke', methods=['POST'])
+def admin_revoke_promo():
+    """Revoke a promo code by setting max_uses = used_count. Admin-only."""
+    from .pg_auth import get_current_user
+    user = get_current_user()
+    if not user or user.get("role") != "admin":
+        return jsonify({"error": "Admin access required"}), 403
+
+    data = request.get_json(silent=True) or {}
+    code = (data.get("code") or "").strip().upper()
+    if not code:
+        return jsonify({"error": "Missing promo code."}), 400
+
+    result = execute(
+        "UPDATE promo_codes SET max_uses = used_count WHERE code=$1 AND max_uses > used_count", code
+    )
+    if result == 0:
+        return jsonify({"error": "Code not found or already fully used/revoked."}), 404
+
+    log_action(user["email"], "promo_revoked", f"Revoked promo code {code}")
+    return jsonify({"success": True, "message": f"Promo code {code} has been revoked."}), 200
 
 
 # ══════════════════════════════════════════════════════════════════════════

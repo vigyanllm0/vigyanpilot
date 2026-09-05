@@ -360,7 +360,8 @@ def admin_users():
     try:
         rows = db.execute(
             """SELECT u.id, u.email, u.name, u.role, u.run_count, u.paid_runs,
-                      u.created_at, u.last_login,
+                      u.created_at, u.last_login, u.plan, u.plan_activated_at,
+                      u.promo_code_used, u.is_academic,
                       COALESCE(tb.balance, 0) AS balance,
                       COALESCE(tb.total_purchased, 0) AS total_purchased,
                       COALESCE(tb.total_consumed, 0) AS total_consumed

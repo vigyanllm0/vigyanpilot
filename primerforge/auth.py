@@ -114,6 +114,7 @@ def init_db():
             billing_cycle TEXT DEFAULT 'monthly',
             plan_activated_at REAL DEFAULT 0,
             plan_expires_at REAL DEFAULT 0,
+            pro_expires_at REAL DEFAULT 0,
             is_academic INTEGER DEFAULT 0,
             academic_discount REAL DEFAULT 0,
             created_at REAL DEFAULT (strftime('%s','now')),
@@ -246,6 +247,7 @@ def init_db():
         CREATE TABLE IF NOT EXISTS promo_codes (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             code TEXT UNIQUE NOT NULL,
+            promo_type TEXT DEFAULT 'trial',
             tier TEXT NOT NULL DEFAULT 'pro',
             daily_analyses INTEGER DEFAULT 50,
             batch_max INTEGER DEFAULT 20,
@@ -335,6 +337,14 @@ def init_db():
         pass
     try:
         db.execute("ALTER TABLE users ADD COLUMN razorpay_customer_id TEXT DEFAULT ''")
+    except sqlite3.OperationalError:
+        pass
+    try:
+        db.execute("ALTER TABLE users ADD COLUMN pro_expires_at REAL DEFAULT 0")
+    except sqlite3.OperationalError:
+        pass
+    try:
+        db.execute("ALTER TABLE promo_codes ADD COLUMN promo_type TEXT DEFAULT 'trial'")
     except sqlite3.OperationalError:
         pass
     # Backfill auth_provider for existing Google users (detected via audit log).
@@ -568,12 +578,13 @@ def log_action(email: str, action: str, details: str = ""):
 def get_user_plan(email: str) -> str:
     """Get the user's current plan tier. Returns 'free' as default."""
     db = get_db()
-    row = db.execute("SELECT plan, plan_expires_at, trial_ends_at FROM users WHERE email=?", (email,)).fetchone()
+    row = db.execute("SELECT plan, plan_expires_at, trial_ends_at, pro_expires_at FROM users WHERE email=?", (email,)).fetchone()
     if not row:
         return "free"
     plan = row["plan"] or "free"
     expires_at = row["plan_expires_at"] or 0
     trial_ends_at = row["trial_ends_at"] or 0
+    pro_expires_at = row["pro_expires_at"] or 0
     now = time.time()
 
     # Handle trial tier — active until trial_ends_at
@@ -584,6 +595,12 @@ def get_user_plan(email: str) -> str:
             # Trial expired — waiting for Razorpay webhook to confirm subscription activation
             # Keep as 'trial' until webhook confirms payment
             return "trial"
+        return "free"
+
+    # Handle academic Pro — auto-downgrade when pro_expires_at passes
+    if plan == "pro" and pro_expires_at > 0 and now >= pro_expires_at:
+        db.execute("UPDATE users SET plan='free', pro_expires_at=0 WHERE email=?", (email,))
+        db.commit()
         return "free"
 
     # Handle paid plans — check expiry
