@@ -6,6 +6,7 @@ Structures BLAST results into a uniform table format.
 No local BLAST binary needed — uses NCBI API or exact matching.
 """
 
+import json
 import logging
 import os
 import re
@@ -61,7 +62,7 @@ def run_remote_blast(
     error_detail = None
     import time as _time
     _start = _time.time()
-    _MAX_TOTAL = 55  # must finish before Vercel's 60s proxy timeout
+    _MAX_TOTAL = 90  # NCBI can be slow; allow up to 90s
     try:
         # Step 1: Submit BLAST job
         submit_url = "https://blast.ncbi.nlm.nih.gov/Blast.cgi"
@@ -106,9 +107,11 @@ def run_remote_blast(
         wait_time = rtoe if rtoe else 10
         time.sleep(min(wait_time, 15))
 
+        data = {}
         status_url = "https://blast.ncbi.nlm.nih.gov/Blast.cgi"
-        for attempt in range(15):
-            if _time.time() - _start > _MAX_TOTAL:
+        for attempt in range(25):
+            elapsed = _time.time() - _start
+            if elapsed > _MAX_TOTAL:
                 error_detail = "BLAST polling timed out (server limit)"
                 break
             poll_params = {
@@ -129,7 +132,32 @@ def run_remote_blast(
                 time.sleep(2)
                 continue
             try:
-                data = status_resp.json()
+                raw = status_resp.content
+                # NCBI now returns ZIP archives containing JSON2 results
+                if raw[:2] == b'PK':
+                    import io as _io, zipfile as _zipfile
+                    zf = _zipfile.ZipFile(_io.BytesIO(raw))
+                    data = {}
+                    for name in zf.namelist():
+                        if name.endswith('.json'):
+                            try:
+                                inner = json.loads(zf.read(name))
+                                if "BlastOutput2" in inner:
+                                    data = inner
+                                    break
+                            except Exception:
+                                continue
+                    if not data:
+                        time.sleep(2)
+                        continue
+                else:
+                    data = status_resp.json()
+                    if not data:
+                        logger.warning("BLAST ZIP: no BlastOutput2 found in %s", zf.namelist())
+                        time.sleep(2)
+                        continue
+                else:
+                    data = status_resp.json()
             except Exception:
                 time.sleep(2)
                 continue
@@ -145,6 +173,8 @@ def run_remote_blast(
             return {"results": [], "total": 0, "params": {"program": program, "database": db, "error": error_detail}}
 
         # Step 3: Parse JSON results
+        if not data:
+            return {"results": [], "total": 0, "params": {"program": program, "database": db, "error": error_detail or "No response from NCBI"}}
         report = data.get("BlastOutput2", {}).get("report", {})
         search = report.get("results", {}).get("search", {})
         hits = search.get("hits", [])
@@ -155,11 +185,12 @@ def run_remote_blast(
                 identity_pct = round(float(hsp.get("identity", 0)) / max(float(hsp.get("align_len", 1)), 1) * 100, 2) if hsp.get("align_len") else 0.0
                 query_cover = round(float(hsp.get("align_len", 0)) / max(len(query_sequence), 1) * 100, 2) if len(query_sequence) > 0 else 0.0
 
+                desc = hit.get("description", [{}])[0] if hit.get("description") else {}
                 result = {
                     "query_id": f">{program}_query",
-                    "subject_id": hit.get("id", ""),
-                    "subject_description": hit.get("description", [{}])[0].get("title", "") if hit.get("description") else "",
-                    "subject_species": _extract_species(hit.get("description", [{}])[0].get("title", "") if hit.get("description") else ""),
+                    "subject_id": desc.get("accession", "") or hit.get("id", ""),
+                    "subject_description": desc.get("title", ""),
+                    "subject_species": _extract_species(desc.get("title", "")),
                     "identity_pct": identity_pct,
                     "alignment_length": hsp.get("align_len", 0),
                     "mismatches": hsp.get("mismatch", 0),
