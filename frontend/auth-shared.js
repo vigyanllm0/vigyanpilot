@@ -10,11 +10,20 @@ function updateAuthUI(){
     if(btns)btns.style.display='none';
     if(profile)profile.style.display='flex';
     var letter=document.querySelector('#navProfile .nav-avatar-letter');
-    if(letter)letter.textContent=(user.email||user.name||'U').charAt(0).toUpperCase();
+    var svgIcon=document.querySelector('#navProfile .nav-avatar svg');
+    if(letter){
+      letter.textContent=(user.email||user.name||'U').charAt(0).toUpperCase();
+      letter.style.display='';
+    }
+    if(svgIcon)svgIcon.style.display='none';
     var dn=document.getElementById('udName');
     if(dn)dn.textContent=user.name||user.email||'User';
     var de=document.getElementById('udEmail');
     if(de)de.textContent=user.email||'';
+    // Show admin-only elements
+    document.querySelectorAll('[data-admin-show]').forEach(function(el) {
+      if (user.role === 'admin') { el.style.display = ''; }
+    });
   }else{
     if(btns)btns.style.display='flex';
     if(profile)profile.style.display='none';
@@ -200,14 +209,18 @@ function openAuthModal(){isRegister=false;showAuth()}
     if (user) {
       profile.style.display = 'flex';
       var letterEl = profile.querySelector('.nav-avatar-letter');
-      if (letterEl) letterEl.textContent = (user.email || user.name || 'U').charAt(0).toUpperCase();
+      var svgEl = profile.querySelector('.nav-avatar svg');
+      if (letterEl) {
+        letterEl.textContent = (user.email || user.name || 'U').charAt(0).toUpperCase();
+        letterEl.style.display = '';
+      }
+      if (svgEl) svgEl.style.display = 'none';
     } else {
       profile.style.display = 'none';
     }
   });
   if (user) {
     document.querySelectorAll('[data-auth-show]').forEach(function(el) { el.style.display = ''; });
-    // Admin-only elements: only show if user role is admin
     document.querySelectorAll('[data-admin-show]').forEach(function(el) {
       if (user.role === 'admin') { el.style.display = ''; }
     });
@@ -240,6 +253,26 @@ function openAuthModal(){isRegister=false;showAuth()}
       closeUserMenu();
     }
   });
-  // Listen for storage events from primer-app.js (both scripts run on /primer)
+  // Re-run after shared header loads (includes.js fires vl-includes-loaded)
+  document.addEventListener('vl-includes-loaded', function() {
+    updateAuthUI();
+    document.querySelectorAll('.nav-profile').forEach(function(profile) {
+      if (user) {
+        profile.style.display = 'flex';
+        var letterEl = profile.querySelector('.nav-avatar-letter');
+        var svgEl = profile.querySelector('.nav-avatar svg');
+        if (letterEl) {
+          letterEl.textContent = (user.email || user.name || 'U').charAt(0).toUpperCase();
+          letterEl.style.display = '';
+        }
+        if (svgEl) svgEl.style.display = 'none';
+      }
+    });
+    if (user) {
+      document.querySelectorAll('[data-admin-show]').forEach(function(el) {
+        if (user.role === 'admin') { el.style.display = ''; }
+      });
+    }
+  });
   window.addEventListener('storage', function(){ updateAuthUI(); });
 })();
