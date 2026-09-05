@@ -134,7 +134,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   
   
   
-  .step-bar{display:flex;gap:6px;margin-bottom:28px;flex-wrap:wrap}
+  .step-bar{display:flex;gap:6px;margin-bottom:28px;flex-wrap:wrap;max-width:var(--max-w);margin:0 auto 28px;padding:0 24px}
   .step-pill{flex:1;min-width:120px;text-align:center;padding:12px 8px;border-radius:8px;background:var(--surface-alt);font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;border:2px solid var(--outline);font-family:var(--font-b)}
   .step-pill.active{background:var(--blue);color:#fff;border-color:var(--blue)}
   .step-pill.done{background:var(--bio);color:#fff;border-color:var(--bio)}
@@ -227,6 +227,10 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   .footer-bottom{max-width:var(--max-w);margin:0 auto;padding:16px 16px 0;border-top:1px solid rgba(255,255,255,.06);display:flex;justify-content:space-between;font-size:12px;color:rgba(255,255,255,.35);flex-wrap:wrap;gap:8px}
   .skip-link{position:absolute;top:-100%;left:50%;transform:translateX(-50%);padding:8px 16px;background:var(--saffron);color:#fff;z-index:10000;border-radius:0 0 8px 8px;font-weight:600;text-decoration:none;font-size:14px}
   .skip-link:focus{top:0;outline:none}
+  details summary::-webkit-details-marker{display:none}
+  details[open] summary span{transform:rotate(90deg)}
+  details summary{transition:color .15s}
+  details summary:hover{color:var(--blue)}
   @media(max-width:768px){.nav-links{display:none}.hamburger{display:flex}.nav-inner{padding:0 16px}.footer-grid{grid-template-columns:1fr 1fr;gap:24px}.step-pill{min-width:calc(50% - 6px)}.enzyme-check-list{grid-template-columns:1fr 1fr}}
   @media(max-width:480px){.step-pill{min-width:100%}.vector-grid{grid-template-columns:1fr 1fr}.enzyme-check-list{grid-template-columns:1fr}.footer-grid{grid-template-columns:1fr 1fr;gap:16px}.page{padding:32px 16px 48px}}
   </style>
@@ -357,28 +361,28 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <a class="skip-link" href="#main-content">Skip to main content</a>
 
 <main id="main-content">
-<div class="page">
-  <h1 style="font-family:var(--font-h);font-size:clamp(1.6rem,3.5vw,2.2rem);font-weight:700">Molecular Cloning Simulator</h1>
-<p style="margin:8px 0 20px 0">Pick a plasmid vector, choose a gene, select restriction enzymes, and watch the simulator compute cut positions, fragment sizes, and the ligated recombinant plasmid. The circular SVG map updates live, and the virtual gel at the end shows your predicted bands — all in the browser, no data leaves your machine.</p>
-  <p>Pick a plasmid vector, choose a gene, select restriction enzymes, and watch the simulator compute cut positions, fragment sizes, and the ligated recombinant plasmid. The circular SVG map updates live, and the virtual gel at the end shows your predicted bands — all in the browser, no data leaves your machine.</p>
-
-  <div id="quick-answers">
-    <h2>How it works</h2>
-    <ol style="color:var(--text2);line-height:1.8;font-size:13px">
-      <li>Choose from 10+ common plasmid vectors (or paste your own sequence)</li>
-      <li>Select or enter a gene of interest</li>
-      <li>Pick restriction enzymes — the simulator shows cut positions and sticky ends</li>
-      <li>See the ligated recombinant plasmid and predicted gel bands</li>
-    </ol>
+<!-- TOOL HERO -->
+<div style="background:linear-gradient(135deg,#0f172a 0%,#1a2744 50%,#0f172a 100%);padding:40px 24px 32px;border-bottom:1px solid rgba(255,255,255,.06)">
+  <div style="max-width:var(--max-w);margin:0 auto">
+    <div style="font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:#64748b;font-weight:600;margin-bottom:8px;font-family:var(--font-h)">Molecular Biology Tool &middot; In Silico Cloning</div>
+    <h1 style="font-family:var(--font-h);font-size:clamp(1.4rem,3vw,2rem);font-weight:800;color:#fff;margin:0 0 10px;line-height:1.2">Molecular Cloning Simulator</h1>
+    <p style="font-size:14px;color:#94a3b8;margin:0 0 16px;max-width:640px;line-height:1.6">Pick a plasmid vector, digest with restriction enzymes, ligate your gene, and predict gel bands. All in the browser, no data leaves your machine.</p>
+    <div style="display:flex;flex-wrap:wrap;gap:8px">
+      <span style="display:inline-flex;align-items:center;gap:5px;padding:5px 12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:99px;font-size:11px;color:#cbd5e1;font-weight:600"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#22D3EE" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> 10+ vectors</span>
+      <span style="display:inline-flex;align-items:center;gap:5px;padding:5px 12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:99px;font-size:11px;color:#cbd5e1;font-weight:600"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#22D3EE" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> 41 enzymes</span>
+      <span style="display:inline-flex;align-items:center;gap:5px;padding:5px 12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:99px;font-size:11px;color:#cbd5e1;font-weight:600"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#22D3EE" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Circular plasmid maps</span>
+      <span style="display:inline-flex;align-items:center;gap:5px;padding:5px 12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:99px;font-size:11px;color:#cbd5e1;font-weight:600"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#22D3EE" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Virtual gel</span>
+      <span style="display:inline-flex;align-items:center;gap:5px;padding:5px 12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:99px;font-size:11px;color:#cbd5e1;font-weight:600"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#22D3EE" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> 100% browser-side</span>
+    </div>
   </div>
 </div>
 
   <div class="step-bar" id="stepBar">
-    <div class="step-pill active" onclick="goToStep(1)">1. Vector</div>
-    <div class="step-pill disabled" onclick="goToStep(2)">2. Gene of Interest</div>
-    <div class="step-pill disabled" onclick="goToStep(3)">3. Digestion</div>
-    <div class="step-pill disabled" onclick="goToStep(4)">4. Ligation</div>
-    <div class="step-pill disabled" onclick="goToStep(5)">5. Virtual Gel</div>
+    <div class="step-pill active" onclick="goToStep(1)" style="display:flex;align-items:center;justify-content:center;gap:6px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/></svg> 1. Vector</div>
+    <div class="step-pill disabled" onclick="goToStep(2)" style="display:flex;align-items:center;justify-content:center;gap:6px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/><path d="M12 6v12M6 12h12"/></svg> 2. Gene of Interest</div>
+    <div class="step-pill disabled" onclick="goToStep(3)" style="display:flex;align-items:center;justify-content:center;gap:6px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="20" y1="4" x2="8.12" y2="15.88"/><line x1="14.47" y1="14.48" x2="20" y2="20"/><line x1="8.12" y1="8.12" x2="12" y2="12"/></svg> 3. Digestion</div>
+    <div class="step-pill disabled" onclick="goToStep(4)" style="display:flex;align-items:center;justify-content:center;gap:6px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg> 4. Ligation</div>
+    <div class="step-pill disabled" onclick="goToStep(5)" style="display:flex;align-items:center;justify-content:center;gap:6px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg> 5. Virtual Gel</div>
   </div>
 
   <!-- STEP 1: VECTOR -->
@@ -531,31 +535,36 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   </div>
 
   <!-- EDUCATIONAL CONTENT -->
-  <div class="info-box">
-    <h2>How the cloning simulation works</h2>
-    <p>The simulator mirrors the four steps of a restriction/ligation cloning experiment. <strong>Digestion</strong> finds every occurrence of each selected enzyme's recognition site on the circular vector and the linear insert, then computes fragment sizes (for circular DNA the last fragment wraps around from the final cut to position 1) — the same cut-site logic as our <a href="restriction-enzyme-finder">free restriction enzyme finder</a>. <strong>Compatibility</strong> compares the sticky-end overhangs: EcoRI leaves 5'-AATT, BamHI and BglII both leave 5'-GATC, so a BamHI-cut vector will ligate an insert cut with BglII, while EcoRI-cut ends will not. <strong>Ligation</strong> splices the insert sequence at the chosen cut position and re-draws every feature (the GOI appears as an orange arc). <strong>Electrophoresis</strong> places bands using a log₁₀(size) migration curve, the standard approximation for linear DNA on agarose.</p>
-  </div>
-  <div class="info-box">
-    <h2>Choosing compatible enzymes</h2>
-    <ul>
+  <details style="margin-bottom:16px;border:1px solid var(--outline);border-radius:12px;background:#fff">
+    <summary style="padding:16px 20px;cursor:pointer;font-family:var(--font-h);font-size:15px;font-weight:700;list-style:none;display:flex;align-items:center;gap:8px"><span style="display:inline-block;transition:transform .2s;font-size:12px;color:var(--muted)">&#9656;</span> How the cloning simulation works</summary>
+    <div style="padding:0 20px 20px;border-top:1px solid var(--outline)">
+    <p style="margin-top:16px">The simulator mirrors the four steps of a restriction/ligation cloning experiment. <strong>Digestion</strong> finds every occurrence of each selected enzyme's recognition site on the circular vector and the linear insert, then computes fragment sizes (for circular DNA the last fragment wraps around from the final cut to position 1) — the same cut-site logic as our <a href="restriction-enzyme-finder">free restriction enzyme finder</a>. <strong>Compatibility</strong> compares the sticky-end overhangs: EcoRI leaves 5'-AATT, BamHI and BglII both leave 5'-GATC, so a BamHI-cut vector will ligate an insert cut with BglII, while EcoRI-cut ends will not. <strong>Ligation</strong> splices the insert sequence at the chosen cut position and re-draws every feature (the GOI appears as an orange arc). <strong>Electrophoresis</strong> places bands using a log₁₀(size) migration curve, the standard approximation for linear DNA on agarose.</p>
+    </div>
+  </details>
+  <details style="margin-bottom:16px;border:1px solid var(--outline);border-radius:12px;background:#fff">
+    <summary style="padding:16px 20px;cursor:pointer;font-family:var(--font-h);font-size:15px;font-weight:700;list-style:none;display:flex;align-items:center;gap:8px"><span style="display:inline-block;transition:transform .2s;font-size:12px;color:var(--muted)">&#9656;</span> Choosing compatible enzymes</summary>
+    <div style="padding:0 20px 20px;border-top:1px solid var(--outline)">
+    <ul style="margin-top:16px">
       <li><strong>Same enzyme</strong> for both vector and insert — always compatible (e.g. EcoRI + EcoRI).</li>
       <li><strong>Isocaudomers</strong> — different enzymes, identical overhang (BamHI/GATC + BglII/GATC, XhoI/TCGA + SalI/TCGA). These ligate but usually destroy both sites.</li>
       <li><strong>Blunt ends</strong> — SmaI, EcoRV, StuI, HpaI, PvuII all produce blunt ends and can ligate with any other blunt end (at lower efficiency).</li>
       <li><strong>Incompatible</strong> — different sticky overhangs (EcoRI/AATT vs HindIII/AGCT) cannot ligate without repair.</li>
       <li>Watch for <strong>internal sites</strong>: if your GOI contains the enzyme's recognition site, the insert will be cut inside the gene — the tool flags this in Step 2. Before ordering primers that add restriction sites, verify them against a <a href="primer">primer design</a> run, and confirm target uniqueness with <a href="blast">BLAST</a>.</li>
     </ul>
-  </div>
-  <div class="info-box">
-    <h2>Interpreting the virtual gel</h2>
-    <ul>
+    </div>
+  </details>
+  <details style="margin-bottom:16px;border:1px solid var(--outline);border-radius:12px;background:#fff">
+    <summary style="padding:16px 20px;cursor:pointer;font-family:var(--font-h);font-size:15px;font-weight:700;list-style:none;display:flex;align-items:center;gap:8px"><span style="display:inline-block;transition:transform .2s;font-size:12px;color:var(--muted)">&#9656;</span> Interpreting the virtual gel</summary>
+    <div style="padding:0 20px 20px;border-top:1px solid var(--outline)">
+    <ul style="margin-top:16px">
       <li><strong>Ladder lane</strong> — 100 bp → 10 kb markers for size calibration.</li>
       <li><strong>Undigested vector</strong> — supercoiled DNA migrates faster than linear; we draw a compact band plus a faint nicked (open-circle) band.</li>
       <li><strong>Single digest</strong> — one cut linearizes the plasmid → one band at the full size.</li>
       <li><strong>Double digest</strong> — two or more cuts → multiple bands whose sizes sum to the plasmid size.</li>
       <li><strong>Recombinant</strong> — after insertion the total size grows by the GOI length; bands shift accordingly. For digestion math on single sequences (not full plasmid maps), try the <a href="restriction-enzyme-finder">restriction enzyme finder</a>; for fragment sizes in the context of a PCR product, use <a href="pcr-analysis">PCR analysis</a>.</li>
     </ul>
-  </div>
-
+    </div>
+  </details>
   <div class="info-box" id="ai-answers">
     <h2>Quick Answers for AI Search</h2>
     <div style="display:grid;gap:20px">
