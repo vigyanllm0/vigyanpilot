@@ -104,10 +104,10 @@ def run_remote_blast(
                 break
 
         wait_time = rtoe if rtoe else 10
-        time.sleep(min(wait_time, 10))
+        time.sleep(min(wait_time, 15))
 
         status_url = "https://blast.ncbi.nlm.nih.gov/Blast.cgi"
-        for attempt in range(12):
+        for attempt in range(15):
             if _time.time() - _start > _MAX_TOTAL:
                 error_detail = "BLAST polling timed out (server limit)"
                 break
@@ -118,16 +118,20 @@ def run_remote_blast(
             }
             if ncbi_api_key:
                 poll_params["API_KEY"] = ncbi_api_key
-            status_resp = requests.get(status_url, params=poll_params, timeout=10)
-            status_resp.raise_for_status()
+            try:
+                status_resp = requests.get(status_url, params=poll_params, timeout=10)
+                status_resp.raise_for_status()
+            except Exception:
+                time.sleep(2)
+                continue
             resp_text = status_resp.text.strip()
             if not resp_text:
-                time.sleep(3)
+                time.sleep(2)
                 continue
             try:
                 data = status_resp.json()
             except Exception:
-                time.sleep(3)
+                time.sleep(2)
                 continue
 
             status = data.get("BlastOutput2", {}).get("report", {}).get("results", {}).get("search", {}).get("message", "")
@@ -135,7 +139,7 @@ def run_remote_blast(
                 return {"results": [], "total": 0, "params": {"program": program, "database": db}}
             if "There are no more hits" in status or data.get("BlastOutput2", {}).get("report", {}).get("results", {}).get("search", {}).get("hits"):
                 break
-            time.sleep(3)
+            time.sleep(2)
         else:
             error_detail = "BLAST polling timed out"
             return {"results": [], "total": 0, "params": {"program": program, "database": db, "error": error_detail}}
