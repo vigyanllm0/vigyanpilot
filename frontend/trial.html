@@ -324,7 +324,7 @@ async function validateCode() {
     var token = sessionStorage.getItem('pf_token') || '';
     var vh = { 'Content-Type': 'application/json' };
     if (token) vh['Authorization'] = 'Bearer ' + token;
-    var r = await fetch(API + '/promo/apply', {
+    var r = await fetch(API + '/promo/validate', {
       method: 'POST',
       headers: vh,
       credentials: 'same-origin',
