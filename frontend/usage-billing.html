@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<link rel="canonical" href="https://www.vigyanllm.in/usage-billing">
+<title>Usage & Billing — VigyanLLM</title>
+<meta name="description" content="Your VigyanLLM subscription, usage stats, and billing history.">
+<meta property="og:title" content="Usage & Billing — VigyanLLM">
+<meta property="og:description" content="Manage your VigyanLLM subscription, track usage, and view billing history.">
+<meta name="twitter:card" content="summary">
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-KRP5LLPR');</script>
+<link rel="icon" type="image/png" href="/logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://accounts.google.com/gsi/client?hl=en" async defer></script>
+<script>window.VIGYAN_BACKEND_URL = window.location.origin;</script>
+<style>
+html{overflow-x:hidden}:root{--blue:#1565C0;--navy:#0F172A;--surface:#FFFFFF;--surface-alt:#F8FAFC;--outline:#E2E8F0;--text:#0F172A;--text2:#475569;--muted:#94A3B8;--font-h:'Montserrat',sans-serif;--font-b:'Inter',sans-serif;--primary:#2563EB;--primary-soft:#EFF6FF;--bio:#047857;--bio-soft:#F0FDF4;--error:#DC2626;--error-soft:#FEF2F2;--success:#16A34A;--success-soft:#DCFCE7;--warning:#F59E0B;--warning-soft:#FEF3C7;--slate:#F1F5F9;--slate-border:#E2E8F0;--radius:14px;--radius-sm:8px}
+*{box-sizing:border-box;margin:0;padding:0}html{scroll-behavior:smooth}
+body{background:var(--surface-alt);color:var(--text);font-family:var(--font-b);line-height:1.6;-webkit-font-smoothing:antialiased}
+a{text-decoration:none;color:inherit}
+.skip-link{position:absolute;top:-100%;left:50%;transform:translateX(-50%);padding:8px 14px;background:var(--navy);color:#fff;z-index:10000;border-radius:0 0 8px 8px;font-weight:600;text-decoration:none;font-size:14px}.skip-link:focus{top:0;outline:none}
+
+/* ── Layout ── */
+.dash-wrap{max-width:1100px;margin:0 auto;padding:32px 24px 80px}
+.dash-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px}
+.dash-header h1{font-family:var(--font-h);font-size:22px;font-weight:800;color:var(--text)}
+.dash-header p{font-size:13px;color:var(--muted);margin-top:2px}
+.dash-nav{display:flex;gap:6px}
+.dash-nav a{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:var(--radius-sm);font-size:12px;font-weight:600;color:var(--text2);background:var(--surface);border:1px solid var(--slate-border);transition:all .15s;text-decoration:none}
+.dash-nav a:hover{border-color:var(--primary);color:var(--primary)}
+.dash-nav a.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+
+/* ── Cards ── */
+.card{background:var(--surface);border:1px solid var(--slate-border);border-radius:var(--radius);padding:24px;margin-bottom:20px}
+.card-title{font-family:var(--font-h);font-size:13px;font-weight:700;color:var(--text);margin-bottom:16px}
+
+/* ── Plan Card ── */
+.plan-card{background:linear-gradient(135deg,var(--primary),#1D4ED8);color:#fff;border:none;border-radius:var(--radius);padding:32px;margin-bottom:20px;position:relative;overflow:hidden}
+.plan-card::before{content:'';position:absolute;top:-40px;right:-40px;width:140px;height:140px;border-radius:50%;background:rgba(255,255,255,.1)}
+.plan-card::after{content:'';position:absolute;bottom:-30px;left:30px;width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,.06)}
+.plan-card.pro{background:linear-gradient(135deg,#2563EB,#1D4ED8)}
+.plan-card.lab{background:linear-gradient(135deg,#7C3AED,#6D28D9)}
+.plan-card.free{background:linear-gradient(135deg,#475569,#334155)}
+
+/* ── Usage Bar ── */
+.usage-bar{height:10px;background:rgba(255,255,255,.2);border-radius:5px;overflow:hidden}
+.usage-bar-fill{height:100%;border-radius:5px;transition:width .4s ease;background:#fff}
+.usage-bar-fill.danger{background:#FCA5A5}
+.usage-bar-fill.warning{background:#FCD34D}
+.usage-bar-label{display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px}
+
+/* ── Tool Badge ── */
+.tool-badge{display:inline-block;font-size:10px;font-weight:700;padding:3px 8px;border-radius:6px;text-transform:uppercase;letter-spacing:.02em}
+.tool-primer{background:#EFF6FF;color:#2563EB}.tool-blast{background:#FEF3C7;color:#D97706}.tool-msa{background:#EDE9FE;color:#7C3AED}.tool-docking{background:#F0FDF4;color:#047857}
+
+/* ── Status Pill ── */
+.pill{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700}
+.pill-active{background:rgba(255,255,255,.25);color:#fff}
+.pill-trial{background:rgba(255,255,255,.25);color:#fff}
+.pill-free{background:rgba(255,255,255,.2);color:rgba(255,255,255,.8)}
+.pill-cancelled{background:#FCA5A5;color:#991B1B}
+
+/* ── Table ── */
+.results-table{width:100%;border-collapse:collapse}
+.results-table th{text-align:left;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;padding:8px 12px;border-bottom:1px solid var(--slate-border)}
+.results-table td{padding:10px 12px;font-size:13px;border-bottom:1px solid var(--slate);vertical-align:middle}
+.results-table tr:last-child td{border-bottom:none}
+.results-table tr:hover td{background:rgba(241,245,249,.5)}
+
+/* ── Buttons ── */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:var(--radius-sm);font-size:12px;font-weight:600;cursor:pointer;border:none;transition:all .15s;font-family:var(--font-b)}
+.btn-primary{background:var(--primary);color:#fff}.btn-primary:hover{background:#1D4ED8}
+.btn-outline{background:transparent;color:var(--text2);border:1px solid var(--slate-border)}.btn-outline:hover{border-color:var(--primary);color:var(--primary)}
+.btn-danger{background:var(--error);color:#fff}.btn-danger:hover{background:#B91C1C}
+.btn-upgrade{background:linear-gradient(135deg,#F59E0B,#D97706);color:#fff;font-size:13px;padding:10px 24px;border-radius:10px;box-shadow:0 4px 14px rgba(245,158,11,.35)}.btn-upgrade:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(245,158,11,.45)}
+.btn-sm{padding:6px 12px;font-size:11px}
+
+/* ── Grid ── */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+
+@media(max-width:768px){.grid-2{grid-template-columns:1fr}.grid-4{grid-template-columns:repeat(2,1fr)}.dash-header{flex-direction:column;align-items:flex-start;gap:12px}}
+</style>
+<script src="/cookie-banner.js" defer></script>
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to content</a>
+<header>
+<nav aria-label="Main navigation">
+<div class="nav-inner">
+  <a href="/" class="nav-brand"><img src="logo.png" alt="VigyanLLM Logo" style="height:36px;width:auto;object-fit:contain" loading="lazy"><span>VigyanLLM</span></a>
+  <div class="nav-links" id="nav-links"></div>
+  <div class="nav-right">
+    <div class="nav-btns" id="navBtns"><button class="nav-login" onclick="openAuthModal()">Sign in</button><button class="nav-cta" onclick="openAuthModal()">Get started</button></div>
+    <div class="nav-profile" id="navProfile" style="display:none"><div class="nav-avatar" id="navAvatar" onclick="toggleUserMenu()"><span class="nav-avatar-letter" id="navAvatarLetter"></span></div>
+      <div class="user-dropdown" id="userDropdown"><div class="user-dropdown-header"><div class="ud-name" id="udName"></div><div class="ud-email" id="udEmail"></div><div class="ud-plan" id="udPlan"></div></div>
+        <a class="ud-item" href="/dashboard">Dashboard</a><a class="ud-item" href="/usage-billing">Usage & Billing</a><div class="ud-item logout" onclick="logout()">Logout</div>
+      </div>
+    </div>
+  </div>
+</div>
+</nav>
+</header>
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-KRP5LLPR" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+
+<main id="main-content">
+<div class="dash-wrap">
+  <div class="dash-header">
+    <div><h1>Usage & Billing</h1><p id="bill-sub">Loading subscription details…</p></div>
+    <div class="dash-nav"><a href="/dashboard">Dashboard</a><a href="/usage-billing" class="active">Usage & Billing</a></div>
+  </div>
+
+  <div class="plan-card free" id="plan-card">
+    <div style="display:flex;align-items:center;justify-content:space-between;position:relative;z-index:1">
+      <div>
+        <div style="font-size:11px;opacity:.8;margin-bottom:6px">Current Plan</div>
+        <div style="font-family:var(--font-h);font-size:28px;font-weight:800" id="plan-name">Free</div>
+        <div style="font-size:12px;margin-top:4px;opacity:.9" id="plan-expires"></div>
+      </div>
+      <div style="text-align:right">
+        <span class="pill pill-free" id="plan-pill">FREE</span>
+        <div style="font-size:11px;margin-top:8px;opacity:.8" id="razorpay-id"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">&#x1F4CA; Usage This Period</div>
+    <div style="margin-bottom:20px">
+      <div class="usage-bar-label"><span>Daily — <span id="daily-label">0/5</span></span><span id="daily-pct">0%</span></div>
+      <div class="usage-bar"><div class="usage-bar-fill" id="daily-bar" style="width:0%"></div></div>
+    </div>
+    <div>
+      <div class="usage-bar-label"><span>Monthly — <span id="monthly-label">0</span></span><span id="monthly-pct"></span></div>
+      <div class="usage-bar"><div class="usage-bar-fill" id="monthly-bar" style="width:0%"></div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">&#x1F50D; Tool Breakdown</div>
+    <div class="grid-4">
+      <div style="padding:16px;background:var(--slate);border-radius:8px;text-align:center"><div style="font-size:20px;font-weight:800;color:var(--primary)" id="ub-primer">0</div><div style="font-size:11px;color:var(--muted);margin-top:4px">Primer Design</div></div>
+      <div style="padding:16px;background:var(--slate);border-radius:8px;text-align:center"><div style="font-size:20px;font-weight:800;color:#D97706" id="ub-blast">0</div><div style="font-size:11px;color:var(--muted);margin-top:4px">BLAST</div></div>
+      <div style="padding:16px;background:var(--slate);border-radius:8px;text-align:center"><div style="font-size:20px;font-weight:800;color:#7C3AED" id="ub-msa">0</div><div style="font-size:11px;color:var(--muted);margin-top:4px">MSA</div></div>
+      <div style="padding:16px;background:var(--slate);border-radius:8px;text-align:center"><div style="font-size:20px;font-weight:800;color:var(--bio)" id="ub-docking">0</div><div style="font-size:11px;color:var(--muted);margin-top:4px">Docking</div></div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">&#x1F511; Subscription Actions</div>
+      <div id="actions-free" style="text-align:center;padding:20px 0">
+        <a href="/pricing" class="btn btn-upgrade">Upgrade to Pro</a>
+        <div style="font-size:12px;color:var(--muted);margin-top:12px">Unlock higher limits, batch processing, and exports</div>
+      </div>
+      <div id="actions-paid" style="display:none">
+        <a href="/pricing" class="btn btn-primary" style="width:100%;justify-content:center;margin-bottom:12px">Upgrade Plan</a>
+        <button class="btn btn-outline" style="width:100%;justify-content:center" onclick="cancelSubscription()" id="cancel-btn">Cancel Subscription</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">&#x1F4B0; Billing History</div>
+      <div id="billing-table"><div style="text-align:center;padding:20px;color:var(--muted);font-size:12px">No billing history</div></div>
+    </div>
+  </div>
+</div>
+</main>
+
+<script defer src="/search-index.js"></script>
+<script defer src="/auth-shared.js"></script>
+<script>
+var PLAN_COLORS={free:'linear-gradient(135deg,#475569,#334155)',trial:'linear-gradient(135deg,#2563EB,#1D4ED8)',pro:'linear-gradient(135deg,#2563EB,#1D4ED8)',lab:'linear-gradient(135deg,#7C3AED,#6D28D9)'};
+var PLAN_CLASSES={free:'free',trial:'pro',pro:'pro',lab:'lab'};
+var PLAN_LABELS={free:'FREE TRIAL',trial:'TRIAL',pro:'PRO',lab:'LAB'};
+var TIER_LIMITS={free:5,trial:50,pro:100,lab:500};
+
+function formatDate(ts){if(!ts)return'—';var d=new Date(ts);return d.toLocaleDateString('en-IN',{year:'numeric',month:'short',day:'numeric'})}
+function formatDateShort(ts){if(!ts)return'—';var d=new Date(ts);return d.toLocaleDateString('en-IN',{month:'short',day:'numeric',year:'numeric'})}
+
+async function loadBilling(){
+  var api=window.VIGYAN_BACKEND_URL||'/api';
+  var pr=sessionStorage.getItem('pf_user')||localStorage.getItem('pf_user');
+  if(!pr){document.getElementById('bill-sub').textContent='Please sign in to view billing.';return}
+
+  try{
+    var[statusRes,usageRes,historyRes]=await Promise.all([
+      fetch(api+'/api/payments/status',{credentials:'same-origin'}),
+      fetch(api+'/api/usage/check?tool=all',{credentials:'same-origin'}),
+      fetch(api+'/api/subscription/history',{credentials:'same-origin'})
+    ]);
+
+    var status=statusRes.ok?await statusRes.json():{};
+    var usage=usageRes.ok?await usageRes.json():{};
+    var history=historyRes.ok?await historyRes.json():{payments:[]};
+
+    var plan=status.plan||'free';
+    var expires=status.expires_at;
+    var remaining=status.days_remaining;
+    var dailyLimit=usage.daily_limit||TIER_LIMITS[plan]||5;
+    var dailyUsed=usage.daily_used||0;
+    var monthlyUsed=usage.monthly_used||0;
+
+    // Plan card
+    var card=document.getElementById('plan-card');
+    card.className='plan-card '+(PLAN_CLASSES[plan]||'free');
+    card.style.background=PLAN_COLORS[plan]||PLAN_COLORS.free;
+    document.getElementById('plan-name').textContent=plan.toUpperCase();
+    document.getElementById('plan-pill').className='pill pill-'+(PLAN_CLASSES[plan]||'free');
+    document.getElementById('plan-pill').textContent=PLAN_LABELS[plan]||'FREE';
+
+    if(expires){
+      var exp=new Date(expires);
+      var daysLeft=Math.max(0,Math.ceil((exp-Date.now())/(1000*60*60*24)));
+      document.getElementById('plan-expires').textContent='Expires '+formatDate(exp)+' ('+daysLeft+' days left)';
+    }else{
+      document.getElementById('plan-expires').textContent=plan==='pro'||plan==='lab'?'Active subscription':'No expiration';
+    }
+
+    if(status.razorpay_subscription_id){
+      document.getElementById('razorpay-id').textContent='Sub: '+status.razorpay_subscription_id.substring(0,20)+'…';
+    }
+
+    // Usage bars
+    var dpct=Math.min(100,Math.round(dailyUsed/dailyLimit*100));
+    document.getElementById('daily-label').textContent=dailyUsed+'/'+dailyLimit;
+    document.getElementById('daily-pct').textContent=dpct+'%';
+    var dbar=document.getElementById('daily-bar');
+    dbar.style.width=dpct+'%';
+    dbar.className='usage-bar-fill'+(dpct>80?' danger':dpct>60?' warning':'');
+
+    document.getElementById('monthly-label').textContent=monthlyUsed+' analyses';
+
+    // Tool breakdown (use localStorage analytics)
+    try{
+      var a=JSON.parse(localStorage.getItem('vl_analytics')||'{}');
+      var t=a.tools||{};
+      document.getElementById('ub-primer').textContent=t.primer||0;
+      document.getElementById('ub-blast').textContent=t.blast||0;
+      document.getElementById('ub-msa').textContent=t.msa||0;
+      document.getElementById('ub-docking').textContent=t.docking||0;
+    }catch(e){}
+
+    // Actions
+    if(plan==='free'||plan==='trial'){
+      document.getElementById('actions-free').style.display='block';
+      document.getElementById('actions-paid').style.display='none';
+    }else{
+      document.getElementById('actions-free').style.display='none';
+      document.getElementById('actions-paid').style.display='block';
+    }
+
+    // Billing history
+    var payments=history.payments||[];
+    var tb=document.getElementById('billing-table');
+    if(!payments.length){
+      tb.innerHTML='<div style="text-align:center;padding:20px;color:var(--muted);font-size:12px">No billing history</div>';
+    }else{
+      var h='<table class="results-table"><thead><tr><th>Plan</th><th>Status</th><th>Amount</th><th>Date</th></tr></thead><tbody>';
+      payments.slice(0,10).forEach(function(p){
+        var statusCls=p.status==='captured'?'color:var(--success)':p.status==='failed'?'color:var(--error)':'color:var(--muted)';
+        h+='<tr><td style="font-weight:600">'+(p.plan||'pro').toUpperCase()+'</td><td><span style="'+statusCls+';font-weight:600;text-transform:capitalize">'+p.status+'</span></td><td>₹'+(p.amount||0)+'</td><td style="font-size:12px;color:var(--muted)">'+formatDate(p.created_at)+'</td></tr>';
+      });
+      h+='</tbody></table>';
+      tb.innerHTML=h;
+    }
+
+    document.getElementById('bill-sub').textContent='Manage your subscription and track usage.';
+  }catch(e){document.getElementById('bill-sub').textContent='Could not load billing info.'}
+}
+
+async function cancelSubscription(){
+  if(!confirm('Are you sure you want to cancel your subscription? You will lose access to paid features at the end of your billing period.'))return;
+  try{
+    var r=await fetch((window.VIGYAN_BACKEND_URL||'/api')+'/api/subscription/cancel',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin'});
+    var d=await r.json();
+    if(d.status==='cancelled'||d.status==='ok'){alert('Subscription cancelled. Access continues until end of billing period.');loadBilling()}
+    else{alert('Error: '+(d.error||'Unknown error'))}
+  }catch(e){alert('Network error. Please try again.')}
+}
+
+document.addEventListener('DOMContentLoaded',loadBilling);
+</script>
+<footer style="background:var(--navy);color:rgba(255,255,255,.5);padding:24px;text-align:center;font-size:12px">
+  <span>&copy; <script>document.write(new Date().getFullYear())</script> VigyanLLM Private Limited</span>
+</footer>
+</body>
+</html>
