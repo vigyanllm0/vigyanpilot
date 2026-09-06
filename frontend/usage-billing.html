@@ -12,8 +12,7 @@
 <meta name="twitter:card" content="summary">
 <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-KRP5LLPR');</script>
 <link rel="icon" type="image/png" href="/logo.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="/design-tokens.css">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <script src="https://accounts.google.com/gsi/client?hl=en" async defer></script>
 <script>window.VIGYAN_BACKEND_URL = window.location.origin;</script>
@@ -88,23 +87,8 @@ a{text-decoration:none;color:inherit}
 <script src="/cookie-banner.js" defer></script>
 </head>
 <body>
+<div id="vl-header"></div>
 <a href="#main-content" class="skip-link">Skip to content</a>
-<header>
-<nav aria-label="Main navigation">
-<div class="nav-inner">
-  <a href="/" class="nav-brand"><img src="logo.png" alt="VigyanLLM Logo" style="height:36px;width:auto;object-fit:contain" loading="lazy"><span>VigyanLLM</span></a>
-  <div class="nav-links" id="nav-links"></div>
-  <div class="nav-right">
-    <div class="nav-btns" id="navBtns"><button class="nav-login" onclick="openAuthModal()">Sign in</button><button class="nav-cta" onclick="openAuthModal()">Get started</button></div>
-    <div class="nav-profile" id="navProfile" style="display:none"><div class="nav-avatar" id="navAvatar" onclick="toggleUserMenu()"><span class="nav-avatar-letter" id="navAvatarLetter"></span></div>
-      <div class="user-dropdown" id="userDropdown"><div class="user-dropdown-header"><div class="ud-name" id="udName"></div><div class="ud-email" id="udEmail"></div><div class="ud-plan" id="udPlan"></div></div>
-        <a class="ud-item" href="/dashboard">Dashboard</a><a class="ud-item" href="/usage-billing">Usage & Billing</a><div class="ud-item logout" onclick="logout()">Logout</div>
-      </div>
-    </div>
-  </div>
-</div>
-</nav>
-</header>
 <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-KRP5LLPR" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
 <main id="main-content">
@@ -284,8 +268,18 @@ async function cancelSubscription(){
 
 document.addEventListener('DOMContentLoaded',loadBilling);
 </script>
-<footer style="background:var(--navy);color:rgba(255,255,255,.5);padding:24px;text-align:center;font-size:12px">
-  <span>&copy; <script>document.write(new Date().getFullYear())</script> VigyanLLM Private Limited</span>
-</footer>
-</body>
-</html>
+<div id="vl-footer"></div>
+<div class="mobile-sticky-cta">
+  <a href="/dashboard" class="cta-primary">Dashboard</a>
+  <a href="/usage-billing" class="cta-secondary">Usage & Billing</a>
+</div>
+<script src="/includes.js"></script>
+<script>
+(function(){
+var h=document.getElementById('hamburger'),m=document.getElementById('mobile-menu');
+if(!h||!m)return;
+h.addEventListener('click',function(){h.classList.toggle('active');m.classList.toggle('open')});
+document.addEventListener('click',function(e){if(!h.contains(e.target)&&!m.contains(e.target)){h.classList.remove('active');m.classList.remove('open')}});
+})();
+</script>
+</body></html>
