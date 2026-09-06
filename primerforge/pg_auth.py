@@ -1160,3 +1160,62 @@ def log_action(email: str, action: str, details: str = ""):
         )
     except Exception as e:
         logger.debug("Suppressed exception: %s", e)  # system_events table may not exist in all environments
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# ANONYMOUS RATE LIMITING (1/day per IP+UA fingerprint)
+# ═══════════════════════════════════════════════════════════════════════════
+
+import hashlib as _hashlib
+
+_ANON_DAILY_LIMIT = 1
+
+
+def _anon_fingerprint() -> str:
+    """Generate a fingerprint from IP + User-Agent for anonymous rate limiting."""
+    ip = request.headers.get("X-Forwarded-For", request.remote_addr or "0.0.0.0")
+    ip = ip.split(",")[0].strip()
+    ua = request.headers.get("User-Agent", "")
+    raw = f"{ip}|{ua}"
+    return _hashlib.sha256(raw.encode()).hexdigest()[:32]
+
+
+def _today_str_pg() -> str:
+    """Return today as YYYY-MM-DD string in PG."""
+    row = fetch_one("SELECT CURRENT_DATE::text AS d")
+    return row["d"] if row else "1970-01-01"
+
+
+def check_anon_usage() -> dict:
+    """Check if anonymous user can run an analysis. Returns {can_analyze, used, limit}."""
+    fp = _anon_fingerprint()
+    today = _today_str_pg()
+    try:
+        row = fetch_one(
+            "SELECT count FROM anon_daily_usage WHERE fingerprint = %s AND usage_date = %s",
+            (fp, today)
+        )
+        used = row["count"] if row else 0
+    except Exception:
+        used = 0
+    return {
+        "can_analyze": used < _ANON_DAILY_LIMIT,
+        "used": used,
+        "limit": _ANON_DAILY_LIMIT,
+    }
+
+
+def record_anon_usage(seq_count: int = 1):
+    """Record anonymous usage for today."""
+    fp = _anon_fingerprint()
+    today = _today_str_pg()
+    try:
+        execute(
+            """INSERT INTO anon_daily_usage (fingerprint, usage_date, count)
+               VALUES (%s, %s, %s)
+               ON CONFLICT (fingerprint, usage_date)
+               DO UPDATE SET count = anon_daily_usage.count + %s""",
+            (fp, today, seq_count, seq_count)
+        )
+    except Exception as e:
+        logger.debug("anon usage record failed: %s", e)

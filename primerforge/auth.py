@@ -395,6 +395,95 @@ def init_db():
     logger.info("Database initialized at %s", DB_PATH)
 
 
+# ═══════════════════════════════════════════════════════════════════════════
+# ANONYMOUS RATE LIMITING (1/day per IP+UA fingerprint)
+# ═══════════════════════════════════════════════════════════════════════════
+
+import hashlib as _hashlib
+
+_ANON_DAILY_LIMIT = 1
+
+
+def _anon_fingerprint() -> str:
+    """Generate a fingerprint from IP + User-Agent for anonymous rate limiting."""
+    from flask import request as _req
+    ip = _req.headers.get("X-Forwarded-For", _req.remote_addr or "0.0.0.0")
+    ip = ip.split(",")[0].strip()
+    ua = _req.headers.get("User-Agent", "")
+    raw = f"{ip}|{ua}"
+    return _hashlib.sha256(raw.encode()).hexdigest()[:32]
+
+
+def check_anon_usage() -> dict:
+    """Check if anonymous user can run an analysis."""
+    fp = _anon_fingerprint()
+    today = _today_str()
+    db = get_db()
+    try:
+        row = db.execute(
+            "SELECT count FROM anon_daily_usage WHERE fingerprint=? AND usage_date=?",
+            (fp, today)
+        ).fetchone()
+        used = row["count"] if row else 0
+    except Exception:
+        used = 0
+    return {
+        "can_analyze": used < _ANON_DAILY_LIMIT,
+        "used": used,
+        "limit": _ANON_DAILY_LIMIT,
+    }
+
+
+@_retry_on_lock(max_attempts=3)
+def record_anon_usage(seq_count: int = 1):
+    """Record anonymous usage for today."""
+    fp = _anon_fingerprint()
+    today = _today_str()
+    db = get_db()
+    try:
+        existing = db.execute(
+            "SELECT id FROM anon_daily_usage WHERE fingerprint=? AND usage_date=?",
+            (fp, today)
+        ).fetchone()
+        if existing:
+            db.execute(
+                "UPDATE anon_daily_usage SET count = count + ? WHERE id=?",
+                (seq_count, existing["id"])
+            )
+        else:
+            db.execute(
+                "INSERT INTO anon_daily_usage (fingerprint, usage_date, count) VALUES (?, ?, ?)",
+                (fp, today, seq_count)
+            )
+        db.commit()
+    except Exception:
+        # Table may not exist — create it lazily
+        try:
+            db.execute("""
+                CREATE TABLE IF NOT EXISTS anon_daily_usage (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    fingerprint TEXT NOT NULL,
+                    usage_date TEXT NOT NULL,
+                    count INTEGER DEFAULT 1,
+                    created_at REAL,
+                    UNIQUE(fingerprint, usage_date)
+                )
+            """)
+            db.execute(
+                "INSERT INTO anon_daily_usage (fingerprint, usage_date, count, created_at) VALUES (?, ?, ?, ?)",
+                (fp, today, seq_count, time.time())
+            )
+            db.commit()
+        except Exception:
+            pass
+        except Exception as e:
+            logger.error("Failed to create admin user: %s", e)
+    else:
+        logger.warning("ADMIN_PASSWORD not set — skipping admin user creation in SQLite DB")
+    db.close()
+    logger.info("Database initialized at %s", DB_PATH)
+
+
 # ── Token Management ──────────────────────────────────────────────────────
 def _sign(payload: str) -> str:
     return hmac.new(SECRET_KEY.encode(), payload.encode(), hashlib.sha256).hexdigest()

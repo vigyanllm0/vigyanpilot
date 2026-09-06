@@ -801,7 +801,6 @@ def payment_status():
     # Get usage info from check_usage
     usage = check_usage(email)
 
-    FREE_DAILY_LIMIT = 5
     plan = "free"
     billing_cycle = "monthly"
     plan_expires_at = 0
@@ -822,6 +821,9 @@ def payment_status():
         if sub["plan_id"] and "-" in (sub["plan_id"] or ""):
             billing_cycle = sub["plan_id"].split("-")[1] if len(sub["plan_id"].split("-")) > 1 else "monthly"
 
+    from .price_registry import get_tier_limits
+    tier_limits = get_tier_limits(plan)
+
     # Count today's usage from agent_work_logs (works for all tiers)
     today_start = time.time() - (time.time() % 86400)
     today_usage = 0
@@ -838,15 +840,15 @@ def payment_status():
             pass
 
     if sub and sub.get("is_active") and plan != "free":
-        daily_quota = sub["monthly_quota"] or FREE_DAILY_LIMIT
+        daily_quota = sub["monthly_quota"] or tier_limits["daily_analyses"]
         daily_used = sub["quota_used"] or 0
         can_analyze = daily_used < daily_quota
         remaining = max(0, daily_quota - daily_used)
     else:
-        daily_quota = FREE_DAILY_LIMIT
+        daily_quota = tier_limits["daily_analyses"]
         daily_used = today_usage
-        can_analyze = today_usage < FREE_DAILY_LIMIT
-        remaining = max(0, FREE_DAILY_LIMIT - today_usage)
+        can_analyze = today_usage < daily_quota
+        remaining = max(0, daily_quota - today_usage)
 
     role = g.user.get("role", "user") if hasattr(g, 'user') else "user"
 
@@ -892,14 +894,17 @@ def usage_check():
         (email,)
     )
 
-    FREE_DAILY = 5
     if sub and sub.get("is_active"):
-        limit = sub["monthly_quota"] or FREE_DAILY
+        plan_key = (sub["plan_id"] or "free").split("-")[0]
+        from .price_registry import get_tier_limits
+        tier_limits = get_tier_limits(plan_key)
+        limit = sub["monthly_quota"] or tier_limits["daily_analyses"]
         used = sub["quota_used"] or 0
         remaining = max(0, limit - used)
         can_analyze = remaining > 0
     else:
-        # Free tier: count today's agent_work_logs
+        from .price_registry import get_tier_limits
+        tier_limits = get_tier_limits("free")
         used = 0
         if user_id:
             try:
@@ -912,7 +917,7 @@ def usage_check():
                     used = row["cnt"] or 0
             except Exception:
                 pass
-        limit = FREE_DAILY
+        limit = tier_limits["daily_analyses"]
         remaining = max(0, limit - used)
         can_analyze = used < limit
 

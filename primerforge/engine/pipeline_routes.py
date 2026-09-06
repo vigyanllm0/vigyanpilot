@@ -388,9 +388,18 @@ def submit_pipeline():
         except Exception as e:
             logger.debug("VigyanLLM: Monthly quota check skipped: %s", e)
 
-        # Daily quota: 2 free designs per day. Beyond that, consume a token.
+        # Daily quota: plan-based limit per day. Beyond that, consume a token.
         consumed_daily_token = False
         try:
+            from ..price_registry import get_tier_limits
+            sub_row = fetch_one(
+                """SELECT s.plan_id FROM subscriptions s
+                   WHERE s.user_id = %s AND s.is_active = TRUE""",
+                (user_id,)
+            )
+            plan_key = (sub_row["plan_id"] or "free").split("-")[0] if sub_row else "free"
+            daily_limit = get_tier_limits(plan_key)["daily_analyses"]
+
             today_count = fetch_one(
                 """SELECT COUNT(*) AS cnt FROM pipeline_jobs
                    WHERE user_id = %s
@@ -400,19 +409,19 @@ def submit_pipeline():
                 (user_id,)
             )
             daily_used = today_count["cnt"] if today_count else 0
-            if daily_used >= 2:
+            if daily_used >= daily_limit:
                 if not consume_token(user_id, g.user["email"]):
                     logger.warning(
-                        "VigyanLLM: Daily quota exceeded for user %s (%d/2) and no tokens",
-                        user_id, daily_used,
+                        "VigyanLLM: Daily quota exceeded for user %s (%d/%d) and no tokens",
+                        user_id, daily_used, daily_limit,
                     )
                     return jsonify(brand_response({
                         "error": brand_error(
-                            f"Daily pipeline quota reached ({daily_used}/2). "
-                            "Claim academic access for 10 free designs, or upgrade to a paid plan."
+                            f"Daily pipeline quota reached ({daily_used}/{daily_limit}). "
+                            "Upgrade your plan for more analyses."
                         ),
                         "daily_used": daily_used,
-                        "daily_limit": 2,
+                        "daily_limit": daily_limit,
                         "needs_payment": True,
                     })), 429
                 consumed_daily_token = True

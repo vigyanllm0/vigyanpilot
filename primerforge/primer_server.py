@@ -1292,6 +1292,19 @@ def create_app() -> Flask:
 
         # ── Auth & Usage Check ────────────────────────────────────────────
         user = get_current_user()
+        is_anon = not user
+
+        # Anonymous rate limit: 1/day
+        if is_anon:
+            if USE_POSTGRES:
+                from .pg_auth import check_anon_usage
+            else:
+                from .auth import check_anon_usage
+            anon_chk = check_anon_usage()
+            if not anon_chk["can_analyze"]:
+                return jsonify({"error": "Daily limit reached for anonymous users. Sign up for 5 free analyses per day.",
+                                "code": "DAILY_LIMIT", "usage": anon_chk}), 402
+
         if user:
             from .auth import check_daily_usage
             usage = check_daily_usage(user['email'], "primer")
@@ -1526,6 +1539,13 @@ def create_app() -> Flask:
                 except: pass
                 log_action(user['email'], "pipeline_run", f"{len(normalised)} pairs, {elapsed_ms}ms")
 
+        if is_anon:
+            if USE_POSTGRES:
+                from .pg_auth import record_anon_usage
+            else:
+                from .auth import record_anon_usage
+            record_anon_usage(1)
+
         return jsonify({
             # ── Rigid schema (as specified) ───────────────────────────────
             "pipeline_status": pipeline_envelope["pipeline_status"],
@@ -1550,6 +1570,19 @@ def create_app() -> Flask:
         if not READY:
             return err("Core not available.", "DESIGN_FAILED", 503)
         user = get_current_user()
+        is_anon = not user
+
+        # Anonymous rate limit: 1/day
+        if is_anon:
+            if USE_POSTGRES:
+                from .pg_auth import check_anon_usage
+            else:
+                from .auth import check_anon_usage
+            anon_chk = check_anon_usage()
+            if not anon_chk["can_analyze"]:
+                return jsonify({"error": "Daily limit reached for anonymous users. Sign up for 5 free analyses per day.",
+                                "code": "DAILY_LIMIT", "usage": anon_chk}), 402
+
         data = request.get_json(silent=True) or {}
         forward = data.get("forward", "").strip()
         reverse = data.get("reverse", "").strip()
@@ -1623,6 +1656,18 @@ def create_app() -> Flask:
         except Exception as exc:
             logger.error("Manual analysis error: %s", exc, exc_info=True)
             return err("Analysis failed due to an internal error.", "DESIGN_FAILED", 500)
+
+    def _record_usage_for_route(user, tool_key, seq_count=1):
+        """Record usage for logged-in users."""
+        if user:
+            if USE_POSTGRES:
+                _record_usage(user, tool_key, seq_count)
+            else:
+                try:
+                    from .auth import record_daily_usage
+                    record_daily_usage(user["email"], tool_key, seq_count)
+                except:
+                    pass
 
     def _log_fetch(acc, source, description=""):
         """Log a sequence fetch to the audit log."""
@@ -1818,7 +1863,33 @@ def create_app() -> Flask:
         import re
 
         def _daily_check(user, tool_key):
-            if USE_POSTGRES: return {}
+            if USE_POSTGRES:
+                from .database import fetch_one as pg_fetch_one
+                from .price_registry import get_tier_limits
+                try:
+                    uid_row = pg_fetch_one("SELECT id FROM users WHERE email = %s", (user["email"],))
+                    if not uid_row:
+                        return {}
+                    uid = uid_row["id"]
+                    sub_row = pg_fetch_one(
+                        "SELECT plan_id FROM subscriptions WHERE user_id = %s AND is_active = TRUE",
+                        (uid,)
+                    )
+                    plan_key = (sub_row["plan_id"] or "free").split("-")[0] if sub_row else "free"
+                    limit = get_tier_limits(plan_key)["daily_analyses"]
+                    today_count = pg_fetch_one(
+                        """SELECT COUNT(*) AS cnt FROM agent_work_logs
+                           WHERE user_id = %s AND completed_at >= CURRENT_DATE
+                           AND completed_at < CURRENT_DATE + INTERVAL '1 day'""",
+                        (uid,)
+                    )
+                    used = today_count["cnt"] if today_count else 0
+                    if used >= limit and user.get("role") != "admin":
+                        return {"error": "Daily limit reached.", "code": "DAILY_LIMIT",
+                                "usage": {"daily_limit": limit, "daily_used": used, "daily_remaining": max(0, limit - used)}}
+                except Exception:
+                    pass
+                return {}
             from .auth import check_daily_usage
             usage = check_daily_usage(user["email"], tool_key)
             if not usage["can_analyze"] and user.get("role") != "admin":
@@ -1826,7 +1897,19 @@ def create_app() -> Flask:
             return {}
 
         def _record_usage(user, tool_key, seq_count):
-            if USE_POSTGRES: return
+            if USE_POSTGRES:
+                from .database import fetch_one as pg_fetch_one, execute as pg_execute
+                try:
+                    uid_row = pg_fetch_one("SELECT id FROM users WHERE email = %s", (user["email"],))
+                    if uid_row:
+                        pg_execute(
+                            """INSERT INTO agent_work_logs (user_id, tool, completed_at)
+                               VALUES (%s, %s, NOW())""",
+                            (uid_row["id"], tool_key)
+                        )
+                except Exception:
+                    pass
+                return
             try:
                 from .auth import record_daily_usage
                 record_daily_usage(user["email"], tool_key, seq_count)
@@ -1857,6 +1940,17 @@ def create_app() -> Flask:
         # Allow anonymous BLAST — no auth required for basic searches
         is_anon = bool(auth_err)
 
+        # Anonymous rate limit: 1/day
+        if is_anon:
+            if USE_POSTGRES:
+                from .pg_auth import check_anon_usage
+            else:
+                from .auth import check_anon_usage
+            anon_chk = check_anon_usage()
+            if not anon_chk["can_analyze"]:
+                return jsonify({"error": "Daily limit reached for anonymous users. Sign up for 5 free analyses per day.",
+                                "code": "DAILY_LIMIT", "usage": anon_chk}), 402
+
         if sequences:
             # Batch mode
             n_seqs = len(sequences)
@@ -1875,7 +1969,13 @@ def create_app() -> Flask:
                 r, e = _blast_one(seq)
                 if e: errors.append({"sequence": seq[:50], "error": e})
                 else: results.append(r)
-            if not is_anon:
+            if is_anon:
+                if USE_POSTGRES:
+                    from .pg_auth import record_anon_usage
+                else:
+                    from .auth import record_anon_usage
+                record_anon_usage(n_seqs)
+            else:
                 _record_usage(user, "blast", n_seqs)
             return jsonify({"results": results, "errors": errors, "total": len(results), "failed": len(errors)}), 200
 
@@ -1891,7 +1991,13 @@ def create_app() -> Flask:
         try:
             result, blast_err = _blast_one(query_sequence)
             if blast_err: return err(f"BLAST failed: {blast_err}", "BLAST_FAILED", 500)
-            if not is_anon:
+            if is_anon:
+                if USE_POSTGRES:
+                    from .pg_auth import record_anon_usage
+                else:
+                    from .auth import record_anon_usage
+                record_anon_usage(1)
+            else:
                 _record_usage(user, "blast", 1)
             return jsonify(result), 200
         except Exception as exc:
@@ -2320,9 +2426,28 @@ def create_app() -> Flask:
             return err("At least 2 sequences are required for MSA.", "VALIDATION_ERROR", 400)
 
         user = get_current_user()
+        is_anon = not user
         n = len(sequences)
+
+        # Anonymous rate limit: 1/day
+        if is_anon:
+            if USE_POSTGRES:
+                from .pg_auth import check_anon_usage
+            else:
+                from .auth import check_anon_usage
+            anon_chk = check_anon_usage()
+            if not anon_chk["can_analyze"]:
+                return jsonify({"error": "Daily limit reached for anonymous users. Sign up for 5 free analyses per day.",
+                                "code": "DAILY_LIMIT", "usage": anon_chk}), 402
+
         if user:
-            if not USE_POSTGRES:
+            if USE_POSTGRES:
+                from .pg_auth import check_anon_usage as _noop
+                # Use the PG daily check helper
+                chk = _daily_check(user, "msa")
+                if chk.get("code") == "DAILY_LIMIT":
+                    return jsonify(chk), 402
+            else:
                 from .auth import check_daily_usage, record_daily_usage
                 usage = check_daily_usage(user["email"], "msa")
                 if not usage["can_analyze"] and user.get("role") != "admin":
@@ -2347,9 +2472,14 @@ def create_app() -> Flask:
                 process_job(job_id)
                 job = get_job(job_id)
                 if job["status"] == "DONE":
-                    if user and not USE_POSTGRES:
-                        try: record_daily_usage(user["email"], "msa", n)
-                        except: pass
+                    if is_anon:
+                        if USE_POSTGRES:
+                            from .pg_auth import record_anon_usage
+                        else:
+                            from .auth import record_anon_usage
+                        record_anon_usage(n)
+                    else:
+                        _record_usage(user, "msa", n)
                     return jsonify({
                         "job_id": job_id,
                         "total_sequences": n,
@@ -2364,9 +2494,14 @@ def create_app() -> Flask:
             viewer["fasta"] = format_fasta(sequences)
             viewer["clustal"] = format_clustal(viewer.get("alignment", []))
             viewer["summary"] = get_msa_summary(viewer)
-            if user and not USE_POSTGRES:
-                try: record_daily_usage(user["email"], "msa", n)
-                except: pass
+            if is_anon:
+                if USE_POSTGRES:
+                    from .pg_auth import record_anon_usage
+                else:
+                    from .auth import record_anon_usage
+                record_anon_usage(n)
+            else:
+                _record_usage(user, "msa", n)
             return jsonify(viewer), 200
         except Exception as exc:
             logger.error("MSA error: %s", exc, exc_info=True)
@@ -2382,25 +2517,48 @@ def create_app() -> Flask:
         if not sequences or len(sequences) < 2:
             return err("At least 2 sequences required.", "VALIDATION_ERROR", 400)
         user = get_current_user()
+        is_anon = not user
         n = len(sequences)
-        if user and not USE_POSTGRES:
-            from .auth import check_daily_usage, record_daily_usage
-            usage = check_daily_usage(user["email"], "msa")
-            if not usage["can_analyze"] and user.get("role") != "admin":
-                return jsonify({"error": "Daily limit reached.", "code": "DAILY_LIMIT", "usage": usage}), 402
-            max_batch = usage.get("batch_max_seq", 50)
-            if n > max_batch:
-                return jsonify({"error": f"Batch limit is {max_batch} sequences for your plan.", "code": "BATCH_LIMIT", "batch_max_seq": max_batch}), 402
+
+        # Anonymous rate limit: 1/day
+        if is_anon:
+            if USE_POSTGRES:
+                from .pg_auth import check_anon_usage
+            else:
+                from .auth import check_anon_usage
+            anon_chk = check_anon_usage()
+            if not anon_chk["can_analyze"]:
+                return jsonify({"error": "Daily limit reached for anonymous users. Sign up for 5 free analyses per day.",
+                                "code": "DAILY_LIMIT", "usage": anon_chk}), 402
+
+        if user:
+            if USE_POSTGRES:
+                chk = _daily_check(user, "msa")
+                if chk.get("code") == "DAILY_LIMIT":
+                    return jsonify(chk), 402
+            else:
+                from .auth import check_daily_usage, record_daily_usage
+                usage = check_daily_usage(user["email"], "msa")
+                if not usage["can_analyze"] and user.get("role") != "admin":
+                    return jsonify({"error": "Daily limit reached.", "code": "DAILY_LIMIT", "usage": usage}), 402
+                max_batch = usage.get("batch_max_seq", 50)
+                if n > max_batch:
+                    return jsonify({"error": f"Batch limit is {max_batch} sequences for your plan.", "code": "BATCH_LIMIT", "batch_max_seq": max_batch}), 402
+
         from primerforge.engine.msa_viewer import create_job, process_job
         job_id = create_job(sequences, reference_id)
         import threading
         threading.Thread(target=process_job, args=(job_id,), daemon=True).start()
-        if user and not USE_POSTGRES:
-            try:
-                from .auth import record_daily_usage
-                record_daily_usage(user["email"], "msa", n)
-            except:
-                pass
+
+        if is_anon:
+            if USE_POSTGRES:
+                from .pg_auth import record_anon_usage
+            else:
+                from .auth import record_anon_usage
+            record_anon_usage(n)
+        else:
+            _record_usage(user, "msa", n)
+
         return jsonify({
             "job_id": job_id,
             "total_sequences": n,
