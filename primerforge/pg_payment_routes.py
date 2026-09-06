@@ -1390,6 +1390,43 @@ def trial_status():
         return jsonify({"error": "Server error"}), 500
 
 
+@payment_bp.route('/api/subscription/cancel', methods=['POST'])
+@require_auth
+def cancel_subscription():
+    """Cancel user's active subscription (trial or pro)."""
+    try:
+        email = g.user['email']
+        user = fetch_one("SELECT plan, razorpay_subscription_id, promo_code_used FROM users WHERE email=%s", (email,))
+        if not user:
+            return jsonify({"error": "User not found."}), 404
+
+        plan = user.get("plan", "free")
+        if plan == "free":
+            return jsonify({"error": "No active subscription to cancel."}), 400
+
+        sub_id = user.get("razorpay_subscription_id", "")
+
+        # Cancel on Razorpay if subscription exists
+        if sub_id and not sub_id.startswith("sub_dev_"):
+            try:
+                if _current_client():
+                    _current_client().subscription.cancel(sub_id, {"cancel_at_cycle_end": 1})
+            except Exception as e:
+                logger.warning("Razorpay cancel failed for %s: %s", sub_id, e)
+
+        # Reset user to free
+        execute("""UPDATE users SET plan='free', trial_ends_at=0, pro_expires_at=0,
+                   razorpay_subscription_id='', plan_activated_at=0 WHERE email=%s""", (email,))
+
+        log_action(email, "subscription_cancelled",
+                   f"Cancelled {plan} subscription {sub_id}")
+
+        return jsonify({"success": True, "message": "Subscription cancelled. You're back on the Free plan."}), 200
+    except Exception as e:
+        logger.error("cancel_subscription error: %s", e, exc_info=True)
+        return jsonify({"error": "Server error."}), 500
+
+
 @payment_bp.route('/api/admin/promo/create', methods=['POST'])
 def admin_create_promo():
     """Create promo codes (admin only)."""

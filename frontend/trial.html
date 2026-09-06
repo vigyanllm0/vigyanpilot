@@ -226,6 +226,7 @@ footer{background:var(--navy);color:rgba(255,255,255,.6);text-align:center;paddi
         <p id="active-msg">Loading...</p>
       </div>
       <a href="/primer" class="btn-cta" style="display:block;text-align:center;margin-top:16px">Go to Tools →</a>
+      <button onclick="cancelSubscription()" style="display:block;width:100%;margin-top:12px;padding:12px;background:transparent;border:1.5px solid #DC2626;color:#DC2626;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;transition:all .2s">Cancel Subscription</button>
     </div>
 
   </div>
@@ -505,6 +506,25 @@ async function verifyAndActivate(rzResponse) {
     btn.disabled = false;
     btn.textContent = 'Pay ₹1 & Start Trial →';
   }
+}
+
+async function cancelSubscription() {
+  if (!confirm('Are you sure you want to cancel your subscription? You will lose access to Pro features.')) return;
+  try {
+    var token = sessionStorage.getItem('pf_token') || '';
+    var ch = { 'Content-Type': 'application/json' };
+    if (token) ch['Authorization'] = 'Bearer ' + token;
+    var r = await fetch(API + '/subscription/cancel', {
+      method: 'POST', headers: ch, credentials: 'same-origin'
+    });
+    var d = await r.json();
+    if (r.ok) {
+      alert(d.message || 'Subscription cancelled.');
+      window.location.href = '/pricing';
+    } else {
+      alert(d.error || 'Failed to cancel.');
+    }
+  } catch(e) { alert('Network error.'); }
 }
 
 async function activateAcademic() {

@@ -887,7 +887,7 @@ def trial_status():
             (user["promo_code_used"],)
         ).fetchone()
 
-    return jsonify({
+        return jsonify({
         "status": "active" if is_active else "expired",
         "plan": "trial",
         "trial_ends_at": trial_ends,
@@ -900,6 +900,31 @@ def trial_status():
         "price_inr": promo["price_inr"] if promo else 699,
         "currency": promo["currency"] if promo else "INR",
     }), 200
+
+
+@payment_bp.route('/api/subscription/cancel', methods=['POST'])
+@require_auth
+def cancel_subscription():
+    """Cancel user's active subscription."""
+    try:
+        email = g.user['email']
+
+        db = get_db()
+        row = db.execute("SELECT plan FROM users WHERE email=?", (email,)).fetchone()
+        if not row:
+            return jsonify({"error": "User not found."}), 404
+
+        plan = row["plan"] if row else "free"
+        if plan == "free":
+            return jsonify({"error": "No active subscription to cancel."}), 400
+
+        db.execute("UPDATE users SET plan='free' WHERE email=?", (email,))
+        db.commit()
+        log_action(email, "subscription_cancelled", f"Cancelled {plan} subscription")
+        return jsonify({"success": True, "message": "Subscription cancelled."}), 200
+    except Exception as e:
+        logger.error("cancel_subscription error: %s", e)
+        return jsonify({"error": "Server error."}), 500
 
 
 # ══════════════════════════════════════════════════════════════════════════
