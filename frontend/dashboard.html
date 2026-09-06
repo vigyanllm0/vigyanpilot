@@ -707,7 +707,7 @@ var Analytics = {
 Analytics.sessionStart = Date.now();
 
 async function loadDashboard() {
-  var api = window.VIGYAN_BACKEND_URL || '';
+  var api = window.VIGYAN_BACKEND_URL || '/api';
   var pr = sessionStorage.getItem('pf_user') || localStorage.getItem('pf_user');
   if (!pr) {
     document.getElementById('dash-sub').textContent = 'Please sign in to view your dashboard.';
@@ -843,7 +843,7 @@ function saveProfile() {
   var name = document.getElementById('settings-name').value.trim();
   if (!name) { alert('Name cannot be empty'); return; }
   
-  var api = window.VIGYAN_BACKEND_URL || '';
+  var api = window.VIGYAN_BACKEND_URL || '/api';
   fetch(api + '/api/auth/me', {
     method: 'PUT',
     headers: {'Content-Type': 'application/json'},
@@ -887,7 +887,7 @@ function confirmDeleteAccount() {
 }
 
 async function loadSavedResults() {
-  var api = window.VIGYAN_BACKEND_URL || '';
+  var api = window.VIGYAN_BACKEND_URL || '/api';
   try {
     var url = api+'/api/results/list?limit=20&offset='+(_page*20);
     if (_filter) url += '&tool='+encodeURIComponent(_filter);
@@ -924,7 +924,7 @@ async function loadSavedResults() {
 
 async function deleteResult(id) {
   if (!confirm('Delete this saved result?')) return;
-  var api = window.VIGYAN_BACKEND_URL || '';
+  var api = window.VIGYAN_BACKEND_URL || '/api';
   try {
     var r = await fetch(api+'/api/results/delete', {method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify({id:id})});
     if (r.ok) loadSavedResults();

@@ -7,7 +7,7 @@
 (function() {
   'use strict';
 
-  var API = window.VIGYAN_BACKEND_URL || '';
+  var API = window.VIGYAN_BACKEND_URL || '/api';
 
   // ── Track Visit (POST) ──
   function trackVisit() {

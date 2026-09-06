@@ -1,4 +1,4 @@
-var FG_API = window.VIGYAN_BACKEND_URL || '';
+var FG_API = window.VIGYAN_BACKEND_URL || '/api';
 var FG_CACHE = null;
 var FG_CACHE_TIME = 0;
 

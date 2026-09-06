@@ -1,7 +1,7 @@
 /* batch-ui.js — Shared batch processing across all tool pages */
 var BUI = window.BUI || {};
 
-BUI.API = window.VIGYAN_BACKEND_URL || '';
+BUI.API = window.VIGYAN_BACKEND_URL || '/api';
 
 BUI.parseFasta = function(text) {
   var lines = text.split('\n');
