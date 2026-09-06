@@ -64,7 +64,19 @@
         <div class="user-dropdown-header">
           <div class="ud-name" id="udName"></div>
           <div class="ud-email" id="udEmail"></div>
-          <div class="ud-plan" id="udPlan"></div>
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:2px">
+            <span class="ud-plan" id="udPlan"></span>
+            <span class="ud-expiry" id="udExpiry" style="font-size:11px;color:var(--muted)"></span>
+          </div>
+          <div class="ud-usage" id="udUsage" style="margin-top:6px;display:none">
+            <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:2px">
+              <span id="udUsageLabel">Today's analyses</span>
+              <span id="udUsageCount"></span>
+            </div>
+            <div style="height:4px;background:var(--outline);border-radius:2px;overflow:hidden">
+              <div id="udUsageBar" style="height:100%;border-radius:2px;transition:width .3s"></div>
+            </div>
+          </div>
         </div>
         <a class="ud-item" href="/dashboard">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
@@ -74,9 +86,17 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
           Settings
         </a>
-        <a class="ud-item" href="/pricing">
+        <a class="ud-item ud-billing" href="/pricing">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
-          Billing &amp; Plans
+          <span class="ud-billing-text">Billing &amp; Plans</span>
+        </a>
+        <a class="ud-item ud-manage" href="/pricing" style="display:none">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+          Manage Subscription
+        </a>
+        <a class="ud-item ud-upgrade" href="/pricing" style="display:none">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          Upgrade to Pro
         </a>
         <div class="ud-item logout" onclick="logout()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
@@ -92,6 +112,15 @@
   </button>
 </div>
 <div class="mobile-menu" id="mobile-menu">
+  <div class="mm-user" id="mmUser" style="display:none;padding:12px 16px;background:rgba(255,255,255,.05);border-radius:12px;margin-bottom:12px">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div id="mmAvatar" style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#3B82F6,#1D4ED8);display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:13px"></div>
+      <div>
+        <div id="mmName" style="font-weight:600;color:#fff;font-size:14px"></div>
+        <div id="mmPlan" style="font-size:11px;color:rgba(255,255,255,.5)"></div>
+      </div>
+    </div>
+  </div>
   <div class="mm-group"><div class="mm-hdr">Products</div>
     <a href="primer">Primer Design</a>
     <a href="search">Sequence Search</a>

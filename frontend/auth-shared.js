@@ -20,6 +20,14 @@ function updateAuthUI(){
     if(dn)dn.textContent=user.name||user.email||'User';
     var de=document.getElementById('udEmail');
     if(de)de.textContent=user.email||'';
+    // Mobile user section
+    var mmUser=document.getElementById('mmUser');
+    var mmAvatar=document.getElementById('mmAvatar');
+    var mmName=document.getElementById('mmName');
+    var mmPlan=document.getElementById('mmPlan');
+    if(mmUser)mmUser.style.display='';
+    if(mmAvatar)mmAvatar.textContent=(user.email||user.name||'U').charAt(0).toUpperCase();
+    if(mmName)mmName.textContent=user.name||user.email||'User';
     // Show admin-only elements
     document.querySelectorAll('[data-admin-show]').forEach(function(el) {
       if (user.role === 'admin') { el.style.display = ''; }
@@ -225,7 +233,7 @@ function openAuthModal(){isRegister=false;showAuth()}
       if (user.role === 'admin') { el.style.display = ''; }
     });
   }
-  // Fetch plan for badge
+  // Fetch plan for badge + avatar + usage + expiry
   if (user) {
     var api = window.VIGYAN_BACKEND_URL || '/api';
     fetch(api + '/payments/status', {credentials: 'same-origin'})
@@ -235,12 +243,82 @@ function openAuthModal(){isRegister=false;showAuth()}
       var plan = st.plan;
       var labels = {free:'Free',trial:'Trial',pro:'Pro',lab:'Lab',enterprise:'Enterprise'};
       var colors = {free:['#F1F5F9','#64748B'],trial:['#DBEAFE','#1565C0'],pro:['#DBEAFE','#1D4ED8'],lab:['#EDE9FE','#6D28D9'],enterprise:['#FEF3C7','#92400E']};
+      var gradients = {
+        free: 'linear-gradient(135deg, #94A3B8, #64748B)',
+        trial: 'linear-gradient(135deg, #3B82F6, #1D4ED8)',
+        pro: 'linear-gradient(135deg, #2563EB, #1E40AF)',
+        lab: 'linear-gradient(135deg, #7C3AED, #6D28D9)',
+        enterprise: 'linear-gradient(135deg, #F59E0B, #D97706)'
+      };
       var c = colors[plan] || colors.free;
+      var grad = gradients[plan] || gradients.free;
+
+      // Plan badge
       var badge = document.getElementById('udPlan');
       if (badge) {
         badge.textContent = labels[plan] || 'Free';
         badge.style.background = c[0];
         badge.style.color = c[1];
+      }
+      // Mobile plan
+      var mmPlan = document.getElementById('mmPlan');
+      if (mmPlan) mmPlan.textContent = labels[plan] || 'Free';
+
+      // Avatar gradient
+      var avatar = document.getElementById('navAvatar');
+      if (avatar && plan !== 'free') {
+        avatar.style.background = grad;
+        avatar.style.border = 'none';
+        avatar.classList.add('glow');
+      }
+
+      // Conditional dropdown items
+      var billingItem = document.querySelector('.ud-billing');
+      var manageItem = document.querySelector('.ud-manage');
+      var upgradeItem = document.querySelector('.ud-upgrade');
+      if (plan === 'free') {
+        if (billingItem) billingItem.style.display = 'none';
+        if (manageItem) manageItem.style.display = 'none';
+        if (upgradeItem) upgradeItem.style.display = '';
+      } else {
+        if (billingItem) billingItem.style.display = 'none';
+        if (manageItem) manageItem.style.display = '';
+        if (upgradeItem) upgradeItem.style.display = 'none';
+      }
+
+      // Expiry
+      var expiryEl = document.getElementById('udExpiry');
+      if (expiryEl && st.plan_expires_at && st.plan_expires_at > 0) {
+        var d = new Date(st.plan_expires_at * 1000);
+        var now = new Date();
+        var daysLeft = Math.ceil((d - now) / 86400000);
+        if (daysLeft > 0) {
+          expiryEl.textContent = daysLeft + ' days left';
+          if (daysLeft <= 7) expiryEl.style.color = '#DC2626';
+          else if (daysLeft <= 30) expiryEl.style.color = '#F59E0B';
+          else expiryEl.style.color = '';
+        } else {
+          expiryEl.textContent = 'Expired';
+          expiryEl.style.color = '#DC2626';
+        }
+      }
+
+      // Usage bar
+      var usageEl = document.getElementById('udUsage');
+      var usageBar = document.getElementById('udUsageBar');
+      var usageCount = document.getElementById('udUsageCount');
+      var usageLabel = document.getElementById('udUsageLabel');
+      if (usageEl && st.daily) {
+        usageEl.style.display = '';
+        var used = st.daily.used || 0;
+        var limit = st.daily.limit || 5;
+        var pct = Math.min(100, Math.round((used / limit) * 100));
+        usageCount.textContent = used + '/' + limit;
+        usageLabel.textContent = 'Today\'s analyses';
+        usageBar.style.width = pct + '%';
+        if (pct >= 90) usageBar.style.background = '#DC2626';
+        else if (pct >= 70) usageBar.style.background = '#F59E0B';
+        else usageBar.style.background = '#22C55E';
       }
     })
     .catch(function(){});
