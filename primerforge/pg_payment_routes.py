@@ -1158,7 +1158,7 @@ def validate_promo():
     if not code:
         return jsonify({"error": "Please enter a promo code."}), 400
 
-    row = fetch_one("SELECT * FROM promo_codes WHERE code=$1", code)
+    row = fetch_one("SELECT * FROM promo_codes WHERE code=%s", code)
     if not row:
         return jsonify({"error": "Invalid promo code."}), 404
 
@@ -1168,7 +1168,7 @@ def validate_promo():
     if row["used_count"] >= row["max_uses"]:
         return jsonify({"error": "This promo code has already been used."}), 410
 
-    user_row = fetch_one("SELECT promo_code_used FROM users WHERE email=$1", g.user['email'])
+    user_row = fetch_one("SELECT promo_code_used FROM users WHERE email=%s", g.user['email'])
     if user_row and user_row.get("promo_code_used"):
         return jsonify({"error": "You have already used a promo code."}), 409
 
@@ -1191,7 +1191,7 @@ def apply_promo():
     if not code:
         return jsonify({"error": "Missing promo code."}), 400
 
-    row = fetch_one("SELECT * FROM promo_codes WHERE code=$1", code)
+    row = fetch_one("SELECT * FROM promo_codes WHERE code=%s", code)
     if not row:
         return jsonify({"error": "Invalid promo code."}), 404
     now = time.time()
@@ -1201,7 +1201,7 @@ def apply_promo():
         return jsonify({"error": "This promo code has already been used."}), 410
 
     email = g.user['email']
-    user_row = fetch_one("SELECT promo_code_used FROM users WHERE email=$1", email)
+    user_row = fetch_one("SELECT promo_code_used FROM users WHERE email=%s", email)
     if user_row and user_row.get("promo_code_used"):
         return jsonify({"error": "You have already used a promo code."}), 409
 
@@ -1209,13 +1209,13 @@ def apply_promo():
 
     # ── Academic promo: no payment, direct Pro activation ──
     if promo_type == "academic":
-        result = execute("UPDATE promo_codes SET used_count = used_count + 1 WHERE code=$1 AND used_count < max_uses", code)
+        result = execute("UPDATE promo_codes SET used_count = used_count + 1 WHERE code=%s AND used_count < max_uses", (code,))
         if result == 0:
             return jsonify({"error": "Code was just claimed by another user."}), 410
 
         pro_expires_at = int(time.time()) + (row["trial_days"] * 86400)
-        execute("""UPDATE users SET plan='pro', pro_expires_at=$1, promo_code_used=$2,
-                   plan_activated_at=$3, is_academic=1 WHERE email=$4""",
+        execute("""UPDATE users SET plan='pro', pro_expires_at=%s, promo_code_used=%s,
+                   plan_activated_at=%s, is_academic=1 WHERE email=%s""",
                 (pro_expires_at, code, int(time.time()), email))
         log_action(email, "academic_pro_activated",
                    f"Promo {code}, {row['trial_days']}d Pro access, no payment")
@@ -1271,7 +1271,7 @@ def apply_promo():
                 "interval": 1, "period": "monthly"
             })
             plan_id_cached = rz_plan["id"]
-            execute("UPDATE promo_codes SET razorpay_plan_id=$1 WHERE code=$2", (plan_id_cached, code))
+            execute("UPDATE promo_codes SET razorpay_plan_id=%s WHERE code=%s", (plan_id_cached, code))
         except Exception as e:
             logger.error("Failed to create Razorpay plan: %s", e)
             return jsonify({"error": "Failed to create subscription plan."}), 500
@@ -1293,18 +1293,18 @@ def apply_promo():
         sub_id = f"sub_dev_{int(time.time())}"
 
     # Mark code used
-    result = execute("UPDATE promo_codes SET used_count = used_count + 1 WHERE code=$1 AND used_count < max_uses", code)
+    result = execute("UPDATE promo_codes SET used_count = used_count + 1 WHERE code=%s AND used_count < max_uses", (code,))
     if result == 0:
         return jsonify({"error": "Code was just claimed by another user."}), 410
 
     # Activate trial
     trial_ends_at = int(time.time()) + (row["trial_days"] * 86400)
-    execute("""UPDATE users SET plan='trial', trial_ends_at=$1, promo_code_used=$2,
-               razorpay_subscription_id=$3, plan_activated_at=$4 WHERE email=$5""",
+    execute("""UPDATE users SET plan='trial', trial_ends_at=%s, promo_code_used=%s,
+               razorpay_subscription_id=%s, plan_activated_at=%s WHERE email=%s""",
             (trial_ends_at, code, sub_id, int(time.time()), email))
     execute("""INSERT INTO trial_subscriptions (user_email, promo_code, razorpay_subscription_id,
                razorpay_plan_id, trial_days, trial_started_at, trial_ends_at, status)
-               VALUES ($1,$2,$3,$4,$5,$6,$7,'trial')""",
+               VALUES (%s,%s,%s,%s,%s,%s,%s,'trial')""",
             (email, code, sub_id, plan_id_cached, row["trial_days"], int(time.time()), trial_ends_at))
     log_action(email, "trial_activated", f"Promo {code}, {row['trial_days']}d trial, sub {sub_id}")
 
@@ -1328,15 +1328,15 @@ def apply_promo():
 def trial_status():
     """Get trial status for current user."""
     email = g.user['email']
-    user = fetch_one("SELECT plan, trial_ends_at, promo_code_used, razorpay_subscription_id FROM users WHERE email=$1", email)
+    user = fetch_one("SELECT plan, trial_ends_at, promo_code_used, razorpay_subscription_id FROM users WHERE email=%s", email)
     if not user or user["plan"] != "trial":
         plan = user["plan"] if user else "free"
         # Check if academic Pro has expired
         if plan == "pro":
-            pro_expires = fetch_one("SELECT pro_expires_at FROM users WHERE email=$1", email)
+            pro_expires = fetch_one("SELECT pro_expires_at FROM users WHERE email=%s", email)
             if pro_expires and pro_expires.get("pro_expires_at") and pro_expires["pro_expires_at"] > 0:
                 if time.time() > pro_expires["pro_expires_at"]:
-                    execute("UPDATE users SET plan='free', pro_expires_at=0 WHERE email=$1", email)
+                    execute("UPDATE users SET plan='free', pro_expires_at=0 WHERE email=%s", (email,))
                     return jsonify({"status": "expired", "plan": "free"}), 200
                 else:
                     days_left = int((pro_expires["pro_expires_at"] - time.time()) / 86400)
@@ -1352,7 +1352,7 @@ def trial_status():
 
     promo = None
     if user.get("promo_code_used"):
-        promo = fetch_one("SELECT daily_analyses, batch_max, has_export, trial_days, price_inr, currency FROM promo_codes WHERE code=$1", user["promo_code_used"])
+        promo = fetch_one("SELECT daily_analyses, batch_max, has_export, trial_days, price_inr, currency FROM promo_codes WHERE code=%s", user["promo_code_used"])
 
     return jsonify({
         "status": "active" if is_active else "expired", "plan": "trial",
@@ -1399,7 +1399,7 @@ def admin_create_promo():
             try:
                 execute("""INSERT INTO promo_codes (code, promo_type, tier, daily_analyses, batch_max, has_export,
                            trial_days, price_inr, currency, max_uses, created_by, expires_at, discount_pct)
-                           VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)""",
+                           VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)""",
                         (code, promo_type, tier, daily_analyses, batch_max, has_export, trial_days,
                          price_inr, currency, max_uses, user["email"], expires_at, discount_pct))
                 codes.append(code)
@@ -1484,7 +1484,7 @@ def admin_revoke_promo():
         return jsonify({"error": "Missing promo code."}), 400
 
     result = execute(
-        "UPDATE promo_codes SET max_uses = used_count WHERE code=$1 AND max_uses > used_count", code
+        "UPDATE promo_codes SET max_uses = used_count WHERE code=%s AND max_uses > used_count", code
     )
     if result == 0:
         return jsonify({"error": "Code not found or already fully used/revoked."}), 404
@@ -1512,14 +1512,14 @@ def admin_list_expenses():
         rows = fetch_all(
             """SELECT id, category, description, amount_inr, promo_code,
                       user_email, subscription_id, metadata, created_by, created_at
-               FROM expense_log WHERE category=$1 ORDER BY created_at DESC LIMIT $2""",
+               FROM expense_log WHERE category=%s ORDER BY created_at DESC LIMIT %s""",
             category, limit
         )
     else:
         rows = fetch_all(
             """SELECT id, category, description, amount_inr, promo_code,
                       user_email, subscription_id, metadata, created_by, created_at
-               FROM expense_log ORDER BY created_at DESC LIMIT $1""",
+               FROM expense_log ORDER BY created_at DESC LIMIT %s""",
             limit
         )
 
@@ -1584,7 +1584,7 @@ def admin_record_expense():
         """INSERT INTO expense_log
            (category, description, amount_inr, promo_code, user_email,
             subscription_id, metadata, created_by)
-           VALUES ($1,$2,$3,$4,$5,$6,$7,$8)""",
+           VALUES (%s,%s,%s,%s,%s,%s,%s,%s)""",
         (category, description, amount_inr, promo_code, user_email,
          subscription_id, metadata, user["email"])
     )
@@ -1600,7 +1600,7 @@ def _log_expense(category, description, amount_inr, promo_code="", user_email=""
             """INSERT INTO expense_log
                (category, description, amount_inr, promo_code, user_email,
                 subscription_id, metadata, created_by)
-               VALUES ($1,$2,$3,$4,$5,$6,$7,$8)""",
+               VALUES (%s,%s,%s,%s,%s,%s,%s,%s)""",
             (category, description, amount_inr, promo_code, user_email,
              subscription_id, json.dumps(metadata or {}), created_by)
         )
