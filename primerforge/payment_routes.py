@@ -937,7 +937,7 @@ def admin_create_promo():
     codes = []
 
     for _ in range(count):
-        while True:
+        for attempt in range(10):
             suffix = ''.join(secrets.choice(string.ascii_uppercase + string.digits) for _ in range(6))
             code = f"{prefix}-{suffix}"
             try:
@@ -952,7 +952,7 @@ def admin_create_promo():
                 codes.append(code)
                 break
             except Exception:
-                continue  # duplicate code, retry
+                continue
 
     db.commit()
     log_action(user["email"], "promo_codes_created", f"Created {len(codes)} codes with prefix {prefix}")

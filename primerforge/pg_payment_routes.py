@@ -1393,7 +1393,7 @@ def admin_create_promo():
     import secrets, string
     codes = []
     for _ in range(count):
-        while True:
+        for attempt in range(10):
             suffix = ''.join(secrets.choice(string.ascii_uppercase + string.digits) for _ in range(6))
             code = f"{prefix}-{suffix}"
             try:
@@ -1404,7 +1404,9 @@ def admin_create_promo():
                         price_inr, currency, max_uses, user["email"], expires_at, discount_pct)
                 codes.append(code)
                 break
-            except Exception:
+            except Exception as e:
+                if attempt == 9:
+                    logger.error("promo create failed after 10 attempts: %s", e, exc_info=True)
                 continue
     log_action(user["email"], "promo_codes_created", f"Created {len(codes)} codes with prefix {prefix}")
     return jsonify({"success": True, "count": len(codes), "codes": codes, "trial_days": trial_days, "tier": tier}), 200
