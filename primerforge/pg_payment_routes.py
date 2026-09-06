@@ -1166,7 +1166,7 @@ def validate_promo():
     if not code:
         return jsonify({"error": "Please enter a promo code."}), 400
 
-    row = fetch_one("SELECT * FROM promo_codes WHERE code=%s", code)
+    row = fetch_one("SELECT * FROM promo_codes WHERE code=%s", (code,))
     if not row:
         return jsonify({"error": "Invalid promo code."}), 404
 
@@ -1207,7 +1207,7 @@ def apply_promo():
         if not code:
             return jsonify({"error": "Missing promo code."}), 400
 
-        row = fetch_one("SELECT * FROM promo_codes WHERE code=%s", code)
+        row = fetch_one("SELECT * FROM promo_codes WHERE code=%s", (code,))
         if not row:
             return jsonify({"error": "Invalid promo code."}), 404
         now = time.time()
@@ -1217,7 +1217,7 @@ def apply_promo():
             return jsonify({"error": "This promo code has already been used."}), 410
 
         email = g.user['email']
-        user_row = fetch_one("SELECT promo_code_used FROM users WHERE email=%s", email)
+        user_row = fetch_one("SELECT promo_code_used FROM users WHERE email=%s", (email,))
         if user_row and user_row.get("promo_code_used"):
             return jsonify({"error": "You have already used a promo code."}), 409
 
@@ -1348,12 +1348,12 @@ def trial_status():
     """Get trial status for current user."""
     try:
         email = g.user['email']
-        user = fetch_one("SELECT plan, trial_ends_at, promo_code_used, razorpay_subscription_id FROM users WHERE email=%s", email)
+        user = fetch_one("SELECT plan, trial_ends_at, promo_code_used, razorpay_subscription_id FROM users WHERE email=%s", (email,))
         if not user or user["plan"] != "trial":
             plan = user["plan"] if user else "free"
             # Check if academic Pro has expired
             if plan == "pro":
-                pro_expires = fetch_one("SELECT pro_expires_at FROM users WHERE email=%s", email)
+                pro_expires = fetch_one("SELECT pro_expires_at FROM users WHERE email=%s", (email,))
                 if pro_expires and pro_expires.get("pro_expires_at") and pro_expires["pro_expires_at"] > 0:
                     if time.time() > pro_expires["pro_expires_at"]:
                         execute("UPDATE users SET plan='free', pro_expires_at=0 WHERE email=%s", (email,))
@@ -1372,7 +1372,7 @@ def trial_status():
 
         promo = None
         if user.get("promo_code_used"):
-            promo = fetch_one("SELECT daily_analyses, batch_max, has_export, trial_days, price_inr, currency FROM promo_codes WHERE code=%s", user["promo_code_used"])
+            promo = fetch_one("SELECT daily_analyses, batch_max, has_export, trial_days, price_inr, currency FROM promo_codes WHERE code=%s", (user["promo_code_used"],))
 
         return jsonify({
             "status": "active" if is_active else "expired", "plan": "trial",
