@@ -1268,3 +1268,60 @@ def payment_callback():
         return f'<script>window.location.href="payment-success.html?order_id={order_id}&payment_id={payment_id}"</script>'
     else:
         return '<script>window.location.href="payment-failed.html?reason=Signature+verification+failed"</script>'
+
+
+# ══════════════════════════════════════════════════════════════════════════
+# SUBSCRIPTION MANAGEMENT (SQLite)
+# ══════════════════════════════════════════════════════════════════════════
+
+@payment_bp.route("/api/subscription/details", methods=["GET"])
+@require_auth
+def subscription_details():
+    """Return full subscription details for the current user (SQLite)."""
+    email = g.user["email"]
+    from .auth import get_db
+    db = get_db()
+    row = db.execute(
+        """SELECT plan_id, is_active, monthly_quota, quota_used,
+                  started_at, expires_at, max_seats
+           FROM subscriptions WHERE user_email = ?""",
+        (email,)
+    ).fetchone()
+    if not row:
+        return jsonify({"plan": "free", "is_active": False, "monthly_quota": 0,
+                        "quota_used": 0, "started_at": 0, "expires_at": 0, "max_seats": 1}), 200
+    plan_key = (row["plan_id"] or "free").split("-")[0]
+    return jsonify({
+        "plan": plan_key, "plan_id": row["plan_id"],
+        "is_active": bool(row["is_active"]),
+        "monthly_quota": row["monthly_quota"] or 0,
+        "quota_used": row["quota_used"] or 0,
+        "started_at": int(row["started_at"] or 0),
+        "expires_at": int(row["expires_at"] or 0),
+        "max_seats": row["max_seats"] or 1,
+    }), 200
+
+
+@payment_bp.route("/api/subscription/history", methods=["GET"])
+@require_auth
+def billing_history():
+    """Return last 10 payments for the current user (SQLite)."""
+    email = g.user["email"]
+    from .auth import get_db
+    db = get_db()
+    rows = db.execute(
+        """SELECT product_type, status, amount_paise, currency, created_at, captured_at
+           FROM payments WHERE user_email = ? AND status IN ('captured', 'initiated')
+           ORDER BY created_at DESC LIMIT 10""",
+        (email,)
+    ).fetchall()
+    history = []
+    for r in rows or []:
+        history.append({
+            "plan": r["product_type"], "status": r["status"],
+            "amount_inr": (r["amount_paise"] or 0) // 100,
+            "currency": r["currency"] or "INR",
+            "created_at": int(r["created_at"] or 0),
+            "captured_at": int(r["captured_at"] or 0),
+        })
+    return jsonify(history), 200

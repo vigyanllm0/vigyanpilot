@@ -200,6 +200,12 @@ def _credit_tokens_atomic(user_id: int, order_id: str, product_id: str,
             (user_id, product_id, product_id, designs, dock_runs, product.max_seats,
              product_id, product_id, designs, dock_runs, product.max_seats)
         )
+        # Also update users.plan for consistency
+        try:
+            base_plan = product_id.split("-")[0] if "-" in product_id else product_id
+            execute("UPDATE users SET plan = %s WHERE id = %s", (base_plan, user_id))
+        except Exception:
+            pass
     else:
         # Top-up — add to balance directly
         cur.execute(
@@ -1671,3 +1677,104 @@ def _log_expense(category, description, amount_inr, promo_code="", user_email=""
         )
     except Exception:
         logger.warning("Failed to log expense: %s %s %.2f", category, description, amount_inr)
+
+
+# ══════════════════════════════════════════════════════════════════════════
+# SUBSCRIPTION MANAGEMENT
+# ══════════════════════════════════════════════════════════════════════════
+
+@payment_bp.route("/api/subscription/details", methods=["GET"])
+@require_auth
+def subscription_details():
+    """Return full subscription details for the current user."""
+    email = g.user["email"]
+    uid_row = fetch_one("SELECT id FROM users WHERE email = %s", (email,))
+    if not uid_row:
+        return jsonify({"error": "User not found."}), 404
+    uid = uid_row["id"]
+
+    sub = fetch_one(
+        """SELECT plan_id, plan_type, is_active, monthly_quota, quota_used,
+                  started_at, expires_at, last_renewed_at, max_seats,
+                  razorpay_subscription_id
+           FROM subscriptions WHERE user_id = %s""",
+        (uid,)
+    )
+
+    if not sub:
+        return jsonify({
+            "plan": "free",
+            "is_active": False,
+            "monthly_quota": 0,
+            "quota_used": 0,
+            "started_at": 0,
+            "expires_at": 0,
+            "max_seats": 1,
+        }), 200
+
+    plan_key = (sub["plan_id"] or "free").split("-")[0]
+    started = 0
+    expires = 0
+    renewed = 0
+    try:
+        if sub.get("started_at"):
+            started = int(sub["started_at"].timestamp())
+        if sub.get("expires_at"):
+            expires = int(sub["expires_at"].timestamp())
+        if sub.get("last_renewed_at"):
+            renewed = int(sub["last_renewed_at"].timestamp())
+    except Exception:
+        pass
+
+    return jsonify({
+        "plan": plan_key,
+        "plan_id": sub["plan_id"],
+        "is_active": bool(sub["is_active"]),
+        "monthly_quota": sub["monthly_quota"] or 0,
+        "quota_used": sub["quota_used"] or 0,
+        "started_at": started,
+        "expires_at": expires,
+        "last_renewed_at": renewed,
+        "max_seats": sub["max_seats"] or 1,
+        "razorpay_subscription_id": sub.get("razorpay_subscription_id") or "",
+    }), 200
+
+
+@payment_bp.route("/api/subscription/history", methods=["GET"])
+@require_auth
+def billing_history():
+    """Return last 10 payments for the current user."""
+    email = g.user["email"]
+    uid_row = fetch_one("SELECT id FROM users WHERE email = %s", (email,))
+    if not uid_row:
+        return jsonify([]), 200
+    uid = uid_row["id"]
+
+    rows = fetch_all(
+        """SELECT product_type, status, amount_paise, currency, created_at, captured_at
+           FROM payments WHERE user_id = %s AND status IN ('captured', 'initiated')
+           ORDER BY created_at DESC LIMIT 10""",
+        (uid,)
+    ) or []
+
+    history = []
+    for r in rows:
+        created = 0
+        captured = 0
+        try:
+            if r.get("created_at"):
+                created = int(r["created_at"].timestamp())
+            if r.get("captured_at"):
+                captured = int(r["captured_at"].timestamp())
+        except Exception:
+            pass
+        history.append({
+            "plan": r["product_type"],
+            "status": r["status"],
+            "amount_inr": (r["amount_paise"] or 0) // 100,
+            "currency": r["currency"] or "INR",
+            "created_at": created,
+            "captured_at": captured,
+        })
+
+    return jsonify(history), 200
