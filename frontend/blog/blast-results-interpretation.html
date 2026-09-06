@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en-IN">
+<head>
+<!-- Google tag (gtag.js) -->
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('consent', 'default', {
+    'ad_storage': 'denied',
+    'ad_user_data': 'denied',
+    'ad_personalization': 'denied',
+    'analytics_storage': 'denied',
+    'region': ['AT','BE','BG','HR','CY','CZ','DK','EE','FI','FR','DE','GR','HU','IE','IT','LV','LT','LU','MT','NL','PL','PT','RO','SK','SI','ES','SE','IS','LI','NO','GB','CH']
+  });
+  try {
+    var vlcs = JSON.parse(localStorage.getItem('vigyanllm_cookie_consent') || 'null');
+    if (vlcs && vlcs.consent === 'accepted') {
+      gtag('consent', 'update', { 'ad_storage': 'granted', 'ad_user_data': 'granted', 'ad_personalization': 'granted', 'analytics_storage': 'granted' });
+    } else if (vlcs && vlcs.consent === 'declined') {
+      gtag('consent', 'update', { 'ad_storage': 'denied', 'ad_user_data': 'denied', 'ad_personalization': 'denied', 'analytics_storage': 'denied' });
+    }
+  } catch (e) {}
+
+  gtag('set', 'ads_data_redaction', true);
+</script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PB0XMF4GEH"></script>
+<script>
+  gtag('js', new Date());
+  gtag('config', 'G-PB0XMF4GEH');
+</script>
+
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-KRP5LLPR');</script>
+<!-- End Google Tag Manager -->
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>How to Interpret BLAST Results — E-value, Identity, Coverage (2026)</title>
+  <link rel="stylesheet" href="/design-tokens.css">
+<link rel="manifest" href="/manifest.json" />
+<link rel="sitemap" type="application/xml" href="/sitemap.xml" />
+<link rel="alternate" type="application/rss+xml" title="VigyanLLM Blog RSS" href="/blog/rss.xml" />
+<meta name="theme-color" content="#0F172A" />
+<meta name="twitter:image" content="https://www.vigyanllm.in/poster.png">
+<meta name="twitter:description" content="Learn how to read BLAST results. Understand E-values, percent identity, query coverage, and alignment scores.">
+<meta name="twitter:title" content="How to Interpret BLAST Results — E-value, Identity, Coverage (2026)">
+<meta name="twitter:card" content="summary_large_image">
+<meta property="og:site_name" content="VigyanLLM">
+<meta property="og:image" content="https://www.vigyanllm.in/poster.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="robots" content="index, follow" />
+<meta name="author" content="VigyanLLM Private Limited" />
+<meta name="description" content="Learn how to read BLAST results. Understand E-values, percent identity, query coverage, and alignment scores.">
+  <meta name="keywords" content="BLAST results interpretation, E-value BLAST, percent identity, query coverage, alignment score, BLAST hits, sequence alignment results">
+  <link rel="canonical" href="https://www.vigyanllm.in/blog/blast-results-interpretation">
+<link rel="alternate" hreflang="en" href="https://www.vigyanllm.in/blog/blast-results-interpretation" />
+<link rel="alternate" hreflang="en-IN" href="https://www.vigyanllm.in/blog/blast-results-interpretation" />
+<link rel="alternate" hreflang="x-default" href="https://www.vigyanllm.in/blog/blast-results-interpretation" />
+  <meta property="og:title" content="How to Interpret BLAST Results — E-value, Identity, Coverage (2026)">
+  <meta property="og:description" content="Learn how to read BLAST results. Understand E-values, percent identity, query coverage, and alignment scores.">
+  <meta property="og:type" content="article">
+<meta property="article:published_time" content="2026-09-06T00:00:00Z">
+<meta property="article:modified_time" content="2026-09-06T00:00:00Z">
+<meta property="article:author" content="VigyanLLM Private Limited">
+<meta property="article:publisher" content="https://www.vigyanllm.in">
+  <meta property="og:url" content="https://www.vigyanllm.in/blog/blast-results-interpretation">
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&amp;family=Open+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+  
+  <style>
+    html { overflow-x: hidden; }
+    :root {
+  --navy: #0F172A;
+  --navy-light: #1E293B;
+  --white: #FFFFFF;
+  --slate: #F8FAFC;
+  --slate-border: #E2E8F0;
+  --text: #0F172A;
+  --text2: #475569;
+  --muted: #94A3B8;
+  --primary: #2563EB;
+  --bio: #059669;
+  --amber: #D97706;
+  --accent: #22D3EE;
+  --font-h: 'Montserrat', sans-serif;
+  --font-b: 'Open Sans', sans-serif;
+  --bg: #FFFFFF;
+  --border: #E2E8F0;
+  --surface: #F8FAFC;
+  --space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-5:20px;--space-6:24px;--space-8:32px;--space-10:40px;--space-12:48px;--space-16:64px;--space-20:80px;--space-24:96px;--max-w: 1100px;
+  --sec-p: 100px;
+  --blue: #1565C0;
+  --blue-light: #42A5F5;
+  --blue-bg: #E3F2FD;
+  --outline: #E2E5EA;
+  --black: #0A0A0F;
+  --surface-alt: #F5F7FA;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--surface);color:var(--text);font-family:var(--font-b);line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{text-decoration:none;color:inherit}
+img{max-width:100%}
+nav{position:sticky;top:0;background:var(--navy);z-index:1000;height:80px;border-bottom:1px solid rgba(255,255,255,.08)}
+.nav-inner{display:flex;align-items:center;height:100%;max-width:var(--max-w);margin:0 auto;padding:0 16px}
+.nav-brand{display:flex;align-items:center;gap:12px;color:#fff;font-family:var(--font-h);font-size:13px;font-weight:800;flex-shrink:0}
+.nav-brand img{height:36px;width:auto;object-fit:contain}
+@media(max-width:768px){.nav-brand img{height:60px}}
+
+.nav-links{display:flex;gap:8px;align-items:center;margin-left:24px}
+.nav-links>a:hover,
+.drop-wrap{position:relative;display:inline-block}
+.drop-wrap:hover
+.drop-menu a:hover{background:var(--blue-bg);color:var(--blue);padding-left:20px}
+.nav-right{display:flex;align-items:center;gap:14px;margin-left:auto}
+.nav-btns{display:flex;flex-direction:row;align-items:center;gap:10px}
+.nav-search-wrap{position:relative;display:flex;align-items:center}
+.nav-search-wrap input{width:200px;padding:8px 36px 8px 12px;border-radius:8px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:#fff;font-family:var(--font-b);font-size:13px;outline:none;transition:all .2s}
+.nav-search-wrap input::placeholder{color:rgba(255,255,255,.4)}
+.nav-search-wrap input:focus{border-color:rgba(255,255,255,.4);background:rgba(255,255,255,.12);width:260px}
+.nav-search-wrap .ns-icon{position:absolute;right:10px;color:rgba(255,255,255,.4);pointer-events:none;display:flex}
+.nav-search-results{position:absolute;top:calc(100% + 8px);right:0;width:360px;background:#fff;border-radius:12px;box-shadow:0 12px 48px rgba(0,0,0,.25);overflow:hidden;display:none;z-index:1001}
+.nav-search-results.open{display:block}
+.nav-search-results .nsr-group{padding:4px 0 0}
+.nav-search-results .nsr-label{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:#94A3B8;font-weight:700;padding:6px 14px 2px}
+.nav-search-results .nsr-item{display:flex;align-items:center;gap:10px;padding:8px 14px;cursor:pointer;text-decoration:none;transition:background .1s}
+.nav-search-results .nsr-item:hover{background:#F1F5F9}
+.nav-search-results .nsr-item .r-icon{font-size:14px;flex-shrink:0}
+.nav-search-results .nsr-item .r-text{flex:1;min-width:0}
+.nav-search-results .nsr-item .r-title{font-size:12px;font-weight:600;color:#0F172A}
+.nav-search-results .nsr-item .r-desc{font-size:12px;color:#64748B;margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nav-search-no{font-size:12px;color:#94A3B8;padding:20px 14px;text-align:center}
+
+@media(max-width:900px){.nav-search-wrap input{width:140px}.nav-search-wrap input:focus{width:180px}.nav-search-results{width:280px}}
+@media(max-width:768px){.nav-search-wrap{display:none}.nav-right{gap:14px;margin-left:auto}.nav-login{padding:8px 20px;background:transparent;color:rgba(255,255,255,.8);border:1.5px solid rgba(255,255,255,.35);border-radius:8px;font-family:var(--font-b);font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;line-height:1.3;white-space:nowrap}
+.nav-profile{display:none;align-items:center;position:relative}
+.nav-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--saffron),var(--sage));display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .2s;border:2px solid transparent;flex-shrink:0}
+.nav-avatar:hover{transform:scale(1.08);border-color:rgba(255,255,255,.4)}
+.nav-avatar span{color:#fff;font-family:var(--font-h);font-size:13px;font-weight:700;text-transform:uppercase}
+.user-popup-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center;padding:24px}
+.user-popup-overlay.open{display:flex}
+.user-popup{background:#fff;border-radius:16px;padding:24px;width:100%;max-width:340px;box-shadow:0 24px 64px rgba(0,0,0,.25);position:relative;text-align:center}
+.user-popup-close{position:absolute;top:12px;right:14px;background:none;border:none;font-size:20px;cursor:pointer;color:#94A3B8;line-height:1;padding:4px}
+.user-popup-close:hover{color:#0F172A}
+.user-popup-header{padding:8px 0 16px}
+.user-popup-avatar{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--saffron),var(--sage));display:flex;align-items:center;justify-content:center;margin:0 auto 10px;font-family:var(--font-h);font-size:13px;font-weight:700;color:#fff;text-transform:uppercase}
+.user-popup-email{font-size:13px;color:#64748B;word-break:break-all}
+.user-popup-item{display:block;padding:12px 16px;font-size:14px;color:#334155;cursor:pointer;text-decoration:none;border-radius:8px;transition:background .15s;text-align:center;margin-top:4px}
+.user-popup-item:hover{background:#F1F5F9;color:#0F172A}
+.user-popup-logout{color:#EF4444;margin-top:8px}
+.user-popup-logout:hover{background:#FEF2F2;color:#DC2626}
+
+.nav-cta{padding:8px 24px;background:var(--saffron);color:#fff;border:none;border-radius:8px;font-family:var(--font-h);font-size:13px;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:.06em;transition:all .2s;line-height:1.3}.nav-btns{gap:3px}.nav-links{display:flex;gap:8px;align-items:center;margin-left:24px}.hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;background:none;border:none;padding:4px;z-index:1001}}
+@media(max-width:480px){.nav-inner{padding:0 8px}.nav-right{gap:14px;margin-left:auto}.nav-login{padding:4px 10px;font-size:12px;border-width:1px}.nav-cta{padding:4px 12px;font-size:12px}.nav-btns{gap:5px}}
+.nav-cta{padding:8px 24px;background:var(--saffron);color:#fff;border:none;border-radius:8px;font-family:var(--font-h);font-size:13px;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:.06em;transition:all .2s;line-height:1.3}
+.nav-cta:hover{background:var(--saffron-dark);box-shadow:0 4px 16px var(--saffron-glow)}
+.nav-login{padding:8px 20px;background:transparent;color:rgba(255,255,255,.8);border:1.5px solid rgba(255,255,255,.35);border-radius:8px;font-family:var(--font-b);font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;line-height:1.3;white-space:nowrap}
+.nav-login:hover{border-color:#fff;color:#fff;background:rgba(255,255,255,.06)}
+.hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;background:none;border:none;padding:4px;z-index:1001}
+.hamburger span{width:22px;height:2.5px;background:#fff;border-radius:2px;transition:all .3s}
+.hamburger.active span:nth-child(1){transform:rotate(45deg) translate(5px,5px)}
+.hamburger.active span:nth-child(2){opacity:0}
+.hamburger.active span:nth-child(3){transform:rotate(-45deg) translate(5px,-5px)}
+.article-body { padding: 40px 0; max-width: 720px; margin: 0 auto; }
+    .article-body h1 { font-family: var(--font-b); font-size: clamp(2rem,4vw,2.8rem); font-weight: 400; line-height: 1.1; margin-bottom: 16px; }
+    .article-body h2 { font-size: 24px; font-weight: 600; color: var(--text); margin: 40px 0 16px; }
+    .article-body h3 { font-size: 18px; font-weight: 600; color: var(--text); margin: 28px 0 12px; }
+    .article-body p { margin-bottom: 16px; color: var(--text2); font-size: 15px; line-height: 1.8; }
+    .article-body ul, .article-body ol { margin-left: 24px; margin-bottom: 16px; color: var(--text2); font-size: 15px; }
+    .article-body li { margin-bottom: 8px; }
+    .article-body strong { color: var(--text); }
+    .article-body a { color: var(--primary); text-decoration: none; }
+    .article-body a:hover { text-decoration: underline; }
+    .article-body table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 14px; }
+    .article-body th { background: var(--surface); color: var(--text); padding: 12px; text-align: left; border: 1px solid var(--border); font-size:12px; text-transform: uppercase; letter-spacing: 0.05em; }
+    .article-body td { padding: 12px; border: 1px solid var(--border); color: var(--text2); }
+    .article-body tr:nth-child(even) { background: var(--surface); }
+    .article-body .callout { background: var(--surface); border-left: 4px solid var(--primary); padding: 20px 24px; border-radius: 0 12px 12px 0; margin: 24px 0; }
+    .article-body .callout-title { font-weight: 700; color: var(--primary); margin-bottom: 8px; }
+    .article-body code { background: var(--surface); padding: 2px 6px; border-radius: 4px; font-size: 13px; color: var(--text); border: 1px solid var(--border); }
+    .hero-blog { padding: 60px 0 30px; text-align: center; border-bottom: 1px solid var(--border); }
+    .cta-box { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 36px; text-align: center; margin: 40px 0; }
+    .cta-box h3 { font-size: 20px; color: var(--text); margin-bottom: 10px; }
+    .cta-box p { color: var(--text2); margin-bottom: 20px; }
+    .cta-btn { display: inline-block; padding: 14px 32px; background: var(--primary); color: #fff; text-decoration: none; border-radius: 8px; font-weight: 700; font-size: 14px; transition: background 0.2s; }
+    .cta-btn:hover { background: #0044ff; }
+    .references { padding: 30px 0; border-top: 1px solid var(--border); margin-top: 40px; }
+    .references h2 { font-size: 20px; color: var(--text); margin-bottom: 16px; font-weight: 600; }
+    .references ol { margin-left: 24px; color: var(--text2); font-size: 14px; }
+    
+    .article-header .article-tag { display: inline-block; background: #e8f0ff; color: var(--primary); padding: 4px 14px; border-radius: 12px; font-size:12px; font-weight: 600; margin-bottom: 16px; }
+    .article-header .article-date { color: var(--muted); font-size: 13px; }
+    .article-header .article-author { color: var(--text2); font-size: 13px; font-weight: 600; }
+    .article-header h1 { font-size: clamp(2rem,4vw,2.8rem); font-weight: 400; line-height: 1.1; margin-bottom: 16px; }
+    .article-header .subtitle { font-size: 16px; color: var(--text2); line-height: 1.6; max-width: 700px; }
+    .article-meta-bar { display: flex; gap: 16px; align-items: center; margin-bottom: 16px; flex-wrap: wrap; }
+    .author-bio { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 28px; margin: 40px 0 24px; display: flex; gap: 20px; align-items: flex-start; }
+    .author-bio-avatar { width: 60px; height: 60px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 24px; flex-shrink: 0; }
+    .author-bio h4 { font-size: 16px; color: var(--text); margin-bottom: 6px; }
+    .author-bio p { font-size: 13px; color: var(--text2); line-height: 1.6; margin-bottom: 0; }
+    .related-articles { padding: 30px 0; border-top: 1px solid var(--border); margin-top: 24px; }
+    .related-articles h2 { font-size: 20px; color: var(--text); margin-bottom: 20px; font-weight: 600; }
+    .related-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; }
+    .related-card { border: 1px solid var(--border); border-radius: 12px; padding: 20px; transition: border-color 0.2s; }
+    .related-card:hover { border-color: var(--primary); }
+    .related-card h3 { font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+    .related-card p { font-size: 12px; color: var(--text2); line-height: 1.6; margin-bottom: 0; }
+    .related-card a { color: var(--primary); font-weight: 600; }
+  .auth-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center;padding:24px}
+.auth-overlay.open{display:flex}
+.auth-modal{background:#fff;border-radius:16px;padding:36px;width:100%;max-width:400px;box-shadow:0 24px 64px rgba(0,0,0,.25);position:relative;max-height:90vh;overflow-y:auto}
+.auth-modal .close-btn{position:absolute;top:14px;right:16px;background:none;border:none;font-size:13px;cursor:pointer;color:var(--muted);line-height:1}
+.auth-modal h2{font-family:var(--font-h);font-size:13px;font-weight:800;color:var(--text);margin-bottom:2px}
+.auth-modal .sub{font-size:13px;color:var(--muted);margin-bottom:24px}
+.auth-modal .field{margin-bottom:14px}
+.auth-modal .field label{display:block;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text2);margin-bottom:5px}
+.auth-modal .field input{width:100%;padding:11px 13px;border:1px solid var(--outline);border-radius:8px;font-family:var(--font-b);font-size:14px;color:var(--text);transition:border-color .15s}
+.auth-modal .field input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(21,101,192,.1)}
+.auth-modal .auth-btn{width:100%;padding:13px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-family:var(--font-b);font-size:14px;font-weight:700;cursor:pointer;transition:opacity .15s}
+.auth-modal .auth-btn:hover{opacity:.9}
+.auth-modal .toggle-link{text-align:center;font-size:12px;color:var(--muted);margin-top:14px}
+.auth-modal .toggle-link a{color:var(--blue);font-weight:600;cursor:pointer}
+.auth-modal .auth-err{color:#DC2626;font-size:12px;text-align:center;margin-top:8px;display:none}
+
+footer{background:var(--navy);color:rgba(255,255,255,.8);padding:56px 0 24px}
+.footer-grid{display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr 1fr;gap:40px;max-width:var(--max-w);margin:0 auto 32px;padding:0 16px}
+.footer-col h5{font-size:12px;text-transform:uppercase;letter-spacing:.12em;color:#fff;margin-bottom:16px;font-weight:700}
+.footer-col a{display:block;font-size:13px;color:rgba(255,255,255,.5);margin-bottom:10px;transition:color .15s}
+.footer-col a:hover{color:#fff}
+.footer-social{display:flex;gap:8px;margin-top:16px}
+.footer-social a{width:36px;height:36px;display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,.12);border-radius:8px;transition:all .3s ease}
+.footer-social a:hover{border-color:rgba(255,255,255,.3);transform:translateY(-2px);background:rgba(255,255,255,.05)}
+.footer-social svg{width:16px;height:16px;filter:grayscale(1);opacity:.5;transition:all .3s ease}
+.footer-social a:hover svg{filter:grayscale(0);opacity:1}
+.footer-bottom{max-width:var(--max-w);margin:0 auto;padding:12px 16px 0;border-top:1px solid rgba(255,255,255,.06);display:flex;font-size:12px;color:rgba(255,255,255,.35)}
+
+.mobile-menu{display:none;position:fixed;top:72px;left:0;right:0;background:var(--navy);padding:20px 24px;z-index:999;border-bottom:1px solid rgba(255,255,255,.08);max-height:calc(100vh-72px);overflow-y:auto}.mobile-menu.open{display:block}.mobile-menu .mm-group{margin-bottom:16px}.mobile-menu .mm-hdr{font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.4);font-weight:700;padding:8px 0 4px}.mobile-menu a{display:block;color:rgba(255,255,255,.7);font-size:14px;padding:10px 0;font-weight:500}.mobile-menu .mm-cta{display:block;margin-top:8px;padding:12px;background:var(--saffron);color:#fff;border-radius:8px;text-align:center;font-weight:700;font-size:13px}
+
+@media(max-width:768px){.nav-links{display:none}.nav-inner{padding:0 12px}.hamburger{display:flex}}
+
+.toc{background:var(--surface,#F8FAFC);border:1px solid var(--outline,#E2E5EA);border-radius:12px;padding:24px;margin:30px 0}
+.toc h3{font-size:16px;color:var(--text,#0F172A);margin-bottom:14px;margin-top:0;font-weight:600}
+.toc ul{margin-left:0;list-style:none}
+.toc li{margin-bottom:6px}
+.toc a{color:var(--text2,#475569);text-decoration:none;font-size:14px}
+.toc a:hover{color:var(--primary,#2563EB)}
+
+.dna-seq{font-family:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;font-size:13px;letter-spacing:1.5px;background:#f0fdf4;border:1px solid #bbf7d0;padding:2px 6px;border-radius:4px;color:#166534;word-break:break-all}
+</style>
+  
+  <link rel="icon" type="image/png" href="/logo.png">
+<link rel="apple-touch-icon" href="/logo.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <script src="https://accounts.google.com/gsi/client?hl=en" async defer></script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.vigyanllm.in"}, {"@type": "ListItem", "position": 2, "name": "Blog", "item": "https://www.vigyanllm.in/blog"}, {"@type": "ListItem", "position": 3, "name": "BLAST Results Interpretation", "item": "https://www.vigyanllm.in/blog/blast-results-interpretation"}]}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "How to Interpret BLAST Results — E-value, Identity, Coverage (2026)", "description": "Learn how to read BLAST results. Understand E-values, percent identity, query coverage, and alignment scores.", "url": "https://www.vigyanllm.in/blog/blast-results-interpretation", "mainEntityOfPage": "https://www.vigyanllm.in/blog/blast-results-interpretation", "author": {"@type": "Organization", "name": "VigyanLLM Research Team", "url": "https://www.vigyanllm.in/about", "sameAs": ["https://github.com/vigyanllm", "https://www.linkedin.com/company/vigyanllm/"]}, "publisher": {"@type": "Organization", "name": "VigyanLLM Private Limited", "logo": {"@type": "ImageObject", "url": "https://www.vigyanllm.in/logo.png"}}, "datePublished": "2026-09-06", "dateModified": "2026-09-06"}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What is a good E-value in BLAST?","acceptedAnswer":{"@type":"Answer","text":"A good E-value depends on your search goal. For species-level identification, aim for E-value 0.0 or below 1e-100. For homology detection, below 1e-10 is considered significant. Between 1e-3 and 1e-10 requires manual inspection. Above 1 is likely noise. Always check E-value alongside percent identity and query coverage — a low E-value with poor coverage may indicate a partial match."}},{"@type":"Question","name":"What is percent identity?","acceptedAnswer":{"@type":"Answer","text":"Percent identity is the fraction of aligned residues that are identical between your query and the subject sequence. A 100% identity hit means every residue in the alignment matches exactly. For species-level identification, you typically want identity above 95%. For cross-species homology, identity can be 30-70% and still be biologically meaningful, especially when combined with high coverage."}},{"@type":"Question","name":"What is query coverage?","acceptedAnswer":{"@type":"Answer","text":"Query coverage is the percentage of your query sequence that is included in the alignment. High coverage (above 80%) means most of your query aligns to the subject. A hit with 100% identity but only 20% coverage is likely matching a conserved domain, not the full gene. Always prefer hits with both high identity AND high coverage."}},{"@type":"Question","name":"What is an alignment score?","acceptedAnswer":{"@type":"Answer","text":"The alignment score (bit score) is a normalised measure of alignment quality. Higher scores mean better alignments. Unlike raw scores, bit scores account for database size and composition, making them comparable across different BLAST runs. Use bit scores to compare hits within the same BLAST result, not across different searches."}},{"@type":"Question","name":"How do I know if a BLAST hit is significant?","acceptedAnswer":{"@type":"Answer","text":"A significant BLAST hit has a low E-value (below 1e-10), high percent identity (above 30% for protein, above 90% for nucleotide), and high query coverage (above 80%). All three metrics should be evaluated together. A hit with E-value 0.0 but 5% coverage is not a true full-length match. A hit with 100% coverage but E-value 0.5 is likely noise."}}]}</script>
+<script src="/cookie-banner.js" defer></script>
+</head>
+<body>
+
+<header>
+<nav aria-label="Main navigation">
+<div class="nav-inner">
+  <a href="/" class="nav-brand">
+    <img src="/logo.png" alt="VigyanLLM Logo" class="site-logo" style="height:36px;width:auto;object-fit:contain" loading="lazy">
+    <span>VigyanLLM</span>
+  </a>
+  <div class="nav-links">
+    <div class="drop-wrap">
+      <span class="drop-trigger">Products ▾</span>
+      <div class="drop-menu">
+        <a href="primer">Primer Design</a>
+        <a href="search">Sequence Search</a>
+        <a href="blast">BLAST</a>
+        <a href="msa">MSA</a>
+        <a href="pcr-analysis">PCR Analysis</a>
+        <a href="crispr-analysis">CRISPR Analysis <span style="font-size:12px;font-weight:700;color:#fff;background:#F59E0B;padding:2px 6px;border-radius:99px;line-height:1.3">Coming Soon</span></a>
+        <a href="tm-calculator">Tm Calculator</a>
+        <a href="gc-calculator">GC Calculator</a>
+        <a href="protein-docking">Protein Docking</a>
+        <a href="/docking">Molecular Docking</a>
+        <a href="/dna-3d">3D DNA Viewer</a>
+        <a href="dna-to-rna" style="display:flex;align-items:center;gap:6px">DNA → RNA Converter</a>
+        <a href="reverse-complement" style="display:flex;align-items:center;gap:6px">Reverse Complement <span style="font-size:9px;font-weight:700;color:#fff;background:#16A34A;padding:2px 7px;border-radius:99px;line-height:1.4">Free</span></a>
+        <a href="dna-to-protein" style="display:flex;align-items:center;gap:6px">DNA → Protein <span style="font-size:9px;font-weight:700;color:#fff;background:#16A34A;padding:2px 7px;border-radius:99px;line-height:1.4">Free</span></a>
+        <a href="pcr-product-calculator" style="display:flex;align-items:center;gap:6px">PCR Product Calc <span style="font-size:9px;font-weight:700;color:#fff;background:#16A34A;padding:2px 7px;border-radius:99px;line-height:1.4">Free</span></a>
+        <a href="restriction-enzyme-finder" style="display:flex;align-items:center;gap:6px">Restriction Enzyme Finder <span style="font-size:9px;font-weight:700;color:#fff;background:#16A34A;padding:2px 7px;border-radius:99px;line-height:1.4">Free</span></a>
+      </div>
+    </div>
+    <div class="drop-wrap">
+      <span class="drop-trigger">Platform ▾</span>
+      <div class="drop-menu">
+        <a href="platform">Overview</a>
+        <a href="architecture">Architecture</a>
+        <a href="problem">Problem</a>
+        <a href="solution">Solution</a>
+        <a href="compare">Compare</a>
+        <a href="roadmap">Roadmap</a>
+        <a href="about/sovereign-ai">Sovereign AI</a>
+        <a href="features/on-premises">On-Premises</a>
+      </div>
+    </div>
+    <a href="/learning-vigyanllm">Learning</a>
+    <a href="/academic-partnership">Partnership</a>
+    <a href="pricing">Pricing</a>
+  </div>
+  <div class="nav-right">
+    <div class="nav-search-wrap">
+      <input type="text" id="navSearchInput" placeholder="Search tools &amp; resources" autocomplete="off">
+      <span class="ns-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
+      <div class="nav-search-results" id="navSearchResults"></div>
+    </div>
+    <div class="nav-btns" id="navBtns">
+      <button type="button" class="nav-login" onclick="openAuthModal()">Sign in</button>
+      <button type="button" class="nav-cta" onclick="openAuthModal()">Get started</button>
+    </div>
+    <div class="nav-profile" id="navProfile" style="display:none">
+      <div class="nav-avatar" id="navAvatar" onclick="toggleUserMenu()">
+        <span class="nav-avatar-letter" id="navAvatarLetter"></span>
+      </div>
+      <div class="user-dropdown" id="userDropdown">
+        <div class="user-dropdown-header">
+          <div class="ud-name" id="udName"></div>
+          <div class="ud-email" id="udEmail"></div>
+          <div class="ud-plan" id="udPlan"></div>
+        </div>
+        <a class="ud-item" href="/dashboard">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+          Saved Reports
+        </a>
+        <a class="ud-item" href="/dashboard#settings">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          Settings
+        </a>
+        <div class="ud-item logout" onclick="logout()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          Logout
+        </div>
+      </div>
+    </div>
+  </div>
+    </div>
+  </div>
+  <button type="button" class="hamburger" id="hamburger" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</div>
+<div class="mobile-menu" id="mobile-menu">
+  <div class="mm-group"><div class="mm-hdr">Products</div>
+    <a href="primer">Primer Design</a>
+    <a href="search">Sequence Search</a>
+    <a href="blast">BLAST</a>
+    <a href="msa">MSA</a>
+    <a href="pcr-analysis">PCR Analysis</a>
+    <a href="crispr-analysis">CRISPR Analysis <span style="font-size:12px;font-weight:700;color:#fff;background:#F59E0B;padding:2px 6px;border-radius:99px;line-height:1.3">Coming Soon</span></a>
+    <a href="tm-calculator">Tm Calculator</a>
+    <a href="gc-calculator">GC Calculator</a>
+    <a href="protein-docking">Protein Docking</a>
+    <a href="/docking">Molecular Docking</a>
+        <a href="/dna-3d">3D DNA Viewer</a>
+        <a href="dna-to-rna" style="display:flex;align-items:center;gap:6px">DNA → RNA Converter</a>
+        <a href="reverse-complement">Reverse Complement</a>
+        <a href="dna-to-protein">DNA → Protein</a>
+        <a href="pcr-product-calculator">PCR Product Calculator</a>
+        <a href="restriction-enzyme-finder">Restriction Enzyme Finder</a>
+  </div>
+  <div class="mm-group"><div class="mm-hdr">Platform</div>
+    <a href="platform">Overview</a>
+    <a href="architecture">Architecture</a>
+    <a href="problem">Problem</a>
+    <a href="solution">Solution</a>
+    <a href="compare">Compare</a>
+    <a href="roadmap">Roadmap</a>
+    <a href="about/sovereign-ai">Sovereign AI</a>
+    <a href="features/on-premises">On-Premises</a>
+  </div>
+  <div class="mm-group">
+    <a href="/learning-vigyanllm">Learning</a>
+    <a href="/academic-partnership">Academic Partnership</a>
+    <a href="pricing">Pricing</a>
+    <a href="mailto:contact@vigyanllm.in">Enterprise Inquiry</a>
+  </div>
+  <a href="#" onclick="closeMobileMenu();var e=document.getElementById('navSearchInput');if(e){e.focus();e.scrollIntoView({behavior:'smooth',block:'center'})};return false" class="mm-cta" style="background:transparent;border:1px solid rgba(255,255,255,.25);color:rgba(255,255,255,.8);margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:8px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Search</a>
+  <a href="#" class="mm-cta" onclick="openAuthModal();return false">Sign in</a>
+</div>
+</nav>
+</header>
+<a href="#main-content" class="skip-link">Skip to content</a>
+<main id="main-content">
+
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-KRP5LLPR"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+
+
+  <div style="max-width:var(--max-w);margin:0 auto;padding:0 24px">
+    <header style="padding:50px 0 30px;border-bottom:1px solid var(--border)">
+      <div class="article-meta-bar">
+        <span class="article-tag">BLAST</span>
+        <span class="article-date">Published: September 6, 2026</span>
+        <span class="article-author">By VigyanLLM Research Team</span>
+      </div>
+      <h1>BLAST Results Interpretation: E-value, Identity &amp; Coverage Guide</h1>
+      <div class="toc">
+  <h3>Table of Contents</h3>
+  <ul>
+    <li><a href="#why-interpretation-matters">Why BLAST Interpretation Matters</a></li>
+    <li><a href="#e-value">E-value Explained</a></li>
+    <li><a href="#identity-vs-similarity">Percent Identity vs Similarity</a></li>
+    <li><a href="#coverage">Query Coverage</a></li>
+    <li><a href="#bit-score">Alignment Score (Bit Score)</a></li>
+    <li><a href="#worked-example">Worked Example with Real Results</a></li>
+    <li><a href="#red-flags">Red Flags to Watch For</a></li>
+    <li><a href="#frequently-asked-questions">Frequently Asked Questions</a></li>
+  </ul>
+</div>
+
+      <p class="subtitle">BLAST results can look overwhelming — E-values, bit scores, percent identity, query coverage. We break down every column in a BLAST result table and show you exactly how to judge whether a hit is real, using a worked example with actual numbers.</p>
+
+<div style="background:linear-gradient(135deg,#0d9488,#0f766e);border-radius:12px;padding:20px 24px;margin:24px 0;text-align:center">
+  <p style="color:#fff;font-size:14px;margin:0 0 12px">Run BLAST and interpret results instantly — E-values, identity, coverage, all in one view.</p>
+  <a href="https://www.vigyanllm.in/blast" style="display:inline-block;background:#fff;color:#0f766e;padding:10px 24px;border-radius:8px;font-weight:700;font-size:13px;text-decoration:none">Try the Free BLAST Tool →</a>
+</div>
+
+    
+
+    <article class="article-body">
+
+      <h2 id="why-interpretation-matters">Why BLAST Interpretation Matters</h2>
+      <p>A BLAST search produces a table of hits ranked by statistical significance. But the table itself does not tell you which hits matter. A hit with E-value 0.0 and 100% identity is almost certainly your target. A hit with E-value 0.001 and 95% identity might be a close homolog — or a misleading match in the wrong gene. The difference between a correct and incorrect BLAST interpretation is the difference between publishing a real finding and wasting months chasing a false lead.</p>
+      <p>Every BLAST result has four core metrics: <strong>E-value</strong>, <strong>percent identity</strong>, <strong>query coverage</strong>, and <strong>bit score</strong>. Understanding what each one means — and, critically, how they interact — is the most important skill in sequence analysis.</p>
+
+      <h2 id="e-value">E-value Explained</h2>
+      <p>The <strong>E-value</strong> (expect value) is the single most important column in a BLAST result. It tells you how many hits of this quality or better you would expect to find by chance in a database of this size. A lower E-value means a more significant hit.</p>
+      <p>Here is a practical guide to interpreting E-values:</p>
+      <ul>
+        <li><strong>E-value = 0.0</strong> — Perfect or near-perfect match. The probability of this match occurring by chance is effectively zero. This is your target sequence or a very close relative.</li>
+        <li><strong>E-value &lt; 1e-100</strong> — Extremely significant. Almost certainly a true homolog. Safe to assume biological relevance.</li>
+        <li><strong>E-value 1e-50 to 1e-100</strong> — Highly significant. Very likely a true homolog. Investigate further if the identity is below 95%.</li>
+        <li><strong>E-value 1e-10 to 1e-50</strong> — Significant. Likely a homolog worth investigating. Check identity and coverage carefully.</li>
+        <li><strong>E-value 1e-3 to 1e-10</strong> — Possibly significant. This could be a distant homolog or a conserved domain. Manual inspection is required.</li>
+        <li><strong>E-value &gt; 1</strong> — Not significant. This match is probably noise. Do not trust it without additional evidence.</li>
+      </ul>
+
+      <div class="callout">
+        <div class="callout-title">E-value is Not a P-value</div>
+        <p>A common mistake is treating the E-value like a p-value and applying a significance threshold like 0.05. BLAST E-values work differently — they are scaled to the database size. An E-value of 0.001 in a small database (1,000 sequences) means something different than 0.001 in the nr database (hundreds of millions of sequences). Always interpret E-values relative to the database you searched.</p>
+      </div>
+
+      <h2 id="identity-vs-similarity">Percent Identity vs Similarity</h2>
+      <p><strong>Percent identity</strong> is the fraction of aligned residues that are identical between your query and the subject. If your 100 bp query aligns to a subject with 95 identical bases and 5 mismatches, the percent identity is 95%.</p>
+      <p><strong>Percent similarity</strong> (also called percent positive) includes both identical matches and conservative substitutions — amino acid changes that preserve biochemical properties (e.g., leucine to isoleucine). Percent similarity is always equal to or higher than percent identity.</p>
+
+      <table>
+        <tr>
+          <th>Metric</th>
+          <th>What It Measures</th>
+          <th>When to Use</th>
+          <th>Typical Threshold</th>
+        </tr>
+        <tr>
+          <td><strong>Percent Identity</strong></td>
+          <td>Exact matches only</td>
+          <td>Species identification, primer verification</td>
+          <td>&gt;95% for species, &gt;97% for strain</td>
+        </tr>
+        <tr>
+          <td><strong>Percent Similarity</strong></td>
+          <td>Exact + conservative substitutions</td>
+          <td>Functional homology, distant evolution</td>
+          <td>&gt;30% for protein homologs</td>
+        </tr>
+      </table>
+
+      <p>For most researchers, percent identity is the metric to focus on. Use percent similarity only when you are specifically looking for conserved protein function where conservative substitutions matter.</p>
+
+      <h2 id="coverage">Query Coverage</h2>
+      <p><strong>Query coverage</strong> tells you what percentage of your query sequence is included in the alignment. A 100% coverage hit means your entire query aligns to the subject. A 20% coverage hit means only one-fifth of your query matches.</p>
+      <p>Coverage matters because a short alignment in a conserved region can produce a misleadingly low E-value. Consider these two scenarios:</p>
+      <ul>
+        <li><strong>Hit A:</strong> 98% identity, 100% coverage — This is a full-length match. The subject is likely the same gene or a very close ortholog.</li>
+        <li><strong>Hit B:</strong> 100% identity, 8% coverage — This matches only a small conserved motif. The subject could be a completely different gene that shares one short domain.</li>
+      </ul>
+      <p>Hit A is more biologically meaningful than Hit B, even though Hit B has higher identity. Always check coverage alongside identity.</p>
+
+      <h2 id="bit-score">Alignment Score (Bit Score)</h2>
+      <p>The <strong>bit score</strong> is a normalised measure of the alignment quality. Higher scores mean better alignments. Bit scores account for the scoring matrix used, the gap penalties, and the database composition, making them comparable across different BLAST runs against the same database.</p>
+      <p>Unlike raw scores, bit scores are normalised to a standard scale. A bit score of 200 means something different than a bit score of 50. In practice, bit scores are most useful for comparing hits within the same BLAST result — the hit with the highest bit score is generally the best alignment.</p>
+
+      <h2 id="worked-example">Worked Example with Real Results</h2>
+      <div class="callout">
+        <div class="callout-title">Query: Human ACTB Forward Primer</div>
+        <p>We ran the human beta-actin (ACTB) forward primer <code class="dna-seq">CACCATTGGCAATGAGCGGTTC</code> against the nt database using blastn.</p>
+        <p><strong>Hit 1:</strong> Homo sapiens ACTB mRNA (NM_001101.5) — <strong>E-value: 2e-09, Identity: 100%, Coverage: 100%, Bit score: 42.8</strong>. The query matches positions 155–176 of the ACTB transcript with zero mismatches. This confirms the primer targets ACTB correctly.</p>
+        <p><strong>Hit 2:</strong> Pan troglodytes ACTB mRNA (XM_025123046.2) — <strong>E-value: 8e-09, Identity: 95%, Coverage: 100%, Bit score: 40.1</strong>. The query matches the chimpanzee ACTB ortholog with 1 mismatch. This is expected — chimp and human ACTB are highly conserved.</p>
+        <p><strong>Hit 3:</strong> Mus musculus Actb mRNA (NM_007393.4) — <strong>E-value: 3e-07, Identity: 86%, Coverage: 100%, Bit score: 36.2</strong>. The query matches the mouse ortholog with 3 mismatches. This is still significant — ACTB is conserved across mammals.</p>
+        <p><strong>Hit 4:</strong> Synthetic construct — <strong>E-value: 0.52, Identity: 82%, Coverage: 45%, Bit score: 18.4</strong>. This is a partial match to a synthetic sequence. The E-value above 1 and low coverage mean this hit is not significant.</p>
+        <p><strong>Interpretation:</strong> Hits 1-3 are real ACTB homologs (low E-values, high coverage, decreasing identity across species). Hit 4 is noise (E-value &gt; 1, low coverage).</p>
+      </div>
+
+      <h2 id="red-flags">Red Flags to Watch For</h2>
+
+      <p><strong>1. High identity, low coverage.</strong> A 100% identity hit covering only 10% of your query is likely matching a conserved motif, not a true full-length homolog. This is common when searching short queries against large databases — the E-value looks good because of the high identity, but the alignment is too short to be meaningful.</p>
+
+      <p><strong>2. Low identity, high coverage.</strong> The entire query aligns but with many mismatches. This could be a distant homolog (good) or a coincidental match in a different gene family (bad). Check whether the aligned regions correspond to known functional domains.</p>
+
+      <p><strong>3. Multiple hits with similar E-values.</strong> If your query produces 50 hits with E-values between 1e-20 and 1e-30, your query is likely matching a conserved domain shared across many genes. This is especially common with kinase domains, zinc fingers, and other widespread motifs. You may need to redesign your query for specificity.</p>
+
+      <p><strong>4. Gaps in the alignment.</strong> Large gaps (insertions or deletions) between query and subject suggest structural differences. Check whether the gaps correspond to known variable regions or whether they indicate a misalignment.</p>
+
+      <p><strong>5. Matches to unexpected organisms.</strong> If you search a human gene and the top hit is from bacteria, something is wrong. Either your query is contaminated, the database has errors, or the match is a conserved domain (like a ribosomal protein) that exists across all life.</p>
+
+      <div class="cta-box">
+        <h3>Interpret BLAST Results Instantly</h3>
+        <p>Run BLAST online and get ranked results with E-values, identity, coverage, and pairwise alignments — all in one view. No NCBI account required.</p>
+        <a href="https://www.vigyanllm.in/blast" class="cta-btn">Run Free BLAST Search →</a>
+      </div>
+
+      <h2 id="frequently-asked-questions">Frequently Asked Questions</h2>
+      <div itemscope itemtype="https://schema.org/FAQPage">
+        <div itemscope itemprop="mainEntity" itemtype="https://schema.org/Question" style="margin-bottom:16px">
+          <h3 itemprop="name">What is a good E-value in BLAST?</h3>
+          <div itemprop="acceptedAnswer" itemscope itemtype="https://schema.org/Answer">
+            <p itemprop="text" style="color:#475569">A good E-value depends on your search goal. For species-level identification, aim for E-value 0.0 or below 1e-100. For homology detection, below 1e-10 is considered significant. Between 1e-3 and 1e-10 requires manual inspection. Above 1 is likely noise. Always check E-value alongside percent identity and query coverage — a low E-value with poor coverage may indicate a partial match.</p>
+          </div>
+        </div>
+        <div itemscope itemprop="mainEntity" itemtype="https://schema.org/Question" style="margin-bottom:16px">
+          <h3 itemprop="name">What is percent identity?</h3>
+          <div itemprop="acceptedAnswer" itemscope itemtype="https://schema.org/Answer">
+            <p itemprop="text" style="color:#475569">Percent identity is the fraction of aligned residues that are identical between your query and the subject sequence. A 100% identity hit means every residue in the alignment matches exactly. For species-level identification, you typically want identity above 95%. For cross-species homology, identity can be 30-70% and still be biologically meaningful, especially when combined with high coverage.</p>
+          </div>
+        </div>
+        <div itemscope itemprop="mainEntity" itemtype="https://schema.org/Question" style="margin-bottom:16px">
+          <h3 itemprop="name">What is query coverage?</h3>
+          <div itemprop="acceptedAnswer" itemscope itemtype="https://schema.org/Answer">
+            <p itemprop="text" style="color:#475569">Query coverage is the percentage of your query sequence that is included in the alignment. High coverage (above 80%) means most of your query aligns to the subject. A hit with 100% identity but only 20% coverage is likely matching a conserved domain, not the full gene. Always prefer hits with both high identity AND high coverage.</p>
+          </div>
+        </div>
+        <div itemscope itemprop="mainEntity" itemtype="https://schema.org/Question" style="margin-bottom:16px">
+          <h3 itemprop="name">What is an alignment score?</h3>
+          <div itemprop="acceptedAnswer" itemscope itemtype="https://schema.org/Answer">
+            <p itemprop="text" style="color:#475569">The alignment score (bit score) is a normalised measure of alignment quality. Higher scores mean better alignments. Unlike raw scores, bit scores account for database size and composition, making them comparable across different BLAST runs. Use bit scores to compare hits within the same BLAST result, not across different searches.</p>
+          </div>
+        </div>
+        <div itemprop="mainEntity" itemscope itemtype="https://schema.org/Question" style="margin-bottom:16px">
+          <h3 itemprop="name">How do I know if a BLAST hit is significant?</h3>
+          <div itemprop="acceptedAnswer" itemscope itemtype="https://schema.org/Answer">
+            <p itemprop="text" style="color:#475569">A significant BLAST hit has a low E-value (below 1e-10), high percent identity (above 30% for protein, above 90% for nucleotide), and high query coverage (above 80%). All three metrics should be evaluated together. A hit with E-value 0.0 but 5% coverage is not a true full-length match. A hit with 100% coverage but E-value 0.5 is likely noise.</p>
+          </div>
+        </div>
+      </div>
+
+      <h2 id="related-articles">Why This Matters for Sequence Analysis</h2>
+      <p>BLAST interpretation is not optional — it is the core skill that determines whether your sequence analysis produces real biological insights or misleading noise. A correctly interpreted BLAST result tells you exactly what your sequence is and where it comes from. An incorrectly interpreted result gives you false confidence in a wrong answer.</p>
+      <p>After interpreting your BLAST results, you can design primers for confirmed genes using <a href="https://www.vigyanllm.in/primer">VigyanLLM Primer Design</a>, align homologous sequences with <a href="https://www.vigyanllm.in/msa">Multiple Sequence Alignment</a>, or verify your findings against published standards at the <a href="https://www.vigyanllm.in/validation">validation benchmark</a>.</p>
+
+<section class="related-articles">
+      <h2>Related Articles</h2>
+      <div class="related-grid">
+        <div class="related-card">
+          <h3><a href="https://www.vigyanllm.in/blog/blastn-vs-blastp">blastn vs blastp — When to Use Each BLAST Program</a></h3>
+          <p>Understand the difference between blastn and blastp. Choose the right BLAST program for nucleotide vs protein searches.</p>
+        </div>
+        <div class="related-card">
+          <h3><a href="https://www.vigyanllm.in/blog/ncbi-primer-blast-guide">NCBI Primer-BLAST Guide: Step-by-Step with Examples</a></h3>
+          <p>Master Primer-BLAST for designing genome-specific primers with worked examples from real genes.</p>
+        </div>
+        <div class="related-card">
+          <h3><a href="https://www.vigyanllm.in/blog/local-blast-setup">Local BLAST Setup — Install &amp; Run on Your Computer</a></h3>
+          <p>Install BLAST locally on Windows, Mac, or Linux. Run BLAST searches without internet.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="references">
+      <h2 id="references">References</h2>
+      <ol>
+        <li>Altschul S.F., et al. (1990). Basic local alignment search tool. <em>Journal of Molecular Biology</em>, 215(3), 403-410.</li>
+        <li>Altschul S.F., et al. (1997). Gapped BLAST and PSI-BLAST: a new generation of protein database search programs. <em>Nucleic Acids Research</em>, 25(17), 3389-3402.</li>
+        <li>Schaffer A.A., et al. (2001). Improving the accuracy of PSI-BLAST protein database searches with composition-based statistics and other refinements. <em>Nucleic Acids Research</em>, 29(14), 2994-3005.</li>
+        <li>Ye J., et al. (2012). Primer-BLAST: a tool to design target-specific primers for polymerase chain reaction. <em>BMC Bioinformatics</em>, 13, 134.</li>
+      </ol>
+    </section>
+  </div>
+
+  
+
+</main>
+
+
+
+<script defer src="/search-index.js"></script>
+<script defer src="/auth-shared.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded',function(){var h=document.getElementById('hamburger'),m=document.getElementById('mobile-menu');if(h&&m){h.addEventListener('click',function(){h.classList.toggle('active');m.classList.toggle('open')});m.querySelectorAll('a').forEach(function(l){l.addEventListener('click',function(){m.classList.remove('open');h.classList.remove('active')})})}window.closeMobileMenu=function(){if(m){m.classList.remove('open');if(h)h.classList.remove('active')}}});
+
+</script>
+
+<div class="auth-overlay" id="auth-overlay" onclick="if(event.target===this)closeAuth()">
+  <div class="auth-modal">
+    <button type="button" class="close-btn" onclick="closeAuth()">&#10005;</button>
+    <div id="auth-content"></div>
+  </div>
+</div>
+
+
+<section style="max-width:900px;margin:0 auto;padding:32px 16px;border-top:1px solid var(--outline)">
+<h3 style="font-family:var(--font-h);font-size:13px;font-weight:700;margin-bottom:8px;color:var(--text)">Continue Reading</h3>
+<p style="font-size:13px;color:var(--text2);margin-bottom:8px">Explore more in <a href="https://www.vigyanllm.in/hub/sequence-alignment" style="color:var(--blue);text-decoration:none;font-weight:600">Sequence Alignment</a></p>
+</section>
+
+<footer>
+
+<div class="footer-grid">
+  <div class="footer-col">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+      <img src="/logo.png" alt="VigyanLLM Logo" class="site-logo" style="height:36px;width:auto;object-fit:contain" loading="lazy">
+      <span style="font-family:var(--font-h);font-size:13px;font-weight:800;color:#fff">VigyanLLM</span>
+    </div>
+    <p style="font-size:13px;color:rgba(255,255,255,.45);line-height:1.6">Sovereign Healthcare &amp; Life Sciences AI.<br>Built in India. For the world.</p>
+    <a href="mailto:contact@vigyanllm.in" style="color:var(--saffron-light,#ff8a7a);font-size:13px;display:block;margin-top:12px">contact@vigyanllm.in</a>
+    <div class="footer-social">
+      <a href="https://github.com/vigyanllm" rel="me" aria-label="GitHub"><svg fill="#fff" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg></a>
+      <a href="https://www.linkedin.com/company/vigyanllm/" rel="me" aria-label="LinkedIn"><svg fill="#0077B5" viewBox="0 0 24 24"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg></a>
+      <a href="https://www.facebook.com/vigyanllm" rel="me" aria-label="Facebook"><svg fill="#1877F2" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></a>
+      <a href="https://www.youtube.com/@VigyanLLM" rel="me" aria-label="YouTube"><svg fill="#FF0000" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+    </div>
+  </div>
+  <div class="footer-col">
+    <h5>Products</h5>
+    <a href="primer">Primer Design</a>
+    <a href="search">Sequence Search</a>
+    <a href="blast">BLAST</a>
+    <a href="msa">MSA</a>
+    <a href="pcr-analysis">PCR Analysis</a>
+    <a href="crispr-analysis">CRISPR <span style="font-size:12px;font-weight:700;color:#fff;background:#F59E0B;padding:2px 6px;border-radius:99px;line-height:1.3">Coming Soon</span></a>
+    <a href="protein-docking">Docking</a>
+  </div>
+  <div class="footer-col">
+    <h5>Platform</h5>
+    <a href="platform">Overview</a>
+    <a href="architecture">Architecture</a>
+    <a href="problem">Problem</a>
+    <a href="solution">Solution</a>
+    <a href="compare">Compare</a>
+    <a href="roadmap">Roadmap</a>
+    <a href="about/sovereign-ai">Sovereign AI</a>
+    <a href="features/on-premises">On-Premises</a>
+  </div>
+  <div class="footer-col">
+    <h5>Resources</h5>
+    <a href="blog/index">Blog</a>
+    <a href="faq">FAQ</a>
+    <a href="about">About</a>
+    <a href="demo">Demo</a>
+    <a href="/learning-vigyanllm">Learning</a>
+    <a href="/academic-partnership">Academic Partnership</a>
+    <a href="pricing">Pricing</a>
+  </div>
+  <div class="footer-col">
+    <h5>Contact</h5>
+    <a href="mailto:contact@vigyanllm.in">contact@vigyanllm.in</a>
+    <a href="privacy">Privacy</a>
+    <a href="terms">Terms</a>
+    <a href="cookies">Cookies</a>
+    <a href="refund">Refund</a>
+    <a href="security">Security</a>
+    <a href="cite-vigyanllm">Cite Us</a>
+    <a href="/cms-login" style="margin-top:8px;opacity:.5;font-size:var(--font-xs)">CMS Login</a>
+  </div>
+</div>
+<div class="footer-bottom"> <span>&copy; <script>document.write(new Date().getFullYear())</script> VigyanLLM Private Limited · Sovereign Research AI</span>
+  <span>WWW.VIGYANLLM.IN</span>
+</div>
+
+
+
+
+</footer>
+</body>
+</html>

@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en-IN">
+<head>
+<!-- Google tag (gtag.js) -->
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('consent', 'default', {
+    'ad_storage': 'denied',
+    'ad_user_data': 'denied',
+    'ad_personalization': 'denied',
+    'analytics_storage': 'denied',
+    'region': ['AT','BE','BG','HR','CY','CZ','DK','EE','FI','FR','DE','GR','HU','IE','IT','LV','LT','LU','MT','NL','PL','PT','RO','SK','SI','ES','SE','IS','LI','NO','GB','CH']
+  });
+  try {
+    var vlcs = JSON.parse(localStorage.getItem('vigyanllm_cookie_consent') || 'null');
+    if (vlcs && vlcs.consent === 'accepted') {
+      gtag('consent', 'update', { 'ad_storage': 'granted', 'ad_user_data': 'granted', 'ad_personalization': 'granted', 'analytics_storage': 'granted' });
+    } else if (vlcs && vlcs.consent === 'declined') {
+      gtag('consent', 'update', { 'ad_storage': 'denied', 'ad_user_data': 'denied', 'ad_personalization': 'denied', 'analytics_storage': 'denied' });
+    }
+  } catch (e) {}
+  gtag('set', 'ads_data_redaction', true);
+</script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PB0XMF4GEH"></script>
+<script>
+  gtag('js', new Date());
+  gtag('config', 'G-PB0XMF4GEH');
+</script>
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-KRP5LLPR');</script>
+<!-- End Google Tag Manager -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>How to Interpret Docking Scores — Binding Affinity Guide (2026)</title>
+  <link rel="stylesheet" href="/design-tokens.css">
+<link rel="manifest" href="/manifest.json" />
+<link rel="sitemap" type="application/xml" href="/sitemap.xml" />
+<link rel="alternate" type="application/rss+xml" title="VigyanLLM Blog RSS" href="/blog/rss.xml" />
+<meta name="theme-color" content="#0F172A" />
+<meta name="twitter:image" content="https://www.vigyanllm.in/poster.png">
+<meta name="twitter:description" content="Learn how to interpret molecular docking scores. Understand binding affinity, RMSD, and scoring functions.">
+<meta name="twitter:title" content="How to Interpret Docking Scores — Binding Affinity Guide (2026)">
+<meta name="twitter:card" content="summary_large_image">
+<meta property="og:site_name" content="VigyanLLM">
+<meta property="og:image" content="https://www.vigyanllm.in/poster.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="robots" content="index, follow" />
+<meta name="author" content="VigyanLLM Private Limited" />
+<meta name="description" content="Learn how to interpret molecular docking scores. Understand binding affinity, RMSD, and scoring functions.">
+  <meta name="keywords" content="docking score interpretation, binding affinity, molecular docking scores, RMSD docking, Vina score, GNINA CNN score, scoring function">
+  <link rel="canonical" href="https://www.vigyanllm.in/blog/docking-score-interpretation">
+<link rel="alternate" hreflang="en" href="https://www.vigyanllm.in/blog/docking-score-interpretation" />
+<link rel="alternate" hreflang="en-IN" href="https://www.vigyanllm.in/blog/docking-score-interpretation" />
+<link rel="alternate" hreflang="x-default" href="https://www.vigyanllm.in/blog/docking-score-interpretation" />
+  <meta property="og:title" content="How to Interpret Docking Scores — Binding Affinity Guide (2026)">
+  <meta property="og:description" content="Learn how to interpret molecular docking scores. Understand binding affinity, RMSD, and scoring functions.">
+  <meta property="og:type" content="article">
+<meta property="article:published_time" content="2026-09-06T00:00:00Z">
+<meta property="article:author" content="VigyanLLM Private Limited">
+<meta property="article:publisher" content="https://www.vigyanllm.in">
+  <meta property="og:url" content="https://www.vigyanllm.in/blog/docking-score-interpretation">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&amp;family=Open+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+  <style>
+    html{overflow-x:hidden}:root{--navy:#0F172A;--navy-light:#1E293B;--white:#FFFFFF;--slate:#F8FAFC;--slate-border:#E2E8F0;--text:#0F172A;--text2:#475569;--muted:#94A3B8;--primary:#2563EB;--bio:#059669;--amber:#D97706;--accent:#22D3EE;--font-h:'Montserrat',sans-serif;--font-b:'Open Sans',sans-serif;--bg:#FFFFFF;--border:#E2E8F0;--surface:#F8FAFC;--max-w:1100px;--blue:#1565C0;--blue-light:#42A5F5;--blue-bg:#E3F2FD;--outline:#E2E5EA;--black:#0A0A0F;--surface-alt:#F5F7FA}*{box-sizing:border-box;margin:0;padding:0}html{scroll-behavior:smooth}body{background:var(--surface);color:var(--text);font-family:var(--font-b);line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}a{text-decoration:none;color:inherit}img{max-width:100%}nav{position:sticky;top:0;background:var(--navy);z-index:1000;height:80px;border-bottom:1px solid rgba(255,255,255,.08)}.nav-inner{display:flex;align-items:center;height:100%;max-width:var(--max-w);margin:0 auto;padding:0 16px}.nav-brand{display:flex;align-items:center;gap:12px;color:#fff;font-family:var(--font-h);font-size:13px;font-weight:800;flex-shrink:0}.nav-brand img{height:36px;width:auto;object-fit:contain}@media(max-width:768px){.nav-brand img{height:60px}}.nav-links{display:flex;gap:8px;align-items:center;margin-left:24px}.drop-wrap{position:relative;display:inline-block}.drop-menu a:hover{background:var(--blue-bg);color:var(--blue);padding-left:20px}.nav-right{display:flex;align-items:center;gap:14px;margin-left:auto}.nav-btns{display:flex;flex-direction:row;align-items:center;gap:10px}.nav-cta{padding:8px 24px;background:var(--saffron);color:#fff;border:none;border-radius:8px;font-family:var(--font-h);font-size:13px;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:.06em;transition:all .2s;line-height:1.3}.nav-cta:hover{background:var(--saffron-dark)}.nav-login{padding:8px 20px;background:transparent;color:rgba(255,255,255,.8);border:1.5px solid rgba(255,255,255,.35);border-radius:8px;font-family:var(--font-b);font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;line-height:1.3;white-space:nowrap}.nav-login:hover{border-color:#fff;color:#fff;background:rgba(255,255,255,.06)}.hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;background:none;border:none;padding:4px;z-index:1001}.hamburger span{width:22px;height:2.5px;background:#fff;border-radius:2px;transition:all .3s}.hamburger.active span:nth-child(1){transform:rotate(45deg) translate(5px,5px)}.hamburger.active span:nth-child(2){opacity:0}.hamburger.active span:nth-child(3){transform:rotate(-45deg) translate(5px,-5px)}.article-body{padding:40px 0;max-width:720px;margin:0 auto}.article-body h1{font-family:var(--font-b);font-size:clamp(2rem,4vw,2.8rem);font-weight:400;line-height:1.1;margin-bottom:16px}.article-body h2{font-size:24px;font-weight:600;color:var(--text);margin:40px 0 16px}.article-body h3{font-size:18px;font-weight:600;color:var(--text);margin:28px 0 12px}.article-body p{margin-bottom:16px;color:var(--text2);font-size:15px;line-height:1.8}.article-body ul,.article-body ol{margin-left:24px;margin-bottom:16px;color:var(--text2);font-size:15px}.article-body li{margin-bottom:8px}.article-body strong{color:var(--text)}.article-body a{color:var(--primary);text-decoration:none}.article-body a:hover{text-decoration:underline}.article-body table{width:100%;border-collapse:collapse;margin:20px 0;font-size:14px}.article-body th{background:var(--surface);color:var(--text);padding:12px;text-align:left;border:1px solid var(--border);font-size:12px;text-transform:uppercase;letter-spacing:.05em}.article-body td{padding:12px;border:1px solid var(--border);color:var(--text2)}.article-body tr:nth-child(even){background:var(--surface)}.article-body .callout{background:var(--surface);border-left:4px solid var(--primary);padding:20px 24px;border-radius:0 12px 12px 0;margin:24px 0}.article-body .callout-title{font-weight:700;color:var(--primary);margin-bottom:8px}.article-body code{background:var(--surface);padding:2px 6px;border-radius:4px;font-size:13px;color:var(--text);border:1px solid var(--border)}.cta-box{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:36px;text-align:center;margin:40px 0}.cta-box h3{font-size:20px;color:var(--text);margin-bottom:10px}.cta-box p{color:var(--text2);margin-bottom:20px}.cta-btn{display:inline-block;padding:14px 32px;background:var(--primary);color:#fff;text-decoration:none;border-radius:8px;font-weight:700;font-size:14px;transition:background .2s}.cta-btn:hover{background:#0044ff}.references{padding:30px 0;border-top:1px solid var(--border);margin-top:40px}.references h2{font-size:20px;color:var(--text);margin-bottom:16px;font-weight:600}.references ol{margin-left:24px;color:var(--text2);font-size:14px}.article-meta-bar{display:flex;gap:16px;align-items:center;margin-bottom:16px;flex-wrap:wrap}.article-tag{display:inline-block;background:#e8f0ff;color:var(--primary);padding:4px 14px;border-radius:12px;font-size:12px;font-weight:600;margin-bottom:16px}.article-date{color:var(--muted);font-size:13px}.article-author{color:var(--text2);font-size:13px;font-weight:600}.subtitle{font-size:16px;color:var(--text2);line-height:1.6;max-width:700px}.related-articles{padding:30px 0;border-top:1px solid var(--border);margin-top:24px}.related-articles h2{font-size:20px;color:var(--text);margin-bottom:20px;font-weight:600}.related-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:20px}.related-card{border:1px solid var(--border);border-radius:12px;padding:20px;transition:border-color .2s}.related-card:hover{border-color:var(--primary)}.related-card h3{font-size:14px;font-weight:600;margin-bottom:8px}.related-card p{font-size:12px;color:var(--text2);line-height:1.6;margin-bottom:0}.related-card a{color:var(--primary);font-weight:600}.auth-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center;padding:24px}.auth-overlay.open{display:flex}.auth-modal{background:#fff;border-radius:16px;padding:36px;width:100%;max-width:400px;box-shadow:0 24px 64px rgba(0,0,0,.25);position:relative;max-height:90vh;overflow-y:auto}.auth-modal .close-btn{position:absolute;top:14px;right:16px;background:none;border:none;font-size:13px;cursor:pointer;color:var(--muted);line-height:1}.auth-modal h2{font-family:var(--font-h);font-size:13px;font-weight:800;color:var(--text);margin-bottom:2px}.auth-modal .sub{font-size:13px;color:var(--muted);margin-bottom:24px}.auth-modal .field{margin-bottom:14px}.auth-modal .field label{display:block;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text2);margin-bottom:5px}.auth-modal .field input{width:100%;padding:11px 13px;border:1px solid var(--outline);border-radius:8px;font-family:var(--font-b);font-size:14px;color:var(--text);transition:border-color .15s}.auth-modal .field input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(21,101,192,.1)}.auth-modal .auth-btn{width:100%;padding:13px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-family:var(--font-b);font-size:14px;font-weight:700;cursor:pointer;transition:opacity .15s}.auth-modal .auth-btn:hover{opacity:.9}.auth-modal .toggle-link{text-align:center;font-size:12px;color:var(--muted);margin-top:14px}.auth-modal .toggle-link a{color:var(--blue);font-weight:600;cursor:pointer}.auth-modal .auth-err{color:#DC2626;font-size:12px;text-align:center;margin-top:8px;display:none}footer{background:var(--navy);color:rgba(255,255,255,.8);padding:56px 0 24px}.footer-grid{display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr 1fr;gap:40px;max-width:var(--max-w);margin:0 auto 32px;padding:0 16px}.footer-col h5{font-size:12px;text-transform:uppercase;letter-spacing:.12em;color:#fff;margin-bottom:16px;font-weight:700}.footer-col a{display:block;font-size:13px;color:rgba(255,255,255,.5);margin-bottom:10px;transition:color .15s}.footer-col a:hover{color:#fff}.footer-social{display:flex;gap:8px;margin-top:16px}.footer-social a{width:36px;height:36px;display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,.12);border-radius:8px;transition:all .3s ease}.footer-social a:hover{border-color:rgba(255,255,255,.3);transform:translateY(-2px);background:rgba(255,255,255,.05)}.footer-social svg{width:16px;height:16px;filter:grayscale(1);opacity:.5;transition:all .3s ease}.footer-social a:hover svg{filter:grayscale(0);opacity:1}.footer-bottom{max-width:var(--max-w);margin:0 auto;padding:12px 16px 0;border-top:1px solid rgba(255,255,255,.06);display:flex;font-size:12px;color:rgba(255,255,255,.35)}.mobile-menu{display:none;position:fixed;top:72px;left:0;right:0;background:var(--navy);padding:20px 24px;z-index:999;border-bottom:1px solid rgba(255,255,255,.08);max-height:calc(100vh-72px);overflow-y:auto}.mobile-menu.open{display:block}.mobile-menu .mm-group{margin-bottom:16px}.mobile-menu .mm-hdr{font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.4);font-weight:700;padding:8px 0 4px}.mobile-menu a{display:block;color:rgba(255,255,255,.7);font-size:14px;padding:10px 0;font-weight:500}.mobile-menu .mm-cta{display:block;margin-top:8px;padding:12px;background:var(--saffron);color:#fff;border-radius:8px;text-align:center;font-weight:700;font-size:13px}@media(max-width:768px){.nav-links{display:none}.nav-inner{padding:0 12px}.hamburger{display:flex}.nav-search-wrap{display:none}}.toc{background:var(--surface);border:1px solid var(--outline);border-radius:12px;padding:24px;margin:30px 0}.toc h3{font-size:16px;color:var(--text);margin-bottom:14px;margin-top:0;font-weight:600}.toc ul{margin-left:0;list-style:none}.toc li{margin-bottom:6px}.toc a{color:var(--text2);text-decoration:none;font-size:14px}.toc a:hover{color:var(--primary)}.score-good{color:#059669;font-weight:600}.score-mid{color:#D97706;font-weight:600}.score-warn{color:#DC2626;font-weight:600}
+  </style>
+  <link rel="icon" type="image/png" href="/logo.png">
+<link rel="apple-touch-icon" href="/logo.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <script src="https://accounts.google.com/gsi/client?hl=en" async defer></script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.vigyanllm.in"}, {"@type": "ListItem", "position": 2, "name": "Blog", "item": "https://www.vigyanllm.in/blog"}, {"@type": "ListItem", "position": 3, "name": "Docking Score Interpretation", "item": "https://www.vigyanllm.in/blog/docking-score-interpretation"}]}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "Docking Score Interpretation: What the Numbers Mean", "description": "Learn how to interpret molecular docking scores. Understand binding affinity, RMSD, and scoring functions.", "url": "https://www.vigyanllm.in/blog/docking-score-interpretation", "mainEntityOfPage": "https://www.vigyanllm.in/blog/docking-score-interpretation", "author": {"@type": "Organization", "name": "VigyanLLM Research Team", "url": "https://www.vigyanllm.in/about", "sameAs": ["https://github.com/vigyanllm", "https://www.linkedin.com/company/vigyanllm/"]}, "publisher": {"@type": "Organization", "name": "VigyanLLM Private Limited", "logo": {"@type": "ImageObject", "url": "https://www.vigyanllm.in/logo.png"}}, "datePublished": "2026-09-06", "dateModified": "2026-09-06"}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What is a good docking score?","acceptedAnswer":{"@type":"Answer","text":"A good docking score depends on the scoring function used. For AutoDock Vina, scores below -8.0 kcal/mol suggest good binding affinity, -6.0 to -8.0 indicates moderate binding, and above -5.0 suggests weak binding. For GNINA CNN scores, values closer to 1.0 indicate stronger predicted binding. Always compare scores within the same scoring function and target."}},{"@type":"Question","name":"What is binding affinity?","acceptedAnswer":{"@type":"Answer","text":"Binding affinity is the strength of the interaction between a protein and a ligand, typically measured as the dissociation constant (Kd) or inhibition constant (Ki). Lower Kd values indicate tighter binding. Docking scores estimate binding free energy (delta-G) in kcal/mol, where more negative values indicate stronger predicted binding."}},{"@type":"Question","name":"What is RMSD in docking?","acceptedAnswer":{"@type":"Answer","text":"RMSD (Root Mean Square Deviation) measures the structural difference between two protein-ligand poses. In docking, it quantifies how far a predicted pose deviates from a reference (typically the crystal structure). An RMSD below 2 Angstrom is considered good agreement with the experimental structure."}},{"@type":"Question","name":"How accurate are docking scores?","acceptedAnswer":{"@type":"Answer","text":"Docking scores are approximations with moderate correlation to experimental binding affinities. Scoring functions typically achieve R-squared values of 0.3 to 0.5 against experimental data. They are most reliable for relative ranking of compounds against the same target, not for predicting absolute binding affinity."}},{"@type":"Question","name":"What is a scoring function?","acceptedAnswer":{"@type":"Answer","text":"A scoring function is a mathematical equation that estimates the binding free energy between a protein and ligand based on their atomic interactions. Common types include force-field based (van der Waals, electrostatics), empirical (weighted energy terms), and knowledge-based (statistical potentials). Each docking tool uses a different scoring function."}}]}</script>
+<script src="/cookie-banner.js" defer></script>
+</head>
+<body>
+<header>
+<nav aria-label="Main navigation">
+<div class="nav-inner">
+  <a href="/" class="nav-brand"><img src="/logo.png" alt="VigyanLLM Logo" class="site-logo" style="height:36px;width:auto;object-fit:contain" loading="lazy"><span>VigyanLLM</span></a>
+  <div class="nav-links">
+    <div class="drop-wrap"><span class="drop-trigger">Products ▾</span><div class="drop-menu"><a href="primer">Primer Design</a><a href="search">Sequence Search</a><a href="blast">BLAST</a><a href="msa">MSA</a><a href="pcr-analysis">PCR Analysis</a><a href="crispr-analysis">CRISPR Analysis <span style="font-size:12px;font-weight:700;color:#fff;background:#F59E0B;padding:2px 6px;border-radius:99px;line-height:1.3">Coming Soon</span></a><a href="tm-calculator">Tm Calculator</a><a href="gc-calculator">GC Calculator</a><a href="protein-docking">Protein Docking</a><a href="/docking">Molecular Docking</a><a href="/dna-3d">3D DNA Viewer</a><a href="dna-to-rna">DNA → RNA Converter</a><a href="reverse-complement">Reverse Complement</a><a href="dna-to-protein">DNA → Protein</a><a href="pcr-product-calculator">PCR Product Calc</a><a href="restriction-enzyme-finder">Restriction Enzyme Finder</a></div></div>
+    <div class="drop-wrap"><span class="drop-trigger">Platform ▾</span><div class="drop-menu"><a href="platform">Overview</a><a href="architecture">Architecture</a><a href="problem">Problem</a><a href="solution">Solution</a><a href="compare">Compare</a><a href="roadmap">Roadmap</a><a href="about/sovereign-ai">Sovereign AI</a><a href="features/on-premises">On-Premises</a></div></div>
+    <a href="/learning-vigyanllm">Learning</a><a href="/academic-partnership">Partnership</a><a href="pricing">Pricing</a>
+  </div>
+  <div class="nav-right">
+    <div class="nav-search-wrap"><input type="text" id="navSearchInput" placeholder="Search tools &amp; resources" autocomplete="off"><span class="ns-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span><div class="nav-search-results" id="navSearchResults"></div></div>
+    <div class="nav-btns" id="navBtns"><button type="button" class="nav-login" onclick="openAuthModal()">Sign in</button><button type="button" class="nav-cta" onclick="openAuthModal()">Get started</button></div>
+    <div class="nav-profile" id="navProfile" style="display:none"><div class="nav-avatar" id="navAvatar" onclick="toggleUserMenu()"><span class="nav-avatar-letter" id="navAvatarLetter"></span></div></div>
+  </div>
+</div>
+  <button type="button" class="hamburger" id="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
+</nav>
+<div class="mobile-menu" id="mobile-menu">
+  <div class="mm-group"><div class="mm-hdr">Products</div><a href="primer">Primer Design</a><a href="search">Sequence Search</a><a href="blast">BLAST</a><a href="msa">MSA</a><a href="pcr-analysis">PCR Analysis</a><a href="crispr-analysis">CRISPR Analysis</a><a href="tm-calculator">Tm Calculator</a><a href="gc-calculator">GC Calculator</a><a href="protein-docking">Protein Docking</a><a href="/docking">Molecular Docking</a><a href="/dna-3d">3D DNA Viewer</a><a href="dna-to-rna">DNA → RNA Converter</a><a href="reverse-complement">Reverse Complement</a><a href="dna-to-protein">DNA → Protein</a><a href="pcr-product-calculator">PCR Product Calculator</a><a href="restriction-enzyme-finder">Restriction Enzyme Finder</a></div>
+  <div class="mm-group"><div class="mm-hdr">Platform</div><a href="platform">Overview</a><a href="architecture">Architecture</a><a href="problem">Problem</a><a href="solution">Solution</a><a href="compare">Compare</a><a href="roadmap">Roadmap</a><a href="about/sovereign-ai">Sovereign AI</a><a href="features/on-premises">On-Premises</a></div>
+  <div class="mm-group"><a href="/learning-vigyanllm">Learning</a><a href="/academic-partnership">Academic Partnership</a><a href="pricing">Pricing</a><a href="mailto:contact@vigyanllm.in">Enterprise Inquiry</a></div>
+  <a href="#" onclick="closeMobileMenu();var e=document.getElementById('navSearchInput');if(e){e.focus();e.scrollIntoView({behavior:'smooth',block:'center'})};return false" class="mm-cta" style="background:transparent;border:1px solid rgba(255,255,255,.25);color:rgba(255,255,255,.8);margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:8px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Search</a>
+  <a href="#" class="mm-cta" onclick="openAuthModal();return false">Sign in</a>
+</div>
+</nav>
+</header>
+<a href="#main-content" class="skip-link">Skip to content</a>
+<main id="main-content">
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-KRP5LLPR" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+
+  <div style="max-width:var(--max-w);margin:0 auto;padding:0 24px">
+    <header style="padding:50px 0 30px;border-bottom:1px solid var(--border)">
+      <div class="article-meta-bar">
+        <span class="article-tag">Docking</span>
+        <span class="article-date">Published: September 6, 2026</span>
+        <span class="article-author">By VigyanLLM Research Team</span>
+      </div>
+      <h1>Docking Score Interpretation: What the Numbers Mean</h1>
+      <div class="toc">
+  <h3>Table of Contents</h3>
+  <ul>
+    <li><a href="#what-scores-represent">What Docking Scores Represent</a></li>
+    <li><a href="#vina-scores">AutoDock Vina Scores</a></li>
+    <li><a href="#gnina-scores">GNINA CNN Scores</a></li>
+    <li><a href="#rmsd">RMSD: Structural Agreement</a></li>
+    <li><a href="#common-pitfalls">Common Pitfalls</a></li>
+    <li><a href="#frequently-asked-questions">Frequently Asked Questions</a></li>
+  </ul>
+</div>
+      <p class="subtitle">Docking scores are not absolute binding affinities. Here is what the numbers actually tell you — and what they do not.</p>
+<div style="background:linear-gradient(135deg,#0d9488,#0f766e);border-radius:12px;padding:20px 24px;margin:24px 0;text-align:center">
+  <p style="color:#fff;font-size:14px;margin:0 0 12px">See docking scores in action — run imatinib against ABL1 kinase for free.</p>
+  <a href="https://www.vigyanllm.in/docking" style="display:inline-block;background:#fff;color:#0f766e;padding:10px 24px;border-radius:8px;font-weight:700;font-size:13px;text-decoration:none">Run Docking Free →</a>
+</div>
+
+    <article class="article-body">
+      <h2 id="what-scores-represent">What Docking Scores Represent</h2>
+      <p>Molecular docking produces two outputs: a <strong>binding pose</strong> (the predicted orientation of the ligand in the protein binding site) and a <strong>docking score</strong> (an estimate of how tightly that pose binds). The score is the output of a <strong>scoring function</strong> — a mathematical equation that converts atomic interactions into a single number.</p>
+      <p>Most scoring functions estimate the binding free energy (ΔG) in kcal/mol. The general principle is straightforward: <strong>more negative values indicate stronger predicted binding</strong>. A ligand scoring −10 kcal/mol is predicted to bind more tightly than one scoring −6 kcal/mol, all else being equal.</p>
+      <p>However, docking scores are <strong>approximations</strong>. They ignore solvent entropy, protein conformational change, and many other factors that contribute to real binding affinity. The correlation between docking scores and experimentally measured IC₅₀ or Kd values is typically moderate (R² ≈ 0.3–0.5). This means docking scores are useful for <strong>ranking</strong> compounds against the same target, but not for predicting absolute binding affinity.</p>
+
+      <h2 id="vina-scores">AutoDock Vina Scores</h2>
+      <p><a href="/autodock-vs-swissdock">AutoDock Vina</a> uses a scoring function derived from machine learning on protein-ligand complexes. It combines knowledge-based terms (distance-dependent pair potentials) with empirical energy terms (hydrogen bonds, hydrophobic contacts, rotatable bond penalties).</p>
+
+      <h3>Score Ranges</h3>
+      <table>
+        <tr><th>Score Range</th><th>Interpretation</th><th>Action</th></tr>
+        <tr><td class="score-good">Below −8.0 kcal/mol</td><td>Strong predicted binding</td><td>Worth experimental validation</td></tr>
+        <tr><td class="score-mid">−6.0 to −8.0 kcal/mol</td><td>Moderate binding</td><td>Possible hit; verify with consensus scoring</td></tr>
+        <tr><td class="score-warn">Above −5.0 kcal/mol</td><td>Weak or no binding</td><td>Unlikely to be a meaningful hit</td></tr>
+      </table>
+
+      <div class="callout">
+        <div class="callout-title">Worked Example: Imatinib Scoring</div>
+        <p>Imatinib (Gleevec) scores −10.2 kcal/mol against ABL1 kinase (PDB: 2HYY) in AutoDock Vina. The experimental IC₅₀ is approximately 25 nM, which corresponds to a ΔG of roughly −10.4 kcal/mol at 25°C. The Vina score is remarkably close in this case, but this level of agreement is not typical — expect 1–3 kcal/mol error for most systems.</p>
+      </div>
+
+      <h3>What Changes the Score</h3>
+      <ul>
+        <li><strong>Exhaustiveness</strong>: Increasing from 8 to 32 may find better poses with lower (more negative) scores. The default exhaustiveness of 8 is adequate for most targets, but harder targets benefit from 32–64.</li>
+        <li><strong>Grid box size</strong>: Too small a box may exclude the correct binding site. Too large wastes computation. A 22 Å box centered on the binding site is a good starting point.</li>
+        <li><strong>Protein preparation</strong>: Missing hydrogens, wrong protonation states, or unsatisfied charges can shift scores by 2–4 kcal/mol.</li>
+        <li><strong>Ligand conformation</strong>: The starting conformation of the ligand matters less with high exhaustiveness, but a reasonable starting geometry helps.</li>
+      </ul>
+
+      <h2 id="gnina-scores">GNINA CNN Scores</h2>
+      <p><a href="https://github.com/gnina/gnina">GNINA</a> extends AutoDock Vina with a convolutional neural network (CNN) scoring function trained on receptor-ligand affinity data from PDBbind. The CNN score ranges from 0 to 1, where <strong>values closer to 1.0 indicate stronger predicted binding</strong>.</p>
+
+      <h3>GNINA vs Vina</h3>
+      <table>
+        <tr><th>Feature</th><th>AutoDock Vina</th><th>GNINA</th></tr>
+        <tr><td>Score type</td><td>kcal/mol (ΔG estimate)</td><td>CNN affinity (0–1)</td></tr>
+        <tr><td>Better binding</td><td>More negative</td><td>Higher (closer to 1.0)</td></tr>
+        <tr><td>Speed</td><td>Fast (5–10 sec)</td><td>Moderate (15–30 sec with GPU)</td></tr>
+        <tr><td>Training data</td><td>Knowledge-based potentials</td><td>PDBbind affinity data</td></tr>
+        <tr><td>Best for</td><td>Virtual screening</td><td>Pose scoring and rescoring</td></tr>
+      </table>
+      <p>GNINA's CNN scoring can rescore Vina poses to improve ranking accuracy. A common workflow is: dock with Vina, rescore the top poses with GNINA, then rank by CNN affinity.</p>
+
+      <h2 id="rmsd">RMSD: Structural Agreement</h2>
+      <p>RMSD (Root Mean Square Deviation) measures how different two molecular structures are. In docking, it quantifies the distance between a predicted pose and a reference (usually the crystal structure).</p>
+
+      <h3>Interpreting RMSD Values</h3>
+      <table>
+        <tr><th>RMSD</th><th>Interpretation</th></tr>
+        <tr><td class="score-good">Below 2.0 Å</td><td>Good agreement — pose reproduces experimental binding mode</td></tr>
+        <tr><td class="score-mid">2.0–4.0 Å</td><td>Moderate agreement — key interactions may be preserved</td></tr>
+        <tr><td class="score-warn">Above 4.0 Å</td><td>Poor agreement — different binding mode from reference</td></tr>
+      </table>
+      <p>The industry benchmark is <strong>2 Å RMSD</strong>: if a docking program reproduces the crystallographic pose within 2 Å, it is considered successful. AutoDock Vina achieves this in approximately 70–80% of cases on well-characterized binding sites.</p>
+
+      <h3>When RMSD Matters More Than Score</h3>
+      <p>For drug discovery, pose quality often matters more than the score. A pose with a score of −8.5 kcal/mol that shows clear hydrogen bonds to catalytic residues and good shape complementarity is more trustworthy than a pose scoring −10.0 kcal/mol with no clear interactions. <strong>Always visualize the best poses before making decisions.</strong></p>
+
+      <h2 id="common-pitfalls">Common Pitfalls</h2>
+      <p>Understanding these pitfalls prevents costly mistakes in docking studies:</p>
+      <ul>
+        <li><strong>Comparing scores across tools</strong>: Vina scores of −9.0 and SwissDock scores of −9.0 are not equivalent. Different scoring functions use different energy terms and scales. Always compare compounds using the same tool.</li>
+        <li><strong>Ignoring protein flexibility</strong>: Most scoring functions assume a rigid protein. Induced-fit effects (where the protein changes conformation upon ligand binding) can shift the true binding mode far from the docked pose.</li>
+        <li><strong>Over-trusting the top pose</strong>: Vina returns up to 9 poses. The top-ranked pose is not always the correct one. Check that poses 1–3 are structurally similar (low RMSD between them) for higher confidence.</li>
+        <li><strong>Ignoring solvent</strong>: Most scoring functions treat water implicitly. Binding sites with structured water molecules (like HIV protease) can have significant errors in docking scores.</li>
+        <li><strong>Selectivity blindness</strong>: A compound scoring −10 kcal/mol against one target may also bind related proteins with similar affinity. Always dock against close homologs if selectivity matters.</li>
+      </ul>
+
+      <div class="cta-box">
+        <h3>Put Score Interpretation into Practice</h3>
+        <p>Dock imatinib against ABL1 kinase and examine the binding poses, scores, and interaction maps.</p>
+        <a href="https://www.vigyanllm.in/docking" class="cta-btn">Run Docking Free →</a>
+      </div>
+
+      <h2 id="frequently-asked-questions">Frequently Asked Questions</h2>
+      <div itemscope itemtype="https://schema.org/FAQPage">
+        <div itemscope itemprop="mainEntity" itemtype="https://schema.org/Question" style="margin-bottom:16px">
+          <h3 itemprop="name">What is a good docking score?</h3>
+          <div itemprop="acceptedAnswer" itemscope itemtype="https://schema.org/Answer">
+            <p itemprop="text" style="color:#475569">A good docking score depends on the scoring function used. For AutoDock Vina, scores below −8.0 kcal/mol suggest good binding affinity, −6.0 to −8.0 indicates moderate binding, and above −5.0 suggests weak or no meaningful binding. For GNINA CNN scores, values closer to 1.0 indicate stronger predicted binding. Always compare scores within the same scoring function and target, and validate predictions experimentally.</p>
+          </div>
+        </div>
+        <div itemscope itemprop="mainEntity" itemtype="https://schema.org/Question" style="margin-bottom:16px">
+          <h3 itemprop="name">What is binding affinity?</h3>
+          <div itemprop="acceptedAnswer" itemscope itemtype="https://schema.org/Answer">
+            <p itemprop="text" style="color:#475569">Binding affinity is the strength of the interaction between a protein and a ligand, typically measured as the dissociation constant (Kd) or inhibition constant (Ki). Lower Kd values indicate tighter binding. Docking scores estimate binding free energy (ΔG) in kcal/mol, where more negative values indicate stronger predicted binding. The relationship between ΔG and Kd follows: ΔG = RT·ln(Kd), where R is the gas constant and T is temperature.</p>
+          </div>
+        </div>
+        <div itemscope itemprop="mainEntity" itemtype="https://schema.org/Question" style="margin-bottom:16px">
+          <h3 itemprop="name">What is RMSD in docking?</h3>
+          <div itemprop="acceptedAnswer" itemscope itemtype="https://schema.org/Answer">
+            <p itemprop="text" style="color:#475569">RMSD (Root Mean Square Deviation) measures the structural difference between two protein-ligand poses. In docking, it quantifies how far a predicted pose deviates from a reference, typically the crystal structure. An RMSD below 2 Å is considered good agreement with the experimental structure. The industry benchmark is that docking programs should reproduce crystallographic poses within 2 Å in 70–80% of cases.</p>
+          </div>
+        </div>
+        <div itemscope itemprop="mainEntity" itemtype="https://schema.org/Question" style="margin-bottom:16px">
+          <h3 itemprop="name">How accurate are docking scores?</h3>
+          <div itemprop="acceptedAnswer" itemscope itemtype="https://schema.org/Answer">
+            <p itemprop="text" style="color:#475569">Docking scores are approximations with moderate correlation to experimental binding affinities. Scoring functions typically achieve R² values of 0.3 to 0.5 against experimental data. They are most reliable for relative ranking of compounds against the same target, not for predicting absolute binding affinity. Combining docking with molecular dynamics, free energy calculations, or experimental validation significantly improves reliability.</p>
+          </div>
+        </div>
+        <div itemprop="mainEntity" itemscope itemtype="https://schema.org/Question" style="margin-bottom:16px">
+          <h3 itemprop="name">What is a scoring function?</h3>
+          <div itemprop="acceptedAnswer" itemscope itemtype="https://schema.org/Answer">
+            <p itemprop="text" style="color:#475569">A scoring function is a mathematical equation that estimates the binding free energy between a protein and ligand based on their atomic interactions. Common types include force-field based (van der Waals, electrostatics), empirical (weighted energy terms trained on experimental data), and knowledge-based (statistical potentials derived from protein-ligand complexes). Each docking tool uses a different scoring function, which is why scores cannot be directly compared across tools.</p>
+          </div>
+        </div>
+      </div>
+
+      <section class="related-articles">
+      <h2 id="related-articles">Related Articles</h2>
+      <div class="related-grid">
+        <div class="related-card">
+          <h3><a href="https://www.vigyanllm.in/docking">Free Molecular Docking Tool</a></h3>
+          <p>Dock a ligand against any protein structure in your browser and see binding scores with interactive 3D visualization.</p>
+        </div>
+        <div class="related-card">
+          <h3><a href="https://www.vigyanllm.in/protein-docking">Protein-Ligand Docking Guide</a></h3>
+          <p>Learn protein-ligand docking from scratch — what it is, how it works, and free tools to get started.</p>
+        </div>
+        <div class="related-card">
+          <h3><a href="https://www.vigyanllm.in/autodock-vs-swissdock">AutoDock vs SwissDock: Head-to-Head</a></h3>
+          <p>Compare two popular docking tools on speed, accuracy, and score interpretation.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="references">
+      <h2 id="references">References</h2>
+      <ol>
+        <li>Trott O., Olson A.J. (2010). AutoDock Vina: Improving the speed and accuracy of docking with a new scoring function, efficient optimization, and multithreading. <em>Journal of Computational Chemistry</em>, 31(2), 455-461.</li>
+        <li>McNutt A.T., et al. (2021). GNINA 1.0: Molecular docking with deep learning. <em>Journal of Cheminformatics</em>, 13(1), 43.</li>
+        <li>Warren G.L., et al. (2006). A critical assessment of docking programs and scoring functions. <em>Journal of Medicinal Chemistry</em>, 49(20), 5992-6016.</li>
+        <li>Kontoyiannis M., et al. (2021). Scoring functions for molecular docking. <em>WIREs Computational Molecular Science</em>, 11(6), e1549.</li>
+      </ol>
+    </section>
+  </div>
+</main>
+
+<script defer src="/search-index.js"></script>
+<script defer src="/auth-shared.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded',function(){var h=document.getElementById('hamburger'),m=document.getElementById('mobile-menu');if(h&&m){h.addEventListener('click',function(){h.classList.toggle('active');m.classList.toggle('open')});m.querySelectorAll('a').forEach(function(l){l.addEventListener('click',function(){m.classList.remove('open');h.classList.remove('active')})})}window.closeMobileMenu=function(){if(m){m.classList.remove('open');if(h)h.classList.remove('active')}}});
+</script>
+<div class="auth-overlay" id="auth-overlay" onclick="if(event.target===this)closeAuth()">
+  <div class="auth-modal">
+    <button type="button" class="close-btn" onclick="closeAuth()">&#10005;</button>
+    <div id="auth-content"></div>
+  </div>
+</div>
+<section style="max-width:900px;margin:0 auto;padding:32px 16px;border-top:1px solid var(--outline)">
+<h3 style="font-family:var(--font-h);font-size:13px;font-weight:700;margin-bottom:8px;color:var(--text)">Continue Reading</h3>
+<p style="font-size:13px;color:var(--text2);margin-bottom:8px">Explore more in <a href="https://www.vigyanllm.in/hub/molecular-docking" style="color:var(--blue);text-decoration:none;font-weight:600">Molecular Docking</a></p>
+</section>
+<footer>
+<div class="footer-grid">
+  <div class="footer-col">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px"><img src="/logo.png" alt="VigyanLLM Logo" class="site-logo" style="height:36px;width:auto;object-fit:contain" loading="lazy"><span style="font-family:var(--font-h);font-size:13px;font-weight:800;color:#fff">VigyanLLM</span></div>
+    <p style="font-size:13px;color:rgba(255,255,255,.45);line-height:1.6">Sovereign Healthcare &amp; Life Sciences AI.<br>Built in India. For the world.</p>
+    <a href="mailto:contact@vigyanllm.in" style="color:var(--saffron-light,#ff8a7a);font-size:13px;display:block;margin-top:12px">contact@vigyanllm.in</a>
+    <div class="footer-social">
+      <a href="https://github.com/vigyanllm" rel="me" aria-label="GitHub"><svg fill="#fff" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg></a>
+      <a href="https://www.linkedin.com/company/vigyanllm/" rel="me" aria-label="LinkedIn"><svg fill="#0077B5" viewBox="0 0 24 24"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg></a>
+      <a href="https://www.facebook.com/vigyanllm" rel="me" aria-label="Facebook"><svg fill="#1877F2" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></a>
+      <a href="https://www.youtube.com/@VigyanLLM" rel="me" aria-label="YouTube"><svg fill="#FF0000" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+    </div>
+  </div>
+  <div class="footer-col"><h5>Products</h5><a href="primer">Primer Design</a><a href="search">Sequence Search</a><a href="blast">BLAST</a><a href="msa">MSA</a><a href="pcr-analysis">PCR Analysis</a><a href="crispr-analysis">CRISPR</a><a href="protein-docking">Docking</a></div>
+  <div class="footer-col"><h5>Platform</h5><a href="platform">Overview</a><a href="architecture">Architecture</a><a href="problem">Problem</a><a href="solution">Solution</a><a href="compare">Compare</a><a href="roadmap">Roadmap</a><a href="about/sovereign-ai">Sovereign AI</a><a href="features/on-premises">On-Premises</a></div>
+  <div class="footer-col"><h5>Resources</h5><a href="blog/index">Blog</a><a href="faq">FAQ</a><a href="about">About</a><a href="demo">Demo</a><a href="/learning-vigyanllm">Learning</a><a href="/academic-partnership">Academic Partnership</a><a href="pricing">Pricing</a></div>
+  <div class="footer-col"><h5>Contact</h5><a href="mailto:contact@vigyanllm.in">contact@vigyanllm.in</a><a href="privacy">Privacy</a><a href="terms">Terms</a><a href="cookies">Cookies</a><a href="refund">Refund</a><a href="security">Security</a><a href="cite-vigyanllm">Cite Us</a></div>
+</div>
+<div class="footer-bottom"><span>&copy; <script>document.write(new Date().getFullYear())</script> VigyanLLM Private Limited · Sovereign Research AI</span><span>WWW.VIGYANLLM.IN</span></div>
+</footer>
+</body>
+</html>
