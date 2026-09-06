@@ -282,6 +282,17 @@ def verify_payment():
     )
     db.commit()
 
+    # Mark promo code as used (only after payment succeeds)
+    try:
+        meta = json.loads(order_row.get("metadata") or "{}") if isinstance(order_row.get("metadata"), str) else {}
+        promo_code = meta.get("promo_code", "")
+        if promo_code:
+            db.execute("UPDATE promo_codes SET used_count = used_count + 1 WHERE code = ? AND used_count < max_uses", (promo_code,))
+            db.execute("UPDATE users SET promo_code_used = ? WHERE email = ? AND (promo_code_used IS NULL OR promo_code_used = '')", (promo_code, email))
+            db.commit()
+    except Exception as e:
+        logger.warning("Failed to record promo usage: %s", e)
+
     log_action(email, "plan_activated",
                f"Plan {tier} ({billing_cycle}) activated via Razorpay order {razorpay_order_id}")
 
@@ -595,6 +606,7 @@ def validate_promo():
         "price_inr": row["price_inr"],
         "currency": row["currency"],
         "tier": row["tier"],
+        "discount_pct": int(row["discount_pct"] or 0),
     }), 200
 
 

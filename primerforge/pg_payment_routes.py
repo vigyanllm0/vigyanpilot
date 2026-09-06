@@ -443,6 +443,15 @@ def verify_payment():
         logger.error("Token credit failed: %s", e)
         return jsonify({"error": "Token credit failed. Contact support."}), 500
 
+    # Mark promo code as used (only after payment succeeds)
+    promo_code = metadata.get("promo_code", "")
+    if promo_code:
+        try:
+            execute("UPDATE promo_codes SET used_count = used_count + 1 WHERE code = %s AND used_count < max_uses", (promo_code,))
+            execute("UPDATE users SET promo_code_used = %s WHERE id = %s AND (promo_code_used IS NULL OR promo_code_used = '')", (promo_code, order["user_id"]))
+        except Exception as e:
+            logger.warning("Failed to record promo usage: %s", e)
+
     try:
         log_action(g.user["email"], "payment_verified",
                    f"order={razorpay_order_id} payment={razorpay_payment_id} tokens={tokens_credited}")
@@ -1178,6 +1187,7 @@ def validate_promo():
         "trial_days": row["trial_days"], "daily_analyses": row["daily_analyses"],
         "batch_max": row["batch_max"], "has_export": bool(row["has_export"]),
         "price_inr": row["price_inr"], "currency": row["currency"], "tier": row["tier"],
+        "discount_pct": int(row.get("discount_pct") or 0),
     }), 200
 
 

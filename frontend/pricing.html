@@ -263,6 +263,24 @@ footer{background:var(--navy);color:rgba(255,255,255,.8);padding:56px 0 24px}
     <span id="bill-yearly-label" style="font-size:13px;font-weight:500;color:var(--muted);cursor:pointer" onclick="setBilling('yearly')">Yearly <span style="font-size:12px;font-weight:700;color:#16A34A;background:#DCFCE7;padding:2px 8px;border-radius:99px">Save ~28%</span></span>
   </div>
 
+  <!-- Promo Code Section -->
+  <div style="max-width:480px;margin:0 auto 24px;text-align:center">
+    <div id="promo-toggle-pricing" onclick="togglePromoPricing()" style="font-size:13px;color:var(--blue);cursor:pointer;font-weight:600;user-select:none;padding:8px 0">Have a promo code?</div>
+    <div id="promo-form-pricing" style="display:none;background:var(--surface-alt);border-radius:12px;padding:16px;margin-top:8px">
+      <div style="display:flex;gap:8px;align-items:center">
+        <input type="text" id="promo-input-pricing" placeholder="Enter promo code" maxlength="20" autocomplete="off" style="flex:1;padding:10px 14px;border:1px solid var(--outline);border-radius:8px;font-family:var(--font-b);font-size:13px;text-transform:uppercase;letter-spacing:.5px">
+        <button type="button" id="promo-apply-btn-pricing" onclick="applyPromoPricing()" style="padding:10px 16px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-family:var(--font-b);font-size:13px;font-weight:700;cursor:pointer">Apply</button>
+      </div>
+      <div id="promo-msg-pricing" style="font-size:12px;margin-top:8px;min-height:18px"></div>
+    </div>
+    <div id="promo-discount-pricing" style="display:none;max-width:480px;margin:0 auto">
+      <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px dashed var(--outline)">
+        <span id="promo-discount-label-pricing" style="font-size:13px;color:#16A34A;font-weight:600"></span>
+        <span id="promo-discount-value-pricing" style="font-size:13px;color:#16A34A;font-weight:700"></span>
+      </div>
+    </div>
+  </div>
+
   <div class="pricing-grid">
 
     <!-- Free -->
@@ -506,6 +524,75 @@ function updateBillingUI(isYearly) {
   var labBtn = document.getElementById('lab-btn');
   proBtn.setAttribute('onclick', "purchasePlan('" + (isYearly ? 'pro-yearly' : 'pro-monthly') + "')");
   labBtn.setAttribute('onclick', "purchasePlan('" + (isYearly ? 'lab-yearly' : 'lab-monthly') + "')");
+  updatePricingPromoDisplay();
+}
+
+// ── Promo Code (pricing page) ──
+var PRICING_PROMO_CODE = null;
+var PRICING_PROMO_DISCOUNT = 0;
+var PRICING_BASE_AMOUNTS = { 'pro-monthly': 699, 'pro-yearly': 5999, 'lab-monthly': 3999, 'lab-yearly': 32999 };
+
+function togglePromoPricing() {
+  var form = document.getElementById('promo-form-pricing');
+  var toggle = document.getElementById('promo-toggle-pricing');
+  if (form.style.display === 'none') {
+    form.style.display = 'block';
+    toggle.textContent = 'Hide promo code';
+    document.getElementById('promo-input-pricing').focus();
+  } else {
+    form.style.display = 'none';
+    toggle.textContent = 'Have a promo code?';
+  }
+}
+
+async function applyPromoPricing() {
+  var code = document.getElementById('promo-input-pracing').value.trim();
+  var msg = document.getElementById('promo-msg-pricing');
+  var btn = document.getElementById('promo-apply-btn-pricing');
+  if (!code) { msg.style.color = '#DC2626'; msg.textContent = 'Please enter a code'; return; }
+  btn.disabled = true; btn.textContent = 'Checking...'; msg.textContent = '';
+  try {
+    var token = sessionStorage.getItem('pf_token') || '';
+    var headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = 'Bearer ' + token;
+    var r = await fetch(API + '/promo/validate', { method: 'POST', headers: headers, credentials: 'same-origin', body: JSON.stringify({ code: code }) });
+    var d = await r.json();
+    if (!r.ok || d.error) { msg.style.color = '#DC2626'; msg.textContent = d.error || 'Invalid code'; btn.disabled = false; btn.textContent = 'Apply'; return; }
+    var pct = parseInt(d.discount_pct || 0);
+    if (pct <= 0) { msg.style.color = '#DC2626'; msg.textContent = 'This code does not offer a checkout discount.'; btn.disabled = false; btn.textContent = 'Apply'; return; }
+    PRICING_PROMO_CODE = code.toUpperCase();
+    PRICING_PROMO_DISCOUNT = pct;
+    msg.style.color = '#16A34A'; msg.textContent = 'Promo applied! ' + pct + '% discount.';
+    document.getElementById('promo-form-pricing').style.display = 'none';
+    var toggle = document.getElementById('promo-toggle-pricing');
+    toggle.textContent = code.toUpperCase() + ' applied';
+    toggle.style.color = '#16A34A';
+    toggle.onclick = removePromoPricing;
+    updatePricingPromoDisplay();
+  } catch (e) { msg.style.color = '#DC2626'; msg.textContent = 'Network error. Try again.'; }
+  btn.disabled = false; btn.textContent = 'Apply';
+}
+
+function removePromoPricing() {
+  PRICING_PROMO_CODE = null;
+  PRICING_PROMO_DISCOUNT = 0;
+  document.getElementById('promo-discount-pricing').style.display = 'none';
+  document.getElementById('promo-input-pricing').value = '';
+  document.getElementById('promo-msg-pricing').textContent = '';
+  var toggle = document.getElementById('promo-toggle-pricing');
+  toggle.textContent = 'Have a promo code?';
+  toggle.style.color = '';
+  toggle.onclick = togglePromoPricing;
+  updatePricingPromoDisplay();
+}
+
+function updatePricingPromoDisplay() {
+  var el = document.getElementById('promo-discount-pricing');
+  if (!PRICING_PROMO_CODE || PRICING_PROMO_DISCOUNT <= 0) { el.style.display = 'none'; return; }
+  el.style.display = 'block';
+  document.getElementById('promo-discount-label-pricing').textContent = PRICING_PROMO_CODE + ' (' + PRICING_PROMO_DISCOUNT + '% off)';
+  var baseAmount = PRICING_BASE_AMOUNTS[isYearly ? 'pro-yearly' : 'pro-monthly'] || 699;
+  document.getElementById('promo-discount-value-pricing').textContent = '-₹' + Math.round(baseAmount * PRICING_PROMO_DISCOUNT / 100);
 }
 </script>
 
@@ -552,10 +639,12 @@ async function purchasePlan(planId) {
   }
   showLoading(true);
   try {
+    var orderBody = { plan_id: planId };
+    if (PRICING_PROMO_CODE) orderBody.promo_code = PRICING_PROMO_CODE;
     var r = await fetch(API + '/payments/create-order', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' }, credentials: 'same-origin',
-      body: JSON.stringify({ plan_id: planId })
+      body: JSON.stringify(orderBody)
     });
     var d = await r.json();
     if (!r.ok) {
