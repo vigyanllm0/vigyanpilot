@@ -1200,186 +1200,194 @@ def validate_promo():
 @require_auth
 def apply_promo():
     """Apply promo code — two-step: create_order + verify/activate."""
-    data = request.get_json(silent=True) or {}
-    code = (data.get("code") or "").strip().upper()
-    step = data.get("step", "")
-    if not code:
-        return jsonify({"error": "Missing promo code."}), 400
+    try:
+        data = request.get_json(silent=True) or {}
+        code = (data.get("code") or "").strip().upper()
+        step = data.get("step", "")
+        if not code:
+            return jsonify({"error": "Missing promo code."}), 400
 
-    row = fetch_one("SELECT * FROM promo_codes WHERE code=%s", code)
-    if not row:
-        return jsonify({"error": "Invalid promo code."}), 404
-    now = time.time()
-    if row.get("expires_at") and row["expires_at"] > 0 and row["expires_at"] < now:
-        return jsonify({"error": "This promo code has expired."}), 410
-    if row["used_count"] >= row["max_uses"]:
-        return jsonify({"error": "This promo code has already been used."}), 410
+        row = fetch_one("SELECT * FROM promo_codes WHERE code=%s", code)
+        if not row:
+            return jsonify({"error": "Invalid promo code."}), 404
+        now = time.time()
+        if row.get("expires_at") and row["expires_at"] > 0 and row["expires_at"] < now:
+            return jsonify({"error": "This promo code has expired."}), 410
+        if row["used_count"] >= row["max_uses"]:
+            return jsonify({"error": "This promo code has already been used."}), 410
 
-    email = g.user['email']
-    user_row = fetch_one("SELECT promo_code_used FROM users WHERE email=%s", email)
-    if user_row and user_row.get("promo_code_used"):
-        return jsonify({"error": "You have already used a promo code."}), 409
+        email = g.user['email']
+        user_row = fetch_one("SELECT promo_code_used FROM users WHERE email=%s", email)
+        if user_row and user_row.get("promo_code_used"):
+            return jsonify({"error": "You have already used a promo code."}), 409
 
-    promo_type = row.get("promo_type") or "trial"
+        promo_type = row.get("promo_type") or "trial"
 
-    # ── Academic promo: no payment, direct Pro activation ──
-    if promo_type == "academic":
+        # ── Academic promo: no payment, direct Pro activation ──
+        if promo_type == "academic":
+            result = execute("UPDATE promo_codes SET used_count = used_count + 1 WHERE code=%s AND used_count < max_uses", (code,))
+            if result == 0:
+                return jsonify({"error": "Code was just claimed by another user."}), 410
+
+            pro_expires_at = int(time.time()) + (row["trial_days"] * 86400)
+            execute("""UPDATE users SET plan='pro', pro_expires_at=%s, promo_code_used=%s,
+                       plan_activated_at=%s, is_academic=TRUE WHERE email=%s""",
+                    (pro_expires_at, code, int(time.time()), email))
+            log_action(email, "academic_pro_activated",
+                       f"Promo {code}, {row['trial_days']}d Pro access, no payment")
+            _log_expense("trial_service", f"Academic promo {code} — {row['trial_days']}d Pro access",
+                         0, promo_code=code, user_email=email,
+                         metadata={"daily_analyses": row["daily_analyses"],
+                                   "trial_days": row["trial_days"], "promo_type": "academic"})
+            return jsonify({"success": True, "promo_type": "academic",
+                            "message": f"Your {row['trial_days']}-day Pro access is active!",
+                            "trial_days": row["trial_days"], "pro_expires_at": pro_expires_at,
+                            "daily_analyses": row["daily_analyses"],
+                            "batch_max": row["batch_max"], "price_inr": row["price_inr"]}), 200
+
+        # ── Trial promo: Rs.1 Razorpay verification → trial → auto-debit ──
+        # Step 1: Create ₹1 order
+        if step == "create_order":
+            if not _current_client():
+                return jsonify({"error": "Payment service not configured."}), 503
+            try:
+                order = _current_client().order.create({
+                    "amount": 100, "currency": row["currency"] or "INR",
+                    "receipt": f"promo_{int(time.time())}_{code}",
+                    "notes": {"email": email, "promo_code": code, "type": "trial_verification"}
+                })
+            except Exception as e:
+                logger.error("Failed to create promo order: %s", e)
+                return jsonify({"error": "Failed to create payment order."}), 500
+            return jsonify({"order_id": order["id"], "amount": 100, "currency": row["currency"] or "INR",
+                            "key_id": RAZORPAY_KEY_ID, "prefill": {"email": email}}), 200
+
+        # Step 2: Verify + activate
+        rz_payment_id = data.get("razorpay_payment_id", "")
+        rz_order_id = data.get("razorpay_order_id", "")
+        rz_signature = data.get("razorpay_signature", "")
+        if not rz_payment_id or not rz_order_id or not rz_signature:
+            return jsonify({"error": "Missing payment verification fields."}), 400
+        if not RAZORPAY_KEY_SECRET:
+            return jsonify({"error": "Payment service not configured."}), 503
+
+        message = f"{rz_order_id}|{rz_payment_id}"
+        expected_sig = hmac.new(RAZORPAY_KEY_SECRET.encode(), message.encode(), hashlib.sha256).hexdigest()
+        if not hmac.compare_digest(expected_sig, rz_signature):
+            return jsonify({"error": "Payment verification failed."}), 400
+
+        # Create Razorpay Plan if needed
+        plan_id_cached = row.get("razorpay_plan_id", "")
+        if not plan_id_cached and _current_client():
+            try:
+                rz_plan = _current_client().plan.create({
+                    "item": {"name": f"VigyanLLM Pro ({row['trial_days']}d trial)",
+                             "amount": row["price_inr"] * 100, "currency": row["currency"],
+                             "description": f"Trial {row['trial_days']}d, then {row['currency']} {row['price_inr']}/mo"},
+                    "interval": 1, "period": "monthly"
+                })
+                plan_id_cached = rz_plan["id"]
+                execute("UPDATE promo_codes SET razorpay_plan_id=%s WHERE code=%s", (plan_id_cached, code))
+            except Exception as e:
+                logger.error("Failed to create Razorpay plan: %s", e)
+                return jsonify({"error": "Failed to create subscription plan."}), 500
+
+        # Create Subscription
+        if _current_client() and plan_id_cached:
+            trial_seconds = row["trial_days"] * 86400
+            try:
+                rz_sub = _current_client().subscription.create({
+                    "plan_id": plan_id_cached, "total_count": 12, "quantity": 1,
+                    "customer_notify": True, "start_at": int(time.time()) + trial_seconds,
+                    "notes": {"promo_code": code, "user_email": email}
+                })
+                sub_id = rz_sub["id"]
+            except Exception as e:
+                logger.error("Failed to create Razorpay subscription: %s", e)
+                return jsonify({"error": "Failed to create subscription."}), 500
+        else:
+            sub_id = f"sub_dev_{int(time.time())}"
+
+        # Mark code used
         result = execute("UPDATE promo_codes SET used_count = used_count + 1 WHERE code=%s AND used_count < max_uses", (code,))
         if result == 0:
             return jsonify({"error": "Code was just claimed by another user."}), 410
 
-        pro_expires_at = int(time.time()) + (row["trial_days"] * 86400)
-        execute("""UPDATE users SET plan='pro', pro_expires_at=%s, promo_code_used=%s,
-                   plan_activated_at=%s, is_academic=1 WHERE email=%s""",
-                (pro_expires_at, code, int(time.time()), email))
-        log_action(email, "academic_pro_activated",
-                   f"Promo {code}, {row['trial_days']}d Pro access, no payment")
-        _log_expense("trial_service", f"Academic promo {code} — {row['trial_days']}d Pro access",
-                     0, promo_code=code, user_email=email,
-                     metadata={"daily_analyses": row["daily_analyses"],
-                               "trial_days": row["trial_days"], "promo_type": "academic"})
-        return jsonify({"success": True, "promo_type": "academic",
-                        "message": f"Your {row['trial_days']}-day Pro access is active!",
-                        "trial_days": row["trial_days"], "pro_expires_at": pro_expires_at,
-                        "daily_analyses": row["daily_analyses"],
+        # Activate trial
+        trial_ends_at = int(time.time()) + (row["trial_days"] * 86400)
+        execute("""UPDATE users SET plan='trial', trial_ends_at=%s, promo_code_used=%s,
+                   razorpay_subscription_id=%s, plan_activated_at=%s WHERE email=%s""",
+                (trial_ends_at, code, sub_id, int(time.time()), email))
+        execute("""INSERT INTO trial_subscriptions (user_email, promo_code, razorpay_subscription_id,
+                   razorpay_plan_id, trial_days, trial_started_at, trial_ends_at, status)
+                   VALUES (%s,%s,%s,%s,%s,%s,%s,'trial')""",
+                (email, code, sub_id, plan_id_cached, row["trial_days"], int(time.time()), trial_ends_at))
+        log_action(email, "trial_activated", f"Promo {code}, {row['trial_days']}d trial, sub {sub_id}")
+
+        # Log company expenses: ₹1 verification charge + estimated trial service cost
+        _log_expense("verification_charge", f"Razorpay verification charge for promo {code}",
+                     1.0, promo_code=code, user_email=email, subscription_id=sub_id,
+                     metadata={"razorpay_payment_id": rz_payment_id, "razorpay_order_id": rz_order_id})
+        estimated_trial_cost = row["daily_analyses"] * row["trial_days"] * 0.50
+        _log_expense("trial_service", f"Estimated {row['trial_days']}d trial service cost ({row['daily_analyses']} analyses/day)",
+                     estimated_trial_cost, promo_code=code, user_email=email, subscription_id=sub_id,
+                     metadata={"daily_analyses": row["daily_analyses"], "trial_days": row["trial_days"],
+                               "price_inr": row["price_inr"], "estimated": True})
+
+        return jsonify({"success": True, "trial_days": row["trial_days"], "trial_ends_at": trial_ends_at,
+                        "subscription_id": sub_id, "daily_analyses": row["daily_analyses"],
                         "batch_max": row["batch_max"], "price_inr": row["price_inr"]}), 200
-
-    # ── Trial promo: Rs.1 Razorpay verification → trial → auto-debit ──
-    # Step 1: Create ₹1 order
-    if step == "create_order":
-        if not _current_client():
-            return jsonify({"error": "Payment service not configured."}), 503
-        try:
-            order = _current_client().order.create({
-                "amount": 100, "currency": row["currency"] or "INR",
-                "receipt": f"promo_{int(time.time())}_{code}",
-                "notes": {"email": email, "promo_code": code, "type": "trial_verification"}
-            })
-        except Exception as e:
-            logger.error("Failed to create promo order: %s", e)
-            return jsonify({"error": "Failed to create payment order."}), 500
-        return jsonify({"order_id": order["id"], "amount": 100, "currency": row["currency"] or "INR",
-                        "key_id": RAZORPAY_KEY_ID, "prefill": {"email": email}}), 200
-
-    # Step 2: Verify + activate
-    rz_payment_id = data.get("razorpay_payment_id", "")
-    rz_order_id = data.get("razorpay_order_id", "")
-    rz_signature = data.get("razorpay_signature", "")
-    if not rz_payment_id or not rz_order_id or not rz_signature:
-        return jsonify({"error": "Missing payment verification fields."}), 400
-    if not RAZORPAY_KEY_SECRET:
-        return jsonify({"error": "Payment service not configured."}), 503
-
-    message = f"{rz_order_id}|{rz_payment_id}"
-    expected_sig = hmac.new(RAZORPAY_KEY_SECRET.encode(), message.encode(), hashlib.sha256).hexdigest()
-    if not hmac.compare_digest(expected_sig, rz_signature):
-        return jsonify({"error": "Payment verification failed."}), 400
-
-    # Create Razorpay Plan if needed
-    plan_id_cached = row.get("razorpay_plan_id", "")
-    if not plan_id_cached and _current_client():
-        try:
-            rz_plan = _current_client().plan.create({
-                "item": {"name": f"VigyanLLM Pro ({row['trial_days']}d trial)",
-                         "amount": row["price_inr"] * 100, "currency": row["currency"],
-                         "description": f"Trial {row['trial_days']}d, then {row['currency']} {row['price_inr']}/mo"},
-                "interval": 1, "period": "monthly"
-            })
-            plan_id_cached = rz_plan["id"]
-            execute("UPDATE promo_codes SET razorpay_plan_id=%s WHERE code=%s", (plan_id_cached, code))
-        except Exception as e:
-            logger.error("Failed to create Razorpay plan: %s", e)
-            return jsonify({"error": "Failed to create subscription plan."}), 500
-
-    # Create Subscription
-    if _current_client() and plan_id_cached:
-        trial_seconds = row["trial_days"] * 86400
-        try:
-            rz_sub = _current_client().subscription.create({
-                "plan_id": plan_id_cached, "total_count": 12, "quantity": 1,
-                "customer_notify": True, "start_at": int(time.time()) + trial_seconds,
-                "notes": {"promo_code": code, "user_email": email}
-            })
-            sub_id = rz_sub["id"]
-        except Exception as e:
-            logger.error("Failed to create Razorpay subscription: %s", e)
-            return jsonify({"error": "Failed to create subscription."}), 500
-    else:
-        sub_id = f"sub_dev_{int(time.time())}"
-
-    # Mark code used
-    result = execute("UPDATE promo_codes SET used_count = used_count + 1 WHERE code=%s AND used_count < max_uses", (code,))
-    if result == 0:
-        return jsonify({"error": "Code was just claimed by another user."}), 410
-
-    # Activate trial
-    trial_ends_at = int(time.time()) + (row["trial_days"] * 86400)
-    execute("""UPDATE users SET plan='trial', trial_ends_at=%s, promo_code_used=%s,
-               razorpay_subscription_id=%s, plan_activated_at=%s WHERE email=%s""",
-            (trial_ends_at, code, sub_id, int(time.time()), email))
-    execute("""INSERT INTO trial_subscriptions (user_email, promo_code, razorpay_subscription_id,
-               razorpay_plan_id, trial_days, trial_started_at, trial_ends_at, status)
-               VALUES (%s,%s,%s,%s,%s,%s,%s,'trial')""",
-            (email, code, sub_id, plan_id_cached, row["trial_days"], int(time.time()), trial_ends_at))
-    log_action(email, "trial_activated", f"Promo {code}, {row['trial_days']}d trial, sub {sub_id}")
-
-    # Log company expenses: ₹1 verification charge + estimated trial service cost
-    _log_expense("verification_charge", f"Razorpay verification charge for promo {code}",
-                 1.0, promo_code=code, user_email=email, subscription_id=sub_id,
-                 metadata={"razorpay_payment_id": rz_payment_id, "razorpay_order_id": rz_order_id})
-    estimated_trial_cost = row["daily_analyses"] * row["trial_days"] * 0.50
-    _log_expense("trial_service", f"Estimated {row['trial_days']}d trial service cost ({row['daily_analyses']} analyses/day)",
-                 estimated_trial_cost, promo_code=code, user_email=email, subscription_id=sub_id,
-                 metadata={"daily_analyses": row["daily_analyses"], "trial_days": row["trial_days"],
-                           "price_inr": row["price_inr"], "estimated": True})
-
-    return jsonify({"success": True, "trial_days": row["trial_days"], "trial_ends_at": trial_ends_at,
-                    "subscription_id": sub_id, "daily_analyses": row["daily_analyses"],
-                    "batch_max": row["batch_max"], "price_inr": row["price_inr"]}), 200
+    except Exception as e:
+        logger.error("apply_promo error: %s", e, exc_info=True)
+        return jsonify({"error": "Server error. Please try again."}), 500
 
 
 @payment_bp.route('/api/trial/status', methods=['GET'])
 @require_auth
 def trial_status():
     """Get trial status for current user."""
-    email = g.user['email']
-    user = fetch_one("SELECT plan, trial_ends_at, promo_code_used, razorpay_subscription_id FROM users WHERE email=%s", email)
-    if not user or user["plan"] != "trial":
-        plan = user["plan"] if user else "free"
-        # Check if academic Pro has expired
-        if plan == "pro":
-            pro_expires = fetch_one("SELECT pro_expires_at FROM users WHERE email=%s", email)
-            if pro_expires and pro_expires.get("pro_expires_at") and pro_expires["pro_expires_at"] > 0:
-                if time.time() > pro_expires["pro_expires_at"]:
-                    execute("UPDATE users SET plan='free', pro_expires_at=0 WHERE email=%s", (email,))
-                    return jsonify({"status": "expired", "plan": "free"}), 200
-                else:
-                    days_left = int((pro_expires["pro_expires_at"] - time.time()) / 86400)
-                    return jsonify({"status": "active", "plan": "pro", "promo_type": "academic",
-                                    "pro_expires_at": pro_expires["pro_expires_at"],
-                                    "days_remaining": days_left}), 200
-        return jsonify({"status": "none", "plan": plan}), 200
+    try:
+        email = g.user['email']
+        user = fetch_one("SELECT plan, trial_ends_at, promo_code_used, razorpay_subscription_id FROM users WHERE email=%s", email)
+        if not user or user["plan"] != "trial":
+            plan = user["plan"] if user else "free"
+            # Check if academic Pro has expired
+            if plan == "pro":
+                pro_expires = fetch_one("SELECT pro_expires_at FROM users WHERE email=%s", email)
+                if pro_expires and pro_expires.get("pro_expires_at") and pro_expires["pro_expires_at"] > 0:
+                    if time.time() > pro_expires["pro_expires_at"]:
+                        execute("UPDATE users SET plan='free', pro_expires_at=0 WHERE email=%s", (email,))
+                        return jsonify({"status": "expired", "plan": "free"}), 200
+                    else:
+                        days_left = int((pro_expires["pro_expires_at"] - time.time()) / 86400)
+                        return jsonify({"status": "active", "plan": "pro", "promo_type": "academic",
+                                        "pro_expires_at": pro_expires["pro_expires_at"],
+                                        "days_remaining": days_left}), 200
+            return jsonify({"status": "none", "plan": plan}), 200
 
-    now = time.time()
-    trial_ends = user["trial_ends_at"] or 0
-    days_remaining = max(0, int((trial_ends - now) / 86400)) if trial_ends > 0 else 0
-    is_active = trial_ends > 0 and now < trial_ends
+        now = time.time()
+        trial_ends = user["trial_ends_at"] or 0
+        days_remaining = max(0, int((trial_ends - now) / 86400)) if trial_ends > 0 else 0
+        is_active = trial_ends > 0 and now < trial_ends
 
-    promo = None
-    if user.get("promo_code_used"):
-        promo = fetch_one("SELECT daily_analyses, batch_max, has_export, trial_days, price_inr, currency FROM promo_codes WHERE code=%s", user["promo_code_used"])
+        promo = None
+        if user.get("promo_code_used"):
+            promo = fetch_one("SELECT daily_analyses, batch_max, has_export, trial_days, price_inr, currency FROM promo_codes WHERE code=%s", user["promo_code_used"])
 
-    return jsonify({
-        "status": "active" if is_active else "expired", "plan": "trial",
-        "trial_ends_at": trial_ends, "days_remaining": days_remaining,
-        "promo_code": user.get("promo_code_used", ""),
-        "subscription_id": user.get("razorpay_subscription_id", ""),
-        "daily_analyses": promo["daily_analyses"] if promo else 50,
-        "batch_max": promo["batch_max"] if promo else 20,
-        "has_export": bool(promo["has_export"]) if promo else True,
-        "price_inr": promo["price_inr"] if promo else 699,
-        "currency": promo["currency"] if promo else "INR",
-    }), 200
+        return jsonify({
+            "status": "active" if is_active else "expired", "plan": "trial",
+            "trial_ends_at": trial_ends, "days_remaining": days_remaining,
+            "promo_code": user.get("promo_code_used", ""),
+            "subscription_id": user.get("razorpay_subscription_id", ""),
+            "daily_analyses": promo["daily_analyses"] if promo else 50,
+            "batch_max": promo["batch_max"] if promo else 20,
+            "has_export": bool(promo["has_export"]) if promo else True,
+            "price_inr": promo["price_inr"] if promo else 699,
+            "currency": promo["currency"] if promo else "INR",
+        }), 200
+    except Exception as e:
+        logger.error("trial_status error: %s", e, exc_info=True)
+        return jsonify({"error": "Server error"}), 500
 
 
 @payment_bp.route('/api/admin/promo/create', methods=['POST'])
