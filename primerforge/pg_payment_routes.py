@@ -1180,7 +1180,7 @@ def validate_promo():
     try:
         from flask import g as _g
         if hasattr(_g, 'user') and _g.user and _g.user.get('email'):
-            user_row = fetch_one("SELECT promo_code_used FROM users WHERE email=%s", _g.user['email'])
+            user_row = fetch_one("SELECT promo_code_used FROM users WHERE email=%s", (_g.user['email'],))
     except Exception:
         pass
     if user_row and user_row.get("promo_code_used"):
