@@ -399,7 +399,7 @@ $('auth-submit-btn').addEventListener('click',async function(){
       resendAttempts=0;
       return;
     }
-    if(r.ok){window.location.href='primer'}else{
+    if(r.ok){var rd=new URLSearchParams(window.location.search).get('redirect');window.location.href=rd||'primer'}else{
       $('auth-error').style.display='block';$('auth-error').style.color='';$('auth-error').textContent=(d&&d.error)||'Authentication failed';
     }
   }catch(e){$('auth-error').style.display='block';$('auth-error').textContent='Server unavailable. Please try again.';}
@@ -461,7 +461,8 @@ function handleGoogleCredential(res){
       if(res&&res.ok&&res.data){
         sessionStorage.setItem('pf_user',JSON.stringify(res.data.user||{}));
         localStorage.setItem('pf_user',JSON.stringify(res.data.user||{}));
-        window.location.href='/dashboard';
+        var rd=new URLSearchParams(window.location.search).get('redirect');
+        window.location.href=rd||'/dashboard';
       }else{
         err.style.display='block';err.textContent=(res&&res.data&&res.data.error)||'Google sign-in failed.';
       }

@@ -1159,7 +1159,6 @@ def export_pptx():
 # ══════════════════════════════════════════════════════════════════════════
 
 @payment_bp.route('/api/promo/validate', methods=['POST'])
-@require_auth
 def validate_promo():
     """Validate a promo code and return trial details."""
     data = request.get_json(silent=True) or {}
@@ -1177,7 +1176,13 @@ def validate_promo():
     if row["used_count"] >= row["max_uses"]:
         return jsonify({"error": "This promo code has already been used."}), 410
 
-    user_row = fetch_one("SELECT promo_code_used FROM users WHERE email=%s", g.user['email'])
+    user_row = None
+    try:
+        from flask import g as _g
+        if hasattr(_g, 'user') and _g.user and _g.user.get('email'):
+            user_row = fetch_one("SELECT promo_code_used FROM users WHERE email=%s", _g.user['email'])
+    except Exception:
+        pass
     if user_row and user_row.get("promo_code_used"):
         return jsonify({"error": "You have already used a promo code."}), 409
 

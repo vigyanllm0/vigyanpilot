@@ -248,11 +248,43 @@ var promoData = null;
 
 (function init() {
   checkExistingTrial();
+  // Resume from login redirect — restore saved promo data and auto-proceed
+  try {
+    var saved = sessionStorage.getItem('trial_promo');
+    if (saved) {
+      sessionStorage.removeItem('trial_promo');
+      promoData = JSON.parse(saved);
+      document.getElementById('promo-code').value = promoData.code;
+      // Show trial details
+      document.getElementById('td-days').textContent = promoData.trial_days + ' days';
+      document.getElementById('td-daily').textContent = promoData.daily_analyses + '/day';
+      document.getElementById('td-batch').textContent = promoData.batch_max + ' sequences';
+      document.getElementById('td-export').textContent = promoData.has_export ? 'Included' : 'Not included';
+      if (promoData.promo_type === 'academic') {
+        document.getElementById('td-verify').textContent = 'Free (no payment)';
+        document.getElementById('td-price').textContent = 'Expires after ' + promoData.trial_days + ' days';
+        document.getElementById('td-now').textContent = 'Free';
+      } else {
+        document.getElementById('td-verify').textContent = '₹1 (non-refundable)';
+        document.getElementById('td-price').textContent = '₹' + promoData.price_inr + '/month (autopay)';
+        document.getElementById('td-now').textContent = '₹1';
+      }
+      document.getElementById('trial-details').style.display = 'block';
+      document.getElementById('btn-proceed').style.display = 'block';
+      document.getElementById('btn-validate').textContent = '✓ Valid';
+      document.getElementById('btn-validate').style.background = '#16A34A';
+      // Auto-proceed to step 2
+      goToStep2();
+    }
+  } catch(e) {}
 })();
 
 async function checkExistingTrial() {
   try {
-    var r = await fetch(API + '/trial/status', { credentials: 'same-origin' });
+    var token = sessionStorage.getItem('pf_token') || '';
+    var fetchOpts = { credentials: 'same-origin' };
+    if (token) fetchOpts.headers = { 'Authorization': 'Bearer ' + token };
+    var r = await fetch(API + '/trial/status', fetchOpts);
     if (!r.ok) return;
     var d = await r.json();
     if (d.status === 'active') {
@@ -289,9 +321,12 @@ async function validateCode() {
   btn.textContent = 'Checking...';
 
   try {
-    var r = await fetch(API + '/promo/validate', {
+    var token = sessionStorage.getItem('pf_token') || '';
+    var vh = { 'Content-Type': 'application/json' };
+    if (token) vh['Authorization'] = 'Bearer ' + token;
+    var r = await fetch(API + '/promo/apply', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: vh,
       credentials: 'same-origin',
       body: JSON.stringify({ code: code })
     });
@@ -336,6 +371,15 @@ async function validateCode() {
 
 function goToStep2() {
   if (!promoData) return;
+  // Require login before payment
+  var user = null;
+  try { user = JSON.parse(localStorage.getItem('pf_user') || 'null'); } catch(e) {}
+  if (!user || !user.email) {
+    // Save promo data so we can resume after login
+    try { sessionStorage.setItem('trial_promo', JSON.stringify(promoData)); } catch(e) {}
+    window.location.href = '/login?redirect=/trial';
+    return;
+  }
   if (promoData.promo_type === 'academic') {
     // Academic: no Razorpay, direct activation
     showStep('step2');
@@ -358,9 +402,12 @@ async function openCheckout() {
 
   try {
     // Create ₹1 verification order
+    var token = sessionStorage.getItem('pf_token') || '';
+    var orderHeaders = { 'Content-Type': 'application/json' };
+    if (token) orderHeaders['Authorization'] = 'Bearer ' + token;
     var orderR = await fetch(API + '/promo/apply', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: orderHeaders,
       credentials: 'same-origin',
       body: JSON.stringify({
         code: promoData.code,
@@ -427,9 +474,12 @@ async function verifyAndActivate(rzResponse) {
   btn.textContent = 'Verifying...';
 
   try {
+    var token = sessionStorage.getItem('pf_token') || '';
+    var vh2 = { 'Content-Type': 'application/json' };
+    if (token) vh2['Authorization'] = 'Bearer ' + token;
     var r = await fetch(API + '/promo/apply', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: vh2,
       credentials: 'same-origin',
       body: JSON.stringify({
         code: promoData.code,
@@ -465,9 +515,12 @@ async function activateAcademic() {
   hideError('pay-error');
 
   try {
+    var token = sessionStorage.getItem('pf_token') || '';
+    var ah = { 'Content-Type': 'application/json' };
+    if (token) ah['Authorization'] = 'Bearer ' + token;
     var r = await fetch(API + '/promo/apply', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: ah,
       credentials: 'same-origin',
       body: JSON.stringify({ code: promoData.code })
     });
