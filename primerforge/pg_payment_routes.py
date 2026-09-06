@@ -1216,7 +1216,7 @@ def apply_promo():
         pro_expires_at = int(time.time()) + (row["trial_days"] * 86400)
         execute("""UPDATE users SET plan='pro', pro_expires_at=$1, promo_code_used=$2,
                    plan_activated_at=$3, is_academic=1 WHERE email=$4""",
-                pro_expires_at, code, int(time.time()), email)
+                (pro_expires_at, code, int(time.time()), email))
         log_action(email, "academic_pro_activated",
                    f"Promo {code}, {row['trial_days']}d Pro access, no payment")
         _log_expense("trial_service", f"Academic promo {code} — {row['trial_days']}d Pro access",
@@ -1271,7 +1271,7 @@ def apply_promo():
                 "interval": 1, "period": "monthly"
             })
             plan_id_cached = rz_plan["id"]
-            execute("UPDATE promo_codes SET razorpay_plan_id=$1 WHERE code=$2", plan_id_cached, code)
+            execute("UPDATE promo_codes SET razorpay_plan_id=$1 WHERE code=$2", (plan_id_cached, code))
         except Exception as e:
             logger.error("Failed to create Razorpay plan: %s", e)
             return jsonify({"error": "Failed to create subscription plan."}), 500
@@ -1301,11 +1301,11 @@ def apply_promo():
     trial_ends_at = int(time.time()) + (row["trial_days"] * 86400)
     execute("""UPDATE users SET plan='trial', trial_ends_at=$1, promo_code_used=$2,
                razorpay_subscription_id=$3, plan_activated_at=$4 WHERE email=$5""",
-            trial_ends_at, code, sub_id, int(time.time()), email)
+            (trial_ends_at, code, sub_id, int(time.time()), email))
     execute("""INSERT INTO trial_subscriptions (user_email, promo_code, razorpay_subscription_id,
                razorpay_plan_id, trial_days, trial_started_at, trial_ends_at, status)
                VALUES ($1,$2,$3,$4,$5,$6,$7,'trial')""",
-            email, code, sub_id, plan_id_cached, row["trial_days"], int(time.time()), trial_ends_at)
+            (email, code, sub_id, plan_id_cached, row["trial_days"], int(time.time()), trial_ends_at))
     log_action(email, "trial_activated", f"Promo {code}, {row['trial_days']}d trial, sub {sub_id}")
 
     # Log company expenses: ₹1 verification charge + estimated trial service cost
@@ -1400,8 +1400,8 @@ def admin_create_promo():
                 execute("""INSERT INTO promo_codes (code, promo_type, tier, daily_analyses, batch_max, has_export,
                            trial_days, price_inr, currency, max_uses, created_by, expires_at, discount_pct)
                            VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)""",
-                        code, promo_type, tier, daily_analyses, batch_max, has_export, trial_days,
-                        price_inr, currency, max_uses, user["email"], expires_at, discount_pct)
+                        (code, promo_type, tier, daily_analyses, batch_max, has_export, trial_days,
+                         price_inr, currency, max_uses, user["email"], expires_at, discount_pct))
                 codes.append(code)
                 break
             except Exception as e:
@@ -1409,7 +1409,7 @@ def admin_create_promo():
                     logger.error("promo create failed after 10 attempts: %s", e, exc_info=True)
                 continue
     log_action(user["email"], "promo_codes_created", f"Created {len(codes)} codes with prefix {prefix}")
-    return jsonify({"success": True, "count": len(codes), "codes": codes, "trial_days": trial_days, "tier": tier}), 200
+    return jsonify({"success": True, "count": len(codes), "codes": codes, "prefix": prefix, "trial_days": trial_days, "tier": tier}), 200
 
 
 # ══════════════════════════════════════════════════════════════════════════
@@ -1585,8 +1585,8 @@ def admin_record_expense():
            (category, description, amount_inr, promo_code, user_email,
             subscription_id, metadata, created_by)
            VALUES ($1,$2,$3,$4,$5,$6,$7,$8)""",
-        category, description, amount_inr, promo_code, user_email,
-        subscription_id, metadata, user["email"]
+        (category, description, amount_inr, promo_code, user_email,
+         subscription_id, metadata, user["email"])
     )
 
     return jsonify({"success": True, "message": "Expense recorded"}), 201
@@ -1601,8 +1601,8 @@ def _log_expense(category, description, amount_inr, promo_code="", user_email=""
                (category, description, amount_inr, promo_code, user_email,
                 subscription_id, metadata, created_by)
                VALUES ($1,$2,$3,$4,$5,$6,$7,$8)""",
-            category, description, amount_inr, promo_code, user_email,
-            subscription_id, json.dumps(metadata or {}), created_by
+            (category, description, amount_inr, promo_code, user_email,
+             subscription_id, json.dumps(metadata or {}), created_by)
         )
     except Exception:
         logger.warning("Failed to log expense: %s %s %.2f", category, description, amount_inr)
