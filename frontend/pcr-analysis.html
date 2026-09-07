@@ -129,6 +129,9 @@ a{color:var(--primary);text-decoration:none}
 <script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.vigyanllm.in"}, {"@type": "ListItem", "position": 2, "name": "PCR Analysis Tool", "item": "https://www.vigyanllm.in/pcr-analysis"}]}</script>
 <script type="application/ld+json">{"@context": "https://schema.org", "@type": ["SoftwareApplication","WebApplication"], "name": "VigyanLLM PCR Analysis", "url": "https://www.vigyanllm.in/pcr-analysis", "description": "PCR analysis tool to check primers against templates for accurate amplification planning.", "applicationCategory":"BioinformaticsApplication", "featureList": ["Primer-template alignment check", "Tm and GC% thermodynamics", "Hairpin and dimer analysis", "FASTA, CSV, TSV, and Primer-BLAST report input", "No account required"],"operatingSystem": "Web Browser", "offers":{"@type":"Offer","price":"0","priceCurrency":"INR"}, "creator": {"@type": "Organization", "name": "VigyanLLM Private Limited"}}</script>
 
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What is in silico PCR analysis?","acceptedAnswer":{"@type":"Answer","text":"In silico PCR analysis computationally simulates PCR by aligning primer pairs against a template sequence, calculating melting temperature, GC content, hairpin formation, and self-dimer potential without running a physical reaction."}},{"@type":"Question","name":"What input formats does this tool accept?","acceptedAnswer":{"@type":"Answer","text":"The tool accepts FASTA format, CSV, TSV, and Primer-BLAST report format. You can paste sequences directly or upload files. The tool auto-detects the format."}},{"@type":"Question","name":"How does this compare to Primer3?","acceptedAnswer":{"@type":"Answer","text":"Primer3 designs primer candidates from thermodynamic rules; this tool analyzes existing primer-template pairs. Use Primer3 to design, then use this tool to validate and troubleshoot your primer pairs before ordering."}},{"@type":"Question","name":"What Tm values does the tool report?","acceptedAnswer":{"@type":"Answer","text":"The tool reports nearest-neighbor Tm (SantaLucia 1998), GC content, hairpin free energy, self-dimer free energy, and 3' GC clamp status for each primer in the pair."}},{"@type":"Question","name":"Can I analyze primer-dimer risk?","acceptedAnswer":{"@type":"Answer","text":"Yes. The tool calculates self-dimer and cross-dimer free energy values. Values above -5 kcal/mol indicate low dimer risk; values below -8 kcal/mol suggest significant dimer formation that may reduce PCR efficiency."}}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"HowTo","name":"Analyze PCR Primers Online","step":[{"@type":"HowToStep","position":1,"name":"Enter template sequence","text":"Paste your DNA template sequence in FASTA format or as plain text."},{"@type":"HowToStep","position":2,"name":"Add primer pairs","text":"Enter forward and reverse primer sequences, or upload a Primer-BLAST report."},{"@type":"HowToStep","position":3,"name":"Run analysis","text":"Click Analyze to check Tm, GC%, hairpin, dimer, and specificity against the template."},{"@type":"HowToStep","position":4,"name":"Review results","text":"Examine the alignment, thermodynamic metrics, and pass/fail flags for each primer."}]}</script>
+
 <script src="/cookie-banner.js" defer></script>
   <link rel="alternate" hreflang="en-US" href="https://www.vigyanllm.in/pcr-analysis" />
 </head>
@@ -187,8 +190,8 @@ a{color:var(--primary);text-decoration:none}
 </div>
 
 <!-- ══ Educational content (below tool) ══ -->
-<details style="max-width:900px;margin:32px auto;padding:0 24px" id="edu-section">
-<summary style="font-family:var(--font-h);font-size:13px;font-weight:700;color:var(--text2);cursor:pointer;padding:10px 0;list-style:none;display:flex;align-items:center;gap:6px"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="flex-shrink:0"><path d="M9 18l6-6-6-6"/></svg> A few things worth knowing before you check primers</summary>
+<section style="max-width:900px;margin:32px auto;padding:0 24px;border-top:1px solid var(--slate-border)">
+<h2 style="font-family:var(--font-h);font-size:13px;font-weight:700;color:var(--text2);padding:10px 0;list-style:none;display:flex;align-items:center;gap:6px">A few things worth knowing before you check primers</h2>
 <div style="padding:8px 0">
   <p style="font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:12px">VigyanLLM is a <strong>free online PCR analysis tool</strong> that checks primer pairs against any DNA template using the Tm nearest-neighbor model (SantaLucia 1998) and Primer3-based ΔG calculations. Unlike standard web primer checkers, it supports Primer-BLAST reports, auto-design CSV exports, and CSV/TSV/FASTA formats with automatic detection.</p>
   <table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:12px">
@@ -242,7 +245,7 @@ a{color:var(--primary);text-decoration:none}
     </svg>
   </div>
 </div>
-</details>
+</section>
 
 <!-- REFERENCES -->
 <section class="references-section" style="max-width:var(--max-w);margin:48px auto;padding:0 24px">

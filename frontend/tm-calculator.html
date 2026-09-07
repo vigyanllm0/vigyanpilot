@@ -162,6 +162,8 @@ img{max-width:100%}
 <main id="main-content">
 <nav class="breadcrumbs" style="font-size:0.875rem;color:#64748b;margin-bottom:16px;padding:8px 0;"><a href="/" style="color:#1565C0;text-decoration:none;">Home</a> <span style="margin:0 6px;">›</span> <span>Tm Calculator</span></nav>
 
+<div style="background:#FEF3C7;border-bottom:1px solid #FDE68A;padding:10px 24px;text-align:center;font-size:13px;color:#92400e;font-weight:500;display:flex;align-items:center;justify-content:center;gap:8px"><span style="font-size:13px;flex-shrink:0">&#x26A0;&#xFE0F;</span><strong>Research Use Only.</strong> Not validated for clinical diagnostic use. All Tm values require independent experimental verification.</div>
+
 <!-- Google Tag Manager (noscript) -->
 <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-KRP5LLPR"
 height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
@@ -186,6 +188,33 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <p>Calculate melting temperature, GC content, and free energy for PCR primers using SantaLucia nearest-neighbour thermodynamics. Supports monovalent and divalent salt concentration corrections.</p>
 </div></section>
 <p style="font-size:12px;color:#94A3B8;margin-top:8px">Last updated: July 2026 · Reviewed by VigyanLLM Research Team</p>
+
+<section class="tool-section"><div class="container">
+<h2>Enter a Primer Sequence</h2>
+<form class="calc-box" onsubmit="return false">
+<label for="seq-input">DNA Sequence (5' → 3')</label>
+<input type="text" id="seq-input" placeholder="e.g. ATGCGATCGTAGCTAGCTAGC" value="ATGCGATCGTAGCTAGCTAGC">
+<label for="na-conc">Na⁺ Concentration (mM)</label>
+<input type="number" id="na-conc" value="50" min="0" max="1000">
+<label for="mg-conc">Mg²⁺ Concentration (mM)</label>
+<input type="number" id="mg-conc" value="0" min="0" max="100">
+<label for="oligo-conc">Oligo Concentration (μM)</label>
+<input type="number" id="oligo-conc" value="0.25" min="0.01" max="10" step="0.01">
+<button type="button" onclick="calcTm()">Calculate Tm</button>
+</form>
+<div class="result-box" id="result-box">
+<table>
+<tr><th>Parameter</th><th>Value</th></tr>
+<tr><td>Sequence Length</td><td id="r-len">—</td></tr>
+<tr><td>GC Content</td><td id="r-gc">—</td></tr>
+<tr><td>Melting Temperature (Tm)</td><td id="r-tm">—</td></tr>
+<tr><td>Oligo Conc.</td><td id="r-oligo">—</td></tr>
+<tr><td>ΔG (kcal/mol)</td><td id="r-dg">—</td></tr>
+<tr><td>Molecular Weight</td><td id="r-mw">—</td></tr>
+</table>
+</div>
+</div></section>
+<p style="font-size:12px;margin-top:12px;color:#94A3B8"><a href="/cite-vigyanllm" style="color:#2563EB">Cite this tool</a> — use the preferred citation format for VigyanLLM tools in your research.</p>
 
 <!-- ══ LLMO: Tm Calculator Inputs & Outputs ══ -->
 <section style="max-width:900px;margin:48px auto;padding:0 24px">
@@ -271,34 +300,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <tr><td style="padding:8px 12px">Nested PCR</td><td style="padding:8px 12px">55-65°C</td><td style="padding:8px 12px">Outer primer pair Tm 2-4°C higher than inner pair</td></tr>
 </table>
 </section>
-
-<section class="tool-section"><div class="container">
-<h2>Enter a Primer Sequence</h2>
-<form class="calc-box" onsubmit="return false">
-<label for="seq-input">DNA Sequence (5' → 3')</label>
-<input type="text" id="seq-input" placeholder="e.g. ATGCGATCGTAGCTAGCTAGC" value="ATGCGATCGTAGCTAGCTAGC">
-<label for="na-conc">Na⁺ Concentration (mM)</label>
-<input type="number" id="na-conc" value="50" min="0" max="1000">
-<label for="mg-conc">Mg²⁺ Concentration (mM)</label>
-<input type="number" id="mg-conc" value="0" min="0" max="100">
-<label for="oligo-conc">Oligo Concentration (μM)</label>
-<input type="number" id="oligo-conc" value="0.25" min="0.01" max="10" step="0.01">
-<button type="button" onclick="calcTm()">Calculate Tm</button>
-</form>
-
-<div class="result-box" id="result-box">
-<table>
-<tr><th>Parameter</th><th>Value</th></tr>
-<tr><td>Sequence Length</td><td id="r-len">—</td></tr>
-<tr><td>GC Content</td><td id="r-gc">—</td></tr>
-    <tr><td>Melting Temperature (Tm)</td><td id="r-tm">—</td></tr>
-<tr><td>Oligo Conc.</td><td id="r-oligo">—</td></tr>
-<tr><td>ΔG (kcal/mol)</td><td id="r-dg">—</td></tr>
-<tr><td>Molecular Weight</td><td id="r-mw">—</td></tr>
-</table>
-</div>
-</div></section>
-<p style="font-size:12px;margin-top:12px;color:#94A3B8"><a href="/cite-vigyanllm" style="color:#2563EB">Cite this tool</a> — use the preferred citation format for VigyanLLM tools in your research.</p>
 
 <section class="learn-section"><div class="container">
 <h2>What Is Primer Melting Temperature (Tm)?</h2>

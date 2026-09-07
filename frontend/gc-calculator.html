@@ -240,6 +240,8 @@ img{max-width:100%}
 <main id="main-content">
 <nav class="breadcrumbs" style="font-size:0.875rem;color:#64748b;margin-bottom:16px;padding:8px 0;"><a href="/" style="color:#1565C0;text-decoration:none;">Home</a> <span style="margin:0 6px;">›</span> <span>GC Calculator</span></nav>
 
+<div style="background:#FEF3C7;border-bottom:1px solid #FDE68A;padding:10px 24px;text-align:center;font-size:13px;color:#92400e;font-weight:500;display:flex;align-items:center;justify-content:center;gap:8px"><span style="font-size:13px;flex-shrink:0">&#x26A0;&#xFE0F;</span><strong>Research Use Only.</strong> Not validated for clinical diagnostic use. All analysis results require independent experimental verification.</div>
+
 <!-- Google Tag Manager (noscript) -->
 <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-KRP5LLPR"
 height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
@@ -264,6 +266,30 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <p>Calculate GC content, base composition, molecular weight, and estimated melting temperature for any DNA sequence. Essential for PCR primer design and probe development.</p>
 </div></section>
 <p style="font-size:12px;color:#94A3B8;margin-top:8px">Last updated: July 2026</p>
+
+<section class="tool-section"><div class="container">
+<h2>Enter a DNA Sequence</h2>
+<form class="calc-box" onsubmit="return false">
+<label for="seq-input">DNA Sequence</label>
+<textarea id="seq-input" placeholder="Paste your DNA sequence here...">ATGCGATCGTAGCTAGCTAGCTAGCATGCGATCGTAGCTAGCTAGC</textarea>
+<button type="button" onclick="calcGC()">Calculate GC Content</button>
+</form>
+<div class="result-box" id="result-box">
+<table>
+<tr><th>Parameter</th><th>Value</th></tr>
+<tr><td>Sequence Length</td><td id="r-len">—</td></tr>
+<tr><td>Adenine (A)</td><td id="r-a">—</td></tr>
+<tr><td>Thymine (T)</td><td id="r-t">—</td></tr>
+<tr><td>Guanine (G)</td><td id="r-g">—</td></tr>
+<tr><td>Cytosine (C)</td><td id="r-c">—</td></tr>
+<tr><td>GC Content</td><td id="r-gc">—</td></tr>
+<tr><td>AT/GC Ratio</td><td id="r-ratio">—</td></tr>
+<tr><td>Molecular Weight</td><td id="r-mw">—</td></tr>
+<tr><td>Estimated Tm (basic)</td><td id="r-tm">—</td></tr>
+</table>
+</div>
+</div></section>
+<p style="font-size:12px;margin-top:12px;color:#94A3B8"><a href="/cite-vigyanllm" style="color:#2563EB">Cite this tool</a> — use the preferred citation format for VigyanLLM tools in your research.</p>
 
 <!-- \u2550\u2550 GC Editorial: spectrum, examples, Tm relationship, troubleshooting \u2550\u2550 -->
 <section style="max-width:900px;margin:48px auto;padding:0 24px">
@@ -367,31 +393,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </tbody>
   </table>
 </section>
-
-<section class="tool-section"><div class="container">
-<h2>Enter a DNA Sequence</h2>
-<form class="calc-box" onsubmit="return false">
-<label for="seq-input">DNA Sequence</label>
-<textarea id="seq-input" placeholder="Paste your DNA sequence here...">ATGCGATCGTAGCTAGCTAGCTAGCATGCGATCGTAGCTAGCTAGC</textarea>
-<button type="button" onclick="calcGC()">Calculate GC Content</button>
-</form>
-
-<div class="result-box" id="result-box">
-<table>
-<tr><th>Parameter</th><th>Value</th></tr>
-<tr><td>Sequence Length</td><td id="r-len">—</td></tr>
-<tr><td>Adenine (A)</td><td id="r-a">—</td></tr>
-<tr><td>Thymine (T)</td><td id="r-t">—</td></tr>
-<tr><td>Guanine (G)</td><td id="r-g">—</td></tr>
-<tr><td>Cytosine (C)</td><td id="r-c">—</td></tr>
-<tr><td>GC Content</td><td id="r-gc">—</td></tr>
-<tr><td>AT/GC Ratio</td><td id="r-ratio">—</td></tr>
-<tr><td>Molecular Weight</td><td id="r-mw">—</td></tr>
-<tr><td>Estimated Tm (basic)</td><td id="r-tm">—</td></tr>
-</table>
-</div>
-</div></section>
-<p style="font-size:12px;margin-top:12px;color:#94A3B8"><a href="/cite-vigyanllm" style="color:#2563EB">Cite this tool</a> — use the preferred citation format for VigyanLLM tools in your research.</p>
 
 <section class="learn-section"><div class="container">
 <h2>What Is GC Content?</h2>
