@@ -476,21 +476,9 @@ function initHamburgerAndNav() {
   window.closeMobileMenu = function(){if(m){m.classList.remove('open');if(h)h.classList.remove('active')}};
 }
 
-function initRevealAnimations() {
-  var revealEls=document.querySelectorAll('.reveal');
-  function checkVis(){
-    revealEls.forEach(function(el){var r=el.getBoundingClientRect();if(r.top<window.innerHeight-60)el.classList.add('visible')});
-  }
-  checkVis();
-  window.addEventListener('scroll',checkVis);
-}
-
 document.addEventListener('DOMContentLoaded', function(){
   // Auth UI — auth-shared.js is deferred, so updateAuthUI exists
   if (typeof updateAuthUI === 'function') updateAuthUI();
-
-  // Reveal animations (elements are in main HTML, safe immediately)
-  initRevealAnimations();
 
   // Close user menu on outside click
   document.addEventListener('click',function(e){
@@ -659,11 +647,22 @@ try {
     });
 } catch(e) { console.warn('amCharts map unavailable:', e); }
 }
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initGeoMap);
-} else {
-  initGeoMap();
-}
+// Lazy-load map: only init when #chartdiv enters viewport (or after 3s idle fallback)
+(function(){
+  var chartdiv=document.getElementById('chartdiv');
+  function startMap(){try{initGeoMap();}catch(e){}}
+  if(chartdiv&&'IntersectionObserver' in window){
+    var obs=new IntersectionObserver(function(entries){
+      if(entries.some(function(e){return e.isIntersecting})){
+        obs.disconnect();
+        startMap();
+      }
+    },{rootMargin:'400px'});
+    obs.observe(chartdiv);
+  } else {
+    requestIdleCallback?requestIdleCallback(startMap):setTimeout(startMap,3000);
+  }
+})();
 
 function initDNAAnim(){
   var el=document.getElementById('protein-stage');
@@ -754,5 +753,6 @@ else initDNAAnim();
   <a href="/blast" class="cta-secondary">Run BLAST</a>
 </div>
 <script src="/includes.js"></script>
+<script src="/reveal.js"></script>
 </body>
 </html>
