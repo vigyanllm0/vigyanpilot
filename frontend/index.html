@@ -306,8 +306,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
       <div class="insight-card reveal"><div class="insight-tag">Access</div><h3>Direct academic partnership program</h3><p>Free access for qualifying university labs. 30-day full-platform evaluation with no feature gates.</p></div>
     </div>
   </div>
-    </div>
-  </div>
 </div>
 
 <!-- SOCIAL PROOF — Validation Models -->
@@ -535,6 +533,7 @@ document.addEventListener('DOMContentLoaded', function(){
 });
 
 // ── Geo Map (amCharts v4 choropleth) ──
+function initGeoMap() {
 try {
 (function(){
   var API_GEO = window.VIGYAN_BACKEND_URL || '/api';
@@ -659,6 +658,12 @@ try {
       g.removeAttribute('aria-labelledby');
     });
 } catch(e) { console.warn('amCharts map unavailable:', e); }
+}
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initGeoMap);
+} else {
+  initGeoMap();
+}
 
 function initDNAAnim(){
   var el=document.getElementById('protein-stage');
