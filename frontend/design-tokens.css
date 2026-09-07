@@ -316,6 +316,25 @@ code,pre,.mono{font-family:var(--font-mono)!important}
 .tilt-left{transform:rotate(-1deg)}
 .tilt-right{transform:rotate(1.5deg)}
 
+/* === ACCESSIBILITY: Reduced Motion === */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* === ACCESSIBILITY: Focus Visible === */
+:focus-visible {
+  outline: 2px solid var(--saffron, #e85d4c);
+  outline-offset: 2px;
+}
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
 /* Print stylesheet */
 @media print{
   header,nav,.nav-inner,.mobile-menu,.hamburger,.user-popup-overlay,.auth-overlay,.gate-overlay,.order-overlay,.pay-overlay,#ai-widget,#ai-widget-panel,#guest-claim-card,.nav-search-wrap,.drop-menu,.status-pill,.disclaimer,.footer-social,.skip-link,.slow-warn,button[class*="btn"],.mm-cta{display:none!important}
