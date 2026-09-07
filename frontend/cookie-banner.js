@@ -67,7 +67,7 @@
       '.vl-cookie-decline:hover{color:#fff;border-color:rgba(148,163,184,.7)}',
       '.vl-cookie-link{color:#7DD3FC;text-decoration:none;font-size:13px;white-space:nowrap;padding:8px 4px;min-height:36px;display:inline-flex;align-items:center}',
       '.vl-cookie-link:hover{text-decoration:underline}',
-      '.vl-cookie-close{position:absolute;top:8px;right:12px;background:none;border:none;color:rgba(255,255,255,.4);font-size:18px;cursor:pointer;padding:4px 8px;line-height:1;min-width:36px;min-height:36px;display:flex;align-items:center;justify-content:center}',
+      '.vl-cookie-close{position:absolute;top:8px;right:12px;background:none;border:none;color:rgba(255,255,255,.6);font-size:18px;cursor:pointer;padding:4px 8px;line-height:1;min-width:36px;min-height:36px;display:flex;align-items:center;justify-content:center}',
       '.vl-cookie-close:hover{color:#fff}',
       '@media(max-width:600px){.vl-cookie-banner{flex-direction:column;gap:8px;padding:12px 16px 16px;text-align:center}.vl-cookie-actions{justify-content:center}.vl-cookie-text{white-space:normal}}'
     ].join('\n');

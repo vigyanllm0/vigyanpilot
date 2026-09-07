@@ -114,7 +114,7 @@
 .logo-img{width:36px;height:36px;border-radius:8px}
 
 /* === NAV BAR === */
-nav{position:sticky;top:0;background:var(--navy);z-index:1000;height:56px;border-bottom:1px solid rgba(255,255,255,.08)}
+nav{position:sticky;top:0;background:var(--navy);z-index:1000;height:56px}
 .nav-inner{display:flex;align-items:center;height:100%;max-width:var(--max-w);margin:0 auto;padding:0 16px}
 .nav-brand{display:flex;align-items:center;gap:12px;color:#fff;font-family:var(--font-h);font-size:var(--font-sm);font-weight:800;flex-shrink:0}
 .nav-brand img{height:36px;width:auto;object-fit:contain}
@@ -198,26 +198,26 @@ nav{position:sticky;top:0;background:var(--navy);z-index:1000;height:56px;border
 .hamburger.active span:nth-child(3){transform:rotate(-45deg) translate(5px,-5px)}
 
 /* === MOBILE MENU === */
-.mobile-menu{display:none;position:fixed;top:72px;left:0;right:0;background:var(--navy);padding:20px 24px;z-index:999;border-bottom:1px solid rgba(255,255,255,.08);max-height:calc(100vh - 72px);overflow-y:auto}
+.mobile-menu{display:none;position:fixed;top:72px;left:0;right:0;background:var(--navy);padding:20px 24px;z-index:999;max-height:calc(100vh - 72px);overflow-y:auto}
 .mobile-menu.open{display:block}
 .mobile-menu .mm-group{margin-bottom:16px}
-.mobile-menu .mm-hdr{font-size:var(--font-xs);text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.4);font-weight:700;padding:8px 0 4px}
+.mobile-menu .mm-hdr{font-size:var(--font-xs);text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.60);font-weight:700;padding:8px 0 4px}
 .mobile-menu a{display:block;color:rgba(255,255,255,.7);font-size:var(--font-base);padding:10px 0;font-weight:500}
 .mobile-menu .mm-cta{display:block;margin-top:8px;padding:12px;background:var(--saffron);color:#fff;border-radius:8px;text-align:center;font-weight:700;font-size:var(--font-sm)}
 
 /* === FOOTER === */
 footer{background:var(--navy);color:rgba(255,255,255,.8);padding:56px 0 24px}
 .footer-grid{display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr 1fr;gap:40px;max-width:var(--max-w);margin:0 auto 32px;padding:0 16px}
-.footer-col h5{font-size:12px;text-transform:uppercase;letter-spacing:.12em;color:#fff;margin-bottom:16px;font-weight:700}
-.footer-col a{display:block;font-size:var(--font-sm);color:rgba(255,255,255,.5);margin-bottom:10px;transition:color .15s}
+.footer-col h5,.footer-col .footer-col-title{font-size:12px;text-transform:uppercase;letter-spacing:.12em;color:#fff;margin-bottom:16px;font-weight:700}
+.footer-col a{display:block;font-size:var(--font-sm);color:rgba(255,255,255,.65);margin-bottom:10px;transition:color .15s}
 .footer-col a:hover{color:#fff}
 .footer-social{display:flex;gap:8px;margin-top:16px}
 .footer-social a{width:36px;height:36px;display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,.12);border-radius:8px;transition:all .3s ease}
 .footer-social a:hover{border-color:rgba(255,255,255,.3);transform:translateY(-2px);background:rgba(255,255,255,.05)}
-.footer-social svg{width:16px;height:16px;filter:grayscale(1);opacity:.5;transition:all .3s ease}
+.footer-social svg{width:16px;height:16px;filter:grayscale(1);opacity:.7;transition:all .3s ease}
 .footer-social a:hover svg{filter:grayscale(0);opacity:1}
-.footer-bottom{max-width:var(--max-w);margin:0 auto;padding:12px 16px 0;border-top:1px solid rgba(255,255,255,.06);display:flex;justify-content:space-between;font-size:var(--font-xs);color:rgba(255,255,255,.50)}
-.footer-text{font-size:13px;color:rgba(255,255,255,.45);line-height:1.6}
+.footer-bottom{max-width:var(--max-w);margin:0 auto;padding:12px 16px 0;border-top:1px solid rgba(255,255,255,.06);display:flex;justify-content:space-between;font-size:var(--font-xs);color:rgba(255,255,255,.65)}
+.footer-text{font-size:13px;color:rgba(255,255,255,.60);line-height:1.6}
 .footer-link{color:var(--saffron-light,#ff8a7a);font-size:13px;display:block;margin-top:12px}
 
 /* === SKIP LINK === */
@@ -332,6 +332,11 @@ code,pre,.mono{font-family:var(--font-mono)!important}
   outline-offset: 2px;
 }
 :focus:not(:focus-visible) {
+  outline: none;
+}
+/* Prevent focus-visible on mouse click for dropdown triggers */
+.drop-trigger:focus-visible,
+.nav-links>a:focus-visible {
   outline: none;
 }
 
