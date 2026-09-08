@@ -41,7 +41,7 @@ var SITE_INDEX = [
   { t:'Primer3 Alternative', d:'Alternative to Primer3 software', u:'primer3-alternative.html', c:'Learning' },
   { t:'Molecular Docking Guide', d:'Guide to molecular docking workflows', u:'molecular-docking-guide.html', c:'Learning' },
 
-  { t:'Academic Partnership', d:'Academic access and collaboration program', u:'academic-partnership.html', c:'Company' },
+  { t:'Academic Partnership', d:'Academic access and collaboration program', u:'https://forms.gle/63vdQQ1Ka6WF3ZJg7', c:'Company' },
   { t:'FAQ', d:'Frequently asked questions', u:'faq.html', c:'Company' },
   { t:'About VigyanLLM', d:'About the sovereign biomedical AI platform', u:'about.html', c:'Company' },
   { t:'Privacy Policy', d:'Data privacy and protection policy', u:'privacy.html', c:'Company' },

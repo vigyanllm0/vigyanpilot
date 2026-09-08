@@ -563,7 +563,6 @@ def _halt_trial_subscription(subscription_id: str):
 # ══════════════════════════════════════════════════════════════════════════
 
 @payment_bp.route('/api/promo/validate', methods=['POST'])
-@require_auth
 def validate_promo():
     """Validate a promo code and return trial details.
 

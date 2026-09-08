@@ -373,7 +373,7 @@ def create_order():
         "product_id": product_id,
         "tokens": designs,
         "description": f"VigyanLLM: {designs} design(s)",
-        "original_amount": amount_paise // (100 - promo_discount_pct) * 100 if promo_discount_pct > 0 else amount_paise,
+        "original_amount": round(amount_paise / (1 - promo_discount_pct / 100)) if promo_discount_pct > 0 else amount_paise,
         "discount_pct": promo_discount_pct,
         "promo_code": promo_code or None,
         "theme": {"color": "#2563EB"},
@@ -1555,7 +1555,7 @@ def admin_revoke_promo():
         return jsonify({"error": "Missing promo code."}), 400
 
     result = execute(
-        "UPDATE promo_codes SET max_uses = used_count WHERE code=%s AND max_uses > used_count", code
+        "UPDATE promo_codes SET max_uses = used_count WHERE code=%s AND max_uses > used_count", (code,)
     )
     if result == 0:
         return jsonify({"error": "Code not found or already fully used/revoked."}), 404
