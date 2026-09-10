@@ -1770,29 +1770,51 @@ def billing_history():
         return jsonify([]), 200
     uid = uid_row["id"]
 
-    rows = fetch_all(
-        """SELECT product_type, status, amount_paise, currency, created_at, captured_at
-           FROM payments WHERE user_id = %s AND status IN ('captured', 'initiated')
-           ORDER BY created_at DESC LIMIT 10""",
-        (uid,)
-    ) or []
+    # Try full query (0105+ schema with product_type, captured_at)
+    try:
+        rows = fetch_all(
+            """SELECT product_type, status, amount, currency, initiated_at, captured_at
+               FROM payments WHERE user_id = %s AND status IN ('captured', 'initiated')
+               ORDER BY initiated_at DESC LIMIT 10""",
+            (uid,)
+        ) or []
+    except Exception:
+        # Fallback: old 0100 schema (user_email, amount, created_at, no product_type)
+        try:
+            rows = fetch_all(
+                """SELECT status, amount, created_at AS initiated_at, NULL AS captured_at,
+                          NULL AS product_type, 'INR' AS currency
+                   FROM payments WHERE user_email = %s AND status IN ('captured', 'pending')
+                   ORDER BY created_at DESC LIMIT 10""",
+                (email,)
+            ) or []
+        except Exception:
+            return jsonify([]), 200
 
     history = []
     for r in rows:
         created = 0
         captured = 0
         try:
-            if r.get("created_at"):
-                created = int(r["created_at"].timestamp())
+            if r.get("initiated_at"):
+                val = r["initiated_at"]
+                created = int(val.timestamp()) if hasattr(val, 'timestamp') else int(val)
             if r.get("captured_at"):
-                captured = int(r["captured_at"].timestamp())
+                val = r["captured_at"]
+                captured = int(val.timestamp()) if hasattr(val, 'timestamp') else int(val)
         except Exception:
             pass
+        amt = r.get("amount") or 0
+        # amount might be NUMERIC(12,2) — convert to int paise
+        try:
+            amt = int(float(amt))
+        except Exception:
+            amt = 0
         history.append({
-            "plan": r["product_type"],
+            "plan": r.get("product_type") or "subscription",
             "status": r["status"],
-            "amount_inr": (r["amount_paise"] or 0) // 100,
-            "currency": r["currency"] or "INR",
+            "amount_inr": amt,
+            "currency": r.get("currency") or "INR",
             "created_at": created,
             "captured_at": captured,
         })

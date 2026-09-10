@@ -80,7 +80,23 @@ a{text-decoration:none;color:inherit}
 .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
 .grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
 
-@media(max-width:768px){.grid-2{grid-template-columns:1fr}.grid-4{grid-template-columns:repeat(2,1fr)}.dash-header{flex-direction:column;align-items:flex-start;gap:12px}}
+/* ── Billing History ── */
+.billing-empty{display:flex;flex-direction:column;align-items:center;padding:28px 16px;color:var(--muted)}
+.billing-empty p{font-size:13px;font-weight:600;color:var(--text2);margin-top:10px}
+.billing-empty span{font-size:11px;margin-top:4px;text-align:center;max-width:200px;line-height:1.4}
+.bill-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--slate)}
+.bill-row:last-child{border-bottom:none}
+.bill-row-left{display:flex;align-items:center;gap:12px}
+.bill-row-icon{width:36px;height:36px;border-radius:10px;background:var(--slate);display:flex;align-items:center;justify-content:center;color:var(--text2)}
+.bill-row-plan{font-size:13px;font-weight:600;color:var(--text)}
+.bill-row-date{font-size:11px;color:var(--muted);margin-top:2px}
+.bill-row-right{display:flex;align-items:center;gap:12px}
+.bill-row-amt{font-size:14px;font-weight:700;color:var(--text)}
+.bill-s-paid{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;background:#DCFCE7;color:#166534}
+.bill-s-pending{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;background:#FEF3C7;color:#92400E}
+.bill-s-failed{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;background:#FEF2F2;color:#991B1B}
+
+@media(max-width:768px){.grid-2{grid-template-columns:1fr}.grid-4{grid-template-columns:repeat(2,1fr)}.dash-header{flex-direction:column;align-items:flex-start;gap:12px}.bill-row{flex-direction:column;align-items:flex-start;gap:8px}.bill-row-right{width:100%;justify-content:space-between}}
 </style>
 <script src="/cookie-banner.js" defer></script>
 </head>
@@ -109,7 +125,7 @@ a{text-decoration:none;color:inherit}
   </div>
 
   <div class="card">
-    <div class="card-title">&#x1F4CA; Usage This Period</div>
+    <div class="card-title">Usage This Period</div>
     <div style="margin-bottom:20px">
       <div class="usage-bar-label"><span>Daily — <span id="daily-label">0/5</span></span><span id="daily-pct">0%</span></div>
       <div class="usage-bar"><div class="usage-bar-fill" id="daily-bar" style="width:0%"></div></div>
@@ -121,7 +137,7 @@ a{text-decoration:none;color:inherit}
   </div>
 
   <div class="card">
-    <div class="card-title">&#x1F50D; Tool Breakdown</div>
+    <div class="card-title">Tool Breakdown</div>
     <div class="grid-4">
       <div style="padding:16px;background:var(--slate);border-radius:8px;text-align:center"><div style="font-size:20px;font-weight:800;color:var(--primary)" id="ub-primer">0</div><div style="font-size:11px;color:var(--muted);margin-top:4px">Primer Design</div></div>
       <div style="padding:16px;background:var(--slate);border-radius:8px;text-align:center"><div style="font-size:20px;font-weight:800;color:#D97706" id="ub-blast">0</div><div style="font-size:11px;color:var(--muted);margin-top:4px">BLAST</div></div>
@@ -132,7 +148,7 @@ a{text-decoration:none;color:inherit}
 
   <div class="grid-2">
     <div class="card">
-      <div class="card-title">&#x1F511; Subscription Actions</div>
+      <div class="card-title">Subscription Actions</div>
       <div id="actions-free" style="text-align:center;padding:20px 0">
         <a href="/pricing" class="btn btn-upgrade">Upgrade to Pro</a>
         <div style="font-size:12px;color:var(--muted);margin-top:12px">Unlock higher limits, batch processing, and exports</div>
@@ -143,7 +159,7 @@ a{text-decoration:none;color:inherit}
       </div>
     </div>
     <div class="card">
-      <div class="card-title">&#x1F4B0; Billing History</div>
+      <div class="card-title">Billing History</div>
       <div id="billing-table"><div style="text-align:center;padding:20px;color:var(--muted);font-size:12px">No billing history</div></div>
     </div>
   </div>
@@ -232,17 +248,23 @@ async function loadBilling(){
     }
 
     // Billing history
-    var payments=history.payments||[];
+    var payments=Array.isArray(history)?history:(history.payments||[]);
     var tb=document.getElementById('billing-table');
     if(!payments.length){
-      tb.innerHTML='<div style="text-align:center;padding:20px;color:var(--muted);font-size:12px">No billing history</div>';
+      tb.innerHTML='<div class="billing-empty"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.5"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 10h20"/></svg><p>No transactions yet</p><span>Your trial verification charge and subscription payments will appear here</span></div>';
     }else{
-      var h='<table class="results-table"><thead><tr><th>Plan</th><th>Status</th><th>Amount</th><th>Date</th></tr></thead><tbody>';
+      var h='';
       payments.slice(0,10).forEach(function(p){
-        var statusCls=p.status==='captured'?'color:var(--success)':p.status==='failed'?'color:var(--error)':'color:var(--muted)';
-        h+='<tr><td style="font-weight:600">'+(p.plan||'pro').toUpperCase()+'</td><td><span style="'+statusCls+';font-weight:600;text-transform:capitalize">'+p.status+'</span></td><td>₹'+(p.amount||0)+'</td><td style="font-size:12px;color:var(--muted)">'+formatDate(p.created_at)+'</td></tr>';
+        var s=p.status||'';
+        var sLabel=s==='captured'?'Paid':s==='initiated'?'Pending':s==='failed'?'Failed':s==='refunded'?'Refunded':s.charAt(0).toUpperCase()+s.slice(1);
+        var sCls=s==='captured'?'bill-s-paid':s==='initiated'?'bill-s-pending':s==='failed'?'bill-s-failed':'bill-s-pending';
+        var planLabel=(p.plan||'subscription');
+        if(planLabel==='subscription')planLabel='Pro Trial';
+        else planLabel=planLabel.replace(/_/g,' ').replace(/\b\w/g,function(c){return c.toUpperCase()});
+        var dateStr=p.created_at?formatDate(p.created_at*1000):'—';
+        var amt=p.amount_inr||0;
+        h+='<div class="bill-row"><div class="bill-row-left"><div class="bill-row-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 10h20"/></svg></div><div><div class="bill-row-plan">'+planLabel+'</div><div class="bill-row-date">'+dateStr+'</div></div></div><div class="bill-row-right"><span class="bill-row-amt">'+(amt?'₹'+amt:'—')+'</span><span class="'+sCls+'">'+sLabel+'</span></div></div>';
       });
-      h+='</tbody></table>';
       tb.innerHTML=h;
     }
 
