@@ -61,7 +61,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <link rel="canonical" href="https://www.vigyanllm.in/signup">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<script src="https://accounts.google.com/gsi/client?hl=en" async defer></script>
+
 <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&amp;family=Montserrat:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
 <style>
 
@@ -247,45 +247,6 @@ function doResend(){
   });
 }
 
-function renderGoogleBtn(){
-  var w=$('gbtn-wrap');
-  if(!w)return;
-  try{
-    if(typeof google!=='undefined'&&google.accounts&&google.accounts.id){
-      w.style.display='';
-      google.accounts.id.initialize({client_id:'598272150916-57hl3s7jijaamh3er18alk93gj2op6jt.apps.googleusercontent.com',callback:handleGoogleCredential,cancel_on_tap_outside:false});
-      google.accounts.id.renderButton(w,{type:'standard',shape:'pill',theme:'outline',size:'large',text:'signup_with',width:328});
-      return;
-    }
-  }catch(e){}
-  var s=document.createElement('script');
-  s.src='https://accounts.google.com/gsi/client?hl=en';
-  s.async=true;
-  s.onload=function(){renderGoogleBtn()};
-  document.head.appendChild(s);
-}
-function handleGoogleCredential(res){
-  var err=$('auth-error');
-  var tc=$('auth-tc');
-  if(!res||!res.credential){if(err){err.style.display='block';err.textContent='Google sign-in was cancelled.'}return}
-  if(tc&&!tc.checked){if(err){err.style.display='block';err.textContent='Please accept the Terms & Conditions to continue.'}return}
-  fetch(API+'/auth/google',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({credential:res.credential})
-  }).then(function(r){return r.json().then(function(d){return{ok:r.ok,data:d}})})
-    .then(function(res){
-      if(res&&res.ok&&res.data){
-        sessionStorage.setItem('pf_user',JSON.stringify(res.data.user||{}));
-        localStorage.setItem('pf_user',JSON.stringify(res.data.user||{}));
-        var rd=new URLSearchParams(window.location.search).get('redirect');
-        window.location.href=rd||'/dashboard';
-      }else{
-        err.style.display='block';err.textContent=(res&&res.data&&res.data.error)||'Google sign-in failed.';
-      }
-    })
-    .catch(function(){if(err){err.style.display='block';err.textContent='Server unavailable. Please try again.'}});
-}
 (function(){
   var h=window.location.hash;
   if(!h||h.indexOf('access_token')===-1)return;
