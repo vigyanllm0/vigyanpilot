@@ -159,7 +159,7 @@ a{text-decoration:none;color:inherit}
 <script>
 var PLAN_COLORS={free:'linear-gradient(135deg,#475569,#334155)',trial:'linear-gradient(135deg,#2563EB,#1D4ED8)',pro:'linear-gradient(135deg,#2563EB,#1D4ED8)',lab:'linear-gradient(135deg,#7C3AED,#6D28D9)'};
 var PLAN_CLASSES={free:'free',trial:'pro',pro:'pro',lab:'lab'};
-var PLAN_LABELS={free:'FREE TRIAL',trial:'TRIAL',pro:'PRO',lab:'LAB'};
+var PLAN_LABELS={free:'FREE',trial:'TRIAL',pro:'PRO',lab:'LAB'};
 var TIER_LIMITS={free:5,trial:50,pro:100,lab:500};
 
 function formatDate(ts){if(!ts)return'—';var d=new Date(ts);return d.toLocaleDateString('en-IN',{year:'numeric',month:'short',day:'numeric'})}
@@ -182,10 +182,10 @@ async function loadBilling(){
     var history=historyRes.ok?await historyRes.json():{payments:[]};
 
     var plan=status.plan||'free';
-    var expires=status.expires_at;
+    var expires=status.plan_expires_at||0;
     var remaining=status.days_remaining;
-    var dailyLimit=usage.daily_limit||TIER_LIMITS[plan]||5;
-    var dailyUsed=usage.daily_used||0;
+    var dailyLimit=usage.limit||status.daily&&status.daily.limit||TIER_LIMITS[plan]||5;
+    var dailyUsed=usage.used||status.daily&&status.daily.used||0;
     var monthlyUsed=usage.monthly_used||0;
 
     // Plan card
@@ -197,7 +197,7 @@ async function loadBilling(){
     document.getElementById('plan-pill').textContent=PLAN_LABELS[plan]||'FREE';
 
     if(expires){
-      var exp=new Date(expires);
+      var exp=new Date(expires*1000);
       var daysLeft=Math.max(0,Math.ceil((exp-Date.now())/(1000*60*60*24)));
       document.getElementById('plan-expires').textContent='Expires '+formatDate(exp)+' ('+daysLeft+' days left)';
     }else{

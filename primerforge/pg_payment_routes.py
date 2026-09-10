@@ -827,6 +827,21 @@ def payment_status():
         if sub["plan_id"] and "-" in (sub["plan_id"] or ""):
             billing_cycle = sub["plan_id"].split("-")[1] if len(sub["plan_id"].split("-")) > 1 else "monthly"
 
+    # Fallback: check users table for trial/pro from promo activation
+    # (promo activations write to users, not subscriptions)
+    if plan == "free":
+        user_row = fetch_one(
+            "SELECT plan, plan_expires_at, trial_ends_at, pro_expires_at FROM users WHERE email=%s",
+            (email,))
+        if user_row and user_row.get("plan") and user_row["plan"] != "free":
+            plan = user_row["plan"]
+            if user_row.get("trial_ends_at"):
+                plan_expires_at = int(user_row["trial_ends_at"])
+            elif user_row.get("pro_expires_at"):
+                plan_expires_at = int(user_row["pro_expires_at"])
+            elif user_row.get("plan_expires_at"):
+                plan_expires_at = int(user_row["plan_expires_at"])
+
     from .price_registry import get_tier_limits
     tier_limits = get_tier_limits(plan)
 
@@ -900,8 +915,16 @@ def usage_check():
         (email,)
     )
 
+    # Determine plan tier (subscription first, then users table for trial/promo)
+    plan_key = "free"
     if sub and sub.get("is_active"):
         plan_key = (sub["plan_id"] or "free").split("-")[0]
+    else:
+        user_row = fetch_one("SELECT plan FROM users WHERE email=%s", (email,))
+        if user_row and user_row.get("plan") and user_row["plan"] != "free":
+            plan_key = user_row["plan"]
+
+    if sub and sub.get("is_active"):
         from .price_registry import get_tier_limits
         tier_limits = get_tier_limits(plan_key)
         limit = sub["monthly_quota"] or tier_limits["daily_analyses"]
@@ -910,7 +933,7 @@ def usage_check():
         can_analyze = remaining > 0
     else:
         from .price_registry import get_tier_limits
-        tier_limits = get_tier_limits("free")
+        tier_limits = get_tier_limits(plan_key)
         used = 0
         if user_id:
             try:
