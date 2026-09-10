@@ -812,7 +812,7 @@ def payment_status():
 
     # Read plan from users table (primary source — promo/trial writes here)
     user_plan_row = fetch_one(
-        "SELECT plan, billing_cycle, plan_activated_at, plan_expires_at, "
+        "SELECT plan, billing_cycle, plan_activated_at, "
         "trial_ends_at, pro_expires_at FROM users WHERE email=%s",
         (email,))
     plan = (user_plan_row or {}).get("plan") or "free"
@@ -825,8 +825,6 @@ def payment_status():
         plan_expires_at = int(user_plan_row["trial_ends_at"])
     elif plan in ("pro",) and (user_plan_row or {}).get("pro_expires_at"):
         plan_expires_at = int(user_plan_row["pro_expires_at"])
-    elif (user_plan_row or {}).get("plan_expires_at"):
-        plan_expires_at = int(user_plan_row["plan_expires_at"])
 
     # Override with subscription data if active paid subscription exists
     if sub and sub.get("is_active") and sub.get("plan_id"):
