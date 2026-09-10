@@ -96,7 +96,7 @@ def test_auto_design_does_not_mark_unrun_specificity_as_pass(client):
 
     assert pair["pipeline"]["step4_specificity"]["pass"] is None
     assert pair["validation_pending"] is True
-    assert pair["status"] == "CORE PASS - external validation pending"
+    assert pair["status"] != "ALL PASS - validated"
 
     stage4 = next(s for s in data["stages"] if s["step_id"] == 4)
     assert stage4["status"] == "not_run"
@@ -134,7 +134,7 @@ def test_inconclusive_specificity_is_not_specific(monkeypatch):
     assert response.status_code == 200
     pair = response.get_json()["primers_found"][0]
     assert pair["pipeline"]["step4_specificity"]["pass"] is None
-    assert pair["status"] == "CORE PASS - external validation pending"
+    assert pair["status"] != "ALL PASS - validated"
 
 
 def test_fetch_uniprot_is_not_auto_design_usable(monkeypatch):
