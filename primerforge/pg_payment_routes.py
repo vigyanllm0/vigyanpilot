@@ -807,40 +807,39 @@ def payment_status():
     # Get usage info from check_usage
     usage = check_usage(email)
 
-    plan = "free"
-    billing_cycle = "monthly"
-    plan_expires_at = 0
-
     uid_row = fetch_one("SELECT id FROM users WHERE email = %s", (email,))
     user_id = uid_row["id"] if uid_row else None
 
-    if sub:
-        plan = sub["plan_id"] or "free"
-        if plan:
-            plan = plan.split("-")[0] if "-" in plan else plan
-        if sub.get("expires_at"):
-            try:
-                plan_expires_at = int(sub["expires_at"].timestamp())
-            except Exception:
-                plan_expires_at = 0
-        billing_cycle = "monthly"
-        if sub["plan_id"] and "-" in (sub["plan_id"] or ""):
-            billing_cycle = sub["plan_id"].split("-")[1] if len(sub["plan_id"].split("-")) > 1 else "monthly"
+    # Read plan from users table (primary source — promo/trial writes here)
+    user_plan_row = fetch_one(
+        "SELECT plan, billing_cycle, plan_activated_at, plan_expires_at, "
+        "trial_ends_at, pro_expires_at FROM users WHERE email=%s",
+        (email,))
+    plan = (user_plan_row or {}).get("plan") or "free"
+    billing_cycle = (user_plan_row or {}).get("billing_cycle") or "monthly"
+    plan_activated_at = (user_plan_row or {}).get("plan_activated_at") or 0
 
-    # Fallback: check users table for trial/pro from promo activation
-    # (promo activations write to users, not subscriptions)
-    if plan == "free":
-        user_row = fetch_one(
-            "SELECT plan, plan_expires_at, trial_ends_at, pro_expires_at FROM users WHERE email=%s",
-            (email,))
-        if user_row and user_row.get("plan") and user_row["plan"] != "free":
-            plan = user_row["plan"]
-            if user_row.get("trial_ends_at"):
-                plan_expires_at = int(user_row["trial_ends_at"])
-            elif user_row.get("pro_expires_at"):
-                plan_expires_at = int(user_row["pro_expires_at"])
-            elif user_row.get("plan_expires_at"):
-                plan_expires_at = int(user_row["plan_expires_at"])
+    # Determine plan expiry based on plan type
+    plan_expires_at = 0
+    if plan in ("trial",) and (user_plan_row or {}).get("trial_ends_at"):
+        plan_expires_at = int(user_plan_row["trial_ends_at"])
+    elif plan in ("pro",) and (user_plan_row or {}).get("pro_expires_at"):
+        plan_expires_at = int(user_plan_row["pro_expires_at"])
+    elif (user_plan_row or {}).get("plan_expires_at"):
+        plan_expires_at = int(user_plan_row["plan_expires_at"])
+
+    # Override with subscription data if active paid subscription exists
+    if sub and sub.get("is_active") and sub.get("plan_id"):
+        sub_plan = (sub["plan_id"] or "").split("-")[0] if "-" in (sub["plan_id"] or "") else (sub["plan_id"] or "")
+        if sub_plan and sub_plan != "free":
+            plan = sub_plan
+            if sub.get("expires_at"):
+                try:
+                    plan_expires_at = int(sub["expires_at"].timestamp())
+                except Exception:
+                    pass
+            if sub["plan_id"] and "-" in (sub["plan_id"] or ""):
+                billing_cycle = sub["plan_id"].split("-")[1] if len(sub["plan_id"].split("-")) > 1 else "monthly"
 
     from .price_registry import get_tier_limits
     tier_limits = get_tier_limits(plan)
@@ -876,7 +875,7 @@ def payment_status():
     return jsonify({
         "plan": plan,
         "billing_cycle": billing_cycle,
-        "plan_activated_at": 0,
+        "plan_activated_at": plan_activated_at,
         "plan_expires_at": plan_expires_at,
         "is_academic": is_academic,
         "academic_discount": 30 if is_academic else 0,
