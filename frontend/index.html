@@ -331,35 +331,13 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <p style="margin-top:20px;font-size:var(--font-sm);color:var(--muted)">Same thermodynamic models as NCBI Primer-BLAST, running in your browser.</p>
 </div>
 
-<!-- TESTIMONIALS -->
-<div class="testimonials" style="max-width:var(--max-w);margin:0 auto;padding:48px 24px">
+<!-- TESTIMONIALS (dynamic — hidden until 10+ approved reviews) -->
+<div class="testimonials" data-review-display style="max-width:var(--max-w);margin:0 auto;padding:48px 24px;display:none">
   <div class="section-header" style="text-align:center;margin-bottom:32px">
     <div class="section-tag">What researchers say</div>
     <h2>Trusted by labs across India and beyond</h2>
   </div>
-  <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:24px;max-width:900px;margin:0 auto">
-    <div style="background:var(--warm-paper);border:1px solid var(--warm-paper-border);border-radius:12px;padding:28px;position:relative">
-      <div style="font-size:32px;color:var(--saffron);font-family:var(--font-h-serif);line-height:1;margin-bottom:8px">"</div>
-      <p style="font-size:15px;color:var(--text2);line-height:1.7;margin-bottom:16px;font-style:italic">VigyanLLM cut our primer validation time from 3 hours to 15 minutes. The on-premise deployment was non-negotiable for our patient data.</p>
-      <div style="display:flex;align-items:center;gap:12px">
-        <div style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,var(--saffron),var(--sage));display:flex;align-items:center;justify-content:center;color:#fff;font-family:var(--font-h);font-weight:700;font-size:16px">RK</div>
-        <div>
-          <div style="font-weight:700;font-size:14px;color:var(--text)">Dr. Rahul Kumar</div>
-          <div style="font-size:12px;color:var(--muted)">Molecular Biology Lab</div>
-        </div>
-      </div>
-    </div>
-    <div style="background:var(--warm-paper);border:1px solid var(--warm-paper-border);border-radius:12px;padding:28px;position:relative">
-      <div style="font-size:32px;color:var(--saffron);font-family:var(--font-h-serif);line-height:1;margin-bottom:8px">"</div>
-      <p style="font-size:15px;color:var(--text2);line-height:1.7;margin-bottom:16px;font-style:italic">The 24-step validation pipeline caught three primer pairs that would have failed in our qPCR assay. Saved us weeks of wasted reagents.</p>
-      <div style="display:flex;align-items:center;gap:12px">
-        <div style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,var(--saffron),var(--sage));display:flex;align-items:center;justify-content:center;color:#fff;font-family:var(--font-h);font-weight:700;font-size:16px">PS</div>
-        <div>
-          <div style="font-weight:700;font-size:14px;color:var(--text)">Dr. Priya Sharma</div>
-          <div style="font-size:12px;color:var(--muted)">Genomics Research Center</div>
-        </div>
-      </div>
-    </div>
+  <div id="home-reviews-grid" style="display:grid;grid-template-columns:repeat(2,1fr);gap:24px;max-width:900px;margin:0 auto">
   </div>
 </div>
 
@@ -752,7 +730,38 @@ else initDNAAnim();
   <a href="/primer" class="cta-primary">Design Primers</a>
   <a href="/blast" class="cta-secondary">Run BLAST</a>
 </div>
+<script defer src="/review-modal.js"></script>
 <script src="/includes.js"></script>
 <script src="/reveal.js"></script>
+<script>
+// Custom homepage review grid renderer
+(function(){
+  var API = window.VIGYAN_BACKEND_URL || '/api';
+  var grid = document.getElementById('home-reviews-grid');
+  if (!grid) return;
+  fetch(API + '/reviews/public?featured=1&limit=4', {credentials:'same-origin'})
+    .then(function(r){return r.json()})
+    .then(function(d){
+      var reviews = d.reviews || [];
+      if ((d.count || 0) < 10 || reviews.length === 0) {
+        var section = document.querySelector('[data-review-display]');
+        if (section) section.style.display = 'none';
+        return;
+      }
+      var html = '';
+      reviews.forEach(function(r){
+        var stars = '';
+        for(var s=0;s<5;s++) stars += s < r.rating ? '\u2605' : '\u2606';
+        var name = r.name || 'Researcher';
+        var parts = name.split(' ');
+        var initials = parts.length >= 2 ? (parts[0][0]+parts[parts.length-1][0]).toUpperCase() : name.substring(0,2).toUpperCase();
+        var roleLine = r.role_label && r.institution ? r.role_label+' \u00B7 '+r.institution : r.role_label || r.institution || '';
+        html += '<div class="review-card"><div class="review-card-stars">'+stars+'</div><p class="review-card-text">\u201C'+r.message.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')+'\u201D</p><div class="review-card-author"><div class="review-card-avatar">'+initials+'</div><div><div class="review-card-name">'+name.replace(/&/g,'&amp;').replace(/</g,'&lt;')+'</div>'+(roleLine?'<div class="review-card-role">'+roleLine.replace(/&/g,'&amp;').replace(/</g,'&lt;')+'</div>':'')+'</div></div></div>';
+      });
+      grid.innerHTML = html;
+    })
+    .catch(function(){});
+})();
+</script>
 </body>
 </html>

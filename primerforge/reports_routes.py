@@ -1015,3 +1015,176 @@ def submit_feedback():
         "success": True,
         "message": "Thank you for your feedback! It helps us improve VigyanLLM.",
     }), 201
+
+
+# ── Reviews / Testimonials ────────────────────────────────────────────────
+
+_MIN_REVIEW_LENGTH = 100
+
+
+@reports_bp.route("/api/reviews", methods=["POST"])
+def submit_review():
+    """Submit a review/testimonial. Works for both authenticated and anonymous users."""
+    data = request.get_json(silent=True) or {}
+
+    message = (data.get("message") or "").strip()[:2000]
+    rating = data.get("rating")
+    name = (data.get("name") or "").strip()[:100]
+    role_label = (data.get("role_label") or "").strip()[:100]
+    institution = (data.get("institution") or "").strip()[:200]
+    email = (data.get("email") or "").strip().lower()[:320]
+
+    if not message:
+        return jsonify({"error": "Review message is required"}), 400
+    if len(message) < _MIN_REVIEW_LENGTH:
+        return jsonify({"error": f"Review must be at least {_MIN_REVIEW_LENGTH} characters"}), 400
+
+    if rating is not None:
+        try:
+            rating = int(rating)
+            if not (1 <= rating <= 5):
+                rating = None
+        except (TypeError, ValueError):
+            rating = None
+    if rating is None:
+        return jsonify({"error": "Rating (1-5) is required"}), 400
+
+    # Get user_id if authenticated
+    user_id = None
+    auth_header = request.headers.get("Authorization", "")
+    if auth_header.startswith("Bearer "):
+        from .pg_auth import verify_token
+        user_data = verify_token(auth_header[7:])
+        if user_data:
+            user_id = user_data.get("user_id")
+            if not email:
+                user = fetch_one("SELECT email FROM users WHERE id = %s", (user_id,))
+                if user:
+                    email = user["email"]
+
+    # Auto-approve if rating >= 4
+    is_approved = rating >= 4
+
+    execute(
+        """INSERT INTO feedback_submissions
+           (user_id, email, rating, message, name, role_label, institution, is_approved)
+           VALUES (%s, %s, %s, %s, %s, %s, %s, %s)""",
+        (user_id, email or None, rating, message, name, role_label, institution, is_approved)
+    )
+
+    # Mark user as reviewed
+    if user_id:
+        execute("UPDATE users SET has_reviewed = TRUE WHERE id = %s", (user_id,))
+
+    return jsonify({
+        "success": True,
+        "message": "Thank you for your review!",
+        "is_approved": is_approved,
+    }), 201
+
+
+@reports_bp.route("/api/reviews/public", methods=["GET"])
+def get_public_reviews():
+    """Get approved reviews for public display."""
+    featured = request.args.get("featured")
+    limit = min(int(request.args.get("limit", 10)), 50)
+
+    if featured == "1":
+        rows = fetch_all(
+            """SELECT id, name, role_label, institution, rating, message, created_at
+               FROM feedback_submissions
+               WHERE is_approved = TRUE AND is_featured = TRUE
+               ORDER BY created_at DESC LIMIT %s""",
+            (limit,)
+        )
+    else:
+        rows = fetch_all(
+            """SELECT id, name, role_label, institution, rating, message, created_at
+               FROM feedback_submissions
+               WHERE is_approved = TRUE
+               ORDER BY created_at DESC LIMIT %s""",
+            (limit,)
+        )
+
+    count_row = fetch_one(
+        "SELECT COUNT(*) as cnt FROM feedback_submissions WHERE is_approved = TRUE"
+    )
+    total = count_row["cnt"] if count_row else 0
+
+    return jsonify({"reviews": rows, "count": total}), 200
+
+
+@reports_bp.route("/api/reviews/check", methods=["GET"])
+def check_review_status():
+    """Check if current user has submitted a review."""
+    user_id = None
+    auth_header = request.headers.get("Authorization", "")
+    if auth_header.startswith("Bearer "):
+        from .pg_auth import verify_token
+        user_data = verify_token(auth_header[7:])
+        if user_data:
+            user_id = user_data.get("user_id")
+
+    if not user_id:
+        return jsonify({"has_reviewed": False, "count": 0}), 200
+
+    user = fetch_one("SELECT has_reviewed FROM users WHERE id = %s", (user_id,))
+    has_reviewed = bool(user["has_reviewed"]) if user else False
+
+    count_row = fetch_one(
+        "SELECT COUNT(*) as cnt FROM feedback_submissions WHERE is_approved = TRUE"
+    )
+    total = count_row["cnt"] if count_row else 0
+
+    return jsonify({"has_reviewed": has_reviewed, "count": total}), 200
+
+
+@reports_bp.route("/api/reviews/pending", methods=["GET"])
+def get_pending_reviews():
+    """Admin: List unapproved reviews."""
+    rows = fetch_all(
+        """SELECT id, user_id, email, name, role_label, institution, rating, message,
+                  is_approved, is_featured, created_at
+           FROM feedback_submissions
+           WHERE is_approved = FALSE
+           ORDER BY created_at DESC"""
+    )
+    return jsonify({"reviews": rows, "count": len(rows)}), 200
+
+
+@reports_bp.route("/api/admin/reviews/<int:review_id>/approve", methods=["POST"])
+@require_admin
+def toggle_review_approval(review_id):
+    """Admin: Toggle review approval status."""
+    row = fetch_one(
+        "SELECT id, is_approved FROM feedback_submissions WHERE id = %s", (review_id,)
+    )
+    if not row:
+        return jsonify({"error": "Review not found"}), 404
+
+    new_status = not row["is_approved"]
+    execute(
+        """UPDATE feedback_submissions
+           SET is_approved = %s, reviewed_at = %s
+           WHERE id = %s""",
+        (new_status, time.time(), review_id)
+    )
+    return jsonify({"success": True, "is_approved": new_status}), 200
+
+
+@reports_bp.route("/api/admin/reviews/<int:review_id>/feature", methods=["POST"])
+@require_admin
+def toggle_review_featured(review_id):
+    """Admin: Toggle review featured status."""
+    row = fetch_one(
+        "SELECT id, is_featured FROM feedback_submissions WHERE id = %s", (review_id,)
+    )
+    if not row:
+        return jsonify({"error": "Review not found"}), 404
+
+    new_status = not row["is_featured"]
+    execute(
+        "UPDATE feedback_submissions SET is_featured = %s WHERE id = %s",
+        (new_status, review_id)
+    )
+    return jsonify({"success": True, "is_featured": new_status}), 200

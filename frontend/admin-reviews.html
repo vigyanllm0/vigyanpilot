@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Manage Reviews — VigyanLLM Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'Inter',-apple-system,sans-serif;background:#f8fafc;color:#1e293b;min-height:100vh}
+    .admin-header{background:#1a1a2e;color:#fff;padding:20px 32px;display:flex;align-items:center;justify-content:space-between}
+    .admin-header h1{font-size:20px;font-weight:700}
+    .admin-header a{color:rgba(255,255,255,.7);text-decoration:none;font-size:14px}
+    .admin-header a:hover{color:#fff}
+    .container{max-width:1100px;margin:0 auto;padding:24px}
+    .stats-bar{display:flex;gap:16px;margin-bottom:24px;flex-wrap:wrap}
+    .stat-card{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:16px 20px;min-width:140px}
+    .stat-card .label{font-size:12px;color:#64748b;text-transform:uppercase;letter-spacing:.5px}
+    .stat-card .value{font-size:28px;font-weight:700;color:#1e293b;margin-top:4px}
+    .filters{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}
+    .filter-btn{padding:8px 16px;border:1px solid #e2e8f0;border-radius:8px;background:#fff;cursor:pointer;font-size:13px;font-weight:500;color:#475569;transition:all .15s}
+    .filter-btn:hover{background:#f1f5f9}
+    .filter-btn.active{background:#1565C0;color:#fff;border-color:#1565C0}
+    .review-table{width:100%;border-collapse:collapse;background:#fff;border-radius:10px;overflow:hidden;border:1px solid #e2e8f0}
+    .review-table th{background:#f8fafc;text-align:left;padding:12px 16px;font-size:12px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid #e2e8f0}
+    .review-table td{padding:14px 16px;border-bottom:1px solid #f1f5f9;font-size:14px;vertical-align:top}
+    .review-table tr:last-child td{border-bottom:none}
+    .review-table tr:hover td{background:#f8fafc}
+    .stars{color:#f59e0b;font-size:16px;letter-spacing:1px}
+    .badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600}
+    .badge-pending{background:#fef3c7;color:#92400e}
+    .badge-approved{background:#d1fae5;color:#065f46}
+    .badge-featured{background:#dbeafe;color:#1e40af}
+    .msg-preview{max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#475569}
+    .btn{padding:6px 14px;border-radius:6px;border:none;cursor:pointer;font-size:12px;font-weight:600;transition:all .15s}
+    .btn-approve{background:#d1fae5;color:#065f46}
+    .btn-approve:hover{background:#a7f3d0}
+    .btn-reject{background:#fee2e2;color:#991b1b}
+    .btn-reject:hover{background:#fecaca}
+    .btn-feature{background:#dbeafe;color:#1e40af}
+    .btn-feature:hover{background:#bfdbfe}
+    .btn-unfeature{background:#f3f4f6;color:#374151}
+    .btn-unfeature:hover{background:#e5e7eb}
+    .actions{display:flex;gap:6px;flex-wrap:wrap}
+    .empty{text-align:center;padding:60px 20px;color:#64748b}
+    .empty-icon{font-size:48px;margin-bottom:12px}
+    .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center}
+    .modal-overlay.open{display:flex}
+    .modal{background:#fff;border-radius:12px;padding:28px;max-width:600px;width:90%;max-height:80vh;overflow-y:auto}
+    .modal h3{margin-bottom:12px}
+    .modal .full-msg{line-height:1.7;color:#374151;white-space:pre-wrap}
+    .modal-close{float:right;background:none;border:none;font-size:24px;cursor:pointer;color:#64748b}
+    @media(max-width:768px){.review-table{display:block;overflow-x:auto}.stats-bar{flex-direction:column}}
+  </style>
+</head>
+<body>
+  <div class="admin-header">
+    <h1>Review Management</h1>
+    <a href="/dashboard">&larr; Back to Dashboard</a>
+  </div>
+  <div class="container">
+    <div class="stats-bar">
+      <div class="stat-card"><div class="label">Total Reviews</div><div class="value" id="stat-total">-</div></div>
+      <div class="stat-card"><div class="label">Approved</div><div class="value" id="stat-approved">-</div></div>
+      <div class="stat-card"><div class="label">Pending</div><div class="value" id="stat-pending">-</div></div>
+      <div class="stat-card"><div class="label">Featured</div><div class="value" id="stat-featured">-</div></div>
+    </div>
+
+    <div class="filters">
+      <button class="filter-btn active" data-filter="all">All</button>
+      <button class="filter-btn" data-filter="pending">Pending</button>
+      <button class="filter-btn" data-filter="approved">Approved</button>
+      <button class="filter-btn" data-filter="featured">Featured</button>
+    </div>
+
+    <table class="review-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Rating</th>
+          <th>Review</th>
+          <th>Date</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="reviews-body">
+        <tr><td colspan="6" class="empty"><div class="empty-icon">&#128221;</div>Loading reviews...</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Full Message Modal -->
+  <div class="modal-overlay" id="msgModal" onclick="if(event.target===this)this.classList.remove('open')">
+    <div class="modal">
+      <button class="modal-close" onclick="document.getElementById('msgModal').classList.remove('open')">&times;</button>
+      <h3 id="modalTitle">Full Review</h3>
+      <div class="full-msg" id="modalMsg"></div>
+      <div style="margin-top:16px;font-size:13px;color:#64748b" id="modalMeta"></div>
+    </div>
+  </div>
+
+  <script>
+  (function() {
+    var API = window.VIGYAN_BACKEND_URL || '/api';
+    var allReviews = [];
+    var currentFilter = 'all';
+
+    function getToken() { return sessionStorage.getItem('pf_token') || ''; }
+
+    function authHeaders() {
+      var h = {'Content-Type':'application/json'};
+      var t = getToken();
+      if (t) h['Authorization'] = 'Bearer ' + t;
+      return h;
+    }
+
+    function loadReviews() {
+      // Load all reviews (both approved and pending) for admin
+      Promise.all([
+        fetch(API + '/reviews/public?limit=100', {credentials:'same-origin'}).then(function(r){return r.json()}),
+        fetch(API + '/reviews/pending', {headers:authHeaders(),credentials:'same-origin'}).then(function(r){return r.json()})
+      ]).then(function(results) {
+        var approved = (results[0].reviews || []).map(function(r){r._source='approved';return r});
+        var pending = (results[1].reviews || []).map(function(r){r._source='pending';return r});
+        // Merge, deduplicate by id
+        var seen = {};
+        allReviews = [];
+        approved.concat(pending).forEach(function(r) {
+          if (!seen[r.id]) { seen[r.id] = true; allReviews.push(r); }
+        });
+        updateStats();
+        renderReviews();
+      }).catch(function(err) {
+        document.getElementById('reviews-body').innerHTML =
+          '<tr><td colspan="6" class="empty">Failed to load reviews. ' + err.message + '</td></tr>';
+      });
+    }
+
+    function updateStats() {
+      var total = allReviews.length;
+      var approved = allReviews.filter(function(r){return r.is_approved}).length;
+      var pending = total - approved;
+      var featured = allReviews.filter(function(r){return r.is_featured}).length;
+      document.getElementById('stat-total').textContent = total;
+      document.getElementById('stat-approved').textContent = approved;
+      document.getElementById('stat-pending').textContent = pending;
+      document.getElementById('stat-featured').textContent = featured;
+    }
+
+    function renderReviews() {
+      var filtered = allReviews;
+      if (currentFilter === 'pending') filtered = allReviews.filter(function(r){return !r.is_approved});
+      else if (currentFilter === 'approved') filtered = allReviews.filter(function(r){return r.is_approved && !r.is_featured});
+      else if (currentFilter === 'featured') filtered = allReviews.filter(function(r){return r.is_featured});
+
+      if (!filtered.length) {
+        document.getElementById('reviews-body').innerHTML =
+          '<tr><td colspan="6" class="empty"><div class="empty-icon">&#128221;</div>No reviews match this filter</td></tr>';
+        return;
+      }
+
+      var html = '';
+      filtered.forEach(function(r) {
+        var stars = '';
+        for(var s=0;s<5;s++) stars += s < r.rating ? '\u2605' : '\u2606';
+        var date = r.created_at ? new Date(r.created_at * 1000).toLocaleDateString('en-IN', {day:'numeric',month:'short',year:'numeric'}) : '-';
+        var statusBadge = r.is_approved ? '<span class="badge badge-approved">Approved</span>' : '<span class="badge badge-pending">Pending</span>';
+        if (r.is_featured) statusBadge += ' <span class="badge badge-featured">Featured</span>';
+
+        var approveBtn = r.is_approved
+          ? '<button class="btn btn-reject" onclick="toggleApprove('+r.id+')">Reject</button>'
+          : '<button class="btn btn-approve" onclick="toggleApprove('+r.id+')">Approve</button>';
+        var featureBtn = r.is_featured
+          ? '<button class="btn btn-unfeature" onclick="toggleFeature('+r.id+')">Unfeature</button>'
+          : '<button class="btn btn-feature" onclick="toggleFeature('+r.id+')">Feature</button>';
+
+        var name = r.name || 'Anonymous';
+        var roleInfo = [r.role_label, r.institution].filter(Boolean).join(' \u00B7 ');
+        var msgShort = r.message || '';
+        if (msgShort.length > 80) msgShort = msgShort.substring(0, 80) + '...';
+
+        html += '<tr>' +
+          '<td><strong>'+esc(name)+'</strong>' + (roleInfo ? '<br><span style="font-size:12px;color:#64748b">'+esc(roleInfo)+'</span>' : '') + '</td>' +
+          '<td class="stars">'+stars+'</td>' +
+          '<td><span class="msg-preview" title="Click to view full" onclick="showFullMsg(\''+esc(r.message)+'\',\''+esc(name)+'\')">'+esc(msgShort)+'</span></td>' +
+          '<td style="white-space:nowrap">'+date+'</td>' +
+          '<td>'+statusBadge+'</td>' +
+          '<td class="actions">'+approveBtn+featureBtn+'</td>' +
+        '</tr>';
+      });
+      document.getElementById('reviews-body').innerHTML = html;
+    }
+
+    function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+
+    window.toggleApprove = function(id) {
+      fetch(API + '/admin/reviews/' + id + '/approve', {
+        method: 'POST', headers: authHeaders(), credentials: 'same-origin'
+      }).then(function(r){return r.json()}).then(function(d){
+        if (d.success) loadReviews();
+      });
+    };
+
+    window.toggleFeature = function(id) {
+      fetch(API + '/admin/reviews/' + id + '/feature', {
+        method: 'POST', headers: authHeaders(), credentials: 'same-origin'
+      }).then(function(r){return r.json()}).then(function(d){
+        if (d.success) loadReviews();
+      });
+    };
+
+    window.showFullMsg = function(msg, name) {
+      document.getElementById('modalTitle').textContent = 'Review by ' + name;
+      document.getElementById('modalMsg').textContent = msg;
+      document.getElementById('msgModal').classList.add('open');
+    };
+
+    // Filter buttons
+    document.querySelectorAll('.filter-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('.filter-btn').forEach(function(b){b.classList.remove('active')});
+        btn.classList.add('active');
+        currentFilter = btn.dataset.filter;
+        renderReviews();
+      });
+    });
+
+    loadReviews();
+  })();
+  </script>
+</body>
+</html>

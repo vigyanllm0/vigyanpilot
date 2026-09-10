@@ -300,6 +300,170 @@ def submit_feedback():
     return jsonify({"message": "Thank you for your feedback!"}), 200
 
 
+# ── Reviews / Testimonials ───────────────────────────────────────────────
+
+_MIN_REVIEW_LENGTH = 100
+
+
+@reports_bp.route("/api/reviews", methods=["POST"])
+def submit_review():
+    """Submit a review/testimonial."""
+    email = g.user["email"] if hasattr(g, "user") and g.user else None
+    data = request.get_json(silent=True) or {}
+
+    message = (data.get("message") or "").strip()[:2000]
+    rating = data.get("rating")
+    name = (data.get("name") or "").strip()[:100]
+    role_label = (data.get("role_label") or "").strip()[:100]
+    institution = (data.get("institution") or "").strip()[:200]
+
+    if not message:
+        return jsonify({"error": "Review message is required"}), 400
+    if len(message) < _MIN_REVIEW_LENGTH:
+        return jsonify({"error": f"Review must be at least {_MIN_REVIEW_LENGTH} characters"}), 400
+
+    if rating is not None:
+        try:
+            rating = int(rating)
+            if not (1 <= rating <= 5):
+                rating = None
+        except (TypeError, ValueError):
+            rating = None
+    if rating is None:
+        return jsonify({"error": "Rating (1-5) is required"}), 400
+
+    # Auto-approve if rating >= 4
+    is_approved = 1 if rating >= 4 else 0
+
+    db = get_db()
+    db.execute(
+        """INSERT INTO feedback_submissions
+           (user_email, rating, message, name, role_label, institution, is_approved)
+           VALUES (?, ?, ?, ?, ?, ?, ?)""",
+        (email, rating, message, name, role_label, institution, is_approved)
+    )
+    # Mark user as reviewed
+    if email:
+        try:
+            db.execute("UPDATE users SET has_reviewed = 1 WHERE email = ?", (email,))
+        except Exception:
+            pass  # column may not exist yet
+    db.commit()
+
+    return jsonify({
+        "success": True,
+        "message": "Thank you for your review!",
+        "is_approved": bool(is_approved),
+    }), 201
+
+
+@reports_bp.route("/api/reviews/public", methods=["GET"])
+def get_public_reviews():
+    """Get approved reviews for public display."""
+    featured = request.args.get("featured")
+    limit = min(int(request.args.get("limit", 10)), 50)
+    db = get_db()
+
+    if featured == "1":
+        rows = db.execute(
+            """SELECT id, name, role_label, institution, rating, message, created_at
+               FROM feedback_submissions
+               WHERE is_approved = 1 AND is_featured = 1
+               ORDER BY created_at DESC LIMIT ?""",
+            (limit,)
+        ).fetchall()
+    else:
+        rows = db.execute(
+            """SELECT id, name, role_label, institution, rating, message, created_at
+               FROM feedback_submissions
+               WHERE is_approved = 1
+               ORDER BY created_at DESC LIMIT ?""",
+            (limit,)
+        ).fetchall()
+
+    total = db.execute(
+        "SELECT COUNT(*) as cnt FROM feedback_submissions WHERE is_approved = 1"
+    ).fetchone()["cnt"]
+
+    return jsonify({"reviews": [dict(r) for r in rows], "count": total}), 200
+
+
+@reports_bp.route("/api/reviews/check", methods=["GET"])
+def check_review_status():
+    """Check if current user has submitted a review."""
+    email = g.user["email"] if hasattr(g, "user") and g.user else None
+    db = get_db()
+
+    has_reviewed = False
+    if email:
+        try:
+            row = db.execute("SELECT has_reviewed FROM users WHERE email = ?", (email,)).fetchone()
+            has_reviewed = bool(row["has_reviewed"]) if row else False
+        except Exception:
+            pass
+
+    total = db.execute(
+        "SELECT COUNT(*) as cnt FROM feedback_submissions WHERE is_approved = 1"
+    ).fetchone()["cnt"]
+
+    return jsonify({"has_reviewed": has_reviewed, "count": total}), 200
+
+
+@reports_bp.route("/api/reviews/pending", methods=["GET"])
+@require_auth
+def get_pending_reviews():
+    """Admin: List unapproved reviews."""
+    db = get_db()
+    rows = db.execute(
+        """SELECT id, user_email, name, role_label, institution, rating, message,
+                  is_approved, is_featured, created_at
+           FROM feedback_submissions
+           WHERE is_approved = 0
+           ORDER BY created_at DESC"""
+    ).fetchall()
+    return jsonify({"reviews": [dict(r) for r in rows], "count": len(rows)}), 200
+
+
+@reports_bp.route("/api/admin/reviews/<int:review_id>/approve", methods=["POST"])
+@require_auth
+def toggle_review_approval(review_id):
+    """Admin: Toggle review approval status."""
+    db = get_db()
+    row = db.execute(
+        "SELECT id, is_approved FROM feedback_submissions WHERE id = ?", (review_id,)
+    ).fetchone()
+    if not row:
+        return jsonify({"error": "Review not found"}), 404
+
+    new_status = 0 if row["is_approved"] else 1
+    db.execute(
+        "UPDATE feedback_submissions SET is_approved = ?, reviewed_at = ? WHERE id = ?",
+        (new_status, time.time(), review_id)
+    )
+    db.commit()
+    return jsonify({"success": True, "is_approved": bool(new_status)}), 200
+
+
+@reports_bp.route("/api/admin/reviews/<int:review_id>/feature", methods=["POST"])
+@require_auth
+def toggle_review_featured(review_id):
+    """Admin: Toggle review featured status."""
+    db = get_db()
+    row = db.execute(
+        "SELECT id, is_featured FROM feedback_submissions WHERE id = ?", (review_id,)
+    ).fetchone()
+    if not row:
+        return jsonify({"error": "Review not found"}), 404
+
+    new_status = 0 if row["is_featured"] else 1
+    db.execute(
+        "UPDATE feedback_submissions SET is_featured = ? WHERE id = ?",
+        (new_status, review_id)
+    )
+    db.commit()
+    return jsonify({"success": True, "is_featured": bool(new_status)}), 200
+
+
 # ── Referral System ──────────────────────────────────────────────────────
 
 def _get_user_id_by_email(email):

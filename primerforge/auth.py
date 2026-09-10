@@ -211,6 +211,12 @@ def init_db():
             user_email TEXT NOT NULL,
             context TEXT DEFAULT '',
             message TEXT NOT NULL,
+            name TEXT DEFAULT '',
+            role_label TEXT DEFAULT '',
+            institution TEXT DEFAULT '',
+            is_approved INTEGER DEFAULT 0,
+            is_featured INTEGER DEFAULT 0,
+            reviewed_at REAL DEFAULT 0,
             created_at REAL DEFAULT (strftime('%s','now'))
         );
 
@@ -351,6 +357,10 @@ def init_db():
         pass
     try:
         db.execute("ALTER TABLE promo_codes ADD COLUMN discount_pct INTEGER DEFAULT 0")
+    except sqlite3.OperationalError:
+        pass
+    try:
+        db.execute("ALTER TABLE users ADD COLUMN has_reviewed INTEGER DEFAULT 0")
     except sqlite3.OperationalError:
         pass
     # Backfill auth_provider for existing Google users (detected via audit log).
