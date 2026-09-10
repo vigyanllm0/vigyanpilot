@@ -95,12 +95,14 @@ function renderAuth(){
 function renderGoogleBtn(){
   var w=document.getElementById('gbtn-wrap');
   if(!w)return;
-  if(typeof google!=='undefined'&&google.accounts&&google.accounts.id){
-    w.style.display='';
-    google.accounts.id.initialize({client_id:'598272150916-57hl3s7jijaamh3er18alk93gj2op6jt.apps.googleusercontent.com',callback:handleGoogleCredential,cancel_on_tap_outside:false});
-    google.accounts.id.renderButton(w,{type:'standard',shape:'pill',theme:'outline',size:'large',text:isRegister?'signup_with':'signin_with',width:328});
-    return;
-  }
+  try{
+    if(typeof google!=='undefined'&&google.accounts&&google.accounts.id){
+      w.style.display='';
+      google.accounts.id.initialize({client_id:'598272150916-57hl3s7jijaamh3er18alk93gj2op6jt.apps.googleusercontent.com',callback:handleGoogleCredential,cancel_on_tap_outside:false});
+      google.accounts.id.renderButton(w,{type:'standard',shape:'pill',theme:'outline',size:'large',text:isRegister?'signup_with':'signin_with',width:328});
+      return;
+    }
+  }catch(e){}
   // Google SDK not loaded yet — load dynamically
   w.style.display='none';
   var s=document.createElement('script');
