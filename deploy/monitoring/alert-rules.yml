@@ -1,0 +1,106 @@
+groups:
+  - name: vigyanllm_alerts
+    rules:
+      - alert: VigyanServiceDown
+        expr: up{job="vigyanllm-app"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "VigyanLLM service is down"
+          description: "VigyanLLM application has been unreachable for more than 1 minute."
+
+      - alert: HighErrorRate
+        expr: >
+          (
+            rate(http_requests_total{status=~"5.."}[5m])
+            /
+            rate(http_requests_total[5m])
+          ) > 0.05
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High 5xx error rate"
+          description: "Error rate has exceeded 5% for more than 5 minutes. Current: {{ $value | humanizePercentage }}"
+
+      - alert: HighLatencyP95
+        expr: >
+          histogram_quantile(0.95,
+            rate(http_request_duration_seconds_bucket[5m])
+          ) > 2
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "P95 latency is too high"
+          description: "P95 request latency is {{ $value }}s (threshold: 2s)."
+
+      - alert: DiskSpaceLow
+        expr: >
+          (
+            node_filesystem_avail_bytes
+            /
+            node_filesystem_size_bytes
+          ) < 0.10
+        for: 10m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Disk space critically low"
+          description: "Disk usage has exceeded 90%. Available: {{ $value | humanizePercentage }}"
+
+      - alert: MemoryHigh
+        expr: >
+          (
+            1 - node_memory_MemAvailable_bytes
+            /
+            node_memory_MemTotal_bytes
+          ) > 0.90
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Memory usage is high"
+          description: "Memory usage has exceeded 90% for more than 5 minutes."
+
+      - alert: DatabaseConnectionPoolExhausted
+        expr: pg_stat_activity_count > 90
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "PostgreSQL connection pool nearly exhausted"
+          description: "Active connections: {{ $value }} (threshold: 90)."
+
+      - alert: HighLoginFailures
+        expr: >
+          rate(http_requests_total{endpoint="/api/auth/login", status="401"}[5m]) * 60 > 20
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High login failure rate"
+          description: "More than 20 failed login attempts per minute. Possible brute-force attack."
+
+      - alert: PaymentFailureSpike
+        expr: >
+          rate(http_requests_total{endpoint=~"/api/payments/.*", status=~"4.."}[5m]) * 60 > 5
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Payment failure spike detected"
+          description: "More than 5 payment failures per minute. Possible Razorpay or gateway issue."
+
+      - alert: CertificateExpiringSoon
+        expr: >
+          (
+            probe_ssl_earliest_cert_expiry - time()
+          ) / 86400 < 14
+        for: 1h
+        labels:
+          severity: warning
+        annotations:
+          summary: "TLS certificate expiring soon"
+          description: "Certificate expires in {{ $value }} days. Renew immediately."

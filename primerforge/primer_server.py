@@ -673,6 +673,9 @@ def create_app() -> Flask:
     init_debugger(app)
     init_file_scanner(app)
 
+    from primerforge.metrics import init_metrics
+    init_metrics(app)
+
     # ── Database Setup: PostgreSQL (production) or SQLite (fallback) ───────
     USE_POSTGRES = bool(os.environ.get("DATABASE_URL"))
 
@@ -707,6 +710,10 @@ def create_app() -> Flask:
         # Register visitor geo tracking
         from primerforge.visitor_routes import visitor_bp
         app.register_blueprint(visitor_bp)
+
+        # Register API management / developer portal blueprint
+        from primerforge.pg_api_routes import api_bp
+        app.register_blueprint(api_bp)
 
         with app.app_context():
             try:
@@ -753,6 +760,11 @@ def create_app() -> Flask:
             app.register_blueprint(visitor_bp)
         except ImportError as exc:
             logger.warning("Visitor tracking disabled: %s", exc)
+        try:
+            from primerforge.pg_api_routes import api_bp
+            app.register_blueprint(api_bp)
+        except ImportError as exc:
+            logger.warning("API management disabled: %s", exc)
         consume_token = None
         consume_docking_token = None
         record_operation_cost = None

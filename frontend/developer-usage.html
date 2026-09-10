@@ -1,0 +1,141 @@
+<!DOCTYPE html><html lang="en"><head>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('consent', 'default', {'ad_storage':'denied','ad_user_data':'denied','ad_personalization':'denied','analytics_storage':'denied','region':['AT','BE','BG','HR','CY','CZ','DK','EE','FI','FR','DE','GR','HU','IE','IT','LV','LT','LU','MT','NL','PL','PT','RO','SK','SI','ES','SE','IS','LI','NO','GB','CH']});
+try{var vlcs=JSON.parse(localStorage.getItem('vigyanllm_cookie_consent')||'null');if(vlcs&&vlcs.consent==='accepted'){gtag('consent','update',{'ad_storage':'granted','ad_user_data':'granted','ad_personalization':'granted','analytics_storage':'granted'})}else if(vlcs&&vlcs.consent==='declined'){gtag('consent','update',{'ad_storage':'denied','ad_user_data':'denied','ad_personalization':'denied','analytics_storage':'denied'})}}catch(e){}
+gtag('set','ads_data_redaction',true);
+</script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PB0XMF4GEH"></script>
+<script>gtag('js',new Date());gtag('config','G-PB0XMF4GEH');</script>
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-KRP5LLPR');</script>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0"><title>API Usage — VigyanLLM Developer</title><link rel="stylesheet" href="/design-tokens.css"><link rel="stylesheet" href="/tools.css"><meta name="theme-color" content="#0F172A"><meta property="og:site_name" content="VigyanLLM"><meta name="robots" content="index, follow"><meta name="author" content="VigyanLLM Private Limited"><meta name="description" content="Monitor your VigyanLLM API usage, latency, and error rates."><link rel="canonical" href="https://www.vigyanllm.in/developer/usage"><meta property="og:type" content="website"><meta property="og:url" content="https://www.vigyanllm.in/developer/usage"><meta property="og:title" content="API Usage — VigyanLLM Developer"><meta property="og:image" content="https://www.vigyanllm.in/poster.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta name="twitter:card" content="summary_large_image">
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://accounts.google.com/gsi/client?hl=en" async defer></script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://www.vigyanllm.in"},{"@type":"ListItem","position":2,"name":"Developer","item":"https://www.vigyanllm.in/developer"},{"@type":"ListItem","position":3,"name":"Usage","item":"https://www.vigyanllm.in/developer/usage"}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebPage","name":"API Usage — VigyanLLM Developer","url":"https://www.vigyanllm.in/developer/usage"}</script>
+<script src="/cookie-banner.js" defer></script>
+<style>
+.dev-page{max-width:1000px;margin:0 auto;padding:40px 24px}
+.dev-page h1{font-family:var(--font-h,'Montserrat',sans-serif);font-size:clamp(1.6rem,3vw,2rem);font-weight:700;margin-bottom:6px}
+.dev-page .sub{color:#64748B;font-size:15px;margin-bottom:28px}
+.dev-nav{display:flex;gap:8px;margin-bottom:28px;flex-wrap:wrap}
+.dev-nav a{padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;text-decoration:none;color:#64748B;background:#F1F5F9;transition:all .15s}
+.dev-nav a.active{background:#2563EB;color:#fff}.dev-nav a:hover:not(.active){background:#E2E8F0}
+.auth-gate{text-align:center;padding:60px 24px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px}
+.auth-gate h2{font-size:18px;margin-bottom:8px}.auth-gate p{color:#64748B;margin-bottom:20px;font-size:14px}
+.btn-primary{background:#2563EB;color:#fff;border:none;padding:10px 20px;border-radius:8px;font-weight:600;font-size:13px;cursor:pointer}.btn-primary:hover{background:#1D4ED8}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:28px}
+.stat-card{background:#fff;border:1px solid #E2E8F0;border-radius:8px;padding:20px}
+.stat-card .label{font-size:12px;color:#64748B;text-transform:uppercase;letter-spacing:.04em;font-weight:600;margin-bottom:4px}
+.stat-card .value{font-size:28px;font-weight:800;font-family:var(--font-h,'Montserrat',sans-serif)}
+.stat-card .sub{font-size:12px;color:#94A3B8;margin-top:2px}
+.range-selector{display:flex;gap:8px;margin-bottom:20px}
+.range-btn{padding:6px 14px;border-radius:6px;font-size:12px;font-weight:600;border:1px solid #E2E8F0;background:#fff;color:#64748B;cursor:pointer}
+.range-btn.active{background:#2563EB;color:#fff;border-color:#2563EB}
+.chart-section{background:#fff;border:1px solid #E2E8F0;border-radius:8px;padding:20px;margin-bottom:20px}
+.chart-section h3{font-size:14px;font-weight:700;margin-bottom:16px}
+.bar-chart{display:flex;align-items:flex-end;gap:4px;height:120px;padding:0 4px}
+.bar{background:#2563EB;border-radius:3px 3px 0 0;min-width:8px;flex:1;transition:height .3s;position:relative}
+.bar:hover{background:#1D4ED8}
+.bar:hover::after{content:attr(data-val);position:absolute;top:-20px;left:50%;transform:translateX(-50%);background:#0F172A;color:#fff;padding:2px 6px;border-radius:4px;font-size:10px;white-space:nowrap}
+.bar-labels{display:flex;gap:4px;padding:4px;font-size:9px;color:#94A3B8}
+.bar-labels span{flex:1;text-align:center;overflow:hidden}
+table.endpoint-table{width:100%;border-collapse:collapse;font-size:13px}
+.endpoint-table th{text-align:left;padding:8px 12px;font-weight:600;color:#64748B;background:#F8FAFC;border-bottom:2px solid #E2E8F0;font-size:12px}
+.endpoint-table td{padding:8px 12px;border-bottom:1px solid #F1F5F9}
+.endpoint-table tr:hover td{background:#F8FAFC}
+.pct-bar{height:6px;background:#F1F5F9;border-radius:3px;overflow:hidden;min-width:80px}
+.pct-fill{height:100%;background:#2563EB;border-radius:3px}
+</style>
+</head><body>
+<div id="vl-header"></div>
+<a href="#main-content" class="skip-link">Skip to content</a>
+<main id="main-content">
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-KRP5LLPR" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<div class="dashboard-wrap">
+<div class="dev-page">
+  <nav class="breadcrumbs" style="font-size:13px;color:#64748B;margin-bottom:16px"><a href="/" style="color:#1565C0;text-decoration:none">Home</a> <span style="margin:0 6px">›</span> <a href="/developer" style="color:#1565C0;text-decoration:none">Developer</a> <span style="margin:0 6px">›</span> <span>Usage</span></nav>
+  <div class="dev-nav">
+    <a href="/developer">Overview</a>
+    <a href="/developer/docs">Docs</a>
+    <a href="/developer/keys">API Keys</a>
+    <a href="/developer/playground">Playground</a>
+    <a href="/developer/webhooks">Webhooks</a>
+    <a href="/developer/usage" class="active">Usage</a>
+  </div>
+
+  <div id="auth-gate" class="auth-gate" style="display:none">
+    <h2>API Usage Dashboard</h2>
+    <p>Sign in to view your API usage, latency, and error rate metrics.</p>
+    <button class="btn-primary" onclick="openAuthModal()">Sign in</button>
+  </div>
+
+  <div id="usage-content" style="display:none">
+    <h1>API Usage</h1>
+    <p class="sub">Monitor your API consumption across all endpoints.</p>
+
+    <div class="range-selector">
+      <button class="range-btn active" data-days="7" onclick="setRange(7,this)">Last 7 days</button>
+      <button class="range-btn" data-days="30" onclick="setRange(30,this)">Last 30 days</button>
+      <button class="range-btn" data-days="90" onclick="setRange(90,this)">Last 90 days</button>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card"><div class="label">Total Calls</div><div class="value" id="stat-total">—</div><div class="sub">in selected period</div></div>
+      <div class="stat-card"><div class="label">Avg Latency</div><div class="value" id="stat-latency">—</div><div class="sub">milliseconds</div></div>
+      <div class="stat-card"><div class="label">Error Rate</div><div class="value" id="stat-errors">—</div><div class="sub">of total requests</div></div>
+      <div class="stat-card"><div class="label">Active Keys</div><div class="value" id="stat-keys">—</div><div class="sub">currently active</div></div>
+    </div>
+
+    <div class="chart-section">
+      <h3>Daily API Calls</h3>
+      <div class="bar-chart" id="daily-chart"></div>
+      <div class="bar-labels" id="daily-labels"></div>
+    </div>
+
+    <div class="chart-section">
+      <h3>Top Endpoints</h3>
+      <table class="endpoint-table">
+        <thead><tr><th>Endpoint</th><th>Calls</th><th>% of Total</th><th>Avg Latency</th></tr></thead>
+        <tbody id="endpoints-tbody"><tr><td colspan="4" style="text-align:center;padding:20px;color:#94A3B8">Loading...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+</div>
+<script defer src="/search-index.js"></script>
+<script defer src="/auth-shared.js"></script>
+<script>
+(function(){
+var user=null;var days=7;
+function checkAuth(){var pu=localStorage.getItem('pf_user');if(pu){user=JSON.parse(pu);document.getElementById('auth-gate').style.display='none';document.getElementById('usage-content').style.display='block';loadUsage()}else{document.getElementById('auth-gate').style.display='block';document.getElementById('usage-content').style.display='none'}}
+function setRange(d,btn){days=d;document.querySelectorAll('.range-btn').forEach(function(b){b.classList.remove('active')});btn.classList.add('active');loadUsage()}
+function loadUsage(){
+fetch('/api/developer/usage?days='+days,{credentials:'same-origin'}).then(function(r){return r.json()}).then(function(d){
+document.getElementById('stat-total').textContent=(d.total_calls||0).toLocaleString();
+document.getElementById('stat-latency').textContent=d.avg_latency?d.avg_latency+'ms':'—';
+document.getElementById('stat-errors').textContent=d.error_rate?(d.error_rate+'%'):'—';
+document.getElementById('stat-keys').textContent=d.active_keys||'—';
+renderChart(d.daily||[]);
+renderEndpoints(d.endpoints||[])}).catch(function(){
+document.getElementById('stat-total').textContent='0';
+renderChart([]);renderEndpoints([])})}
+function renderChart(daily){
+var chart=document.getElementById('daily-chart');var labels=document.getElementById('daily-labels');
+if(!daily.length){chart.innerHTML='<div style="color:#94A3B8;font-size:13px;width:100%;text-align:center;padding:40px 0">No data for this period</div>';labels.innerHTML='';return}
+var max=Math.max.apply(null,daily.map(function(d){return d.calls||0}));if(max===0)max=1;
+chart.innerHTML=daily.map(function(d){var h=Math.max(4,((d.calls||0)/max)*100);return '<div class="bar" style="height:'+h+'%" data-val="'+d.calls+' calls"></div>'}).join('');
+labels.innerHTML=daily.map(function(d){return '<span>'+d.date.slice(5)+'</span>'}).join('')}
+function renderEndpoints(eps){
+var tb=document.getElementById('endpoints-tbody');
+if(!eps.length){tb.innerHTML='<tr><td colspan="4" style="text-align:center;padding:20px;color:#94A3B8">No endpoint data</td></tr>';return}
+var max=Math.max.apply(null,eps.map(function(e){return e.calls||0}));
+tb.innerHTML=eps.map(function(e){
+var pct=max?Math.round((e.calls/max)*100):0;
+return '<tr><td style="font-family:monospace;font-size:12px">'+e.endpoint+'</td><td>'+(e.calls||0).toLocaleString()+'</td><td><div class="pct-bar"><div class="pct-fill" style="width:'+pct+'%"></div></div></td><td>'+(e.avg_latency||'—')+'ms</td></tr>'
+}).join('')}
+window.setRange=setRange;checkAuth();
+})();
+</script>
+</body></html>

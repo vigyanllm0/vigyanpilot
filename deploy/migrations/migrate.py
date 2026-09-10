@@ -83,7 +83,11 @@ def split_sql(sql: str):
     return stmts
 
 
-def apply_file(version, name, sql):
+def apply_file(version, name, sql, dry_run=False):
+    if dry_run:
+        stmts = split_sql(sql)
+        print(f"  ✓ {version:04d}-{name} ({len(stmts)} statements — dry run, skipped)")
+        return
     for i, stmt in enumerate(split_sql(sql)):
         try:
             cur.execute(stmt)
@@ -98,8 +102,12 @@ def apply_file(version, name, sql):
 
 
 def main():
+    dry_run = "--dry-run" in sys.argv
+
     p = urllib.parse.urlparse(DATABASE_URL)
     print("VigyanLLM Migration Runner")
+    if dry_run:
+        print("  MODE: DRY RUN (no changes will be applied)")
     print(f"  Host: {p.hostname}:{p.port}")
     print(f"  DB:   {p.path.lstrip('/')}")
 
@@ -141,13 +149,14 @@ def main():
         with open(fpath) as f:
             sql = f.read()
         print(f"  → Applying {fname} ...", end=" ")
-        apply_file(version, fname.replace(".sql", ""), sql)
+        apply_file(version, fname.replace(".sql", ""), sql, dry_run=dry_run)
         pending += 1
 
     if pending == 0:
         print("  Schema up to date.")
     else:
-        print(f"\n  Applied {pending} migration(s).")
+        action = "would apply" if dry_run else "Applied"
+        print(f"\n  {action} {pending} migration(s).")
 
     cur.close()
     conn.close()

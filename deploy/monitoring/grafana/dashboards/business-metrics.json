@@ -1,0 +1,180 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "type": "stat",
+      "title": "Signups Today",
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": { "steps": [ { "color": "green", "value": null }, { "color": "yellow", "value": 10 }, { "color": "red", "value": 50 } ] }
+        }
+      },
+      "targets": [
+        { "expr": "sum(increase(vigyanllm_registrations_total[24h]))", "legendFormat": "Signups", "refId": "A" }
+      ],
+      "options": { "colorMode": "background", "graphMode": "area", "justifyMode": "auto", "textMode": "auto", "reduceOptions": { "calcs": ["lastNotNull"] } }
+    },
+    {
+      "type": "stat",
+      "title": "Active Users",
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": { "steps": [ { "color": "green", "value": null }, { "color": "yellow", "value": 50 }, { "color": "red", "value": 100 } ] }
+        }
+      },
+      "targets": [
+        { "expr": "vigyanllm_active_users", "legendFormat": "Active Users", "refId": "A" }
+      ],
+      "options": { "colorMode": "background", "graphMode": "area", "justifyMode": "auto", "textMode": "auto", "reduceOptions": { "calcs": ["lastNotNull"] } }
+    },
+    {
+      "type": "stat",
+      "title": "Tool Runs Today",
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": { "steps": [ { "color": "blue", "value": null } ] }
+        }
+      },
+      "targets": [
+        { "expr": "sum(increase(vigyanllm_tool_runs_total[24h]))", "legendFormat": "Tool Runs", "refId": "A" }
+      ],
+      "options": { "colorMode": "background", "graphMode": "area", "justifyMode": "auto", "textMode": "auto", "reduceOptions": { "calcs": ["lastNotNull"] } }
+    },
+    {
+      "type": "stat",
+      "title": "Active API Keys",
+      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": { "steps": [ { "color": "purple", "value": null } ] }
+        }
+      },
+      "targets": [
+        { "expr": "vigyanllm_active_api_keys", "legendFormat": "API Keys", "refId": "A" }
+      ],
+      "options": { "colorMode": "background", "graphMode": "area", "justifyMode": "auto", "textMode": "auto", "reduceOptions": { "calcs": ["lastNotNull"] } }
+    },
+    {
+      "type": "timeseries",
+      "title": "Signups Over Time",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 4 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "fieldConfig": {
+        "defaults": { "unit": "short", "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 15, "gradientMode": "scheme" } }
+      },
+      "targets": [
+        { "expr": "sum(increase(vigyanllm_registrations_total[1h])) by (method)", "legendFormat": "{{method}}", "refId": "A" }
+      ],
+      "options": { "tooltip": { "mode": "multi" }, "legend": { "displayMode": "list", "placement": "bottom" } }
+    },
+    {
+      "type": "timeseries",
+      "title": "Tool Usage Over Time",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 4 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "fieldConfig": {
+        "defaults": { "unit": "short", "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 15 } }
+      },
+      "targets": [
+        { "expr": "sum(increase(vigyanllm_tool_runs_total[1h])) by (tool)", "legendFormat": "{{tool}}", "refId": "A" }
+      ],
+      "options": { "tooltip": { "mode": "multi" }, "legend": { "displayMode": "list", "placement": "bottom" } }
+    },
+    {
+      "type": "piechart",
+      "title": "Tool Usage by Type",
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 12 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "fieldConfig": { "defaults": {} },
+      "targets": [
+        { "expr": "sum(increase(vigyanllm_tool_runs_total[24h])) by (tool)", "legendFormat": "{{tool}}", "refId": "A" }
+      ],
+      "options": { "legend": { "displayMode": "table", "placement": "right" }, "pieType": "donut" }
+    },
+    {
+      "type": "bargauge",
+      "title": "Conversion Funnel",
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 12 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "fieldConfig": {
+        "defaults": { "unit": "short" }
+      },
+      "targets": [
+        { "expr": "sum(increase(http_requests_total{endpoint=\"/\"}[24h]))", "legendFormat": "Page Visits", "refId": "A" },
+        { "expr": "sum(increase(vigyanllm_tool_runs_total[24h]))", "legendFormat": "Tool Runs", "refId": "B" },
+        { "expr": "sum(increase(vigyanllm_registrations_total[24h]))", "legendFormat": "Registrations", "refId": "C" },
+        { "expr": "sum(increase(vigyanllm_payments_total{event=\"success\"}[24h]))", "legendFormat": "Payments", "refId": "D" }
+      ],
+      "options": { "orientation": "horizontal", "displayMode": "gradient", "reduceOptions": { "calcs": ["lastNotNull"] } }
+    },
+    {
+      "type": "gauge",
+      "title": "Payment Success Rate",
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 12 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "min": 0,
+          "max": 1,
+          "thresholds": { "steps": [ { "color": "red", "value": null }, { "color": "yellow", "value": 0.9 }, { "color": "green", "value": 0.95 } ] }
+        }
+      },
+      "targets": [
+        { "expr": "sum(rate(vigyanllm_payments_total{event=\"success\"}[1h])) / (sum(rate(vigyanllm_payments_total{event=\"success\"}[1h])) + sum(rate(vigyanllm_payments_total{event=\"failure\"}[1h])))", "legendFormat": "Success Rate", "refId": "A" }
+      ],
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "showThresholdLabels": false, "showThresholdMarkers": true }
+    },
+    {
+      "type": "timeseries",
+      "title": "Revenue Over Time",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 20 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "fieldConfig": {
+        "defaults": { "unit": "short", "custom": { "drawStyle": "bars", "lineWidth": 1, "fillOpacity": 60, "stacking": { "mode": "normal" } } }
+      },
+      "targets": [
+        { "expr": "sum(increase(vigyanllm_payments_total{event=\"success\"}[1h])) by (plan)", "legendFormat": "{{plan}}", "refId": "A" }
+      ],
+      "options": { "tooltip": { "mode": "multi" }, "legend": { "displayMode": "list", "placement": "bottom" } }
+    },
+    {
+      "type": "timeseries",
+      "title": "Pipeline Runs Over Time",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 20 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "fieldConfig": {
+        "defaults": { "unit": "short", "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 10 } }
+      },
+      "targets": [
+        { "expr": "sum(increase(vigyanllm_pipeline_step_seconds_count[1h])) by (step)", "legendFormat": "{{step}}", "refId": "A" }
+      ],
+      "options": { "tooltip": { "mode": "multi" }, "legend": { "displayMode": "list", "placement": "bottom" } }
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": ["vigyanllm", "business"],
+  "templating": { "list": [] },
+  "time": { "from": "now-24h", "to": "now" },
+  "timepicker": {},
+  "timezone": "utc",
+  "title": "VigyanLLM Business Metrics",
+  "uid": "vigyanllm-business",
+  "version": 1,
+  "weekStart": "monday"
+}

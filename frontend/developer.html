@@ -1,0 +1,147 @@
+<!DOCTYPE html><html lang="en"><head>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('consent', 'default', {
+'ad_storage': 'denied',
+'ad_user_data': 'denied',
+'ad_personalization': 'denied',
+'analytics_storage': 'denied',
+'region': ['AT','BE','BG','HR','CY','CZ','DK','EE','FI','FR','DE','GR','HU','IE','IT','LV','LT','LU','MT','NL','PL','PT','RO','SK','SI','ES','SE','IS','LI','NO','GB','CH']
+});
+try {
+var vlcs = JSON.parse(localStorage.getItem('vigyanllm_cookie_consent') || 'null');
+if (vlcs && vlcs.consent === 'accepted') {
+gtag('consent', 'update', { 'ad_storage': 'granted', 'ad_user_data': 'granted', 'ad_personalization': 'granted', 'analytics_storage': 'granted' });
+} else if (vlcs && vlcs.consent === 'declined') {
+gtag('consent', 'update', { 'ad_storage': 'denied', 'ad_user_data': 'denied', 'ad_personalization': 'denied', 'analytics_storage': 'denied' });
+}
+} catch (e) {}
+gtag('set', 'ads_data_redaction', true);
+</script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PB0XMF4GEH"></script>
+<script>gtag('js', new Date());gtag('config', 'G-PB0XMF4GEH');</script>
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-KRP5LLPR');</script>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0"><title>Developer API — VigyanLLM</title><link rel="stylesheet" href="/design-tokens.css"><link rel="stylesheet" href="/tools.css"><meta name="theme-color" content="#0F172A"><meta property="og:site_name" content="VigyanLLM"><meta name="robots" content="index, follow"><meta name="author" content="VigyanLLM Private Limited"><meta name="description" content="Build with VigyanLLM's bioinformatics API. Design primers, run BLAST, align sequences — all programmatically."><link rel="canonical" href="https://www.vigyanllm.in/developer"><link rel="alternate" hreflang="en" href="https://www.vigyanllm.in/developer"><link rel="alternate" hreflang="en-IN" href="https://www.vigyanllm.in/developer"><link rel="alternate" hreflang="x-default" href="https://www.vigyanllm.in/developer"><meta property="og:type" content="website"><meta property="og:url" content="https://www.vigyanllm.in/developer"><meta property="og:title" content="Developer API — VigyanLLM"><meta property="og:description" content="Build with VigyanLLM's bioinformatics API. Design primers, run BLAST, align sequences — all programmatically."><meta property="og:image" content="https://www.vigyanllm.in/poster.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="Developer API — VigyanLLM"><meta name="twitter:description" content="Build with VigyanLLM's bioinformatics API. Design primers, run BLAST, align sequences — all programmatically."><meta name="twitter:image" content="https://www.vigyanllm.in/poster.png">
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://accounts.google.com/gsi/client?hl=en" async defer></script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://www.vigyanllm.in"},{"@type":"ListItem","position":2,"name":"Developer API","item":"https://www.vigyanllm.in/developer"}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebPage","name":"Developer API — VigyanLLM","description":"Build with VigyanLLM's bioinformatics API. Design primers, run BLAST, align sequences — all programmatically.","url":"https://www.vigyanllm.in/developer","publisher":{"@type":"Organization","name":"VigyanLLM Private Limited","logo":{"@type":"ImageObject","url":"https://www.vigyanllm.in/logo.png"}}}</script>
+<script src="/cookie-banner.js" defer></script>
+<style>
+.dev-hero{background:linear-gradient(135deg,#0F172A 0%,#1E293B 100%);color:#fff;padding:80px 24px 60px;text-align:center}
+.dev-hero h1{font-family:var(--font-h,'Montserrat',sans-serif);font-size:clamp(2rem,4vw,2.8rem);font-weight:800;margin-bottom:12px}
+.dev-hero p{font-size:16px;color:#94A3B8;max-width:600px;margin:0 auto 28px;line-height:1.7}
+.dev-hero .cta-row{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:32px}
+.dev-hero .btn-hero{display:inline-block;padding:12px 28px;border-radius:var(--r-md,8px);font-weight:700;font-size:14px;text-decoration:none;transition:all .15s}
+.dev-hero .btn-primary{background:#2563EB;color:#fff;border:2px solid #2563EB}.dev-hero .btn-primary:hover{background:#1D4ED8;border-color:#1D4ED8}
+.dev-hero .btn-outline{background:transparent;color:#fff;border:2px solid rgba(255,255,255,.25)}.dev-hero .btn-outline:hover{border-color:#fff}
+.code-block{background:#1E293B;border:1px solid #334155;border-radius:var(--r-md,8px);max-width:640px;margin:0 auto;text-align:left;overflow:hidden}
+.code-block .code-header{display:flex;align-items:center;gap:8px;padding:10px 16px;background:#0F172A;border-bottom:1px solid #334155}
+.code-block .dot{width:10px;height:10px;border-radius:50%;background:#EF4444}.code-block .dot:nth-child(2){background:#F59E0B}.code-block .dot:nth-child(3){background:#22C55E}
+.code-block pre{padding:16px;font-family:'SF Mono',Menlo,monospace;font-size:13px;color:#E2E8F0;overflow-x:auto;line-height:1.6;margin:0}
+.code-block .kw{color:#C084FC}.code-block .str{color:#34D399}.code-block .cmt{color:#64748B}
+.dev-section{max-width:1100px;margin:0 auto;padding:64px 24px}
+.dev-section h2{font-family:var(--font-h,'Montserrat',sans-serif);font-size:clamp(1.4rem,3vw,1.8rem);font-weight:700;margin-bottom:8px;color:#0F172A}
+.dev-section .sub{color:#64748B;font-size:15px;margin-bottom:32px}
+.feature-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px}
+.feature-card{background:#fff;border:1px solid #E2E8F0;border-radius:var(--r-md,8px);padding:28px;transition:box-shadow .2s}.feature-card:hover{box-shadow:0 4px 20px rgba(0,0,0,.06)}
+.feature-card .icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:14px;font-size:20px}
+.feature-card h3{font-family:var(--font-h,'Montserrat',sans-serif);font-size:16px;font-weight:700;margin-bottom:6px}
+.feature-card p{color:#64748B;font-size:14px;line-height:1.6}
+.feature-card a{color:#2563EB;text-decoration:none;font-weight:600;font-size:13px}.feature-card a:hover{text-decoration:underline}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px;margin-top:32px}
+.step{display:flex;gap:16px;align-items:flex-start}
+.step-num{width:36px;height:36px;min-width:36px;border-radius:50%;background:#EFF6FF;color:#2563EB;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px}
+.step h4{font-size:15px;font-weight:700;margin-bottom:4px}.step p{font-size:13px;color:#64748B;line-height:1.6}
+.pricing-note{background:#F8FAFC;border:1px solid #E2E8F0;border-radius:var(--r-md,8px);padding:24px;margin-top:32px}
+.pricing-note h3{font-size:15px;font-weight:700;margin-bottom:8px}
+.pricing-note table{width:100%;border-collapse:collapse;font-size:13px}
+.pricing-note th,.pricing-note td{padding:8px 12px;text-align:left;border-bottom:1px solid #E2E8F0}
+.pricing-note th{font-weight:600;color:#0F172A;background:#F1F5F9}
+</style>
+</head><body>
+<div id="vl-header"></div>
+<a href="#main-content" class="skip-link">Skip to content</a>
+<main id="main-content">
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-KRP5LLPR" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<div class="dashboard-wrap">
+<div class="dev-hero">
+  <div style="max-width:800px;margin:0 auto">
+    <div style="display:inline-block;background:rgba(37,99,235,.15);color:#60A5FA;padding:6px 16px;border-radius:20px;font-size:12px;font-weight:600;margin-bottom:20px;border:1px solid rgba(37,99,235,.2)">API v1 · REST · JSON</div>
+    <h1>Build with VigyanLLM API</h1>
+    <p>Integrate automated primer design, BLAST search, and multiple sequence alignment directly into your lab workflows and bioinformatics pipelines.</p>
+    <div class="cta-row">
+      <a href="/developer/docs" class="btn-hero btn-primary">Read the Docs</a>
+      <a href="/developer/playground" class="btn-hero btn-outline">Try the Playground</a>
+    </div>
+    <div class="code-block">
+      <div class="code-header"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="color:#64748B;font-size:12px;margin-left:8px">terminal</span></div>
+      <pre><span class="cmt"># Design primers with a single API call</span>
+<span class="kw">curl</span> -X POST https://www.vigyanllm.in/api/v1/primer/design \
+  -H <span class="str">"Authorization: Bearer YOUR_API_KEY"</span> \
+  -H <span class="str">"Content-Type: application/json"</span> \
+  -d <span class="str">'{"sequence": "ATGCGATCGATCG...", "organism": "human"}'</span></pre>
+    </div>
+  </div>
+</div>
+
+<div class="dev-section">
+  <h2>Everything You Need</h2>
+  <p class="sub">Four surfaces to build, test, and monitor your integrations.</p>
+  <div class="feature-grid">
+    <div class="feature-card">
+      <div class="icon" style="background:#EFF6FF;color:#2563EB"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></div>
+      <h3>Documentation</h3>
+      <p>Full API reference with request/response examples, authentication guide, and SDKs for Python and R.</p>
+      <a href="/developer/docs">Read the docs →</a>
+    </div>
+    <div class="feature-card">
+      <div class="icon" style="background:#FEF3C7;color:#D97706"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+      <h3>API Keys</h3>
+      <p>Generate and manage API keys with scoped permissions. Rotate keys and set rate limits per key.</p>
+      <a href="/developer/keys">Manage keys →</a>
+    </div>
+    <div class="feature-card">
+      <div class="icon" style="background:#ECFDF5;color:#059669"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></div>
+      <h3>Playground</h3>
+      <p>Test API endpoints live in your browser. No setup required — authenticate and send requests instantly.</p>
+      <a href="/developer/playground">Open playground →</a>
+    </div>
+    <div class="feature-card">
+      <div class="icon" style="background:#FEE2E2;color:#DC2626"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
+      <h3>Webhooks</h3>
+      <p>Get notified when async jobs complete. Subscribe to primer, BLAST, and payment events.</p>
+      <a href="/developer/webhooks">Configure webhooks →</a>
+    </div>
+  </div>
+</div>
+
+<div class="dev-section" style="border-top:1px solid #E2E8F0">
+  <h2>Getting Started in 3 Steps</h2>
+  <p class="sub">Go from zero to your first API call in under 5 minutes.</p>
+  <div class="steps">
+    <div class="step"><div class="step-num">1</div><div><h4>Generate an API Key</h4><p>Sign in and create a key from the Developer Dashboard. Choose which tools your key can access.</p></div></div>
+    <div class="step"><div class="step-num">2</div><div><h4>Make Your First Request</h4><p>Use the playground or curl to send a primer design request. Pass your key in the Authorization header.</p></div></div>
+    <div class="step"><div class="step-num">3</div><div><h4>Explore the Docs</h4><p>Dive into endpoint references, error codes, webhook events, and rate limit details for your plan.</p></div></div>
+  </div>
+</div>
+
+<div class="dev-section" style="border-top:1px solid #E2E8F0">
+  <div class="pricing-note">
+    <h3>API Access by Plan</h3>
+    <table>
+      <tr><th>Plan</th><th>Calls / Month</th><th>Rate Limit</th><th>Endpoints</th></tr>
+      <tr><td>Free</td><td>No API access</td><td>—</td><td>Web UI only</td></tr>
+      <tr><td>Pro (₹699/mo)</td><td>1,000</td><td>30 req/min</td><td>All endpoints</td></tr>
+      <tr><td>Lab (₹1,999/mo)</td><td>10,000</td><td>120 req/min</td><td>All endpoints + webhooks</td></tr>
+    </table>
+  </div>
+</div>
+</div>
+<div class="auth-overlay" id="auth-overlay"><div class="auth-card"><div class="auth-title" id="auth-modal-title">Log in to VigyanLLM</div><div class="auth-sub" id="auth-modal-sub">Sign in to access the Developer Dashboard</div><div id="auth-form-area"><div class="form-group" id="auth-name-group" style="display:none"><label class="form-label">Full Name</label><input type="text" id="auth-name" class="form-input" placeholder="Dr. Hemant Sharma"></div><div class="form-group"><label class="form-label">Email</label><input type="email" id="auth-email" class="form-input" placeholder="researcher@lab.edu"></div><div class="form-group"><label class="form-label">Password</label><input type="password" id="auth-password" class="form-input" placeholder="Min 8: upper, lower, digit, special"></div><div class="form-group"><label class="tc-checkbox"><input type="checkbox" id="auth-tc"> I agree to the <a href="/terms" target="_blank" rel="noopener">Terms</a> and <a href="/privacy" target="_blank" rel="noopener">Privacy Policy</a></label></div><button type="button" class="btn-primary" id="auth-submit-btn" style="margin-top:8px">Log in</button><div class="auth-error" id="auth-error"></div><div class="auth-toggle" id="auth-toggle">Don't have an account? Register</div><div style="margin-top:16px;text-align:center"><div style="display:flex;align-items:center;gap:12px;margin:12px 0"><div style="flex:1;height:1px;background:var(--slate-border)"></div><span style="font-size:var(--fs-xs);color:var(--muted)">OR</span><div style="flex:1;height:1px;background:var(--slate-border)"></div></div><div id="google-signin-btn" style="display:flex;align-items:center;justify-content:center;gap:10px;border:1.5px solid var(--slate-border);border-radius:var(--r-md);padding:10px 20px;cursor:pointer;transition:all 0.15s;background:transparent" onmouseover="this.style.borderColor='#4285f4'" onmouseout="this.style.borderColor='var(--slate-border)'"><svg width="18" height="18" viewBox="0 0 48 48"><path fill="#4285F4" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#34A853" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#EA4335" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg><span style="font-size:14px;font-weight:500;color:#333">Sign in with Google</span></div></div><div style="margin-top:12px;font-size:var(--fs-xs);color:var(--muted);text-align:center">Create a free account to access the Developer Dashboard.</div></div></div></div>
+</main>
+<script defer src="/search-index.js"></script>
+<script defer src="/auth-shared.js"></script>
+<script defer src="/feature-gate.js"></script>
+</body></html>

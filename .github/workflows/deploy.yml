@@ -7,6 +7,10 @@ on:
       - "frontend/**"
       - "**.md"
 
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
+
 jobs:
   quality:
     name: Lint & Test
@@ -20,14 +24,14 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.10"
+          python-version: "3.11"
 
       - name: Install tools
         run: |
-          pip install ruff mypy bandit safety pytest --quiet
+          pip install ruff mypy bandit safety pytest pytest-cov --quiet
 
       - name: Run ruff linter
-        run: ruff check primerforge/ backend/ --output-format=github || true
+        run: ruff check primerforge/ backend/ --output-format=github
 
       - name: Python syntax check
         run: |
@@ -37,15 +41,29 @@ jobs:
 
       - name: Security scan with bandit
         run: |
-          bandit -r primerforge/ backend/ -ll -q || true
+          bandit -r primerforge/ backend/ -f json -o bandit-report.json -q
+          bandit -r primerforge/ backend/ -ll -q
+          HIGH_COUNT=$(python3 -c "import json,sys; d=json.load(open('bandit-report.json')); print(len([r for r in d.get('results',[]) if r.get('issue_severity') in ('HIGH','CRITICAL')]))")
+          if [ "$HIGH_COUNT" -gt 0 ]; then
+            echo "::error::Found $HIGH_COUNT HIGH/CRITICAL bandit findings — review bandit-report.json"
+            exit 1
+          fi
 
       - name: Check dependency vulnerabilities
         run: |
-          safety check --full-report || true
+          safety check --full-report
 
-      - name: Run pytest
+      - name: Run pytest with coverage
         run: |
-          python3 -m pytest tests/ -x -q --timeout=30 --ignore=tests/test_frontend.py || true
+          python3 -m pytest tests/ -x -q --timeout=30 --ignore=tests/test_frontend.py \
+            --cov=primerforge --cov-report=xml --cov-fail-under=70
+
+      - name: Upload coverage artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage.xml
 
   deploy:
     name: Deploy to EC2
@@ -64,6 +82,15 @@ jobs:
 
       - name: Add EC2 host key
         run: ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Migration dry-run
+        run: |
+          ssh ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'ENDSSH'
+            set -e
+            cd ~/vigyanpilot
+            source .venv/bin/activate 2>/dev/null || true
+            python deploy/migrations/migrate.py --dry-run
+          ENDSSH
 
       - name: Deploy to EC2
         run: |
@@ -169,7 +196,7 @@ jobs:
 
             # Verify
             sleep 4
-            curl -sf http://localhost:5000/health && echo " OK" || echo " FAIL"
+            curl -sf http://localhost:11436/health && echo " OK" || echo " FAIL"
           ENDSSH
 
       - name: Health check via Vercel proxy
@@ -178,3 +205,16 @@ jobs:
           curl -sf https://vigyanllm.in/health || { echo " — Vercel proxy FAIL"; exit 1; }
           curl -sf https://vigyanllm.in/api/config/public || { echo " — API config FAIL"; exit 1; }
           echo " — All endpoints OK"
+
+      - name: Deploy notification
+        if: always()
+        run: |
+          if [ "${{ job.status }}" = "success" ]; then
+            MSG="✅ Deploy succeeded for ${{ github.repository }}@${{ github.sha }}"
+          else
+            MSG="❌ Deploy FAILED for ${{ github.repository }}@${{ github.sha }} — ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          fi
+          # Set SLACK_WEBHOOK_URL in GitHub Secrets
+          curl -sf -X POST -H 'Content-type: application/json' \
+            --data "{\"text\":\"$MSG\"}" \
+            "${{ secrets.SLACK_WEBHOOK_URL }}" || echo "Slack notification skipped (webhook not configured)"

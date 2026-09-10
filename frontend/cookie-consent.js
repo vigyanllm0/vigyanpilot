@@ -1,5 +1,10 @@
 /**
  * VigyanLLM DPDP Cookie Consent Banner
+ * =====================================================
+ * LEGACY FILE — superseded by cookie-banner.js.
+ * This script is no longer loaded by any HTML page.
+ * Kept for reference only; do not use in new code.
+ * =====================================================
  * ====================================
  * DPDP Act 2023 compliance requires explicit consent before tracking scripts
  * (e.g., Google Tag Manager, Analytics) can be executed.

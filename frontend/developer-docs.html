@@ -1,0 +1,233 @@
+<!DOCTYPE html><html lang="en"><head>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('consent', 'default', {'ad_storage':'denied','ad_user_data':'denied','ad_personalization':'denied','analytics_storage':'denied','region':['AT','BE','BG','HR','CY','CZ','DK','EE','FI','FR','DE','GR','HU','IE','IT','LV','LT','LU','MT','NL','PL','PT','RO','SK','SI','ES','SE','IS','LI','NO','GB','CH']});
+try{var vlcs=JSON.parse(localStorage.getItem('vigyanllm_cookie_consent')||'null');if(vlcs&&vlcs.consent==='accepted'){gtag('consent','update',{'ad_storage':'granted','ad_user_data':'granted','ad_personalization':'granted','analytics_storage':'granted'})}else if(vlcs&&vlcs.consent==='declined'){gtag('consent','update',{'ad_storage':'denied','ad_user_data':'denied','ad_personalization':'denied','analytics_storage':'denied'})}}catch(e){}
+gtag('set','ads_data_redaction',true);
+</script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PB0XMF4GEH"></script>
+<script>gtag('js',new Date());gtag('config','G-PB0XMF4GEH');</script>
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-KRP5LLPR');</script>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0"><title>API Documentation — VigyanLLM Developer</title><link rel="stylesheet" href="/design-tokens.css"><link rel="stylesheet" href="/tools.css"><meta name="theme-color" content="#0F172A"><meta property="og:site_name" content="VigyanLLM"><meta name="robots" content="index, follow"><meta name="author" content="VigyanLLM Private Limited"><meta name="description" content="VigyanLLM API documentation. Authentication, endpoints, rate limits, error codes, and webhooks."><link rel="canonical" href="https://www.vigyanllm.in/developer/docs"><meta property="og:type" content="website"><meta property="og:url" content="https://www.vigyanllm.in/developer/docs"><meta property="og:title" content="API Documentation — VigyanLLM Developer"><meta property="og:description" content="VigyanLLM API documentation."><meta property="og:image" content="https://www.vigyanllm.in/poster.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta name="twitter:card" content="summary_large_image">
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://accounts.google.com/gsi/client?hl=en" async defer></script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://www.vigyanllm.in"},{"@type":"ListItem","position":2,"name":"Developer","item":"https://www.vigyanllm.in/developer"},{"@type":"ListItem","position":3,"name":"Documentation","item":"https://www.vigyanllm.in/developer/docs"}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebPage","name":"API Documentation — VigyanLLM Developer","url":"https://www.vigyanllm.in/developer/docs"}</script>
+<script src="/cookie-banner.js" defer></script>
+<style>
+.dev-page{max-width:1000px;margin:0 auto;padding:40px 24px}
+.dev-page h1{font-family:var(--font-h,'Montserrat',sans-serif);font-size:clamp(1.6rem,3vw,2rem);font-weight:700;margin-bottom:6px}
+.dev-page .sub{color:#64748B;font-size:15px;margin-bottom:28px}
+.dev-nav{display:flex;gap:8px;margin-bottom:28px;flex-wrap:wrap}
+.dev-nav a{padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;text-decoration:none;color:#64748B;background:#F1F5F9;transition:all .15s}
+.dev-nav a.active{background:#2563EB;color:#fff}.dev-nav a:hover:not(.active){background:#E2E8F0}
+.doc-section{margin-bottom:32px}
+.doc-section h2{font-family:var(--font-h,'Montserrat',sans-serif);font-size:18px;font-weight:700;margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid #E2E8F0}
+.doc-section h3{font-size:15px;font-weight:700;margin:16px 0 8px;color:#0F172A}
+.doc-section p,.doc-section li{font-size:14px;color:#475569;line-height:1.7}
+.doc-section ul{margin-left:20px;margin-bottom:12px}
+.doc-section code{background:#F1F5F9;padding:2px 6px;border-radius:4px;font-size:12px;font-family:'SF Mono',Menlo,monospace;color:#DC2626}
+.endpoint-card{border:1px solid #E2E8F0;border-radius:8px;margin-bottom:16px;overflow:hidden}
+.endpoint-header{display:flex;align-items:center;gap:12px;padding:12px 16px;cursor:pointer;transition:background .15s}
+.endpoint-header:hover{background:#F8FAFC}
+.method{padding:4px 10px;border-radius:4px;font-size:11px;font-weight:700;font-family:monospace;text-transform:uppercase}
+.method-post{background:#DBEAFE;color:#1D4ED8}.method-get{background:#D1FAE5;color:#065F46}
+.endpoint-url{font-family:'SF Mono',Menlo,monospace;font-size:13px;color:#334155}
+.endpoint-desc{color:#64748B;font-size:13px;margin-left:auto}
+.endpoint-body{display:none;padding:16px;border-top:1px solid #E2E8F0;background:#F8FAFC;font-size:13px}
+.endpoint-body.open{display:block}
+.endpoint-body pre{background:#1E293B;color:#E2E8F0;padding:14px;border-radius:6px;overflow-x:auto;font-size:12px;line-height:1.6;margin:8px 0}
+.endpoint-body .label{font-weight:700;color:#334155;margin-bottom:4px}
+table.rate-table{width:100%;border-collapse:collapse;font-size:13px;margin:12px 0}
+.rate-table th,.rate-table td{padding:8px 12px;text-align:left;border-bottom:1px solid #E2E8F0}
+.rate-table th{font-weight:600;background:#F8FAFC;color:#334155}
+table.error-table{width:100%;border-collapse:collapse;font-size:13px;margin:12px 0}
+.error-table th,.error-table td{padding:8px 12px;text-align:left;border-bottom:1px solid #E2E8F0}
+.error-table th{font-weight:600;background:#F8FAFC;color:#334155}
+.error-code{font-family:monospace;font-weight:700;color:#DC2626}
+.toggle-icon{transition:transform .2s;font-size:12px;color:#94A3B8}
+.toggle-icon.open{transform:rotate(90deg)}
+</style>
+</head><body>
+<div id="vl-header"></div>
+<a href="#main-content" class="skip-link">Skip to content</a>
+<main id="main-content">
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-KRP5LLPR" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<div class="dashboard-wrap">
+<div class="dev-page">
+  <nav class="breadcrumbs" style="font-size:13px;color:#64748B;margin-bottom:16px"><a href="/" style="color:#1565C0;text-decoration:none">Home</a> <span style="margin:0 6px">›</span> <a href="/developer" style="color:#1565C0;text-decoration:none">Developer</a> <span style="margin:0 6px">›</span> <span>Documentation</span></nav>
+  <div class="dev-nav">
+    <a href="/developer">Overview</a>
+    <a href="/developer/docs" class="active">Docs</a>
+    <a href="/developer/keys">API Keys</a>
+    <a href="/developer/playground">Playground</a>
+    <a href="/developer/webhooks">Webhooks</a>
+    <a href="/developer/usage">Usage</a>
+  </div>
+
+  <h1>API Documentation</h1>
+  <p class="sub">Base URL: <code style="background:#F1F5F9;padding:2px 8px;border-radius:4px;font-size:13px">https://www.vigyanllm.in/api/v1</code></p>
+
+  <div class="doc-section">
+    <h2>Authentication</h2>
+    <p>All API requests require a Bearer token in the <code>Authorization</code> header:</p>
+    <pre style="background:#1E293B;color:#E2E8F0;padding:14px;border-radius:6px;font-size:12px;overflow-x:auto">Authorization: Bearer vly_sk_your_api_key_here</pre>
+    <p style="margin-top:8px">Generate keys from the <a href="/developer/keys" style="color:#2563EB">API Keys</a> page. Keys are scoped to specific endpoints and have configurable rate limits.</p>
+  </div>
+
+  <div class="doc-section">
+    <h2>Rate Limits</h2>
+    <p>Rate limits are per API key and vary by plan:</p>
+    <table class="rate-table">
+      <tr><th>Plan</th><th>Calls / Month</th><th>Rate Limit</th></tr>
+      <tr><td>Free</td><td>No API access</td><td>—</td></tr>
+      <tr><td>Pro (₹699/mo)</td><td>1,000</td><td>30 req/min</td></tr>
+      <tr><td>Lab (₹1,999/mo)</td><td>10,000</td><td>120 req/min</td></tr>
+    </table>
+    <p style="margin-top:8px">Rate limit headers are returned with every response: <code>X-RateLimit-Limit</code>, <code>X-RateLimit-Remaining</code>, <code>X-RateLimit-Reset</code>.</p>
+  </div>
+
+  <div class="doc-section">
+    <h2>Endpoints</h2>
+
+    <div class="endpoint-card">
+      <div class="endpoint-header" onclick="toggleEndpoint(this)">
+        <span class="toggle-icon">▶</span>
+        <span class="method method-post">POST</span>
+        <span class="endpoint-url">/api/v1/primer/design</span>
+        <span class="endpoint-desc">Design and validate PCR primers</span>
+      </div>
+      <div class="endpoint-body">
+        <div class="label">Request Body (JSON):</div>
+        <pre>{
+  "sequence": "ATGCGATCGATCG...",     // Required: DNA sequence (≥100 bp)
+  "organism": "human",                  // Optional: human, mouse, rat, etc.
+  "amplicon_min": 70,                   // Optional: min amplicon size (default 70)
+  "amplicon_max": 200,                  // Optional: max amplicon size (default 200)
+  "tm_min": 58,                         // Optional: min Tm (default 58)
+  "tm_max": 65                          // Optional: max Tm (default 65)
+}</pre>
+        <div class="label">Response (200):</div>
+        <pre>{
+  "status": "success",
+  "pairs": [
+    {
+      "forward": "GACCCCAAAATCAGCGAAAT",
+      "reverse": "TCTGGTTACTGCCAGTTGAATCTG",
+      "tm_fwd": 59.8,
+      "tm_rev": 60.1,
+      "gc_pct": 52.3,
+      "amplicon_size": 142,
+      "hairpin_dg": -1.2,
+      "self_dimer_dg": -3.4,
+      "cross_dimer_dg": -2.8,
+      "blast_specificity": "PASS",
+      "snp_risk": "LOW"
+    }
+  ],
+  "job_id": "a1b2c3d4"
+}</pre>
+      </div>
+    </div>
+
+    <div class="endpoint-card">
+      <div class="endpoint-header" onclick="toggleEndpoint(this)">
+        <span class="toggle-icon">▶</span>
+        <span class="method method-post">POST</span>
+        <span class="endpoint-url">/api/v1/blast/search</span>
+        <span class="endpoint-desc">Run BLAST search against nr/nt database</span>
+      </div>
+      <div class="endpoint-body">
+        <div class="label">Request Body (JSON):</div>
+        <pre>{
+  "query": "GACCCCAAAATCAGCGAAAT",      // Required: DNA/protein sequence
+  "database": "nr",                      // Optional: nr, nt, refseq_rna
+  "program": "blastn",                   // Optional: blastn, blastp, blastx
+  "evalue": 0.001                        // Optional: E-value threshold
+}</pre>
+        <div class="label">Response (200):</div>
+        <pre>{
+  "status": "success",
+  "hits": [
+    {
+      "accession": "NM_007294.4",
+      "description": "BRCA1 DNA repair associated",
+      "score": 142,
+      "evalue": 2.1e-42,
+      "identity": 100,
+      "query_coverage": 100
+    }
+  ],
+  "job_id": "e5f6g7h8"
+}</pre>
+      </div>
+    </div>
+
+    <div class="endpoint-card">
+      <div class="endpoint-header" onclick="toggleEndpoint(this)">
+        <span class="toggle-icon">▶</span>
+        <span class="method method-post">POST</span>
+        <span class="endpoint-url">/api/v1/msa/align</span>
+        <span class="endpoint-desc">Multiple sequence alignment (Clustal Omega)</span>
+      </div>
+      <div class="endpoint-body">
+        <div class="label">Request Body (JSON):</div>
+        <pre>{
+  "sequences": [                         // Required: 2–50 sequences
+    ">seq1\nATGCGATCGATCG",
+    ">seq2\nATGCAATCGATCG"
+  ],
+  "format": "clustal"                    // Optional: clustal, fasta, json
+}</pre>
+        <div class="label">Response (200):</div>
+        <pre>{
+  "status": "success",
+  "alignment": ">seq1\nATGCGATCGATCG\n>seq2\nATGCAATCGATCG",
+  "stats": {
+    "sequences": 2,
+    "length": 16,
+    "identity_pct": 93.75,
+    "gap_pct": 0
+  },
+  "job_id": "i9j0k1l2"
+}</pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="doc-section">
+    <h2>Error Codes</h2>
+    <table class="error-table">
+      <tr><th>Code</th><th>Meaning</th><th>Action</th></tr>
+      <tr><td class="error-code">400</td><td>Bad Request — missing or invalid parameters</td><td>Check request body against endpoint schema</td></tr>
+      <tr><td class="error-code">401</td><td>Unauthorized — missing or invalid API key</td><td>Verify your API key is valid and included in the header</td></tr>
+      <tr><td class="error-code">403</td><td>Forbidden — key lacks scope for this endpoint</td><td>Generate a new key with the required scope</td></tr>
+      <tr><td class="error-code">404</td><td>Not Found — invalid endpoint URL</td><td>Check the endpoint path in the docs</td></tr>
+      <tr><td class="error-code">429</td><td>Too Many Requests — rate limit exceeded</td><td>Wait for the reset window or upgrade your plan</td></tr>
+      <tr><td class="error-code">500</td><td>Internal Server Error</td><td>Retry with exponential backoff; contact support if persistent</td></tr>
+    </table>
+  </div>
+
+  <div class="doc-section">
+    <h2>Webhook Events</h2>
+    <p>Subscribe to events via the <a href="/developer/webhooks" style="color:#2563EB">Webhooks</a> page. All payloads are JSON-encoded and signed with your webhook secret.</p>
+    <table class="rate-table">
+      <tr><th>Event</th><th>Description</th><th>Trigger</th></tr>
+      <tr><td><code>primer.complete</code></td><td>Primer design job finished</td><td>POST /api/v1/primer/design async completion</td></tr>
+      <tr><td><code>blast.complete</code></td><td>BLAST search finished</td><td>POST /api/v1/blast/search async completion</td></tr>
+      <tr><td><code>payment.captured</code></td><td>Payment successfully captured</td><td>Razorpay webhook → plan activation</td></tr>
+      <tr><td><code>user.created</code></td><td>New user account created</td><td>Registration or first Google sign-in</td></tr>
+    </table>
+  </div>
+</div>
+</div>
+<script defer src="/search-index.js"></script>
+<script defer src="/auth-shared.js"></script>
+<script>
+function toggleEndpoint(el){
+var body=el.nextElementSibling;var icon=el.querySelector('.toggle-icon');
+body.classList.toggle('open');icon.classList.toggle('open');
+}
+</script>
+</body></html>

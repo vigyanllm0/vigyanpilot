@@ -25,6 +25,7 @@ const CORE = [
   "/blast-for-beginners","/docking-for-beginners","/msa-for-beginners",
   "/primer-design-for-beginners","/pcr-for-beginners",
   "/validation","/cloning-simulator","/trial",
+  "/developer","/developer/docs","/developer/keys","/developer/playground","/developer/webhooks","/developer/usage",
   "/gc-calculator-for-pcr","/primer-design-for-cloning","/primer-design-for-qpcr",
   "/blast-for-primer-specificity","/docking-for-drug-discovery",
   "/glossary/primer-design-terms","/glossary/pcr-glossary","/glossary/molecular-docking-terms",

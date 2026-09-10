@@ -11,6 +11,9 @@
 <meta property="og:description" content="Manage your VigyanLLM subscription, track usage, and view billing history.">
 <meta name="twitter:card" content="summary">
 <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-KRP5LLPR');</script>
+<!-- Microsoft Clarity — uncomment and replace with your Clarity ID from https://clarity.microsoft.com -->
+<!-- <script type="text/javascript">(function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y)})(window,document,"clarity","script","YOUR_CLARITY_ID");</script> -->
+
 <link rel="icon" type="image/png" href="/logo.png">
 <link rel="stylesheet" href="/design-tokens.css">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -228,15 +231,7 @@ async function loadBilling(){
 
     document.getElementById('monthly-label').textContent=monthlyUsed+' analyses';
 
-    // Tool breakdown (use localStorage analytics)
-    try{
-      var a=JSON.parse(localStorage.getItem('vl_analytics')||'{}');
-      var t=a.tools||{};
-      document.getElementById('ub-primer').textContent=t.primer||0;
-      document.getElementById('ub-blast').textContent=t.blast||0;
-      document.getElementById('ub-msa').textContent=t.msa||0;
-      document.getElementById('ub-docking').textContent=t.docking||0;
-    }catch(e){}
+    // Tool breakdown — zeroed (no localStorage analytics)
 
     // Actions
     if(plan==='free'||plan==='trial'){
@@ -298,4 +293,5 @@ h.addEventListener('click',function(){h.classList.toggle('active');m.classList.t
 document.addEventListener('click',function(e){if(!h.contains(e.target)&&!m.contains(e.target)){h.classList.remove('active');m.classList.remove('open')}});
 })();
 </script>
+<script defer src="/analytics.js"></script>
 </body></html>

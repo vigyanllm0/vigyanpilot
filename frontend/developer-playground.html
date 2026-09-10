@@ -1,0 +1,159 @@
+<!DOCTYPE html><html lang="en"><head>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('consent', 'default', {'ad_storage':'denied','ad_user_data':'denied','ad_personalization':'denied','analytics_storage':'denied','region':['AT','BE','BG','HR','CY','CZ','DK','EE','FI','FR','DE','GR','HU','IE','IT','LV','LT','LU','MT','NL','PL','PT','RO','SK','SI','ES','SE','IS','LI','NO','GB','CH']});
+try{var vlcs=JSON.parse(localStorage.getItem('vigyanllm_cookie_consent')||'null');if(vlcs&&vlcs.consent==='accepted'){gtag('consent','update',{'ad_storage':'granted','ad_user_data':'granted','ad_personalization':'granted','analytics_storage':'granted'})}else if(vlcs&&vlcs.consent==='declined'){gtag('consent','update',{'ad_storage':'denied','ad_user_data':'denied','ad_personalization':'denied','analytics_storage':'denied'})}}catch(e){}
+gtag('set','ads_data_redaction',true);
+</script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PB0XMF4GEH"></script>
+<script>gtag('js',new Date());gtag('config','G-PB0XMF4GEH');</script>
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-KRP5LLPR');</script>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0"><title>API Playground — VigyanLLM Developer</title><link rel="stylesheet" href="/design-tokens.css"><link rel="stylesheet" href="/tools.css"><meta name="theme-color" content="#0F172A"><meta property="og:site_name" content="VigyanLLM"><meta name="robots" content="index, follow"><meta name="author" content="VigyanLLM Private Limited"><meta name="description" content="Test VigyanLLM API endpoints live in your browser."><link rel="canonical" href="https://www.vigyanllm.in/developer/playground"><meta property="og:type" content="website"><meta property="og:url" content="https://www.vigyanllm.in/developer/playground"><meta property="og:title" content="API Playground — VigyanLLM Developer"><meta property="og:image" content="https://www.vigyanllm.in/poster.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta name="twitter:card" content="summary_large_image">
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://accounts.google.com/gsi/client?hl=en" async defer></script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://www.vigyanllm.in"},{"@type":"ListItem","position":2,"name":"Developer","item":"https://www.vigyanllm.in/developer"},{"@type":"ListItem","position":3,"name":"Playground","item":"https://www.vigyanllm.in/developer/playground"}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebPage","name":"API Playground — VigyanLLM Developer","url":"https://www.vigyanllm.in/developer/playground"}</script>
+<script src="/cookie-banner.js" defer></script>
+<style>
+.dev-page{max-width:1000px;margin:0 auto;padding:40px 24px}
+.dev-page h1{font-family:var(--font-h,'Montserrat',sans-serif);font-size:clamp(1.6rem,3vw,2rem);font-weight:700;margin-bottom:6px}
+.dev-page .sub{color:#64748B;font-size:15px;margin-bottom:28px}
+.dev-nav{display:flex;gap:8px;margin-bottom:28px;flex-wrap:wrap}
+.dev-nav a{padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;text-decoration:none;color:#64748B;background:#F1F5F9;transition:all .15s}
+.dev-nav a.active{background:#2563EB;color:#fff}.dev-nav a:hover:not(.active){background:#E2E8F0}
+.auth-gate{text-align:center;padding:60px 24px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px}
+.auth-gate h2{font-size:18px;margin-bottom:8px}.auth-gate p{color:#64748B;margin-bottom:20px;font-size:14px}
+.btn-primary{background:#2563EB;color:#fff;border:none;padding:10px 20px;border-radius:8px;font-weight:600;font-size:13px;cursor:pointer}
+.btn-primary:hover{background:#1D4ED8}
+.pg-layout{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start}
+@media(max-width:768px){.pg-layout{grid-template-columns:1fr}}
+.pg-panel{background:#fff;border:1px solid #E2E8F0;border-radius:8px;overflow:hidden}
+.pg-panel-head{padding:12px 16px;background:#F8FAFC;border-bottom:1px solid #E2E8F0;font-weight:700;font-size:14px}
+.pg-panel-body{padding:16px}
+.form-group{margin-bottom:14px}
+.form-label{display:block;font-size:13px;font-weight:600;margin-bottom:4px;color:#334155}
+.form-input,.form-select,.form-textarea{width:100%;padding:10px 12px;border:1px solid #E2E8F0;border-radius:6px;font-size:13px;font-family:inherit}
+.form-input:focus,.form-select:focus,.form-textarea:focus{outline:none;border-color:#2563EB;box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+.form-textarea{min-height:100px;resize:vertical;font-family:'SF Mono',Menlo,monospace;font-size:12px}
+.send-btn{width:100%;padding:12px;background:#2563EB;color:#fff;border:none;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;transition:background .15s}
+.send-btn:hover{background:#1D4ED8}
+.send-btn:disabled{background:#94A3B8;cursor:not-allowed}
+.resp-status{display:inline-block;padding:4px 10px;border-radius:4px;font-size:12px;font-weight:700;font-family:monospace}
+.resp-200{background:#D1FAE5;color:#065F46}.resp-400{background:#FEF3C7;color:#92400E}
+.resp-401{background:#FEE2E2;color:#991B1B}.resp-429{background:#FEE2E2;color:#991B1B}
+.resp-500{background:#FEE2E2;color:#991B1B}
+.resp-body{background:#1E293B;color:#E2E8F0;padding:14px;border-radius:6px;font-family:'SF Mono',Menlo,monospace;font-size:12px;overflow-x:auto;max-height:400px;overflow-y:auto;white-space:pre-wrap;line-height:1.6;margin-top:8px}
+.history-list{margin-top:12px;border-top:1px solid #E2E8F0;padding-top:12px}
+.history-item{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:4px;font-size:12px;cursor:pointer;transition:background .1s}
+.history-item:hover{background:#F1F5F9}
+.history-method{font-weight:700;font-family:monospace;font-size:11px}
+.history-url{color:#64748B;font-family:monospace;font-size:11px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+</style>
+</head><body>
+<div id="vl-header"></div>
+<a href="#main-content" class="skip-link">Skip to content</a>
+<main id="main-content">
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-KRP5LLPR" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<div class="dashboard-wrap">
+<div class="dev-page">
+  <nav class="breadcrumbs" style="font-size:13px;color:#64748B;margin-bottom:16px"><a href="/" style="color:#1565C0;text-decoration:none">Home</a> <span style="margin:0 6px">›</span> <a href="/developer" style="color:#1565C0;text-decoration:none">Developer</a> <span style="margin:0 6px">›</span> <span>Playground</span></nav>
+  <div class="dev-nav">
+    <a href="/developer">Overview</a>
+    <a href="/developer/docs">Docs</a>
+    <a href="/developer/keys">API Keys</a>
+    <a href="/developer/playground" class="active">Playground</a>
+    <a href="/developer/webhooks">Webhooks</a>
+    <a href="/developer/usage">Usage</a>
+  </div>
+
+  <div id="auth-gate" class="auth-gate" style="display:none">
+    <h2>API Playground</h2>
+    <p>Sign in and generate an API key to test endpoints live.</p>
+    <button class="btn-primary" onclick="openAuthModal()">Sign in</button>
+  </div>
+
+  <div id="pg-content" style="display:none">
+    <h1>API Playground</h1>
+    <p class="sub">Select an endpoint, fill in parameters, and send a live request.</p>
+    <div class="pg-layout">
+      <div class="pg-panel">
+        <div class="pg-panel-head">Request</div>
+        <div class="pg-panel-body">
+          <div class="form-group">
+            <label class="form-label">Endpoint</label>
+            <select class="form-select" id="pg-endpoint" onchange="updateParams()">
+              <option value="primer">POST /api/v1/primer/design</option>
+              <option value="blast">POST /api/v1/blast/search</option>
+              <option value="msa">POST /api/v1/msa/align</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">API Key</label>
+            <input type="text" class="form-input" id="pg-apikey" placeholder="vly_sk_..." style="font-family:monospace;font-size:12px">
+          </div>
+          <div id="pg-params"></div>
+          <button class="send-btn" id="pg-send" onclick="sendRequest()">Send Request</button>
+        </div>
+      </div>
+      <div class="pg-panel">
+        <div class="pg-panel-head">Response <span id="pg-resp-status"></span></div>
+        <div class="pg-panel-body">
+          <div id="pg-resp-meta" style="font-size:12px;color:#64748B;margin-bottom:8px"></div>
+          <div class="resp-body" id="pg-resp-body" style="min-height:200px;color:#94A3B8">Response will appear here</div>
+          <div class="history-list" id="pg-history"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+<script defer src="/search-index.js"></script>
+<script defer src="/auth-shared.js"></script>
+<script>
+(function(){
+var user=null;var history=JSON.parse(localStorage.getItem('pg_history')||'[]');
+var params={
+  primer:'<div class="form-group"><label class="form-label">Template Sequence (≥100 bp)</label><textarea class="form-textarea" id="pg-seq" placeholder="Paste DNA sequence...">ATGCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATCG</textarea></div><div class="form-group"><label class="form-label">Organism</label><select class="form-select" id="pg-organism"><option value="human">Human</option><option value="mouse">Mouse</option><option value="ecoli">E. coli</option></select></div>',
+  blast:'<div class="form-group"><label class="form-label">Query Sequence</label><textarea class="form-textarea" id="pg-blast-query" placeholder="DNA or protein sequence">GACCCCAAAATCAGCGAAAT</textarea></div><div class="form-group"><label class="form-label">Database</label><select class="form-select" id="pg-blast-db"><option value="nr">nr</option><option value="nt">nt</option></select></div>',
+  msa:'<div class="form-group"><label class="form-label">Sequences (FASTA format)</label><textarea class="form-textarea" id="pg-msa-seq" placeholder=">seq1&#10;ATGCGATCGATCG&#10;>seq2&#10;ATGCAATCGATCG" style="min-height:140px">>seq1\nATGCGATCGATCGATCG\n>seq2\nATGCAATCGATCGATCG\n>seq3\nATGCGATCAATCGATCG</textarea></div>'
+};
+function updateParams(){document.getElementById('pg-params').innerHTML=params[document.getElementById('pg-endpoint').value]}
+function checkAuth(){var pu=localStorage.getItem('pf_user');if(pu){user=JSON.parse(pu);document.getElementById('auth-gate').style.display='none';document.getElementById('pg-content').style.display='block';loadKeys()}else{document.getElementById('auth-gate').style.display='block';document.getElementById('pg-content').style.display='none'}}
+function loadKeys(){fetch('/api/developer/keys',{credentials:'same-origin'}).then(function(r){return r.json()}).then(function(d){if(d.keys&&d.keys.length){document.getElementById('pg-apikey').value=d.keys[0].key_mask||''}})}
+function renderHistory(){
+var el=document.getElementById('pg-history');
+if(!history.length){el.innerHTML='';return}
+el.innerHTML='<div style="font-size:12px;font-weight:600;color:#64748B;margin-bottom:6px">Recent Requests</div>'+history.map(function(h,i){
+return '<div class="history-item" onclick="loadHistory('+i+')"><span class="history-method" style="color:'+(h.method==='POST'?'#2563EB':'#059669')+'">'+h.method+'</span><span class="history-url">'+h.endpoint+'</span><span class="resp-status resp-'+h.status+'">'+h.status+'</span></div>'
+}).join('')}
+function sendRequest(){
+var ep=document.getElementById('pg-endpoint').value;
+var key=document.getElementById('pg-apikey').value.trim();
+if(!key){alert('Enter an API key');return}
+var body={};
+if(ep==='primer'){body={sequence:document.getElementById('pg-seq').value,organism:document.getElementById('pg-organism').value}}
+else if(ep==='blast'){body={query:document.getElementById('pg-blast-query').value,database:document.getElementById('pg-blast-db').value}}
+else{body={sequences:document.getElementById('pg-msa-seq').value.split('\n').filter(function(l){return l.trim()})}}
+var url='/api/v1/'+(ep==='primer'?'primer/design':ep==='blast'?'blast/search':'msa/align');
+var btn=document.getElementById('pg-send');btn.disabled=true;btn.textContent='Sending...';
+var start=Date.now();
+fetch(url,{method:'POST',headers:{'Authorization':'Bearer '+key,'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify(body)}).then(function(r){
+var elapsed=Date.now()-start;
+document.getElementById('pg-resp-status').innerHTML='<span class="resp-status resp-'+r.status+'">'+r.status+' '+r.statusText+'</span>';
+document.getElementById('pg-resp-meta').textContent='Time: '+elapsed+'ms';
+return r.json()}).then(function(d){
+document.getElementById('pg-resp-body').textContent=JSON.stringify(d,null,2);
+document.getElementById('pg-resp-body').style.color='#E2E8F0';
+history.unshift({method:'POST',endpoint:url,status:200});
+if(history.length>10)history.pop();
+localStorage.setItem('pg-history',JSON.stringify(history));renderHistory()}).catch(function(e){
+document.getElementById('pg-resp-body').textContent='Error: '+e.message;
+document.getElementById('pg-resp-body').style.color='#F87171'}).finally(function(){btn.disabled=false;btn.textContent='Send Request'});
+}
+window.sendRequest=sendRequest;window.updateParams=updateParams;
+window.loadHistory=function(i){var h=history[i];document.getElementById('pg-endpoint').value=h.endpoint.includes('primer')?'primer':h.endpoint.includes('blast')?'blast':'msa';updateParams()};
+checkAuth();updateParams();renderHistory();
+})();
+</script>
+</body></html>
