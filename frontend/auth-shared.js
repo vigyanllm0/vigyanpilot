@@ -95,21 +95,9 @@ function renderAuth(){
 function renderGoogleBtn(){
   var w=document.getElementById('gbtn-wrap');
   if(!w)return;
-  try{
-    if(typeof google!=='undefined'&&google.accounts&&google.accounts.id){
-      w.style.display='';
-      google.accounts.id.initialize({client_id:'598272150916-57hl3s7jijaamh3er18alk93gj2op6jt.apps.googleusercontent.com',callback:handleGoogleCredential,cancel_on_tap_outside:false});
-      google.accounts.id.renderButton(w,{type:'standard',shape:'pill',theme:'outline',size:'large',text:isRegister?'signup_with':'signin_with',width:328});
-      return;
-    }
-  }catch(e){}
-  // Google SDK not loaded yet — load dynamically
-  w.style.display='none';
-  var s=document.createElement('script');
-  s.src='https://accounts.google.com/gsi/client?hl=en';
-  s.async=true;
-  s.onload=function(){renderGoogleBtn()};
-  document.head.appendChild(s);
+  var redirectBase=window.location.pathname;
+  var clientId='598272150916-57hl3s7jijaamh3er18alk93gj2op6jt.apps.googleusercontent.com';
+  w.innerHTML='<a href="https://accounts.google.com/o/oauth2/v2/auth?client_id='+clientId+'&redirect_uri='+encodeURIComponent('https://www.vigyanllm.in'+redirectBase)+'&response_type=token&scope=openid%20email%20profile&prompt=select_account" style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:12px;background:#fff;color:#333;border:1px solid #dadce0;border-radius:8px;font-family:Roboto,sans-serif;font-size:14px;font-weight:500;text-decoration:none;cursor:pointer;transition:background .15s"><svg viewBox="0 0 24 24" style="width:18px;height:18px"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>'+(isRegister?'Sign up with Google':'Sign in with Google')+'</a>';
 }
 
 function handleGoogleCredential(res){
@@ -140,6 +128,27 @@ function handleGoogleCredential(res){
       if(err){err.style.display='block';err.textContent='Server unavailable. Please try again.'}
     });
 }
+
+// OAuth redirect handler — runs on every page load
+(function(){
+  var h=window.location.hash;
+  if(!h||h.indexOf('access_token')===-1)return;
+  var params=new URLSearchParams(h.substring(1));
+  var token=params.get('access_token');
+  if(!token)return;
+  window.history.replaceState(null,'',window.location.pathname+window.location.search);
+  fetch(API+'/auth/google',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({access_token:token})})
+    .then(function(r){return r.json().then(function(d){return{ok:r.ok,data:d}})})
+    .then(function(res){
+      if(res&&res.ok&&res.data){
+        sessionStorage.setItem('pf_user',JSON.stringify(res.data.user||{}));
+        localStorage.setItem('pf_user',JSON.stringify(res.data.user||{}));
+        var rd=new URLSearchParams(window.location.search).get('redirect');
+        window.location.href=rd||'/dashboard';
+      }
+    })
+    .catch(function(){});
+})();
 
 function submitAuth(){
   var email=document.getElementById('auth-email').value.trim();
