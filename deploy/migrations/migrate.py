@@ -80,7 +80,13 @@ def split_sql(sql: str):
     s = "".join(buf).strip()
     if s:
         stmts.append(s)
-    return stmts
+    filtered = []
+    for stmt in stmts:
+        lines = [l for l in stmt.splitlines() if not l.strip().startswith("--")]
+        clean = "\n".join(lines).strip()
+        if clean:
+            filtered.append(clean)
+    return filtered
 
 
 def apply_file(version, name, sql, dry_run=False):
