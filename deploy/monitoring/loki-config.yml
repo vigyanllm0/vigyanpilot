@@ -4,7 +4,7 @@ server:
   http_listen_port: 3100
 
 common:
-  path: /loki
+  path_prefix: /loki
   replication_factor: 1
   ring:
     instance_addr: 127.0.0.1
@@ -12,13 +12,9 @@ common:
 storage_config:
   filesystem:
     directory: /loki/chunks
-  boltdb-shipper:
-    active_index_directory: /loki/boltdb-shipper-active
-    cache_location: /loki/boltdb-shipper-cache
-    shared_store: filesystem
-  rules_storage:
-    filesystem:
-      directory: /loki/rules
+  tsdb_shipper:
+    active_index_directory: /loki/tsdb-index
+    cache_location: /loki/tsdb-cache
 
 limits_config:
   ingestion_rate_mb: 16
@@ -28,16 +24,15 @@ limits_config:
 schema_config:
   configs:
     - from: "2024-01-01"
-      store: boltdb-shipper
+      store: tsdb
       object_store: filesystem
-      schema: v12
+      schema: v13
       index:
         prefix: index_
         period: 24h
 
 compactor:
   working_directory: /loki/compactor
-  shared_store: filesystem
   compaction_interval: 10m
   retention_enabled: true
   retention_delete_delay: 2h
