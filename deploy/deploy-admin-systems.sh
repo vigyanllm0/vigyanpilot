@@ -37,19 +37,26 @@ fi
 
 # ─── Step 2: Install Python dependencies ───
 log "Step 2: Installing Python dependencies..."
-source venv/bin/activate 2>/dev/null || true
+if [ -d venv ]; then
+    source venv/bin/activate
+    log "Activated venv"
+else
+    warn "No venv found — creating one"
+    python3 -m venv venv
+    source venv/bin/activate
+fi
 pip install -q prometheus_client requests 2>&1 | tail -3
 pip install -q -r requirements.txt 2>&1 | tail -3
 log "Dependencies installed"
 
 # ─── Step 3: Run database migration ───
 log "Step 3: Running database migration (dry-run first)..."
-python3 deploy/migrations/migrate.py --dry-run 2>&1 | tail -10
+python deploy/migrations/migrate.py --dry-run 2>&1 | tail -10
 echo ""
 read -p "Apply migration? (y/n) " -n 1 -r
 echo ""
 if [[ $REPLY =~ ^[Yy]$ ]]; then
-    python3 deploy/migrations/migrate.py
+    python deploy/migrations/migrate.py
     log "Migration applied"
 else
     warn "Skipping migration"
