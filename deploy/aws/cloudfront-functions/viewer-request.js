@@ -21,19 +21,21 @@ function handler(event) {
     return redir('https://www.vigyanllm.in' + u);
   }
 
-  // 3. .HTML STRIP — /primer.html → /primer/
+  // 3. ROOT → /index.html
+  if (u === '/') { r.uri = '/index.html'; return r; }
+
+  // 4. .HTML STRIP — /primer.html → /primer
   if (u.length > 5 && u.substring(u.length - 5) === '.html') {
     var s = u.substring(0, u.length - 5);
-    if (s.length > 1 && s.charAt(s.length - 1) !== '/') s += '/';
-    return redir(s);
+    if (s.length > 1) return redir(s);
   }
 
-  // 4. TRAILING-SLASH NORMALIZATION — /path/ → /path
+  // 5. TRAILING-SLASH NORMALIZATION — /path/ → /path
   if (u.length > 1 && u.charAt(u.length - 1) === '/') {
     return redir(u.substring(0, u.length - 1));
   }
 
-  // 5. CONTENT REDIRECTS
+  // 6. CONTENT REDIRECTS (before clean URL rewrite)
   var redirects = {
     '/tools/dna-to-rna': '/dna-to-rna',
     '/primer-3-alternative': '/primer3-alternative',
@@ -82,13 +84,13 @@ function handler(event) {
   };
   if (redirects[u]) return redir(redirects[u]);
 
-  // 6. 410 GONE
+  // 7. 410 GONE
   if (u === '/cite') {
     return { statusCode: 410, statusDescription: 'Gone',
       headers: { location: { value: '/' }, 'content-type': { value: 'text/plain' } }, body: 'Gone' };
   }
 
-  // 7. CLEAN URL REWRITES
+  // 8. CLEAN URL REWRITES (explicit mappings)
   var rewrites = {
     '/admin': '/admin-security.html',
     '/developer': '/developer.html',
@@ -109,6 +111,8 @@ function handler(event) {
     return r;
   }
 
+  // 9. FALLBACK — try .html for clean URLs (/primer → /primer.html)
+  r.uri = u + '.html';
   return r;
 }
 
