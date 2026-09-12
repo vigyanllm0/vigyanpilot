@@ -1,4 +1,4 @@
-// CloudFront Function — Viewer Request
+// CloudFront Function — Viewer Request v6
 // Bot blocking, domain canonicalization, .html strip,
 // redirects, trailing-slash normalization, clean URL rewrites.
 function handler(event) {
@@ -6,7 +6,16 @@ function handler(event) {
   var u = r.uri;
   var h = r.headers;
 
-  // 1. BOT BLOCKING (excludes /api/, /_next/, /assets/, /partials/)
+  // 0. .HTML STRIP FIRST — /primer.html → /primer (before file ext check)
+  if (u.length > 5 && u.substring(u.length - 5) === '.html') {
+    var s = u.substring(0, u.length - 5);
+    if (s.length > 1) return redir(s);
+  }
+
+  // 1. NON-HTML FILE EXTENSION — serve as-is (css, js, xml, txt, png, etc.)
+  if (u.match(/\.\w{1,5}$/)) return r;
+
+  // 2. BOT BLOCKING (excludes /api/, /_next/, /assets/, /partials/)
   if (u.indexOf('/api/') !== 0 && u.indexOf('/_next/') !== 0 &&
       u.indexOf('/assets/') !== 0 && u.indexOf('/partials/') !== 0) {
     var ua = h['user-agent'] ? h['user-agent'].value : '';
@@ -16,19 +25,13 @@ function handler(event) {
     }
   }
 
-  // 2. DOMAIN CANONICALIZATION — vigyanllm.in → www
+  // 3. DOMAIN CANONICALIZATION — vigyanllm.in → www
   if (h.host ? h.host.value === 'vigyanllm.in' : false) {
     return redir('https://www.vigyanllm.in' + u);
   }
 
-  // 3. ROOT → /index.html
+  // 4. ROOT → /index.html
   if (u === '/') { r.uri = '/index.html'; return r; }
-
-  // 4. .HTML STRIP — /primer.html → /primer
-  if (u.length > 5 && u.substring(u.length - 5) === '.html') {
-    var s = u.substring(0, u.length - 5);
-    if (s.length > 1) return redir(s);
-  }
 
   // 5. TRAILING-SLASH NORMALIZATION — /path/ → /path
   if (u.length > 1 && u.charAt(u.length - 1) === '/') {
