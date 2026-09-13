@@ -82,7 +82,6 @@ function handler(event) {
     '/glossary/mg2-correction': '/glossary/melting-temperature',
     '/glossary/rychlik-formula': '/glossary/melting-temperature',
     '/glossary/delta-g': '/glossary/melting-temperature',
-    '/glossary/gc-clamp': '/glossary/primer-design',
     '/glossary/thermocycling-profile': '/glossary/pcr',
     '/glossary/mass-spectrometry-proteomics': '/glossary/mass-spectrometry',
     '/glossary/blast-specificity': '/glossary/blast',
