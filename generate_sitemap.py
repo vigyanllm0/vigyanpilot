@@ -35,6 +35,7 @@ PRIORITY_MAP = {
     "pcr-product-calculator.html": 0.80,
     "restriction-enzyme-finder.html": 0.80,
     "cloning-simulator.html": 0.80,
+    "biostatistics-calculator.html": 0.85,
     "gc-calculator-for-pcr.html": 0.70,
     "primer-design-for-cloning.html": 0.70,
     "primer-design-for-qpcr.html": 0.70,
