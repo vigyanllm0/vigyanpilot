@@ -37,6 +37,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <script src="https://accounts.google.com/gsi/client?hl=en" async defer></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://www.vigyanllm.in"},{"@type":"ListItem","position":2,"name":"Biostatistics Calculator","item":"https://www.vigyanllm.in/biostatistics-calculator"}]}</script>
 <script type="application/ld+json">{"@context":"https://schema.org","@type":["SoftwareApplication","WebApplication"],"name":"VigyanLLM Biostatistics Calculator","url":"https://www.vigyanllm.in/biostatistics-calculator","description":"Free biostatistics calculator with 20+ statistical tests including t-test, ANOVA, chi-square, correlation, regression, sample size, power analysis, and diagnostic test evaluation.","applicationCategory":"BioinformaticsApplication","featureList":["20+ statistical tests","Descriptive statistics with CI","Parametric and non-parametric tests","Correlation and regression","Sample size and power analysis","Effect size calculations","Diagnostic test evaluation","Multiple comparison corrections","EC50/IC50 dose-response","No login required"],"operatingSystem":"Web Browser","offers":{"@type":"Offer","price":"0","priceCurrency":"INR"},"aggregateRating":{"@type":"AggregateRating","ratingValue":"4.8","ratingCount":"127"},"author":{"@type":"Organization","name":"VigyanLLM Private Limited"}}</script>
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"HowTo","name":"How to Use the Biostatistics Calculator","step":[{"@type":"HowToStep","position":1,"name":"Select a Statistical Test","text":"Choose the appropriate test from the tabs: Descriptive, t-Tests, ANOVA, Non-Parametric, Correlation, Power, Effect Size, or Diagnostic."},{"@type":"HowToStep","position":2,"name":"Enter Your Data","text":"Paste your data into the input fields. For group comparisons, enter one group per line with values separated by spaces, tabs, or commas."},{"@type":"HowToStep","position":3,"name":"Click Calculate","text":"Press the Calculate button to run the analysis. Results appear instantly with plain-English interpretation."},{"@type":"HowToStep","position":4,"name":"Interpret Results","text":"Review the statistics table, p-value, effect size, and confidence intervals. Green indicates significance at alpha = 0.05."}]}</script>
@@ -161,6 +162,31 @@ html{overflow-x:hidden}
 .google-btn:hover{background:#f8fafc}
 .skip-link{position:absolute;top:-40px;left:0;background:#2563eb;color:#fff;padding:8px;z-index:10000;font-size:13px;text-decoration:none;border-radius:0 0 8px 0}
 .skip-link:focus{top:0}
+
+/* ── Upload Zone ────────────────────────────── */
+.upload-zone{border:2px dashed var(--border);border-radius:var(--radius-xl);padding:32px 24px;text-align:center;cursor:pointer;transition:all .2s;background:var(--surface-alt);margin-bottom:20px}
+.upload-zone:hover,.upload-zone.dragover{border-color:var(--accent);background:#eff6ff}
+.upload-zone .upload-icon{font-size:36px;margin-bottom:8px;opacity:.6}
+.upload-zone .upload-text{font-size:14px;color:var(--text2);margin-bottom:4px}
+.upload-zone .upload-hint{font-size:12px;color:var(--text3)}
+.upload-zone input[type="file"]{display:none}
+.upload-preview{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:16px;display:none}
+.upload-preview.show{display:block}
+.upload-preview .preview-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.upload-preview .preview-title{font-family:'Montserrat',sans-serif;font-size:13px;font-weight:700;color:var(--text)}
+.upload-preview .preview-close{background:none;border:none;cursor:pointer;color:var(--text3);font-size:16px;padding:4px}
+.upload-preview .preview-close:hover{color:var(--danger)}
+.upload-preview .preview-table{max-height:150px;overflow:auto;border:1px solid var(--border);border-radius:var(--radius);margin-bottom:12px}
+.upload-preview table{width:100%;border-collapse:collapse;font-size:12px;font-family:'SF Mono',monospace}
+.upload-preview th{background:var(--text);color:#fff;padding:6px 10px;text-align:left;position:sticky;top:0;font-weight:600}
+.upload-preview td{padding:5px 10px;border-bottom:1px solid var(--border)}
+.upload-preview tr:hover td{background:#f1f5f9}
+.col-map{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;margin-bottom:8px}
+.col-map .map-arrow{color:var(--accent);font-size:16px;text-align:center}
+.col-map select{width:100%;padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:12px;background:var(--surface)}
+.col-map label{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.03em}
+.btn-upload-use{padding:8px 16px;background:var(--accent);color:#fff;border:none;border-radius:var(--radius);font-size:12px;font-weight:600;cursor:pointer}
+.btn-upload-use:hover{background:var(--accent-hover)}
 </style>
 </head>
 <body>
@@ -197,6 +223,25 @@ html{overflow-x:hidden}
 <button class="tab-btn" data-tab="diag" role="tab">Diagnostic</button>
 <button class="tab-btn" data-tab="multi" role="tab">Corrections</button>
 <button class="tab-btn" data-tab="dose" role="tab">EC50 / IC50</button>
+</div>
+
+<!-- ═══════ FILE UPLOAD ZONE ═══════ -->
+<div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+  <div class="upload-icon">&#128206;</div>
+  <div class="upload-text"><strong>Upload your data</strong> — CSV, TSV, or Excel (.xlsx)</div>
+  <div class="upload-hint">Drag &amp; drop or click to browse. Columns auto-detected for mapping.</div>
+  <input type="file" id="fileInput" accept=".csv,.tsv,.txt,.xlsx,.xls">
+</div>
+<div class="upload-preview" id="uploadPreview">
+  <div class="preview-header">
+    <span class="preview-title" id="previewTitle">Data Preview</span>
+    <button class="preview-close" onclick="clearUpload()" aria-label="Close preview">&times;</button>
+  </div>
+  <div class="preview-table" id="previewTable"></div>
+  <div id="colMapArea"></div>
+  <div style="display:flex;gap:8px;margin-top:8px">
+    <button class="btn-upload-use" onclick="useUploadedData()">Use This Data</button>
+  </div>
 </div>
 
 <!-- ═══════ DESCRIPTIVE ═══════ -->
@@ -883,6 +928,161 @@ function calcDose(){
     +'<div class="result-grid">'+rItem('EC50/IC50',fmt(r.ec50,4),'large')+rItem('Hill Slope',fmt(r.hill,4))+rItem('Bottom',fmt(r.bottom,4))+rItem('Top',fmt(r.top,4))+rItem('R²',fmt(r.r2,4),'large')+'</div>'
     +'<div class="interpretation"><strong>Result:</strong> EC50/IC50 = <strong>'+fmt(r.ec50,3)+'</strong>. Hill slope = '+fmt(r.hill,2)+'. R² = '+fmt(r.r2,4)+'. '+(r.r2>0.95?'The model fits the data very well.':'The model fit could be improved — check for outliers or consider a different model.')+'</div></div>';
 }
+
+/* ── File Upload Handler ─────────────────────── */
+var uploadedData = null; /* { headers:[], rows:[], data:[], delimiter:string } */
+var uploadZone = document.getElementById('uploadZone');
+var fileInput = document.getElementById('fileInput');
+
+/* Drag & drop */
+uploadZone.addEventListener('dragover', function(e) { e.preventDefault(); uploadZone.classList.add('dragover'); });
+uploadZone.addEventListener('dragleave', function() { uploadZone.classList.remove('dragover'); });
+uploadZone.addEventListener('drop', function(e) {
+  e.preventDefault(); uploadZone.classList.remove('dragover');
+  if (e.dataTransfer.files.length) processFile(e.dataTransfer.files[0]);
+});
+fileInput.addEventListener('change', function() { if (fileInput.files.length) processFile(fileInput.files[0]); });
+
+function processFile(file) {
+  var name = file.name.toLowerCase();
+  if (name.endsWith('.xlsx') || name.endsWith('.xls')) {
+    if (typeof XLSX === 'undefined') { alert('Excel parser loading... please try again in 2 seconds.'); return; }
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      var wb = XLSX.read(e.target.result, { type: 'array' });
+      var ws = wb.Sheets[wb.SheetNames[0]];
+      var csv = XLSX.utils.sheet_to_csv(ws);
+      showPreview(csv, file.name);
+    };
+    reader.readAsArrayBuffer(file);
+  } else {
+    var reader = new FileReader();
+    reader.onload = function(e) { showPreview(e.target.result, file.name); };
+    reader.readAsText(file);
+  }
+}
+
+function showPreview(text, filename) {
+  uploadedData = BioStat.parseSheet(text);
+  var preview = document.getElementById('uploadPreview');
+  var title = document.getElementById('previewTitle');
+  var tableEl = document.getElementById('previewTable');
+  title.textContent = filename + ' (' + uploadedData.rows.length + ' rows, ' + (uploadedData.headers.length || uploadedData.rows[0].length) + ' columns)';
+  /* Build preview table */
+  var html = '<table><thead><tr>';
+  if (uploadedData.headers.length) {
+    for (var j = 0; j < uploadedData.headers.length; j++) html += '<th>' + esc(uploadedData.headers[j]) + '</th>';
+  } else {
+    for (var j = 0; j < uploadedData.rows[0].length; j++) html += '<th>Col ' + (j + 1) + '</th>';
+  }
+  html += '</tr></thead><tbody>';
+  var maxRows = Math.min(uploadedData.rows.length, 10);
+  for (var i = 0; i < maxRows; i++) {
+    html += '<tr>';
+    for (var j = 0; j < uploadedData.rows[i].length; j++) {
+      html += '<td>' + (uploadedData.rows[i][j] !== null ? uploadedData.rows[i][j] : '') + '</td>';
+    }
+    html += '</tr>';
+  }
+  if (uploadedData.rows.length > 10) html += '<tr><td colspan="99" style="text-align:center;color:var(--text3);font-style:italic">... ' + (uploadedData.rows.length - 10) + ' more rows</td></tr>';
+  html += '</tbody></table>';
+  tableEl.innerHTML = html;
+  /* Build column mapping UI */
+  buildColumnMap();
+  preview.classList.add('show');
+}
+
+function buildColumnMap() {
+  var area = document.getElementById('colMapArea');
+  if (!uploadedData || !uploadedData.headers.length) { area.innerHTML = '<p style="font-size:12px;color:var(--text3);margin-top:8px">No headers detected — data will be treated as raw numeric values.</p>'; return; }
+  var colCount = uploadedData.headers.length;
+  var html = '<div style="margin-top:12px;font-size:12px;color:var(--text2);font-weight:600">Map columns to calculator fields:</div>';
+  html += '<div class="col-map"><label>Calculator Field</label><label></label><label>Data Column</label></div>';
+  var fields = ['Group A', 'Group B', 'X Variable', 'Y Variable'];
+  var defaults = [0, colCount > 1 ? 1 : 0, 0, colCount > 1 ? 1 : 0];
+  for (var i = 0; i < fields.length; i++) {
+    html += '<div class="col-map"><label>' + fields[i] + '</label><span class="map-arrow">&larr;</span><select id="colMap_' + i + '">';
+    html += '<option value="">-- skip --</option>';
+    for (var j = 0; j < colCount; j++) {
+      html += '<option value="' + j + '"' + (j === defaults[i] ? ' selected' : '') + '>' + esc(uploadedData.headers[j]) + '</option>';
+    }
+    html += '</select></div>';
+  }
+  area.innerHTML = html;
+}
+
+function clearUpload() {
+  uploadedData = null;
+  document.getElementById('uploadPreview').classList.remove('show');
+  fileInput.value = '';
+}
+
+function useUploadedData() {
+  if (!uploadedData) return;
+  var rows = uploadedData.rows;
+  var headers = uploadedData.headers;
+  /* Read column mappings */
+  var maps = {};
+  for (var i = 0; i < 4; i++) {
+    var sel = document.getElementById('colMap_' + i);
+    maps[i] = sel && sel.value !== '' ? parseInt(sel.value) : -1;
+  }
+  var fieldNames = ['Group A', 'Group B', 'X Variable', 'Y Variable'];
+  var targetTextareas = {
+    0: 'Group A Data (one value per line)',
+    1: 'Group B Data (one value per line)',
+    2: 'Variable X (one value per line)',
+    3: 'Variable Y (one value per line)'
+  };
+
+  /* Extract mapped columns */
+  var columns = {};
+  for (var key in maps) {
+    if (maps[key] >= 0) {
+      var col = [];
+      for (var r = 0; r < rows.length; r++) {
+        if (rows[r][maps[key]] !== null && rows[r][maps[key]] !== undefined) col.push(rows[r][maps[key]]);
+      }
+      columns[key] = col;
+    }
+  }
+
+  /* Auto-detect which tab to activate and fill data */
+  var activeTab = document.querySelector('.tab-btn.active').dataset.tab;
+
+  if (columns[0] && columns[1]) {
+    /* Two columns → t-test or correlation */
+    document.getElementById('ttest-a').value = columns[0].join('\n');
+    document.getElementById('ttest-b').value = columns[1].join('\n');
+    document.getElementById('corr-x').value = columns[0].join('\n');
+    document.getElementById('corr-y').value = columns[1].join('\n');
+    document.getElementById('reg-x').value = columns[0].join('\n');
+    document.getElementById('reg-y').value = columns[1].join('\n');
+    document.getElementById('np-a').value = columns[0].join('\n');
+    document.getElementById('np-b').value = columns[1].join('\n');
+    document.getElementById('eff-a').value = columns[0].join('\n');
+    document.getElementById('eff-b').value = columns[1].join('\n');
+    document.getElementById('ttest-before').value = columns[0].join('\n');
+    document.getElementById('ttest-after').value = columns[1].join('\n');
+    /* Switch to t-test tab */
+    switchTab('ttest');
+  } else if (columns[0]) {
+    /* Single column → descriptive */
+    document.getElementById('desc-data').value = columns[0].join('\n');
+    switchTab('descriptive');
+  }
+
+  clearUpload();
+}
+
+function switchTab(tabName) {
+  document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+  document.querySelectorAll('.tab-panel').forEach(function(p) { p.classList.remove('active'); });
+  document.querySelector('[data-tab="' + tabName + '"]').classList.add('active');
+  document.getElementById('panel-' + tabName).classList.add('active');
+}
+
+function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
 
 /* ── Auth Modal ─────────────────────────────── */
 var AUTH_MODE='login';

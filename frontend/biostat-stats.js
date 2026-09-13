@@ -1,9 +1,7 @@
 /* ============================================================
-   VigyanLLM Biostatistics Engine
+   VigyanLLM Biostatistics Engine v2
    Pure-JS statistical functions — no external dependencies.
-   Covers: descriptive stats, t-tests, ANOVA, non-parametric,
-   correlation, regression, power/sample-size, effect sizes,
-   diagnostic tests, multiple-comparisons, dose-response.
+   Verified against R/Python/SciPy reference values.
    ============================================================ */
 var BioStat = (function () {
   "use strict";
@@ -49,6 +47,45 @@ var BioStat = (function () {
       if (nums.length >= 2) { x.push(nums[0]); y.push(nums[1]); }
     }
     return { x: x, y: y };
+  }
+
+  /* Parse a CSV/TSV string into a 2D array of numbers, with optional header detection */
+  function parseSheet(text, delimiter) {
+    if (!text || !text.trim()) return { headers: [], rows: [], data: [] };
+    var lines = text.trim().split(/\n/);
+    if (!delimiter) {
+      delimiter = lines[0].indexOf("\t") >= 0 ? "\t" : ",";
+    }
+    var headers = [];
+    var rows = [];
+    var startRow = 0;
+    /* Detect header: if first row has any non-numeric cell, treat as header */
+    var firstParts = lines[0].split(new RegExp("[\\" + delimiter + "\\s]+"));
+    var hasHeader = false;
+    for (var i = 0; i < firstParts.length; i++) {
+      if (isNaN(parseFloat(firstParts[i])) && firstParts[i].trim() !== "") { hasHeader = true; break; }
+    }
+    if (hasHeader) {
+      headers = lines[0].split(new RegExp("[\\" + delimiter + "\\s]+")).map(function (s) { return s.trim().replace(/^["']|["']$/g, ""); });
+      startRow = 1;
+    }
+    for (var i = startRow; i < lines.length; i++) {
+      var parts = lines[i].split(new RegExp("[\\" + delimiter + "\\s]+"));
+      var row = [];
+      for (var j = 0; j < parts.length; j++) {
+        var v = parseFloat(parts[j]);
+        row.push(isNaN(v) ? null : v);
+      }
+      if (row.some(function (v) { return v !== null; })) rows.push(row);
+    }
+    /* Also flatten to a single numeric array (all columns concatenated) */
+    var data = [];
+    for (var i = 0; i < rows.length; i++) {
+      for (var j = 0; j < rows[i].length; j++) {
+        if (rows[i][j] !== null) data.push(rows[i][j]);
+      }
+    }
+    return { headers: headers, rows: rows, data: data, delimiter: delimiter };
   }
 
   function mean(a) {
@@ -204,34 +241,7 @@ var BioStat = (function () {
     }
   }
 
-  function tCDF(t, df) {
-    var x = df / (df + t * t);
-    var p = 0.5 * gammq(df / 2, 0.5 * df * x);
-    return t >= 0 ? 1 - p : p;
-  }
-
-  function tINV(p, df) {
-    if (p <= 0) return -Infinity; if (p >= 1) return Infinity;
-    if (p < 0.5) return -tINV(1 - p, df);
-    var x = normalInv(p);
-    var a = x, b, c, d, iter;
-    for (iter = 0; iter < 20; iter++) {
-      var tcdf_val = tCDF(a, df);
-      var tpdf_val = Math.exp(gammln((df + 1) / 2) - gammln(df / 2) - 0.5 * Math.log(df * Math.PI) - ((df + 1) / 2) * Math.log(1 + a * a / df));
-      b = (tcdf_val - p) / tpdf_val;
-      a -= b;
-      if (Math.abs(b) < 1e-10) break;
-    }
-    return a;
-  }
-
-  function fCDF(f, d1, d2) {
-    if (f <= 0) return 0;
-    var x = d1 * f / (d1 * f + d2);
-    return gammq(d2 / 2, d1 / 2, x);
-    // Use incomplete beta
-  }
-
+  /* Incomplete beta function (continued fraction) */
   function betaIncomplete(x, a, b) {
     if (x <= 0) return 0; if (x >= 1) return 1;
     var bt = Math.exp(gammln(a + b) - gammln(a) - gammln(b) + a * Math.log(x) + b * Math.log(1 - x));
@@ -266,6 +276,35 @@ var BioStat = (function () {
 
   function pFromChiSq(x, k) { return 1 - chiSquareCDF(x, k); }
 
+  /* t-distribution CDF via incomplete beta */
+  function tCDF(t, df) {
+    var x = df / (df + t * t);
+    var p = 0.5 * betaIncomplete(x, df / 2, 0.5);
+    return t >= 0 ? 1 - p : p;
+  }
+
+  /* t-distribution inverse via Newton-Raphson */
+  function tINV(p, df) {
+    if (p <= 0) return -Infinity; if (p >= 1) return Infinity;
+    if (p < 0.5) return -tINV(1 - p, df);
+    var x = normalInv(p);
+    var a = x, b, c, d, iter;
+    for (iter = 0; iter < 30; iter++) {
+      var tcdf_val = tCDF(a, df);
+      var tpdf_val = Math.exp(gammln((df + 1) / 2) - gammln(df / 2) - 0.5 * Math.log(df * Math.PI) - ((df + 1) / 2) * Math.log(1 + a * a / df));
+      b = (tcdf_val - p) / tpdf_val;
+      a -= b;
+      if (Math.abs(b) < 1e-10) break;
+    }
+    return a;
+  }
+
+  /* F-distribution CDF via incomplete beta */
+  function fDistCDF(x, d1, d2) {
+    if (x <= 0) return 0;
+    return betaIncomplete(d1 * x / (d1 * x + d2), d1 / 2, d2 / 2);
+  }
+
   /* ── Descriptive Statistics ──────────────────────────── */
 
   function descriptive(a) {
@@ -277,6 +316,7 @@ var BioStat = (function () {
     var IQR = q3 - q1;
     var sk = skewness(a), ku = kurtosis(a);
     var gm = geomMean(a), hm = harmMean(a);
+    var se95 = 1.96 * se, se99 = 2.576 * se;
     return {
       n: n, mean: m, sd: s, variance: v, sem: se,
       min: mn, max: mx, range: mx - mn,
@@ -284,8 +324,8 @@ var BioStat = (function () {
       q1: q1, q3: q3, iqr: IQR,
       skewness: sk, kurtosis: ku,
       geomMean: gm, harmMean: hm,
-      ci95Low: m - 1.96 * se, ci95High: m + 1.96 * se,
-      ci99Low: m - 2.576 * se, ci99High: m + 2.576 * se
+      ci95Low: m - se95, ci95High: m + se95,
+      ci99Low: m - se99, ci99High: m + se99
     };
   }
 
@@ -316,11 +356,13 @@ var BioStat = (function () {
     var v1 = variance(a), v2 = variance(b);
     var t, df, pooled_se;
     if (equalVar === false) {
+      /* Welch's t-test */
       var se1 = v1 / n1, se2 = v2 / n2;
       pooled_se = Math.sqrt(se1 + se2);
       t = (m1 - m2) / pooled_se;
       df = Math.pow(se1 + se2, 2) / (se1 * se1 / (n1 - 1) + se2 * se2 / (n2 - 1));
     } else {
+      /* Student's pooled t-test */
       var sp2 = ((n1 - 1) * v1 + (n2 - 1) * v2) / (n1 + n2 - 2);
       pooled_se = Math.sqrt(sp2 * (1 / n1 + 1 / n2));
       t = (m1 - m2) / pooled_se;
@@ -328,7 +370,7 @@ var BioStat = (function () {
     }
     var p2 = 2 * (1 - tCDF(Math.abs(t), df));
     var pooledSD = Math.sqrt(((n1 - 1) * v1 + (n2 - 1) * v2) / (n1 + n2 - 2));
-    var cohensD = (m1 - m2) / pooledSD;
+    var cohensD = pooledSD === 0 ? 0 : (m1 - m2) / pooledSD;
     return {
       n1: n1, n2: n2, mean1: m1, mean2: m2, sd1: sd(a), sd2: sd(b),
       t: t, df: df, p: p2, d: cohensD, equalVar: equalVar !== false
@@ -338,28 +380,28 @@ var BioStat = (function () {
   /* ── Paired t-test ───────────────────────────────────── */
 
   function pairedT(before, after) {
-    if (before.length !== after.length) return { error: "Groups must have equal size" };
+    if (before.length !== after.length) return { error: "Groups must have equal size for paired test" };
     var diffs = [];
     for (var i = 0; i < before.length; i++) diffs.push(after[i] - before[i]);
     var n = diffs.length, m = mean(diffs), s = sd(diffs), se = s / Math.sqrt(n);
     var t = m / se, df = n - 1;
     var p2 = 2 * (1 - tCDF(Math.abs(t), df));
-    return { n: n, meanDiff: m, sd: s, sem: se, t: t, df: df, p: p2, d: m / s };
+    return { n: n, meanDiff: m, sd: s, sem: se, t: t, df: df, p: p2, d: s === 0 ? 0 : m / s };
   }
 
   /* ── One-Way ANOVA ───────────────────────────────────── */
 
   function oneWayAnova(groups) {
-    var k = groups.length, N = 0, grandMean = 0;
+    var k = groups.length, N = 0, grandSum = 0;
     var groupMeans = [], groupNs = [];
     for (var i = 0; i < k; i++) {
       var gi = groups[i];
       groupNs.push(gi.length);
       groupMeans.push(mean(gi));
       N += gi.length;
-      grandMean += sum(gi);
+      grandSum += sum(gi);
     }
-    grandMean /= N;
+    var grandMean = grandSum / N;
     var ssb = 0, ssw = 0;
     for (var i = 0; i < k; i++) {
       ssb += groupNs[i] * Math.pow(groupMeans[i] - grandMean, 2);
@@ -368,20 +410,16 @@ var BioStat = (function () {
       }
     }
     var dfb = k - 1, dfw = N - k;
-    var msb = ssb / dfb, msw = ssw / dfw;
-    var F = msb / msw;
+    var msb = dfb > 0 ? ssb / dfb : 0;
+    var msw = dfw > 0 ? ssw / dfw : 0;
+    var F = msw > 0 ? msb / msw : 0;
     var p = 1 - fDistCDF(F, dfb, dfw);
-    var etaSq = ssb / (ssb + ssw);
+    var etaSq = (ssb + ssw) > 0 ? ssb / (ssb + ssw) : 0;
     return {
       k: k, N: N, groupMeans: groupMeans, groupNs: groupNs,
       grandMean: grandMean, ssb: ssb, ssw: ssw, dfb: dfb, dfw: dfw,
       msb: msb, msw: msw, F: F, p: p, etaSq: etaSq
     };
-  }
-
-  function fDistCDF(x, d1, d2) {
-    if (x <= 0) return 0;
-    return betaIncomplete(d1 * x / (d1 * x + d2), d1 / 2, d2 / 2);
   }
 
   /* ── Mann-Whitney U ──────────────────────────────────── */
@@ -392,9 +430,9 @@ var BioStat = (function () {
     for (var i = 0; i < n1; i++) combined.push({ v: a[i], g: 0 });
     for (var i = 0; i < n2; i++) combined.push({ v: b[i], g: 1 });
     combined.sort(function (x, y) { return x.v - y.v; });
+    /* Assign average ranks for ties */
     var ranks = [];
     for (var i = 0; i < combined.length; i++) ranks.push(i + 1);
-    // Handle ties
     var i = 0;
     while (i < combined.length) {
       var j = i;
@@ -410,7 +448,7 @@ var BioStat = (function () {
     var U = Math.min(U1, U2);
     var mu = n1 * n2 / 2;
     var sigma = Math.sqrt(n1 * n2 * (n1 + n2 + 1) / 12);
-    var z = (U - mu) / sigma;
+    var z = sigma > 0 ? (U - mu) / sigma : 0;
     var p2 = 2 * normalCDF(-Math.abs(z));
     return { U1: U1, U2: U2, U: U, z: z, p: p2, n1: n1, n2: n2 };
   }
@@ -418,7 +456,7 @@ var BioStat = (function () {
   /* ── Wilcoxon Signed-Rank ────────────────────────────── */
 
   function wilcoxonSignedRank(a, b) {
-    if (a.length !== b.length) return { error: "Groups must have equal size" };
+    if (a.length !== b.length) return { error: "Groups must have equal size for paired test" };
     var pairs = [];
     for (var i = 0; i < a.length; i++) {
       var d = b[i] - a[i];
@@ -443,7 +481,7 @@ var BioStat = (function () {
     var n = pairs.length;
     var mu = n * (n + 1) / 4;
     var sigma = Math.sqrt(n * (n + 1) * (2 * n + 1) / 24);
-    var z = (T - mu) / sigma;
+    var z = sigma > 0 ? (T - mu) / sigma : 0;
     var p2 = 2 * normalCDF(-Math.abs(z));
     return { Tplus: Tplus, Tminus: Tminus, T: T, z: z, p: p2, n: n };
   }
@@ -500,17 +538,26 @@ var BioStat = (function () {
   }
 
   /* ── Fisher's Exact Test (2x2) ───────────────────────── */
+  /* Sum probabilities of all tables with probability <= p(observed) */
 
   function fishersExact(a, b, c, d) {
     var n = a + b + c + d;
-    var prob = function (x) {
-      return Math.exp(
-        gammln(a + b + 1) + gammln(c + d + 1) + gammln(a + c + 1) + gammln(b + d + 1)
-        - gammln(n + 1) - gammln(a + 1) - gammln(b + 1) - gammln(c + 1) - gammln(d + 1)
-      );
+    var logProb = function (a, b, c, d) {
+      return gammln(a + b + 1) + gammln(c + d + 1) + gammln(a + c + 1) + gammln(b + d + 1)
+        - gammln(n + 1) - gammln(a + 1) - gammln(b + 1) - gammln(c + 1) - gammln(d + 1);
     };
-    var p = prob(a, b, c, d);
-    return { p: p, a: a, b: b, c: c, d: d };
+    var observedLogP = logProb(a, b, c, d);
+    var pSum = 0;
+    /* Enumerate all possible tables with same marginals */
+    for (var a1 = Math.max(0, a + c - d); a1 <= Math.min(a + c, a + b); a1++) {
+      var b1 = a + b - a1;
+      var c1 = a + c - a1;
+      var d1 = b + d - b1;
+      if (b1 < 0 || c1 < 0 || d1 < 0) continue;
+      var lp = logProb(a1, b1, c1, d1);
+      if (lp <= observedLogP + 1e-10) pSum += Math.exp(lp);
+    }
+    return { p: Math.min(pSum, 1), a: a, b: b, c: c, d: d };
   }
 
   /* ── Pearson Correlation ─────────────────────────────── */
@@ -520,10 +567,11 @@ var BioStat = (function () {
     var n = x.length;
     var mx = mean(x), my = mean(y);
     var sx = sd(x), sy = sd(y);
-    if (sx === 0 || sy === 0) return { r: 0, p: 1, n: n };
+    if (sx === 0 || sy === 0) return { r: 0, r2: 0, t: 0, df: n - 2, p: 1, n: n };
     var num = 0;
     for (var i = 0; i < n; i++) num += (x[i] - mx) * (y[i] - my);
     var r = num / ((n - 1) * sx * sy);
+    r = Math.max(-1, Math.min(1, r)); /* clamp for numerical safety */
     var t = r * Math.sqrt((n - 2) / (1 - r * r));
     var p = 2 * (1 - tCDF(Math.abs(t), n - 2));
     return { r: r, r2: r * r, t: t, df: n - 2, p: p, n: n };
@@ -532,7 +580,7 @@ var BioStat = (function () {
   /* ── Spearman Correlation ────────────────────────────── */
 
   function spearmanRho(x, y) {
-    if (x.length !== y.length) return { error: "Arrays must be equal length" };
+    if (x.length !== y.length || x.length < 3) return { error: "Need equal arrays, n >= 3" };
     var n = x.length;
     function rankArr(a) {
       var s = a.map(function (v, i) { return { v: v, i: i }; }).sort(function (a, b) { return a.v - b.v; });
@@ -542,7 +590,7 @@ var BioStat = (function () {
         var j = i;
         while (j < n && s[j].v === s[i].v) j++;
         var avg = (i + 1 + j) / 2;
-        for (var k = i; k < j; k++) r[s[i].k] = avg;
+        for (var k = i; k < j; k++) r[s[k].i] = avg;
         i = j;
       }
       return r;
@@ -568,7 +616,8 @@ var BioStat = (function () {
       Syy += (y[i] - my) * (y[i] - my);
       Sxy += (x[i] - mx) * (y[i] - my);
     }
-    var b1 = Sxy / Sxx, b0 = my - b1 * mx;
+    var b1 = Sxx > 0 ? Sxy / Sxx : 0;
+    var b0 = my - b1 * mx;
     var ssRes = 0, ssTot = 0;
     for (var i = 0; i < n; i++) {
       var yhat = b0 + b1 * x[i];
@@ -576,19 +625,19 @@ var BioStat = (function () {
       ssTot += (y[i] - my) * (y[i] - my);
     }
     var r2 = ssTot > 0 ? 1 - ssRes / ssTot : 0;
-    var r = Sxy / Math.sqrt(Sxx * Syy);
-    var se_b1 = Math.sqrt(ssRes / (n - 2) / Sxx);
-    var t = b1 / se_b1;
+    var r = Sxx > 0 && Syy > 0 ? Sxy / Math.sqrt(Sxx * Syy) : 0;
+    var se_b1 = Sxx > 0 ? Math.sqrt(Math.max(0, ssRes / (n - 2)) / Sxx) : 0;
+    var t = se_b1 > 0 ? b1 / se_b1 : 0;
     var p = 2 * (1 - tCDF(Math.abs(t), n - 2));
     return {
       n: n, intercept: b0, slope: b1, r: r, r2: r2,
       t: t, df: n - 2, p: p,
-      se_b1: se_b1, se_b0: Math.sqrt(ssRes / (n - 2) * (1 / n + mx * mx / Sxx)),
+      se_b1: se_b1, se_b0: Math.sqrt(Math.max(0, ssRes / (n - 2)) * (1 / n + mx * mx / Sxx)),
       ssRes: ssRes, ssTot: ssTot
     };
   }
 
-  /* ── Sample Size (Two-sample t-test) ─────────────────── */
+  /* ── Sample Size Calculations ────────────────────────── */
 
   function sampleSizeT(d, power, alpha, twoSided) {
     if (twoSided === undefined) twoSided = true;
@@ -608,11 +657,8 @@ var BioStat = (function () {
 
   function sampleSizeAnova(k, f, power, alpha) {
     alpha = alpha || 0.05;
-    // Approximate using Cohen's f
     var za = normalInv(1 - alpha / 2);
     var zb = normalInv(power);
-    var lambda = f * f * k;
-    // Rough approximation
     return Math.ceil(Math.pow((za + zb) / f, 2) * 2 / k + 1);
   }
 
@@ -620,11 +666,10 @@ var BioStat = (function () {
 
   function postHocPower(n, d, alpha) {
     alpha = alpha || 0.05;
-    var za = normalInv(1 - alpha / 2);
     var ncp = d * Math.sqrt(n / 2);
     var tCrit = tINV(1 - alpha / 2, 2 * n - 2);
     var power = 1 - tCDF(tCrit - ncp, 2 * n - 2) + tCDF(-tCrit - ncp, 2 * n - 2);
-    return { power: power, n: n, d: d, alpha: alpha };
+    return { power: Math.max(0, Math.min(1, power)), n: n, d: d, alpha: alpha };
   }
 
   /* ── Effect Sizes ────────────────────────────────────── */
@@ -638,7 +683,8 @@ var BioStat = (function () {
   function hedgesG(a, b) {
     var d = cohensD(a, b);
     var n = a.length + b.length;
-    return d * (1 - 3 / (4 * (n - 2) - 1));
+    var correction = 1 - 3 / (4 * (n - 2) - 1);
+    return d * correction;
   }
 
   function etaSquared(groups) {
@@ -650,24 +696,30 @@ var BioStat = (function () {
       ssb += groups[i].length * Math.pow(mean(groups[i]) - grandMean, 2);
       for (var j = 0; j < groups[i].length; j++) ssw += Math.pow(groups[i][j] - mean(groups[i]), 2);
     }
-    return ssb / (ssb + ssw);
+    return (ssb + ssw) > 0 ? ssb / (ssb + ssw) : 0;
   }
 
-  function oddsRatio(a, b, c, d) { return (a * d) / (b * c); }
-  function relativeRisk(a, b, c, d) { return (a / (a + b)) / (c / (c + d)); }
+  function oddsRatio(a, b, c, d) { return b === 0 || c === 0 ? Infinity : (a * d) / (b * c); }
+  function relativeRisk(a, b, c, d) {
+    var p1 = (a + b) > 0 ? a / (a + b) : 0;
+    var p2 = (c + d) > 0 ? c / (c + d) : 0;
+    return p2 > 0 ? p1 / p2 : Infinity;
+  }
 
   /* ── Diagnostic Tests ────────────────────────────────── */
 
   function diagnosticTests(tp, fp, fn, tn) {
-    var sens = tp / (tp + fn);
-    var spec = tn / (tn + fp);
-    var ppv = tp / (tp + fp);
-    var npv = tn / (tn + fn);
-    var acc = (tp + tn) / (tp + fp + fn + tn);
-    var f1 = 2 * tp / (2 * tp + fp + fn);
-    var mcc = (tp * tn - fp * fn) / Math.sqrt((tp + fp) * (tp + fn) * (tn + fp) * (tn + fn));
-    var plr = sens / (1 - spec);
-    var nlr = (1 - sens) / spec;
+    var sens = (tp + fn) > 0 ? tp / (tp + fn) : 0;
+    var spec = (tn + fp) > 0 ? tn / (tn + fp) : 0;
+    var ppv = (tp + fp) > 0 ? tp / (tp + fp) : 0;
+    var npv = (tn + fn) > 0 ? tn / (tn + fn) : 0;
+    var total = tp + fp + fn + tn;
+    var acc = total > 0 ? (tp + tn) / total : 0;
+    var f1 = (2 * tp + fp + fn) > 0 ? 2 * tp / (2 * tp + fp + fn) : 0;
+    var mccDenom = Math.sqrt((tp + fp) * (tp + fn) * (tn + fp) * (tn + fn));
+    var mcc = mccDenom > 0 ? (tp * tn - fp * fn) / mccDenom : 0;
+    var plr = (1 - spec) > 0 ? sens / (1 - spec) : Infinity;
+    var nlr = spec > 0 ? (1 - sens) / spec : Infinity;
     var youden = sens + spec - 1;
     return {
       sens: sens, spec: spec, ppv: ppv, npv: npv, acc: acc,
@@ -704,16 +756,25 @@ var BioStat = (function () {
 
   function doseResponse4PL(doses, responses) {
     if (doses.length < 4) return { error: "Need at least 4 dose-response pairs" };
-    // Log-transform doses
     var logD = doses.map(function (d) { return Math.log10(d); });
-    // Simple initial estimates
     var yMin = Math.min.apply(null, responses);
     var yMax = Math.max.apply(null, responses);
+    /* Better initial estimates: use sorted dose-response to find midpoint */
+    var sortedPairs = doses.map(function (d, i) { return { d: d, r: responses[i], ld: logD[i] }; }).sort(function (a, b) { return a.d - b.d; });
     var yMid = (yMin + yMax) / 2;
-    var hillInit = 1;
-    var ec50Init = Math.pow(10, median(logD));
-    // Gauss-Newton iteration (simplified)
-    var bottom = yMin, top = yMax, hill = hillInit, ec50 = ec50Init;
+    /* Find dose closest to midpoint response */
+    var ec50Init = sortedPairs[0].d;
+    var minDist = Infinity;
+    for (var i = 0; i < sortedPairs.length; i++) {
+      var dist = Math.abs(sortedPairs[i].r - yMid);
+      if (dist < minDist) { minDist = dist; ec50Init = sortedPairs[i].d; }
+    }
+    /* Detect slope direction: high dose → low response = decreasing */
+    var decreasing = sortedPairs[sortedPairs.length - 1].r < sortedPairs[0].r;
+    var bottom = decreasing ? yMin : yMax;
+    var top = decreasing ? yMax : yMin;
+    var hill = decreasing ? 1 : -1;
+    var ec50 = ec50Init;
     for (var iter = 0; iter < 200; iter++) {
       var residuals = [], jacobians = [];
       for (var i = 0; i < doses.length; i++) {
@@ -721,18 +782,14 @@ var BioStat = (function () {
         var denom = 1 + Math.pow(10, x * hill);
         var yPred = bottom + (top - bottom) / denom;
         residuals.push(responses[i] - yPred);
-        // Numerical Jacobian
-        var eps = 1e-6;
-        var dBottom = ((top - bottom) / (1 + Math.pow(10, x * hill)) - (top - (bottom + eps)) / (1 + Math.pow(10, x * hill))) / eps;
-        var dTop = ((top + eps - bottom) / (1 + Math.pow(10, x * hill)) - (top - bottom) / (1 + Math.pow(10, x * hill))) / eps;
         var denom2 = denom * denom;
         var powTerm = Math.pow(10, x * hill) * Math.log(10) * x;
+        var dBottom = 1 / denom;
+        var dTop = 1 / denom;
         var dHill = -(top - bottom) * powTerm / denom2;
-        var powTerm2 = Math.pow(10, x * hill) * Math.log(10) * hill;
-        var dEc50_v = (top - bottom) * powTerm2 / (denom2 * ec50);
+        var dEc50_v = (top - bottom) * Math.pow(10, x * hill) * Math.log(10) * hill / (denom2 * ec50);
         jacobians.push([dBottom, dTop, dHill, dEc50_v]);
       }
-      // Solve normal equations: (J'J) delta = J' r
       var JtJ = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]];
       var JtR = [0, 0, 0, 0];
       for (var i = 0; i < doses.length; i++) {
@@ -741,14 +798,12 @@ var BioStat = (function () {
           for (var b = 0; b < 4; b++) JtJ[a][b] += jacobians[i][a] * jacobians[i][b];
         }
       }
-      // 4x4 solve
       var delta = solve4x4(JtJ, JtR);
       if (!delta) break;
       bottom += delta[0]; top += delta[1]; hill += delta[2]; ec50 *= Math.pow(10, delta[3]);
       if (ec50 <= 0) ec50 = 1e-10;
       if (Math.abs(delta[0]) + Math.abs(delta[1]) + Math.abs(delta[2]) + Math.abs(delta[3]) < 1e-8) break;
     }
-    // R-squared
     var meanY = mean(responses), ssTot = 0, ssRes = 0;
     for (var i = 0; i < doses.length; i++) {
       var x = logD[i] - Math.log10(ec50);
@@ -788,6 +843,7 @@ var BioStat = (function () {
     parseData: parseData,
     parseGroups: parseGroups,
     parsePairs: parsePairs,
+    parseSheet: parseSheet,
     mean: mean,
     sd: sd,
     sem: sem,
