@@ -104,9 +104,8 @@ function handler(event) {
   }
 
   // 8. CLEAN URL REWRITES (explicit mappings)
-  // NOTE: /admin, /admin-reviews, /cms-admin are routed to EC2 via CloudFront
-  // behaviors and blocked by nginx — do NOT rewrite them here.
   var rewrites = {
+    '/blog': '/blog/index.html',
     '/developer': '/developer.html',
     '/developer/docs': '/developer-docs.html',
     '/developer/keys': '/developer-keys.html',

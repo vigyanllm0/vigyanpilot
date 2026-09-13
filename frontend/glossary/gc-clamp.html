@@ -225,6 +225,18 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     .compare-table td{padding:12px 16px;border-bottom:1px solid var(--border)}
     .compare-table tr:nth-child(even) td{background:var(--slate)}
 
+    .section{margin-bottom:40px}
+    .section h2{font-family:var(--font-h);font-size:20px;font-weight:700;color:var(--text);margin:40px 0 16px;padding-top:16px;border-top:1px solid var(--border)}
+    .section p{margin-bottom:16px;color:var(--text2);font-size:16px;line-height:1.7}
+
+    .practice-list{list-style:none;display:flex;flex-direction:column;gap:12px;margin:0 0 16px 0}
+    .practice-list li{position:relative;padding-left:20px;color:var(--text2);font-size:16px;line-height:1.7}
+    .practice-list li::before{content:"";position:absolute;left:0;top:10px;width:6px;height:6px;border-radius:50%;background:var(--accent)}
+
+    .related-tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+    .related-tag{display:inline-block;padding:6px 14px;border-radius:8px;background:var(--blue-bg);color:var(--blue);text-decoration:none;font-size:14px;font-weight:500;border:1px solid rgba(21,101,192,.15);transition:all .2s}
+    .related-tag:hover{background:var(--blue);color:#fff;border-color:var(--blue)}
+
     .faq-section{margin-top:48px}
     .faq-section h2{border-top:2px solid var(--border);padding-top:24px}
     details{background:#fff;border:1px solid var(--border);border-radius:12px;margin-bottom:12px;overflow:hidden}
@@ -308,6 +320,17 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <h2>What Is a GC Clamp?</h2>
 <p>A <strong>GC clamp</strong> is a deliberate placement of one or more guanine (G) or cytosine (C) nucleotides at the 3' end of a PCR primer. The term "clamp" reflects the stabilizing function: G-C base pairs form <strong>three hydrogen bonds</strong> (compared to two for A-T pairs), creating a stronger anchor at the primer's binding edge.</p>
 <p>In practical terms, a GC clamp ensures that the 3' terminus — the exact position where <a href="https://en.wikipedia.org/wiki/DNA_polymerase" target="_blank" rel="noopener">DNA polymerase</a> begins extending the new strand — is firmly hybridised to the template. This reduces the risk of primer slippage, mispriming, and failed amplification, particularly in AT-rich target regions where the 3' end would otherwise have weak intrinsic stability.</p>
+
+<h2>In Practice</h2>
+<p>GC clamps solve real problems in the lab. Key scenarios where they matter:</p>
+<ul class="practice-list">
+  <li>Amplifying AT-rich bacterial genomes (e.g., <em>Mycoplasma</em>, <em>Plasmodium</em>) where primers naturally end with A/T and fail without 3' stabilisation</li>
+  <li>Designing multiplex PCR panels where all primer pairs must anneal at a single temperature — consistent GC clamps reduce Tm variation across the panel</li>
+  <li>Building <a href="/glossary/qpcr">qPCR</a> and TaqMan assays where reliable 3' extension is essential for fluorescent signal generation during the exponential phase</li>
+  <li>Allele-specific PCR (AS-PCR) where an over-stabilised 3' end tolerates mismatches, reducing your ability to discriminate wild-type from variant alleles</li>
+  <li>Long-range PCR (>3 kb amplicons) where primer slippage at repetitive sequences causes stutter bands — a GC clamp anchors the primer and suppresses these artifacts</li>
+  <li>Cloning experiments with GC-rich inserts where adding extra G/C at the 3' end pushes <a href="/glossary/melting-temperature">Tm</a> beyond the polymerase's optimal range, requiring re-optimisation of annealing temperature</li>
+</ul>
 
 <h2>Why the 3' End Matters</h2>
 <p>DNA polymerase requires a stably hybridised 3' hydroxyl group to initiate nucleotide addition. If the 3' end of a primer is weakly bound (e.g., ending with A or T in an AT-rich context), the enzyme may dissociate before extension begins, or the primer may transiently misalign to a non-target site. The 3' end is therefore the <strong>most sequence-critical region</strong> of any PCR primer.</p>
@@ -401,6 +424,19 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   </ul>
   <p>You can also check any existing primer manually with our free <a href="/gc-calculator">GC Calculator</a> or design new primers with the <a href="/primer">Primer Design Tool</a>.</p>
 </div>
+
+<section class="section" id="related-terms">
+<h2>Related Terms</h2>
+<div class="related-tags">
+  <a href="/glossary/melting-temperature" class="related-tag">Melting Temperature</a>
+  <a href="/glossary/primer" class="related-tag">Primer</a>
+  <a href="/glossary/pcr" class="related-tag">PCR</a>
+  <a href="/glossary/gc-content" class="related-tag">GC Content</a>
+  <a href="/glossary/annealing-temperature" class="related-tag">Annealing Temperature</a>
+  <a href="/glossary/nucleotide" class="related-tag">Nucleotide</a>
+  <a href="/glossary/primer-dimer" class="related-tag">Primer Dimer</a>
+</div>
+</section>
 
 <section class="faq-section">
 <h2>Frequently Asked Questions</h2>
