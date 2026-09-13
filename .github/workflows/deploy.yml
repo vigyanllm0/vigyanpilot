@@ -160,7 +160,6 @@ jobs:
             printf '%s\n' "RAZORPAY_KEY_SECRET=${{ secrets.RAZORPAY_KEY_SECRET }}" >> .env
             printf '%s\n' "RAZORPAY_WEBHOOK_SECRET=${{ secrets.RAZORPAY_WEBHOOK_SECRET }}" >> .env
             printf '%s\n' "GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}" >> .env
-            printf '%s\n' "DOCKING_DATABASE_URL=${{ secrets.DOCKING_DATABASE_URL }}" >> .env
 
             # Start PostgreSQL
             if command -v pg_isready &>/dev/null && pg_isready -q 2>/dev/null; then
@@ -199,11 +198,11 @@ jobs:
             curl -sf http://localhost:11436/health && echo " OK" || echo " FAIL"
           ENDSSH
 
-      - name: Health check via Vercel proxy
+      - name: Health check via CloudFront
         run: |
           sleep 5
-          curl -sf https://vigyanllm.in/health || { echo " — Vercel proxy FAIL"; exit 1; }
-          curl -sf https://vigyanllm.in/api/config/public || { echo " — API config FAIL"; exit 1; }
+          curl -sf https://www.vigyanllm.in/health || { echo " — CloudFront health FAIL"; exit 1; }
+          curl -sf https://www.vigyanllm.in/api/config/public || { echo " — API config FAIL"; exit 1; }
           echo " — All endpoints OK"
 
       - name: Deploy notification
