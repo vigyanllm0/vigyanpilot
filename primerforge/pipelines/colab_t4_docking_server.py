@@ -56,6 +56,7 @@ print(f"✅ GPU detected: {_GPU_NAME}  |  VRAM: {_GPU_VRAM_TOTAL_GB} GB")
 # 2.  STANDARD IMPORTS  (safe on both CPU & GPU — no heavy GPU-only libs yet)
 # ═══════════════════════════════════════════════════════════════════════════════
 import datetime as _dt
+import logging
 import re
 import shutil
 import tempfile
@@ -69,6 +70,8 @@ import requests
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+
+logger = logging.getLogger(__name__)
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # 3.  GPU-ONLY IMPORTS  (gated — never run on the Mac backend)
@@ -321,8 +324,9 @@ async def api_docking(request: Request):
         result["pdb_id"] = pdb_id
         return result
     except Exception as exc:
+        logger.error("Vina docking failed: %s", exc, exc_info=True)
         return JSONResponse(
-            {"status": "error", "error": str(exc), "source": "COLAB_T4_VINA"},
+            {"status": "error", "error": "Docking failed.", "source": "COLAB_T4_VINA"},
             status_code=500,
         )
 
@@ -388,7 +392,8 @@ async def run_dry_lab(request: Request):
         return {"job_id": job_id, "status": "running"}
 
     except Exception as exc:
-        return JSONResponse({"status": "error", "error": str(exc)}, status_code=500)
+        logger.error("Dry lab docking failed: %s", exc, exc_info=True)
+        return JSONResponse({"status": "error", "error": "Docking failed."}, status_code=500)
 
 
 def _run_consensus_job(job_id: str, protein_pdb: str, smiles_list: list[str], top_n: int) -> None:

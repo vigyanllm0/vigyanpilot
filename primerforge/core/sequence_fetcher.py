@@ -585,7 +585,7 @@ def search_databases(query: str, database: str = "auto", organism: str = "human"
                     r["database_label"] = db_info["label"]
                 all_results.extend(results)
         except Exception as e:
-            errors.append(f"{db_name}: {str(e)[:150]}")
+            errors.append(f"{db_name}: Search failed")
             logger.warning("Search %s failed: %s", db_name, e)
             continue
 

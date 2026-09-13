@@ -23,7 +23,7 @@
 
   gtag('set', 'ads_data_redaction', true);
 </script>
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-PB0XMF4GEH"></script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PB0XMF4GEH" integrity="sha384-hACMoDCIDMba3jsHG3rMgdvIrTqUjGNEOMNz7cNKE+iuubQod4g9e9628Tl1SuzS" crossorigin="anonymous"></script>
 <script>
   gtag('js', new Date());
   gtag('config', 'G-PB0XMF4GEH');
@@ -267,6 +267,8 @@ function loadRazorpaySdk() {
     if (window.Razorpay) return resolve();
     var s = document.createElement('script');
     s.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    s.integrity = 'sha384-I5wXqcpkX4vItvjlQ0eOrOX93fB5rf7MJKERHCdEbV+I6tcpmDP+BygehrlGduS0';
+    s.crossOrigin = 'anonymous';
     s.onload = resolve;
     s.onerror = function() { reject(new Error('Failed to load Razorpay SDK')); };
     document.body.appendChild(s);
@@ -295,11 +297,8 @@ async function applyPromoCode() {
   btn.disabled = true; btn.textContent = 'Checking...'; msg.textContent = '';
 
   try {
-    var token = sessionStorage.getItem('pf_token') || '';
-    var headers = { 'Content-Type': 'application/json' };
-    if (token) headers['Authorization'] = 'Bearer ' + token;
     var r = await fetch(API + '/promo/validate', {
-      method: 'POST', headers: headers, credentials: 'same-origin',
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'same-origin',
       body: JSON.stringify({ code: code })
     });
     var d = await r.json();

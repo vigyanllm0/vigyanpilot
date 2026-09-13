@@ -315,12 +315,6 @@ def login():
         httponly=True, secure=True, samesite='Lax',
         max_age=86400 * 7, path='/'
     )
-    if result["user"].get("role") == "admin":
-        resp.set_cookie(
-            'admin_tk', result["token"],
-            httponly=True, secure=True, samesite='Strict',
-            max_age=1800, path='/'
-        )
     resp.set_cookie(
         'pf_refresh', refresh_token,
         httponly=True, secure=True, samesite='Lax',
@@ -366,7 +360,6 @@ def logout():
         invalidate_token(auth_header[7:])
     resp = jsonify({"success": True, "message": "Logged out successfully."})
     resp.set_cookie('pf_token', '', httponly=True, secure=True, samesite='Lax', max_age=0, path='/')
-    resp.set_cookie('admin_tk', '', httponly=True, secure=True, samesite='Strict', max_age=0, path='/')
     resp.set_cookie('pf_refresh', '', httponly=True, secure=True, samesite='Lax', max_age=0, path='/api/auth')
     return resp, 200
 
@@ -390,6 +383,19 @@ def change_password_route():
     auth = request.headers.get("Authorization", "")
     if auth.startswith("Bearer "):
         invalidate_token(auth[7:])
+
+    # Revoke all active API keys on password change (security: compromised keys should not survive)
+    try:
+        from primerforge.database import get_db_connection
+        conn = get_db_connection()
+        try:
+            cur = conn.cursor()
+            cur.execute("UPDATE api_keys SET is_active = FALSE WHERE user_id = %s", (g.user["user_id"],))
+            conn.commit()
+        finally:
+            conn.close()
+    except Exception:
+        logger.warning("Failed to revoke API keys after password change for user %s", g.user["user_id"])
 
     return jsonify(result), 200
 
@@ -725,7 +731,8 @@ def google_auth():
             if not ginfo.get("email"):
                 return jsonify({"error": "Could not retrieve email from Google credential."}), 400
         except Exception as e:
-            return jsonify({"error": f"Google verification failed: {str(e)[:100]}"}), 500
+            logger.error("Google credential verification failed: %s", e, exc_info=True)
+            return jsonify({"error": "Google verification failed."}), 500
     elif access_token and isinstance(access_token, str):
         try:
             r = http_requests.get(
@@ -737,7 +744,8 @@ def google_auth():
                 return jsonify({"error": "Invalid Google token."}), 401
             ginfo = r.json()
         except Exception as e:
-            return jsonify({"error": f"Google verification failed: {str(e)[:100]}"}), 500
+            logger.error("Google token verification failed: %s", e, exc_info=True)
+            return jsonify({"error": "Google verification failed."}), 500
     else:
         return jsonify({"error": "Google credential or access token is required."}), 400
 

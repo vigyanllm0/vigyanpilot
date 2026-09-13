@@ -64,6 +64,16 @@ def _ensure_guest_user() -> dict:
                 return {}
     if not row:
         return {}
+
+    # Defensive check: verify the guest user has the correct role.
+    # A wrong role (e.g. after a failed DB migration) means quota bypass
+    # via g.is_guest may silently stop working.
+    if row["role"] not in ("guest", "user"):
+        logger.critical(
+            "Guest user record has wrong role — anonymous quota bypass may be broken. "
+            "role=%s email=%s", row["role"], row["email"]
+        )
+
     return {"email": row["email"], "role": row["role"], "user_id": row["id"]}
 
 
@@ -101,7 +111,7 @@ def _route_error_handler(f):
         except Exception as exc:
             logger.error("Route %s failed: %s", f.__name__, exc, exc_info=True)
             return jsonify(brand_response({
-                "error": brand_error(f"Internal error: {str(exc)[:200]}"),
+                "error": brand_error("Internal error."),
                 "code": "INTERNAL_ERROR",
             })), 500
     return wrapper
@@ -891,12 +901,12 @@ def trigger_order_serialization(job_id: str):
 
     except ValueError as e:
         return jsonify(brand_response(
-            {"error": brand_error(str(e))}
+            {"error": brand_error("Invalid order data.")}
         )), 403
     except Exception as e:
         logger.error("Order serialization failed for job %s: %s", job_id, e)
         return jsonify(brand_response(
-            {"error": brand_error(f"Order serialization failed: {e!s}")}
+            {"error": brand_error("Order serialization failed.")}
         )), 500
 
     # Save order payload to database

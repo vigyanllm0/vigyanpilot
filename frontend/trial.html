@@ -22,7 +22,7 @@
   } catch (e) {}
   gtag('set', 'ads_data_redaction', true);
 </script>
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-PB0XMF4GEH"></script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PB0XMF4GEH" integrity="sha384-hACMoDCIDMba3jsHG3rMgdvIrTqUjGNEOMNz7cNKE+iuubQod4g9e9628Tl1SuzS" crossorigin="anonymous"></script>
 <script>gtag('js', new Date());gtag('config', 'G-PB0XMF4GEH');</script>
 <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
 new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
@@ -280,10 +280,7 @@ var promoData = null;
 
 async function checkExistingTrial() {
   try {
-    var token = sessionStorage.getItem('pf_token') || '';
-    var fetchOpts = { credentials: 'same-origin' };
-    if (token) fetchOpts.headers = { 'Authorization': 'Bearer ' + token };
-    var r = await fetch(API + '/trial/status', fetchOpts);
+    var r = await fetch(API + '/trial/status', { credentials: 'same-origin' });
     if (!r.ok) return;
     var d = await r.json();
     if (d.status === 'active') {
@@ -320,12 +317,9 @@ async function validateCode() {
   btn.textContent = 'Checking...';
 
   try {
-    var token = sessionStorage.getItem('pf_token') || '';
-    var vh = { 'Content-Type': 'application/json' };
-    if (token) vh['Authorization'] = 'Bearer ' + token;
     var r = await fetch(API + '/promo/validate', {
       method: 'POST',
-      headers: vh,
+      headers: { 'Content-Type': 'application/json' },
       credentials: 'same-origin',
       body: JSON.stringify({ code: code })
     });
@@ -401,12 +395,9 @@ async function openCheckout() {
 
   try {
     // Create ₹1 verification order
-    var token = sessionStorage.getItem('pf_token') || '';
-    var orderHeaders = { 'Content-Type': 'application/json' };
-    if (token) orderHeaders['Authorization'] = 'Bearer ' + token;
     var orderR = await fetch(API + '/promo/apply', {
       method: 'POST',
-      headers: orderHeaders,
+      headers: { 'Content-Type': 'application/json' },
       credentials: 'same-origin',
       body: JSON.stringify({
         code: promoData.code,
@@ -450,6 +441,8 @@ async function openCheckout() {
       // Load Razorpay SDK
       var s = document.createElement('script');
       s.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      s.integrity = 'sha384-I5wXqcpkX4vItvjlQ0eOrOX93fB5rf7MJKERHCdEbV+I6tcpmDP+BygehrlGduS0';
+      s.crossOrigin = 'anonymous';
       s.onload = function() {
         var rzp = new Razorpay(options);
         rzp.open();
@@ -473,12 +466,9 @@ async function verifyAndActivate(rzResponse) {
   btn.textContent = 'Verifying...';
 
   try {
-    var token = sessionStorage.getItem('pf_token') || '';
-    var vh2 = { 'Content-Type': 'application/json' };
-    if (token) vh2['Authorization'] = 'Bearer ' + token;
     var r = await fetch(API + '/promo/apply', {
       method: 'POST',
-      headers: vh2,
+      headers: { 'Content-Type': 'application/json' },
       credentials: 'same-origin',
       body: JSON.stringify({
         code: promoData.code,
@@ -509,11 +499,8 @@ async function verifyAndActivate(rzResponse) {
 async function cancelSubscription() {
   if (!confirm('Are you sure you want to cancel your subscription? You will lose access to Pro features.')) return;
   try {
-    var token = sessionStorage.getItem('pf_token') || '';
-    var ch = { 'Content-Type': 'application/json' };
-    if (token) ch['Authorization'] = 'Bearer ' + token;
     var r = await fetch(API + '/subscription/cancel', {
-      method: 'POST', headers: ch, credentials: 'same-origin'
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'same-origin'
     });
     var d = await r.json();
     if (r.ok) {
@@ -533,12 +520,9 @@ async function activateAcademic() {
   hideError('pay-error');
 
   try {
-    var token = sessionStorage.getItem('pf_token') || '';
-    var ah = { 'Content-Type': 'application/json' };
-    if (token) ah['Authorization'] = 'Bearer ' + token;
     var r = await fetch(API + '/promo/apply', {
       method: 'POST',
-      headers: ah,
+      headers: { 'Content-Type': 'application/json' },
       credentials: 'same-origin',
       body: JSON.stringify({ code: promoData.code })
     });

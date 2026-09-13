@@ -144,7 +144,7 @@ function handleGoogleCredential(res){
         sessionStorage.setItem('pf_user',JSON.stringify(res.data.user||{}));
         localStorage.setItem('pf_user',JSON.stringify(res.data.user||{}));
         var rd=new URLSearchParams(window.location.search).get('redirect');
-        window.location.href=rd||'/dashboard';
+        window.location.href=(rd&&rd.startsWith('/')&&!rd.startsWith('//'))?rd:'/dashboard';
       }
     })
     .catch(function(){});
@@ -171,8 +171,11 @@ function submitAuth(){
           err.textContent=res.data.message||'Account created! Check your email to verify your account before logging in.';
         }else{
           err.style.display='block';err.style.color='#F59E0B';
-          err.innerHTML=res.data.message||'Account created but email could not be sent.';
-          err.innerHTML+='<br><a href="#" onclick="resendVerif(\''+email+'\');return false" style="color:#1565C0;font-weight:600">Resend verification email</a>';
+          err.textContent=res.data.message||'Account created but email could not be sent.';
+          var link=document.createElement('a');link.href='#';link.textContent='Resend verification email';
+          link.style.cssText='color:#1565C0;font-weight:600;display:block;margin-top:4px';
+          link.addEventListener('click',function(e){e.preventDefault();resendVerif(email);});
+          err.appendChild(link);
         }
         return;
       }

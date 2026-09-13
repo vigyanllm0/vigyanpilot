@@ -23,7 +23,7 @@
 
   gtag('set', 'ads_data_redaction', true);
 </script>
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-PB0XMF4GEH"></script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PB0XMF4GEH" integrity="sha384-hACMoDCIDMba3jsHG3rMgdvIrTqUjGNEOMNz7cNKE+iuubQod4g9e9628Tl1SuzS" crossorigin="anonymous"></script>
 <script>
   gtag('js', new Date());
   gtag('config', 'G-PB0XMF4GEH');
@@ -215,7 +215,7 @@ $('auth-submit-btn').addEventListener('click',async function(){
       resendAttempts=0;
       return;
     }
-    if(r.ok){var rd=new URLSearchParams(window.location.search).get('redirect');window.location.href=rd||'primer'}else{
+    if(r.ok){var rd=new URLSearchParams(window.location.search).get('redirect');if(rd&&rd.startsWith('/')&&!rd.startsWith('//')){window.location.href=rd}else{window.location.href='/primer'}}else{
       $('auth-error').style.display='block';$('auth-error').style.color='';$('auth-error').textContent=(d&&d.error)||'Authentication failed';
     }
   }catch(e){$('auth-error').style.display='block';$('auth-error').textContent='Server unavailable. Please try again.';}
@@ -261,7 +261,7 @@ function doResend(){
         sessionStorage.setItem('pf_user',JSON.stringify(res.data.user||{}));
         localStorage.setItem('pf_user',JSON.stringify(res.data.user||{}));
         var rd=new URLSearchParams(window.location.search).get('redirect');
-        window.location.href=rd||'/dashboard';
+        window.location.href=(rd&&rd.startsWith('/')&&!rd.startsWith('//'))?rd:'/dashboard';
       }else{
         var err=$('auth-error');if(err){err.style.display='block';err.textContent=(res&&res.data&&res.data.error)||'Google sign-in failed.'}
       }

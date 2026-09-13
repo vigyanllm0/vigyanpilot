@@ -268,6 +268,7 @@ def apply_rate_limits(app):
             "auth.verify_email": "10 per minute",
             "payments.verify_payment": "10 per minute",
             "payments.create_order": "10 per minute",
+            "api_management.test_webhook": "5 per minute",
         }
         for endpoint, limit_str in endpoint_map.items():
             fn = app.view_functions.get(endpoint)

@@ -177,7 +177,7 @@ def _process_job(job: dict):
             complete_job(job_id, None, error)
             logger.error("Local worker failed job %s: %s", job_id, error)
     except Exception as e:
-        complete_job(job_id, None, str(e))
+        complete_job(job_id, None, "Docking job failed")
         logger.error("Local worker exception on job %s: %s", job_id, e)
 
 

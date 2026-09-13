@@ -36,7 +36,7 @@ services:
     restart: always
     networks:
       - app_network
-    command: redis-server --maxmemory 128mb --maxmemory-policy allkeys-lru
+    command: redis-server --maxmemory 128mb --maxmemory-policy allkeys-lru --requirepass ${REDIS_PASSWORD:-changeme}
     deploy:
       resources:
         limits:

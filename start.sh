@@ -8,9 +8,14 @@ cd "$SCRIPT_DIR"
 for port in 11436 8080; do
     pid=$(lsof -ti :$port 2>/dev/null || true)
     if [ -n "$pid" ]; then
-        echo "[VigyanLLM] Port $port in use by PID $pid — terminating..."
-        kill "$pid" 2>/dev/null
-        sleep 1
+        proc_name=$(ps -p "$pid" -o comm= 2>/dev/null || true)
+        if echo "$proc_name" | grep -qiE "python|gunicorn"; then
+            echo "[VigyanLLM] Port $port in use by $proc_name (PID $pid) — terminating..."
+            kill "$pid" 2>/dev/null
+            sleep 1
+        else
+            echo "[VigyanLLM] Port $port in use by non-python process $proc_name (PID $pid) — skipping"
+        fi
     fi
 done
 

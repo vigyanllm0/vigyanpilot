@@ -1,7 +1,7 @@
 var ADMIN_BASE = window.location.origin;
 
 function $(id){return document.getElementById(id)}
-function authH(){const t=sessionStorage.getItem('pf_token')||'';return t?{'Content-Type':'application/json','Authorization':'Bearer '+t}:{'Content-Type':'application/json'}}
+function authH(){return {'Content-Type':'application/json'}}
 async function api(p,m='GET',b=null){const o={method:m,headers:authH(),credentials:'include'};if(b)o.body=JSON.stringify(b);const r=await fetch(ADMIN_BASE+p,o);if(r.status===401){doLogout();return null}const txt=await r.text();try{return JSON.parse(txt)}catch(e){console.error('API non-JSON response from',p,txt.slice(0,200));return null}}
 
 // Auth
@@ -10,7 +10,7 @@ async function doLogin(){
     const r=await fetch(ADMIN_BASE+'/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'include',body:JSON.stringify({email:$('l-email').value,password:$('l-pass').value})});
     const txt=await r.text();
     let d;try{d=JSON.parse(txt)}catch(e){$('l-err').textContent='Backend offline (502). Please try again later.';return}
-    if(r.ok&&d.token){sessionStorage.setItem('pf_token',d.token);localStorage.setItem('pf_token',d.token);if(d.user){sessionStorage.setItem('pf_user',JSON.stringify(d.user));localStorage.setItem('pf_user',JSON.stringify(d.user));}$('loginWrap').style.display='none';$('shell').style.display='block';refreshAll()}
+    if(r.ok){if(d.user){sessionStorage.setItem('pf_user',JSON.stringify(d.user));localStorage.setItem('pf_user',JSON.stringify(d.user));}$('loginWrap').style.display='none';$('shell').style.display='block';refreshAll()}
     else{$('l-err').textContent=d.error||d.detail||'Failed'}
   }catch(e){$('l-err').textContent='Network error — backend may be offline.'}
 }
@@ -301,10 +301,9 @@ async function recordExpense(){
 // Blog / CMS
 async function loadBlogPosts(){
   const el=$('blog-list');if(!el)return;
-  const pfToken=sessionStorage.getItem('pf_token')||localStorage.getItem('pf_token');
-  const CMS_API = window.location.origin.includes('localhost')?'http://localhost:8001':'';
-  try{
-    const r=await fetch(CMS_API+'/api/v1/cms/pages?content_type=blog&limit=50',{headers:pfToken?{'Authorization':'Bearer '+pfToken}:{}});
+    const CMS_API = window.location.origin.includes('localhost')?'http://localhost:8001':'';
+    try{
+      const r=await fetch(CMS_API+'/api/v1/cms/pages?content_type=blog&limit=50',{credentials:'include'});
     if(!r.ok){el.innerHTML='<div style="color:var(--muted);padding:1rem;text-align:center">Could not load blog posts.</div>';return}
     const txt=await r.text();const d=JSON.parse(txt);
     const pages=d.data?.pages||[];
@@ -353,7 +352,7 @@ document.addEventListener('DOMContentLoaded', () => {
   $('btn-ban')?.addEventListener('click', banIp);
   
   // Init
-  fetch(ADMIN_BASE+'/api/auth/me',{headers:authH(),credentials:'include'}).then(r=>{
+  fetch(ADMIN_BASE+'/api/auth/me',{credentials:'include'}).then(r=>{
     const txt=r.text();
     return txt.then(t=>{try{return JSON.parse(t)}catch(e){return null}});
   }).then(d=>{

@@ -107,13 +107,8 @@
     var allReviews = [];
     var currentFilter = 'all';
 
-    function getToken() { return sessionStorage.getItem('pf_token') || ''; }
-
     function authHeaders() {
-      var h = {'Content-Type':'application/json'};
-      var t = getToken();
-      if (t) h['Authorization'] = 'Bearer ' + t;
-      return h;
+      return {'Content-Type':'application/json'};
     }
 
     function loadReviews() {

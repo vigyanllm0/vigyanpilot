@@ -203,8 +203,8 @@ def run_remote_blast(
                 results.append(result)
 
     except Exception as e:
-        error_detail = str(e)[:200]
-        logger.warning("Remote BLAST failed: %s", error_detail)
+        error_detail = "Remote BLAST request failed"
+        logger.warning("Remote BLAST failed: %s", e, exc_info=True)
 
     return {
         "results": results,

@@ -97,7 +97,7 @@ class SecureHandler(SimpleHTTPRequestHandler):
     def do_OPTIONS(self):
         if self._is_api_path(self.path):
             self.send_response(204)
-            self.send_header("Access-Control-Allow-Origin", "*")
+            self.send_header("Access-Control-Allow-Origin", "http://localhost:8080")
             self.send_header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
             self.send_header("Access-Control-Allow-Headers", "Content-Type, Authorization")
             self.end_headers()

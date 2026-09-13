@@ -43,10 +43,12 @@ def create_key():
     conn = get_db_connection()
     try:
         cur = conn.cursor()
+        # Default expiry: 1 year from now if none provided
+        expires_at = data.get('expires_at') or (time.time() + 365 * 86400)
         cur.execute("""
-            INSERT INTO api_keys (user_id, key_hash, key_prefix, name, scopes, rate_limit)
-            VALUES (%s, %s, %s, %s, %s, %s) RETURNING id
-        """, (g.api_user_id, key_hash, key_prefix, name, json.dumps(scopes), rate_limit))
+            INSERT INTO api_keys (user_id, key_hash, key_prefix, name, scopes, rate_limit, expires_at)
+            VALUES (%s, %s, %s, %s, %s, %s, %s) RETURNING id
+        """, (g.api_user_id, key_hash, key_prefix, name, json.dumps(scopes), rate_limit, expires_at))
         key_id = cur.fetchone()[0]
         conn.commit()
         return jsonify({
@@ -89,12 +91,13 @@ def rotate_key(key_id):
             return jsonify({'error': 'Key not found'}), 404
         # Deactivate old
         cur.execute("UPDATE api_keys SET is_active = FALSE WHERE id = %s", (key_id,))
-        # Generate new
+        # Generate new (default expiry: 1 year from now)
         full_key, key_hash, key_prefix = generate_api_key()
+        expires_at = time.time() + 365 * 86400
         cur.execute("""
-            INSERT INTO api_keys (user_id, key_hash, key_prefix, name, scopes, rate_limit)
-            VALUES (%s, %s, %s, %s, %s, %s) RETURNING id
-        """, (g.api_user_id, key_hash, key_prefix, row[0], json.dumps(row[1]), row[2]))
+            INSERT INTO api_keys (user_id, key_hash, key_prefix, name, scopes, rate_limit, expires_at)
+            VALUES (%s, %s, %s, %s, %s, %s, %s) RETURNING id
+        """, (g.api_user_id, key_hash, key_prefix, row[0], json.dumps(row[1]), row[2], expires_at))
         new_id = cur.fetchone()[0]
         conn.commit()
         return jsonify({
@@ -182,6 +185,28 @@ def create_webhook():
     secret = 'whsec_' + secrets.token_urlsafe(32)
     if not url:
         return jsonify({'error': 'URL required'}), 400
+    # SSRF protection: validate URL scheme and block private/internal ranges
+    from urllib.parse import urlparse
+    import ipaddress
+    try:
+        parsed = urlparse(url)
+    except Exception:
+        return jsonify({'error': 'Invalid URL'}), 400
+    if parsed.scheme not in ('https',):
+        return jsonify({'error': 'Only HTTPS webhook URLs are allowed'}), 400
+    if not parsed.hostname:
+        return jsonify({'error': 'Invalid URL hostname'}), 400
+    blocked_hosts = ('localhost', '127.0.0.1', '0.0.0.0', '::1', 'metadata.google.internal')
+    if parsed.hostname.lower() in blocked_hosts:
+        return jsonify({'error': 'Internal URLs are not allowed'}), 400
+    try:
+        ip = ipaddress.ip_address(parsed.hostname)
+        if ip.is_private or ip.is_loopback or ip.is_link_local or ip.is_reserved or ip.is_multicast:
+            return jsonify({'error': 'Internal/private IP addresses are not allowed'}), 400
+    except ValueError:
+        # hostname is a domain, not an IP — check for common internal patterns
+        if parsed.hostname.endswith('.local') or parsed.hostname.endswith('.internal'):
+            return jsonify({'error': 'Internal domains are not allowed'}), 400
     conn = get_db_connection()
     try:
         cur = conn.cursor()
@@ -222,6 +247,25 @@ def test_webhook(hook_id):
         row = cur.fetchone()
         if not row:
             return jsonify({'error': 'Webhook not found'}), 404
+        # SSRF re-validation on delivery
+        from urllib.parse import urlparse
+        import ipaddress
+        try:
+            parsed = urlparse(row[0])
+            if parsed.scheme not in ('https',):
+                return jsonify({'error': 'Webhook URL must be HTTPS', 'success': False}), 400
+            blocked = ('localhost', '127.0.0.1', '0.0.0.0', '::1')
+            if parsed.hostname and parsed.hostname.lower() in blocked:
+                return jsonify({'error': 'Internal URLs not allowed', 'success': False}), 400
+            if parsed.hostname:
+                try:
+                    ip = ipaddress.ip_address(parsed.hostname)
+                    if ip.is_private or ip.is_loopback or ip.is_link_local:
+                        return jsonify({'error': 'Internal IPs not allowed', 'success': False}), 400
+                except ValueError:
+                    pass
+        except Exception:
+            return jsonify({'error': 'Invalid webhook URL', 'success': False}), 400
         import hmac, hashlib, requests
         payload = json.dumps({
             'event': 'test',
@@ -235,8 +279,8 @@ def test_webhook(hook_id):
                 'X-VigyanLLM-Signature': sig
             }, timeout=10)
             return jsonify({'status_code': resp.status_code, 'success': resp.ok, 'response': resp.text[:500]})
-        except Exception as e:
-            return jsonify({'error': str(e), 'success': False}), 502
+        except Exception:
+            return jsonify({'error': 'Webhook delivery failed', 'success': False}), 502
     finally:
         conn.close()
 

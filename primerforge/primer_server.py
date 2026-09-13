@@ -645,20 +645,15 @@ def create_app() -> Flask:
             del response.headers["Server"]
         if "X-Powered-By" in response.headers:
             del response.headers["X-Powered-By"]
-        # CSP: allow only self + Google/GTM fonts/styles; block inline scripts except nonce
-        if request.path.endswith(".html") or request.path == "/":
-            response.headers["Content-Security-Policy"] = (
-                "default-src 'self'; "
-                "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://js.stripe.com https://apis.google.com; "
-                "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
-                "font-src 'self' https://fonts.gstatic.com; "
-                "img-src 'self' data: https:; "
-                "connect-src 'self' https://www.google-analytics.com https://www.googletagmanager.com https://api.stripe.com; "
-                "frame-src https://js.stripe.com https://www.google.com; "
-                "object-src 'none'; "
-                "base-uri 'self'; "
-                "form-action 'self'"
-            )
+        # Security headers — CSP handled by Talisman in security.py; only add non-CSP headers here
+        response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+        response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=(), payment=()"
+        response.headers["Strict-Transport-Security"] = "max-age=63072000; includeSubDomains; preload"
+        # Remove server information leak
+        if "Server" in response.headers:
+            del response.headers["Server"]
+        if "X-Powered-By" in response.headers:
+            del response.headers["X-Powered-By"]
         return response
 
     @app.before_request
@@ -672,6 +667,9 @@ def create_app() -> Flask:
     init_threat_detection(app)
     init_debugger(app)
     init_file_scanner(app)
+
+    from primerforge.csrf import init_csrf
+    init_csrf(app)
 
     from primerforge.metrics import init_metrics
     init_metrics(app)
@@ -843,10 +841,10 @@ def create_app() -> Flask:
                 return jsonify({"success": True, "accepted_at": now}), 200
             except Exception as exc:
                 logger.error("cookie consent insert failed after re-init: %s", exc)
-                return jsonify({"success": False, "error": str(exc)}), 500
+                return jsonify({"success": False, "error": "Cookie consent update failed."}), 500
         except Exception as exc:
             logger.error("cookie consent insert failed: %s", exc)
-            return jsonify({"success": False, "error": str(exc)}), 500
+            return jsonify({"success": False, "error": "Cookie consent update failed."}), 500
 
     if not USE_POSTGRES:
         DEV_PIPELINE_JOBS = {}
@@ -1058,7 +1056,7 @@ def create_app() -> Flask:
             except Exception as exc:
                 logger.error("Pipeline submit failed: %s", exc, exc_info=True)
                 return jsonify({
-                    "error": f"Pipeline submission failed: {str(exc)[:300]}",
+                    "error": "Pipeline submission failed.",
                     "code": "PIPELINE_FAILED",
                 }), 500
 
@@ -1096,7 +1094,7 @@ def create_app() -> Flask:
             except Exception as exc:
                 logger.error("Pipeline status failed: %s", exc, exc_info=True)
                 return jsonify({
-                    "error": f"Status check failed: {str(exc)[:200]}",
+                    "error": "Status check failed.",
                     "code": "STATUS_ERROR",
                 }), 500
 
@@ -1136,7 +1134,7 @@ def create_app() -> Flask:
             except Exception as exc:
                 logger.error("Pipeline result failed: %s", exc, exc_info=True)
                 return jsonify({
-                    "error": f"Result fetch failed: {str(exc)[:200]}",
+                    "error": "Result fetch failed.",
                     "code": "RESULT_ERROR",
                 }), 500
 
@@ -1182,7 +1180,7 @@ def create_app() -> Flask:
             return FlaskResponse(response=err_body, status=e.code, headers=dict(e.headers))
         except Exception as e:
             logger.error("CMS proxy exception: %s", e, exc_info=True)
-            return jsonify({"detail": f"Proxy error: {str(e)}"}), 502
+            return jsonify({"detail": "Proxy error."}), 502
 
     @app.route("/api/v1/pages", methods=["GET", "POST", "OPTIONS"])
     @app.route("/api/v1/pages/<path:public_path>", methods=["GET", "POST", "OPTIONS"])
@@ -1203,7 +1201,8 @@ def create_app() -> Flask:
         except urllib.error.HTTPError as e:
             return FlaskResponse(response=e.read(), status=e.code, headers=dict(e.headers))
         except Exception as e:
-            return jsonify({"detail": f"Proxy error: {str(e)}"}), 502
+            logger.error("CMS public proxy error: %s", e, exc_info=True)
+            return jsonify({"detail": "Proxy error."}), 502
 
     # ── Serve Frontend HTML Files ─────────────────────────────────────────
     from flask import send_from_directory
@@ -1384,7 +1383,7 @@ def create_app() -> Flask:
             num_returned = p3_result.get('PRIMER_PAIR_NUM_RETURNED', 0)
         except ValueError as exc:
             logger.warning("Design validation: %s", exc)
-            return err(str(exc), "VALIDATION_ERROR", 422)
+            return err("Invalid input provided.", "VALIDATION_ERROR", 422)
         except Exception as exc:
             logger.error("Design error: %s", exc, exc_info=True)
             env = _build_pipeline_status([], 0, "Internal error")
@@ -1664,7 +1663,7 @@ def create_app() -> Flask:
             }), 200
         except ValueError as exc:
             logger.warning("Manual analysis validation: %s", exc)
-            return err(str(exc), "VALIDATION_ERROR", 400)
+            return err("Invalid input provided.", "VALIDATION_ERROR", 400)
         except Exception as exc:
             logger.error("Manual analysis error: %s", exc, exc_info=True)
             return err("Analysis failed due to an internal error.", "DESIGN_FAILED", 500)
@@ -1802,7 +1801,7 @@ def create_app() -> Flask:
             elif "timeout" in exc_str.lower():
                 msg = f"Database request timed out for '{accession}'. Please try again."
             else:
-                msg = f"Failed to fetch '{accession}': {exc_str[:100]}"
+                msg = f"Failed to fetch '{accession}'."
             return err(msg, "FETCH_FAILED", 400)
 
     @app.route("/api/primer/thermodynamics", methods=["POST"])
@@ -1855,7 +1854,7 @@ def create_app() -> Flask:
             return jsonify(result), 200
         except Exception as exc:
             logger.error("Search error: %s", exc, exc_info=True)
-            return err(f"Search failed: {str(exc)[:200]}", "SEARCH_FAILED", 500)
+            return err("Search failed.", "SEARCH_FAILED", 500)
 
     @app.route("/api/primer/blast", methods=["POST"])
     def blast_route():
@@ -1946,7 +1945,8 @@ def create_app() -> Flask:
                     from primerforge.engine.blast_viewer import run_remote_blast
                     return run_remote_blast(clean, database=database, organism=organism), None
             except Exception as exc:
-                return None, str(exc)[:200]
+                logger.error("BLAST inner error: %s", exc, exc_info=True)
+                return None, "BLAST execution failed"
 
         user, auth_err = _auth_user()
         # Allow anonymous BLAST — no auth required for basic searches
@@ -2002,7 +2002,7 @@ def create_app() -> Flask:
 
         try:
             result, blast_err = _blast_one(query_sequence)
-            if blast_err: return err(f"BLAST failed: {blast_err}", "BLAST_FAILED", 500)
+            if blast_err: return err("BLAST failed.", "BLAST_FAILED", 500)
             if is_anon:
                 if USE_POSTGRES:
                     from .pg_auth import record_anon_usage
@@ -2014,7 +2014,7 @@ def create_app() -> Flask:
             return jsonify(result), 200
         except Exception as exc:
             logger.error("BLAST error: %s", exc, exc_info=True)
-            return err(f"BLAST failed: {str(exc)[:200]}", "BLAST_FAILED", 500)
+            return err("BLAST failed.", "BLAST_FAILED", 500)
 
     @app.route("/api/primer/fetch-sequences", methods=["POST"])
     def fetch_sequences_route():
@@ -2051,7 +2051,8 @@ def create_app() -> Flask:
                         "length": len(record.seq),
                     }
                 except Exception as e:
-                    return {"accession": acc, "error": str(e)[:100]}
+                    logger.error("Fetch sequence %s failed: %s", acc, e, exc_info=True)
+                    return {"accession": acc, "error": "Fetch failed"}
 
             results = []
             with ThreadPoolExecutor(max_workers=8) as pool:
@@ -2062,7 +2063,7 @@ def create_app() -> Flask:
             return jsonify({"results": results, "total": len(results)}), 200
         except Exception as exc:
             logger.error("Fetch sequences error: %s", exc, exc_info=True)
-            return err(f"Fetch failed: {str(exc)[:200]}", "FETCH_FAILED", 500)
+            return err("Fetch failed.", "FETCH_FAILED", 500)
 
     # ════════════════════════════════════════════════════════════════════
     # Batch Oligo Analysis & Primer Check Endpoints
@@ -2324,7 +2325,8 @@ def create_app() -> Flask:
                     } if rev else None,
                 })
             except Exception as exc:
-                errors.append({"name": entry.get("name", "?"), "error": str(exc)[:200]})
+                logger.error("Batch analysis failed for entry %s: %s", entry.get("name", "?"), exc, exc_info=True)
+                errors.append({"name": entry.get("name", "?"), "error": "Analysis failed"})
         resp = {"results": results, "errors": errors, "total": len(results), "failed": len(errors)}
         if parse_meta:
             resp["parse_info"] = f"Detected {parse_meta['count']} {parse_meta['format']} entries"
@@ -2410,7 +2412,8 @@ def create_app() -> Flask:
                 }
                 ranked.append(entry)
             except Exception as exc:
-                errors.append({"name": p.get("name", "?"), "error": str(exc)[:200]})
+                logger.error("Primer check failed for %s: %s", p.get("name", "?"), exc, exc_info=True)
+                errors.append({"name": p.get("name", "?"), "error": "Analysis failed"})
         ranked.sort(key=lambda x: -x["combined_score"])
         suggestions = []
         if ranked:
@@ -2517,7 +2520,7 @@ def create_app() -> Flask:
             return jsonify(viewer), 200
         except Exception as exc:
             logger.error("MSA error: %s", exc, exc_info=True)
-            return err(f"MSA failed: {str(exc)[:200]}", "MSA_FAILED", 500)
+            return err("MSA failed.", "MSA_FAILED", 500)
 
     @app.route("/api/primer/msa/submit", methods=["POST"])
     def msa_submit_route():
@@ -2954,7 +2957,7 @@ def create_app() -> Flask:
                 logger.error("Failed to update pipeline_jobs for %s: %s", job_id, e)
                 return jsonify({
                     "received": True,
-                    "warning": f"Results accepted but DB update failed: {str(e)[:200]}",
+                    "warning": "Results accepted but DB update failed.",
                 }), 200
 
         # ── Update in-memory (dev mode) ───────────────────────────────
@@ -3159,6 +3162,8 @@ if __name__ == "__main__":
     port = int(os.environ.get("PRIMERFORGE_PORT", 11436))
     host = os.environ.get("PRIMERFORGE_HOST", "127.0.0.1")
     debug = os.environ.get("PRIMERFORGE_DEBUG", "").lower() == "true"
+    if os.environ.get("VIGYANLLM_ENV", "").lower() == "production" and debug:
+        raise RuntimeError("PRIMERFORGE_DEBUG=true is not allowed in production (VIGYANLLM_ENV=production)")
     if os.environ.get("FORCE_HTTPS", "").lower() == "true" and debug:
         raise RuntimeError("PRIMERFORGE_DEBUG=true is not allowed when FORCE_HTTPS=true")
     wsgi_app = create_app()

@@ -6,11 +6,37 @@ import time
 import logging
 import os
 import threading
+from urllib.parse import urlparse
+import ipaddress
 
 import psycopg2
 import requests
 
 log = logging.getLogger('vigyanllm.webhooks')
+
+
+def _is_safe_url(url):
+    """Check if a URL is safe to deliver to (no SSRF)."""
+    try:
+        parsed = urlparse(url)
+    except Exception:
+        return False
+    if parsed.scheme not in ('https',):
+        return False
+    if not parsed.hostname:
+        return False
+    blocked = ('localhost', '127.0.0.1', '0.0.0.0', '::1', 'metadata.google.internal')
+    if parsed.hostname.lower() in blocked:
+        return False
+    if parsed.hostname.endswith('.local') or parsed.hostname.endswith('.internal'):
+        return False
+    try:
+        ip = ipaddress.ip_address(parsed.hostname)
+        if ip.is_private or ip.is_loopback or ip.is_link_local or ip.is_reserved or ip.is_multicast:
+            return False
+    except ValueError:
+        pass
+    return True
 
 
 def emit_event(conn, event_type, data):
@@ -25,6 +51,9 @@ def emit_event(conn, event_type, data):
         return
     payload = json.dumps({'event': event_type, 'timestamp': int(time.time()), 'data': data})
     for hook_id, url, secret in webhooks:
+        if not _is_safe_url(url):
+            log.warning("Skipping webhook %s — unsafe URL: %s", hook_id, url)
+            continue
         sig = hmac.new(secret.encode(), payload.encode(), hashlib.sha256).hexdigest()
         # Record delivery attempt
         cur.execute(
@@ -40,7 +69,12 @@ def emit_event(conn, event_type, data):
 
 def _deliver(delivery_id, url, payload, sig):
     """Deliver webhook with retry."""
-    conn = _get_conn()
+    conn = None
+    try:
+        conn = psycopg2.connect(os.environ.get('DATABASE_URL', ''), connect_timeout=10)
+    except Exception as e:
+        log.warning("Webhook %s — DB connection failed: %s", delivery_id, e)
+        return
     for attempt in range(3):
         try:
             resp = requests.post(url, data=payload, headers={
@@ -57,6 +91,7 @@ def _deliver(delivery_id, url, payload, sig):
                 )
                 conn.commit()
                 log.info("Webhook %s delivered: %s", delivery_id, resp.status_code)
+                conn.close()
                 return
             else:
                 log.warning("Webhook %s failed: %s", delivery_id, resp.status_code)
@@ -65,12 +100,12 @@ def _deliver(delivery_id, url, payload, sig):
         # Exponential backoff
         time.sleep([5, 30, 300][attempt])
     # All retries failed
-    cur = conn.cursor()
-    cur.execute("UPDATE webhook_deliveries SET status = 'failed', attempts = 3 WHERE id = %s",
-                (delivery_id,))
-    conn.commit()
-    conn.close()
-
-
-def _get_conn():
-    return psycopg2.connect(os.environ.get('DATABASE_URL', ''))
+    try:
+        cur = conn.cursor()
+        cur.execute("UPDATE webhook_deliveries SET status = 'failed', attempts = 3 WHERE id = %s",
+                    (delivery_id,))
+        conn.commit()
+    except Exception:
+        pass
+    finally:
+        conn.close()

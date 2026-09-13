@@ -1257,8 +1257,13 @@ def payment_callback():
     payment_id = request.args.get('razorpay_payment_id', '')
     signature = request.args.get('razorpay_signature', '')
 
+    import re
     if not order_id or not payment_id or not signature:
         return '<script>window.location.href="payment-failed.html?reason=Missing+parameters"</script>'
+
+    # Validate Razorpay param format to prevent XSS
+    if not re.match(r'^order_[a-zA-Z0-9]+$', order_id) or not re.match(r'^pay_[a-zA-Z0-9]+$', payment_id) or not re.match(r'^[a-f0-9]+$', signature):
+        return '<script>window.location.href="payment-failed.html?reason=Invalid+parameters"</script>'
 
     message = f"{order_id}|{payment_id}"
     expected = hmac.new(RAZORPAY_KEY_SECRET.encode(), message.encode(), hashlib.sha256).hexdigest()

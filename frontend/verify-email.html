@@ -22,7 +22,7 @@
   } catch (e) {}
   gtag('set', 'ads_data_redaction', true);
 </script>
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-PB0XMF4GEH"></script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PB0XMF4GEH" integrity="sha384-hACMoDCIDMba3jsHG3rMgdvIrTqUjGNEOMNz7cNKE+iuubQod4g9e9628Tl1SuzS" crossorigin="anonymous"></script>
 <script>
   gtag('js', new Date());
   gtag('config', 'G-PB0XMF4GEH');
@@ -137,14 +137,14 @@ footer a{color:var(--saffron-light,#ff8a7a)}
         icon.className = 'icon-wrap success';
         icon.innerHTML = '&#10004;';
         title.textContent = 'Email verified!';
-        msg.innerHTML = '<strong>' + (res.data.message || 'Your email has been verified successfully.') + '</strong><br>You can now sign in to your account.';
+        msg.textContent = (res.data.message || 'Your email has been verified successfully.') + ' You can now sign in to your account.';
         actions.style.display = 'block';
       } else {
         // Token might have been consumed by a previous call — try login hint
         icon.className = 'icon-wrap error';
         icon.innerHTML = '&#10006;';
         title.textContent = 'Verification issue';
-        msg.innerHTML = 'This link may have already been used or expired.<br><strong>Try signing in</strong> — if your account was just verified, it should work.';
+        msg.textContent = 'This link may have already been used or expired. Try signing in — if your account was just verified, it should work.';
         actions.style.display = 'block';
         resendSection.style.display = 'block';
       }
@@ -154,7 +154,11 @@ footer a{color:var(--saffron-light,#ff8a7a)}
       icon.className = 'icon-wrap error';
       icon.innerHTML = '&#10006;';
       title.textContent = 'Connection error';
-      msg.innerHTML = 'Could not reach the server. <strong>Try signing in</strong> — your account may already be verified.';
+      msg.textContent = 'Could not reach the server. ';
+      var strong = document.createElement('strong');
+      strong.textContent = 'Try signing in';
+      msg.appendChild(strong);
+      msg.appendChild(document.createTextNode(' — your account may already be verified.'));
       actions.style.display = 'block';
       resendSection.style.display = 'block';
     });

@@ -261,7 +261,7 @@ def logout():
         from primerforge.auth import revoke_token
         revoke_token(auth[7:])
     resp = jsonify({"message": "Logged out successfully."})
-    resp.set_cookie('pf_token', '', httponly=True, secure=True, samesite='None', max_age=0, path='/')
+    resp.set_cookie('pf_token', '', httponly=True, secure=True, samesite='Lax', max_age=0, path='/')
     return resp, 200
 
 

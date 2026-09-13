@@ -185,7 +185,7 @@ def process_job(job_id: str):
     except Exception as e:
         logger.error("MSA job %s failed: %s", job_id, e, exc_info=True)
         job["status"] = "ERROR"
-        job["error"] = str(e)[:300]
+        job["error"] = "MSA alignment failed"
         _save_job(job_id, job)
 
 # ── Alignment strategies ───────────────────────────────────────

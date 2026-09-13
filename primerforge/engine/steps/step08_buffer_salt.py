@@ -131,7 +131,7 @@ class BufferSaltStep(PipelineStep):
                     f"'{candidate.get('id', 'unknown')}': {e}"
                 )
                 updated["tm_salt_adjusted"] = None
-                updated["buffer_salt_error"] = str(e)
+                updated["buffer_salt_error"] = "Buffer/salt recalculation failed"
 
             updated_candidates.append(updated)
 

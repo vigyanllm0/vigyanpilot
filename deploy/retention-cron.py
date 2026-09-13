@@ -10,6 +10,10 @@ def get_db():
     url = os.environ.get('DATABASE_URL', '')
     if not url:
         log.error('DATABASE_URL not set'); sys.exit(1)
+    if "?" in url:
+        url += "&sslmode=require"
+    else:
+        url += "?sslmode=require"
     return psycopg2.connect(url)
 
 def run_cleanup(conn):

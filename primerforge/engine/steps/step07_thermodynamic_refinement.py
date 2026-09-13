@@ -121,7 +121,7 @@ def execute(input_data: dict[str, Any]) -> dict[str, Any]:
             pair_label = pair.get("pair_id") or pair.get("rank") or pair.get("pair_index", "?")
             logger.warning("Thermo calc failed for pair %s: %s", pair_label, e)
             pair["thermo_pass"] = False
-            pair["thermo_error"] = str(e)
+            pair["thermo_error"] = "Thermodynamic calculation failed"
             refined_pairs.append(pair)
 
     # Sort by delta_tm (smallest first — best thermodynamic match)
