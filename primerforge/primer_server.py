@@ -1264,7 +1264,7 @@ def create_app() -> Flask:
             filepath = os.path.join(STATIC_DIR, filename)
             if os.path.isfile(filepath):
                 return send_from_directory(STATIC_DIR, filename)
-        # Clean-URL fallback: /terms → terms.html, /blog/slug → blog/slug.html (matches Vercel behavior)
+        # Clean-URL fallback: /terms → terms.html, /blog/slug → blog/slug.html
         if "." not in filename.rsplit("/", 1)[-1]:
             html_path = os.path.join(STATIC_DIR, filename + ".html")
             if os.path.isfile(html_path):

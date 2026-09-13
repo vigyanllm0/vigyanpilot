@@ -102,7 +102,8 @@ def get_production_origins():
             "http://localhost:3000",
             "http://localhost:5500",
             "http://127.0.0.1:5500",
-            "https://vigyanpilot.vercel.app",
+            "https://www.vigyanllm.in",
+            "https://vigyanllm.in",
             "null",  # file:// protocol
         ]
     return origins
