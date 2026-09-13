@@ -18,6 +18,13 @@ function handler(event) {
   // 1b. API + HEALTH + ACME — pass through to EC2 origin untouched
   if (u.indexOf('/api/') === 0 || u === '/health' || u.indexOf('/.well-known/') === 0) return r;
 
+  // 1c. ADMIN PAGES — block directly (no forwarding to EC2)
+  if (u === '/admin' || u === '/admin-reviews' || u === '/cms-admin'
+      || u.indexOf('/admin/') === 0) {
+    return { statusCode: 403, statusDescription: 'Forbidden',
+      headers: { 'content-type': { value: 'text/plain' } }, body: 'Forbidden' };
+  }
+
   // 2. BOT BLOCKING (excludes /api/, /_next/, /assets/, /partials/)
   if (u.indexOf('/api/') !== 0 && u.indexOf('/_next/') !== 0 &&
       u.indexOf('/assets/') !== 0 && u.indexOf('/partials/') !== 0) {
@@ -97,8 +104,9 @@ function handler(event) {
   }
 
   // 8. CLEAN URL REWRITES (explicit mappings)
+  // NOTE: /admin, /admin-reviews, /cms-admin are routed to EC2 via CloudFront
+  // behaviors and blocked by nginx — do NOT rewrite them here.
   var rewrites = {
-    '/admin': '/admin-security.html',
     '/developer': '/developer.html',
     '/developer/docs': '/developer-docs.html',
     '/developer/keys': '/developer-keys.html',
