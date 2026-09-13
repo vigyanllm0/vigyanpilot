@@ -2670,10 +2670,10 @@ def create_app() -> Flask:
     # ════════════════════════════════════════════════════════════════════
     # Consensus Pipeline — Molecular Docking (ESMFold → Vina → GNINA)
     # ════════════════════════════════════════════════════════════════════
-    # Docking jobs are dispatched to the Azure worker via a file-based job
-    # queue. The main server returns 202 Accepted immediately; the Azure
+    # Docking jobs are dispatched via a file-based job
+    # queue. The main server returns 202 Accepted immediately; the local
     # worker picks up pending jobs, runs the full pipeline (ESMFold, Vina,
-    # GNINA), and POSTs results back. Frontend polls /status/<job_id>.
+    # GNINA), and writes results back. Frontend polls /status/<job_id>.
 
     from primerforge.docking_queue import create_job, get_job, list_pending_jobs
     try:
@@ -2863,7 +2863,7 @@ def create_app() -> Flask:
         return jsonify({"status": "acknowledged"}), 200
 
     # ════════════════════════════════════════════════════════════════════
-    # Azure Worker Callback Endpoint
+    # Worker Callback Endpoint
     # ════════════════════════════════════════════════════════════════════
 
     CALLBACK_SECRET_TOKEN = os.environ.get("CALLBACK_SECRET_TOKEN", "")
@@ -2875,7 +2875,7 @@ def create_app() -> Flask:
     @app.route("/api/v1/jobs/callback", methods=["POST"])
     def jobs_callback():
         """
-        Secure endpoint for Azure workers to POST results back.
+        Secure endpoint for workers to POST results back.
 
         Authentication: X-Callback-Token header must match CALLBACK_SECRET_TOKEN.
         Payload: JSON object with job_id, status, job_type, step outcomes.

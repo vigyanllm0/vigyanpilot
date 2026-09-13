@@ -1,4 +1,4 @@
-"""File-based job queue for docking dispatch to Azure worker."""
+"""File-based job queue for docking dispatch to local worker."""
 
 import asyncio
 import json

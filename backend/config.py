@@ -9,7 +9,7 @@ _DEFAULT_UPLOAD_DIR = os.path.join(_REPO_ROOT, "frontend", "uploads", "cms")
 # Use SQLite for local dev, PostgreSQL for production
 DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite:///./cms.db")
 
-# ── SSL / TLS for Azure PostgreSQL ────────────────────────────────────────
+# ── SSL / TLS for PostgreSQL ──────────────────────────────────────────
 # If DB_SSL_MODE is set and not already in the URL, append it as a query param.
 DB_SSL_MODE = os.environ.get("DB_SSL_MODE", "").strip().lower()
 if DB_SSL_MODE and DATABASE_URL.startswith("postgresql"):

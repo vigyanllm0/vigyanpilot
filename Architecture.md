@@ -411,7 +411,7 @@ Flask was chosen over Django because:
 |--------|------------|------------|
 | **Engine** | SQLite 3 | PostgreSQL 16 |
 | **Connection** | `sqlite3.connect(primerforge.db)` | `psycopg2.pool.ThreadedConnectionPool` |
-| **File/Path** | `./primerforge.db` | Azure Flexible Server |
+| **File/Path** | `./primerforge.db` | PostgreSQL 16 (local or managed) |
 | **ORM** | None (raw SQL) | None (raw SQL + connection pool) |
 | **Tables** | 12 | 25+ (including partitions, views) |
 | **Usage tracking** | `daily_usage` table | Token balance + subscription quota |

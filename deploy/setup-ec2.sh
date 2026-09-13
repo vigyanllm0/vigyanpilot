@@ -54,7 +54,7 @@ GOOGLE_CLIENT_ID=xxxxxxxxxx.apps.googleusercontent.com
 # ── Optional ──────────────────────────────────────────────────────
 NCBI_API_KEY=
 
-# ── Docking Results Database (Azure PostgreSQL) ──────────────────
+# ── Docking Results Database (Optional) ─────────────────────────────
 # DOCKING_DATABASE_URL=postgresql://user:pass@host:port/db?sslmode=require
 ENVEOF
     echo "!!! .env created — you MUST edit it with real secrets: nano .env"

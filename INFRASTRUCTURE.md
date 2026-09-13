@@ -27,14 +27,14 @@
 │                                                         │                    │
 │                              ┌───────────────────────────┼──────────┐        │
 │                              │                           │          │        │
-│                              ▼                           ▼          ▼        │
-│                     ┌──────────────┐           ┌──────────┐  ┌──────────┐  │
-│                     │  PostgreSQL   │           │  Redis    │  │  Azure   │  │
-│                     │  16 (local)   │           │  7 Alpine │  │  Worker  │  │
-│                     │  :5432        │           │  :6379    │  │  (ESM+   │  │
-│                     │  vigyan_prod  │           │  AUTH req  │  │  Vina+   │  │
-│                     └──────────────┘           └──────────┘  │  GNINA)   │  │
-│                                                              └──────────┘  │
+│                              ▼                           ▼          │        │
+│                     ┌──────────────┐           ┌──────────┐        │        │
+│                     │  PostgreSQL   │           │  Redis    │        │        │
+│                     │  16 (local)   │           │  7 Alpine │        │        │
+│                     │  :5432        │           │  :6379    │        │        │
+│                     │  vigyan_prod  │           │  AUTH req  │        │        │
+│                     └──────────────┘           └──────────┘        │        │
+│                                                                    │        │
 │  ┌──────────────────── Monitoring Stack (Docker) ────────────────────────┐  │
 │  │ Grafana :3000 │ Prometheus :9090 │ Loki :3100 │ Alertmanager :9093   │  │
 │  │ 3 dashboards  │ 2 targets       │ TSDB+v3    │ null receiver (ready)│  │
@@ -83,15 +83,7 @@
 | rdkit | ≥2024.3.1 | Molecular chemistry (docking prep) |
 | meeko | ≥0.7.1 | Vina docking prep |
 
-### 2.3 Azure Worker (Separate)
-| Technology | Purpose |
-|---|---|
-| ESMFold | Protein structure prediction |
-| AutoDock Vina | Molecular docking |
-| GNINA | CNN-based docking scoring |
-| torch, transformers, fair-esm | ML dependencies |
-
-### 2.4 Monitoring Stack (Docker on EC2)
+### 2.3 Monitoring Stack (Docker on EC2)
 | Service | Image | Port | Purpose | Memory Limit |
 |---|---|---|---|---|
 | **Grafana** | grafana/grafana:latest | 3000 | Dashboards, visualization | 512MB |

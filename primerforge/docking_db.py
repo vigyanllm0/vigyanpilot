@@ -1,4 +1,4 @@
-"""Azure PostgreSQL for docking results persistence.
+"""PostgreSQL for docking results persistence.
 
 Separate database from the main auth/user database.
 Used to store completed docking results for queryability and
