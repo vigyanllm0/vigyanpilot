@@ -618,43 +618,10 @@ def create_app() -> Flask:
     # ── Security Hardening ────────────────────────────────────────────────
     from primerforge.debugger import init_debugger
     from primerforge.file_scanner import init_file_scanner
-    from primerforge.security import get_production_origins, init_security
+    from primerforge.security import init_security, register_cors_headers
     from primerforge.threat_detection import init_threat_detection
 
-    # CORS — validate against allowlist, never echo arbitrary origins
-    allowed_origins = get_production_origins()
-
-    @app.after_request
-    def cors_headers(response):
-        origin = request.headers.get("Origin", "")
-        if origin in allowed_origins:
-            response.headers["Access-Control-Allow-Origin"] = origin
-            response.headers["Access-Control-Allow-Credentials"] = "true"
-            response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
-            response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
-            response.headers["Access-Control-Max-Age"] = "3600"
-        # ── Security Headers ────────────────────────────────────────────
-        response.headers["X-Content-Type-Options"] = "nosniff"
-        response.headers["X-Frame-Options"] = "DENY"
-        response.headers["X-XSS-Protection"] = "1; mode=block"
-        response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
-        response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=(), payment=()"
-        response.headers["Strict-Transport-Security"] = "max-age=63072000; includeSubDomains; preload"
-        # Remove server information leak
-        if "Server" in response.headers:
-            del response.headers["Server"]
-        if "X-Powered-By" in response.headers:
-            del response.headers["X-Powered-By"]
-        # Security headers — CSP handled by Talisman in security.py; only add non-CSP headers here
-        response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
-        response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=(), payment=()"
-        response.headers["Strict-Transport-Security"] = "max-age=63072000; includeSubDomains; preload"
-        # Remove server information leak
-        if "Server" in response.headers:
-            del response.headers["Server"]
-        if "X-Powered-By" in response.headers:
-            del response.headers["X-Powered-By"]
-        return response
+    # CORS handled exclusively by security.py register_cors_headers() — called below after init_security()
 
     @app.before_request
     def handle_preflight():
@@ -662,6 +629,7 @@ def create_app() -> Flask:
             return "", 204
 
     init_security(app)
+    register_cors_headers(app)
     from primerforge.security import init_admin_rbac
     init_admin_rbac(app)
     init_threat_detection(app)
@@ -2637,7 +2605,7 @@ def create_app() -> Flask:
             raw = f.read()
             text = raw.decode("utf-8", errors="replace")
         except Exception as e:
-            return err(f"Failed to read file: {e}", "VALIDATION_ERROR", 400)
+            return err("Failed to read file.", "VALIDATION_ERROR", 400)
         import re as _re
         seqs = []
         cur_name = ""

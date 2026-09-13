@@ -154,7 +154,7 @@ var actions=k.status==='active'?'<button class="btn-sm btn-outline" onclick="rot
 return '<tr><td><strong>'+k.name+'</strong></td><td><span class="key-mask">'+k.key_mask+'</span></td><td>'+scopes+'</td><td>'+k.rate_limit+' req/min</td><td>'+(k.last_used||'Never')+'</td><td><span class="status-'+k.status+'">'+k.status+'</span></td><td>'+actions+'</td></tr>'
 }).join('')}
 function checkAuth(){
-var pu=localStorage.getItem('pf_user');
+var pu=sessionStorage.getItem('pf_user');
 if(pu){user=JSON.parse(pu);document.getElementById('auth-gate').style.display='none';document.getElementById('keys-content').style.display='block';loadKeys()}
 else{document.getElementById('auth-gate').style.display='block';document.getElementById('keys-content').style.display='none'}}
 function loadKeys(){

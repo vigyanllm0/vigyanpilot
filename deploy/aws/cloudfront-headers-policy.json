@@ -1,0 +1,38 @@
+{
+  "ResponseHeadersPolicyConfig": {
+    "Name": "vigyanllm-security-headers",
+    "Comment": "Security headers for all CloudFront responses",
+    "SecurityHeadersConfig": {
+      "StrictTransportSecurity": {
+        "Override": true,
+        "AccessControlMaxAgeSec": 63072000,
+        "IncludeSubdomains": true,
+        "Preload": true
+      },
+      "ContentTypeOptions": {
+        "Override": true
+      },
+      "FrameOptions": {
+        "Override": true,
+        "FrameOption": "DENY"
+      },
+      "XSSProtection": {
+        "Override": true,
+        "Protection": false
+      },
+      "ReferrerPolicy": {
+        "Override": true,
+        "ReferrerPolicy": "strict-origin-when-cross-origin"
+      }
+    },
+    "CustomHeadersConfig": {
+      "Items": [
+        {
+          "Header": "Permissions-Policy",
+          "Value": "camera=(), microphone=(), geolocation=(), payment=()",
+          "Override": true
+        }
+      ]
+    }
+  }
+}

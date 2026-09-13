@@ -589,10 +589,13 @@ def validate_promo():
         return jsonify({"error": "This promo code has already been used."}), 410
 
     # Check if user already used a promo code
-    user_row = db.execute("SELECT promo_code_used FROM users WHERE email=?",
-                          (g.user['email'],)).fetchone()
-    if user_row and user_row["promo_code_used"]:
-        return jsonify({"error": "You have already used a promo code."}), 409
+    try:
+        user_row = db.execute("SELECT promo_code_used FROM users WHERE email=?",
+                              (g.user['email'],)).fetchone()
+        if user_row and user_row["promo_code_used"]:
+            return jsonify({"error": "You have already used a promo code."}), 409
+    except Exception:
+        pass
 
     return jsonify({
         "valid": True,

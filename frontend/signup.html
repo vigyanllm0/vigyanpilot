@@ -259,7 +259,6 @@ function doResend(){
     .then(function(res){
       if(res&&res.ok&&res.data){
         sessionStorage.setItem('pf_user',JSON.stringify(res.data.user||{}));
-        localStorage.setItem('pf_user',JSON.stringify(res.data.user||{}));
         var rd=new URLSearchParams(window.location.search).get('redirect');
         window.location.href=(rd&&rd.startsWith('/')&&!rd.startsWith('//'))?rd:'/dashboard';
       }else{

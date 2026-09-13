@@ -947,7 +947,7 @@ async function rehydrateSession() {
   } catch(e) {}
 }
 function loadAuth() {
-  var u = sessionStorage.getItem('pf_user') || localStorage.getItem('pf_user');
+  var u = sessionStorage.getItem('pf_user');
   if (u) { try { authUser = JSON.parse(u); } catch(e) {} }
   updateAuthUI();
 }
@@ -1032,7 +1032,6 @@ async function handleAuth() {
 }
 function logout() {
   sessionStorage.removeItem('pf_user');
-  localStorage.removeItem('pf_user');
   authToken = ''; authUser = null; updateAuthUI();
   document.querySelectorAll('.user-menu').forEach(function(el){el.remove();});
   fetch(API+'/auth/logout', {method:'POST',credentials:'include'}).catch(()=>{});

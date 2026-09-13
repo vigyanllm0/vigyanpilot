@@ -164,7 +164,7 @@ var CHECKOUT_BASE_AMOUNT = 0;
 
 // Auth is carried by the HttpOnly pf_token cookie (same-origin). 'pf_user'
 // is a non-sensitive profile marker used only for UI/login-state decisions.
-function isLoggedIn() { return !!(sessionStorage.getItem('pf_user') || localStorage.getItem('pf_user')); }
+function isLoggedIn() { return !!sessionStorage.getItem('pf_user'); }
 
 function showLoading(show) { var el = document.getElementById('pay-loading'); if (el) el.style.display = show ? 'flex' : 'none'; }
 

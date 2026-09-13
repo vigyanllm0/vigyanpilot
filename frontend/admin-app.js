@@ -10,7 +10,7 @@ async function doLogin(){
     const r=await fetch(ADMIN_BASE+'/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'include',body:JSON.stringify({email:$('l-email').value,password:$('l-pass').value})});
     const txt=await r.text();
     let d;try{d=JSON.parse(txt)}catch(e){$('l-err').textContent='Backend offline (502). Please try again later.';return}
-    if(r.ok){if(d.user){sessionStorage.setItem('pf_user',JSON.stringify(d.user));localStorage.setItem('pf_user',JSON.stringify(d.user));}$('loginWrap').style.display='none';$('shell').style.display='block';refreshAll()}
+    if(r.ok){if(d.user){sessionStorage.setItem('pf_user',JSON.stringify(d.user));}$('loginWrap').style.display='none';$('shell').style.display='block';refreshAll()}
     else{$('l-err').textContent=d.error||d.detail||'Failed'}
   }catch(e){$('l-err').textContent='Network error — backend may be offline.'}
 }

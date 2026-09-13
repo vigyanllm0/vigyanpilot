@@ -190,7 +190,7 @@ def _run_pipeline_background(job_id: str, reason: str) -> None:
         logger.error("VigyanLLM: Background pipeline run failed for %s: %s", job_id, bg_err)
         execute(
             "UPDATE pipeline_jobs SET status = 'failed', error_log = %s, completed_at = NOW() WHERE id = %s",
-            (str(bg_err), job_id),
+            ("Pipeline execution failed.", job_id),
         )
 
 
@@ -525,7 +525,7 @@ def get_pipeline_status(job_id: str):
         "created_at": str(job["created_at"]) if job.get("created_at") else None,
         "started_at": str(job["started_at"]) if job.get("started_at") else None,
         "completed_at": str(job["completed_at"]) if job.get("completed_at") else None,
-        "error": job.get("error_log"),
+        "error": "Pipeline failed." if job.get("error_log") else None,
         "steps": steps,
     })), 200
 
@@ -847,7 +847,7 @@ def trigger_order_serialization(job_id: str):
     except Exception as e:
         logger.error("Compliance screening failed for job %s: %s", job_id, e)
         return jsonify(brand_response(
-            {"error": brand_error(f"Compliance screening failed: {e!s}")}
+            {"error": brand_error("Compliance screening failed.")}
         )), 500
 
     # Save compliance result to database

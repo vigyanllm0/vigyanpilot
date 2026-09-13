@@ -22,6 +22,8 @@ server {
     listen 80;
     server_name www.vigyanllm.in;
 
+    server_tokens off;
+
     gzip on;
     gzip_types text/html text/css application/javascript application/json image/svg+xml;
     gzip_min_length 1000;
@@ -44,13 +46,20 @@ server {
     add_header Access-Control-Allow-Headers "Authorization, Content-Type, X-Requested-With" always;
     add_header Access-Control-Allow-Credentials "true" always;
 
-    # CMS proxy (port 8001)
+    # CMS proxy (port 8001) — localhost only
     location /api/v1/cms/ {
+        allow 127.0.0.1;
+        deny all;
         proxy_pass http://127.0.0.1:8001/api/v1/cms/;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    # Block direct access to admin pages — auth is client-side only
+    location ~ ^/(admin|admin-reviews|cms-admin) {
+        return 403;
     }
 
     # All other requests → gunicorn

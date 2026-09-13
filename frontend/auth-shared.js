@@ -2,7 +2,7 @@ var API = window.VIGYAN_BACKEND_URL || '/api';
 var isRegister = false;
 
 function updateAuthUI(){
-  var userStr=sessionStorage.getItem('pf_user')||localStorage.getItem('pf_user');
+  var userStr=sessionStorage.getItem('pf_user');
   var user=null;try{if(userStr)user=JSON.parse(userStr)}catch(e){}
   var btns=document.getElementById('navBtns');
   var profile=document.getElementById('navProfile');
@@ -56,7 +56,6 @@ function logout(){
     fetch(API+'/auth/logout',{method:'POST',credentials:'same-origin'});
   } catch(e) {}
   sessionStorage.removeItem('pf_user');
-  localStorage.removeItem('pf_user');
   closeUserMenu();
   updateAuthUI();
 }
@@ -114,7 +113,6 @@ function handleGoogleCredential(res){
       if(res&&res.ok&&res.data){
         var u=JSON.stringify(res.data.user||{});
         sessionStorage.setItem('pf_user',u);
-        localStorage.setItem('pf_user',u);
         closeAuth();
         updateAuthUI();
       }else if(res.ok){
@@ -142,7 +140,6 @@ function handleGoogleCredential(res){
     .then(function(res){
       if(res&&res.ok&&res.data){
         sessionStorage.setItem('pf_user',JSON.stringify(res.data.user||{}));
-        localStorage.setItem('pf_user',JSON.stringify(res.data.user||{}));
         var rd=new URLSearchParams(window.location.search).get('redirect');
         window.location.href=(rd&&rd.startsWith('/')&&!rd.startsWith('//'))?rd:'/dashboard';
       }
@@ -182,7 +179,6 @@ function submitAuth(){
       if(res&&res.ok&&res.data&&res.data.user){
         var u=JSON.stringify(res.data.user||{email:email});
         sessionStorage.setItem('pf_user',u);
-        localStorage.setItem('pf_user',u);
         closeAuth();
         updateAuthUI();
       }else if(res&&res.ok){
@@ -213,7 +209,7 @@ function openAuthModal(){isRegister=false;showAuth()}
 (function(){
   closeUserMenu();
   updateAuthUI();
-  var userRaw = sessionStorage.getItem('pf_user') || localStorage.getItem('pf_user');
+  var userRaw = sessionStorage.getItem('pf_user');
   var user = null;
   if (userRaw) { try { user = JSON.parse(userRaw); } catch(e) {} }
 
