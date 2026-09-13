@@ -15,6 +15,9 @@ function handler(event) {
   // 1. NON-HTML FILE EXTENSION — serve as-is (css, js, xml, txt, png, etc.)
   if (u.match(/\.\w{1,5}$/)) return r;
 
+  // 1b. API + HEALTH + ACME — pass through to EC2 origin untouched
+  if (u.indexOf('/api/') === 0 || u === '/health' || u.indexOf('/.well-known/') === 0) return r;
+
   // 2. BOT BLOCKING (excludes /api/, /_next/, /assets/, /partials/)
   if (u.indexOf('/api/') !== 0 && u.indexOf('/_next/') !== 0 &&
       u.indexOf('/assets/') !== 0 && u.indexOf('/partials/') !== 0) {
