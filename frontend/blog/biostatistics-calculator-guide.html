@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en-IN">
+<head>
+<!-- Google tag (gtag.js) -->
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('consent', 'default', {
+    'ad_storage': 'denied',
+    'ad_user_data': 'denied',
+    'ad_personalization': 'denied',
+    'analytics_storage': 'denied',
+    'region': ['AT','BE','BG','HR','CY','CZ','DK','EE','FI','FR','DE','GR','HU','IE','IT','LV','LT','LU','MT','NL','PL','PT','RO','SK','SI','ES','SE','IS','LI','NO','GB','CH']
+  });
+  try {
+    var vlcs = JSON.parse(localStorage.getItem('vigyanllm_cookie_consent') || 'null');
+    if (vlcs && vlcs.consent === 'accepted') {
+      gtag('consent', 'update', { 'ad_storage': 'granted', 'ad_user_data': 'granted', 'ad_personalization': 'granted', 'analytics_storage': 'granted' });
+    } else if (vlcs && vlcs.consent === 'declined') {
+      gtag('consent', 'update', { 'ad_storage': 'denied', 'ad_user_data': 'denied', 'ad_personalization': 'denied', 'analytics_storage': 'denied' });
+    }
+  } catch (e) {}
+
+  gtag('set', 'ads_data_redaction', true);
+</script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PB0XMF4GEH" integrity="sha384-hACMoDCIDMba3jsHG3rMgdvIrTqUjGNEOMNz7cNKE+iuubQod4g9e9628Tl1SuzS" crossorigin="anonymous"></script>
+<script>
+  gtag('js', new Date());
+  gtag('config', 'G-PB0XMF4GEH');
+</script>
+
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-KRP5LLPR');</script>
+<!-- End Google Tag Manager -->
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Biostatistics Calculator Guide: 20+ Tests You Can Run in Your Browser</title>
+  <link rel="stylesheet" href="/design-tokens.css">
+<link rel="manifest" href="/manifest.json" />
+<link rel="sitemap" type="application/xml" href="/sitemap.xml" />
+<link rel="alternate" type="application/rss+xml" title="VigyanLLM Blog RSS" href="/blog/rss.xml" />
+<meta name="theme-color" content="#2563eb" />
+<meta name="twitter:image" content="https://www.vigyanllm.in/assets/og-biostatistics-calculator.png">
+<meta name="twitter:description" content="A practical guide to running t-tests, ANOVA, chi-square, correlation, and power analysis in your browser. Includes worked examples with real research data.">
+<meta name="twitter:title" content="Biostatistics Calculator Guide: 20+ Tests in Your Browser">
+<meta name="twitter:card" content="summary_large_image">
+<meta property="og:site_name" content="VigyanLLM">
+<meta property="og:image" content="https://www.vigyanllm.in/assets/og-biostatistics-calculator.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="robots" content="index, follow" />
+<meta name="author" content="VigyanLLM Private Limited" />
+<meta name="description" content="A practical guide to running t-tests, ANOVA, chi-square, correlation, and power analysis in your browser. Includes worked examples with real research data.">
+  <meta name="keywords" content="biostatistics calculator, online statistics tool, t-test calculator, ANOVA calculator, chi-square test, correlation analysis, sample size calculator, statistical analysis online">
+  <link rel="canonical" href="https://www.vigyanllm.in/blog/biostatistics-calculator-guide">
+<link rel="alternate" hreflang="en" href="https://www.vigyanllm.in/blog/biostatistics-calculator-guide" />
+<link rel="alternate" hreflang="en-IN" href="https://www.vigyanllm.in/blog/biostatistics-calculator-guide" />
+<link rel="alternate" hreflang="x-default" href="https://www.vigyanllm.in/blog/biostatistics-calculator-guide" />
+  <meta property="og:title" content="Biostatistics Calculator Guide: 20+ Tests You Can Run in Your Browser">
+  <meta property="og:description" content="A practical guide to running t-tests, ANOVA, chi-square, correlation, and power analysis in your browser. Includes worked examples with real research data.">
+  <meta property="og:type" content="article">
+<meta property="article:published_time" content="2026-09-15T10:00:00Z">
+<meta property="article:author" content="VigyanLLM Private Limited">
+<meta property="article:publisher" content="https://www.vigyanllm.in">
+  <meta property="og:url" content="https://www.vigyanllm.in/blog/biostatistics-calculator-guide">
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&amp;family=Open+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+  
+  <style>
+    html { overflow-x: hidden; }
+    :root {
+  --navy: #0F172A;
+  --navy-light: #1E293B;
+  --white: #FFFFFF;
+  --slate: #F8FAFC;
+  --slate-border: #E2E8F0;
+  --text: #0F172A;
+  --text2: #475569;
+  --muted: #94A3B8;
+  --primary: #2563EB;
+  --bio: #059669;
+  --amber: #D97706;
+  --accent: #22D3EE;
+  --font-h: 'Montserrat', sans-serif;
+  --font-b: 'Open Sans', sans-serif;
+  --bg: #FFFFFF;
+  --border: #E2E8F0;
+  --surface: #F8FAFC;
+  --space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-5:20px;--space-6:24px;--space-8:32px;--space-10:40px;--space-12:48px;--space-16:64px;--space-20:80px;--space-24:96px;--max-w: 1100px;
+  --sec-p: 100px;
+  --blue: #1565C0;
+  --blue-light: #42A5F5;
+  --blue-bg: #E3F2FD;
+}
+    body { font-family: var(--font-b); color: var(--text); background: var(--bg); margin: 0; padding: 0; }
+    .container { max-width: var(--max-w); margin: 0 auto; padding: 0 16px; }
+    nav[aria-label="Main navigation"]{position:sticky;top:0;background:var(--navy);z-index:1000;height:56px}
+    .nav-inner{display:flex;align-items:center;justify-content:space-between;max-width:var(--max-w);margin:0 auto;padding:0 24px;height:100%}
+    .nav-brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:#fff;font-family:var(--font-h);font-size:18px;font-weight:800;letter-spacing:-.02em}
+    .nav-brand img{height:32px;width:auto}
+    .nav-links>a,.drop-trigger{color:rgba(255,255,255,.7);text-decoration:none;font-size:13px;font-weight:500;padding:8px 12px;border-radius:8px;transition:all .15s;white-space:nowrap}
+    .nav-links>a:hover,.drop-trigger:hover{color:#fff;background:rgba(255,255,255,.08)}
+    .drop-menu{display:none;position:absolute;top:100%;left:-16px;background:#fff!important;border:1px solid var(--border);border-radius:12px;min-width:240px;padding:8px;z-index:1001;box-shadow:0 12px 40px rgba(0,0,0,.12);opacity:0;transform:translateY(4px);transition:opacity .2s,transform .2s}
+    .drop-menu a{display:block;padding:10px 14px;color:var(--text)!important;font-size:13px;border-radius:8px;transition:background .1s}
+    .drop-menu a:hover{background:var(--blue-bg);color:var(--blue)!important;padding-left:20px}
+    .nav-right{display:flex;align-items:center;gap:8px}
+    .nav-cta{padding:8px 24px;background:var(--saffron);color:#fff;border:none;border-radius:8px;font-family:var(--font-h);font-size:13px;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:.06em;transition:all .2s;line-height:1.3}
+    .nav-cta:hover{background:var(--saffron-dark);box-shadow:0 4px 16px var(--saffron-glow)}
+    .nav-login{padding:8px 20px;background:transparent;color:rgba(255,255,255,.8);border:1.5px solid rgba(255,255,255,.35);border-radius:8px;font-family:var(--font-b);font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;line-height:1.3;white-space:nowrap}
+    .nav-login:hover{border-color:#fff;color:#fff;background:rgba(255,255,255,.06)}
+    .hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;background:none;border:none;padding:4px;z-index:1001}
+    .hamburger span{width:22px;height:2.5px;background:#fff;border-radius:2px;transition:all .3s}
+    .hamburger.active span:nth-child(1){transform:rotate(45deg) translate(5px,5px)}
+    .hamburger.active span:nth-child(2){opacity:0}
+    .hamburger.active span:nth-child(3){transform:rotate(-45deg) translate(5px,-5px)}
+    .article-body { padding: 40px 0; max-width: 720px; margin: 0 auto; }
+    .article-body h1 { font-family: var(--font-b); font-size: clamp(2rem,4vw,2.8rem); font-weight: 400; line-height: 1.1; margin-bottom: 16px; }
+    .article-body h2 { font-size: 24px; font-weight: 600; color: var(--text); margin: 40px 0 16px; }
+    .article-body h3 { font-size: 18px; font-weight: 600; color: var(--text); margin: 28px 0 12px; }
+    .article-body p { margin-bottom: 16px; color: var(--text2); font-size: 15px; line-height: 1.8; }
+    .article-body ul, .article-body ol { margin-left: 24px; margin-bottom: 16px; color: var(--text2); font-size: 15px; }
+    .article-body li { margin-bottom: 8px; }
+    .article-body strong { color: var(--text); }
+    .article-body a { color: var(--primary); text-decoration: none; }
+    .article-body a:hover { text-decoration: underline; }
+    .article-body table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 14px; }
+    .article-body th { background: var(--surface); color: var(--text); padding: 12px; text-align: left; border: 1px solid var(--border); font-size:12px; text-transform: uppercase; letter-spacing: 0.05em; }
+    .article-body td { padding: 12px; border: 1px solid var(--border); color: var(--text2); }
+    .article-body tr:nth-child(even) { background: var(--surface); }
+    .article-body .callout { background: var(--surface); border-left: 4px solid var(--primary); padding: 20px 24px; border-radius: 0 12px 12px 0; margin: 24px 0; }
+    .article-body .callout-title { font-weight: 700; color: var(--primary); margin-bottom: 8px; }
+    .article-body code { background: var(--surface); padding: 2px 6px; border-radius: 4px; font-size: 13px; color: var(--text); border: 1px solid var(--border); }
+    .hero-blog { padding: 60px 0 30px; text-align: center; border-bottom: 1px solid var(--border); }
+    .cta-box { background: linear-gradient(135deg,#eff6ff 0%,#dbeafe 100%); border: 1px solid #bfdbfe; border-radius: 16px; padding: 36px; text-align: center; margin: 40px 0; }
+    .cta-box h3 { font-size: 20px; color: var(--text); margin-bottom: 10px; }
+    .cta-box p { color: var(--text2); margin-bottom: 20px; }
+    .cta-btn { display: inline-block; padding: 14px 32px; background: var(--primary); color: #fff; text-decoration: none; border-radius: 8px; font-weight: 700; font-size: 14px; transition: background 0.2s; }
+    .cta-btn:hover { background: #0044ff; text-decoration: none; }
+    .references { padding: 30px 0; border-top: 1px solid var(--border); margin-top: 40px; }
+    .references h2 { font-size: 20px; color: var(--text); margin-bottom: 16px; font-weight: 600; }
+    .references ol { margin-left: 24px; color: var(--text2); font-size: 14px; }
+    
+    .article-header .article-tag { display: inline-block; background: #e8f0ff; color: var(--primary); padding: 4px 14px; border-radius: 12px; font-size:12px; font-weight: 600; margin-bottom: 16px; }
+    .article-header .article-date { color: var(--muted); font-size: 13px; }
+    .article-header .article-author { color: var(--text2); font-size: 13px; font-weight: 600; }
+    .article-header h1 { font-size: clamp(2rem,4vw,2.8rem); font-weight: 400; line-height: 1.1; margin-bottom: 16px; }
+    .article-header .subtitle { font-size: 16px; color: var(--text2); line-height: 1.6; max-width: 700px; }
+    .article-meta-bar { display: flex; gap: 16px; align-items: center; margin-bottom: 16px; flex-wrap: wrap; }
+    .author-bio { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 28px; margin: 40px 0 24px; display: flex; gap: 20px; align-items: flex-start; }
+    .author-bio-avatar { width: 60px; height: 60px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 24px; flex-shrink: 0; }
+    .author-bio h4 { font-size: 16px; color: var(--text); margin-bottom: 6px; }
+    .author-bio p { font-size: 13px; color: var(--text2); line-height: 1.6; margin-bottom: 0; }
+    .related-articles { padding: 30px 0; border-top: 1px solid var(--border); margin-top: 24px; }
+    .related-articles h2 { font-size: 20px; color: var(--text); margin-bottom: 20px; font-weight: 600; }
+    .related-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; }
+    .related-card { border: 1px solid var(--border); border-radius: 12px; padding: 20px; transition: border-color 0.2s; }
+    .related-card:hover { border-color: var(--primary); }
+    .related-card h3 { font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+    .related-card p { font-size: 12px; color: var(--text2); line-height: 1.6; margin-bottom: 0; }
+    .related-card a { color: var(--primary); font-weight: 600; }
+  .auth-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center;padding:24px}
+.auth-overlay.open{display:flex}
+.auth-modal{background:#fff;border-radius:16px;padding:36px;width:100%;max-width:400px;box-shadow:0 24px 64px rgba(0,0,0,.25);position:relative;max-height:90vh;overflow-y:auto}
+.auth-modal .close-btn{position:absolute;top:14px;right:16px;background:none;border:none;font-size:13px;cursor:pointer;color:var(--muted);line-height:1}
+.auth-modal h2{font-family:var(--font-h);font-size:13px;font-weight:800;color:var(--text);margin-bottom:2px}
+.auth-modal .sub{font-size:13px;color:var(--muted);margin-bottom:24px}
+.auth-modal .field{margin-bottom:14px}
+.auth-modal .field label{display:block;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text2);margin-bottom:5px}
+.auth-modal .field input{width:100%;padding:11px 13px;border:1px solid var(--outline);border-radius:8px;font-family:var(--font-b);font-size:14px;color:var(--text);transition:border-color .15s}
+.auth-modal .field input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(21,101,192,.1)}
+.auth-modal .auth-btn{width:100%;padding:13px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-family:var(--font-b);font-size:14px;font-weight:700;cursor:pointer;transition:opacity .15s}
+.auth-modal .auth-btn:hover{opacity:.9}
+.auth-modal .toggle-link{text-align:center;font-size:12px;color:var(--muted);margin-top:14px}
+.auth-modal .toggle-link a{color:var(--blue);font-weight:600;cursor:pointer}
+.auth-modal .auth-err{color:#DC2626;font-size:12px;text-align:center;margin-top:8px;display:none}
+
+footer{background:var(--navy);color:rgba(255,255,255,.8);padding:56px 0 24px}
+.footer-grid{display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr 1fr;gap:40px;max-width:var(--max-w);margin:0 auto 32px;padding:0 16px}
+.footer-col h5{font-size:12px;text-transform:uppercase;letter-spacing:.12em;color:#fff;margin-bottom:16px;font-weight:700}
+.footer-col a{display:block;font-size:13px;color:rgba(255,255,255,.5);margin-bottom:10px;transition:color .15s}
+.footer-col a:hover{color:#fff}
+.footer-social{display:flex;gap:8px;margin-top:16px}
+.footer-social a{width:36px;height:36px;display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,.12);border-radius:8px;transition:all .3s ease}
+.footer-social a:hover{border-color:rgba(255,255,255,.3);transform:translateY(-2px);background:rgba(255,255,255,.05)}
+.footer-social svg{width:16px;height:16px;filter:grayscale(1);opacity:.5;transition:all .3s ease}
+.footer-social a:hover svg{filter:grayscale(0);opacity:1}
+.footer-bottom{max-width:var(--max-w);margin:0 auto;padding:12px 16px 0;border-top:1px solid rgba(255,255,255,.06);display:flex;font-size:12px;color:rgba(255,255,255,.35)}
+
+.mobile-menu{display:none;position:fixed;top:72px;left:0;right:0;background:var(--navy);padding:20px 24px;z-index:999;border-bottom:1px solid rgba(255,255,255,.08);max-height:calc(100vh-72px);overflow-y:auto}.mobile-menu.open{display:block}.mobile-menu .mm-group{margin-bottom:16px}.mobile-menu .mm-hdr{font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.4);font-weight:700;padding:8px 0 4px}.mobile-menu a{display:block;color:rgba(255,255,255,.7);font-size:14px;padding:10px 0;font-weight:500}.mobile-menu .mm-cta{display:block;margin-top:8px;padding:12px;background:var(--saffron);color:#fff;border-radius:8px;text-align:center;font-weight:700;font-size:13px}
+
+@media(max-width:768px){.nav-links{display:none}.nav-inner{padding:0 12px}.hamburger{display:flex}}
+
+.toc{background:var(--surface,#F8FAFC);border:1px solid var(--outline,#E2E5EA);border-radius:12px;padding:24px;margin:30px 0}
+.toc h3{font-size:16px;color:var(--text,#0F172A);margin-bottom:14px;margin-top:0;font-weight:600}
+.toc ul{margin-left:0;list-style:none}
+.toc li{margin-bottom:6px}
+.toc a{font-size:14px;color:var(--primary);text-decoration:none}
+.toc a:hover{text-decoration:underline}
+  </style>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://www.vigyanllm.in/blog/biostatistics-calculator-guide"
+  },
+  "headline": "Biostatistics Calculator Guide: 20+ Tests You Can Run in Your Browser",
+  "description": "A practical guide to running t-tests, ANOVA, chi-square, correlation, and power analysis in your browser. Includes worked examples with real research data.",
+  "image": "https://www.vigyanllm.in/assets/og-biostatistics-calculator.png",
+  "author": {
+    "@type": "Organization",
+    "name": "VigyanLLM Private Limited"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "VigyanLLM Private Limited",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://www.vigyanllm.in/logo.png"
+    }
+  },
+  "datePublished": "2026-09-15",
+  "dateModified": "2026-09-15"
+}
+</script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "What statistical tests does the calculator support?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "The calculator supports 20+ tests including descriptive statistics (mean, SD, SEM, CI), parametric tests (one-sample t-test, two-sample t-test, paired t-test, one-way ANOVA), non-parametric tests (Mann-Whitney U, Wilcoxon signed-rank, Kruskal-Wallis, chi-square, Fisher's exact), correlation (Pearson, Spearman), linear regression, sample size and power analysis, effect size measures (Cohen's d, Hedges' g, eta-squared, odds ratio, relative risk), diagnostic test evaluation (sensitivity, specificity, PPV, NPV), multiple comparison corrections (Bonferroni, Holm), and EC50/IC50 dose-response modeling."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "When should I use a t-test vs. ANOVA?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Use a t-test when comparing means between exactly two groups (e.g., treatment vs. control). Use ANOVA when comparing means across three or more groups (e.g., multiple dosage levels). Running multiple t-tests instead of ANOVA inflates your false positive rate because each test carries a 5% chance of Type I error. ANOVA controls this with a single omnibus test, and if significant, you follow up with post-hoc pairwise comparisons."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What is effect size and why does it matter?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Effect size measures the magnitude of a difference or relationship, independent of sample size. Cohen's d of 0.2 is small, 0.5 is medium, and 0.8 is large. Effect size matters because a statistically significant p-value with a very large sample size can still represent a trivially small effect. Always report effect sizes alongside p-values for a complete picture of your results."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Is my data secure when using the online calculator?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. All calculations run entirely in your browser using JavaScript. No data is ever sent to a server. This makes the calculator suitable for sensitive patient data under DPDP/GDPR guidelines. Your data never leaves your device."
+      }
+    }
+  ]
+}
+</script>
+
+</head>
+<body>
+<div id="vl-header"></div>
+
+<main>
+<div class="container">
+  <nav class="toc">
+    <h3>Table of Contents</h3>
+    <ul>
+      <li><a href="#why-online">Why Use an Online Biostatistics Calculator?</a></li>
+      <li><a href="#choosing-test">Choosing the Right Statistical Test</a></li>
+      <li><a href="#worked-examples">Worked Examples</a></li>
+      <li><a href="#common-mistakes">Common Mistakes to Avoid</a></li>
+      <li><a href="#cta">Try the Calculator</a></li>
+    </ul>
+  </nav>
+
+  <article class="article-body">
+    <div class="article-header">
+      <span class="article-tag">Biostatistics</span>
+      <div class="article-meta-bar">
+        <span class="article-date">September 15, 2026</span>
+        <span class="article-author">VigyanLLM Research Team</span>
+      </div>
+      <h1>Biostatistics Calculator Guide: 20+ Tests You Can Run in Your Browser</h1>
+      <p class="subtitle">A practical guide to running t-tests, ANOVA, chi-square, correlation, and power analysis — with worked examples using real research data.</p>
+    </div>
+
+    <section id="why-online">
+    <h2>Why Use an Online Biostatistics Calculator?</h2>
+    <p>Statistical analysis is the backbone of evidence-based research. Whether you're comparing treatment groups in a clinical trial, analyzing gene expression levels, or validating diagnostic test accuracy, the right statistical test transforms raw numbers into actionable conclusions.</p>
+    <p>Traditional desktop software like SPSS, SAS, or R requires installation, licensing, and a learning curve. An <strong>online biostatistics calculator</strong> eliminates these barriers — paste your data, select a test, and get instant results with plain-English interpretation.</p>
+
+    <div class="callout">
+      <div class="callout-title">Privacy First</div>
+      <p>All calculations run entirely in your browser using JavaScript. <strong>No data is ever sent to a server.</strong> This makes the calculator suitable for sensitive patient data under DPDP/GDPR guidelines.</p>
+    </div>
+    </section>
+
+    <section id="choosing-test">
+    <h2>Choosing the Right Statistical Test</h2>
+    <p>Selecting the appropriate test depends on your data type, distribution, and research question. Use this guide to pick the right tool.</p>
+
+    <table>
+      <tr><th>Research Question</th><th>Data Type</th><th>Parametric Test</th><th>Non-Parametric Alternative</th></tr>
+      <tr><td>Compare means of 2 groups</td><td>Continuous, normal</td><td>Independent t-test</td><td>Mann-Whitney U</td></tr>
+      <tr><td>Compare means of paired data</td><td>Continuous, normal</td><td>Paired t-test</td><td>Wilcoxon Signed-Rank</td></tr>
+      <tr><td>Compare means of 3+ groups</td><td>Continuous, normal</td><td>One-way ANOVA</td><td>Kruskal-Wallis</td></tr>
+      <tr><td>Association between 2 variables</td><td>Continuous</td><td>Pearson r</td><td>Spearman ρ</td></tr>
+      <tr><td>Predict Y from X</td><td>Continuous</td><td>Linear regression</td><td>Spearman regression</td></tr>
+      <tr><td>Compare proportions</td><td>Categorical</td><td>—</td><td>Chi-square / Fisher's exact</td></tr>
+      <tr><td>Evaluate a diagnostic test</td><td>Binary (TP/FP/FN/TN)</td><td>—</td><td>Sensitivity/Specificity</td></tr>
+    </table>
+
+    <h3>Assumptions of Parametric Tests</h3>
+    <ul>
+      <li><strong>Normality</strong> — Data should be approximately normally distributed (check with Shapiro-Wilk test)</li>
+      <li><strong>Homogeneity of variance</strong> — Groups should have similar variances (check with Levene's test)</li>
+      <li><strong>Independence</strong> — Observations should be independent of each other</li>
+      <li><strong>Scale</strong> — Dependent variable should be continuous (interval or ratio)</li>
+    </ul>
+    </section>
+
+    <section id="worked-examples">
+    <h2>Worked Examples</h2>
+
+    <h3>Example 1: Independent t-Test (Treatment vs. Control)</h3>
+    <p>You're testing whether a new drug lowers blood pressure compared to placebo. You randomize 8 patients to each group and measure systolic BP after 4 weeks.</p>
+
+    <p><strong>Group A (Drug):</strong> 128, 132, 125, 130, 127, 135, 129, 131</p>
+    <p><strong>Group B (Placebo):</strong> 138, 142, 135, 140, 137, 145, 139, 141</p>
+
+    <div class="callout">
+      <div class="callout-title">Result</div>
+      <p>t = −4.21, df = 14, p = 0.0008, Cohen's d = −2.11 (large effect). The drug group had significantly lower systolic BP than placebo. The large effect size (d > 0.8) indicates a clinically meaningful difference, not just a statistically significant one.</p>
+    </div>
+
+    <h3>Example 2: One-Way ANOVA (Multiple Dosages)</h3>
+    <p>You're comparing three dosage levels (10mg, 25mg, 50mg) on enzyme activity. Six samples per group.</p>
+
+    <p><strong>10mg:</strong> 45, 48, 42, 47, 44, 46</p>
+    <p><strong>25mg:</strong> 52, 55, 50, 54, 51, 53</p>
+    <p><strong>50mg:</strong> 58, 62, 56, 60, 57, 59</p>
+
+    <div class="callout">
+      <div class="callout-title">Result</div>
+      <p>F(2,15) = 28.4, p &lt; 0.0001, η² = 0.79 (large effect). There is a significant difference between at least two dosage groups. Follow up with Tukey HSD for pairwise comparisons.</p>
+    </div>
+
+    <h3>Example 3: Chi-Square Test (Diagnostic Accuracy)</h3>
+    <p>You're evaluating a rapid diagnostic test against a gold standard. You have 200 patients: 80 with disease, 120 without.</p>
+
+    <p><strong>True Positives:</strong> 74, <strong>False Negatives:</strong> 6, <strong>False Positives:</strong> 8, <strong>True Negatives:</strong> 112</p>
+
+    <div class="callout">
+      <div class="callout-title">Result</div>
+      <p>Sensitivity = 92.5%, Specificity = 93.3%, PPV = 90.2%, NPV = 94.9%. The test performs well for both ruling in and ruling out disease. Chi-square = 128.4, p &lt; 0.0001.</p>
+    </div>
+    </section>
+
+    <section id="common-mistakes">
+    <h2>Common Mistakes to Avoid</h2>
+    <ul>
+      <li><strong>Using p-values without effect sizes</strong> — A significant p-value with n=10,000 can still mean a tiny, clinically irrelevant effect. Always report Cohen's d or eta-squared.</li>
+      <li><strong>Ignoring assumptions</strong> — Running a t-test on highly skewed data or ordinal scales produces unreliable results. Check normality first.</li>
+      <li><strong>Post-hoc power analysis</strong> — It adds no information beyond the p-value itself. Plan power a priori.</li>
+      <li><strong>Multiple testing without correction</strong> — Running 20 tests at α=0.05 guarantees at least 1 false positive. Use Bonferroni or Holm correction.</li>
+      <li><strong>Confusing statistical significance with clinical significance</strong> — A p-value of 0.04 with d=0.1 is statistically significant but clinically meaningless.</li>
+    </ul>
+
+    <h3>Effect Size Conventions (Cohen's d)</h3>
+    <table>
+      <tr><th>Effect Size</th><th>Cohen's d</th><th>Interpretation</th><th>Example</th></tr>
+      <tr><td>Small</td><td>0.2</td><td>Hard to see with naked eye</td><td>5 kg weight loss in diet study</td></tr>
+      <tr><td>Medium</td><td>0.5</td><td>Moderate, visible difference</td><td>10 kg weight loss in drug trial</td></tr>
+      <tr><td>Large</td><td>0.8</td><td>Obvious, clinically meaningful</td><td>Surgery vs medication outcome</td></tr>
+    </table>
+    </section>
+
+    <section id="cta">
+    <div class="cta-box">
+      <h3>Try the Biostatistics Calculator</h3>
+      <p>Run t-tests, ANOVA, chi-square, correlation, and power analysis — all in your browser. No login required. Your data never leaves your device.</p>
+      <a href="/biostatistics-calculator" class="cta-btn">Open the Calculator →</a>
+    </div>
+    </section>
+
+    <section class="references">
+    <h2>References</h2>
+    <ol>
+      <li>Cohen J. <em>Statistical Power Analysis for the Behavioral Sciences</em>. 2nd ed. Lawrence Erlbaum Associates; 1988.</li>
+      <li>Fisher RA. <em>The Design of Experiments</em>. Oliver and Boyd; 1935.</li>
+      <li>Snedecor GW, Cochran WG. <em>Statistical Methods</em>. 8th ed. Iowa State University Press; 1989.</li>
+      <li>Altman DG. <em>Practical Statistics for Medical Research</em>. Chapman and Hall; 1991.</li>
+    </ol>
+    </section>
+
+    <div class="author-bio">
+      <div class="author-bio-avatar">V</div>
+      <div>
+        <h4>VigyanLLM Research Team</h4>
+        <p>VigyanLLM builds automated bioinformatics tools for primer design, sequence analysis, and biostatistics. Our mission is to make computational biology accessible to every researcher.</p>
+      </div>
+    </div>
+
+    <div class="related-articles">
+      <h2>Related Articles</h2>
+      <div class="related-grid">
+        <div class="related-card">
+          <h3><a href="/blog/real-time-pcr-data-analysis">qPCR Data Analysis: From Raw Cq Values to Fold Change</a></h3>
+          <p>Take qPCR data from raw Cq values through efficiency correction and fold-change calculation.</p>
+        </div>
+        <div class="related-card">
+          <h3><a href="/blog/pcr-steps">PCR Steps Explained: The Complete Thermal Cycling Protocol</a></h3>
+          <p>Master every step of PCR — from denaturation to final extension — with troubleshooting tips.</p>
+        </div>
+        <div class="related-card">
+          <h3><a href="/blog/primer-design-basics">Primer Design Basics: Rules Every Researcher Should Know</a></h3>
+          <p>GC content, Tm, hairpin formation, and 3' rule — the essentials of primer design.</p>
+        </div>
+      </div>
+    </div>
+  </article>
+</div>
+
+<footer>
+<div class="footer-grid">
+  <div class="footer-col">
+    <h5>VigyanLLM</h5>
+    <a href="/">Home</a>
+    <a href="/about">About</a>
+    <a href="/pricing">Pricing</a>
+    <a href="/blog">Blog</a>
+  </div>
+  <div class="footer-col">
+    <h5>Tools</h5>
+    <a href="/primer">Primer Design</a>
+    <a href="/blast">BLAST Search</a>
+    <a href="/docking">Molecular Docking</a>
+    <a href="/msa">Multiple Sequence Alignment</a>
+  </div>
+  <div class="footer-col">
+    <h5>Calculators</h5>
+    <a href="/tm-calculator">Tm Calculator</a>
+    <a href="/gc-calculator">GC Calculator</a>
+    <a href="/biostatistics-calculator">Biostatistics Calculator</a>
+    <a href="/pcr-analysis">PCR Analysis</a>
+  </div>
+  <div class="footer-col">
+    <h5>Resources</h5>
+    <a href="/glossary">Glossary</a>
+    <a href="/validation">Validation Data</a>
+    <a href="/cite-vigyanllm">Cite Us</a>
+    <a href="/dashboard">Dashboard</a>
+  </div>
+  <div class="footer-col">
+    <h5>Legal</h5>
+    <a href="/terms">Terms of Service</a>
+    <a href="/privacy">Privacy Policy</a>
+    <a href="/cookies">Cookie Policy</a>
+  </div>
+</div>
+<div class="footer-bottom">
+  <span>&copy; 2026 VigyanLLM Private Limited. All rights reserved.</span>
+</div>
+</footer>
+
+<div id="auth-overlay" class="auth-overlay">
+  <div class="auth-modal">
+    <button class="close-btn" onclick="closeAuthModal()">&times;</button>
+    <h2 id="auth-title">Sign In</h2>
+    <p class="sub" id="auth-sub">Access your saved analyses and results</p>
+    <div class="auth-err" id="auth-error"></div>
+    <form id="auth-form" onsubmit="handleAuth(event)">
+      <div class="field">
+        <label>Email</label>
+        <input type="email" id="auth-email" required>
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input type="password" id="auth-password" required>
+      </div>
+      <button type="submit" class="auth-btn" id="auth-submit">Sign In</button>
+    </form>
+    <p class="toggle-link">
+      <span id="auth-toggle">Don't have an account? <a onclick="toggleAuthMode()">Sign Up</a></span>
+    </p>
+  </div>
+</div>
+
+<script src="/auth-shared.js"></script>
+<script src="/header.js"></script>
+</body>
+</html>

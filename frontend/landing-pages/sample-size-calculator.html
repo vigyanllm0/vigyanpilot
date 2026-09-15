@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en-IN">
+<head>
+<!-- Google tag (gtag.js) -->
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('consent', 'default', {
+    'ad_storage': 'denied',
+    'ad_user_data': 'denied',
+    'ad_personalization': 'denied',
+    'analytics_storage': 'denied',
+    'region': ['AT','BE','BG','HR','CY','CZ','DK','EE','FI','FR','DE','GR','HU','IE','IT','LV','LT','LU','MT','NL','PL','PT','RO','SK','SI','ES','SE','IS','LI','NO','GB','CH']
+  });
+  try {
+    var vlcs = JSON.parse(localStorage.getItem('vigyanllm_cookie_consent') || 'null');
+    if (vlcs && vlcs.consent === 'accepted') {
+      gtag('consent', 'update', { 'ad_storage': 'granted', 'ad_user_data': 'granted', 'ad_personalization': 'granted', 'analytics_storage': 'granted' });
+    } else if (vlcs && vlcs.consent === 'declined') {
+      gtag('consent', 'update', { 'ad_storage': 'denied', 'ad_user_data': 'denied', 'ad_personalization': 'denied', 'analytics_storage': 'denied' });
+    }
+  } catch (e) {}
+  gtag('set', 'ads_data_redaction', true);
+</script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PB0XMF4GEH" integrity="sha384-hACMoDCIDMba3jsHG3rMgdvIrTqUjGNEOMNz7cNKE+iuubQod4g9e9628Tl1SuzS" crossorigin="anonymous"></script>
+<script>
+  gtag('js', new Date());
+  gtag('config', 'G-PB0XMF4GEH');
+</script>
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-KRP5LLPR');</script>
+<!-- End Google Tag Manager -->
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sample Size Calculator: Power Analysis for t-Test & ANOVA (2026)</title>
+<link rel="stylesheet" href="/design-tokens.css">
+<link rel="manifest" href="/manifest.json" />
+<link rel="sitemap" type="application/xml" href="/sitemap.xml" />
+<link rel="alternate" type="application/rss+xml" title="VigyanLLM Blog RSS" href="/blog/rss.xml" />
+<meta name="theme-color" content="#2563eb" />
+<meta name="robots" content="index, follow" />
+<meta name="author" content="VigyanLLM Private Limited" />
+<meta name="description" content="Free online sample size calculator. Calculate minimum sample size for t-tests, ANOVA, and correlation studies. Power analysis with effect size, alpha, and power inputs." />
+<meta name="keywords" content="sample size calculator, power analysis, sample size for t-test, sample size for ANOVA, statistical power calculator, effect size calculator, research sample size" />
+<link rel="canonical" href="https://www.vigyanllm.in/landing-pages/sample-size-calculator" />
+<link rel="alternate" hreflang="en" href="https://www.vigyanllm.in/landing-pages/sample-size-calculator" />
+<link rel="alternate" hreflang="en-IN" href="https://www.vigyanllm.in/landing-pages/sample-size-calculator" />
+<link rel="alternate" hreflang="x-default" href="https://www.vigyanllm.in/landing-pages/sample-size-calculator" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://www.vigyanllm.in/landing-pages/sample-size-calculator" />
+<meta property="og:title" content="Sample Size Calculator: Power Analysis for t-Test & ANOVA (2026)" />
+<meta property="og:description" content="Free online sample size calculator. Calculate minimum sample size for t-tests, ANOVA, and correlation studies. Power analysis with effect size, alpha, and power inputs." />
+<meta property="og:image" content="https://www.vigyanllm.in/assets/og-biostatistics-calculator.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:site_name" content="VigyanLLM" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Sample Size Calculator: Power Analysis for t-Test & ANOVA (2026)" />
+<meta name="twitter:description" content="Free online sample size calculator. Calculate minimum sample size for t-tests, ANOVA, and correlation studies. Power analysis with effect size, alpha, and power inputs." />
+<meta name="twitter:image" content="https://www.vigyanllm.in/assets/og-biostatistics-calculator.png" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Open+Sans:wght@400;500;600;700&family=Source+Serif+4:wght@400;500&display=swap" rel="stylesheet">
+<link rel="icon" type="image/png" href="/logo.png">
+<link rel="apple-touch-icon" href="/logo.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<script src="https://accounts.google.com/gsi/client?hl=en" async defer></script>
+
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.vigyanllm.in"}, {"@type": "ListItem", "position": 2, "name": "Sample Size Calculator", "item": "https://www.vigyanllm.in/landing-pages/sample-size-calculator"}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"VigyanLLM Sample Size Calculator","description":"Free online sample size calculator for t-tests, ANOVA, and correlation studies. Calculate minimum sample size with effect size, alpha, and power inputs.","url":"https://www.vigyanllm.in/biostatistics-calculator","applicationCategory":"StatisticsApplication","operatingSystem":"Web Browser","browserRequirements":"Modern web browser with JavaScript","author":{"@type":"Organization","name":"VigyanLLM Private Limited","url":"https://www.vigyanllm.in/about"},"offers":{"@type":"Offer","price":"0","priceCurrency":"INR"},"softwareVersion":"1.0","featureList":["Sample size for one-sample t-test","Sample size for two-sample t-test","Sample size for ANOVA","Sample size for correlation","Power curves","Effect size input (Cohen's d, f, r)"]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What is power analysis?","acceptedAnswer":{"@type":"Answer","text":"Power analysis determines the minimum sample size needed to detect a true effect of a given size with a specified probability. It balances four quantities: sample size (n), effect size, significance level (α), and statistical power (1-β). You set three and solve for the fourth. Most commonly, you set effect size, α, and power to find the required n."}},{"@type":"Question","name":"What sample size do I need for a t-test?","acceptedAnswer":{"@type":"Answer","text":"For a two-sample t-test with α=0.05, power=0.80, and Cohen's d=0.5 (medium effect), you need 64 participants per group (128 total). For d=0.8 (large effect), you need 26 per group (52 total). For d=0.2 (small effect), you need 394 per group (788 total). Use our calculator to find the exact n for your specific parameters."}},{"@type":"Question","name":"What is the difference between α and β?","acceptedAnswer":{"@type":"Answer","text":"α (alpha) is the probability of Type I error — rejecting the null hypothesis when it's actually true (false positive). The conventional threshold is 0.05. β (beta) is the probability of Type II error — failing to reject the null when it's actually false (false negative). Power = 1-β. The conventional power threshold is 0.80, meaning you have an 80% chance of detecting a true effect."}},{"@type":"Question","name":"Should I add extra participants for dropouts?","acceptedAnswer":{"@type":"Answer","text":"Yes. Always add 10-20% extra to your calculated sample size to account for dropouts, exclusions, and missing data. For example, if you calculate n=64 per group, recruit at least 72-78 per group. This is especially important for longitudinal studies where attrition rates can be 15-30%."}}]}</script>
+<script src="/cookie-banner.js" defer></script>
+<style>
+html{overflow-x:hidden}
+:root{--blue:#1565C0;--blue-light:#42A5F5;--blue-bg:#E3F2FD;--navy:#0F172A;--black:#0A0A0F;--surface:#FFFFFF;--surface-alt:#F5F7FA;--outline:#E2E5EA;--text:#0A0A0F;--text2:#4A4A6A;--muted:#7A7A9A;--font-h:'Montserrat',sans-serif;--font-b:'Open Sans',sans-serif;--space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-5:20px;--space-6:24px;--space-8:32px;--space-10:40px;--space-12:48px;--space-16:64px;--space-20:80px;--space-24:96px;--max-w:1400px}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--surface);color:var(--text);font-family:var(--font-b);line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{text-decoration:none;color:inherit}
+img{max-width:100%}
+.container{max-width:1100px;margin:0 auto;padding:0 24px}
+.hero{padding:80px 0 40px;text-align:center}
+.hero h1{font-family:'Montserrat',sans-serif;font-size:clamp(2rem,4vw,2.8rem);font-weight:800;margin-bottom:16px}
+.hero p{font-size:17px;color:#475569;max-width:720px;margin:0 auto 32px}
+.btn{display:inline-block;padding:12px 32px;background:#2563EB;color:#fff;border-radius:8px;font-weight:700;font-size:14px;text-decoration:none}
+.btn:hover{background:#1d4ed8}
+.breadcrumb{font-size:0.85rem;color:#94A3B8;margin-bottom:1.5rem;padding-top:24px}
+.breadcrumb a{color:#2563EB;text-decoration:none}
+.content-section{max-width:900px;margin:40px auto;padding:0 24px}
+.content-section h2{font-family:'Montserrat',sans-serif;font-size:22px;font-weight:700;margin-bottom:12px;color:#0F172A;border-bottom:2px solid #E2E8F0;padding-bottom:8px}
+.content-section h3{font-family:'Montserrat',sans-serif;font-size:17px;font-weight:600;margin:20px 0 10px;color:#1E293B}
+.content-section p{font-size:15px;color:#475569;margin-bottom:16px;line-height:1.8}
+.content-section ul,.content-section ol{margin-left:24px;margin-bottom:16px;color:#475569;font-size:15px}
+.content-section li{margin-bottom:8px}
+.content-section strong{color:#0F172A}
+.callout{background:#F0F9FF;border:1px solid #BAE6FD;border-radius:12px;padding:20px 24px;margin:24px 0}
+.callout-title{font-weight:700;color:#0369A1;margin-bottom:8px}
+.cta-box{background:linear-gradient(135deg,#eff6ff 0%,#dbeafe 100%);border:1px solid #bfdbfe;border-radius:16px;padding:36px;text-align:center;margin:40px 0}
+.cta-box h3{font-size:20px;color:#0F172A;margin-bottom:10px}
+.cta-box p{color:#475569;margin-bottom:20px}
+.faq-section{margin:40px auto;max-width:900px;padding:0 24px}
+.faq-section h2{font-size:22px;font-weight:700;margin-bottom:20px;color:#0F172A}
+.faq-item{margin-bottom:16px;border:1px solid #E2E8F0;border-radius:12px;overflow:hidden}
+.faq-item summary{padding:14px 16px;font-family:'Montserrat',sans-serif;font-size:14px;font-weight:600;cursor:pointer;list-style:none;background:#F8FAFC;transition:background .15s}
+.faq-item summary:hover{background:#E2E8F0}
+.faq-item .faq-body{padding:16px;font-size:14px;line-height:1.8;color:#475569}
+footer{background:#0F172A;color:rgba(255,255,255,.8);padding:56px 0 24px}
+.footer-grid{display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr 1fr;gap:40px;max-width:1100px;margin:0 auto 32px;padding:0 24px}
+.footer-col h5{font-size:12px;text-transform:uppercase;letter-spacing:.12em;color:#fff;margin-bottom:16px;font-weight:700}
+.footer-col a{display:block;font-size:13px;color:rgba(255,255,255,.5);margin-bottom:10px;transition:color .15s}
+.footer-col a:hover{color:#fff}
+.footer-bottom{max-width:1100px;margin:0 auto;padding:12px 24px 0;border-top:1px solid rgba(255,255,255,.06);font-size:12px;color:rgba(255,255,255,.35)}
+@media(max-width:768px){.footer-grid{grid-template-columns:1fr 1fr}.hero{padding:40px 0 20px}}
+</style>
+</head>
+<body>
+<div id="vl-header"></div>
+
+<main>
+<div class="container">
+  <nav class="breadcrumb"><a href="/">Home</a> &rsaquo; Sample Size Calculator</nav>
+</div>
+
+<section class="hero">
+<div class="container">
+  <h1>Sample Size Calculator</h1>
+  <p>Calculate the minimum sample size for t-tests, ANOVA, and correlation studies. Power analysis with effect size, alpha, and power inputs — all in your browser.</p>
+  <a href="/biostatistics-calculator" class="btn">Open the Sample Size Calculator →</a>
+</div>
+</section>
+
+<section class="content-section">
+<h2>Why Sample Size Matters</h2>
+<p>An underpowered study — one with too few participants — wastes time and resources. You run the experiment, collect data, get a p-value of 0.07, and conclude "no significant effect." But was there truly no effect, or did you simply lack the statistical power to detect it?</p>
+
+<p>A well-designed study with adequate sample size gives you the <strong>best chance of detecting a true effect</strong> if it exists. This is what <strong>power analysis</strong> does — it calculates the minimum n needed to detect an effect of a given size with a specified probability.</p>
+
+<h2>The Four Quantities</h2>
+<p>Power analysis involves four interrelated quantities. You set three and solve for the fourth:</p>
+
+<table style="width:100%;border-collapse:collapse;margin:20px 0;font-size:14px">
+<tr><th style="background:#F8FAFC;padding:12px;text-align:left;border:1px solid #E2E8F0;font-size:12px;text-transform:uppercase;letter-spacing:0.05em">Quantity</th><th style="background:#F8FAFC;padding:12px;text-align:left;border:1px solid #E2E8F0;font-size:12px;text-transform:uppercase;letter-spacing:0.05em">Symbol</th><th style="background:#F8FAFC;padding:12px;text-align:left;border:1px solid #E2E8F0;font-size:12px;text-transform:uppercase;letter-spacing:0.05em">Conventional Value</th><th style="background:#F8FAFC;padding:12px;text-align:left;border:1px solid #E2E8F0;font-size:12px;text-transform:uppercase;letter-spacing:0.05em">What It Means</th></tr>
+<tr><td style="padding:12px;border:1px solid #E2E8F0"><strong>Sample size</strong></td><td style="padding:12px;border:1px solid #E2E8F0">n</td><td style="padding:12px;border:1px solid #E2E8F0">Solve for this</td><td style="padding:12px;border:1px solid #E2E8F0">Number of participants per group</td></tr>
+<tr><td style="padding:12px;border:1px solid #E2E8F0"><strong>Effect size</strong></td><td style="padding:12px;border:1px solid #E2E8F0">d, f, r</td><td style="padding:12px;border:1px solid #E2E8F0">Depends on field</td><td style="padding:12px;border:1px solid #E2E8F0">Magnitude of the difference/relationship</td></tr>
+<tr><td style="padding:12px;border:1px solid #E2E8F0"><strong>Significance level</strong></td><td style="padding:12px;border:1px solid #E2E8F0">α</td><td style="padding:12px;border:1px solid #E2E8F0">0.05</td><td style="padding:12px;border:1px solid #E2E8F0">Probability of false positive (Type I error)</td></tr>
+<tr><td style="padding:12px;border:1px solid #E2E8F0"><strong>Power</strong></td><td style="padding:12px;border:1px solid #E2E8F0">1-β</td><td style="padding:12px;border:1px solid #E2E8F0">0.80</td><td style="padding:12px;border:1px solid #E2E8F0">Probability of detecting a true effect (1 - Type II error)</td></tr>
+</table>
+
+<h2>Sample Size for t-Tests</h2>
+<p>For a two-sample independent t-test, the required sample size per group depends on Cohen's d (effect size):</p>
+
+<table style="width:100%;border-collapse:collapse;margin:20px 0;font-size:14px">
+<tr><th style="background:#F8FAFC;padding:12px;text-align:left;border:1px solid #E2E8F0;font-size:12px;text-transform:uppercase;letter-spacing:0.05em">Effect Size (Cohen's d)</th><th style="background:#F8FAFC;padding:12px;text-align:left;border:1px solid #E2E8F0;font-size:12px;text-transform:uppercase;letter-spacing:0.05em">Interpretation</th><th style="background:#F8FAFC;padding:12px;text-align:left;border:1px solid #E2E8F0;font-size:12px;text-transform:uppercase;letter-spacing:0.05em">n per group (α=0.05, power=0.80)</th><th style="background:#F8FAFC;padding:12px;text-align:left;border:1px solid #E2E8F0;font-size:12px;text-transform:uppercase;letter-spacing:0.05em">Total N</th></tr>
+<tr><td style="padding:12px;border:1px solid #E2E8F0">0.2</td><td style="padding:12px;border:1px solid #E2E8F0">Small</td><td style="padding:12px;border:1px solid #E2E8F0">394</td><td style="padding:12px;border:1px solid #E2E8F0">788</td></tr>
+<tr><td style="padding:12px;border:1px solid #E2E8F0">0.5</td><td style="padding:12px;border:1px solid #E2E8F0">Medium</td><td style="padding:12px;border:1px solid #E2E8F0">64</td><td style="padding:12px;border:1px solid #E2E8F0">128</td></tr>
+<tr><td style="padding:12px;border:1px solid #E2E8F0">0.8</td><td style="padding:12px;border:1px solid #E2E8F0">Large</td><td style="padding:12px;border:1px solid #E2E8F0">26</td><td style="padding:12px;border:1px solid #E2E8F0">52</td></tr>
+</table>
+
+<div class="callout">
+  <div class="callout-title">Rule of Thumb</div>
+  <p>For a medium effect (d=0.5) with standard parameters (α=0.05, power=0.80), you need <strong>64 participants per group</strong> (128 total). Always add 10-20% for dropouts.</p>
+</div>
+
+<h2>Worked Example: Clinical Trial Planning</h2>
+<p>You're designing a drug trial. Previous studies suggest the drug reduces blood pressure by about 8 mmHg (SD ≈ 16 mmHg), giving Cohen's d ≈ 0.5. You want 80% power at α=0.05.</p>
+
+<div class="callout">
+  <div class="callout-title">Calculation</div>
+  <p>n = 64 per group × 1.15 (15% dropout buffer) = <strong>74 per group (148 total)</strong></p>
+  <p>If you can only recruit 50 per group (100 total), your power drops to ~0.65 — meaning you have only a 65% chance of detecting the effect. You'd need a larger effect size (d=0.63) or a larger α (0.10) to maintain 80% power with n=50.</p>
+</div>
+
+<h2>Common Pitfalls</h2>
+<ul>
+  <li><strong>Post-hoc power analysis:</strong> Calculating power after you already have results adds no information beyond the p-value itself. Plan power a priori.</li>
+  <li><strong>Ignoring attrition:</strong> A longitudinal study with 30% dropout needs 43% more participants than the power analysis suggests (1/0.7 ≈ 1.43).</li>
+  <li><strong>Using arbitrary effect sizes:</strong> Base your effect size estimate on pilot data, prior literature, or the minimum clinically important difference (MCID).</li>
+  <li><strong>Confusing statistical and practical significance:</strong> A huge sample can detect a trivially small effect as "significant." Always consider whether the effect size is meaningful in practice.</li>
+</ul>
+</section>
+
+<section class="cta-box" style="max-width:900px;margin:40px auto">
+  <h3>Try the Sample Size Calculator</h3>
+  <p>Enter your effect size, alpha, and power — get the minimum sample size for your study. Includes power curves for t-tests, ANOVA, and correlation.</p>
+  <a href="/biostatistics-calculator" class="btn">Open the Calculator →</a>
+</section>
+
+<section class="faq-section">
+<h2>Frequently Asked Questions</h2>
+
+<details class="faq-item">
+  <summary>What is power analysis?</summary>
+  <div class="faq-body">Power analysis determines the minimum sample size needed to detect a true effect of a given size with a specified probability. It balances four quantities: sample size (n), effect size, significance level (α), and statistical power (1-β). You set three and solve for the fourth. Most commonly, you set effect size, α, and power to find the required n.</div>
+</details>
+
+<details class="faq-item">
+  <summary>What sample size do I need for a t-test?</summary>
+  <div class="faq-body">For a two-sample t-test with α=0.05, power=0.80, and Cohen's d=0.5 (medium effect), you need 64 participants per group (128 total). For d=0.8 (large effect), you need 26 per group (52 total). For d=0.2 (small effect), you need 394 per group (788 total). Use our calculator to find the exact n for your specific parameters.</div>
+</details>
+
+<details class="faq-item">
+  <summary>What is the difference between α and β?</summary>
+  <div class="faq-body">α (alpha) is the probability of Type I error — rejecting the null hypothesis when it's actually true (false positive). The conventional threshold is 0.05. β (beta) is the probability of Type II error — failing to reject the null when it's actually false (false negative). Power = 1-β. The conventional power threshold is 0.80, meaning you have an 80% chance of detecting a true effect.</div>
+</details>
+
+<details class="faq-item">
+  <summary>Should I add extra participants for dropouts?</summary>
+  <div class="faq-body">Yes. Always add 10-20% extra to your calculated sample size to account for dropouts, exclusions, and missing data. For example, if you calculate n=64 per group, recruit at least 72-78 per group. This is especially important for longitudinal studies where attrition rates can be 15-30%.</div>
+</details>
+</section>
+
+</main>
+
+<footer>
+<div class="footer-grid">
+  <div class="footer-col">
+    <h5>VigyanLLM</h5>
+    <a href="/">Home</a>
+    <a href="/about">About</a>
+    <a href="/pricing">Pricing</a>
+    <a href="/blog">Blog</a>
+  </div>
+  <div class="footer-col">
+    <h5>Tools</h5>
+    <a href="/primer">Primer Design</a>
+    <a href="/blast">BLAST Search</a>
+    <a href="/docking">Molecular Docking</a>
+    <a href="/msa">Multiple Sequence Alignment</a>
+  </div>
+  <div class="footer-col">
+    <h5>Calculators</h5>
+    <a href="/tm-calculator">Tm Calculator</a>
+    <a href="/gc-calculator">GC Calculator</a>
+    <a href="/biostatistics-calculator">Biostatistics Calculator</a>
+    <a href="/pcr-analysis">PCR Analysis</a>
+  </div>
+  <div class="footer-col">
+    <h5>Resources</h5>
+    <a href="/glossary">Glossary</a>
+    <a href="/validation">Validation Data</a>
+    <a href="/cite-vigyanllm">Cite Us</a>
+    <a href="/dashboard">Dashboard</a>
+  </div>
+  <div class="footer-col">
+    <h5>Legal</h5>
+    <a href="/terms">Terms of Service</a>
+    <a href="/privacy">Privacy Policy</a>
+    <a href="/cookies">Cookie Policy</a>
+  </div>
+</div>
+<div class="footer-bottom">
+  <span>&copy; 2026 VigyanLLM Private Limited. All rights reserved.</span>
+</div>
+</footer>
+
+<script src="/auth-shared.js"></script>
+<script src="/header.js"></script>
+</body>
+</html>
