@@ -2669,7 +2669,11 @@ def create_app() -> Flask:
     except Exception:
         pass
 
+    # ── Docking rate limit: 5/min per IP (expensive compute) ────────────
+    _docking_limiter = app.extensions.get("limiter")
+
     @app.route("/api/primer/docking/consensus", methods=["POST"])
+    @(_docking_limiter.limit("5 per minute") if _docking_limiter else lambda f: f)
     def docking_consensus():
         if not READY:
             return err("Docking engine failed to load on the server. Please contact support or try again later.", "CORE_NOT_READY", 503)
@@ -3039,6 +3043,7 @@ def create_app() -> Flask:
     # ════════════════════════════════════════════════════════════════════
 
     @app.route("/api/primer/docking/regenerate", methods=["POST"])
+    @(_docking_limiter.limit("10 per minute") if _docking_limiter else lambda f: f)
     def regenerate_protein():
         """
         Run regenerative folding on a protein structure.
@@ -3062,6 +3067,7 @@ def create_app() -> Flask:
             return err(f"Regeneration failed: {str(exc)}", "ANALYSIS_FAILED", 500)
 
     @app.route("/api/primer/docking/full-prep", methods=["POST"])
+    @(_docking_limiter.limit("10 per minute") if _docking_limiter else lambda f: f)
     def full_docking_prep():
         """
         Full docking preparation pipeline:
@@ -3118,6 +3124,7 @@ def create_app() -> Flask:
     # ════════════════════════════════════════════════════════════════════
 
     @app.route("/api/primer/docking/analyze-poses", methods=["POST"])
+    @(_docking_limiter.limit("10 per minute") if _docking_limiter else lambda f: f)
     def analyze_docking_poses():
         """
         Run advanced pose analysis: clustering, ligand efficiency, binding modes.
@@ -3232,6 +3239,7 @@ def create_app() -> Flask:
     _screening_campaigns = {}
 
     @app.route("/api/primer/docking/screen", methods=["POST"])
+    @(_docking_limiter.limit("3 per minute") if _docking_limiter else lambda f: f)
     def start_screening():
         """
         Start a virtual screening campaign.
