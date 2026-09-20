@@ -3114,6 +3114,100 @@ def create_app() -> Flask:
             return err(f"Full preparation failed: {str(exc)}", "ANALYSIS_FAILED", 500)
 
     # ════════════════════════════════════════════════════════════════════
+    # Advanced Scoring & Caching
+    # ════════════════════════════════════════════════════════════════════
+
+    @app.route("/api/primer/docking/analyze-poses", methods=["POST"])
+    def analyze_docking_poses():
+        """
+        Run advanced pose analysis: clustering, ligand efficiency, binding modes.
+        Accepts list of poses with scores.
+        """
+        from .pipelines.advanced_scoring import analyze_poses, report_to_dict
+
+        data = request.get_json(silent=True) or {}
+        poses = data.get("poses", [])
+        receptor_plddt = data.get("receptor_plddt")
+        smiles = data.get("smiles", "")
+        logp = data.get("logp", 3.0)
+
+        if not poses:
+            return err("No poses provided.", "VALIDATION_ERROR", 400)
+
+        try:
+            report = analyze_poses(poses, receptor_plddt=receptor_plddt, smiles=smiles, logp=logp)
+            result = report_to_dict(report)
+            return jsonify(result), 200
+        except Exception as exc:
+            logger.error("Pose analysis error: %s", exc, exc_info=True)
+            return err(f"Analysis failed: {str(exc)}", "ANALYSIS_FAILED", 500)
+
+    @app.route("/api/primer/docking/analyze-poses/<job_id>", methods=["GET"])
+    def analyze_job_poses(job_id):
+        """Analyze poses from a completed docking job."""
+        from .pipelines.advanced_scoring import analyze_poses, report_to_dict
+
+        job = get_job(job_id)
+        if not job:
+            return err("Job not found.", "NOT_FOUND", 404)
+
+        result = job.get("result") or {}
+        ranked = result.get("ranked_results") or []
+        if not ranked:
+            return err("No docking results.", "NO_RESULTS", 400)
+
+        poses = [
+            {
+                'rank': i + 1,
+                'score': mol.get('vina_score', 0),
+                'vina_score': mol.get('vina_score', 0),
+                'gnina_score': mol.get('gnina_score', 0),
+                'consensus_score': mol.get('consensus_score', 0),
+            }
+            for i, mol in enumerate(ranked)
+        ]
+
+        smiles = ranked[0].get('smiles', '') if ranked else ''
+
+        try:
+            report = analyze_poses(poses, smiles=smiles)
+            result_dict = report_to_dict(report)
+            result_dict['job_id'] = job_id
+            return jsonify(result_dict), 200
+        except Exception as exc:
+            logger.error("Job pose analysis error: %s", exc, exc_info=True)
+            return err(f"Analysis failed: {str(exc)}", "ANALYSIS_FAILED", 500)
+
+    @app.route("/api/primer/docking/cache/stats", methods=["GET"])
+    def esm_cache_stats():
+        """Get ESMFold cache statistics."""
+        from .pipelines.esm_cache import cache_stats
+        return jsonify(cache_stats()), 200
+
+    @app.route("/api/primer/docking/cache/clear", methods=["POST"])
+    def esm_cache_clear():
+        """Clear ESMFold cache."""
+        from .pipelines.esm_cache import clear_cache
+        n = clear_cache()
+        return jsonify({'cleared': n}), 200
+
+    @app.route("/api/primer/docking/cache/lookup", methods=["POST"])
+    def esm_cache_lookup():
+        """Check if a sequence has a cached ESMFold result."""
+        from .pipelines.esm_cache import get_cached_structure
+
+        data = request.get_json(silent=True) or {}
+        sequence = data.get("sequence", "").strip()
+
+        if not sequence:
+            return err("No sequence provided.", "VALIDATION_ERROR", 400)
+
+        result = get_cached_structure(sequence)
+        if result:
+            return jsonify({'cache_hit': True, 'result': result}), 200
+        return jsonify({'cache_hit': False}), 200
+
+    # ════════════════════════════════════════════════════════════════════
     # DEPRECATED: Azure Worker Endpoints (lines 2803-2834)
     # These endpoints were used by an external Azure worker to poll/claim/complete
     # docking jobs. They are now unused since the local worker thread handles
