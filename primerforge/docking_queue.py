@@ -4,8 +4,6 @@ import asyncio
 import json
 import logging
 import os
-import subprocess
-import sys
 import threading
 import time
 import uuid
@@ -170,47 +168,21 @@ def _process_job(job: dict):
 
     logger.info("Local worker processing job %s (%d ligands)", job_id, len(smiles_list))
 
+    # Cap ligands to prevent OOM on small instances
+    if len(smiles_list) > 10:
+        logger.warning("Job %s has %d ligands — capping to 10 for stability", job_id, len(smiles_list))
+        smiles_list = smiles_list[:10]
+
     try:
-        # Cap ligands to prevent OOM on small instances
-        if len(smiles_list) > 10:
-            logger.warning("Job %s has %d ligands — capping to 10 for stability", job_id, len(smiles_list))
-            smiles_list = smiles_list[:10]
-
         from primerforge.pipelines.consensus_pipeline import run_consensus_pipeline
-        # Run in a subprocess to isolate crashes from the main Flask process
-        import subprocess
-        import sys
-
-        script = f'''
-import sys, json, asyncio
-sys.path.insert(0, "{os.path.dirname(os.path.dirname(os.path.abspath(__file__)))}")
-from primerforge.pipelines.consensus_pipeline import run_consensus_pipeline
-result = asyncio.run(run_consensus_pipeline(
-    {repr(sequence)}, {json.dumps(smiles_list)}, {top_n}, pdb_content={repr(pdb_content)}
-))
-print(json.dumps(result))
-'''
-        proc = subprocess.run(
-            [sys.executable, "-c", script],
-            capture_output=True, text=True, timeout=300  # 5-min hard timeout
-        )
-
-        if proc.returncode == 0 and proc.stdout.strip():
-            result = json.loads(proc.stdout.strip().split('\n')[-1])  # Take last JSON line
-            if result.get("status") == "success":
-                complete_job(job_id, result)
-                logger.info("Local worker completed job %s (subprocess)", job_id)
-            else:
-                error = result.get("message", "Pipeline failed")
-                complete_job(job_id, None, error)
-                logger.error("Local worker failed job %s: %s", job_id, error)
+        result = asyncio.run(run_consensus_pipeline(sequence, smiles_list, top_n, pdb_content=pdb_content))
+        if result.get("status") == "success":
+            complete_job(job_id, result)
+            logger.info("Local worker completed job %s", job_id)
         else:
-            error_msg = proc.stderr[-500:] if proc.stderr else "Unknown subprocess error"
-            complete_job(job_id, None, f"Pipeline crashed: {error_msg}")
-            logger.error("Local worker subprocess failed job %s: %s", job_id, error_msg[:200])
-    except subprocess.TimeoutExpired:
-        complete_job(job_id, None, "Docking job timed out (5 min limit)")
-        logger.error("Local worker timed out on job %s", job_id)
+            error = result.get("message", "Pipeline failed")
+            complete_job(job_id, None, error)
+            logger.error("Local worker failed job %s: %s", job_id, error)
     except Exception as e:
         complete_job(job_id, None, "Docking job failed")
         logger.error("Local worker exception on job %s: %s", job_id, e)

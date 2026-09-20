@@ -380,13 +380,13 @@ async function handleAuth(e){e.preventDefault();var err=document.getElementById(
 <script defer src="/search-index.js"></script>
 <script defer src="/auth-shared.js"></script>
 <script src="/dna-3d-viewer.js"></script>
-<script src="https://cdn.jsdelivr.net/gh/3dmol/3dmol@master/build/3Dmol-min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/3dmol@2.5.0/build/3Dmol-min.js" defer></script>
 <script>
 // Fallback to unpkg if jsdelivr fails
 window.addEventListener('error', function(e) {
   if (e.target && e.target.tagName === 'SCRIPT' && e.target.src && e.target.src.indexOf('3Dmol') >= 0 && typeof $3Dmol === 'undefined') {
     var s = document.createElement('script');
-    s.src = 'https://unpkg.com/3dmol@2.8.2/build/3Dmol-min.js';
+    s.src = 'https://unpkg.com/3dmol@2.5.0/build/3Dmol-min.js';
     s.defer = true;
     document.head.appendChild(s);
   }
