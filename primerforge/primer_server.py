@@ -2721,8 +2721,7 @@ def create_app() -> Flask:
         job = get_job(job_id)
         if not job:
             return err("Job not found.", "NOT_FOUND", 404)
-        from primerforge.docking_queue import cleanup_old_jobs
-        cleanup_old_jobs(4.0)
+        # Cleanup runs in background worker, not on status poll
         resp = {
             "job_id": job["job_id"],
             "status": job["status"],
