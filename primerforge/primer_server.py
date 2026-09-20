@@ -2702,7 +2702,7 @@ def create_app() -> Flask:
                     return jsonify({
                         "error": "Server is low on memory (%.0fMB free). Try again in a moment." % avail_mb,
                         "code": "RESOURCE_EXHAUSTED"
-                    }), 503)
+                    }), 503
             except ImportError:
                 pass  # psutil not installed — skip check
 
