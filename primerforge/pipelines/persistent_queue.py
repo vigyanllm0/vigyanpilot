@@ -172,7 +172,7 @@ class PersistentQueue:
         while time.time() < deadline:
             # Find and claim highest-priority pending job
             row = conn.execute(
-                """SELECT job_id, data, priority, created_at
+                """SELECT job_id, data, priority, created_at, retries
                    FROM jobs
                    WHERE status = ?
                    ORDER BY priority ASC, created_at ASC
@@ -199,6 +199,7 @@ class PersistentQueue:
                         data=json.loads(row['data']),
                         created_at=row['created_at'],
                         claimed_at=now,
+                        retries=row['retries'],
                         worker_id=worker_id,
                     )
                 except Exception:

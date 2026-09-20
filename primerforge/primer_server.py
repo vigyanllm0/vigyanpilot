@@ -3191,6 +3191,23 @@ def create_app() -> Flask:
         n = clear_cache()
         return jsonify({'cleared': n}), 200
 
+    @app.route("/api/primer/docking/cache/store", methods=["POST"])
+    def esm_cache_store():
+        """Store an ESMFold result in cache."""
+        from .pipelines.esm_cache import cache_structure
+
+        data = request.get_json(silent=True) or {}
+        sequence = data.get("sequence", "").strip()
+        result = data.get("result")
+
+        if not sequence:
+            return err("No sequence provided.", "VALIDATION_ERROR", 400)
+        if not result:
+            return err("No result provided.", "VALIDATION_ERROR", 400)
+
+        ok = cache_structure(sequence, result)
+        return jsonify({'stored': ok, 'sequence_length': len(sequence)}), 200
+
     @app.route("/api/primer/docking/cache/lookup", methods=["POST"])
     def esm_cache_lookup():
         """Check if a sequence has a cached ESMFold result."""
