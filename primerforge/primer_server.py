@@ -2675,80 +2675,102 @@ def create_app() -> Flask:
     @app.route("/api/primer/docking/consensus", methods=["POST"])
     @(_docking_limiter.limit("5 per minute") if _docking_limiter else lambda f: f)
     def docking_consensus():
-        if not READY:
-            return err("Docking engine failed to load on the server. Please contact support or try again later.", "CORE_NOT_READY", 503)
-
-        data = request.get_json(silent=True) or {}
-        sequence = (data.get("sequence") or "").strip()
-        ligand_smiles_list = data.get("ligand_smiles_list") or data.get("smiles_list") or []
-        pdb_content = data.get("pdb_content") or ""  # Optional: uploaded PDB file content
-
         try:
-            top_n = int(data.get("top_n", 50))
-        except (ValueError, TypeError):
-            return err("'top_n' must be an integer.", "VALIDATION_ERROR", 400)
+            if not READY:
+                return err("Docking engine failed to load on the server. Please contact support or try again later.", "CORE_NOT_READY", 503)
 
-        if not sequence and not pdb_content:
-            return err("Protein amino acid 'sequence' or 'pdb_content' is required.", "VALIDATION_ERROR", 400)
-        if not ligand_smiles_list or not isinstance(ligand_smiles_list, list):
-            return err("'ligand_smiles_list' must be a non-empty list of SMILES strings.", "VALIDATION_ERROR", 400)
+            data = request.get_json(silent=True) or {}
+            sequence = (data.get("sequence") or "").strip()
+            ligand_smiles_list = data.get("ligand_smiles_list") or data.get("smiles_list") or []
+            pdb_content = data.get("pdb_content") or ""  # Optional: uploaded PDB file content
 
-        # ── Auth & Docking Usage Check ────────────────────────────────────
-        user = get_current_user()
-        if user:
-            from .auth import check_daily_usage
-            dock_usage = check_daily_usage(user['email'], "docking")
-            if not dock_usage['can_analyze'] and user.get('role') != 'admin':
-                return jsonify({"error": "Daily docking analysis limit reached. Upgrade to Pro for more analyses or wait until midnight IST.",
-                               "code": "PAYMENT_REQUIRED", "action": "show_docking_payment",
-                               "usage": dock_usage}), 402
+            try:
+                top_n = int(data.get("top_n", 50))
+            except (ValueError, TypeError):
+                return err("'top_n' must be an integer.", "VALIDATION_ERROR", 400)
 
-        job_id = create_job(sequence, ligand_smiles_list, top_n, pdb_content=pdb_content)
+            if not sequence and not pdb_content:
+                return err("Protein amino acid 'sequence' or 'pdb_content' is required.", "VALIDATION_ERROR", 400)
+            if not ligand_smiles_list or not isinstance(ligand_smiles_list, list):
+                return err("'ligand_smiles_list' must be a non-empty list of SMILES strings.", "VALIDATION_ERROR", 400)
 
-        # Consume token AFTER successful queuing (both SQLite and PostgreSQL)
-        if user and user.get('role') != 'admin':
-            if USE_POSTGRES and consume_docking_token:
-                if not consume_docking_token(user.get('user_id'), user['email']):
-                    return jsonify({"error": "No docking tokens remaining. Purchase more to continue.",
-                                   "code": "PAYMENT_REQUIRED", "action": "show_docking_payment"}), 402
-            else:
-                increment_docking_usage(user['email'])
+            # ── Memory pre-check: reject if too little RAM available ───────────
+            try:
+                import psutil
+                avail_mb = psutil.virtual_memory().available / (1024 * 1024)
+                if avail_mb < 200:
+                    return jsonify({
+                        "error": "Server is low on memory (%.0fMB free). Try again in a moment." % avail_mb,
+                        "code": "RESOURCE_EXHAUSTED"
+                    }), 503)
+            except ImportError:
+                pass  # psutil not installed — skip check
 
-        return jsonify({"job_id": job_id, "status": "queued"}), 202
+            # ── Auth & Docking Usage Check ────────────────────────────────────
+            user = get_current_user()
+            if user:
+                from .auth import check_daily_usage
+                dock_usage = check_daily_usage(user['email'], "docking")
+                if not dock_usage['can_analyze'] and user.get('role') != 'admin':
+                    return jsonify({"error": "Daily docking analysis limit reached. Upgrade to Pro for more analyses or wait until midnight IST.",
+                                   "code": "PAYMENT_REQUIRED", "action": "show_docking_payment",
+                                   "usage": dock_usage}), 402
+
+            job_id = create_job(sequence, ligand_smiles_list, top_n, pdb_content=pdb_content)
+
+            # Consume token AFTER successful queuing (both SQLite and PostgreSQL)
+            if user and user.get('role') != 'admin':
+                if USE_POSTGRES and consume_docking_token:
+                    if not consume_docking_token(user.get('user_id'), user['email']):
+                        return jsonify({"error": "No docking tokens remaining. Purchase more to continue.",
+                                       "code": "PAYMENT_REQUIRED", "action": "show_docking_payment"}), 402
+                else:
+                    increment_docking_usage(user['email'])
+
+            return jsonify({"job_id": job_id, "status": "queued"}), 202
+        except Exception as e:
+            logger.error("docking_consensus error: %s", e)
+            return jsonify({"error": f"Server error: {str(e)}", "code": "SERVER_ERROR"}), 500
 
     @app.route("/api/primer/docking/status/<job_id>", methods=["GET"])
     def docking_status(job_id):
-        job = get_job(job_id)
-        if not job:
-            return err("Job not found.", "NOT_FOUND", 404)
-        # Cleanup runs in background worker, not on status poll
-        resp = {
-            "job_id": job["job_id"],
-            "status": job["status"],
-            "created_at": job["created_at"],
-        }
-        if job["status"] == "completed" and job["result"]:
-            result = job["result"]
-            if isinstance(result, dict):
-                result = dict(result)
-                if "stage1" in result and isinstance(result["stage1"], dict):
-                    s1 = dict(result["stage1"])
-                    s1.pop("pdb_string", None)
-                    result["stage1"] = s1
-                ranked = result.get("ranked_results", [])
-                if ranked:
-                    stripped = []
-                    for mol in ranked:
-                        m = dict(mol)
-                        if "structure" in m:
-                            m["_has_structure"] = bool((m.get("structure") or {}).get("ligand"))
-                            m.pop("structure", None)
-                        stripped.append(m)
-                    result["ranked_results"] = stripped
-            resp["result"] = result
-        if job["error"]:
-            resp["error"] = job["error"]
-        return jsonify(resp), 200
+        try:
+            job = get_job(job_id)
+            if not job:
+                return err("Job not found.", "NOT_FOUND", 404)
+            # Cleanup runs in background worker, not on status poll
+            resp = {
+                "job_id": job["job_id"],
+                "status": job["status"],
+                "created_at": job.get("created_at", 0),
+            }
+            if job["status"] == "completed" and job.get("result"):
+                result = job["result"]
+                if isinstance(result, dict):
+                    result = dict(result)
+                    if "stage1" in result and isinstance(result["stage1"], dict):
+                        s1 = dict(result["stage1"])
+                        s1.pop("pdb_string", None)
+                        result["stage1"] = s1
+                    ranked = result.get("ranked_results", [])
+                    if ranked:
+                        stripped = []
+                        for mol in ranked:
+                            if not isinstance(mol, dict):
+                                continue
+                            m = dict(mol)
+                            if "structure" in m:
+                                m["_has_structure"] = bool((m.get("structure") or {}).get("ligand"))
+                                m.pop("structure", None)
+                            stripped.append(m)
+                        result["ranked_results"] = stripped
+                resp["result"] = result
+            if job.get("error"):
+                resp["error"] = job["error"]
+            return jsonify(resp), 200
+        except Exception as e:
+            logger.error("docking_status error for %s: %s", job_id, e)
+            return jsonify({"job_id": job_id, "status": "unknown", "error": str(e)}), 200
 
     @app.route("/api/primer/docking/structure/<job_id>/<int:rank>", methods=["GET"])
     def docking_structure(job_id, rank):

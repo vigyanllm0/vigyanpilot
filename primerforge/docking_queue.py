@@ -169,9 +169,9 @@ def _process_job(job: dict):
     logger.info("Local worker processing job %s (%d ligands)", job_id, len(smiles_list))
 
     # Cap ligands to prevent OOM on small instances
-    if len(smiles_list) > 10:
-        logger.warning("Job %s has %d ligands — capping to 10 for stability", job_id, len(smiles_list))
-        smiles_list = smiles_list[:10]
+    if len(smiles_list) > 5:
+        logger.warning("Job %s has %d ligands — capping to 5 for stability", job_id, len(smiles_list))
+        smiles_list = smiles_list[:5]
 
     try:
         from primerforge.pipelines.consensus_pipeline import run_consensus_pipeline
@@ -183,9 +183,15 @@ def _process_job(job: dict):
             error = result.get("message", "Pipeline failed")
             complete_job(job_id, None, error)
             logger.error("Local worker failed job %s: %s", job_id, error)
-    except Exception as e:
-        complete_job(job_id, None, "Docking job failed")
-        logger.error("Local worker exception on job %s: %s", job_id, e)
+    except MemoryError:
+        complete_job(job_id, None, "Server ran out of memory. Try with fewer ligands or a shorter sequence.")
+        logger.error("Local worker OOM on job %s — ligands=%d, seq_len=%d", job_id, len(smiles_list), len(sequence))
+    except SystemExit:
+        complete_job(job_id, None, "Docking pipeline crashed. Please try again with fewer ligands.")
+        logger.error("Local worker SystemExit on job %s", job_id)
+    except BaseException as e:
+        complete_job(job_id, None, "Docking job failed: " + str(e)[:200])
+        logger.error("Local worker BaseException on job %s: %s", job_id, e)
 
 
 def _local_worker_loop(interval: float = 5.0):

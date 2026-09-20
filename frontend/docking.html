@@ -1522,6 +1522,11 @@ async function runDocking() {
       try {
         var pr = await fetch(API + '/primer/docking/status/' + jobId);
         if (!pr.ok) {
+          // 502/503 from nginx means gunicorn crashed — retry a few times before giving up
+          if ((pr.status === 502 || pr.status === 503) && pollAttempts < 10) {
+            pollAttempts++;
+            return; // skip this tick, try again on next interval
+          }
           clearInterval(pollInterval);
           setStage(1, 'fail', 'API error: ' + pr.status);
           showError('Server returned ' + pr.status + ' — the EC2 instance may be overloaded. Try again with fewer ligands.');
