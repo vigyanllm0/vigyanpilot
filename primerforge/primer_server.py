@@ -3208,6 +3208,135 @@ def create_app() -> Flask:
         return jsonify({'cache_hit': False}), 200
 
     # ════════════════════════════════════════════════════════════════════
+    # Virtual Screening & Monitoring
+    # ════════════════════════════════════════════════════════════════════
+
+    # In-memory campaign tracking (production would use Redis/DB)
+    _screening_campaigns = {}
+
+    @app.route("/api/primer/docking/screen", methods=["POST"])
+    def start_screening():
+        """
+        Start a virtual screening campaign.
+        Accepts receptor PDB + list of ligand SMILES.
+        Runs up to 4 parallel Vina instances.
+        """
+        from .pipelines.virtual_screening import VirtualScreeningCampaign, campaign_to_dict
+
+        data = request.get_json(silent=True) or {}
+        receptor_pdb = data.get("receptor_pdb", "").strip()
+        ligands = data.get("ligands", [])
+
+        if not receptor_pdb:
+            return err("No receptor PDB provided.", "VALIDATION_ERROR", 400)
+        if not ligands or len(ligands) < 2:
+            return err("At least 2 ligands required for screening.", "VALIDATION_ERROR", 400)
+        if len(ligands) > 500:
+            return err("Maximum 500 ligands per campaign.", "VALIDATION_ERROR", 400)
+
+        try:
+            campaign = VirtualScreeningCampaign(receptor_pdb, ligands)
+            _screening_campaigns[campaign.campaign_id] = campaign
+
+            # Run synchronously (for small batches) or return campaign ID
+            if len(ligands) <= 10:
+                campaign = campaign.run()
+                result = campaign_to_dict(campaign)
+                result['mode'] = 'synchronous'
+                return jsonify(result), 200
+            else:
+                # For larger batches, return campaign ID for polling
+                import threading
+                thread = threading.Thread(target=campaign.run, daemon=True)
+                thread.start()
+                return jsonify({
+                    'campaign_id': campaign.campaign_id,
+                    'status': 'running',
+                    'total_ligands': len(ligands),
+                    'mode': 'async',
+                    'progress_url': f'/api/primer/docking/screen/{campaign.campaign_id}',
+                }), 202
+        except Exception as exc:
+            logger.error("Screening error: %s", exc, exc_info=True)
+            return err(f"Screening failed: {str(exc)}", "SCREENING_FAILED", 500)
+
+    @app.route("/api/primer/docking/screen/<campaign_id>", methods=["GET"])
+    def get_screening_progress(campaign_id):
+        """Get screening campaign progress."""
+        campaign = _screening_campaigns.get(campaign_id)
+        if not campaign:
+            return err("Campaign not found.", "NOT_FOUND", 404)
+
+        from .pipelines.virtual_screening import campaign_to_dict
+        progress = campaign.get_progress()
+
+        if campaign.status in ('complete', 'failed', 'partial'):
+            result = campaign_to_dict(campaign)
+            return jsonify(result), 200
+
+        return jsonify(progress), 200
+
+    @app.route("/api/primer/docking/screen/<campaign_id>/export/csv", methods=["GET"])
+    def export_screening_csv(campaign_id):
+        """Export screening results as CSV."""
+        campaign = _screening_campaigns.get(campaign_id)
+        if not campaign:
+            return err("Campaign not found.", "NOT_FOUND", 404)
+
+        csv_data = campaign.export_csv()
+        return csv_data, 200, {
+            'Content-Type': 'text/csv',
+            'Content-Disposition': f'attachment; filename="screening_{campaign_id}.csv"',
+        }
+
+    @app.route("/api/primer/docking/screen/<campaign_id>/export/sdf", methods=["GET"])
+    def export_screening_sdf(campaign_id):
+        """Export top screening results as SDF."""
+        campaign = _screening_campaigns.get(campaign_id)
+        if not campaign:
+            return err("Campaign not found.", "NOT_FOUND", 404)
+
+        sdf_data = campaign.export_sdf()
+        return sdf_data, 200, {
+            'Content-Type': 'chemical/x-mdl-sdfile',
+            'Content-Disposition': f'attachment; filename="screening_{campaign_id}_top100.sdf"',
+        }
+
+    @app.route("/api/primer/docking/health", methods=["GET"])
+    def docking_health():
+        """System health check for docking infrastructure."""
+        from .pipelines.monitoring import health_check, health_to_dict
+
+        status = health_check()
+        result = health_to_dict(status)
+
+        # Return appropriate HTTP status
+        http_status = 200 if status.status == 'healthy' else (
+            503 if status.status == 'unhealthy' else 200
+        )
+
+        return jsonify(result), http_status
+
+    @app.route("/api/primer/docking/metrics", methods=["GET"])
+    def docking_metrics():
+        """Quick metrics for monitoring dashboards."""
+        from .pipelines.monitoring import check_docking_queue, check_recent_jobs, check_memory
+
+        queue = check_docking_queue()
+        jobs = check_recent_jobs()
+        mem = check_memory()
+
+        return jsonify({
+            'queue_depth': queue.get('pending', 0),
+            'running': queue.get('running', 0),
+            'completed_1h': jobs.get('completed_1h', 0),
+            'completed_24h': jobs.get('completed_24h', 0),
+            'failure_rate': jobs.get('failure_rate_24h', 0),
+            'avg_time': jobs.get('avg_processing_time', 0),
+            'rss_mb': mem.get('rss_mb', 0),
+        }), 200
+
+    # ════════════════════════════════════════════════════════════════════
     # DEPRECATED: Azure Worker Endpoints (lines 2803-2834)
     # These endpoints were used by an external Azure worker to poll/claim/complete
     # docking jobs. They are now unused since the local worker thread handles
