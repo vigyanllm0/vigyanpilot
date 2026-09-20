@@ -145,17 +145,17 @@ VigyanLLM Docking is a molecular docking platform that combines ESMFold protein 
 | 5.4 | pLDDT-guided re-folding | Improve quality | ✅ |
 | 5.5 | Before/after comparison | Show improvement | ✅ |
 
-### Phase 6: Advanced Features ✅ (commit `fe44f136`)
+### Phase 6: Advanced Features ✅ (commit `e03b3cc0`)
 | # | Task | Why | Status |
 |---|------|-----|--------|
-| 6.1 | Parallel Vina (4 concurrent) | 4× throughput | ⏳ Deferred (needs Vina running) |
+| 6.1 | Parallel Vina (4 concurrent) | 4× throughput | ✅ (ThreadPoolExecutor) |
 | 6.2 | Pose clustering | Remove redundant poses | ✅ |
 | 6.3 | Ligand efficiency calculation | Standard metric | ✅ |
-| 6.4 | Virtual screening mode | Batch processing | ⏳ Deferred |
+| 6.4 | Virtual screening mode | Batch processing | ✅ |
 | 6.5 | ESMFold result caching | Avoid re-folding | ✅ |
-| 6.6 | Redis job queue | Crash resilience | ⏳ Deferred (needs Redis) |
-| 6.7 | Monitoring/alerting | Operational visibility | ⏳ Deferred |
-| 6.8 | GPU instance deployment | Production infrastructure | ⏳ Deferred |
+| 6.6 | Redis job queue | Crash resilience | ⏳ Deferred (file-based works) |
+| 6.7 | Monitoring/alerting | Operational visibility | ✅ |
+| 6.8 | GPU instance deployment | Production infrastructure | ⏳ Deferred (needs g4dn.xlarge) |
 
 ---
 
