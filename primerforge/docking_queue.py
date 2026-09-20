@@ -214,13 +214,16 @@ def _process_job(job: dict):
 
 
 def _local_worker_loop(interval: float = 5.0):
-    """Background loop: poll pending, claim, process."""
+    """Background loop: poll pending, claim, process.
+    
+    CRITICAL: This runs inside gunicorn. Any unhandled exception here
+    can kill the gunicorn worker. Every operation is wrapped in try/except.
+    """
     global _LOCAL_WORKER_RUNNING
     logger.info("Local docking worker started (poll interval: %gs)", interval)
     _cleanup_counter = 0
     while _LOCAL_WORKER_RUNNING:
         try:
-            # Run cleanup every ~60 cycles (5 min at 5s interval)
             _cleanup_counter += 1
             if _cleanup_counter >= 60:
                 _cleanup_counter = 0
@@ -229,14 +232,29 @@ def _local_worker_loop(interval: float = 5.0):
                 except Exception:
                     pass
 
-            release_stale_jobs(max_age_minutes=2.0)
-            pending = list_pending_jobs()
+            try:
+                release_stale_jobs(max_age_minutes=5.0)
+            except Exception:
+                pass
+
+            try:
+                pending = list_pending_jobs()
+            except Exception:
+                pending = []
+
             for job in pending:
                 if not _LOCAL_WORKER_RUNNING:
                     break
-                job_id = job["job_id"]
-                if claim_job(job_id):
-                    _process_job(job)
+                job_id = job.get("job_id", "")
+                try:
+                    if claim_job(job_id):
+                        _process_job(job)
+                except Exception as e:
+                    logger.error("Worker failed on job %s: %s", job_id, e)
+                    try:
+                        complete_job(job_id, None, "Internal worker error")
+                    except Exception:
+                        pass
         except Exception as e:
             logger.debug("Local worker cycle error: %s", e)
         time.sleep(interval)
