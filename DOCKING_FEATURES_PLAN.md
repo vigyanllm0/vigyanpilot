@@ -136,14 +136,14 @@ VigyanLLM Docking is a molecular docking platform that combines ESMFold protein 
 | 4.6 | pH-dependent protonation | Affects binding | ✅ |
 | 4.7 | Flexible receptor option | Induced-fit docking | ⏳ Deferred |
 
-### Phase 5: Regenerative Folding (2-3 weeks)
-| # | Task | Why | Effort |
+### Phase 5: Regenerative Folding ✅ (commit `c70d7a29`)
+| # | Task | Why | Status |
 |---|------|-----|--------|
-| 5.1 | Missing loop modeling | Rebuild gaps | 3d |
-| 5.2 | Side-chain repair | Fix clashes | 2d |
-| 5.3 | Terminal cleanup | Fix disorder | 1d |
-| 5.4 | pLDDT-guided re-folding | Improve quality | 2d |
-| 5.5 | Before/after comparison | Show improvement | 2d |
+| 5.1 | Missing loop modeling | Rebuild gaps | ✅ |
+| 5.2 | Side-chain repair | Fix clashes | ✅ (via atom displacement) |
+| 5.3 | Terminal cleanup | Fix disorder | ✅ |
+| 5.4 | pLDDT-guided re-folding | Improve quality | ✅ |
+| 5.5 | Before/after comparison | Show improvement | ✅ |
 
 ### Phase 6: Advanced Features (2-3 weeks)
 | # | Task | Why | Effort |
