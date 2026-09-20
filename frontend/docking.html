@@ -67,7 +67,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <meta name="twitter:title" content="Molecular Docking Tool — Protein-Ligand Docking | VigyanLLM">
 <meta name="twitter:description" content="Run molecular docking online — ESMFold + AutoDock Vina + GNINA consensus scoring. No software install required.">
 <meta name="twitter:image" content="https://www.vigyanllm.in/assets/og-docking.png">
-<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="icon" type="image/png" href="/logo.png">
 <link rel="apple-touch-icon" href="/logo.png">
@@ -76,13 +76,13 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <link rel="preconnect" href="https://checkout.razorpay.com">
 <script src="https://accounts.google.com/gsi/client?hl=en" async defer></script>
 <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&amp;family=Montserrat:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
-<script defer src="https://3Dmol.org/build/3Dmol-min.js" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/3dmol@2.5.0/build/3Dmol-min.js"></script>
 <script>
-// Fallback if CDN fails
+// Fallback to 3Dmol.org if jsdelivr fails
 window.addEventListener('error', function(e) {
   if (e.target && e.target.tagName === 'SCRIPT' && e.target.src && e.target.src.indexOf('3Dmol') >= 0 && typeof $3Dmol === 'undefined') {
     var s = document.createElement('script');
-    s.src = 'https://cdn.jsdelivr.net/npm/3dmol@2.1.0/build/3Dmol-min.js';
+    s.src = 'https://3Dmol.org/build/3Dmol-min.js';
     s.defer = true;
     document.head.appendChild(s);
   }
@@ -1645,6 +1645,12 @@ function displayResults(result) {
   var bestGnina = result.stage3 && result.stage3.best_gnina_score;
   var bestConsensus = result.best_molecule && result.best_molecule.consensus_score;
   var elapsed = result.stage1 && result.stage1.computation_time;
+
+  // Normalize pLDDT: some backends return 0-1 fraction, others 0-100 percent
+  if (plddt !== null && plddt !== undefined) {
+    plddt = parseFloat(plddt);
+    if (plddt > 0 && plddt <= 1.0) plddt = plddt * 100;  // fraction → percent
+  }
 
   // pLDDT quality label
   var plddtLabel = 'N/A', plddtClass = 'neutral';

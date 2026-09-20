@@ -60,7 +60,7 @@ CSP_POLICIES = {
     # /docking.html
     "docking": (
         "default-src 'self'; "
-        "script-src 'self' https://accounts.google.com https://checkout.razorpay.com https://3Dmol.org https://www.googletagmanager.com 'unsafe-inline'; "
+        "script-src 'self' https://accounts.google.com https://checkout.razorpay.com https://cdn.jsdelivr.net https://3Dmol.org https://www.googletagmanager.com 'unsafe-inline'; "
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
         "font-src 'self' https://fonts.gstatic.com; "
         "img-src 'self' data: https: https://www.googletagmanager.com https://www.google-analytics.com; "
