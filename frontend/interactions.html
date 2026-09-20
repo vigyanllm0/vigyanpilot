@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="title" content="Protein-Ligand Interaction Analyzer — Binding Site Analysis | VigyanLLM">
+    <meta name="description" content="Analyze hydrogen bonds, hydrophobic contacts, salt bridges, and π-π stacking in protein-ligand complexes. Visualize binding site residues and interaction strength.">
+    <meta name="keywords" content="protein ligand interaction, hydrogen bond analysis, hydrophobic contact, salt bridge detection, binding site residues, molecular docking analysis">
+
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Protein-Ligand Interaction Analyzer | VigyanLLM">
+    <meta property="og:description" content="Analyze binding interactions: H-bonds, hydrophobic contacts, salt bridges, π-stacking. See which residues matter.">
+    <meta name="twitter:card" content="summary_large_image">
+
+    <title>Protein-Ligand Interaction Analyzer | VigyanLLM</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Protein-Ligand Interaction Analyzer",
+        "url": "https://www.vigyanllm.in/interactions",
+        "description": "Analyze hydrogen bonds, hydrophobic contacts, salt bridges, and π-π stacking in protein-ligand complexes.",
+        "applicationCategory": "Scientific Tool",
+        "operatingSystem": "Web Browser",
+        "offers": {"@type": "Offer", "price": "0", "priceCurrency": "INR"},
+        "provider": {"@type": "Organization", "name": "VigyanLLM"}
+    }
+    </script>
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; color: #1a1a2e; background: #f8f9fa; line-height: 1.6; }
+
+        #vl-header { background: #fff; border-bottom: 1px solid #e5e7eb; padding: 0.75rem 1.5rem; position: sticky; top: 0; z-index: 100; }
+        .header-inner { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; }
+        .nav-brand { font-size: 1.2rem; font-weight: 700; color: #0d9488; text-decoration: none; }
+        .nav-links { display: flex; gap: 1.5rem; align-items: center; }
+        .nav-links a { color: #475569; text-decoration: none; font-size: 0.9rem; font-weight: 500; }
+        .nav-links a:hover { color: #0d9488; }
+
+        .hero { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: #fff; padding: 3rem 1.5rem 2.5rem; }
+        .hero-inner { max-width: 900px; margin: 0 auto; }
+        .hero h1 { font-size: 2rem; font-weight: 700; margin-bottom: 0.75rem; }
+        .hero p { font-size: 1.1rem; color: #94a3b8; max-width: 600px; }
+        .hero-badge { display: inline-block; background: rgba(13,148,136,0.2); color: #2dd4bf; font-size: 0.75rem; font-weight: 600; padding: 0.25rem 0.75rem; border-radius: 999px; margin-bottom: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; }
+
+        .container { max-width: 900px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+        .input-section { background: #fff; border-radius: 12px; border: 1px solid #e5e7eb; padding: 1.5rem; margin-bottom: 1.5rem; }
+        .input-section h2 { font-size: 1.1rem; font-weight: 600; margin-bottom: 1rem; }
+        .tabs { display: flex; gap: 0; margin-bottom: 1rem; border-bottom: 2px solid #e5e7eb; }
+        .tab-btn { padding: 0.5rem 1rem; border: none; background: none; font-size: 0.9rem; font-weight: 500; color: #64748b; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all 0.2s; }
+        .tab-btn.active { color: #0d9488; border-bottom-color: #0d9488; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        textarea { width: 100%; min-height: 150px; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 8px; resize: vertical; line-height: 1.5; }
+        textarea:focus { outline: none; border-color: #0d9488; box-shadow: 0 0 0 3px rgba(13,148,136,0.1); }
+
+        .file-upload-zone { border: 2px dashed #d1d5db; border-radius: 8px; padding: 1.5rem; text-align: center; cursor: pointer; transition: all 0.2s; }
+        .file-upload-zone:hover, .file-upload-zone.dragover { border-color: #0d9488; background: rgba(13,148,136,0.05); }
+        .file-upload-zone input[type="file"] { display: none; }
+
+        .run-btn { display: inline-block; margin-top: 1rem; padding: 0.7rem 2rem; font-size: 1rem; font-weight: 600; background: #0d9488; color: #fff; border: none; border-radius: 8px; cursor: pointer; transition: all 0.2s; }
+        .run-btn:hover { background: #0f766e; }
+        .run-btn:disabled { background: #94a3b8; cursor: not-allowed; }
+        .spinner { display: none; width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.8s linear infinite; margin-right: 0.5rem; }
+        .run-btn.loading .spinner { display: inline-block; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        #results { display: none; }
+        #results.visible { display: block; }
+
+        /* Summary cards */
+        .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 0.75rem; margin-bottom: 1.5rem; }
+        .summary-card { background: #fff; border-radius: 10px; border: 1px solid #e5e7eb; padding: 1rem; text-align: center; }
+        .summary-card .icon { font-size: 1.5rem; margin-bottom: 0.25rem; }
+        .summary-card .count { font-size: 1.3rem; font-weight: 700; }
+        .summary-card .label { font-size: 0.75rem; color: #64748b; font-weight: 500; }
+
+        /* Recommendation */
+        .rec-box { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; padding: 1rem 1.25rem; margin-bottom: 1.5rem; }
+        .rec-box h4 { font-size: 0.9rem; font-weight: 600; color: #16a34a; margin-bottom: 0.5rem; }
+        .rec-box p { font-size: 0.85rem; color: #475569; }
+
+        /* Detail sections */
+        .detail-section { background: #fff; border-radius: 12px; border: 1px solid #e5e7eb; margin-bottom: 1rem; overflow: hidden; }
+        .detail-header { padding: 1rem 1.25rem; cursor: pointer; display: flex; align-items: center; justify-content: space-between; font-weight: 600; font-size: 0.95rem; transition: background 0.2s; }
+        .detail-header:hover { background: #f8fafc; }
+        .badge { font-size: 0.75rem; padding: 0.15rem 0.5rem; border-radius: 999px; font-weight: 600; }
+        .badge-blue { background: #eff6ff; color: #2563eb; }
+        .badge-green { background: #f0fdf4; color: #16a34a; }
+        .badge-purple { background: #faf5ff; color: #9333ea; }
+        .badge-orange { background: #fff7ed; color: #ea580c; }
+        .badge-teal { background: #f0fdfa; color: #0d9488; }
+        .detail-body { padding: 0 1.25rem 1.25rem; display: none; }
+        .detail-body.open { display: block; }
+
+        .int-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+        .int-table th { text-align: left; padding: 0.5rem; border-bottom: 1px solid #e5e7eb; color: #64748b; font-weight: 600; font-size: 0.8rem; }
+        .int-table td { padding: 0.5rem; border-bottom: 1px solid #f1f5f9; }
+        .int-table tr:last-child td { border-bottom: none; }
+        .strength-strong { color: #16a34a; font-weight: 600; }
+        .strength-moderate { color: #d97706; font-weight: 600; }
+        .strength-weak { color: #64748b; }
+
+        /* Binding site table */
+        .residue-tag { display: inline-block; padding: 0.15rem 0.4rem; border-radius: 4px; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; font-weight: 600; }
+        .res-hbond { background: #dbeafe; color: #1d4ed8; }
+        .res-hydrophobic { background: #fef3c7; color: #b45309; }
+        .res-salt { background: #fce7f3; color: #be185d; }
+        .res-pi { background: #ede9fe; color: #6d28d9; }
+        .res-polar { background: #d1fae5; color: #047857; }
+        .res-contact { background: #f1f5f9; color: #475569; }
+
+        .site-footer { background: #0f172a; color: #94a3b8; padding: 2rem 1.5rem; margin-top: 3rem; text-align: center; font-size: 0.85rem; }
+        .site-footer a { color: #2dd4bf; text-decoration: none; }
+    </style>
+</head>
+<body>
+
+<header id="vl-header">
+    <div class="header-inner">
+        <a href="/" class="nav-brand">VigyanLLM</a>
+        <nav class="nav-links">
+            <a href="/primer">Primer Design</a>
+            <a href="/docking">Docking</a>
+            <a href="/interactions" style="color:#0d9488">Interactions</a>
+            <a href="/protein-quality">Protein Quality</a>
+            <a href="/blast">BLAST</a>
+        </nav>
+    </div>
+</header>
+
+<section class="hero">
+    <div class="hero-inner">
+        <span class="hero-badge">Post-Docking Analysis</span>
+        <h1>Protein-Ligand Interaction Analyzer</h1>
+        <p>See exactly how your ligand binds. Hydrogen bonds, hydrophobic contacts, salt bridges, π-stacking — and which residues drive the interaction.</p>
+    </div>
+</section>
+
+<main class="container">
+    <div class="input-section">
+        <h2>Submit Structures for Analysis</h2>
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="paste">Paste Structures</button>
+            <button class="tab-btn" data-tab="job">From Docking Job</button>
+        </div>
+
+        <div class="tab-content active" id="tab-paste">
+            <label style="font-size:0.85rem;font-weight:600;color:#475569;display:block;margin-bottom:0.5rem">Receptor PDB</label>
+            <textarea id="receptor-input" placeholder="Paste receptor PDB here...&#10;ATOM      1  N   ALA A   1      27.340  24.430   2.614  1.00  9.66           N&#10;..."></textarea>
+            <label style="font-size:0.85rem;font-weight:600;color:#475569;display:block;margin-top:1rem;margin-bottom:0.5rem">Ligand SDF or XYZ</label>
+            <textarea id="ligand-input" placeholder="Paste ligand SDF or XYZ coordinates here...&#10;&#10;For SDF:&#10; Mrv2311 200901002D           &#10;&#10;  6  6  0  0  0  0            999 V2000&#10;    1.2124    0.7000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0&#10;...&#10;M  END" style="min-height:120px"></textarea>
+            <button class="example-btn" onclick="loadExample()" style="display:inline-block;margin-top:0.5rem;padding:0.4rem 0.8rem;font-size:0.8rem;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:6px;cursor:pointer;color:#475569">Load example</button>
+        </div>
+
+        <div class="tab-content" id="tab-job">
+            <div style="display:flex;gap:0.5rem;align-items:center">
+                <input type="text" id="job-id-input" placeholder="Enter docking job ID" style="flex:1;padding:0.6rem 0.8rem;border:1px solid #d1d5db;border-radius:8px;font-size:0.9rem;font-family:monospace">
+                <button class="run-btn" onclick="analyzeFromJob()" id="job-btn" style="margin-top:0">Analyze</button>
+            </div>
+            <p style="margin-top:0.5rem;font-size:0.8rem;color:#64748b">Analysis runs on the top-ranked pose from the docking job.</p>
+        </div>
+
+        <button class="run-btn" onclick="runAnalysis()" id="analyze-btn">
+            <span class="spinner"></span>
+            Analyze Interactions
+        </button>
+    </div>
+
+    <div id="results">
+        <div class="summary-grid" id="summary-grid"></div>
+        <div class="rec-box" id="rec-box">
+            <h4 id="rec-title">Recommendation</h4>
+            <p id="rec-text"></p>
+        </div>
+
+        <!-- Hydrogen Bonds -->
+        <div class="detail-section">
+            <div class="detail-header" onclick="toggle(this)">
+                <span>🔗 Hydrogen Bonds</span>
+                <span class="badge badge-blue" id="hbond-badge">0</span>
+            </div>
+            <div class="detail-body" id="hbond-body">
+                <div id="hbond-details"></div>
+            </div>
+        </div>
+
+        <!-- Hydrophobic Contacts -->
+        <div class="detail-section">
+            <div class="detail-header" onclick="toggle(this)">
+                <span>🟠 Hydrophobic Contacts</span>
+                <span class="badge badge-orange" id="hydro-badge">0</span>
+            </div>
+            <div class="detail-body" id="hydro-body">
+                <div id="hydro-details"></div>
+            </div>
+        </div>
+
+        <!-- Salt Bridges -->
+        <div class="detail-section">
+            <div class="detail-header" onclick="toggle(this)">
+                <span>⚡ Salt Bridges</span>
+                <span class="badge badge-purple" id="salt-badge">0</span>
+            </div>
+            <div class="detail-body" id="salt-body">
+                <div id="salt-details"></div>
+            </div>
+        </div>
+
+        <!-- π-Stacking -->
+        <div class="detail-section">
+            <div class="detail-header" onclick="toggle(this)">
+                <span>🔮 π-π Stacking</span>
+                <span class="badge badge-teal" id="pi-badge">0</span>
+            </div>
+            <div class="detail-body" id="pi-body">
+                <div id="pi-details"></div>
+            </div>
+        </div>
+
+        <!-- Binding Site -->
+        <div class="detail-section">
+            <div class="detail-header" onclick="toggle(this)">
+                <span>🎯 Binding Site Residues</span>
+                <span class="badge badge-green" id="site-badge">0</span>
+            </div>
+            <div class="detail-body" id="site-body">
+                <div id="site-details"></div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer class="site-footer">
+    <p>VigyanLLM — <a href="/">Bioinformatics tools</a> that work in your browser.</p>
+    <p style="margin-top:0.5rem;font-size:0.8rem">Free for academic research. Built in India.</p>
+</footer>
+
+<script>
+// Tab switching
+document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+    });
+});
+
+function toggle(header) {
+    header.nextElementSibling.classList.toggle('open');
+}
+
+// Example data
+function loadExample() {
+    document.getElementById('receptor-input').value = `ATOM      1  N   VAL A   1      27.340  24.430   2.614  1.00  9.66           N
+ATOM      2  CA  VAL A   1      26.266  25.425   2.841  1.00  7.23           C
+ATOM      3  C   VAL A   1      26.833  26.613   3.640  1.00  5.80           C
+ATOM      4  O   VAL A   1      27.841  26.492   4.332  1.00  6.93           O
+ATOM      5  CB  VAL A   1      25.015  24.862   3.502  1.00  9.18           C
+ATOM      6  CG1 VAL A   1      23.822  25.722   3.137  1.00 12.01           C
+ATOM      7  CG2 VAL A   1      25.339  24.734   4.998  1.00 11.45           C
+ATOM      8  N   SER A   2      26.185  27.744   3.501  1.00  5.40           N
+ATOM      9  CA  SER A   2      26.641  28.961   4.204  1.00  5.23           C
+ATOM     10  C   SER A   2      25.664  30.052   3.787  1.00  4.69           C
+ATOM     11  O   SER A   2      24.550  29.854   3.280  1.00  5.65           O
+ATOM     12  CB  SER A   2      26.818  28.737   5.712  1.00  6.52           C
+ATOM     13  OG  SER A   2      27.594  27.512   6.122  1.00  8.23           O
+ATOM     14  N   ASP A   3      26.070  31.193   4.040  1.00  4.35           N
+ATOM     15  CA  ASP A   3      25.222  32.355   3.678  1.00  4.82           C
+ATOM     16  C   ASP A   3      25.826  33.542   4.428  1.00  4.56           C
+ATOM     17  O   ASP A   3      26.951  33.450   4.904  1.00  5.23           O
+ATOM     18  CB  ASP A   3      25.263  32.688   2.174  1.00  6.14           C
+ATOM     19  OD1 ASP A   3      24.519  31.691   1.538  1.00  8.92           O
+ATOM     20  OD2 ASP A   3      25.934  33.710   1.538  1.00  9.10           O
+ATOM     21  N   LYS A   4      25.127  34.623   4.587  1.00  5.10           N
+ATOM     22  CA  LYS A   4      25.678  35.840   5.232  1.00  5.45           C
+ATOM     23  C   LYS A   4      25.127  35.980   6.653  1.00  5.20           C
+ATOM     24  O   LYS A   4      24.001  35.596   6.949  1.00  6.34           O
+ATOM     25  CB  LYS A   4      25.186  36.949   4.318  1.00  6.78           C
+ATOM     26  CG  LYS A   4      25.634  36.497   2.970  1.00  8.12           C
+ATOM     27  CD  LYS A   4      24.830  35.233   3.048  1.00  7.45           C
+ATOM     28  CE  LYS A   4      25.400  34.100   2.200  1.00  8.90           C
+ATOM     29  NZ  LYS A   4      24.600  32.900   2.200  1.00 10.20           N
+ATOM     30  N   PHE A   5      25.880  36.526   7.534  1.00  4.89           N
+ATOM     31  CA  PHE A   5      25.460  36.740   8.906  1.00  5.12           C
+ATOM     32  C   PHE A   5      25.987  38.090   9.368  1.00  4.78           C
+ATOM     33  O   PHE A   5      27.074  38.422   8.880  1.00  5.67           O
+ATOM     34  CB  PHE A   5      25.909  35.672   9.878  1.00  6.34           C
+ATOM     35  CG  PHE A   5      25.300  34.350   9.500  1.00  7.20           C
+ATOM     36  CD1 PHE A   5      25.800  33.200  10.100  1.00  8.50           C
+ATOM     37  CD2 PHE A   5      24.300  34.200   8.500  1.00  8.30           C
+ATOM     38  CE1 PHE A   5      25.300  31.900   9.700  1.00  9.20           C
+ATOM     39  CE2 PHE A   5      23.800  32.900   8.100  1.00  9.10           C
+ATOM     40  CZ  PHE A   5      24.300  31.750   8.700  1.00  9.80           C
+END`;
+
+    document.getElementById('ligand-input').value = ` Mrv2311 200901002D
+
+  6  6  0  0  0  0            999 V2000
+    1.2124    0.7000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
+    1.2124   -0.7000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
+    0.0000   -1.4000    0.0000 N   0  0  0  0  0  0  0  0  0  0  0  0
+   -1.2124   -0.7000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
+   -1.2124    0.7000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
+    0.0000    1.4000    0.0000 N   0  0  0  0  0  0  0  0  0  0  0  0
+  1  2  2  0
+  2  3  1  0
+  3  4  2  0
+  4  5  1  0
+  5  6  2  0
+  6  1  1  0
+M  END`;
+}
+
+// Run analysis
+async function runAnalysis() {
+    const receptor = document.getElementById('receptor-input').value.trim();
+    const ligand = document.getElementById('ligand-input').value.trim();
+
+    if (!receptor || receptor.length < 50) {
+        alert('Please provide a valid receptor PDB structure.');
+        return;
+    }
+    if (!ligand) {
+        alert('Please provide a ligand structure (SDF or XYZ).');
+        return;
+    }
+
+    const btn = document.getElementById('analyze-btn');
+    btn.classList.add('loading');
+    btn.disabled = true;
+
+    try {
+        const resp = await fetch('/api/primer/docking/interactions', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ receptor_pdb: receptor, ligand_sdf: ligand })
+        });
+
+        if (!resp.ok) {
+            const err = await resp.json().catch(() => ({}));
+            throw new Error(err.error || 'Analysis failed');
+        }
+
+        const data = await resp.json();
+        renderResults(data);
+    } catch (e) {
+        alert('Error: ' + e.message);
+    } finally {
+        btn.classList.remove('loading');
+        btn.disabled = false;
+    }
+}
+
+// Analyze from docking job
+async function analyzeFromJob() {
+    const jobId = document.getElementById('job-id-input').value.trim();
+    if (!jobId) {
+        alert('Please enter a docking job ID.');
+        return;
+    }
+
+    const btn = document.getElementById('job-btn');
+    btn.classList.add('loading');
+    btn.disabled = true;
+
+    try {
+        const resp = await fetch('/api/primer/docking/interactions/' + jobId);
+        if (!resp.ok) {
+            const err = await resp.json().catch(() => ({}));
+            throw new Error(err.error || 'Analysis failed');
+        }
+        const data = await resp.json();
+        renderResults(data);
+    } catch (e) {
+        alert('Error: ' + e.message);
+    } finally {
+        btn.classList.remove('loading');
+        btn.disabled = false;
+    }
+}
+
+// Render results
+function renderResults(data) {
+    document.getElementById('results').classList.add('visible');
+    const s = data.summary || {};
+
+    // Summary cards
+    document.getElementById('summary-grid').innerHTML = `
+        <div class="summary-card"><div class="icon">🔗</div><div class="count" style="color:#2563eb">${s.hydrogen_bonds || 0}</div><div class="label">H-Bonds</div></div>
+        <div class="summary-card"><div class="icon">🟠</div><div class="count" style="color:#ea580c">${s.hydrophobic_contacts || 0}</div><div class="label">Hydrophobic</div></div>
+        <div class="summary-card"><div class="icon">⚡</div><div class="count" style="color:#be185d">${s.salt_bridges || 0}</div><div class="label">Salt Bridges</div></div>
+        <div class="summary-card"><div class="icon">🔮</div><div class="count" style="color:#6d28d9">${s.pi_stacking || 0}</div><div class="label">π-Stacking</div></div>
+        <div class="summary-card"><div class="icon">🎯</div><div class="count" style="color:#16a34a">${s.unique_receptor_residues || 0}</div><div class="label">Unique Residues</div></div>
+        <div class="summary-card"><div class="icon">💪</div><div class="count" style="color:#0d9488">${s.strong_interactions || 0}</div><div class="label">Strong</div></div>
+    `;
+
+    // Recommendation
+    document.getElementById('rec-text').textContent = data.recommendation || '';
+
+    // H-bonds
+    const hb = data.hydrogen_bonds || [];
+    document.getElementById('hbond-badge').textContent = hb.length + ' bond(s)';
+    if (hb.length === 0) {
+        document.getElementById('hbond-details').innerHTML = '<p style="color:#64748b;font-size:0.9rem">No hydrogen bonds detected.</p>';
+    } else {
+        let html = '<table class="int-table"><tr><th>Receptor</th><th>Atom</th><th>Ligand</th><th>Distance</th><th>Strength</th></tr>';
+        hb.forEach(h => {
+            html += `<tr>
+                <td>${h.receptor_residue}</td>
+                <td style="font-family:monospace">${h.receptor_atom}</td>
+                <td style="font-family:monospace">${h.ligand_atom}</td>
+                <td>${h.distance} Å</td>
+                <td class="strength-${h.strength}">${h.strength}</td>
+            </tr>`;
+        });
+        html += '</table>';
+        document.getElementById('hbond-details').innerHTML = html;
+    }
+
+    // Hydrophobic
+    const hy = data.hydrophobic_contacts || [];
+    document.getElementById('hydro-badge').textContent = hy.length + ' contact(s)';
+    if (hy.length === 0) {
+        document.getElementById('hydro-details').innerHTML = '<p style="color:#64748b;font-size:0.9rem">No hydrophobic contacts detected.</p>';
+    } else {
+        let html = '<table class="int-table"><tr><th>Residue</th><th>Atom</th><th>Ligand</th><th>Distance</th><th>Strength</th></tr>';
+        hy.forEach(h => {
+            html += `<tr><td>${h.receptor_residue}</td><td style="font-family:monospace">${h.receptor_atom}</td><td style="font-family:monospace">${h.ligand_atom}</td><td>${h.distance} Å</td><td class="strength-${h.strength}">${h.strength}</td></tr>`;
+        });
+        html += '</table>';
+        document.getElementById('hydro-details').innerHTML = html;
+    }
+
+    // Salt bridges
+    const sb = data.salt_bridges || [];
+    document.getElementById('salt-badge').textContent = sb.length + ' bridge(s)';
+    if (sb.length === 0) {
+        document.getElementById('salt-details').innerHTML = '<p style="color:#64748b;font-size:0.9rem">No salt bridges detected.</p>';
+    } else {
+        let html = '<table class="int-table"><tr><th>Receptor</th><th>Charge</th><th>Ligand</th><th>Charge</th><th>Distance</th></tr>';
+        sb.forEach(s => {
+            html += `<tr><td>${s.receptor_residue}</td><td>${s.details.receptor_charge || '?'}</td><td style="font-family:monospace">${s.ligand_atom}</td><td>${s.details.ligand_charge || '?'}</td><td>${s.distance} Å</td></tr>`;
+        });
+        html += '</table>';
+        document.getElementById('salt-details').innerHTML = html;
+    }
+
+    // π-stacking
+    const pi = data.pi_stacking || [];
+    document.getElementById('pi-badge').textContent = pi.length + ' interaction(s)';
+    if (pi.length === 0) {
+        document.getElementById('pi-details').innerHTML = '<p style="color:#64748b;font-size:0.9rem">No π-π stacking detected.</p>';
+    } else {
+        let html = '<table class="int-table"><tr><th>Receptor Ring</th><th>Ligand Atom</th><th>Distance</th><th>Geometry</th></tr>';
+        pi.forEach(p => {
+            html += `<tr><td>${p.receptor_residue}</td><td style="font-family:monospace">${p.ligand_atom}</td><td>${p.distance} Å</td><td>${p.details.geometry || 'parallel'}</td></tr>`;
+        });
+        html += '</table>';
+        document.getElementById('pi-details').innerHTML = html;
+    }
+
+    // Binding site
+    const bs = data.binding_site_residues || [];
+    document.getElementById('site-badge').textContent = bs.length + ' residue(s)';
+    if (bs.length === 0) {
+        document.getElementById('site-details').innerHTML = '<p style="color:#64748b;font-size:0.9rem">No binding site residues identified.</p>';
+    } else {
+        let html = '<table class="int-table"><tr><th>Residue</th><th>Contacts</th><th>Role</th></tr>';
+        bs.forEach(r => {
+            const roleClass = r.role.includes('hbond') ? 'res-hbond' :
+                             r.role.includes('hydrophobic') ? 'res-hydrophobic' :
+                             r.role.includes('salt') || r.role.includes('electrostatic') ? 'res-salt' :
+                             r.role.includes('pi') ? 'res-pi' :
+                             r.role.includes('polar') ? 'res-polar' : 'res-contact';
+            html += `<tr>
+                <td><span class="residue-tag ${roleClass}">${r.chain}:${r.number} ${r.name}</span></td>
+                <td>${r.contact_count} atom(s)</td>
+                <td style="font-size:0.8rem;color:#64748b">${r.role.replace(/_/g, ' ')}</td>
+            </tr>`;
+        });
+        html += '</table>';
+        document.getElementById('site-details').innerHTML = html;
+    }
+
+    document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+</script>
+
+</body>
+</html>

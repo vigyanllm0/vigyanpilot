@@ -1213,6 +1213,10 @@ def create_app() -> Flask:
     def serve_protein_quality():
         return send_from_directory(STATIC_DIR, "protein-quality.html")
 
+    @app.route("/interactions")
+    def serve_interactions():
+        return send_from_directory(STATIC_DIR, "interactions.html")
+
     @app.route("/admin")
     def serve_admin():
         return send_from_directory(STATIC_DIR, "admin-security.html")
@@ -2861,6 +2865,80 @@ def create_app() -> Flask:
         except Exception as exc:
             logger.error("PDB file analysis error: %s", exc, exc_info=True)
             return err(f"File analysis failed: {str(exc)}", "ANALYSIS_FAILED", 500)
+
+    # ════════════════════════════════════════════════════════════════════
+    # Interaction Analysis Engine
+    # ════════════════════════════════════════════════════════════════════
+
+    @app.route("/api/primer/docking/interactions", methods=["POST"])
+    def analyze_docking_interactions():
+        """
+        Analyze protein-ligand interactions from docked structures.
+        Accepts receptor PDB + ligand SDF/XYZ and returns interaction report.
+        """
+        from .pipelines.interaction_analyzer import analyze_interactions, report_to_dict
+
+        data = request.get_json(silent=True) or {}
+        receptor_pdb = data.get("receptor_pdb", "").strip()
+        ligand_sdf = data.get("ligand_sdf", "").strip()
+        ligand_xyz = data.get("ligand_xyz", "").strip()
+
+        if not receptor_pdb:
+            return err("No receptor PDB provided.", "VALIDATION_ERROR", 400)
+
+        if len(receptor_pdb) < 50:
+            return err("Receptor PDB too short.", "VALIDATION_ERROR", 400)
+
+        if not ligand_sdf and not ligand_xyz:
+            return err("No ligand structure provided (SDF or XYZ required).", "VALIDATION_ERROR", 400)
+
+        try:
+            report = analyze_interactions(receptor_pdb, ligand_sdf=ligand_sdf, ligand_xyz=ligand_xyz)
+            result = report_to_dict(report)
+            return jsonify(result), 200
+        except Exception as exc:
+            logger.error("Interaction analysis error: %s", exc, exc_info=True)
+            return err(f"Interaction analysis failed: {str(exc)}", "ANALYSIS_FAILED", 500)
+
+    @app.route("/api/primer/docking/interactions/<job_id>", methods=["GET"])
+    def get_docking_interactions(job_id):
+        """
+        Get interaction analysis for a completed docking job.
+        Automatically extracts receptor + ligand from job results.
+        """
+        from .pipelines.interaction_analyzer import analyze_interactions, report_to_dict
+
+        job = get_job(job_id)
+        if not job:
+            return err("Job not found.", "NOT_FOUND", 404)
+
+        result = job.get("result") or {}
+        stage1 = result.get("stage1") or {}
+        receptor_pdb = stage1.get("pdb_string", "")
+
+        ranked = result.get("ranked_results") or []
+        if not ranked:
+            return err("No docking results available.", "NO_RESULTS", 400)
+
+        # Analyze top-ranked pose
+        top_mol = ranked[0]
+        ligand_sdf = (top_mol.get("structure") or {}).get("ligand", "")
+
+        if not receptor_pdb:
+            return err("No receptor structure in job results.", "NO_RECEPTOR", 400)
+        if not ligand_sdf:
+            return err("No ligand structure in job results.", "NO_LIGAND", 400)
+
+        try:
+            report = analyze_interactions(receptor_pdb, ligand_sdf=ligand_sdf)
+            result_dict = report_to_dict(report)
+            result_dict["job_id"] = job_id
+            result_dict["rank"] = 1
+            result_dict["smiles"] = top_mol.get("smiles", "")
+            return jsonify(result_dict), 200
+        except Exception as exc:
+            logger.error("Interaction analysis error for job %s: %s", job_id, exc, exc_info=True)
+            return err(f"Analysis failed: {str(exc)}", "ANALYSIS_FAILED", 500)
 
     # ════════════════════════════════════════════════════════════════════
     # DEPRECATED: Azure Worker Endpoints (lines 2803-2834)
