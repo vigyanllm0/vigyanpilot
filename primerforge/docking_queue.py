@@ -162,6 +162,7 @@ def _process_job(job: dict):
     """Run the consensus pipeline in a SEPARATE OS process.
     
     If the pipeline segfaults or OOMs, only the subprocess dies — gunicorn survives.
+    The subprocess writes results directly to disk (no primerforge imports for I/O).
     """
     import subprocess
     import sys as _sys
@@ -174,7 +175,6 @@ def _process_job(job: dict):
 
     logger.info("Spawning subprocess for job %s (%d ligands, %d aa)", job_id, len(smiles_list), len(sequence))
 
-    # Write job data to stdin, worker reads and processes it
     job_input = json.dumps({
         "job_id": job_id,
         "sequence": sequence,
@@ -185,32 +185,20 @@ def _process_job(job: dict):
 
     worker_script = os.path.join(os.path.dirname(os.path.abspath(__file__)), "docking_worker.py")
 
-    try:
-        proc = subprocess.run(
-            [_sys.executable, worker_script],
-            input=job_input,
-            capture_output=True,
-            text=True,
-            timeout=300,  # 5-minute hard timeout
-            env={**os.environ, "PYTHONUNBUFFERED": "1"},
-        )
-        if proc.returncode != 0:
-            # Worker crashed but gunicorn survived
-            stderr_tail = (proc.stderr or "")[-500:]
-            logger.error("Worker subprocess failed for job %s (rc=%d): %s", job_id, proc.returncode, stderr_tail)
-            # Check if job was already marked failed by the worker
-            from primerforge.docking_queue import get_job
-            current_job = get_job(job_id)
-            if current_job and current_job.get("status") != "completed":
-                complete_job(job_id, None, "Docking pipeline crashed. Try with fewer ligands or a shorter sequence.")
-        else:
-            logger.info("Worker subprocess completed for job %s", job_id)
-    except subprocess.TimeoutExpired:
-        logger.error("Worker subprocess timed out for job %s", job_id)
-        complete_job(job_id, None, "Docking timed out (5 min limit). Try with fewer ligands.")
-    except Exception as e:
-        logger.error("Failed to spawn worker for job %s: %s", job_id, e)
-        complete_job(job_id, None, f"Failed to start docking worker: {str(e)[:200]}")
+    proc = subprocess.run(
+        [_sys.executable, worker_script],
+        input=job_input,
+        capture_output=True,
+        text=True,
+        timeout=300,
+        env={**os.environ, "PYTHONUNBUFFERED": "1"},
+    )
+    # Worker writes results to disk directly. Just log what happened.
+    if proc.returncode != 0:
+        logger.error("Worker failed (rc=%d): %s", proc.returncode, (proc.stderr or "")[-500:])
+    else:
+        logger.info("Worker completed job %s", job_id)
+        logger.debug("Worker stderr: %s", (proc.stderr or "")[-200:])
 
 
 def _local_worker_loop(interval: float = 5.0):
