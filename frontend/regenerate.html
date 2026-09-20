@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="title" content="Regenerative Protein Folding — Fix Broken Structures | VigyanLLM">
+    <meta name="description" content="Rebuild missing loops, resolve steric clashes, and refine low-confidence protein regions. Improve docking quality by fixing structural defects before running the pipeline.">
+    <title>Regenerative Protein Folding — Fix Broken Structures | VigyanLLM</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Regenerative Protein Folding",
+        "url": "https://www.vigyanllm.in/regenerate",
+        "description": "Rebuild missing loops, resolve steric clashes, and refine low-confidence protein regions.",
+        "applicationCategory": "Scientific Tool",
+        "operatingSystem": "Web Browser",
+        "offers": {"@type": "Offer", "price": "0", "priceCurrency": "INR"},
+        "provider": {"@type": "Organization", "name": "VigyanLLM"}
+    }
+    </script>
+
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Inter',sans-serif;color:#1a1a2e;background:#f8f9fa;line-height:1.6}
+        #vl-header{background:#fff;border-bottom:1px solid #e5e7eb;padding:.75rem 1.5rem;position:sticky;top:0;z-index:100}
+        .header-inner{max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between}
+        .nav-brand{font-size:1.2rem;font-weight:700;color:#0d9488;text-decoration:none}
+        .nav-links{display:flex;gap:1.5rem;align-items:center}
+        .nav-links a{color:#475569;text-decoration:none;font-size:.9rem;font-weight:500}
+        .nav-links a:hover{color:#0d9488}
+
+        .hero{background:linear-gradient(135deg,#0f172a,#1e293b);color:#fff;padding:3rem 1.5rem 2.5rem}
+        .hero-inner{max-width:900px;margin:0 auto}
+        .hero h1{font-size:2rem;font-weight:700;margin-bottom:.75rem}
+        .hero p{font-size:1.1rem;color:#94a3b8;max-width:600px}
+        .hero-badge{display:inline-block;background:rgba(13,148,136,.2);color:#2dd4bf;font-size:.75rem;font-weight:600;padding:.25rem .75rem;border-radius:999px;margin-bottom:.75rem;text-transform:uppercase;letter-spacing:.05em}
+
+        .container{max-width:900px;margin:0 auto;padding:2rem 1.5rem}
+
+        .card{background:#fff;border-radius:12px;border:1px solid #e5e7eb;padding:1.5rem;margin-bottom:1.5rem}
+        .card h2{font-size:1.1rem;font-weight:600;margin-bottom:.25rem}
+        .card .subtitle{font-size:.85rem;color:#64748b;margin-bottom:1rem}
+
+        textarea{width:100%;min-height:180px;font-family:'JetBrains Mono',monospace;font-size:.8rem;padding:.75rem;border:1px solid #d1d5db;border-radius:8px;resize:vertical;line-height:1.5}
+        textarea:focus{outline:none;border-color:#0d9488;box-shadow:0 0 0 3px rgba(13,148,136,.1)}
+
+        .btn{display:inline-block;padding:.6rem 1.5rem;font-size:.9rem;font-weight:600;border:none;border-radius:8px;cursor:pointer;transition:all .2s}
+        .btn-primary{background:#0d9488;color:#fff}
+        .btn-primary:hover{background:#0f766e}
+        .btn-primary:disabled{background:#94a3b8;cursor:not-allowed}
+        .btn-secondary{background:#f1f5f9;color:#475569;border:1px solid #e2e8f0}
+        .btn-secondary:hover{background:#e2e8f0}
+        .spinner{display:none;width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite;margin-right:.5rem}
+        .btn.loading .spinner{display:inline-block}
+        @keyframes spin{to{transform:rotate(360deg)}}
+
+        .options-grid{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-bottom:1rem}
+        .option-item{display:flex;align-items:center;gap:.5rem;padding:.5rem .75rem;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;font-size:.85rem}
+        .option-item input{accent-color:#0d9488}
+
+        #results{display:none}
+        #results.visible{display:block}
+
+        /* Before/After comparison */
+        .compare-hero{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.5rem}
+        .compare-card{background:#fff;border-radius:12px;border:1px solid #e5e7eb;padding:1.25rem;text-align:center}
+        .compare-card h3{font-size:.85rem;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.75rem}
+        .compare-card .grade{font-size:2.5rem;font-weight:700;margin-bottom:.25rem}
+        .compare-card .score{font-size:1rem;color:#64748b}
+        .before .grade{color:#dc2626}
+        .after .grade{color:#16a34a}
+        .arrow{display:flex;align-items:center;justify-content:center;font-size:2rem;color:#0d9488}
+
+        /* Improvement badge */
+        .improve-badge{display:inline-flex;align-items:center;gap:.35rem;padding:.35rem .75rem;border-radius:999px;font-size:.8rem;font-weight:600}
+        .improve-positive{background:#d1fae5;color:#047857}
+        .improve-neutral{background:#f1f5f9;color:#64748b}
+        .improve-negative{background:#fee2e2;color:#dc2626}
+
+        /* Stats grid */
+        .stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem;margin-bottom:1.5rem}
+        .stat-card{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:.75rem;text-align:center}
+        .stat-card .label{font-size:.75rem;color:#64748b;font-weight:500}
+        .stat-card .value{font-size:1.1rem;font-weight:700;margin-top:.15rem}
+        .stat-card .delta{font-size:.75rem;margin-top:.15rem}
+        .delta-good{color:#16a34a}
+        .delta-bad{color:#dc2626}
+
+        /* Actions */
+        .action-item{display:flex;align-items:start;gap:.75rem;padding:.75rem;border-bottom:1px solid #f1f5f9}
+        .action-item:last-child{border-bottom:none}
+        .action-icon{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.85rem;flex-shrink:0}
+        .action-loop{background:#dbeafe;color:#2563eb}
+        .action-clash{background:#fef3c7;color:#b45309}
+        .action-terminal{background:#ede9fe;color:#6d28d9}
+        .action-plddt{background:#d1fae5;color:#047857}
+        .action-info{font-size:.85rem}
+        .action-desc{font-weight:500}
+        .action-detail{font-size:.75rem;color:#64748b;margin-top:.15rem}
+
+        .site-footer{background:#0f172a;color:#94a3b8;padding:2rem 1.5rem;margin-top:3rem;text-align:center;font-size:.85rem}
+        .site-footer a{color:#2dd4bf;text-decoration:none}
+    </style>
+</head>
+<body>
+
+<header id="vl-header">
+    <div class="header-inner">
+        <a href="/" class="nav-brand">VigyanLLM</a>
+        <nav class="nav-links">
+            <a href="/docking">Docking</a>
+            <a href="/protein-quality">Quality</a>
+            <a href="/interactions">Interactions</a>
+            <a href="/binding-site">Binding Site</a>
+            <a href="/regenerate" style="color:#0d9488">Regenerate</a>
+        </nav>
+    </div>
+</header>
+
+<section class="hero">
+    <div class="hero-inner">
+        <span class="hero-badge">Unique to VigyanLLM</span>
+        <h1>Regenerative Protein Folding</h1>
+        <p>Most docking servers accept whatever structure you give them. We fix it first — modeling missing loops, resolving clashes, and refining low-confidence regions.</p>
+    </div>
+</section>
+
+<main class="container">
+
+    <div class="card">
+        <h2>📋 Input Protein Structure</h2>
+        <p class="subtitle">Paste PDB content or fetch from RCSB. The engine will analyze and repair structural defects.</p>
+        <textarea id="pdb-input" placeholder="Paste PDB file content here..."></textarea>
+        <div style="display:flex;gap:.5rem;margin-top:.75rem;align-items:center">
+            <input type="text" id="pdb-id" placeholder="PDB ID (e.g. 4HHB)" style="flex:1;padding:.5rem .75rem;border:1px solid #d1d5db;border-radius:8px;font-family:monospace;font-size:.9rem;text-transform:uppercase">
+            <button class="btn btn-secondary" onclick="fetchPDB()">Fetch</button>
+            <button class="btn btn-secondary" onclick="loadExample()">Load example</button>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>🔧 Repair Options</h2>
+        <p class="subtitle">Select which repairs to apply. All enabled by default for best results.</p>
+        <div class="options-grid">
+            <label class="option-item"><input type="checkbox" id="opt-loops" checked> Model missing loops</label>
+            <label class="option-item"><input type="checkbox" id="opt-clashes" checked> Resolve steric clashes</label>
+            <label class="option-item"><input type="checkbox" id="opt-terminals" checked> Clean disordered termini</label>
+            <label class="option-item"><input type="checkbox" id="opt-plddt" checked> Refine low-confidence regions</label>
+        </div>
+        <button class="btn btn-primary" onclick="runRegeneration()" id="run-btn">
+            <span class="spinner"></span>
+            Regenerate Structure
+        </button>
+    </div>
+
+    <div id="results">
+        <!-- Before/After -->
+        <div class="compare-hero">
+            <div class="compare-card before">
+                <h3>Before</h3>
+                <div class="grade" id="before-grade">--</div>
+                <div class="score" id="before-score">--</div>
+            </div>
+            <div class="compare-card after">
+                <h3>After</h3>
+                <div class="grade" id="after-grade">--</div>
+                <div class="score" id="after-score">--</div>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-grid" id="stats-grid"></div>
+
+        <!-- Actions taken -->
+        <div class="card" id="actions-card" style="display:none">
+            <h2>🔧 Repairs Applied</h2>
+            <div id="actions-list"></div>
+        </div>
+
+        <!-- Export -->
+        <div class="card">
+            <h2>📥 Export Repaired Structure</h2>
+            <p class="subtitle">Download the repaired PDB or use it for docking.</p>
+            <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+                <button class="btn btn-primary" onclick="downloadPDB()">Download PDB</button>
+                <button class="btn btn-secondary" onclick="copyPDB()">Copy to Clipboard</button>
+                <button class="btn btn-secondary" onclick="sendToDocking()">Send to Docking →</button>
+                <button class="btn btn-secondary" onclick="checkQuality()">Check Quality →</button>
+            </div>
+        </div>
+    </div>
+
+</main>
+
+<footer class="site-footer">
+    <p>VigyanLLM — <a href="/">Bioinformatics tools</a> that work in your browser.</p>
+    <p style="margin-top:.5rem;font-size:.8rem">Free for academic research. Built in India.</p>
+</footer>
+
+<script>
+let repairedPDB = '';
+
+async function fetchPDB() {
+    const id = document.getElementById('pdb-id').value.trim().toLowerCase();
+    if (!id || !/^[a-z0-9]{4}$/.test(id)) { alert('Enter a valid 4-character PDB ID'); return; }
+    try {
+        const resp = await fetch('https://files.rcsb.org/download/' + id + '.pdb');
+        if (!resp.ok) throw new Error('Not found');
+        const text = await resp.text();
+        document.getElementById('pdb-input').value = text;
+    } catch (e) { alert('Failed to fetch ' + id.toUpperCase()); }
+}
+
+function loadExample() {
+    let lines = [];
+    let serial = 1;
+    const res = ['ALA','VAL','LEU','ILE','PHE','ASP','GLU','LYS','SER','THR'];
+    for (let i = 1; i <= 25; i++) {
+        const r = res[(i-1) % res.length];
+        const x = 20 + Math.random() * 15;
+        const y = 20 + Math.random() * 15;
+        const z = 5 + Math.random() * 10;
+        lines.push(`ATOM  ${String(serial++).padStart(5)}  N   ${r} A${String(i).padStart(4)}    ${x.toFixed(3)}${y.toFixed(3)}${z.toFixed(3)}  1.00 15.00           N`);
+        lines.push(`ATOM  ${String(serial++).padStart(5)}  CA  ${r} A${String(i).padStart(4)}    ${(x+1.2).toFixed(3)}${(y+0.5).toFixed(3)}${(z+0.2).toFixed(3)}  1.00 12.00           C`);
+        lines.push(`ATOM  ${String(serial++).padStart(5)}  C   ${r} A${String(i).padStart(4)}    ${(x+2.0).toFixed(3)}${(y+1.5).toFixed(3)}${(z+0.5).toFixed(3)}  1.00 10.00           C`);
+        lines.push(`ATOM  ${String(serial++).padStart(5)}  O   ${r} A${String(i).padStart(4)}    ${(x+2.8).toFixed(3)}${(y+1.0).toFixed(3)}${(z+0.3).toFixed(3)}  1.00 14.00           O`);
+    }
+    // Add gap (missing residues 10-14)
+    for (let i = 26; i <= 30; i++) {
+        const r = res[(i-1) % res.length];
+        const x = 25 + Math.random() * 10;
+        const y = 25 + Math.random() * 10;
+        const z = 8 + Math.random() * 8;
+        lines.push(`ATOM  ${String(serial++).padStart(5)}  N   ${r} A${String(i).padStart(4)}    ${x.toFixed(3)}${y.toFixed(3)}${z.toFixed(3)}  1.00 55.00           N`);
+        lines.push(`ATOM  ${String(serial++).padStart(5)}  CA  ${r} A${String(i).padStart(4)}    ${(x+1.2).toFixed(3)}${(y+0.5).toFixed(3)}${(z+0.2).toFixed(3)}  1.00 60.00           C`);
+        lines.push(`ATOM  ${String(serial++).padStart(5)}  C   ${r} A${String(i).padStart(4)}    ${(x+2.0).toFixed(3)}${(y+1.5).toFixed(3)}${(z+0.5).toFixed(3)}  1.00 58.00           C`);
+        lines.push(`ATOM  ${String(serial++).padStart(5)}  O   ${r} A${String(i).padStart(4)}    ${(x+2.8).toFixed(3)}${(y+1.0).toFixed(3)}${(z+0.3).toFixed(3)}  1.00 62.00           O`);
+    }
+    lines.push('END');
+    document.getElementById('pdb-input').value = lines.join('\n');
+}
+
+async function runRegeneration() {
+    const pdb = document.getElementById('pdb-input').value.trim();
+    if (!pdb || pdb.length < 50) { alert('Provide a valid PDB structure.'); return; }
+
+    const btn = document.getElementById('run-btn');
+    btn.classList.add('loading'); btn.disabled = true;
+
+    try {
+        const resp = await fetch('/api/primer/docking/regenerate', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                pdb_content: pdb,
+            })
+        });
+        if (!resp.ok) {
+            const err = await resp.json().catch(() => ({}));
+            throw new Error(err.error || 'Failed');
+        }
+        const data = await resp.json();
+        renderResults(data);
+    } catch (e) { alert('Error: ' + e.message); }
+    finally { btn.classList.remove('loading'); btn.disabled = false; }
+}
+
+function renderResults(data) {
+    document.getElementById('results').classList.add('visible');
+
+    const before = data.before || {};
+    const after = data.after || {};
+    const improve = data.improvement || {};
+
+    // Before/After grades
+    const beforeGrade = before.clash_count > 5 ? 'D' : before.clash_count > 2 ? 'C' : 'B';
+    const afterGrade = after.clash_count === 0 && after.mean_bond_deviation < 0.1 ? 'A' :
+                       after.clash_count <= 1 ? 'B' : 'C';
+
+    document.getElementById('before-grade').textContent = beforeGrade;
+    document.getElementById('before-score').textContent =
+        `${before.residues} residues • ${before.clash_count} clashes • ${before.mean_bond_deviation} Å dev`;
+    document.getElementById('after-grade').textContent = afterGrade;
+    document.getElementById('after-score').textContent =
+        `${after.residues} residues • ${after.clash_count} clashes • ${after.mean_bond_deviation} Å dev`;
+
+    // Stats
+    const clashDelta = improve.clashes_resolved || 0;
+    const bondDelta = improve.bond_deviation_improvement || 0;
+    const atomDelta = improve.atoms_delta || 0;
+
+    document.getElementById('stats-grid').innerHTML = `
+        <div class="stat-card">
+            <div class="label">Clashes Resolved</div>
+            <div class="value">${clashDelta > 0 ? clashDelta : '—'}</div>
+            <div class="delta ${clashDelta > 0 ? 'delta-good' : ''}">${clashDelta > 0 ? '✓ Fixed' : 'None found'}</div>
+        </div>
+        <div class="stat-card">
+            <div class="label">Bond Deviation</div>
+            <div class="value">${after.mean_bond_deviation} Å</div>
+            <div class="delta ${bondDelta > 0 ? 'delta-good' : ''}">${bondDelta > 0 ? '↓ ' + bondDelta + ' Å improved' : 'Within tolerance'}</div>
+        </div>
+        <div class="stat-card">
+            <div class="label">Atoms Changed</div>
+            <div class="value">${Math.abs(atomDelta)}</div>
+            <div class="delta ${atomDelta > 0 ? 'delta-good' : ''}">${atomDelta > 0 ? '+ ' + atomDelta + ' added' : atomDelta < 0 ? atomDelta + ' removed' : 'No change'}</div>
+        </div>
+    `;
+
+    // Actions
+    const actions = data.actions || [];
+    const actionsCard = document.getElementById('actions-card');
+    if (actions.length > 0) {
+        actionsCard.style.display = 'block';
+        let html = '';
+        actions.forEach(a => {
+            const iconCls = a.type === 'loop' ? 'action-loop' :
+                           a.type === 'clash' ? 'action-clash' :
+                           a.type === 'terminal' ? 'action-terminal' : 'action-plddt';
+            const icon = a.type === 'loop' ? '🔗' :
+                        a.type === 'clash' ? '💥' :
+                        a.type === 'terminal' ? '✂️' : '🎯';
+            html += `
+            <div class="action-item">
+                <div class="action-icon ${iconCls}">${icon}</div>
+                <div class="action-info">
+                    <div class="action-desc">${a.description}</div>
+                    <div class="action-detail">${a.region} • ${a.atoms_changed} atom(s) affected</div>
+                </div>
+            </div>`;
+        });
+        document.getElementById('actions-list').innerHTML = html;
+    } else {
+        actionsCard.style.display = 'none';
+    }
+
+    // Store repaired PDB
+    repairedPDB = data.prepared_pdb || '';
+
+    document.getElementById('results').scrollIntoView({behavior: 'smooth'});
+}
+
+function downloadPDB() {
+    if (!repairedPDB) { alert('No repaired structure available.'); return; }
+    const blob = new Blob([repairedPDB], {type: 'text/plain'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'repaired_structure.pdb';
+    a.click();
+}
+
+function copyPDB() {
+    if (!repairedPDB) { alert('No repaired structure available.'); return; }
+    navigator.clipboard.writeText(repairedPDB);
+    alert('Repaired PDB copied to clipboard!');
+}
+
+function sendToDocking() {
+    if (!repairedPDB) { alert('No repaired structure available.'); return; }
+    sessionStorage.setItem('regenerated_pdb', repairedPDB);
+    window.location.href = '/docking';
+}
+
+function checkQuality() {
+    if (!repairedPDB) { alert('No repaired structure available.'); return; }
+    sessionStorage.setItem('quality_check_pdb', repairedPDB);
+    window.location.href = '/protein-quality';
+}
+</script>
+
+</body>
+</html>

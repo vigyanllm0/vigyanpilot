@@ -1221,6 +1221,10 @@ def create_app() -> Flask:
     def serve_binding_site():
         return send_from_directory(STATIC_DIR, "binding-site.html")
 
+    @app.route("/regenerate")
+    def serve_regenerate():
+        return send_from_directory(STATIC_DIR, "regenerate.html")
+
     @app.route("/admin")
     def serve_admin():
         return send_from_directory(STATIC_DIR, "admin-security.html")
@@ -3029,6 +3033,85 @@ def create_app() -> Flask:
             'npoints': round(size / 0.375) ** 3,
         }
         return jsonify(gridbox), 200
+
+    # ════════════════════════════════════════════════════════════════════
+    # Regenerative Folding Engine
+    # ════════════════════════════════════════════════════════════════════
+
+    @app.route("/api/primer/docking/regenerate", methods=["POST"])
+    def regenerate_protein():
+        """
+        Run regenerative folding on a protein structure.
+        Models missing loops, resolves clashes, cleans termini, refines by pLDDT.
+        """
+        from .pipelines.regenerative_folder import regenerate_structure, report_to_dict
+
+        data = request.get_json(silent=True) or {}
+        pdb_content = data.get("pdb_content", "").strip()
+        plddt_scores = data.get("plddt_scores")
+
+        if not pdb_content:
+            return err("No PDB content provided.", "VALIDATION_ERROR", 400)
+
+        try:
+            report = regenerate_structure(pdb_content, plddt_scores=plddt_scores)
+            result = report_to_dict(report)
+            return jsonify(result), 200
+        except Exception as exc:
+            logger.error("Regenerative folding error: %s", exc, exc_info=True)
+            return err(f"Regeneration failed: {str(exc)}", "ANALYSIS_FAILED", 500)
+
+    @app.route("/api/primer/docking/full-prep", methods=["POST"])
+    def full_docking_prep():
+        """
+        Full docking preparation pipeline:
+        1. Protein preparation (clean structure)
+        2. Regenerative folding (fix defects)
+        3. Broken protein analysis (quality check)
+        4. Pocket detection (find binding sites)
+        """
+        from .pipelines.protein_preparer import prepare_protein, report_to_dict as prep_dict
+        from .pipelines.regenerative_folder import regenerate_structure, report_to_dict as regen_dict
+        from .pipelines.broken_protein_analyzer import analyze_protein, report_to_dict as analyze_dict
+        from .pipelines.pocket_detector import detect_pockets, pockets_to_dict
+
+        data = request.get_json(silent=True) or {}
+        pdb_content = data.get("pdb_content", "").strip()
+        pH = data.get("pH", 7.4)
+
+        if not pdb_content:
+            return err("No PDB content provided.", "VALIDATION_ERROR", 400)
+
+        try:
+            # Step 1: Prepare
+            prep = prepare_protein(pdb_content, pH=pH)
+            prepared = prep.prepared_pdb
+
+            # Step 2: Regenerate
+            regen = regenerate_structure(prepared)
+
+            # Step 3: Analyze quality
+            analysis = analyze_protein(regen.prepared_pdb)
+
+            # Step 4: Detect pockets
+            pockets = detect_pockets(regen.prepared_pdb)
+
+            return jsonify({
+                'preparation': prep_dict(prep),
+                'regeneration': regen_dict(regen),
+                'quality': analyze_dict(analysis),
+                'pockets': pockets_to_dict(pockets),
+                'final_pdb': regen.prepared_pdb,
+                'summary': (
+                    f"Full prep complete: {prep_dict(prep).get('summary', '')} "
+                    f"{regen.summary} "
+                    f"Quality: {analysis.quality_grade} ({analysis.quality_score}/100). "
+                    f"{len(pockets)} pocket(s) detected."
+                ),
+            }), 200
+        except Exception as exc:
+            logger.error("Full prep error: %s", exc, exc_info=True)
+            return err(f"Full preparation failed: {str(exc)}", "ANALYSIS_FAILED", 500)
 
     # ════════════════════════════════════════════════════════════════════
     # DEPRECATED: Azure Worker Endpoints (lines 2803-2834)
