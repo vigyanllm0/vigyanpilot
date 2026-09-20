@@ -1217,6 +1217,10 @@ def create_app() -> Flask:
     def serve_interactions():
         return send_from_directory(STATIC_DIR, "interactions.html")
 
+    @app.route("/binding-site")
+    def serve_binding_site():
+        return send_from_directory(STATIC_DIR, "binding-site.html")
+
     @app.route("/admin")
     def serve_admin():
         return send_from_directory(STATIC_DIR, "admin-security.html")
@@ -2939,6 +2943,92 @@ def create_app() -> Flask:
         except Exception as exc:
             logger.error("Interaction analysis error for job %s: %s", job_id, exc, exc_info=True)
             return err(f"Analysis failed: {str(exc)}", "ANALYSIS_FAILED", 500)
+
+    # ════════════════════════════════════════════════════════════════════
+    # Binding Site Control — Pocket Detection + Protein Preparation
+    # ════════════════════════════════════════════════════════════════════
+
+    @app.route("/api/primer/docking/pockets", methods=["POST"])
+    def detect_binding_pockets():
+        """
+        Detect binding pockets in a protein structure.
+        Returns ranked pockets with druggability scores.
+        """
+        from .pipelines.pocket_detector import detect_pockets, pockets_to_dict
+
+        data = request.get_json(silent=True) or {}
+        pdb_content = data.get("pdb_content", "").strip()
+
+        if not pdb_content:
+            return err("No PDB content provided.", "VALIDATION_ERROR", 400)
+        if len(pdb_content) < 50:
+            return err("PDB content too short.", "VALIDATION_ERROR", 400)
+
+        try:
+            pockets = detect_pockets(pdb_content)
+            result = pockets_to_dict(pockets)
+            return jsonify({
+                'pockets': result,
+                'total': len(result),
+                'best_pocket': result[0] if result else None,
+            }), 200
+        except Exception as exc:
+            logger.error("Pocket detection error: %s", exc, exc_info=True)
+            return err(f"Pocket detection failed: {str(exc)}", "ANALYSIS_FAILED", 500)
+
+    @app.route("/api/primer/docking/prepare", methods=["POST"])
+    def prepare_protein_structure():
+        """
+        Prepare a protein structure for docking.
+        Removes water, ions, non-cofactor HETATM; assigns protonation.
+        """
+        from .pipelines.protein_preparer import prepare_protein, report_to_dict
+
+        data = request.get_json(silent=True) or {}
+        pdb_content = data.get("pdb_content", "").strip()
+        pH = data.get("pH", 7.4)
+
+        if not pdb_content:
+            return err("No PDB content provided.", "VALIDATION_ERROR", 400)
+
+        try:
+            report = prepare_protein(pdb_content, pH=pH)
+            result = report_to_dict(report)
+            return jsonify(result), 200
+        except Exception as exc:
+            logger.error("Protein preparation error: %s", exc, exc_info=True)
+            return err(f"Preparation failed: {str(exc)}", "ANALYSIS_FAILED", 500)
+
+    @app.route("/api/primer/docking/gridbox", methods=["POST"])
+    def calculate_gridbox():
+        """
+        Calculate AutoDock Vina grid box from binding pocket center + radius.
+        Accepts pocket center (x,y,z) and radius, returns grid box parameters.
+        """
+        data = request.get_json(silent=True) or {}
+        center = data.get("center", [])
+        radius = data.get("radius", 20.0)
+
+        if len(center) != 3:
+            return err("Center must be [x, y, z].", "VALIDATION_ERROR", 400)
+
+        # Vina grid box: center + size (radius * 2 + buffer)
+        size = radius * 2 + 4  # 2 Å buffer on each side
+        gridbox = {
+            'center': {
+                'x': round(center[0], 2),
+                'y': round(center[1], 2),
+                'z': round(center[2], 2),
+            },
+            'size': {
+                'x': round(size, 2),
+                'y': round(size, 2),
+                'z': round(size, 2),
+            },
+            'spacing': 0.375,  # Vina default
+            'npoints': round(size / 0.375) ** 3,
+        }
+        return jsonify(gridbox), 200
 
     # ════════════════════════════════════════════════════════════════════
     # DEPRECATED: Azure Worker Endpoints (lines 2803-2834)

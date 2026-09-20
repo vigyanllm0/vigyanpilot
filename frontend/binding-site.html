@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="title" content="Binding Site Control — Pocket Detection & Protein Preparation | VigyanLLM">
+    <meta name="description" content="Detect binding pockets, prepare proteins for docking, calculate grid boxes. Auto-pocket detection, pH-dependent protonation, and binding site presets for common drug targets.">
+    <title>Binding Site Control — Pocket Detection & Preparation | VigyanLLM</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Binding Site Control",
+        "url": "https://www.vigyanllm.in/binding-site",
+        "description": "Detect binding pockets, prepare proteins for docking, calculate grid boxes.",
+        "applicationCategory": "Scientific Tool",
+        "operatingSystem": "Web Browser",
+        "offers": {"@type": "Offer", "price": "0", "priceCurrency": "INR"},
+        "provider": {"@type": "Organization", "name": "VigyanLLM"}
+    }
+    </script>
+
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Inter',sans-serif;color:#1a1a2e;background:#f8f9fa;line-height:1.6}
+        #vl-header{background:#fff;border-bottom:1px solid #e5e7eb;padding:.75rem 1.5rem;position:sticky;top:0;z-index:100}
+        .header-inner{max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between}
+        .nav-brand{font-size:1.2rem;font-weight:700;color:#0d9488;text-decoration:none}
+        .nav-links{display:flex;gap:1.5rem;align-items:center}
+        .nav-links a{color:#475569;text-decoration:none;font-size:.9rem;font-weight:500}
+        .nav-links a:hover{color:#0d9488}
+
+        .hero{background:linear-gradient(135deg,#0f172a,#1e293b);color:#fff;padding:3rem 1.5rem 2.5rem}
+        .hero-inner{max-width:900px;margin:0 auto}
+        .hero h1{font-size:2rem;font-weight:700;margin-bottom:.75rem}
+        .hero p{font-size:1.1rem;color:#94a3b8;max-width:600px}
+        .hero-badge{display:inline-block;background:rgba(13,148,136,.2);color:#2dd4bf;font-size:.75rem;font-weight:600;padding:.25rem .75rem;border-radius:999px;margin-bottom:.75rem;text-transform:uppercase;letter-spacing:.05em}
+
+        .container{max-width:900px;margin:0 auto;padding:2rem 1.5rem}
+
+        .card{background:#fff;border-radius:12px;border:1px solid #e5e7eb;padding:1.5rem;margin-bottom:1.5rem}
+        .card h2{font-size:1.1rem;font-weight:600;margin-bottom:.25rem;display:flex;align-items:center;gap:.5rem}
+        .card .subtitle{font-size:.85rem;color:#64748b;margin-bottom:1rem}
+
+        textarea{width:100%;min-height:150px;font-family:'JetBrains Mono',monospace;font-size:.8rem;padding:.75rem;border:1px solid #d1d5db;border-radius:8px;resize:vertical;line-height:1.5}
+        textarea:focus{outline:none;border-color:#0d9488;box-shadow:0 0 0 3px rgba(13,148,136,.1)}
+
+        .input-row{display:flex;gap:1rem;align-items:end;margin-bottom:1rem}
+        .input-group{flex:1}
+        .input-group label{display:block;font-size:.8rem;font-weight:600;color:#475569;margin-bottom:.25rem}
+        .input-group input,.input-group select{width:100%;padding:.5rem .75rem;border:1px solid #d1d5db;border-radius:8px;font-size:.9rem}
+        .input-group input:focus{outline:none;border-color:#0d9488}
+
+        .range-group{display:flex;align-items:center;gap:.75rem;margin-bottom:1rem}
+        .range-group label{font-size:.85rem;font-weight:500;color:#475569;min-width:80px}
+        .range-group input[type="range"]{flex:1;accent-color:#0d9488}
+        .range-group .value{font-family:'JetBrains Mono',monospace;font-size:.9rem;font-weight:600;color:#0d9488;min-width:50px;text-align:right}
+
+        .btn{display:inline-block;padding:.6rem 1.5rem;font-size:.9rem;font-weight:600;border:none;border-radius:8px;cursor:pointer;transition:all .2s}
+        .btn-primary{background:#0d9488;color:#fff}
+        .btn-primary:hover{background:#0f766e}
+        .btn-primary:disabled{background:#94a3b8;cursor:not-allowed}
+        .btn-secondary{background:#f1f5f9;color:#475569;border:1px solid #e2e8f0}
+        .btn-secondary:hover{background:#e2e8f0}
+        .spinner{display:none;width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite;margin-right:.5rem}
+        .btn.loading .spinner{display:inline-block}
+        @keyframes spin{to{transform:rotate(360deg)}}
+
+        .presets{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:.5rem;margin-bottom:1rem}
+        .preset-btn{padding:.5rem .75rem;font-size:.8rem;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;cursor:pointer;text-align:left;transition:all .15s}
+        .preset-btn:hover{border-color:#0d9488;background:#f0fdfa}
+        .preset-btn.active{border-color:#0d9488;background:#f0fdfa;box-shadow:0 0 0 2px rgba(13,148,136,.2)}
+        .preset-btn .name{font-weight:600;color:#1a1a2e}
+        .preset-btn .pdb-id{font-family:monospace;font-size:.75rem;color:#64748b}
+
+        #results{display:none}
+        #results.visible{display:block}
+
+        .result-section{background:#fff;border-radius:12px;border:1px solid #e5e7eb;margin-bottom:1rem;overflow:hidden}
+        .result-header{padding:1rem 1.25rem;cursor:pointer;display:flex;align-items:center;justify-content:space-between;font-weight:600;font-size:.95rem;transition:background .2s}
+        .result-header:hover{background:#f8fafc}
+        .badge{font-size:.75rem;padding:.15rem .5rem;border-radius:999px;font-weight:600}
+        .badge-green{background:#f0fdf4;color:#16a34a}
+        .badge-blue{background:#eff6ff;color:#2563eb}
+        .badge-yellow{background:#fffbeb;color:#d97706}
+        .result-body{padding:0 1.25rem 1.25rem;display:none}
+        .result-body.open{display:block}
+
+        .pocket-card{background:#f8fafc;border:1px solid #e5e7eb;border-radius:10px;padding:1rem;margin-bottom:.75rem;display:flex;gap:1rem;align-items:start}
+        .pocket-rank{width:36px;height:36px;border-radius:50%;background:#0d9488;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.9rem;flex-shrink:0}
+        .pocket-info{flex:1}
+        .pocket-info h4{font-size:.9rem;margin-bottom:.25rem}
+        .pocket-meta{font-size:.8rem;color:#64748b;display:flex;gap:1rem;flex-wrap:wrap}
+        .druggability{display:inline-block;padding:.1rem .4rem;border-radius:4px;font-size:.7rem;font-weight:700;text-transform:uppercase}
+        .drugg-high{background:#d1fae5;color:#047857}
+        .drugg-moderate{background:#fef3c7;color:#b45309}
+        .drugg-low{background:#fee2e2;color:#dc2626}
+        .drugg-undruggable{background:#f1f5f9;color:#64748b}
+
+        .prep-step{display:flex;align-items:center;gap:.75rem;padding:.5rem 0;border-bottom:1px solid #f1f5f9;font-size:.85rem}
+        .prep-step:last-child{border-bottom:none}
+        .step-check{color:#16a34a;font-weight:700}
+        .step-warn{color:#d97706;font-weight:700}
+
+        .gridbox-display{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:1rem;font-family:'JetBrains Mono',monospace;font-size:.8rem}
+
+        .site-footer{background:#0f172a;color:#94a3b8;padding:2rem 1.5rem;margin-top:3rem;text-align:center;font-size:.85rem}
+        .site-footer a{color:#2dd4bf;text-decoration:none}
+    </style>
+</head>
+<body>
+
+<header id="vl-header">
+    <div class="header-inner">
+        <a href="/" class="nav-brand">VigyanLLM</a>
+        <nav class="nav-links">
+            <a href="/docking">Docking</a>
+            <a href="/protein-quality">Protein Quality</a>
+            <a href="/interactions">Interactions</a>
+            <a href="/binding-site" style="color:#0d9488">Binding Site</a>
+        </nav>
+    </div>
+</header>
+
+<section class="hero">
+    <div class="hero-inner">
+        <span class="hero-badge">Docking Setup</span>
+        <h1>Binding Site Control</h1>
+        <p>Find the right pocket, prepare your protein, and set up the grid box — all before running a single docking pose.</p>
+    </div>
+</section>
+
+<main class="container">
+
+    <!-- Step 1: Input Structure -->
+    <div class="card">
+        <h2>📋 Step 1: Input Protein Structure</h2>
+        <p class="subtitle">Paste PDB content or fetch from RCSB. This structure will be prepared and analyzed for binding pockets.</p>
+        <textarea id="pdb-input" placeholder="Paste PDB file content here...&#10;ATOM      1  N   ALA A   1      27.340  24.430   2.614  1.00  9.66           N&#10;..."></textarea>
+        <div style="display:flex;gap:.5rem;margin-top:.75rem">
+            <button class="btn btn-secondary" onclick="loadExample()">Load example</button>
+            <input type="text" id="pdb-id" placeholder="Or enter PDB ID (e.g. 4HHB)" style="flex:1;padding:.5rem .75rem;border:1px solid #d1d5db;border-radius:8px;font-family:monospace;font-size:.9rem;text-transform:uppercase">
+            <button class="btn btn-secondary" onclick="fetchPDB()">Fetch</button>
+        </div>
+    </div>
+
+    <!-- Step 2: Binding Site Presets -->
+    <div class="card">
+        <h2>🎯 Step 2: Select Binding Site</h2>
+        <p class="subtitle">Choose a preset for common drug targets, or run auto-detection below.</p>
+        <div class="presets" id="presets">
+            <button class="preset-btn" onclick="selectPreset(this,'EGFR','4ZAU','EGFRL858R','T790M/C797S mutant')" data-pdb="4ZAU">
+                <div class="name">EGFR T790M</div>
+                <div class="pdb-id">4ZAU • Lung cancer</div>
+            </button>
+            <button class="preset-btn" onclick="selectPreset(this,'BRAF','5HSU','BRAF V600E','Osimertinib target')" data-pdb="5HSU">
+                <div class="name">BRAF V600E</div>
+                <div class="pdb-id">5HSU • Melanoma</div>
+            </button>
+            <button class="preset-btn" onclick="selectPreset(this,'CDK2','1FIN','CDK2/CyclinA','Cell cycle target')" data-pdb="1FIN">
+                <div class="name">CDK2</div>
+                <div class="pdb-id">1FIN • Cell cycle</div>
+            </button>
+            <button class="preset-btn" onclick="selectPreset(this,'ACE2','1R42','ACE2','SARS-CoV-2 receptor')" data-pdb="1R42">
+                <div class="name">ACE2</div>
+                <div class="pdb-id">1R42 • COVID-19</div>
+            </button>
+            <button class="preset-btn" onclick="selectPreset(this,'DHFR','1PD2','DHFR','Folate metabolism')" data-pdb="1PD2">
+                <div class="name">DHFR</div>
+                <div class="pdb-id">1PD2 • Antibacterial</div>
+            </button>
+            <button class="preset-btn" onclick="selectPreset(this,'COX2','3LN1','COX-2','Anti-inflammatory')" data-pdb="3LN1">
+                <div class="name">COX-2</div>
+                <div class="pdb-id">3LN1 • Inflammation</div>
+            </button>
+        </div>
+
+        <div style="border-top:1px solid #e5e7eb;padding-top:1rem;margin-top:.5rem">
+            <button class="btn btn-primary" onclick="detectPockets()" id="detect-btn">
+                <span class="spinner"></span>
+                Auto-Detect Pockets
+            </button>
+        </div>
+    </div>
+
+    <!-- Results -->
+    <div id="results">
+        <!-- Pocket Results -->
+        <div class="result-section" id="pocket-section" style="display:none">
+            <div class="result-header" onclick="toggle(this)">
+                <span>🕳️ Detected Binding Pockets</span>
+                <span class="badge badge-green" id="pocket-count">0</span>
+            </div>
+            <div class="result-body open" id="pocket-body">
+                <div id="pocket-list"></div>
+            </div>
+        </div>
+
+        <!-- Preparation Results -->
+        <div class="result-section" id="prep-section" style="display:none">
+            <div class="result-header" onclick="toggle(this)">
+                <span>🔧 Protein Preparation</span>
+                <span class="badge badge-blue" id="prep-status">Ready</span>
+            </div>
+            <div class="result-body open" id="prep-body">
+                <div id="prep-steps"></div>
+            </div>
+        </div>
+
+        <!-- Grid Box -->
+        <div class="result-section" id="grid-section" style="display:none">
+            <div class="result-header" onclick="toggle(this)">
+                <span>📐 Grid Box Configuration</span>
+                <span class="badge badge-blue" id="grid-status">Ready</span>
+            </div>
+            <div class="result-body open" id="grid-body">
+                <div class="range-group">
+                    <label>Radius (Å)</label>
+                    <input type="range" id="grid-radius" min="10" max="40" value="20" oninput="updateGridbox()">
+                    <span class="value" id="radius-value">20</span>
+                </div>
+                <div class="gridbox-display" id="gridbox-output">
+                    Select a pocket to calculate grid box parameters.
+                </div>
+                <div style="margin-top:1rem;display:flex;gap:.5rem">
+                    <button class="btn btn-primary" onclick="startDocking()" id="dock-btn" disabled>
+                        Start Docking with This Grid Box →
+                    </button>
+                    <button class="btn btn-secondary" onclick="copyGridbox()">Copy to Clipboard</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Prepare button (always visible) -->
+    <div class="card" id="prepare-card" style="display:none">
+        <h2>🔧 Step 3: Prepare Protein</h2>
+        <p class="subtitle">Remove water, assign protonation states, clean up the structure for docking.</p>
+        <div class="input-row">
+            <div class="input-group" style="max-width:200px">
+                <label>Target pH</label>
+                <input type="number" id="prep-ph" value="7.4" min="1" max="14" step="0.1">
+            </div>
+            <div style="display:flex;gap:.5rem;align-items:end">
+                <label style="font-size:.85rem;display:flex;align-items:center;gap:.35rem;cursor:pointer">
+                    <input type="checkbox" id="prep-water" checked> Remove water
+                </label>
+                <label style="font-size:.85rem;display:flex;align-items:center;gap:.35rem;cursor:pointer">
+                    <input type="checkbox" id="prep-ions" checked> Remove ions
+                </label>
+                <label style="font-size:.85rem;display:flex;align-items:center;gap:.35rem;cursor:pointer">
+                    <input type="checkbox" id="prep-hetatm" checked> Remove HETATM
+                </label>
+            </div>
+            <button class="btn btn-primary" onclick="prepareProtein()" id="prep-btn">
+                <span class="spinner"></span>
+                Prepare Structure
+            </button>
+        </div>
+    </div>
+
+</main>
+
+<footer class="site-footer">
+    <p>VigyanLLM — <a href="/">Bioinformatics tools</a> that work in your browser.</p>
+    <p style="margin-top:.5rem;font-size:.8rem">Free for academic research. Built in India.</p>
+</footer>
+
+<script>
+let currentPDB = '';
+let selectedPocket = null;
+
+function toggle(h) { h.nextElementSibling.classList.toggle('open'); }
+
+function selectPreset(btn, name, pdb, desc, note) {
+    document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('pdb-id').value = pdb;
+    fetchPDB();
+}
+
+async function fetchPDB() {
+    const id = document.getElementById('pdb-id').value.trim().toLowerCase();
+    if (!id || !/^[a-z0-9]{4}$/.test(id)) { alert('Enter a valid 4-character PDB ID'); return; }
+    try {
+        const resp = await fetch('https://files.rcsb.org/download/' + id + '.pdb');
+        if (!resp.ok) throw new Error('Not found');
+        const text = await resp.text();
+        if (text.length < 100) throw new Error('Invalid');
+        document.getElementById('pdb-input').value = text;
+        currentPDB = text;
+        showPrepareCard();
+    } catch (e) { alert('Failed to fetch ' + id.toUpperCase()); }
+}
+
+function loadExample() {
+    document.getElementById('pdb-input').value = generateExamplePDB();
+    currentPDB = document.getElementById('pdb-input').value;
+    showPrepareCard();
+}
+
+function generateExamplePDB() {
+    let lines = [];
+    const residues = ['ALA','VAL','LEU','ILE','PHE','TRP','MET','PRO','SER','THR',
+                      'ASP','GLU','LYS','ARG','HIS','ASN','GLN','CYS','TYR','GLY'];
+    let serial = 1;
+    for (let i = 1; i <= 30; i++) {
+        const res = residues[(i-1) % residues.length];
+        const chain = 'A';
+        const x = 20 + Math.random() * 20;
+        const y = 20 + Math.random() * 20;
+        const z = 5 + Math.random() * 15;
+        lines.push(`ATOM  ${String(serial++).padStart(5)}  N   ${res} ${chain}${String(i).padStart(4)}    ${x.toFixed(3)}${y.toFixed(3)}${z.toFixed(3)}  1.00 10.00           N`);
+        lines.push(`ATOM  ${String(serial++).padStart(5)}  CA  ${res} ${chain}${String(i).padStart(4)}    ${(x+1.2).toFixed(3)}${(y+0.5).toFixed(3)}${(z+0.2).toFixed(3)}  1.00  8.00           C`);
+        lines.push(`ATOM  ${String(serial++).padStart(5)}  C   ${res} ${chain}${String(i).padStart(4)}    ${(x+2.0).toFixed(3)}${(y+1.5).toFixed(3)}${(z+0.5).toFixed(3)}  1.00  7.00           C`);
+        lines.push(`ATOM  ${String(serial++).padStart(5)}  O   ${res} ${chain}${String(i).padStart(4)}    ${(x+2.8).toFixed(3)}${(y+1.0).toFixed(3)}${(z+0.3).toFixed(3)}  1.00  9.00           O`);
+    }
+    // Add water
+    for (let i = 0; i < 5; i++) {
+        lines.push(`HETATM${String(serial++).padStart(5)}  O   HOH A   ${30+i}    ${(25+Math.random()*10).toFixed(3)}${(25+Math.random()*10).toFixed(3)}${(10+Math.random()*5).toFixed(3)}  1.00 20.00           O`);
+    }
+    lines.push('END');
+    return lines.join('\n');
+}
+
+function showPrepareCard() {
+    document.getElementById('prepare-card').style.display = 'block';
+    document.getElementById('results').classList.add('visible');
+}
+
+async function detectPockets() {
+    const pdb = document.getElementById('pdb-input').value.trim();
+    if (!pdb || pdb.length < 50) { alert('Provide a valid PDB structure first.'); return; }
+    currentPDB = pdb;
+
+    const btn = document.getElementById('detect-btn');
+    btn.classList.add('loading'); btn.disabled = true;
+
+    try {
+        const resp = await fetch('/api/primer/docking/pockets', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({pdb_content: pdb})
+        });
+        const data = await resp.json();
+        renderPockets(data);
+        showPrepareCard();
+    } catch (e) { alert('Error: ' + e.message); }
+    finally { btn.classList.remove('loading'); btn.disabled = false; }
+}
+
+function renderPockets(data) {
+    const section = document.getElementById('pocket-section');
+    section.style.display = 'block';
+    const pockets = data.pockets || [];
+    document.getElementById('pocket-count').textContent = pockets.length + ' pocket(s)';
+
+    if (pockets.length === 0) {
+        document.getElementById('pocket-list').innerHTML = '<p style="color:#64748b;font-size:.9rem">No pockets detected. The structure may be too small or too open. Try a larger protein.</p>';
+        return;
+    }
+
+    let html = '';
+    pockets.forEach(p => {
+        const druggClass = 'drugg-' + p.druggability;
+        html += `
+        <div class="pocket-card" onclick="selectPocket(${JSON.stringify(p).replace(/"/g, '&quot;')})" style="cursor:pointer">
+            <div class="pocket-rank">${p.pocket_id}</div>
+            <div class="pocket-info">
+                <h4>Pocket ${p.pocket_id} <span class="druggability ${druggClass}">${p.druggability}</span></h4>
+                <div class="pocket-meta">
+                    <span>Score: ${p.score}/100</span>
+                    <span>${p.residue_count} residues</span>
+                    <span>Vol: ${Math.round(p.volume)} ų</span>
+                    <span>Hydro: ${(p.hydrophobicity*100).toFixed(0)}%</span>
+                </div>
+                <div style="font-size:.75rem;color:#64748b;margin-top:.25rem;font-family:monospace">
+                    Center: [${p.center.join(', ')}] • Radius: ${p.radius} Å
+                </div>
+            </div>
+        </div>`;
+    });
+    document.getElementById('pocket-list').innerHTML = html;
+}
+
+function selectPocket(pocket) {
+    selectedPocket = pocket;
+    document.getElementById('grid-section').style.display = 'block';
+    document.getElementById('dock-btn').disabled = false;
+    updateGridbox();
+    document.getElementById('grid-section').scrollIntoView({behavior: 'smooth'});
+}
+
+function updateGridbox() {
+    if (!selectedPocket) return;
+    const radius = parseInt(document.getElementById('grid-radius').value);
+    document.getElementById('radius-value').textContent = radius;
+
+    const size = radius * 2 + 4;
+    const n = Math.round(size / 0.375);
+
+    document.getElementById('gridbox-output').innerHTML = `
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+            <div><strong>Center:</strong><br>
+                x: ${selectedPocket.center[0]}<br>
+                y: ${selectedPocket.center[1]}<br>
+                z: ${selectedPocket.center[2]}
+            </div>
+            <div><strong>Size (Å):</strong><br>
+                x: ${size}<br>
+                y: ${size}<br>
+                z: ${size}
+            </div>
+        </div>
+        <div style="margin-top:.75rem;color:#64748b">
+            Spacing: 0.375 Å • ~${n}³ grid points • Pocket radius: ${selectedPocket.radius} Å
+        </div>
+    `;
+}
+
+function copyGridbox() {
+    if (!selectedPocket) return;
+    const radius = parseInt(document.getElementById('grid-radius').value);
+    const size = radius * 2 + 4;
+    const text = `center_x = ${selectedPocket.center[0]}\ncenter_y = ${selectedPocket.center[1]}\ncenter_z = ${selectedPocket.center[2]}\nsize_x = ${size}\nsize_y = ${size}\nsize_z = ${size}`;
+    navigator.clipboard.writeText(text);
+    alert('Grid box parameters copied!');
+}
+
+async function prepareProtein() {
+    const pdb = document.getElementById('pdb-input').value.trim();
+    if (!pdb) { alert('No PDB structure loaded.'); return; }
+
+    const pH = parseFloat(document.getElementById('prep-ph').value) || 7.4;
+    const btn = document.getElementById('prep-btn');
+    btn.classList.add('loading'); btn.disabled = true;
+
+    try {
+        const resp = await fetch('/api/primer/docking/prepare', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                pdb_content: pdb,
+                pH: pH,
+            })
+        });
+        const data = await resp.json();
+        renderPreparation(data);
+    } catch (e) { alert('Error: ' + e.message); }
+    finally { btn.classList.remove('loading'); btn.disabled = false; }
+}
+
+function renderPreparation(data) {
+    const section = document.getElementById('prep-section');
+    section.style.display = 'block';
+    document.getElementById('prep-status').textContent = 'Done';
+    document.getElementById('prep-status').className = 'badge badge-green';
+
+    let html = '';
+    const items = [
+        {check: true, text: `${data.original_residues} → ${data.final_residues} residues`},
+        {check: true, text: `Removed ${data.waters_removed} water molecule(s)`},
+        {check: true, text: `Removed ${data.ions_removed} ion(s)`},
+        {check: data.protonation_changes.length > 0, text: `${data.protonation_changes.length} protonation state(s) assigned at pH ${document.getElementById('prep-ph').value}`, warn: data.protonation_changes.length > 0},
+    ];
+
+    data.protonation_changes.forEach(c => {
+        items.push({check: false, text: '  ' + c, indent: true});
+    });
+
+    if (data.warnings.length > 0) {
+        items.push({warn: true, text: `${data.warnings.length} warning(s):`});
+        data.warnings.forEach(w => items.push({check: false, text: '  ⚠ ' + w, indent: true}));
+    }
+
+    items.forEach(item => {
+        const icon = item.warn ? '⚠' : (item.check ? '✓' : '•');
+        const cls = item.warn ? 'step-warn' : 'step-check';
+        html += `<div class="prep-step"><span class="${cls}">${icon}</span> ${item.text}</div>`;
+    });
+
+    document.getElementById('prep-steps').innerHTML = html;
+
+    // Update PDB with prepared version
+    if (data.prepared_pdb) {
+        document.getElementById('pdb-input').value = data.prepared_pdb;
+        currentPDB = data.prepared_pdb;
+    }
+}
+
+function startDocking() {
+    if (!selectedPocket) return;
+    const radius = parseInt(document.getElementById('grid-radius').value);
+    const size = radius * 2 + 4;
+    const params = new URLSearchParams({
+        cx: selectedPocket.center[0],
+        cy: selectedPocket.center[1],
+        cz: selectedPocket.center[2],
+        sx: size, sy: size, sz: size,
+    });
+    window.location.href = '/docking?' + params.toString();
+}
+</script>
+
+</body>
+</html>
