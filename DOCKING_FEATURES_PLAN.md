@@ -125,16 +125,16 @@ VigyanLLM Docking is a molecular docking platform that combines ESMFold protein 
 | 3.5 | 3D interaction visualization | Visual understanding | ⏳ Phase 5 |
 | 3.6 | Interaction 2D diagram | Standard in drug discovery | ⏳ Phase 5 |
 
-### Phase 4: Binding Site Control (1-2 weeks)
-| # | Task | Why | Effort |
+### Phase 4: Binding Site Control ✅ (commit `2ec8c7ac`)
+| # | Task | Why | Status |
 |---|------|-----|--------|
-| 4.1 | Grid box UI | User control | 1d |
-| 4.2 | Click-to-select binding site | Intuitive UX | 2d |
-| 4.3 | Binding site presets | Speed for common targets | 1d |
-| 4.4 | Auto-binding pocket detection | fpocket integration | 2d |
-| 4.5 | Protein preparation wizard | Critical for accuracy | 2d |
-| 4.6 | pH-dependent protonation | Affects binding | 1d |
-| 4.7 | Flexible receptor option | Induced-fit docking | 3d |
+| 4.1 | Grid box UI | User control | ✅ |
+| 4.2 | Click-to-select binding site | Intuitive UX | ✅ (via pocket cards) |
+| 4.3 | Binding site presets | Speed for common targets | ✅ (6 presets) |
+| 4.4 | Auto-binding pocket detection | fpocket integration | ✅ (simplified Voronoi) |
+| 4.5 | Protein preparation wizard | Critical for accuracy | ✅ |
+| 4.6 | pH-dependent protonation | Affects binding | ✅ |
+| 4.7 | Flexible receptor option | Induced-fit docking | ⏳ Deferred |
 
 ### Phase 5: Regenerative Folding (2-3 weeks)
 | # | Task | Why | Effort |
