@@ -404,49 +404,58 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <span class="disclaimer-icon">&#x26A0;&#xFE0F;</span>
   <strong>Research Use Only.</strong> Not validated for clinical diagnostic use. All docking results require independent experimental validation.
 </div>
-<!-- PAGE HEADER -->
-<div class="page-header">
-  <div class="container" style="max-width:var(--max-w);margin:0 auto;padding:0 24px">
-    <div style="display:flex;align-items:flex-start;gap:20px;flex-wrap:wrap">
-      <div class="ph-title-block">
+<!-- PAGE HEADER — DOMINATING HERO -->
+<div class="page-header" style="position:relative;overflow:hidden">
+  <div style="position:absolute;top:0;left:0;right:0;bottom:0;background:radial-gradient(ellipse 80% 50% at 50% -20%,rgba(13,148,136,.12),transparent),radial-gradient(ellipse 60% 40% at 80% 80%,rgba(59,130,246,.06),transparent);pointer-events:none"></div>
+  <div class="container" style="max-width:var(--max-w);margin:0 auto;padding:0 24px;position:relative;z-index:1">
+    <div style="display:flex;align-items:flex-start;gap:24px;flex-wrap:wrap">
+      <div class="ph-title-block" style="flex:1;min-width:300px">
         <div class="ph-eyebrow">
           Molecular Docking &#xB7; ESMFold + Vina + GNINA
           <span class="pipeline-badge">3-STAGE CONSENSUS</span>
         </div>
-        <h1 class="ph-title">Molecular Docking Tool — Protein-Ligand Docking Free (2026)</h1>
-<!-- ══ GEO Quick-Answer block ══ -->
-<section style="max-width:900px;margin:0 auto 16px;padding:0 24px">
-  <div style="background:linear-gradient(135deg,#0f172a 0%,#1e293b 100%);border-radius:12px;padding:24px 28px;border:1px solid #334155;">
-    <p style="color:#94a3b8;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;margin:0 0 8px 0;">Quick Answer</p>
-    <p style="color:#f8fafc;font-size:13px;line-height:1.6;margin:0 0 12px 0;"><strong>What is this tool?</strong> Molecular docking predicts how a small-molecule ligand binds to a protein target. This tool runs a 3-stage consensus pipeline: ESMFold predicts the protein 3D structure from amino acid sequence, AutoDock Vina screens ligand poses, and GNINA CNN re-scores the top hits for better ranking. All runs stay local with no data egress.</p>
-    <p style="color:#94a3b8;font-size:13px;line-height:1.6;margin:0 0 12px 0;"><strong>How do I use it online?</strong> Enter the protein amino acid sequence and a list of ligand SMILES on the docking page, then start the consensus screening workflow. Results rank each ligand by binding affinity with the consensus score. No account required for basic runs.</p>
-    <p style="color:#64748b;font-size:14px;line-height:1.6;margin:0;padding-top:12px;border-top:1px solid #334155;">Validated engines used: ESMFold (MIT) for structure, AutoDock Vina for pose generation, and GNINA with CNN scoring for affinity refinement.</p>
-  </div>
-</section>
-        <div itemscope itemtype="https://schema.org/Question" style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:12px;padding:24px;margin:24px 0">
-          <p style="font-weight:700;font-size:13px;margin-bottom:8px" itemprop="name">What is this tool?</p>
-          <div itemprop="acceptedAnswer" itemscope itemtype="https://schema.org/Answer">
-            <p itemprop="text" style="color:#475569;font-size:14px">A 3-stage consensus molecular docking pipeline that predicts protein 3D structure from amino acid sequence using ESMFold, screens small-molecule ligands with AutoDock Vina, and re-scores the top hits with GNINA CNN deep learning for improved ranking accuracy.</p>
-          </div>
+        <h1 class="ph-title" style="font-size:clamp(1.5rem,3.2vw,2.2rem);line-height:1.25">Molecular Docking Tool &mdash; Protein-Ligand Docking Free (2026)</h1>
+        <p class="ph-sub" style="margin-top:10px">Run consensus molecular docking in your browser. ESMFold predicts the protein structure, AutoDock Vina screens ligand poses, and GNINA CNN re-scores the top hits &mdash; no software install, no login required for basic runs.</p>
+        <!-- Trust chips -->
+        <div class="ph-meta" style="margin-top:14px">
+          <span class="ph-chip" style="background:rgba(5,150,105,.08);border-color:rgba(5,150,105,.2);color:#059669">&#x2714; ESMFold (MIT)</span>
+          <span class="ph-chip" style="background:rgba(59,130,246,.08);border-color:rgba(59,130,246,.2);color:#2563eb">&#x2714; AutoDock Vina</span>
+          <span class="ph-chip" style="background:rgba(139,92,246,.08);border-color:rgba(139,92,246,.2);color:#7c3aed">&#x2714; GNINA CNN</span>
+          <span class="ph-chip" style="background:rgba(245,158,11,.08);border-color:rgba(245,158,11,.2);color:#d97706">&#x2714; Consensus Rank</span>
         </div>
-        <p class="ph-sub">Enter a protein amino acid sequence and a list of ligand SMILES to run the full consensus screening workflow.</p>
-        <div class="ph-meta">
-          <span class="ph-chip">ESMFold (MIT)</span>
-          <span class="ph-chip">AutoDock Vina (Apache 2.0)</span>
-          <span class="ph-chip">GNINA CNN Scoring</span>
-          <span class="ph-chip">pLDDT &#x2265; 70%</span>
-          <span class="ph-chip">Consensus Ranking</span>
+        <!-- CTA row -->
+        <div class="cta-row" style="margin-top:16px">
+          <button type="button" class="btn-hero" onclick="document.getElementById('protein-seq').focus()" style="padding:12px 28px;font-size:14px;font-weight:800;border-radius:10px;background:linear-gradient(135deg,#0d9488,#0f766e);box-shadow:0 4px 14px rgba(13,148,136,.3)">Run Consensus Docking &rarr;</button>
+          <button type="button" class="btn-hero secondary" onclick="loadExample()" style="padding:12px 24px;font-size:13px">Load Example</button>
         </div>
-        <div class="cta-row">
-          <button type="button" class="btn-hero" onclick="document.getElementById('protein-seq').focus()">Run Docking Screen</button>
-          <button type="button" class="btn-hero secondary" onclick="loadExample()">Load Example</button>
+        <p style="font-size:12px;color:#64748b;margin-top:8px">First run &#x20B9;49 (50% off). No credit card required for basic demo.</p>
+      </div>
+      <!-- Hero stat cards -->
+      <div style="display:flex;flex-direction:column;gap:10px;min-width:220px">
+        <div style="background:rgba(255,255,255,.06);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:16px 20px;text-align:center">
+          <div style="font-family:var(--font-h);font-size:28px;font-weight:800;color:#fff">3</div>
+          <div style="font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:.08em">Scoring Engines</div>
         </div>
-        <p style="font-size:12px;color:#94A3B8;margin-top:8px">First run ₹49 (50% off). No credit card required for basic demo.</p>
+        <div style="background:rgba(255,255,255,.06);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:16px 20px;text-align:center">
+          <div style="font-family:var(--font-h);font-size:28px;font-weight:800;color:#34d399">10K+</div>
+          <div style="font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:.08em">Docking Runs</div>
+        </div>
+        <div style="background:rgba(255,255,255,.06);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:16px 20px;text-align:center">
+          <div style="font-family:var(--font-h);font-size:28px;font-weight:800;color:#60a5fa">&#x2264;2min</div>
+          <div style="font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:.08em">Per Ligand</div>
+        </div>
       </div>
     </div>
   </div>
 </div>
-<p style="font-size:12px;color:#94A3B8;margin-top:8px">Last updated: July 2026 &#xB7; Reviewed by VigyanLLM Research Team</p>
+<!-- GEO Quick-Answer -->
+<section style="max-width:900px;margin:24px auto 0;padding:0 24px">
+  <div style="background:linear-gradient(135deg,#0f172a 0%,#1e293b 100%);border-radius:12px;padding:20px 24px;border:1px solid #334155">
+    <p style="color:#94a3b8;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;margin:0 0 10px 0">&#x26A1; Quick Answer</p>
+    <p style="color:#f8fafc;font-size:13px;line-height:1.6;margin:0 0 10px 0"><strong>What is this tool?</strong> A 3-stage consensus molecular docking pipeline: ESMFold predicts protein 3D structure from sequence, AutoDock Vina screens ligand poses, and GNINA CNN re-scores top hits. All runs stay local with no data egress.</p>
+    <p style="color:#94a3b8;font-size:13px;line-height:1.6;margin:0;padding-top:10px;border-top:1px solid #334155">Validated engines: ESMFold (MIT) + AutoDock Vina (Apache 2.0) + GNINA CNN &middot; No install required</p>
+  </div>
+</section>
 <!-- ══ LLMO: Docking Pipeline Inputs & Outputs ══ -->
 <section style="max-width:900px;margin:48px auto;padding:0 24px">
   <p>The <strong>consensus molecular docking pipeline</strong> integrates <data value="Protein Structure Prediction">ESMFold</data> for protein structure prediction, <data value="Molecular Docking">AutoDock Vina</data> for rapid pose generation, and <data value="Deep Learning Scoring">GNINA</data> with <abbr title="Convolutional Neural Network">CNN</abbr> scoring for binding affinity refinement — all running locally with no data egress.</p>
@@ -524,33 +533,33 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <form onsubmit="return false" class="tool-wrap">
   <!-- LEFT SIDEBAR: Pipeline stages -->
   <div class="tool-left">
-    <div class="sidebar-section">
-      <div class="sidebar-section-head">
-        <h3>Pipeline Stages</h3>
+    <div class="sidebar-section" style="background:linear-gradient(180deg,#0f172a,#1e293b);border-color:#334155">
+      <div class="sidebar-section-head" style="border-color:#334155">
+        <h3 style="color:#f8fafc;font-size:11px;letter-spacing:.1em;text-transform:uppercase">Pipeline Stages</h3>
       </div>
       <div class="sidebar-section-body">
         <div class="pipeline-steps" id="pipeline-steps">
-          <div class="p-step" id="step-1" data-stage="1">
-            <div class="step-icon pending" id="step-icon-1">1</div>
+          <div class="p-step" id="step-1" data-stage="1" style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:12px;margin-bottom:8px">
+            <div class="step-icon pending" id="step-icon-1" style="background:rgba(13,148,136,.2);color:#2dd4bf">1</div>
             <div class="step-text">
-              <div class="step-name">ESMFold &#x2014; Structure Prediction</div>
-              <div class="step-sub" id="step-sub-1">Awaiting input</div>
+              <div class="step-name" style="color:#e2e8f0;font-size:12px">ESMFold &#x2014; Structure Prediction</div>
+              <div class="step-sub" id="step-sub-1" style="color:#64748b;font-size:11px">Awaiting input</div>
             </div>
             <div class="step-status" id="step-status-1"></div>
           </div>
-          <div class="p-step" id="step-2" data-stage="2">
-            <div class="step-icon pending" id="step-icon-2">2</div>
+          <div class="p-step" id="step-2" data-stage="2" style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:12px;margin-bottom:8px">
+            <div class="step-icon pending" id="step-icon-2" style="background:rgba(59,130,246,.2);color:#60a5fa">2</div>
             <div class="step-text">
-              <div class="step-name">AutoDock Vina &#x2014; Broad Screen</div>
-              <div class="step-sub" id="step-sub-2">Awaiting stage 1</div>
+              <div class="step-name" style="color:#e2e8f0;font-size:12px">AutoDock Vina &#x2014; Broad Screen</div>
+              <div class="step-sub" id="step-sub-2" style="color:#64748b;font-size:11px">Awaiting stage 1</div>
             </div>
             <div class="step-status" id="step-status-2"></div>
           </div>
-          <div class="p-step" id="step-3" data-stage="3">
-            <div class="step-icon pending" id="step-icon-3">3</div>
+          <div class="p-step" id="step-3" data-stage="3" style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:12px">
+            <div class="step-icon pending" id="step-icon-3" style="background:rgba(139,92,246,.2);color:#a78bfa">3</div>
             <div class="step-text">
-              <div class="step-name">GNINA &#x2014; CNN Re-scoring</div>
-              <div class="step-sub" id="step-sub-3">Awaiting stage 2</div>
+              <div class="step-name" style="color:#e2e8f0;font-size:12px">GNINA &#x2014; CNN Re-scoring</div>
+              <div class="step-sub" id="step-sub-3" style="color:#64748b;font-size:11px">Awaiting stage 2</div>
             </div>
             <div class="step-status" id="step-status-3"></div>
           </div>
@@ -559,7 +568,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </div>
     <div class="sidebar-section">
       <div class="sidebar-section-head">
-        <h3>Usage</h3>
+        <h3>Quick Start</h3>
       </div>
       <div class="sidebar-section-body">
         <div id="usage-info">
@@ -567,8 +576,15 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           <div class="text-xs text-muted" id="usage-remaining"></div>
         </div>
         <div style="margin-top:12px;border-top:1px solid var(--slate-border);padding-top:10px">
-          <h4 style="font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:6px">What is Consensus Docking?</h4>
-          <p style="font-size:12px;color:var(--text2);line-height:1.7">Combines physics-based (Vina) and deep learning (GNINA) scoring. Top-ranked molecules have highest consensus between both methods.</p>
+          <h4 style="font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:6px;font-weight:700">Pipeline Flow</h4>
+          <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text2);flex-wrap:wrap">
+            <span style="background:#f0fdf4;padding:3px 8px;border-radius:4px;color:#059669;font-weight:600">ESMFold</span>
+            <span style="color:#94a3b8">&rarr;</span>
+            <span style="background:#eff6ff;padding:3px 8px;border-radius:4px;color:#2563eb;font-weight:600">Vina</span>
+            <span style="color:#94a3b8">&rarr;</span>
+            <span style="background:#f5f3ff;padding:3px 8px;border-radius:4px;color:#7c3aed;font-weight:600">GNINA</span>
+          </div>
+          <p style="font-size:11px;color:var(--muted);margin-top:8px;line-height:1.6">Physics-based + deep learning consensus for improved ranking accuracy.</p>
         </div>
       </div>
     </div>
@@ -643,9 +659,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           <button type="button" class="quick-btn" onclick="loadExample()">&#x1F4E6; Load Example (Aspirin)</button>
           <button type="button" class="quick-btn" onclick="loadKinaseExample()">&#x1F4E6; Kinase Library</button><span style="font-size:12px;color:var(--muted);margin-left:6px">Pre-loaded kinase panel for drug discovery screens.</span>
         </div>
-        <button type="button" class="btn-primary" id="run-btn" onclick="runDocking()" style="margin-top:12px">
+        <button type="button" class="btn-primary" id="run-btn" onclick="runDocking()" style="margin-top:12px;padding:14px 24px;font-size:14px;font-weight:800;border-radius:10px;background:linear-gradient(135deg,#0d9488,#0f766e);box-shadow:0 4px 14px rgba(13,148,136,.3);display:flex;align-items:center;justify-content:center;gap:8px">
           <span class="spinner" id="run-spinner"></span>
           <span id="run-btn-text">Run Consensus Docking</span>
+          <span style="font-size:16px;opacity:.7">&rarr;</span>
         </button>
         <div class="slow-warn" id="slow-warn" style="display:none;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:10px 14px;font-size:12px;color:#1d4ed8;margin-top:12px">
           This run may take several minutes depending on ligand count and server load.
@@ -674,54 +691,89 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div id="results-body"></div>
     </div>
     <!-- Empty state -->
-    <div id="empty-state" style="text-align:center;padding:60px 20px">
-      <div style="font-size:48px;margin-bottom:16px;opacity:.3">&#x1F9EC;</div>
-      <h3 style="font-family:var(--font-h);font-size:13px;color:var(--text2);margin-bottom:8px">Ready to Run a Docking Screen</h3>
-      <p style="font-size:13px;color:var(--muted);max-width:400px;margin:0 auto">Enter a protein sequence and at least one ligand SMILES above, then click <strong>Run Consensus Docking</strong>. The 3-stage pipeline will predict the protein structure and rank ligands by consensus score.</p>
+    <div id="empty-state" style="text-align:center;padding:60px 20px;position:relative">
+      <div style="position:relative;width:120px;height:120px;margin:0 auto 20px">
+        <div style="width:120px;height:120px;border-radius:50%;background:linear-gradient(135deg,rgba(13,148,136,.08),rgba(59,130,246,.08));display:flex;align-items:center;justify-content:center">
+          <div style="font-size:48px;opacity:.6">&#x1F9EC;</div>
+        </div>
+        <div style="position:absolute;top:-4px;right:-4px;width:28px;height:28px;border-radius:50%;background:#0d9488;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;box-shadow:0 2px 8px rgba(13,148,136,.3)">3</div>
+      </div>
+      <h3 style="font-family:var(--font-h);font-size:15px;font-weight:700;color:var(--text);margin-bottom:6px">Ready to Run a Docking Screen</h3>
+      <p style="font-size:13px;color:var(--text2);max-width:420px;margin:0 auto;line-height:1.7">Enter a protein sequence (or upload a PDB file) and at least one ligand SMILES, then click <strong>Run Consensus Docking</strong>. The 3-stage pipeline will predict the protein structure and rank ligands by consensus score.</p>
+      <div style="display:flex;justify-content:center;gap:12px;margin-top:16px;flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#64748b"><span style="width:24px;height:24px;border-radius:50%;background:#f0fdf4;color:#059669;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800">1</span> Protein input</div>
+        <div style="color:#cbd5e1;font-size:14px">&rarr;</div>
+        <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#64748b"><span style="width:24px;height:24px;border-radius:50%;background:#eff6ff;color:#2563eb;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800">2</span> Add ligands</div>
+        <div style="color:#cbd5e1;font-size:14px">&rarr;</div>
+        <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#64748b"><span style="width:24px;height:24px;border-radius:50%;background:#f5f3ff;color:#7c3aed;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800">3</span> Get results</div>
+      </div>
     </div>
   </div>
   <!-- RIGHT SIDEBAR: Help -->
   <div class="tool-right">
-    <div class="sidebar-section">
+    <div class="sidebar-section" style="border-left:3px solid #0d9488">
       <div class="sidebar-section-head">
-        <h3>Input Requirements</h3>
+        <h3 style="display:flex;align-items:center;gap:6px"><span style="font-size:14px">&#x1F4CB;</span> Input Requirements</h3>
       </div>
       <div class="sidebar-section-body" style="font-size:12px;color:var(--text2);line-height:1.8">
-        <strong>Protein Sequence</strong>
-        <p>Standard single-letter amino acid code (A-Z). Minimum 10 residues for ESMFold prediction.</p>
-        <div style="margin:10px 0;border-top:1px solid var(--slate-border)"></div>
-        <strong>Ligand SMILES</strong>
-        <p>Valid SMILES strings, one per line. Each must be parseable by RDKit. Examples:</p>
-        <code style="display:block;background:var(--slate);padding:8px;border-radius:6px;font-size:12px;margin-top:4px">CC(=O)Oc1ccccc1C(=O)O  (aspirin)</code>
-        <div style="margin:10px 0;border-top:1px solid var(--slate-border)"></div>
-        <strong>Top N</strong>
-        <p>Number of top Vina hits forwarded to GNINA for CNN re-scoring. Default: 50.</p>
-        <div style="margin:10px 0;border-top:1px solid var(--slate-border)"></div>
-        <strong>Exhaustiveness</strong>
-        <p>4 (default, balances speed and accuracy). Increase for higher precision on known binding sites.</p>
+        <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:10px 12px;margin-bottom:10px">
+          <strong style="color:#059669;display:block;margin-bottom:2px">Protein Sequence</strong>
+          <p style="color:#475569;margin:0">Standard single-letter amino acid code (A&ndash;Z). Min 10 residues. Or upload a PDB file.</p>
+        </div>
+        <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:10px 12px;margin-bottom:10px">
+          <strong style="color:#2563eb;display:block;margin-bottom:2px">Ligand SMILES</strong>
+          <p style="color:#475569;margin:0">Valid SMILES strings, one per line. Or upload SDF/MOL2 file.</p>
+          <code style="display:block;background:#fff;padding:6px;border-radius:4px;font-size:11px;margin-top:6px;color:#1e293b">CC(=O)Oc1ccccc1C(=O)O</code>
+        </div>
+        <div style="background:#fefce8;border:1px solid #fde68a;border-radius:8px;padding:10px 12px">
+          <strong style="color:#d97706;display:block;margin-bottom:2px">Top N Candidates</strong>
+          <p style="color:#475569;margin:0">Top Vina hits forwarded to GNINA. Default: 50.</p>
+        </div>
       </div>
     </div>
-    <div class="sidebar-section">
+    <div class="sidebar-section" style="border-left:3px solid #2563eb">
       <div class="sidebar-section-head">
-        <h3>Stage Descriptions</h3>
+        <h3 style="display:flex;align-items:center;gap:6px"><span style="font-size:14px">&#x1F9EA;</span> Stage Descriptions</h3>
       </div>
       <div class="sidebar-section-body" style="font-size:12px;color:var(--text2);line-height:1.8">
-        <strong>Stage 1: ESMFold</strong>
-        <p style="font-size:12px;color:var(--muted);margin-bottom:8px">Predicts 3D protein structure from sequence using Meta's ESM-2 transformer model. Runs locally with no external API calls.</p>
-        <strong>Stage 2: Vina</strong>
-        <p style="font-size:12px;color:var(--muted);margin-bottom:8px">Screens all ligands with AutoDock Vina using the predicted structure. Fast physics-based scoring (kcal/mol, more negative = better).</p>
-        <strong>Stage 3: GNINA</strong>
-        <p style="font-size:12px;color:var(--muted);margin-bottom:8px">Re-scores top Vina hits with GNINA's CNN model. Consensus rank = 0.4 &times; Vina + 0.6 &times; GNINA score.</p>
+        <div style="display:flex;gap:10px;align-items:flex-start;margin-bottom:10px">
+          <div style="width:28px;height:28px;border-radius:50%;background:#f0fdf4;color:#059669;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0">1</div>
+          <div><strong style="font-size:12px">ESMFold</strong><p style="font-size:11px;color:#64748b;margin:2px 0 0">Predicts 3D structure from sequence. Local inference, no API.</p></div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:flex-start;margin-bottom:10px">
+          <div style="width:28px;height:28px;border-radius:50%;background:#eff6ff;color:#2563eb;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0">2</div>
+          <div><strong style="font-size:12px">AutoDock Vina</strong><p style="font-size:11px;color:#64748b;margin:2px 0 0">Fast physics-based screening. kcal/mol (more neg = better).</p></div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:flex-start">
+          <div style="width:28px;height:28px;border-radius:50%;background:#f5f3ff;color:#7c3aed;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0">3</div>
+          <div><strong style="font-size:12px">GNINA CNN</strong><p style="font-size:11px;color:#64748b;margin:2px 0 0">Deep learning re-scoring. Consensus = 0.4&times;Vina + 0.6&times;GNINA.</p></div>
+        </div>
       </div>
     </div>
-    <div class="sidebar-section">
+    <div class="sidebar-section" style="border-left:3px solid #d97706">
       <div class="sidebar-section-head">
-        <h3>Interpretation</h3>
+        <h3 style="display:flex;align-items:center;gap:6px"><span style="font-size:14px">&#x1F4CA;</span> Score Interpretation</h3>
       </div>
       <div class="sidebar-section-body" style="font-size:12px;color:var(--text2);line-height:1.7">
-        <p><strong>Vina score</strong> &lt; &minus;7 kcal/mol: strong binding. &minus;5 to &minus;7: moderate. &gt; &minus;5: weak.</p>
-        <p style="margin-top:6px"><strong>pLDDT</strong> &gt; 90: high confidence. 70&ndash;90: medium. &lt; 70: low.</p>
-        <p style="margin-top:6px"><strong>Consensus rank</strong> combines both methods for improved reliability.</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+          <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:8px;text-align:center">
+            <div style="font-size:14px;font-weight:800;color:#059669">&lt; -7</div>
+            <div style="font-size:10px;color:#64748b">Strong</div>
+          </div>
+          <div style="background:#fefce8;border:1px solid #fde68a;border-radius:6px;padding:8px;text-align:center">
+            <div style="font-size:14px;font-weight:800;color:#d97706">-5 to -7</div>
+            <div style="font-size:10px;color:#64748b">Moderate</div>
+          </div>
+          <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:6px;padding:8px;text-align:center">
+            <div style="font-size:14px;font-weight:800;color:#dc2626">&gt; -5</div>
+            <div style="font-size:10px;color:#64748b">Weak</div>
+          </div>
+          <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:8px;text-align:center">
+            <div style="font-size:14px;font-weight:800;color:#059669">&gt; 90</div>
+            <div style="font-size:10px;color:#64748b">pLDDT High</div>
+          </div>
+        </div>
+        <p style="font-size:11px;color:#64748b;margin-top:8px;line-height:1.6"><strong>Consensus rank</strong> combines Vina + GNINA for improved reliability. Trust GNINA for pose quality, Vina for affinity.</p>
       </div>
     </div>
   </div>
