@@ -2694,17 +2694,22 @@ def create_app() -> Flask:
             if not ligand_smiles_list or not isinstance(ligand_smiles_list, list):
                 return err("'ligand_smiles_list' must be a non-empty list of SMILES strings.", "VALIDATION_ERROR", 400)
 
-            # ── Memory pre-check: reject if too little RAM available ───────────
+            # ── Memory pre-check: refuse if total RAM < 4GB ─────────────────
+            # Importing torch/ESMFold needs ≥2GB. On 908MB t3.micro it OOM-kills
+            # the entire machine. Check total RAM, not just available.
             try:
-                import psutil
-                avail_mb = psutil.virtual_memory().available / (1024 * 1024)
-                if avail_mb < 200:
-                    return jsonify({
-                        "error": "Server is low on memory (%.0fMB free). Try again in a moment." % avail_mb,
-                        "code": "RESOURCE_EXHAUSTED"
-                    }), 503
-            except ImportError:
-                pass  # psutil not installed — skip check
+                with open("/proc/meminfo") as f:
+                    for line in f:
+                        if line.startswith("MemTotal:"):
+                            total_kb = int(line.split()[1])
+                            if total_kb < 3000000:  # < 3GB
+                                return jsonify({
+                                    "error": "Docking engine requires a GPU server (≥4GB RAM). This server has insufficient memory. Contact support to enable GPU docking.",
+                                    "code": "RESOURCE_EXHAUSTED"
+                                }), 503
+                            break
+            except Exception:
+                pass  # Non-Linux or can't read — skip check
 
             # ── Auth & Docking Usage Check ────────────────────────────────────
             user = get_current_user()
