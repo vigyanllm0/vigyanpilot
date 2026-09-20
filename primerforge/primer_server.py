@@ -3337,6 +3337,117 @@ def create_app() -> Flask:
         }), 200
 
     # ════════════════════════════════════════════════════════════════════
+    # Persistent Job Queue
+    # ════════════════════════════════════════════════════════════════════
+
+    @app.route("/api/primer/docking/queue/enqueue", methods=["POST"])
+    def queue_enqueue():
+        """Add a job to the persistent queue."""
+        from .pipelines.persistent_queue import get_queue, PRIORITY_URGENT, PRIORITY_NORMAL, PRIORITY_BATCH
+
+        data = request.get_json(silent=True) or {}
+        job_data = data.get("data", {})
+        priority_name = data.get("priority", "normal")
+
+        priority_map = {"urgent": PRIORITY_URGENT, "normal": PRIORITY_NORMAL, "batch": PRIORITY_BATCH}
+        priority = priority_map.get(priority_name, PRIORITY_NORMAL)
+
+        q = get_queue()
+        job_id = q.enqueue(job_data, priority=priority)
+
+        return jsonify({"job_id": job_id, "status": "pending", "priority": priority_name}), 201
+
+    @app.route("/api/primer/docking/queue/claim", methods=["POST"])
+    def queue_claim():
+        """Claim the next pending job."""
+        from .pipelines.persistent_queue import get_queue
+
+        data = request.get_json(silent=True) or {}
+        worker_id = data.get("worker_id", f"api_{os.getpid()}")
+
+        q = get_queue()
+        job = q.claim(worker_id=worker_id, timeout=1.0)
+
+        if not job:
+            return jsonify({"message": "No pending jobs"}), 204
+
+        return jsonify({
+            "job_id": job.job_id,
+            "status": job.status,
+            "priority": job.priority,
+            "data": job.data,
+            "retries": job.retries,
+        }), 200
+
+    @app.route("/api/primer/docking/queue/complete", methods=["POST"])
+    def queue_complete():
+        """Mark a job as complete."""
+        from .pipelines.persistent_queue import get_queue
+
+        data = request.get_json(silent=True) or {}
+        job_id = data.get("job_id", "")
+        result = data.get("result", {})
+
+        if not job_id:
+            return err("No job_id provided", "VALIDATION_ERROR", 400)
+
+        q = get_queue()
+        q.complete(job_id, result=result)
+
+        return jsonify({"job_id": job_id, "status": "complete"}), 200
+
+    @app.route("/api/primer/docking/queue/fail", methods=["POST"])
+    def queue_fail():
+        """Mark a job as failed."""
+        from .pipelines.persistent_queue import get_queue
+
+        data = request.get_json(silent=True) or {}
+        job_id = data.get("job_id", "")
+        error = data.get("error", "")
+        retry = data.get("retry", True)
+
+        if not job_id:
+            return err("No job_id provided", "VALIDATION_ERROR", 400)
+
+        q = get_queue()
+        q.fail(job_id, error=error, retry=retry)
+
+        return jsonify({"job_id": job_id, "status": "failed", "retried": retry}), 200
+
+    @app.route("/api/primer/docking/queue/stats", methods=["GET"])
+    def queue_stats():
+        """Get queue statistics."""
+        from .pipelines.persistent_queue import get_queue
+
+        q = get_queue()
+        stats = q.get_stats()
+
+        return jsonify(stats), 200
+
+    @app.route("/api/primer/docking/queue/recover", methods=["POST"])
+    def queue_recover():
+        """Recover stale claimed/running jobs."""
+        from .pipelines.persistent_queue import get_queue
+
+        q = get_queue()
+        released = q.release_stale()
+
+        return jsonify({"released": released, "message": f"Released {released} stale jobs"}), 200
+
+    @app.route("/api/primer/docking/queue/cleanup", methods=["POST"])
+    def queue_cleanup():
+        """Remove old completed/failed jobs."""
+        from .pipelines.persistent_queue import get_queue
+
+        data = request.get_json(silent=True) or {}
+        days = data.get("days", 7)
+
+        q = get_queue()
+        removed = q.cleanup(days=days)
+
+        return jsonify({"removed": removed, "message": f"Removed {removed} old jobs"}), 200
+
+    # ════════════════════════════════════════════════════════════════════
     # DEPRECATED: Azure Worker Endpoints (lines 2803-2834)
     # These endpoints were used by an external Azure worker to poll/claim/complete
     # docking jobs. They are now unused since the local worker thread handles
