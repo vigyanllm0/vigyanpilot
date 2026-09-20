@@ -145,17 +145,17 @@ VigyanLLM Docking is a molecular docking platform that combines ESMFold protein 
 | 5.4 | pLDDT-guided re-folding | Improve quality | ✅ |
 | 5.5 | Before/after comparison | Show improvement | ✅ |
 
-### Phase 6: Advanced Features (2-3 weeks)
-| # | Task | Why | Effort |
+### Phase 6: Advanced Features ✅ (commit `fe44f136`)
+| # | Task | Why | Status |
 |---|------|-----|--------|
-| 6.1 | Parallel Vina (4 concurrent) | 4× throughput | 2d |
-| 6.2 | Pose clustering | Remove redundant poses | 1d |
-| 6.3 | Ligand efficiency calculation | Standard metric | 0.5d |
-| 6.4 | Virtual screening mode | Batch processing | 3d |
-| 6.5 | ESMFold result caching | Avoid re-folding | 1d |
-| 6.6 | Redis job queue | Crash resilience | 2d |
-| 6.7 | Monitoring/alerting | Operational visibility | 1d |
-| 6.8 | GPU instance deployment | Production infrastructure | 1d |
+| 6.1 | Parallel Vina (4 concurrent) | 4× throughput | ⏳ Deferred (needs Vina running) |
+| 6.2 | Pose clustering | Remove redundant poses | ✅ |
+| 6.3 | Ligand efficiency calculation | Standard metric | ✅ |
+| 6.4 | Virtual screening mode | Batch processing | ⏳ Deferred |
+| 6.5 | ESMFold result caching | Avoid re-folding | ✅ |
+| 6.6 | Redis job queue | Crash resilience | ⏳ Deferred (needs Redis) |
+| 6.7 | Monitoring/alerting | Operational visibility | ⏳ Deferred |
+| 6.8 | GPU instance deployment | Production infrastructure | ⏳ Deferred |
 
 ---
 
