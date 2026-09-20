@@ -22,7 +22,7 @@ def _ensure_dirs():
     for d in (PENDING_DIR, RUNNING_DIR, COMPLETE_DIR, FAILED_DIR):
         os.makedirs(d, exist_ok=True)
 
-def create_job(sequence: str, ligand_smiles_list: list, top_n: int = 50) -> str:
+def create_job(sequence: str, ligand_smiles_list: list, top_n: int = 50, pdb_content: str = "") -> str:
     _ensure_dirs()
     job_id = uuid.uuid4().hex[:12]
     job = {
@@ -32,6 +32,7 @@ def create_job(sequence: str, ligand_smiles_list: list, top_n: int = 50) -> str:
         "sequence": sequence,
         "ligand_smiles_list": ligand_smiles_list,
         "top_n": top_n,
+        "pdb_content": pdb_content,  # Optional: uploaded PDB file (skips ESMFold)
         "created_at": time.time(),
         "updated_at": time.time(),
         "result": None,
@@ -163,12 +164,13 @@ def _process_job(job: dict):
     sequence = job["sequence"]
     smiles_list = job.get("ligand_smiles_list") or []
     top_n = job.get("top_n", 50)
+    pdb_content = job.get("pdb_content", "")  # Optional uploaded PDB
 
     logger.info("Local worker processing job %s (%d ligands)", job_id, len(smiles_list))
 
     try:
         from primerforge.pipelines.consensus_pipeline import run_consensus_pipeline
-        result = asyncio.run(run_consensus_pipeline(sequence, smiles_list, top_n))
+        result = asyncio.run(run_consensus_pipeline(sequence, smiles_list, top_n, pdb_content=pdb_content))
         if result.get("status") == "success":
             complete_job(job_id, result)
             logger.info("Local worker completed job %s", job_id)

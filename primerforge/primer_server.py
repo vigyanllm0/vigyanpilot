@@ -2661,14 +2661,15 @@ def create_app() -> Flask:
         data = request.get_json(silent=True) or {}
         sequence = (data.get("sequence") or "").strip()
         ligand_smiles_list = data.get("ligand_smiles_list") or data.get("smiles_list") or []
+        pdb_content = data.get("pdb_content") or ""  # Optional: uploaded PDB file content
 
         try:
             top_n = int(data.get("top_n", 50))
         except (ValueError, TypeError):
             return err("'top_n' must be an integer.", "VALIDATION_ERROR", 400)
 
-        if not sequence:
-            return err("Protein amino acid 'sequence' is required.", "VALIDATION_ERROR", 400)
+        if not sequence and not pdb_content:
+            return err("Protein amino acid 'sequence' or 'pdb_content' is required.", "VALIDATION_ERROR", 400)
         if not ligand_smiles_list or not isinstance(ligand_smiles_list, list):
             return err("'ligand_smiles_list' must be a non-empty list of SMILES strings.", "VALIDATION_ERROR", 400)
 
@@ -2682,7 +2683,7 @@ def create_app() -> Flask:
                                "code": "PAYMENT_REQUIRED", "action": "show_docking_payment",
                                "usage": dock_usage}), 402
 
-        job_id = create_job(sequence, ligand_smiles_list, top_n)
+        job_id = create_job(sequence, ligand_smiles_list, top_n, pdb_content=pdb_content)
 
         # Consume token AFTER successful queuing (both SQLite and PostgreSQL)
         if user and user.get('role') != 'admin':
@@ -2799,6 +2800,14 @@ def create_app() -> Flask:
                     return jsonify({"status": "stored"}), 200
                 return err("Invalid rank.", "NOT_FOUND", 404)
         return err("Job not found.", "NOT_FOUND", 404)
+
+    # ════════════════════════════════════════════════════════════════════
+    # DEPRECATED: Azure Worker Endpoints (lines 2803-2834)
+    # These endpoints were used by an external Azure worker to poll/claim/complete
+    # docking jobs. They are now unused since the local worker thread handles
+    # job processing directly via docking_queue.py functions.
+    # Kept for backward compatibility and debugging. Safe to remove.
+    # ════════════════════════════════════════════════════════════════════
 
     @app.route("/api/primer/docking/pending", methods=["GET"])
     def docking_pending():

@@ -39,6 +39,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>T-Test Calculator Online: Free Statistical Significance Test (2026)</title>
 <link rel="stylesheet" href="/design-tokens.css">
+<link rel="stylesheet" href="/primer.css">
 <link rel="manifest" href="/manifest.json" />
 <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
 <link rel="alternate" type="application/rss+xml" title="VigyanLLM Blog RSS" href="/blog/rss.xml" />
@@ -85,16 +86,18 @@ html{scroll-behavior:smooth}
 body{background:var(--surface);color:var(--text);font-family:var(--font-b);line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
 a{text-decoration:none;color:inherit}
 img{max-width:100%}
+#vl-header .nav-brand span{display:none}
+.page-wrap{max-width:720px;margin:0 auto;padding:0 24px}
 .container{max-width:1100px;margin:0 auto;padding:0 24px}
-.hero{padding:80px 0 40px;text-align:center}
-.hero h1{font-family:'Montserrat',sans-serif;font-size:clamp(2rem,4vw,2.8rem);font-weight:800;margin-bottom:16px}
-.hero p{font-size:17px;color:#475569;max-width:720px;margin:0 auto 32px}
+.hero{padding:48px 0 24px;text-align:left}
+.hero h1{font-family:'Montserrat',sans-serif;font-size:clamp(1.8rem,3.5vw,2.4rem);font-weight:800;margin-bottom:12px}
+.hero p{font-size:17px;color:#475569;max-width:720px;margin:0 0 24px}
 .btn{display:inline-block;padding:12px 32px;background:#2563EB;color:#fff;border-radius:8px;font-weight:700;font-size:14px;text-decoration:none}
 .btn:hover{background:#1d4ed8}
-.breadcrumb{font-size:0.85rem;color:#94A3B8;margin-bottom:1.5rem;padding-top:24px}
+.breadcrumb{font-size:0.85rem;color:#94A3B8;margin-bottom:1rem;padding-top:16px}
 .breadcrumb a{color:#2563EB;text-decoration:none}
-.content-section{max-width:900px;margin:40px auto;padding:0 24px}
-.content-section h2{font-family:'Montserrat',sans-serif;font-size:22px;font-weight:700;margin-bottom:12px;color:#0F172A;border-bottom:2px solid #E2E8F0;padding-bottom:8px}
+.content-section{max-width:720px;margin:24px 0 24px 0;padding:0}
+.content-section h2{font-family:'Montserrat',sans-serif;font-size:20px;font-weight:700;margin:28px 0 12px;color:#0F172A;border-bottom:1px solid #E2E8F0;padding-bottom:6px}
 .content-section h3{font-family:'Montserrat',sans-serif;font-size:17px;font-weight:600;margin:20px 0 10px;color:#1E293B}
 .content-section p{font-size:15px;color:#475569;margin-bottom:16px;line-height:1.8}
 .content-section ul,.content-section ol{margin-left:24px;margin-bottom:16px;color:#475569;font-size:15px}
@@ -102,10 +105,10 @@ img{max-width:100%}
 .content-section strong{color:#0F172A}
 .callout{background:#F0F9FF;border:1px solid #BAE6FD;border-radius:12px;padding:20px 24px;margin:24px 0}
 .callout-title{font-weight:700;color:#0369A1;margin-bottom:8px}
-.cta-box{background:linear-gradient(135deg,#eff6ff 0%,#dbeafe 100%);border:1px solid #bfdbfe;border-radius:16px;padding:36px;text-align:center;margin:40px 0}
+.cta-box{background:#f8fafc;border:1px solid #E2E8F0;border-radius:12px;padding:28px;text-align:left;margin:32px 0;max-width:720px}
 .cta-box h3{font-size:20px;color:#0F172A;margin-bottom:10px}
 .cta-box p{color:#475569;margin-bottom:20px}
-.faq-section{margin:40px auto;max-width:900px;padding:0 24px}
+.faq-section{margin:32px 0;max-width:720px;padding:0}
 .faq-section h2{font-size:22px;font-weight:700;margin-bottom:20px;color:#0F172A}
 .faq-item{margin-bottom:16px;border:1px solid #E2E8F0;border-radius:12px;overflow:hidden}
 .faq-item summary{padding:14px 16px;font-family:'Montserrat',sans-serif;font-size:14px;font-weight:600;cursor:pointer;list-style:none;background:#F8FAFC;transition:background .15s}
@@ -124,52 +127,48 @@ footer{background:#0F172A;color:rgba(255,255,255,.8);padding:56px 0 24px}
 <div id="vl-header"></div>
 
 <main>
-<div class="container">
+<div class="page-wrap">
   <nav class="breadcrumb"><a href="/">Home</a> &rsaquo; T-Test Calculator</nav>
-</div>
 
-<section class="hero">
-<div class="container">
-  <h1>T-Test Calculator Online</h1>
-  <p>Run one-sample, two-sample independent, or paired t-tests instantly. Paste your data, get p-value, confidence intervals, and Cohen's d effect size — all in your browser.</p>
-  <a href="/biostatistics-calculator" class="btn">Open the T-Test Calculator →</a>
-</div>
-</section>
+  <h1>T-Test Calculator</h1>
+  <p style="font-size:17px;color:#475569;margin-bottom:20px">One-sample, two-sample, or paired — paste your data and get the p-value, confidence intervals, and effect size. Runs in your browser, no install needed.</p>
+  <a href="/biostatistics-calculator" class="btn">Open the calculator →</a>
 
-<section class="content-section">
-<h2>What Is a t-Test?</h2>
-<p>A <strong>t-test</strong> is a statistical hypothesis test used to determine whether there is a significant difference between the means of two groups. It is one of the most widely used tests in biology, medicine, psychology, and social sciences. The t-test was developed by William Sealy Gosset in 1908 under the pseudonym "Student" — which is why it's formally called <strong>Student's t-test</strong>.</p>
+  <div style="margin-top:32px">
+  <h2 style="font-family:'Montserrat',sans-serif;font-size:20px;font-weight:700;margin:28px 0 12px;color:#0F172A;border-bottom:1px solid #E2E8F0;padding-bottom:6px">What's a t-test, really?</h2>
+  <p>A t-test answers one simple question: <strong>"Are these two groups different, or is this just noise?"</strong> It was invented by William Gosset in 1908 — he worked at a brewery, hence the pen name "Student." (The Guinness connection is real — look it up.)</p>
 
-<p>The t-test works by calculating a <strong>t-statistic</strong> — the ratio of the difference between group means to the variability within groups. A larger t-statistic indicates a larger difference relative to the noise, making it less likely that the observed difference occurred by chance.</p>
+  <p>Here's how it works: the test calculates a <strong>t-statistic</strong>, which is basically the ratio of "how far apart are these groups" to "how noisy is the data." Big ratio = big difference = low probability it happened by chance.</p>
 
-<h2>Types of t-Tests</h2>
+<h2>The three flavors of t-test</h2>
 
-<h3>1. One-Sample t-Test</h3>
-<p>Use this when you want to compare a sample mean to a known or hypothesized population value. For example: "Is the average blood pressure of our clinic patients different from the national average of 120 mmHg?"</p>
+<h3>1. One-sample t-test</h3>
+<p>You've got one group and want to compare its mean to some known value. Like: "Is the average pipette volume actually 1000 μL, or is this one calibration off?"</p>
 <ul>
-  <li><strong>Input:</strong> One column of numbers + a hypothesized mean (μ₀)</li>
+  <li><strong>Input:</strong> One column of numbers + the value you're testing against (μ₀)</li>
   <li><strong>Output:</strong> t-statistic, p-value, 95% CI for the difference</li>
-  <li><strong>Example:</strong> Test whether a batch of pipettes delivers exactly 1000 μL</li>
+  <li><strong>Real use:</strong> QC labs checking if equipment is calibrated, comparing sample means to reference ranges</li>
 </ul>
 
-<h3>2. Two-Sample Independent t-Test</h3>
-<p>Use this when comparing means between two separate, unrelated groups. This is the most common t-test in experimental research. For example: "Does the treatment group have a different mean outcome than the control group?"</p>
+<h3>2. Two-sample independent t-test</h3>
+<p>The classic. Two separate groups — treatment vs. control, male vs. female, before vs. after (different subjects). You want to know if their means are genuinely different.</p>
 <ul>
   <li><strong>Input:</strong> Two columns of numbers (Group A and Group B)</li>
-  <li><strong>Output:</strong> t-statistic, p-value, 95% CI for the difference, Cohen's d</li>
-  <li><strong>Assumption:</strong> Groups are independent (not paired or repeated measures)</li>
-  <li><strong>Example:</strong> Compare gene expression in treated vs. untreated cells</li>
+  <li><strong>Output:</strong> t-statistic, p-value, 95% CI, Cohen's d</li>
+  <li><strong>Watch out:</strong> The groups have to be independent. If you're measuring the same people twice, that's paired — use test #3 instead.</li>
+  <li><strong>Real use:</strong> Comparing gene expression in treated vs. untreated cells, drug efficacy trials</li>
 </ul>
 
-<h3>3. Paired t-Test</h3>
-<p>Use this when you have repeated measures on the same subjects — before and after, or two conditions. The paired test accounts for within-subject correlation, making it more powerful than the independent test for repeated-measures designs.</p>
+<h3>3. Paired t-test</h3>
+<p>Same subjects, two time points or conditions. Before and after. Left arm and right arm. This test accounts for the fact that person #1's "after" is related to their "before" — which makes it more powerful than the independent test for repeated measures.</p>
 <ul>
-  <li><strong>Input:</strong> Two columns of numbers (Time 1 and Time 2), same subjects</li>
+  <li><strong>Input:</strong> Two columns (Time 1 and Time 2), same subjects</li>
   <li><strong>Output:</strong> t-statistic, p-value, 95% CI for the mean difference</li>
-  <li><strong>Example:</strong> Compare patient weight before and after a diet intervention</li>
+  <li><strong>Real use:</strong> Weight loss studies, pre/post interventions, crossover designs</li>
 </ul>
 
-<h2>How to Interpret t-Test Results</h2>
+<h2>Reading your results</h2>
+<p>Most people look at the p-value and stop there. Don't. Here's what each number actually means:</p>
 
 <table style="width:100%;border-collapse:collapse;margin:20px 0;font-size:14px">
 <tr><th style="background:#F8FAFC;padding:12px;text-align:left;border:1px solid #E2E8F0;font-size:12px;text-transform:uppercase;letter-spacing:0.05em">Metric</th><th style="background:#F8FAFC;padding:12px;text-align:left;border:1px solid #E2E8F0;font-size:12px;text-transform:uppercase;letter-spacing:0.05em">What It Means</th><th style="background:#F8FAFC;padding:12px;text-align:left;border:1px solid #E2E8F0;font-size:12px;text-transform:uppercase;letter-spacing:0.05em">Rule of Thumb</th></tr>
@@ -192,8 +191,8 @@ footer{background:#0F172A;color:rgba(255,255,255,.8);padding:56px 0 24px}
   <li><strong>Scale:</strong> Dependent variable should be continuous (interval or ratio).</li>
 </ul>
 
-<h2>Worked Example: Treatment vs. Control</h2>
-<p>You're testing whether a new drug lowers systolic blood pressure compared to placebo. You randomize 8 patients to each group and measure BP after 4 weeks.</p>
+<h2>Let's try it with real data</h2>
+<p>Here's a simple experiment: does a new drug lower blood pressure? 8 patients on the drug, 8 on placebo. After 4 weeks:</p>
 
 <p><strong>Group A (Drug):</strong> 128, 132, 125, 130, 127, 135, 129, 131<br>
 <strong>Group B (Placebo):</strong> 138, 142, 135, 140, 137, 145, 139, 141</p>
@@ -204,23 +203,21 @@ footer{background:#0F172A;color:rgba(255,255,255,.8);padding:56px 0 24px}
   <p>The drug group had significantly lower systolic BP than placebo (mean difference: −10.5 mmHg, 95% CI [−15.8, −5.2]). The large effect size (d &gt; 0.8) indicates a clinically meaningful difference.</p>
 </div>
 
-<h2>Common Mistakes</h2>
+<h2>Where people go wrong</h2>
 <ul>
-  <li><strong>Using a paired test on independent data</strong> — This inflates Type I error because it ignores between-subject variability.</li>
-  <li><strong>Ignoring normality violations</strong> — With small samples (n &lt; 10), skewed data produces unreliable p-values. Use Mann-Whitney U instead.</li>
-  <li><strong>Confusing statistical and clinical significance</strong> — A p-value of 0.04 with d = 0.1 is statistically significant but clinically meaningless.</li>
-  <li><strong>Not checking for outliers</strong> — A single extreme value can dramatically shift the t-statistic. Always visualize your data first.</li>
+  <li><strong>Using paired on independent data.</strong> If the subjects are different in each group, a paired test inflates your Type I error. It's treating between-subject noise as within-subject signal.</li>
+  <li><strong>Ignoring normality.</strong> With n &lt; 10, skewed data will give you unreliable p-values. Check with Shapiro-Wilk or just switch to Mann-Whitney U.</li>
+  <li><strong>Statistical significance ≠ clinical significance.</strong> p = 0.04 with d = 0.1 is technically significant. It's also meaningless in practice. Always check the effect size.</li>
+  <li><strong>Forgetting to look at outliers.</strong> One extreme value can swing the entire t-statistic. Plot your data first. Seriously.</li>
 </ul>
-</section>
 
-<section class="cta-box" style="max-width:900px;margin:40px auto">
-  <h3>Try the T-Test Calculator</h3>
-  <p>Paste your data, select test type, and get instant results with p-value, confidence intervals, and effect size. No login required.</p>
-  <a href="/biostatistics-calculator" class="btn">Open the Calculator →</a>
-</section>
+<div class="cta-box">
+  <h3>Run your own t-test</h3>
+  <p>Paste your data, pick the test type, and get results in a few seconds. P-value, confidence intervals, effect size — all of it. No login needed.</p>
+  <a href="/biostatistics-calculator" class="btn" style="background:#0F172A">Open the calculator →</a>
+</div>
 
-<section class="faq-section">
-<h2>Frequently Asked Questions</h2>
+<h2 style="font-family:'Montserrat',sans-serif;font-size:20px;font-weight:700;margin:28px 0 16px;color:#0F172A">Frequently Asked Questions</h2>
 
 <details class="faq-item">
   <summary>What is a t-test?</summary>
@@ -241,53 +238,12 @@ footer{background:#0F172A;color:rgba(255,255,255,.8);padding:56px 0 24px}
   <summary>Is this t-test calculator free?</summary>
   <div class="faq-body">Yes, the VigyanLLM t-test calculator is completely free. No login, no installation, no data upload to servers. All calculations run in your browser using JavaScript. Your data never leaves your device.</div>
 </details>
-</section>
 
+</div>
 </main>
 
-<footer>
-<div class="footer-grid">
-  <div class="footer-col">
-    <h5>VigyanLLM</h5>
-    <a href="/">Home</a>
-    <a href="/about">About</a>
-    <a href="/pricing">Pricing</a>
-    <a href="/blog">Blog</a>
-  </div>
-  <div class="footer-col">
-    <h5>Tools</h5>
-    <a href="/primer">Primer Design</a>
-    <a href="/blast">BLAST Search</a>
-    <a href="/docking">Molecular Docking</a>
-    <a href="/msa">Multiple Sequence Alignment</a>
-  </div>
-  <div class="footer-col">
-    <h5>Calculators</h5>
-    <a href="/tm-calculator">Tm Calculator</a>
-    <a href="/gc-calculator">GC Calculator</a>
-    <a href="/biostatistics-calculator">Biostatistics Calculator</a>
-    <a href="/pcr-analysis">PCR Analysis</a>
-  </div>
-  <div class="footer-col">
-    <h5>Resources</h5>
-    <a href="/glossary">Glossary</a>
-    <a href="/validation">Validation Data</a>
-    <a href="/cite-vigyanllm">Cite Us</a>
-    <a href="/dashboard">Dashboard</a>
-  </div>
-  <div class="footer-col">
-    <h5>Legal</h5>
-    <a href="/terms">Terms of Service</a>
-    <a href="/privacy">Privacy Policy</a>
-    <a href="/cookies">Cookie Policy</a>
-  </div>
-</div>
-<div class="footer-bottom">
-  <span>&copy; 2026 VigyanLLM Private Limited. All rights reserved.</span>
-</div>
-</footer>
+<div id="vl-footer"></div>
 
-<script src="/auth-shared.js"></script>
-<script src="/header.js"></script>
+<script src="/includes.js"></script>
 </body>
 </html>

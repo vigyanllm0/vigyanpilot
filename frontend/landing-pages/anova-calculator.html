@@ -39,6 +39,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ANOVA Calculator Online: One-Way Analysis of Variance (2026)</title>
 <link rel="stylesheet" href="/design-tokens.css">
+<link rel="stylesheet" href="/primer.css">
 <link rel="manifest" href="/manifest.json" />
 <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
 <link rel="alternate" type="application/rss+xml" title="VigyanLLM Blog RSS" href="/blog/rss.xml" />
@@ -85,30 +86,28 @@ html{scroll-behavior:smooth}
 body{background:var(--surface);color:var(--text);font-family:var(--font-b);line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
 a{text-decoration:none;color:inherit}
 img{max-width:100%}
-.container{max-width:1100px;margin:0 auto;padding:0 24px}
-.hero{padding:80px 0 40px;text-align:center}
-.hero h1{font-family:'Montserrat',sans-serif;font-size:clamp(2rem,4vw,2.8rem);font-weight:800;margin-bottom:16px}
-.hero p{font-size:17px;color:#475569;max-width:720px;margin:0 auto 32px}
+#vl-header .nav-brand span{display:none}
+.page-wrap{max-width:720px;margin:0 auto;padding:0 24px}
+.hero{padding:48px 0 24px;text-align:left}
+.hero h1{font-family:'Montserrat',sans-serif;font-size:clamp(1.8rem,3.5vw,2.4rem);font-weight:800;margin-bottom:12px}
+.hero p{font-size:17px;color:#475569;max-width:720px;margin:0 0 24px}
 .btn{display:inline-block;padding:12px 32px;background:#2563EB;color:#fff;border-radius:8px;font-weight:700;font-size:14px;text-decoration:none}
 .btn:hover{background:#1d4ed8}
-.breadcrumb{font-size:0.85rem;color:#94A3B8;margin-bottom:1.5rem;padding-top:24px}
+.breadcrumb{font-size:0.85rem;color:#94A3B8;margin-bottom:1rem;padding-top:16px}
 .breadcrumb a{color:#2563EB;text-decoration:none}
-.content-section{max-width:900px;margin:40px auto;padding:0 24px}
-.content-section h2{font-family:'Montserrat',sans-serif;font-size:22px;font-weight:700;margin-bottom:12px;color:#0F172A;border-bottom:2px solid #E2E8F0;padding-bottom:8px}
-.content-section h3{font-family:'Montserrat',sans-serif;font-size:17px;font-weight:600;margin:20px 0 10px;color:#1E293B}
-.content-section p{font-size:15px;color:#475569;margin-bottom:16px;line-height:1.8}
-.content-section ul,.content-section ol{margin-left:24px;margin-bottom:16px;color:#475569;font-size:15px}
-.content-section li{margin-bottom:8px}
-.content-section strong{color:#0F172A}
+.page-wrap h2{font-family:'Montserrat',sans-serif;font-size:20px;font-weight:700;margin:28px 0 12px;color:#0F172A;border-bottom:1px solid #E2E8F0;padding-bottom:6px}
+.page-wrap h3{font-family:'Montserrat',sans-serif;font-size:17px;font-weight:600;margin:20px 0 10px;color:#1E293B}
+.page-wrap p{font-size:15px;color:#475569;margin-bottom:16px;line-height:1.8}
+.page-wrap ul,.page-wrap ol{margin-left:24px;margin-bottom:16px;color:#475569;font-size:15px}
+.page-wrap li{margin-bottom:8px}
+.page-wrap strong{color:#0F172A}
 .callout{background:#F0F9FF;border:1px solid #BAE6FD;border-radius:12px;padding:20px 24px;margin:24px 0}
 .callout-title{font-weight:700;color:#0369A1;margin-bottom:8px}
-.cta-box{background:linear-gradient(135deg,#eff6ff 0%,#dbeafe 100%);border:1px solid #bfdbfe;border-radius:16px;padding:36px;text-align:center;margin:40px 0}
+.cta-box{background:#f8fafc;border:1px solid #E2E8F0;border-radius:12px;padding:28px;text-align:left;margin:32px 0}
 .cta-box h3{font-size:20px;color:#0F172A;margin-bottom:10px}
 .cta-box p{color:#475569;margin-bottom:20px}
-.faq-section{margin:40px auto;max-width:900px;padding:0 24px}
-.faq-section h2{font-size:22px;font-weight:700;margin-bottom:20px;color:#0F172A}
-.faq-item{margin-bottom:16px;border:1px solid #E2E8F0;border-radius:12px;overflow:hidden}
-.faq-item summary{padding:14px 16px;font-family:'Montserrat',sans-serif;font-size:14px;font-weight:600;cursor:pointer;list-style:none;background:#F8FAFC;transition:background .15s}
+.faq-item{margin-bottom:12px;border:1px solid #E2E8F0;border-radius:8px;overflow:hidden}
+.faq-item summary{padding:12px 16px;font-size:14px;font-weight:600;cursor:pointer;list-style:none;background:#F8FAFC;transition:background .15s}
 .faq-item summary:hover{background:#E2E8F0}
 .faq-item .faq-body{padding:16px;font-size:14px;line-height:1.8;color:#475569}
 footer{background:#0F172A;color:rgba(255,255,255,.8);padding:56px 0 24px}
@@ -124,42 +123,36 @@ footer{background:#0F172A;color:rgba(255,255,255,.8);padding:56px 0 24px}
 <div id="vl-header"></div>
 
 <main>
-<div class="container">
+<div class="page-wrap">
   <nav class="breadcrumb"><a href="/">Home</a> &rsaquo; ANOVA Calculator</nav>
-</div>
 
-<section class="hero">
-<div class="container">
-  <h1>One-Way ANOVA Calculator Online</h1>
-  <p>Compare means across 3 or more groups with F-statistic, p-value, eta-squared effect size, and post-hoc pairwise comparisons. Paste your data, get instant results.</p>
-  <a href="/biostatistics-calculator" class="btn">Open the ANOVA Calculator →</a>
-</div>
-</section>
+  <h1>ANOVA Calculator</h1>
+  <p style="font-size:17px;color:#475569;margin-bottom:20px">Compare three or more group means — one-way, two-way, or with replication. Get the F-statistic, p-value, and post-hoc pairwise comparisons. Runs in your browser.</p>
+  <a href="/biostatistics-calculator" class="btn">Open the calculator →</a>
 
 <section class="content-section">
-<h2>What Is One-Way ANOVA?</h2>
-<p><strong>One-way ANOVA</strong> (Analysis of Variance) is a statistical test used to compare means across three or more independent groups. It answers the question: "Is at least one group mean significantly different from the others?"</p>
+<h2>What is ANOVA, and when do you need it?</h2>
+<p>You've got three groups — say, a low-dose drug, a high-dose drug, and a placebo. You want to know if any group mean is different from the others. You <em>could</em> run three separate t-tests. But here's the problem: each test has a 5% false positive rate. With three tests, your actual chance of at least one false alarm goes up to 14.3%. Six groups? That's 54%.</p>
 
-<p>ANOVA works by partitioning total variance into two components: <strong>between-group variance</strong> (differences caused by the treatment) and <strong>within-group variance</strong> (random noise). The <strong>F-statistic</strong> is the ratio of between-group to within-group variance. A large F means the group differences are large relative to the noise.</p>
+<p><strong>ANOVA solves this</strong> with a single omnibus test that keeps your false positive rate at exactly 5%. If it's significant, <em>then</em> you do pairwise comparisons.</p>
 
-<h2>Why Not Just Run Multiple t-Tests?</h2>
-<p>If you have 3 groups (A, B, C), you might think: "Why not just run t-tests for A vs. B, A vs. C, and B vs. C?" The problem is <strong>inflated Type I error</strong>. Each t-test at α=0.05 has a 5% false positive rate. With 3 tests, your actual false positive rate is:</p>
+<h2>Why not just run multiple t-tests?</h2>
+<p>I hear this question all the time. "Why can't I just do A vs. B, A vs. C, B vs. C?" The math is simple: if each test has a 5% chance of a false positive, then with 3 tests:</p>
 
-<p>1 − (0.95)³ = <strong>14.3%</strong> (not 5%!)</p>
+<p>1 − (0.95)³ = <strong>14.3% false positive rate</strong></p>
 
-<p>With 6 groups, you'd have 15 pairwise tests, giving a <strong>54%</strong> false positive rate. ANOVA controls this with a single omnibus test, keeping your false positive rate at exactly 5%.</p>
+<p>With 6 groups, you'd have 15 pairwise comparisons. Your false positive rate? <strong>54%.</strong> That's worse than a coin flip. ANOVA keeps it at 5% because it does one test across all groups.</p>
 
-<h2>How to Run the Test</h2>
+<h2>How to use the calculator</h2>
 <ol>
-  <li><strong>Enter your data:</strong> Paste one group per line in the calculator. Each line becomes one group.</li>
-  <li><strong>Click Calculate:</strong> The calculator computes F-statistic, p-value, and eta-squared.</li>
-  <li><strong>Check the p-value:</strong> If p &lt; 0.05, at least two groups differ significantly.</li>
-  <li><strong>Look at effect size:</strong> Eta-squared tells you how much variance the groups explain.</li>
-  <li><strong>Run post-hoc tests:</strong> If ANOVA is significant, pairwise comparisons identify which groups differ.</li>
+  <li><strong>Paste your data.</strong> One group per line, values separated by spaces or commas.</li>
+  <li><strong>Hit Calculate.</strong> You'll get the F-statistic, p-value, and eta-squared.</li>
+  <li><strong>Check p &lt; 0.05?</strong> If yes, at least two groups differ. Now you need post-hoc tests to figure out which ones.</li>
+  <li><strong>Look at eta-squared.</strong> This tells you what proportion of variance the groups explain. F-statistic alone doesn't tell you if the difference matters in practice.</li>
 </ol>
 
-<h2>Worked Example: Drug Dosage Study</h2>
-<p>You're comparing three dosage levels (10mg, 25mg, 50mg) on enzyme activity. Six samples per group.</p>
+<h2>A real example: does dosage matter?</h2>
+<p>Three dosage levels of an enzyme inhibitor. Six samples each:</p>
 
 <p><strong>10mg:</strong> 45, 48, 42, 47, 44, 46<br>
 <strong>25mg:</strong> 52, 55, 50, 54, 51, 53<br>
@@ -197,23 +190,21 @@ footer{background:#0F172A;color:rgba(255,255,255,.8);padding:56px 0 24px}
   <li><strong>Scheffe:</strong> Most conservative. Good for complex contrasts and unequal group sizes.</li>
 </ul>
 
-<h2>Common Mistakes</h2>
+<h2>What usually goes wrong</h2>
 <ul>
-  <li><strong>Running multiple t-tests instead of ANOVA</strong> — Inflates false positive rate from 5% to 14%+ with 3 groups.</li>
-  <li><strong>Ignoring assumptions</strong> — Non-normal data with small samples produces unreliable p-values. Check normality first.</li>
-  <li><strong>Not reporting effect size</strong> — A significant F with η² = 0.02 means the groups explain only 2% of variance. Statistically significant but practically meaningless.</li>
-  <li><strong>Stopping at the omnibus test</strong> — A significant F doesn't tell you which groups differ. Always run post-hoc tests.</li>
+  <li><strong>Running t-tests instead of ANOVA.</strong> 5% → 14% false positive rate with just 3 groups. Use ANOVA, then do post-hoc pairwise comparisons.</li>
+  <li><strong>Skipping assumption checks.</strong> Non-normal data with small samples gives you garbage p-values. Run Shapiro-Wilk before anything else.</li>
+  <li><strong>Not reporting effect size.</strong> F = 4.2, p = 0.03 means nothing if η² = 0.02. That's 2% of variance explained. Statistically significant and practically pointless.</li>
+  <li><strong>Stopping at the omnibus test.</strong> "ANOVA was significant" doesn't tell you which groups differ. Tukey HSD will — run it.</li>
 </ul>
-</section>
 
-<section class="cta-box" style="max-width:900px;margin:40px auto">
+<div class="cta-box">
   <h3>Try the ANOVA Calculator</h3>
   <p>Paste one group per line, click Calculate, and get F-statistic, p-value, eta-squared, and post-hoc comparisons. No login required.</p>
   <a href="/biostatistics-calculator" class="btn">Open the Calculator →</a>
-</section>
+</div>
 
-<section class="faq-section">
-<h2>Frequently Asked Questions</h2>
+<h2 style="font-family:'Montserrat',sans-serif;font-size:20px;font-weight:700;margin:28px 0 16px;color:#0F172A">Frequently Asked Questions</h2>
 
 <details class="faq-item">
   <summary>What is ANOVA?</summary>
@@ -234,53 +225,12 @@ footer{background:#0F172A;color:rgba(255,255,255,.8);padding:56px 0 24px}
   <summary>What is a post-hoc test?</summary>
   <div class="faq-body">A post-hoc test is run after a significant ANOVA to identify which specific pairs of groups differ. The most common is Tukey's HSD (Honestly Significant Difference), which controls the family-wise error rate across all pairwise comparisons. Other options include Bonferroni, Holm, and Scheffe tests.</div>
 </details>
-</section>
 
+</div>
 </main>
 
-<footer>
-<div class="footer-grid">
-  <div class="footer-col">
-    <h5>VigyanLLM</h5>
-    <a href="/">Home</a>
-    <a href="/about">About</a>
-    <a href="/pricing">Pricing</a>
-    <a href="/blog">Blog</a>
-  </div>
-  <div class="footer-col">
-    <h5>Tools</h5>
-    <a href="/primer">Primer Design</a>
-    <a href="/blast">BLAST Search</a>
-    <a href="/docking">Molecular Docking</a>
-    <a href="/msa">Multiple Sequence Alignment</a>
-  </div>
-  <div class="footer-col">
-    <h5>Calculators</h5>
-    <a href="/tm-calculator">Tm Calculator</a>
-    <a href="/gc-calculator">GC Calculator</a>
-    <a href="/biostatistics-calculator">Biostatistics Calculator</a>
-    <a href="/pcr-analysis">PCR Analysis</a>
-  </div>
-  <div class="footer-col">
-    <h5>Resources</h5>
-    <a href="/glossary">Glossary</a>
-    <a href="/validation">Validation Data</a>
-    <a href="/cite-vigyanllm">Cite Us</a>
-    <a href="/dashboard">Dashboard</a>
-  </div>
-  <div class="footer-col">
-    <h5>Legal</h5>
-    <a href="/terms">Terms of Service</a>
-    <a href="/privacy">Privacy Policy</a>
-    <a href="/cookies">Cookie Policy</a>
-  </div>
-</div>
-<div class="footer-bottom">
-  <span>&copy; 2026 VigyanLLM Private Limited. All rights reserved.</span>
-</div>
-</footer>
+<div id="vl-footer"></div>
 
-<script src="/auth-shared.js"></script>
-<script src="/header.js"></script>
+<script src="/includes.js"></script>
 </body>
 </html>

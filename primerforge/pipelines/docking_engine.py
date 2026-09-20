@@ -244,7 +244,7 @@ async def run_vina_docking(receptor_pdb: str, ligand_smiles: str, exhaustiveness
                 "binding_affinity": best_score,
                 "poses": poses_count or 9,
                 "computation_time": f"{elapsed:.1f}s",
-                "confidence": 92 if best_score < -7 else 85,
+                "confidence": max(0, min(100, int(50 + abs(best_score) * 5))),
                 "status": "success",
                 "message": f"Vina docking successful: {best_score} kcal/mol",
                 "structure": {

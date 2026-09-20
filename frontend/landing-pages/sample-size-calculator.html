@@ -39,6 +39,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sample Size Calculator: Power Analysis for t-Test & ANOVA (2026)</title>
 <link rel="stylesheet" href="/design-tokens.css">
+<link rel="stylesheet" href="/primer.css">
 <link rel="manifest" href="/manifest.json" />
 <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
 <link rel="alternate" type="application/rss+xml" title="VigyanLLM Blog RSS" href="/blog/rss.xml" />
@@ -85,30 +86,28 @@ html{scroll-behavior:smooth}
 body{background:var(--surface);color:var(--text);font-family:var(--font-b);line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
 a{text-decoration:none;color:inherit}
 img{max-width:100%}
-.container{max-width:1100px;margin:0 auto;padding:0 24px}
-.hero{padding:80px 0 40px;text-align:center}
-.hero h1{font-family:'Montserrat',sans-serif;font-size:clamp(2rem,4vw,2.8rem);font-weight:800;margin-bottom:16px}
-.hero p{font-size:17px;color:#475569;max-width:720px;margin:0 auto 32px}
+#vl-header .nav-brand span{display:none}
+.page-wrap{max-width:720px;margin:0 auto;padding:0 24px}
+.hero{padding:48px 0 24px;text-align:left}
+.hero h1{font-family:'Montserrat',sans-serif;font-size:clamp(1.8rem,3.5vw,2.4rem);font-weight:800;margin-bottom:12px}
+.hero p{font-size:17px;color:#475569;max-width:720px;margin:0 0 24px}
 .btn{display:inline-block;padding:12px 32px;background:#2563EB;color:#fff;border-radius:8px;font-weight:700;font-size:14px;text-decoration:none}
 .btn:hover{background:#1d4ed8}
-.breadcrumb{font-size:0.85rem;color:#94A3B8;margin-bottom:1.5rem;padding-top:24px}
+.breadcrumb{font-size:0.85rem;color:#94A3B8;margin-bottom:1rem;padding-top:16px}
 .breadcrumb a{color:#2563EB;text-decoration:none}
-.content-section{max-width:900px;margin:40px auto;padding:0 24px}
-.content-section h2{font-family:'Montserrat',sans-serif;font-size:22px;font-weight:700;margin-bottom:12px;color:#0F172A;border-bottom:2px solid #E2E8F0;padding-bottom:8px}
-.content-section h3{font-family:'Montserrat',sans-serif;font-size:17px;font-weight:600;margin:20px 0 10px;color:#1E293B}
-.content-section p{font-size:15px;color:#475569;margin-bottom:16px;line-height:1.8}
-.content-section ul,.content-section ol{margin-left:24px;margin-bottom:16px;color:#475569;font-size:15px}
-.content-section li{margin-bottom:8px}
-.content-section strong{color:#0F172A}
+.page-wrap h2{font-family:'Montserrat',sans-serif;font-size:20px;font-weight:700;margin:28px 0 12px;color:#0F172A;border-bottom:1px solid #E2E8F0;padding-bottom:6px}
+.page-wrap h3{font-family:'Montserrat',sans-serif;font-size:17px;font-weight:600;margin:20px 0 10px;color:#1E293B}
+.page-wrap p{font-size:15px;color:#475569;margin-bottom:16px;line-height:1.8}
+.page-wrap ul,.page-wrap ol{margin-left:24px;margin-bottom:16px;color:#475569;font-size:15px}
+.page-wrap li{margin-bottom:8px}
+.page-wrap strong{color:#0F172A}
 .callout{background:#F0F9FF;border:1px solid #BAE6FD;border-radius:12px;padding:20px 24px;margin:24px 0}
 .callout-title{font-weight:700;color:#0369A1;margin-bottom:8px}
-.cta-box{background:linear-gradient(135deg,#eff6ff 0%,#dbeafe 100%);border:1px solid #bfdbfe;border-radius:16px;padding:36px;text-align:center;margin:40px 0}
+.cta-box{background:#f8fafc;border:1px solid #E2E8F0;border-radius:12px;padding:28px;text-align:left;margin:32px 0}
 .cta-box h3{font-size:20px;color:#0F172A;margin-bottom:10px}
 .cta-box p{color:#475569;margin-bottom:20px}
-.faq-section{margin:40px auto;max-width:900px;padding:0 24px}
-.faq-section h2{font-size:22px;font-weight:700;margin-bottom:20px;color:#0F172A}
-.faq-item{margin-bottom:16px;border:1px solid #E2E8F0;border-radius:12px;overflow:hidden}
-.faq-item summary{padding:14px 16px;font-family:'Montserrat',sans-serif;font-size:14px;font-weight:600;cursor:pointer;list-style:none;background:#F8FAFC;transition:background .15s}
+.faq-item{margin-bottom:12px;border:1px solid #E2E8F0;border-radius:8px;overflow:hidden}
+.faq-item summary{padding:12px 16px;font-size:14px;font-weight:600;cursor:pointer;list-style:none;background:#F8FAFC;transition:background .15s}
 .faq-item summary:hover{background:#E2E8F0}
 .faq-item .faq-body{padding:16px;font-size:14px;line-height:1.8;color:#475569}
 footer{background:#0F172A;color:rgba(255,255,255,.8);padding:56px 0 24px}
@@ -124,23 +123,18 @@ footer{background:#0F172A;color:rgba(255,255,255,.8);padding:56px 0 24px}
 <div id="vl-header"></div>
 
 <main>
-<div class="container">
+<div class="page-wrap">
   <nav class="breadcrumb"><a href="/">Home</a> &rsaquo; Sample Size Calculator</nav>
-</div>
 
-<section class="hero">
-<div class="container">
   <h1>Sample Size Calculator</h1>
-  <p>Calculate the minimum sample size for t-tests, ANOVA, and correlation studies. Power analysis with effect size, alpha, and power inputs — all in your browser.</p>
-  <a href="/biostatistics-calculator" class="btn">Open the Sample Size Calculator →</a>
-</div>
-</section>
+  <p style="font-size:17px;color:#475569;margin-bottom:20px">Calculate the minimum sample size for your study — whether you're running a t-test, ANOVA, proportion comparison, or correlation. Get statistical power analysis in seconds.</p>
+  <a href="/biostatistics-calculator" class="btn">Open the calculator →</a>
 
 <section class="content-section">
-<h2>Why Sample Size Matters</h2>
-<p>An underpowered study — one with too few participants — wastes time and resources. You run the experiment, collect data, get a p-value of 0.07, and conclude "no significant effect." But was there truly no effect, or did you simply lack the statistical power to detect it?</p>
+<h2>Why sample size matters (a lot)</h2>
+<p>Picture this: you run a 6-month experiment, collect data, and get p = 0.07. "No significant effect," you write. But was there truly no effect, or did you just not have enough people to see it?</p>
 
-<p>A well-designed study with adequate sample size gives you the <strong>best chance of detecting a true effect</strong> if it exists. This is what <strong>power analysis</strong> does — it calculates the minimum n needed to detect an effect of a given size with a specified probability.</p>
+<p>An underpowered study is worse than no study at all. You spent the money, burned the time, and got an answer you can't use. A proper <strong>power analysis</strong> before data collection tells you exactly how many participants you need to detect an effect — if it's there.</p>
 
 <h2>The Four Quantities</h2>
 <p>Power analysis involves four interrelated quantities. You set three and solve for the fourth:</p>
@@ -177,23 +171,21 @@ footer{background:#0F172A;color:rgba(255,255,255,.8);padding:56px 0 24px}
   <p>If you can only recruit 50 per group (100 total), your power drops to ~0.65 — meaning you have only a 65% chance of detecting the effect. You'd need a larger effect size (d=0.63) or a larger α (0.10) to maintain 80% power with n=50.</p>
 </div>
 
-<h2>Common Pitfalls</h2>
+<h2>Common mistakes</h2>
 <ul>
-  <li><strong>Post-hoc power analysis:</strong> Calculating power after you already have results adds no information beyond the p-value itself. Plan power a priori.</li>
-  <li><strong>Ignoring attrition:</strong> A longitudinal study with 30% dropout needs 43% more participants than the power analysis suggests (1/0.7 ≈ 1.43).</li>
-  <li><strong>Using arbitrary effect sizes:</strong> Base your effect size estimate on pilot data, prior literature, or the minimum clinically important difference (MCID).</li>
-  <li><strong>Confusing statistical and practical significance:</strong> A huge sample can detect a trivially small effect as "significant." Always consider whether the effect size is meaningful in practice.</li>
+  <li><strong>Post-hoc power analysis.</strong> You already have the p-value. Computing "observed power" from it tells you nothing new. Plan power <em>before</em> you collect data.</li>
+  <li><strong>Forgetting about dropouts.</strong> A longitudinal study with 30% dropout needs 43% more people than your power analysis says (1/0.7 ≈ 1.43). Factor attrition in from day one.</li>
+  <li><strong>Picking arbitrary effect sizes.</strong> "d = 0.5 because it's medium" isn't a justification. Use pilot data, published literature, or the smallest effect you'd care about clinically.</li>
+  <li><strong>Ignoring practical significance.</strong> With n = 10,000, you can detect a d = 0.02 as "significant." But is a 2% difference worth a 10,000-person trial? Probably not.</li>
 </ul>
-</section>
 
-<section class="cta-box" style="max-width:900px;margin:40px auto">
-  <h3>Try the Sample Size Calculator</h3>
-  <p>Enter your effect size, alpha, and power — get the minimum sample size for your study. Includes power curves for t-tests, ANOVA, and correlation.</p>
-  <a href="/biostatistics-calculator" class="btn">Open the Calculator →</a>
-</section>
+<div class="cta-box">
+  <h3>Figure out your n</h3>
+  <p>Plug in your effect size, alpha, and power. Get the minimum sample size. Includes power curves for t-tests, ANOVA, and correlation.</p>
+  <a href="/biostatistics-calculator" class="btn" style="background:#0F172A">Open the calculator →</a>
+</div>
 
-<section class="faq-section">
-<h2>Frequently Asked Questions</h2>
+<h2 style="font-family:'Montserrat',sans-serif;font-size:20px;font-weight:700;margin:28px 0 16px;color:#0F172A">Frequently Asked Questions</h2>
 
 <details class="faq-item">
   <summary>What is power analysis?</summary>
@@ -214,53 +206,12 @@ footer{background:#0F172A;color:rgba(255,255,255,.8);padding:56px 0 24px}
   <summary>Should I add extra participants for dropouts?</summary>
   <div class="faq-body">Yes. Always add 10-20% extra to your calculated sample size to account for dropouts, exclusions, and missing data. For example, if you calculate n=64 per group, recruit at least 72-78 per group. This is especially important for longitudinal studies where attrition rates can be 15-30%.</div>
 </details>
-</section>
 
+</div>
 </main>
 
-<footer>
-<div class="footer-grid">
-  <div class="footer-col">
-    <h5>VigyanLLM</h5>
-    <a href="/">Home</a>
-    <a href="/about">About</a>
-    <a href="/pricing">Pricing</a>
-    <a href="/blog">Blog</a>
-  </div>
-  <div class="footer-col">
-    <h5>Tools</h5>
-    <a href="/primer">Primer Design</a>
-    <a href="/blast">BLAST Search</a>
-    <a href="/docking">Molecular Docking</a>
-    <a href="/msa">Multiple Sequence Alignment</a>
-  </div>
-  <div class="footer-col">
-    <h5>Calculators</h5>
-    <a href="/tm-calculator">Tm Calculator</a>
-    <a href="/gc-calculator">GC Calculator</a>
-    <a href="/biostatistics-calculator">Biostatistics Calculator</a>
-    <a href="/pcr-analysis">PCR Analysis</a>
-  </div>
-  <div class="footer-col">
-    <h5>Resources</h5>
-    <a href="/glossary">Glossary</a>
-    <a href="/validation">Validation Data</a>
-    <a href="/cite-vigyanllm">Cite Us</a>
-    <a href="/dashboard">Dashboard</a>
-  </div>
-  <div class="footer-col">
-    <h5>Legal</h5>
-    <a href="/terms">Terms of Service</a>
-    <a href="/privacy">Privacy Policy</a>
-    <a href="/cookies">Cookie Policy</a>
-  </div>
-</div>
-<div class="footer-bottom">
-  <span>&copy; 2026 VigyanLLM Private Limited. All rights reserved.</span>
-</div>
-</footer>
+<div id="vl-footer"></div>
 
-<script src="/auth-shared.js"></script>
-<script src="/header.js"></script>
+<script src="/includes.js"></script>
 </body>
 </html>

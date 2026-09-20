@@ -33,7 +33,8 @@ async def run_consensus_pipeline(
     sequence: str,
     ligand_smiles_list: list[str],
     top_n: int = 50,
-    progress_callback=None
+    progress_callback=None,
+    pdb_content: str = ""
 ) -> dict[str, Any]:
     """
     Full 3-stage consensus pipeline.
@@ -55,6 +56,21 @@ async def run_consensus_pipeline(
         }
     """
 
+    # Input validation
+    if not sequence or len(sequence) < 10:
+        return {"status": "error", "message": "Protein sequence must be at least 10 amino acids."}
+    valid_aa = set("ACDEFGHIKLMNPQRSTVWY")
+    clean_seq = "".join(c for c in sequence.upper() if c.isalpha())
+    invalid = set(clean_seq) - valid_aa
+    if invalid:
+        return {"status": "error", "message": f"Invalid amino acids: {', '.join(sorted(invalid))}. Only standard 20 amino acids accepted."}
+    if len(clean_seq) > 2000:
+        return {"status": "error", "message": "Sequence too long (max 2000 residues for web docking)."}
+    if not ligand_smiles_list:
+        return {"status": "error", "message": "At least one ligand SMILES required."}
+    if len(ligand_smiles_list) > 50:
+        return {"status": "error", "message": "Maximum 50 ligands per run."}
+
     async def _progress(stage: str, msg: str, metadata: dict = None):
         logger.info("[%s] %s", stage, msg)
         if progress_callback:
@@ -73,7 +89,7 @@ async def run_consensus_pipeline(
     import shutil
     _receptor_pdbqt_dir = tempfile.mkdtemp(prefix="receptor_pdbqt_")
     try:
-        return await _run_pipeline_inner(sequence, ligand_smiles_list, top_n, _receptor_pdbqt_dir, _progress, result)
+        return await _run_pipeline_inner(sequence, ligand_smiles_list, top_n, _receptor_pdbqt_dir, _progress, result, pdb_content=pdb_content)
     finally:
         shutil.rmtree(_receptor_pdbqt_dir, ignore_errors=True)
 
@@ -85,36 +101,61 @@ async def _run_pipeline_inner(
     _receptor_pdbqt_dir: str,
     _progress,
     result: dict,
+    pdb_content: str = "",
 ) -> dict[str, Any]:
 
     _receptor_pdbqt_path = os.path.join(_receptor_pdbqt_dir, "receptor.pdbqt")
 
     # ══════════════════════════════════════════════════════════════════════════
-    # STAGE 1: ESMFold — Predict Protein 3D Structure
+    # STAGE 1: ESMFold — Predict Protein 3D Structure (or use uploaded PDB)
     # ══════════════════════════════════════════════════════════════════════════
-    if not esmfold_predict:
-        return {**result, "status": "error", "message": "ESMFold engine not loaded. Install: pip install transformers einops"}
+    if pdb_content:
+        # User uploaded a PDB file — skip ESMFold, use provided structure
+        await _progress("STAGE 1 / PDB", "Using uploaded PDB structure (ESMFold skipped)...")
+        receptor_pdb = pdb_content
+        # Count residues from ATOM records
+        residue_count = 0
+        last_res = ""
+        for line in pdb_content.split("\n"):
+            if line.startswith("ATOM") and line[12:16].strip() == "CA":
+                res_num = line[22:26].strip()
+                if res_num != last_res:
+                    last_res = res_num
+                    residue_count += 1
+        result["stage1"] = {
+            "pdb_string": pdb_content,
+            "sequence_length": residue_count or len(sequence),
+            "plddt_score": None,
+            "tool": "User-uploaded PDB",
+            "message": f"Using uploaded PDB structure ({residue_count} residues). ESMFold prediction skipped.",
+            "computation_time": "0.0s"
+        }
+        await _progress("STAGE 1 / PDB", f"✅ Loaded uploaded structure — {residue_count} residues")
+    else:
+        # No PDB uploaded — run ESMFold
+        if not esmfold_predict:
+            return {**result, "status": "error", "message": "ESMFold engine not loaded. Install: pip install transformers einops"}
 
-    try:
-        import torch
-        device = "MPS (Apple Silicon)" if hasattr(torch.backends, "mps") and torch.backends.mps.is_available() else "CPU (Standard)"
-        mode_str = f"Mode: Local GPU Inference on {device}"
-    except ImportError:
-        device = "CPU (ESMFold fallback)"
-        mode_str = "Mode: Extended-chain fallback (no torch)"
-        torch = None
+        try:
+            import torch
+            device = "MPS (Apple Silicon)" if hasattr(torch.backends, "mps") and torch.backends.mps.is_available() else "CPU (Standard)"
+            mode_str = f"Mode: Local GPU Inference on {device}"
+        except ImportError:
+            device = "CPU (ESMFold fallback)"
+            mode_str = "Mode: Extended-chain fallback (no torch)"
+            torch = None
 
-    await _progress("PIPELINE", f"Initializing Consensus Discovery Suite on {device}...")
-    await _progress("STAGE 1 / ESMFold", f"Commencing structural folding for sequence (Length: {len(sequence)}aa, {mode_str})...")
+        await _progress("PIPELINE", f"Initializing Consensus Discovery Suite on {device}...")
+        await _progress("STAGE 1 / ESMFold", f"Commencing structural folding for sequence (Length: {len(sequence)}aa, {mode_str})...")
 
-    try:
-        stage1_result = await esmfold_predict(sequence, progress_callback=_progress)
-        result["stage1"] = stage1_result
-        receptor_pdb = stage1_result["pdb_string"]
-        score = stage1_result.get('plddt_score', 0)
-        await _progress("STAGE 1 / ESMFold", f"✅ Structure predicted — pLDDT: {score}%")
-    except Exception as e:
-        return {**result, "status": "error", "message": f"Stage 1 (ESMFold) failed: {e!s}"}
+        try:
+            stage1_result = await esmfold_predict(sequence, progress_callback=_progress)
+            result["stage1"] = stage1_result
+            receptor_pdb = stage1_result["pdb_string"]
+            score = stage1_result.get('plddt_score', 0)
+            await _progress("STAGE 1 / ESMFold", f"✅ Structure predicted — pLDDT: {score}%")
+        except Exception as e:
+            return {**result, "status": "error", "message": f"Stage 1 (ESMFold) failed: {e!s}"}
 
     await _progress("PIPELINE", "─── STAGE 2 INITIATED: BROAD SCREENING ───")
     # ══════════════════════════════════════════════════════════════════════════
