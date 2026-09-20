@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="title" content="Protein Structure Quality Analyzer — Find Structural Defects | VigyanLLM">
+    <meta name="description" content="Free protein structure quality analyzer. Check pLDDT confidence, steric clashes, Ramachandran outliers, missing residues, and H-bond satisfaction. Before you dock, know your structure.">
+    <meta name="keywords" content="protein structure quality, pLDDT analyzer, steric clash detection, Ramachandran outlier, protein defect analysis, ESMFold quality check">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Protein Structure Quality Analyzer | VigyanLLM">
+    <meta property="og:description" content="Check protein structure quality before docking. pLDDT confidence, clashes, Ramachandran outliers, missing residues.">
+    <meta property="og:url" content="https://www.vigyanllm.in/protein-quality">
+    <meta property="og:image" content="https://www.vigyanllm.in/og-protein-quality.png">
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Protein Structure Quality Analyzer | VigyanLLM">
+    <meta name="twitter:description" content="Check protein structure quality before docking. pLDDT confidence, clashes, Ramachandran outliers.">
+
+    <title>Protein Structure Quality Analyzer — Find Defects Before Docking | VigyanLLM</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <!-- JSON-LD -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Protein Structure Quality Analyzer",
+        "url": "https://www.vigyanllm.in/protein-quality",
+        "description": "Free protein structure quality analyzer. Check pLDDT confidence, steric clashes, Ramachandran outliers, missing residues, and hydrogen bond satisfaction before docking.",
+        "applicationCategory": "Scientific Tool",
+        "operatingSystem": "Web Browser",
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "INR"
+        },
+        "provider": {
+            "@type": "Organization",
+            "name": "VigyanLLM"
+        }
+    }
+    </script>
+
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+            {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.vigyanllm.in/"},
+            {"@type": "ListItem", "position": 2, "name": "Protein Quality", "item": "https://www.vigyanllm.in/protein-quality"}
+        ]
+    }
+    </script>
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            color: #1a1a2e;
+            background: #f8f9fa;
+            line-height: 1.6;
+        }
+
+        /* Header */
+        #vl-header {
+            background: #fff;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 0.75rem 1.5rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .header-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .nav-brand {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #0d9488;
+            text-decoration: none;
+        }
+        .nav-links { display: flex; gap: 1.5rem; align-items: center; }
+        .nav-links a {
+            color: #475569;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        .nav-links a:hover { color: #0d9488; }
+
+        /* Hero */
+        .hero {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: #fff;
+            padding: 3rem 1.5rem 2.5rem;
+            text-align: left;
+        }
+        .hero-inner {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .hero h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+            line-height: 1.2;
+        }
+        .hero p {
+            font-size: 1.1rem;
+            color: #94a3b8;
+            max-width: 600px;
+        }
+        .hero-badge {
+            display: inline-block;
+            background: rgba(13, 148, 136, 0.2);
+            color: #2dd4bf;
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            margin-bottom: 0.75rem;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        /* Main content */
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+        }
+
+        /* Input section */
+        .input-section {
+            background: #fff;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .input-section h2 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #1a1a2e;
+        }
+        .tabs {
+            display: flex;
+            gap: 0;
+            margin-bottom: 1rem;
+            border-bottom: 2px solid #e5e7eb;
+        }
+        .tab-btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            background: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #64748b;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+            transition: all 0.2s;
+        }
+        .tab-btn.active {
+            color: #0d9488;
+            border-bottom-color: #0d9488;
+        }
+        .tab-btn:hover { color: #0d9488; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        textarea {
+            width: 100%;
+            min-height: 200px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            resize: vertical;
+            line-height: 1.5;
+        }
+        textarea:focus {
+            outline: none;
+            border-color: #0d9488;
+            box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.1);
+        }
+
+        .file-upload-zone {
+            border: 2px dashed #d1d5db;
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .file-upload-zone:hover, .file-upload-zone.dragover {
+            border-color: #0d9488;
+            background: rgba(13, 148, 136, 0.05);
+        }
+        .file-upload-zone input[type="file"] {
+            display: none;
+        }
+        .file-upload-zone p {
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+        .file-upload-zone .upload-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .example-btn {
+            display: inline-block;
+            margin-top: 0.75rem;
+            padding: 0.4rem 0.8rem;
+            font-size: 0.8rem;
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            cursor: pointer;
+            color: #475569;
+            transition: all 0.2s;
+        }
+        .example-btn:hover { background: #e2e8f0; }
+
+        .run-btn {
+            display: inline-block;
+            margin-top: 1rem;
+            padding: 0.7rem 2rem;
+            font-size: 1rem;
+            font-weight: 600;
+            background: #0d9488;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .run-btn:hover { background: #0f766e; }
+        .run-btn:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
+        }
+
+        .spinner {
+            display: none;
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-right: 0.5rem;
+        }
+        .run-btn.loading .spinner { display: inline-block; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Results */
+        #results {
+            display: none;
+        }
+        #results.visible { display: block; }
+
+        .quality-hero {
+            background: #fff;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+        .quality-score-circle {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .quality-score-circle .score {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #fff;
+        }
+        .quality-score-circle .grade {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: rgba(255,255,255,0.9);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+        .quality-info { flex: 1; }
+        .quality-info h3 { font-size: 1.1rem; margin-bottom: 0.5rem; }
+        .quality-info p { font-size: 0.9rem; color: #64748b; }
+
+        /* Defect summary cards */
+        .defect-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .defect-card {
+            background: #fff;
+            border-radius: 10px;
+            border: 1px solid #e5e7eb;
+            padding: 1rem;
+            text-align: center;
+        }
+        .defect-card .count {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+        .defect-card .label {
+            font-size: 0.8rem;
+            color: #64748b;
+            font-weight: 500;
+        }
+        .defect-card.critical .count { color: #dc2626; }
+        .defect-card.warning .count { color: #d97706; }
+        .defect-card.info .count { color: #0d9488; }
+        .defect-card.good .count { color: #16a34a; }
+
+        /* Detail sections */
+        .detail-section {
+            background: #fff;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+            margin-bottom: 1rem;
+            overflow: hidden;
+        }
+        .detail-header {
+            padding: 1rem 1.25rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: background 0.2s;
+        }
+        .detail-header:hover { background: #f8fafc; }
+        .detail-header .badge {
+            font-size: 0.75rem;
+            padding: 0.15rem 0.5rem;
+            border-radius: 999px;
+            font-weight: 600;
+        }
+        .badge-red { background: #fef2f2; color: #dc2626; }
+        .badge-yellow { background: #fffbeb; color: #d97706; }
+        .badge-green { background: #f0fdf4; color: #16a34a; }
+        .detail-body {
+            padding: 0 1.25rem 1.25rem;
+            display: none;
+        }
+        .detail-body.open { display: block; }
+
+        .defect-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+        .defect-table th {
+            text-align: left;
+            padding: 0.5rem;
+            border-bottom: 1px solid #e5e7eb;
+            color: #64748b;
+            font-weight: 600;
+        }
+        .defect-table td {
+            padding: 0.5rem;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .defect-table tr:last-child td { border-bottom: none; }
+
+        .severity-critical { color: #dc2626; font-weight: 600; }
+        .severity-warning { color: #d97706; font-weight: 600; }
+        .severity-info { color: #0d9488; font-weight: 500; }
+
+        /* Recommendation */
+        .recommendation-box {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: 10px;
+            padding: 1rem 1.25rem;
+            margin-bottom: 1.5rem;
+        }
+        .recommendation-box.caution {
+            background: #fffbeb;
+            border-color: #fde68a;
+        }
+        .recommendation-box.danger {
+            background: #fef2f2;
+            border-color: #fecaca;
+        }
+        .recommendation-box h4 {
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #16a34a;
+        }
+        .recommendation-box.caution h4 { color: #d97706; }
+        .recommendation-box.danger h4 { color: #dc2626; }
+        .recommendation-box p {
+            font-size: 0.85rem;
+            color: #475569;
+            line-height: 1.5;
+        }
+
+        /* Footer */
+        .site-footer {
+            background: #0f172a;
+            color: #94a3b8;
+            padding: 2rem 1.5rem;
+            margin-top: 3rem;
+            text-align: center;
+            font-size: 0.85rem;
+        }
+        .site-footer a { color: #2dd4bf; text-decoration: none; }
+        .site-footer a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+<!-- Header -->
+<header id="vl-header">
+    <div class="header-inner">
+        <a href="/" class="nav-brand">VigyanLLM</a>
+        <nav class="nav-links">
+            <a href="/primer">Primer Design</a>
+            <a href="/docking">Docking</a>
+            <a href="/protein-quality" style="color:#0d9488">Protein Quality</a>
+            <a href="/blast">BLAST</a>
+            <a href="/msa">MSA</a>
+        </nav>
+    </div>
+</header>
+
+<!-- Hero -->
+<section class="hero">
+    <div class="hero-inner">
+        <span class="hero-badge">Unique to VigyanLLM</span>
+        <h1>Protein Structure Quality Analyzer</h1>
+        <p>Before you dock, know your structure. This tool checks for defects that most docking servers ignore — and that silently ruin your binding scores.</p>
+    </div>
+</section>
+
+<!-- Main -->
+<main class="container">
+
+    <!-- Input Section -->
+    <div class="input-section">
+        <h2>Submit a Protein Structure</h2>
+
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="paste">Paste PDB</button>
+            <button class="tab-btn" data-tab="upload">Upload File</button>
+            <button class="tab-btn" data-tab="fetch">Fetch from PDB</button>
+        </div>
+
+        <!-- Paste tab -->
+        <div class="tab-content active" id="tab-paste">
+            <textarea id="pdb-input" placeholder="Paste your PDB file content here...
+
+ATOM      1  N   ALA A   1      27.340  24.430   2.614  1.00  9.66           N
+ATOM      2  CA  ALA A   1      26.266  25.425   2.841  1.00  7.23           C
+..."></textarea>
+            <button class="example-btn" onclick="loadExample()">Load example (human HBB)</button>
+        </div>
+
+        <!-- Upload tab -->
+        <div class="tab-content" id="tab-upload">
+            <div class="file-upload-zone" id="upload-zone">
+                <div class="upload-icon">📄</div>
+                <p><strong>Drag and drop</strong> a .pdb or .ent file here</p>
+                <p style="font-size:0.8rem;margin-top:0.5rem">or click to browse</p>
+                <input type="file" id="pdb-file-input" accept=".pdb,.ent,.txt">
+            </div>
+            <p id="file-name" style="margin-top:0.75rem;font-size:0.85rem;color:#0d9488;display:none"></p>
+        </div>
+
+        <!-- Fetch tab -->
+        <div class="tab-content" id="tab-fetch">
+            <div style="display:flex;gap:0.5rem;align-items:center">
+                <input type="text" id="pdb-id-input" placeholder="e.g. 1HHO" style="flex:1;padding:0.6rem 0.8rem;border:1px solid #d1d5db;border-radius:8px;font-size:0.9rem;font-family:monospace;text-transform:uppercase">
+                <button class="run-btn" onclick="fetchFromPDB()" id="fetch-btn" style="margin-top:0">Fetch</button>
+            </div>
+            <p style="margin-top:0.5rem;font-size:0.8rem;color:#64748b">Downloads from RCSB PDB. Make sure the ID is valid.</p>
+        </div>
+
+        <button class="run-btn" onclick="runAnalysis()" id="analyze-btn">
+            <span class="spinner"></span>
+            Analyze Structure
+        </button>
+    </div>
+
+    <!-- Results -->
+    <div id="results">
+
+        <!-- Quality Score Hero -->
+        <div class="quality-hero">
+            <div class="quality-score-circle" id="score-circle">
+                <span class="score" id="score-value">--</span>
+                <span class="grade" id="score-grade">--</span>
+            </div>
+            <div class="quality-info">
+                <h3 id="score-title">Quality Assessment</h3>
+                <p id="score-summary"></p>
+            </div>
+        </div>
+
+        <!-- Defect Summary -->
+        <div class="defect-grid" id="defect-grid"></div>
+
+        <!-- Recommendation -->
+        <div class="recommendation-box" id="recommendation-box">
+            <h4 id="rec-title">Recommendation</h4>
+            <p id="rec-text"></p>
+        </div>
+
+        <!-- pLDDT Confidence -->
+        <div class="detail-section">
+            <div class="detail-header" onclick="toggleSection(this)">
+                <span>🎯 pLDDT Confidence Distribution</span>
+                <span class="badge badge-green" id="plddt-badge">--</span>
+            </div>
+            <div class="detail-body" id="plddt-body">
+                <div id="plddt-details"></div>
+            </div>
+        </div>
+
+        <!-- Missing Residues -->
+        <div class="detail-section">
+            <div class="detail-header" onclick="toggleSection(this)">
+                <span>🔗 Missing Residues (Gaps)</span>
+                <span class="badge badge-green" id="missing-badge">0 gaps</span>
+            </div>
+            <div class="detail-body" id="missing-body">
+                <div id="missing-details"></div>
+            </div>
+        </div>
+
+        <!-- Steric Clashes -->
+        <div class="detail-section">
+            <div class="detail-header" onclick="toggleSection(this)">
+                <span>💥 Steric Clashes</span>
+                <span class="badge badge-green" id="clash-badge">0 clashes</span>
+            </div>
+            <div class="detail-body" id="clash-body">
+                <div id="clash-details"></div>
+            </div>
+        </div>
+
+        <!-- Ramachandran -->
+        <div class="detail-section">
+            <div class="detail-header" onclick="toggleSection(this)">
+                <span>📐 Ramachandran Outliers</span>
+                <span class="badge badge-green" id="rama-badge">0 outliers</span>
+            </div>
+            <div class="detail-body" id="rama-body">
+                <div id="rama-details"></div>
+            </div>
+        </div>
+
+        <!-- H-bond -->
+        <div class="detail-section">
+            <div class="detail-header" onclick="toggleSection(this)">
+                <span>🔗 Hydrogen Bond Satisfaction</span>
+                <span class="badge badge-green" id="hbond-badge">--</span>
+            </div>
+            <div class="detail-body" id="hbond-body">
+                <div id="hbond-details"></div>
+            </div>
+        </div>
+
+    </div>
+</main>
+
+<!-- Footer -->
+<footer class="site-footer">
+    <p>VigyanLLM — <a href="/">Bioinformatics tools</a> that work in your browser.</p>
+    <p style="margin-top:0.5rem;font-size:0.8rem">Free for academic research. Built in India.</p>
+</footer>
+
+<script>
+// ── Tab switching ─────────────────────────────────────────────────────────
+document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+    });
+});
+
+// ── File upload ───────────────────────────────────────────────────────────
+const uploadZone = document.getElementById('upload-zone');
+const fileInput = document.getElementById('pdb-file-input');
+const fileName = document.getElementById('file-name');
+let uploadedPdb = null;
+
+uploadZone.addEventListener('click', () => fileInput.click());
+uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('dragover'); });
+uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
+uploadZone.addEventListener('drop', e => {
+    e.preventDefault();
+    uploadZone.classList.remove('dragover');
+    const file = e.dataTransfer.files[0];
+    if (file) handleFile(file);
+});
+fileInput.addEventListener('change', e => {
+    if (e.target.files[0]) handleFile(e.target.files[0]);
+});
+
+function handleFile(file) {
+    const reader = new FileReader();
+    reader.onload = e => {
+        uploadedPdb = e.target.result;
+        fileName.textContent = '✓ ' + file.name + ' (' + (file.size / 1024).toFixed(1) + ' KB)';
+        fileName.style.display = 'block';
+    };
+    reader.readAsText(file);
+}
+
+// ── Fetch from PDB ───────────────────────────────────────────────────────
+async function fetchFromPDB() {
+    const pdbId = document.getElementById('pdb-id-input').value.trim().toLowerCase();
+    if (!pdbId || !/^[a-z0-9]{4}$/.test(pdbId)) {
+        alert('Enter a valid 4-character PDB ID (e.g. 1HHO)');
+        return;
+    }
+    const btn = document.getElementById('fetch-btn');
+    btn.disabled = true;
+    btn.textContent = 'Fetching...';
+    try {
+        const resp = await fetch('https://files.rcsb.org/download/' + pdbId + '.pdb');
+        if (!resp.ok) throw new Error('PDB not found');
+        const text = await resp.text();
+        if (text.includes('ERROR') || text.length < 100) throw new Error('Invalid PDB content');
+        document.getElementById('pdb-input').value = text;
+        // Switch to paste tab
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        document.querySelector('[data-tab="paste"]').classList.add('active');
+        document.getElementById('tab-paste').classList.add('active');
+    } catch (e) {
+        alert('Failed to fetch ' + pdbId.toUpperCase() + ': ' + e.message);
+    } finally {
+        btn.disabled = false;
+        btn.textContent = 'Fetch';
+    }
+}
+
+// ── Example ──────────────────────────────────────────────────────────────
+function loadExample() {
+    // Minimal human hemoglobin beta (HBB) PDB excerpt
+    const example = `ATOM      1  N   VAL A   1      27.340  24.430   2.614  1.00  9.66           N
+ATOM      2  CA  VAL A   1      26.266  25.425   2.841  1.00  7.23           C
+ATOM      3  C   VAL A   1      26.833  26.613   3.640  1.00  5.80           C
+ATOM      4  O   VAL A   1      27.841  26.492   4.332  1.00  6.93           O
+ATOM      5  CB  VAL A   1      25.015  24.862   3.502  1.00  9.18           C
+ATOM      6  CG1 VAL A   1      23.822  25.722   3.137  1.00 12.01           C
+ATOM      7  CG2 VAL A   1      25.339  24.734   4.998  1.00 11.45           C
+ATOM      8  N   LEU A   2      26.185  27.744   3.501  1.00  5.40           N
+ATOM      9  CA  LEU A   2      26.641  28.961   4.204  1.00  5.23           C
+ATOM     10  C   LEU A   2      25.664  30.052   3.787  1.00  4.69           C
+ATOM     11  O   LEU A   2      24.550  29.854   3.280  1.00  5.65           O
+ATOM     12  CB  LEU A   2      26.818  28.737   5.712  1.00  6.52           C
+ATOM     13  CG  LEU A   2      27.594  27.512   6.122  1.00  8.23           C
+ATOM     14  CD1 LEU A   2      26.735  26.297   5.904  1.00 10.12           C
+ATOM     15  CD2 LEU A   2      28.902  27.570   5.336  1.00  9.87           C
+ATOM     16  N   SER A   3      26.070  31.193   4.040  1.00  4.35           N
+ATOM     17  CA  SER A   3      25.222  32.355   3.678  1.00  4.82           C
+ATOM     18  C   SER A   3      25.826  33.542   4.428  1.00  4.56           C
+ATOM     19  O   SER A   3      26.951  33.450   4.904  1.00  5.23           O
+ATOM     20  CB  SER A   3      25.263  32.688   2.174  1.00  6.14           C
+ATOM     21  OG  SER A   3      24.519  31.691   1.538  1.00  8.92           O
+ATOM     22  N   PRO A   4      25.127  34.623   4.587  1.00  5.10           N
+ATOM     23  CA  PRO A   4      25.678  35.840   5.232  1.00  5.45           C
+ATOM     24  C   PRO A   4      25.127  35.980   6.653  1.00  5.20           C
+ATOM     25  O   PRO A   4      24.001  35.596   6.949  1.00  6.34           O
+ATOM     26  CB  PRO A   4      25.186  36.949   4.318  1.00  6.78           C
+ATOM     27  CG  PRO A   4      25.634  36.497   2.970  1.00  8.12           C
+ATOM     28  CD  PRO A   4      24.830  35.233   3.048  1.00  7.45           C
+ATOM     29  N   ALA A   5      25.880  36.526   7.534  1.00  4.89           N
+ATOM     30  CA  ALA A   5      25.460  36.740   8.906  1.00  5.12           C
+ATOM     31  C   ALA A   5      25.987  38.090   9.368  1.00  4.78           C
+ATOM     32  O   ALA A   5      27.074  38.422   8.880  1.00  5.67           O
+ATOM     33  CB  ALA A   5      25.909  35.672   9.878  1.00  6.34           C
+ATOM     34  N   SER A   6      25.262  38.862  10.188  1.00  4.56           N
+ATOM     35  CA  SER A   6      25.680  40.150  10.730  1.00  5.23           C
+ATOM     36  C   SER A   6      24.667  41.230  10.268  1.00  5.45           C
+ATOM     37  O   SER A   6      23.470  40.988  10.120  1.00  6.12           O
+ATOM     38  CB  SER A   6      25.780  40.120  12.250  1.00  7.23           C
+ATOM     39  OG  SER A   6      26.720  39.140  12.680  1.00  9.45           O
+ATOM     40  N   LYS A   7      25.150  42.350  10.010  1.00  5.67           N
+END`;
+    document.getElementById('pdb-input').value = example;
+}
+
+// ── Run analysis ─────────────────────────────────────────────────────────
+async function runAnalysis() {
+    let pdbContent = '';
+    const activeTab = document.querySelector('.tab-btn.active').dataset.tab;
+    if (activeTab === 'paste') {
+        pdbContent = document.getElementById('pdb-input').value.trim();
+    } else if (activeTab === 'upload') {
+        pdbContent = uploadedPdb || '';
+    }
+
+    if (!pdbContent || pdbContent.length < 50) {
+        alert('Please provide a valid PDB structure (at least 50 characters).');
+        return;
+    }
+
+    const btn = document.getElementById('analyze-btn');
+    btn.classList.add('loading');
+    btn.disabled = true;
+
+    try {
+        const resp = await fetch('/api/primer/docking/analyze', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ pdb_content: pdbContent })
+        });
+
+        if (!resp.ok) {
+            const err = await resp.json().catch(() => ({}));
+            throw new Error(err.error || 'Analysis failed (HTTP ' + resp.status + ')');
+        }
+
+        const data = await resp.json();
+        renderResults(data);
+    } catch (e) {
+        alert('Error: ' + e.message);
+    } finally {
+        btn.classList.remove('loading');
+        btn.disabled = false;
+    }
+}
+
+// ── Render results ───────────────────────────────────────────────────────
+function renderResults(data) {
+    document.getElementById('results').classList.add('visible');
+
+    // Quality score
+    const score = data.quality_score;
+    const grade = data.quality_grade;
+    const circle = document.getElementById('score-circle');
+    document.getElementById('score-value').textContent = Math.round(score);
+    document.getElementById('score-grade').textContent = 'Grade ' + grade;
+
+    if (grade === 'A' || grade === 'B') {
+        circle.style.background = 'linear-gradient(135deg, #16a34a, #22c55e)';
+    } else if (grade === 'C') {
+        circle.style.background = 'linear-gradient(135deg, #d97706, #f59e0b)';
+    } else {
+        circle.style.background = 'linear-gradient(135deg, #dc2626, #ef4444)';
+    }
+
+    document.getElementById('score-title').textContent =
+        'Structure Quality: ' + grade + ' (' + Math.round(score) + '/100)';
+    document.getElementById('score-summary').textContent = data.summary;
+
+    // Defect counts
+    const dc = data.defect_count || {};
+    const grid = document.getElementById('defect-grid');
+    grid.innerHTML = `
+        <div class="defect-card critical">
+            <div class="count">${dc.critical || 0}</div>
+            <div class="label">Critical</div>
+        </div>
+        <div class="defect-card warning">
+            <div class="count">${dc.warning || 0}</div>
+            <div class="label">Warnings</div>
+        </div>
+        <div class="defect-card info">
+            <div class="count">${dc.info || 0}</div>
+            <div class="label">Info</div>
+        </div>
+        <div class="defect-card good">
+            <div class="count">${data.plddt?.total_residues || 0}</div>
+            <div class="label">Residues</div>
+        </div>
+    `;
+
+    // Recommendation
+    const recBox = document.getElementById('recommendation-box');
+    const recText = data.recommendation || '';
+    recBox.className = 'recommendation-box';
+    if (recText.includes('significant') || recText.includes('extreme caution')) {
+        recBox.classList.add('danger');
+    } else if (recText.includes('moderate') || recText.includes('caution')) {
+        recBox.classList.add('caution');
+    }
+    document.getElementById('rec-title').textContent =
+        recBox.classList.contains('danger') ? '⚠ Significant Issues Detected' :
+        recBox.classList.contains('caution') ? '⚡ Moderate Issues' : '✓ Structure Looks Good';
+    document.getElementById('rec-text').textContent = recText;
+
+    // pLDDT
+    const pl = data.plddt || {};
+    document.getElementById('plddt-badge').textContent = 'Mean: ' + (pl.mean || 0) + '%';
+    document.getElementById('plddt-badge').className = 'badge ' +
+        (pl.mean >= 70 ? 'badge-green' : pl.mean >= 50 ? 'badge-yellow' : 'badge-red');
+    document.getElementById('plddt-details').innerHTML = `
+        <table class="defect-table">
+            <tr><td>Mean pLDDT</td><td><strong>${pl.mean || 0}%</strong></td></tr>
+            <tr><td>High confidence (≥90%)</td><td>${pl.high_confidence || 0} residues</td></tr>
+            <tr><td>Medium confidence (70-90%)</td><td>${pl.medium_confidence || 0} residues</td></tr>
+            <tr><td>Low confidence (50-70%)</td><td>${pl.low_confidence || 0} residues</td></tr>
+            <tr><td>Very low confidence (<50%)</td><td>${pl.very_low_confidence || 0} residues</td></tr>
+        </table>
+    `;
+
+    // Missing residues
+    const missing = data.missing_residues || [];
+    document.getElementById('missing-badge').textContent = missing.length + ' gap(s)';
+    document.getElementById('missing-badge').className = 'badge ' + (missing.length === 0 ? 'badge-green' : 'badge-yellow');
+    if (missing.length === 0) {
+        document.getElementById('missing-details').innerHTML = '<p style="color:#16a34a;font-size:0.9rem">No gaps detected — all residues are present.</p>';
+    } else {
+        let html = '<table class="defect-table"><tr><th>Chain</th><th>Gap Start</th><th>Gap End</th><th>Missing</th></tr>';
+        missing.forEach(g => {
+            html += `<tr><td>${g.chain}</td><td>${g.start}</td><td>${g.end}</td><td>${g.missing_count} residue(s)</td></tr>`;
+        });
+        html += '</table>';
+        document.getElementById('missing-details').innerHTML = html;
+    }
+
+    // Steric clashes
+    const clashes = data.clashes || [];
+    document.getElementById('clash-badge').textContent = clashes.length + ' clash(es)';
+    document.getElementById('clash-badge').className = 'badge ' + (clashes.length === 0 ? 'badge-green' : clashes.some(c => c.severity === 'critical') ? 'badge-red' : 'badge-yellow');
+    if (clashes.length === 0) {
+        document.getElementById('clash-details').innerHTML = '<p style="color:#16a34a;font-size:0.9rem">No steric clashes detected.</p>';
+    } else {
+        let html = '<table class="defect-table"><tr><th>Atom 1</th><th>Atom 2</th><th>Distance</th><th>Overlap</th></tr>';
+        clashes.slice(0, 20).forEach(c => {
+            html += `<tr>
+                <td style="font-family:monospace;font-size:0.8rem">${c.atom1}</td>
+                <td style="font-family:monospace;font-size:0.8rem">${c.atom2}</td>
+                <td>${c.distance} Å</td>
+                <td class="severity-${c.severity}">${c.overlap} Å</td>
+            </tr>`;
+        });
+        if (clashes.length > 20) html += `<tr><td colspan="4" style="color:#64748b">... and ${clashes.length - 20} more</td></tr>`;
+        html += '</table>';
+        document.getElementById('clash-details').innerHTML = html;
+    }
+
+    // Ramachandran
+    const rama = data.ramachandran_outliers || [];
+    document.getElementById('rama-badge').textContent = rama.length + ' outlier(s)';
+    document.getElementById('rama-badge').className = 'badge ' + (rama.length === 0 ? 'badge-green' : 'badge-yellow');
+    if (rama.length === 0) {
+        document.getElementById('rama-details').innerHTML = '<p style="color:#16a34a;font-size:0.9rem">No Ramachandran outliers detected.</p>';
+    } else {
+        let html = '<table class="defect-table"><tr><th>Residue</th><th>Type</th><th>Value</th><th>Expected</th></tr>';
+        rama.slice(0, 20).forEach(r => {
+            html += `<tr>
+                <td>${r.residue}</td>
+                <td>${r.type}</td>
+                <td>${r.value}</td>
+                <td>${r.expected}</td>
+            </tr>`;
+        });
+        html += '</table>';
+        document.getElementById('rama-details').innerHTML = html;
+    }
+
+    // H-bond
+    const hb = data.hbond_analysis || {};
+    document.getElementById('hbond-badge').textContent = (hb.satisfaction_rate || 0) + '% satisfied';
+    document.getElementById('hbond-badge').className = 'badge ' + (hb.satisfaction_rate >= 80 ? 'badge-green' : hb.satisfaction_rate >= 60 ? 'badge-yellow' : 'badge-red');
+    document.getElementById('hbond-details').innerHTML = `
+        <table class="defect-table">
+            <tr><td>Total donors</td><td>${hb.total_donors || 0}</td></tr>
+            <tr><td>Total acceptors</td><td>${hb.total_acceptors || 0}</td></tr>
+            <tr><td>Unsatisfied donors</td><td>${hb.unsatisfied_donors || 0}</td></tr>
+            <tr><td>Unsatisfied acceptors</td><td>${hb.unsatisfied_acceptors || 0}</td></tr>
+            <tr><td><strong>Satisfaction rate</strong></td><td><strong>${hb.satisfaction_rate || 0}%</strong></td></tr>
+        </table>
+    `;
+
+    // Scroll to results
+    document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ── Toggle sections ──────────────────────────────────────────────────────
+function toggleSection(header) {
+    const body = header.nextElementSibling;
+    body.classList.toggle('open');
+}
+</script>
+
+</body>
+</html>

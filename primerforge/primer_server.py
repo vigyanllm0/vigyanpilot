@@ -1209,6 +1209,10 @@ def create_app() -> Flask:
     def serve_protein_docking_redirect():
         return send_from_directory(STATIC_DIR, "protein-docking.html")
 
+    @app.route("/protein-quality")
+    def serve_protein_quality():
+        return send_from_directory(STATIC_DIR, "protein-quality.html")
+
     @app.route("/admin")
     def serve_admin():
         return send_from_directory(STATIC_DIR, "admin-security.html")
@@ -2800,6 +2804,63 @@ def create_app() -> Flask:
                     return jsonify({"status": "stored"}), 200
                 return err("Invalid rank.", "NOT_FOUND", 404)
         return err("Job not found.", "NOT_FOUND", 404)
+
+    # ════════════════════════════════════════════════════════════════════
+    # Broken Protein Analysis Engine
+    # ════════════════════════════════════════════════════════════════════
+
+    @app.route("/api/primer/docking/analyze", methods=["POST"])
+    def analyze_protein_structure():
+        """
+        Run Broken Protein Analysis Engine on a PDB structure.
+        Accepts PDB content (string) and optional pLDDT scores.
+        Returns quality report with defects, scores, and recommendations.
+        """
+        from .pipelines.broken_protein_analyzer import analyze_protein, report_to_dict
+
+        data = request.get_json(silent=True) or {}
+        pdb_content = data.get("pdb_content", "").strip()
+        plddt_scores = data.get("plddt_scores")  # Optional list
+
+        if not pdb_content:
+            return err("No PDB content provided.", "VALIDATION_ERROR", 400)
+
+        if len(pdb_content) < 50:
+            return err("PDB content too short. Please provide a valid PDB structure.", "VALIDATION_ERROR", 400)
+
+        try:
+            report = analyze_protein(pdb_content, plddt_scores)
+            result = report_to_dict(report)
+            result["pdb_length"] = len(pdb_content)
+            return jsonify(result), 200
+        except Exception as exc:
+            logger.error("Broken protein analysis error: %s", exc, exc_info=True)
+            return err(f"Analysis failed: {str(exc)}", "ANALYSIS_FAILED", 500)
+
+    @app.route("/api/primer/docking/analyze/file", methods=["POST"])
+    def analyze_protein_file():
+        """
+        Accept uploaded PDB file and run Broken Protein Analysis.
+        """
+        from .pipelines.broken_protein_analyzer import analyze_protein, report_to_dict
+
+        if "pdb_file" not in request.files:
+            return err("No PDB file uploaded.", "VALIDATION_ERROR", 400)
+
+        pdb_file = request.files["pdb_file"]
+        if not pdb_file.filename.endswith((".pdb", ".ent")):
+            return err("File must be .pdb or .ent format.", "VALIDATION_ERROR", 400)
+
+        try:
+            pdb_content = pdb_file.read().decode("utf-8", errors="replace")
+            report = analyze_protein(pdb_content)
+            result = report_to_dict(report)
+            result["pdb_length"] = len(pdb_content)
+            result["filename"] = pdb_file.filename
+            return jsonify(result), 200
+        except Exception as exc:
+            logger.error("PDB file analysis error: %s", exc, exc_info=True)
+            return err(f"File analysis failed: {str(exc)}", "ANALYSIS_FAILED", 500)
 
     # ════════════════════════════════════════════════════════════════════
     # DEPRECATED: Azure Worker Endpoints (lines 2803-2834)
