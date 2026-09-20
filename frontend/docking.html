@@ -76,7 +76,18 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <link rel="preconnect" href="https://checkout.razorpay.com">
 <script src="https://accounts.google.com/gsi/client?hl=en" async defer></script>
 <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&amp;family=Montserrat:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
-<script defer src="https://3Dmol.org/build/3Dmol-min.js" integrity="sha384-NM1C3ZcjJAUuea4z5P0F1LXCE0n/gamcTJqFiwNDn4QYgPMSRAcbKj2mWZZYt43t" crossorigin="anonymous"></script>
+<script defer src="https://3Dmol.org/build/3Dmol-min.js" crossorigin="anonymous"></script>
+<script>
+// Fallback if CDN fails
+window.addEventListener('error', function(e) {
+  if (e.target && e.target.tagName === 'SCRIPT' && e.target.src && e.target.src.indexOf('3Dmol') >= 0 && typeof $3Dmol === 'undefined') {
+    var s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/3dmol@2.1.0/build/3Dmol-min.js';
+    s.defer = true;
+    document.head.appendChild(s);
+  }
+}, true);
+</script>
 <style>
     html { overflow-x: hidden; }
 :root {
@@ -184,6 +195,7 @@ a{text-decoration:none;color:inherit}
 .result-card:hover{box-shadow:0 4px 20px rgba(0,0,0,.07)}
 .result-card.pass-card{border-top:3px solid var(--bio)}
 .result-card.fail-card{border-top:3px solid var(--amber);opacity:.85}
+.result-card.info-card-stage{border-top:3px solid var(--primary)}
 .rc-head{padding:12px 20px;background:var(--slate);border-bottom:1px solid var(--slate-border);display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .rc-head-left{display:flex;align-items:center;gap:12px}
 .rank-badge{width:30px;height:30px;border-radius:50%;background:var(--primary);color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
@@ -194,14 +206,48 @@ a{text-decoration:none;color:inherit}
 .badge.bio{border-color:rgba(5,150,105,.2);background:var(--bio-soft);color:var(--bio)}
 .badge.amber{border-color:rgba(217,119,6,.2);background:var(--amber-soft);color:var(--amber);font-weight:700}
 .badge.red{border-color:rgba(220,38,38,.15);background:#fff5f5;color:var(--red)}
+/* Summary hero card */
+.result-summary{background:linear-gradient(135deg,#0F172A 0%,#1E293B 100%);border-radius:14px;padding:24px;color:#fff;margin-bottom:24px;position:relative;overflow:hidden}
+.result-summary::before{content:'';position:absolute;top:-30%;right:-10%;width:200px;height:200px;background:radial-gradient(circle,rgba(13,148,136,.15) 0%,transparent 70%);pointer-events:none}
+.result-summary-title{font-family:var(--font-h);font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#94a3b8;margin-bottom:16px}
+.result-summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:16px}
+.summary-metric{text-align:center;padding:12px 8px;border-radius:10px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08)}
+.summary-metric .sm-value{font-family:var(--font-h);font-size:28px;font-weight:800;line-height:1.1;margin-bottom:4px}
+.summary-metric .sm-label{font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em}
+.summary-metric .sm-sub{font-size:11px;color:#64748b;margin-top:4px}
+.sm-value.good{color:#34d399}.sm-value.ok{color:#fbbf24}.sm-value.bad{color:#f87171}.sm-value.neutral{color:#e2e8f0}
+/* Score bar */
+.score-bar{height:6px;border-radius:3px;background:rgba(255,255,255,.1);margin-top:8px;overflow:hidden}
+.score-bar-fill{height:100%;border-radius:3px;transition:width .8s ease}
+.score-bar-fill.good{background:linear-gradient(90deg,#059669,#34d399)}
+.score-bar-fill.ok{background:linear-gradient(90deg,#d97706,#fbbf24)}
+.score-bar-fill.bad{background:linear-gradient(90deg,#dc2626,#f87171)}
+/* pLDDT confidence strip */
+.plddt-strip{display:flex;gap:3px;margin:10px 0}
+.plddt-strip .ps-seg{flex:1;height:8px;border-radius:2px;transition:opacity .3s}
+.plddt-high{background:#0053D6}.plddt-med{background:#65CBF3}.plddt-low{background:#FFDB13}.plddt-vlow{background:#FF7D45}
+/* Stage detail rows */
+.stage-detail{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--slate-border)}
+.stage-detail:last-child{border-bottom:none}
+.stage-metric{display:flex;justify-content:space-between;width:100%}
+.stage-metric .label{font-size:13px;color:var(--text2);font-weight:500}
+.stage-metric .value{font-size:13px;font-weight:700;color:var(--text)}
+/* Interpretation card */
+.interp-card{border:1px solid #c7d2fe;background:#eef2ff;border-radius:10px;padding:14px 18px;margin-top:16px;font-size:12px;color:#3730a3;line-height:1.7}
+.interp-card strong{color:#1e1b4b}
+.interp-card .interp-icon{font-size:16px;margin-right:6px;vertical-align:middle}
 /* Docking results table */
 .dock-table-wrap{overflow-x:auto}
 .dock-table{width:100%;border-collapse:collapse;font-size:12px}
-.dock-table th{text-align:left;padding:8px 6px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--text2);border-bottom:2px solid var(--slate-border);white-space:nowrap}
-.dock-table td{padding:6px;border-bottom:1px solid var(--slate-border);vertical-align:top}
+.dock-table th{text-align:left;padding:10px 8px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text2);border-bottom:2px solid var(--slate-border);white-space:nowrap}
+.dock-table td{padding:8px;border-bottom:1px solid var(--slate-border);vertical-align:middle}
+.dock-table tr{transition:background .15s}
 .dock-table tr:hover{background:var(--primary-soft)}
+.dock-table tr.best-row{background:rgba(5,150,105,.04);border-left:3px solid var(--bio)}
 .score-good{color:var(--bio);font-weight:700}.score-ok{color:var(--amber);font-weight:700}.score-bad{color:var(--red);font-weight:700}
 .rank-num{font-weight:800;font-size:12px;color:var(--text)}
+.rank-num.top-rank{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:var(--bio);color:#fff;font-size:11px}
+.smiles-cell{font-family:monospace;font-size:11px;max-width:180px;word-break:break-all;line-height:1.5}
 /* PRICING */
 .pricing-section{padding:60px 0;background:var(--slate);border-top:1px solid var(--slate-border)}
 .pricing-header{text-align:center;margin-bottom:36px}
@@ -1535,119 +1581,204 @@ function resetPipeline() {
 function displayResults(result) {
   $('results-wrap').style.display = 'block';
   $('empty-state').style.display = 'none';
-  // Store result globally for viewer
   window._lastDockingResult = result;
   var html = '';
-  // Stage 1: ESMFold
+
+  // ── Summary Hero Card ─────────────────────────────────────────────────
+  var bestVina = result.stage2 && result.stage2.best_vina_score;
+  var ranked = result.ranked_results || [];
+  var plddt = result.stage1 && result.stage1.plddt_score;
+  var seqLen = result.stage1 && result.stage1.sequence_length;
+  var hasGnina = result.stage3 && result.stage3.status !== 'skipped';
+  var bestGnina = result.stage3 && result.stage3.best_gnina_score;
+  var bestConsensus = result.best_molecule && result.best_molecule.consensus_score;
+  var elapsed = result.stage1 && result.stage1.computation_time;
+
+  // pLDDT quality label
+  var plddtLabel = 'N/A', plddtClass = 'neutral';
+  if (plddt !== null && plddt !== undefined) {
+    plddt = parseFloat(plddt);
+    if (plddt >= 90) { plddtLabel = 'High'; plddtClass = 'good'; }
+    else if (plddt >= 70) { plddtLabel = 'Medium'; plddtClass = 'ok'; }
+    else { plddtLabel = 'Low'; plddtClass = 'bad'; }
+  }
+
+  // Binding quality
+  var bindLabel = 'N/A', bindClass = 'neutral', bindPct = 0;
+  if (bestVina !== null && bestVina !== undefined) {
+    bindPct = Math.min(100, Math.max(0, ((bestVina + 12) / 12) * 100));
+    if (bestVina < -7) { bindLabel = 'Strong'; bindClass = 'good'; }
+    else if (bestVina < -5) { bindLabel = 'Moderate'; bindClass = 'ok'; }
+    else { bindLabel = 'Weak'; bindClass = 'bad'; }
+  }
+
+  html += '<div class="result-summary">' +
+    '<div class="result-summary-title">Consensus Docking Results</div>' +
+    '<div class="result-summary-grid">' +
+      '<div class="summary-metric"><div class="sm-value ' + bindClass + '">' + (bestVina !== null && bestVina !== undefined ? bestVina.toFixed(1) : '—') + '</div><div class="sm-label">Best Vina Score</div><div class="sm-sub">kcal/mol &middot; ' + bindLabel + '</div>' +
+        '<div class="score-bar"><div class="score-bar-fill ' + bindClass + '" style="width:' + bindPct + '%"></div></div></div>' +
+      '<div class="summary-metric"><div class="sm-value ' + plddtClass + '">' + (plddt !== null && plddt !== undefined ? Math.round(plddt) + '%' : 'PDB') + '</div><div class="sm-label">pLDDT Confidence</div><div class="sm-sub">' + plddtLabel + (seqLen ? ' &middot; ' + seqLen + ' aa' : '') + '</div></div>' +
+      '<div class="summary-metric"><div class="sm-value neutral">' + ranked.length + '</div><div class="sm-label">Molecules Screened</div><div class="sm-sub">' + (result.stage2 ? result.stage2.successful + ' successful' : '') + '</div></div>' +
+      '<div class="summary-metric"><div class="sm-value ' + (hasGnina && bestGnina !== null ? 'good' : 'neutral') + '">' + (hasGnina && bestGnina !== null ? bestGnina.toFixed(1) : '—') + '</div><div class="sm-label">Best GNINA Score</div><div class="sm-sub">' + (hasGnina ? 'CNN re-scored' : 'Vina only') + '</div></div>' +
+      (bestConsensus !== null && bestConsensus !== undefined ?
+        '<div class="summary-metric"><div class="sm-value ' + (bestConsensus < -7 ? 'good' : bestConsensus < -5 ? 'ok' : 'bad') + '">' + bestConsensus.toFixed(2) + '</div><div class="sm-label">Consensus Score</div><div class="sm-sub">Vina + GNINA rank</div></div>' : '') +
+    '</div></div>';
+
+  // ── Stage 1: ESMFold ──────────────────────────────────────────────────
   if (result.stage1) {
-    var plddt = result.stage1.plddt_score || 0;
-    var isHelical = plddt < 50 || (result.stage1.message && result.stage1.message.toLowerCase().indexOf('helical') >= 0);
-    setStage(1, 'done', 'pLDDT: ' + plddt + '%');
     var s1 = result.stage1;
-    html += '<div class="result-card ' + (isHelical ? 'fail-card' : 'pass-card') + '">' +
-      '<div class="rc-head"><div class="rc-head-left"><div class="rank-badge ' + (isHelical ? '' : 'top') + '" style="background:var(--primary)">1</div><div><div style="font-weight:700;font-size:13px">ESMFold — Structure Prediction</div><div style="font-size:12px;color:var(--text2)">' + (s1.tool || 'Local ESMFold') + '</div></div></div><div class="badge ' + (isHelical ? 'red' : 'bio') + '">' + plddt + '% pLDDT</div></div>' +
+    var isLow = plddt !== null && plddt !== undefined && plddt < 50;
+    setStage(1, 'done', plddt !== null ? 'pLDDT: ' + Math.round(plddt) + '%' : 'PDB loaded');
+
+    html += '<div class="result-card ' + (isLow ? 'fail-card' : 'pass-card') + '">' +
+      '<div class="rc-head"><div class="rc-head-left"><div class="rank-badge ' + (isLow ? '' : 'top') + '" style="background:var(--primary)">1</div><div><div style="font-weight:700;font-size:13px">ESMFold &mdash; Structure Prediction</div><div style="font-size:12px;color:var(--text2)">' + (s1.tool || 'Local ESMFold') + '</div></div></div>' +
+      '<div class="badge ' + (isLow ? 'red' : 'bio') + '">' + (plddt !== null ? Math.round(plddt) + '% pLDDT' : 'PDB Structure') + '</div></div>' +
       '<div class="rc-body">' +
-      (isHelical ? '<div class="error-card" style="margin-bottom:10px"><strong>&#x26A0;&#xFE0F; Low-confidence structure — results may be unreliable.</strong> ESMFold produced a structure with pLDDT &lt; 50%, which often indicates a helical bundle fallback rather than a meaningful 3D fold. Docking predictions on this structure should be treated with extreme caution. For better results, provide an experimental PDB structure or try a shorter sequence region around your binding site.</div>' : '') +
-      '<div class="stage-detail"><div class="stage-metric"><span class="label">Sequence Length</span><span class="value">' + (s1.sequence_length || '?') + ' aa</span></div></div>' +
-      '<div class="stage-detail"><div class="stage-metric"><span class="label">Mean pLDDT</span><span class="value">' + plddt + '%</span></div></div>' +
-      '<div class="stage-detail"><div class="stage-metric"><span class="label">Structure</span><span class="value" style="font-size:12px;color:var(--muted)">' + (s1.sequence_length ? s1.sequence_length + ' aa — view in 3D below' : 'Predicted') + '</span></div></div>' +
+      (isLow ? '<div class="error-card" style="margin-bottom:12px"><strong>&#x26A0;&#xFE0F; Low-confidence structure &mdash; results may be unreliable.</strong> pLDDT &lt; 50% often indicates a helical bundle fallback. For better results, provide an experimental PDB structure.</div>' : '') +
+      '<div class="stage-detail"><div class="stage-metric"><span class="label">Sequence Length</span><span class="value">' + (seqLen || '?') + ' aa</span></div></div>' +
+      '<div class="stage-detail"><div class="stage-metric"><span class="label">Mean pLDDT</span><span class="value">' + (plddt !== null ? Math.round(plddt) + '% &mdash; ' + plddtLabel : 'N/A (uploaded PDB)') + '</span></div></div>' +
+      '<div class="stage-detail"><div class="stage-metric"><span class="label">Computation Time</span><span class="value">' + (elapsed || 'N/A') + '</span></div></div>' +
       (s1.message ? '<div class="info-card" style="margin-top:10px;font-size:12px">' + esc(s1.message) + '</div>' : '') +
-      '<div style="margin-top:8px"><button type="button" class="btn-secondary btn-sm" onclick="downloadPDB()">Download Protein PDB</button></div>' +
+      '<div style="margin-top:12px"><button type="button" class="btn-secondary btn-sm" onclick="downloadPDB()">&#x2B07; Download Protein PDB</button></div>' +
       '</div></div>';
   } else {
     setStage(1, 'fail', 'Stage skipped/failed');
   }
-  // Stage 2: Vina
+
+  // ── Stage 2: AutoDock Vina ────────────────────────────────────────────
   if (result.stage2) {
-    setStage(2, 'done', result.stage2.successful + ' / ' + result.stage2.screened + ' screened');
     var s2 = result.stage2;
+    setStage(2, 'done', s2.successful + '/' + s2.screened + ' screened');
+    var vinaClass = (s2.best_vina_score||0) < -7 ? 'good' : (s2.best_vina_score||0) < -5 ? 'ok' : 'bad';
+
     html += '<div class="result-card pass-card">' +
-      '<div class="rc-head"><div class="rc-head-left"><div class="rank-badge" style="background:var(--primary)">2</div><div><div style="font-weight:700;font-size:13px">AutoDock Vina — Broad Screen</div><div style="font-size:12px;color:var(--text2)">Physics-based scoring</div></div></div><div class="badge amber">Best: ' + (s2.best_vina_score ? s2.best_vina_score.toFixed(2) : 'N/A') + ' kcal/mol</div></div>' +
+      '<div class="rc-head"><div class="rc-head-left"><div class="rank-badge" style="background:var(--primary)">2</div><div><div style="font-weight:700;font-size:13px">AutoDock Vina &mdash; Broad Screen</div><div style="font-size:12px;color:var(--text2)">Physics-based scoring</div></div></div>' +
+      '<div class="badge amber">Best: ' + (s2.best_vina_score ? s2.best_vina_score.toFixed(2) : 'N/A') + ' kcal/mol</div></div>' +
       '<div class="rc-body">' +
-      '<div class="stage-detail"><div class="stage-metric"><span class="label">Ligands Screened</span><span class="value">' + s2.screened + '</span></div></div>' +
-      '<div class="stage-detail"><div class="stage-metric"><span class="label">Successful</span><span class="value" style="color:var(--bio)">' + s2.successful + '</span></div></div>' +
-      (s2.failed> 0 ? '<div class="stage-detail"><div class="stage-metric"><span class="label">Failed</span><span class="value" style="color:var(--red)">' + s2.failed + '</span></div></div>' : '') +
-      '<div class="stage-detail"><div class="stage-metric"><span class="label">Top N Selected</span><span class="value">' + s2.top_n_selected + '</span></div></div>' +
-      '<div class="stage-detail"><div class="stage-metric"><span class="label">Best Vina Score</span><span class="value" style="font-weight:700;color:' + ((s2.best_vina_score||0) < -7 ? 'var(--bio)' : (s2.best_vina_score||0) < -5 ? 'var(--amber)' : 'var(--red)') + '">' + (s2.best_vina_score ? s2.best_vina_score.toFixed(2) + ' kcal/mol' : 'N/A') + '</span></div></div>' +
+      '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px;margin-bottom:12px">' +
+        '<div style="text-align:center;padding:10px;background:var(--slate);border-radius:8px"><div style="font-size:22px;font-weight:800;color:var(--text)">' + s2.screened + '</div><div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">Screened</div></div>' +
+        '<div style="text-align:center;padding:10px;background:var(--slate);border-radius:8px"><div style="font-size:22px;font-weight:800;color:var(--bio)">' + s2.successful + '</div><div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">Successful</div></div>' +
+        (s2.failed > 0 ? '<div style="text-align:center;padding:10px;background:var(--slate);border-radius:8px"><div style="font-size:22px;font-weight:800;color:var(--red)">' + s2.failed + '</div><div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">Failed</div></div>' : '') +
+        '<div style="text-align:center;padding:10px;background:var(--slate);border-radius:8px"><div style="font-size:22px;font-weight:800;color:var(--primary)">' + s2.top_n_selected + '</div><div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">Top N</div></div>' +
+      '</div>' +
+      '<div class="stage-detail"><div class="stage-metric"><span class="label">Best Vina Score</span><span class="value" style="font-weight:800;font-size:15px;color:' + (vinaClass === 'good' ? 'var(--bio)' : vinaClass === 'ok' ? 'var(--amber)' : 'var(--red)') + '">' + (s2.best_vina_score ? s2.best_vina_score.toFixed(2) + ' kcal/mol' : 'N/A') + '</span></div></div>' +
       '</div></div>';
   } else {
     setStage(2, 'fail', 'Stage skipped/failed');
   }
-  // Stage 3: GNINA
-  var hasGnina = result.stage3 && result.stage3.status !== 'skipped';
+
+  // ── Stage 3: GNINA ────────────────────────────────────────────────────
   if (hasGnina) {
-    setStage(3, 'done', result.stage3.refined + ' candidates refined');
     var s3 = result.stage3;
+    setStage(3, 'done', s3.refined + ' candidates refined');
     html += '<div class="result-card pass-card">' +
-      '<div class="rc-head"><div class="rc-head-left"><div class="rank-badge" style="background:var(--primary)">3</div><div><div style="font-weight:700;font-size:13px">GNINA — CNN Re-scoring</div><div style="font-size:12px;color:var(--text2)">Deep learning refinement</div></div></div><div class="badge bio">Best: ' + (s3.best_gnina_score ? s3.best_gnina_score.toFixed(2) : 'N/A') + ' kcal/mol</div></div>' +
+      '<div class="rc-head"><div class="rc-head-left"><div class="rank-badge" style="background:var(--primary)">3</div><div><div style="font-weight:700;font-size:13px">GNINA &mdash; CNN Re-scoring</div><div style="font-size:12px;color:var(--text2)">Deep learning refinement</div></div></div>' +
+      '<div class="badge bio">Best: ' + (s3.best_gnina_score ? s3.best_gnina_score.toFixed(2) : 'N/A') + ' kcal/mol</div></div>' +
       '<div class="rc-body">' +
-      '<div class="stage-detail"><div class="stage-metric"><span class="label">Candidates Refined</span><span class="value">' + s3.refined + '</span></div></div>' +
-      '<div class="stage-detail"><div class="stage-metric"><span class="label">Best GNINA Score</span><span class="value">' + (s3.best_gnina_score ? s3.best_gnina_score.toFixed(2) + ' kcal/mol' : 'N/A') + '</span></div></div>' +
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:8px">' +
+        '<div style="text-align:center;padding:10px;background:var(--slate);border-radius:8px"><div style="font-size:22px;font-weight:800;color:var(--primary)">' + s3.refined + '</div><div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">Refined</div></div>' +
+        '<div style="text-align:center;padding:10px;background:var(--slate);border-radius:8px"><div style="font-size:22px;font-weight:800;color:var(--bio)">' + (s3.best_gnina_score ? s3.best_gnina_score.toFixed(2) : '—') + '</div><div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">Best Score</div></div>' +
+      '</div>' +
+      '<div class="interp-card"><span class="interp-icon">&#x1F4CA;</span><strong>Consensus scoring:</strong> Top Vina hits re-scored with GNINA CNN model. Consensus rank = 0.4 &times; Vina + 0.6 &times; GNINA for improved reliability.</div>' +
       '</div></div>';
   } else {
-    setStage(3, result.stage3 && result.stage3.status === 'skipped' ? 'done' : 'stub', 'GNINA not available — using Vina scores');
+    setStage(3, result.stage3 && result.stage3.status === 'skipped' ? 'done' : 'stub', 'Vina-only mode');
+    html += '<div class="result-card info-card-stage">' +
+      '<div class="rc-head"><div class="rc-head-left"><div class="rank-badge" style="background:#64748b">3</div><div><div style="font-weight:700;font-size:13px">GNINA &mdash; CNN Re-scoring</div><div style="font-size:12px;color:var(--text2)">Deep learning refinement</div></div></div>' +
+      '<div class="badge" style="border-color:#cbd5e1;color:#64748b">Vina-only</div></div>' +
+      '<div class="rc-body">' +
+      '<div class="interp-card" style="background:#f1f5f9;border-color:#cbd5e1;color:#475569"><span class="interp-icon">&#x2139;&#xFE0F;</span><strong>GNINA not available in this environment.</strong> Results are ranked by Vina score only. Consensus scoring with GNINA CNN is available on the production server.</div>' +
+      '</div></div>';
   }
-  // Ranked results table
-  var ranked = result.ranked_results || [];
-  if (ranked.length> 0) {
+
+  // ── Ranked Molecules Table ─────────────────────────────────────────────
+  if (ranked.length > 0) {
     html += '<div class="result-card">' +
-      '<div class="rc-head"><div class="rc-head-left"><div style="font-weight:700;font-size:13px">Ranked Molecules</div></div><div style="font-size:12px;color:var(--muted)">' + ranked.length + ' molecules — click a row to view in 3D</div></div>' +
+      '<div class="rc-head"><div class="rc-head-left"><div style="font-weight:700;font-size:13px">Ranked Molecules</div></div><div style="font-size:12px;color:var(--muted)">' + ranked.length + ' molecules &mdash; click a row to view in 3D</div></div>' +
       '<div class="rc-body"><div class="dock-table-wrap"><table class="dock-table">' +
-      '<thead><tr><th>Rank</th><th>SMILES</th><th>Vina Score</th>' + (hasGnina ? '<th>GNINA Score</th>' : '') + '<th>Consensus</th></tr></thead><tbody>';
+      '<thead><tr><th style="width:40px">Rank</th><th>SMILES</th><th style="text-align:right">Vina<br>(kcal/mol)</th>';
+    if (hasGnina) html += '<th style="text-align:right">GNINA<br>(kcal/mol)</th>';
+    html += '<th style="text-align:right">Consensus</th><th style="width:50px"></th></tr></thead><tbody>';
     for (var i = 0; i < ranked.length; i++) {
       var mol = ranked[i];
       var vina = mol.vina_score;
       var gnina = mol.gnina_score;
-      var cs = mol.consensus_score || '—';
-      var vClass = vina < -7 ? 'score-good' : (vina < -5 ? 'score-ok' : 'score-bad');
+      var cs = mol.consensus_score;
+      var vClass = vina !== null && vina < -7 ? 'score-good' : (vina !== null && vina < -5 ? 'score-ok' : 'score-bad');
       var gClass = gnina !== null && gnina !== undefined ? (gnina < -7 ? 'score-good' : (gnina < -5 ? 'score-ok' : 'score-bad')) : '';
       var hasStruct = mol._has_structure;
-      html += '<tr style="cursor:' + (hasStruct ? 'pointer' : 'default') + '" onclick="' + (hasStruct ? 'viewMol3D(' + i + ')' : '') + '" title="' + (hasStruct ? 'Click to view docked pose in 3D' : 'No 3D structure available') + '">' +
-        '<td><span class="rank-num">#' + (i + 1) + '</span></td>' +
-        '<td style="font-size:12px;max-width:200px;word-break:break-all">' + esc(mol.smiles || '') + '</td>' +
-        '<td><span class="' + vClass + '">' + (vina !== null && vina !== undefined ? vina.toFixed(2) : '—') + '</span></td>' +
-        (hasGnina ? '<td><span class="' + gClass + '">' + (gnina !== null && gnina !== undefined ? gnina.toFixed(2) : '—') + '</span></td>' : '') +
-        '<td><span style="font-weight:700">' + (typeof cs === 'number' ? cs.toFixed(3) : cs) + '</span></td>' +
+      var isBest = i === 0;
+      html += '<tr class="' + (isBest ? 'best-row' : '') + '" style="cursor:' + (hasStruct ? 'pointer' : 'default') + '" onclick="' + (hasStruct ? 'viewMol3D(' + i + ')' : '') + '" title="' + (hasStruct ? 'Click to view docked pose in 3D' : '') + '">' +
+        '<td><span class="rank-num ' + (isBest ? 'top-rank' : '') + '">' + (isBest ? '&#x2605;' : '#' + (i + 1)) + '</span></td>' +
+        '<td class="smiles-cell">' + esc(mol.smiles || '') + '</td>' +
+        '<td style="text-align:right"><span class="' + vClass + '">' + (vina !== null && vina !== undefined ? vina.toFixed(2) : '—') + '</span></td>';
+      if (hasGnina) html += '<td style="text-align:right"><span class="' + gClass + '">' + (gnina !== null && gnina !== undefined ? gnina.toFixed(2) : '—') + '</span></td>';
+      html += '<td style="text-align:right;font-weight:700">' + (cs !== null && cs !== undefined ? cs.toFixed(3) : '—') + '</td>' +
+        '<td style="text-align:center">' + (hasStruct ? '<span style="color:var(--primary);font-size:11px;cursor:pointer" title="View in 3D">&#x1F52D;</span>' : '') + '</td>' +
         '</tr>';
     }
     html += '</tbody></table></div></div></div>';
-    // Best molecule highlight
+
+    // ── Best Molecule Highlight ──────────────────────────────────────────
     var best = result.best_molecule;
     if (best) {
+      var bestInterp = '';
+      if (best.vina_score !== null && best.vina_score < -7) bestInterp = '<strong>Strong binder.</strong> Score below -7 kcal/mol suggests high-affinity interaction.';
+      else if (best.vina_score !== null && best.vina_score < -5) bestInterp = '<strong>Moderate binder.</strong> Worth further investigation. Compare with known actives for your target.';
+      else bestInterp = '<strong>Weak binder.</strong> Consider optimizing the ligand or exploring alternative scaffolds.';
+
       html += '<div class="success-card" style="cursor:pointer" onclick="viewMol3D(0)" title="Click to view docked pose">' +
-        '<strong>Best Molecule (Rank #1) <span style="font-size:12px;color:var(--text2)">— click to view in 3D</span>:</strong> ' + esc(best.smiles || '') + '<br>' +
-        'Vina: ' + (best.vina_score !== null && best.vina_score !== undefined ? best.vina_score.toFixed(2) : '—') + ' kcal/mol' +
-        (best.gnina_score !== null && best.gnina_score !== undefined ? ' | GNINA: ' + best.gnina_score.toFixed(2) + ' kcal/mol' : '') +
-        ' | Consensus: ' + (best.consensus_score ? best.consensus_score.toFixed(3) : '—') +
+        '<div style="display:flex;align-items:flex-start;gap:12px">' +
+          '<div style="width:36px;height:36px;border-radius:50%;background:var(--bio);color:#fff;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">&#x2605;</div>' +
+          '<div style="flex:1">' +
+            '<div style="font-size:14px;font-weight:700;color:#166534;margin-bottom:4px">Best Molecule (Rank #1) &mdash; click to view in 3D</div>' +
+            '<div style="font-family:monospace;font-size:12px;color:#166534;word-break:break-all;margin-bottom:6px">' + esc(best.smiles || '') + '</div>' +
+            '<div style="display:flex;gap:16px;font-size:12px;color:#166534;flex-wrap:wrap">' +
+              '<span><strong>Vina:</strong> ' + (best.vina_score !== null ? best.vina_score.toFixed(2) : '—') + ' kcal/mol</span>' +
+              (best.gnina_score !== null && best.gnina_score !== undefined ? '<span><strong>GNINA:</strong> ' + best.gnina_score.toFixed(2) + '</span>' : '') +
+              '<span><strong>Consensus:</strong> ' + (best.consensus_score ? best.consensus_score.toFixed(3) : '—') + '</span>' +
+            '</div>' +
+            '<div style="margin-top:8px;font-size:12px;color:#166534;line-height:1.6">' + bestInterp + '</div>' +
+          '</div>' +
+        '</div>' +
         '</div>';
     }
-    // Download buttons
+
+    // ── Interpretation Guide ─────────────────────────────────────────────
+    html += '<div class="interp-card" style="margin-top:16px">' +
+      '<span class="interp-icon">&#x1F4D6;</span><strong>How to interpret:</strong> ' +
+      '<strong>Vina &lt; -7 kcal/mol</strong> = strong binding. <strong>-5 to -7</strong> = moderate. <strong>&gt; -5</strong> = weak. ' +
+      (hasGnina ? '<strong>GNINA confidence &gt; 0.7</strong> = high-confidence pose. ' : '') +
+      '<strong>pLDDT &gt; 90</strong> = high confidence protein structure. ' +
+      '<strong>Consensus</strong> combines both engines for improved reliability.' +
+      '</div>';
+
+    // ── Download Buttons ─────────────────────────────────────────────────
     html += '<div class="dl-row" style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap">' +
-      '<button type="button" class="btn-secondary btn-sm" onclick="downloadResults(\'json\')">Download JSON</button>' +
-      '<button type="button" class="btn-secondary btn-sm" onclick="downloadResults(\'csv\')">Download CSV</button>' +
-      '<button type="button" class="btn-secondary btn-sm" onclick="downloadPDB()">Download Protein PDB</button>' +
+      '<button type="button" class="btn-secondary btn-sm" onclick="downloadResults(\'json\')">&#x1F4E5; Download JSON</button>' +
+      '<button type="button" class="btn-secondary btn-sm" onclick="downloadResults(\'csv\')">&#x1F4E5; Download CSV</button>' +
+      '<button type="button" class="btn-secondary btn-sm" onclick="downloadPDB()">&#x1F4E5; Download Protein PDB</button>' +
       '</div>';
   }
+
   // Elapsed time
-  if (result.stage1 && result.stage1.computation_time) {
-    $('elapsed-chip').textContent = 'ESMFold: ' + result.stage1.computation_time;
-  }
+  if (elapsed) $('elapsed-chip').textContent = 'Completed in ' + elapsed;
+
   $('results-body').innerHTML = html;
+
+  // Guest claim card
   if (!authUser && !document.getElementById('dock-guest-claim')) {
     var claim = document.createElement('div');
     claim.id = 'dock-guest-claim';
-    claim.style.cssText = 'margin:16px 0;padding:12px 18px;border:1px solid rgba(26,86,255,.25);border-radius:10px;background:linear-gradient(180deg,#fff,#f2f6ff);display:flex;align-items:center;gap:14px;flex-wrap:wrap';
-    claim.innerHTML = '<div><div style="font-size:14px;font-weight:800;color:var(--text)">Docking complete — create a free account to save this run</div><div style="font-size:12px;color:var(--text2);margin-top:3px">Free accounts keep your docking results and enable PDF export.</div></div>' +
+    claim.style.cssText = 'margin:16px 0;padding:14px 20px;border:1px solid rgba(26,86,255,.2);border-radius:10px;background:linear-gradient(180deg,#fff,#f2f6ff);display:flex;align-items:center;gap:14px;flex-wrap:wrap';
+    claim.innerHTML = '<div style="flex:1;min-width:200px"><div style="font-size:14px;font-weight:800;color:var(--text)">Docking complete &mdash; create a free account to save this run</div><div style="font-size:12px;color:var(--text2);margin-top:3px">Free accounts keep your docking results and enable PDF export.</div></div>' +
       '<button type="button" class="btn-primary" style="width:auto;padding:10px 20px;font-size:13px;font-weight:700;border-radius:8px" onclick="showAuth()">Save My Results &rarr;</button>';
     $('results-wrap').appendChild(claim);
   }
-  // Initialize 3D viewer (fetches structure data from API lazily)
-  if (result.job_id) {
-    _jobId = result.job_id;
-  }
-  if (result.stage1) {
-    initViewer();
-  }
+
+  // Initialize 3D viewer
+  if (result.job_id) _jobId = result.job_id;
+  if (result.stage1) initViewer();
   $('results-wrap').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 function showError(msg) {
@@ -1671,7 +1802,11 @@ function initViewer() {
   container.style.display = 'block';
   var el = $('mol-3d-viewer');
   if (typeof $3Dmol === 'undefined') {
-    el.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--red);font-size:13px">3D viewer library not loaded.</div>';
+    el.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:12px;color:var(--muted)"><div style="font-size:32px">&#x1F52D;</div><div style="font-size:13px;font-weight:600;color:var(--text2)">3D Structure Viewer</div><div style="font-size:12px;max-width:300px;text-align:center;line-height:1.6">The 3D molecular viewer library is loading. If it does not appear, try refreshing the page or using a modern browser.</div><button type="button" class="btn-secondary btn-sm" onclick="initViewer()" style="margin-top:4px">Retry Loading Viewer</button></div>';
+    // Retry after a delay in case script is still loading
+    setTimeout(function() {
+      if (typeof $3Dmol !== 'undefined') initViewer();
+    }, 3000);
     return;
   }
   el.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--muted);font-size:13px">Loading structure data...</div>';
