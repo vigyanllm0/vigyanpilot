@@ -159,39 +159,58 @@ def release_stale_jobs(max_age_minutes: float = 10.0):
 _LOCAL_WORKER_RUNNING = False
 
 def _process_job(job: dict):
-    """Run the consensus pipeline for a single job and save result."""
+    """Run the consensus pipeline in a SEPARATE OS process.
+    
+    If the pipeline segfaults or OOMs, only the subprocess dies — gunicorn survives.
+    """
+    import subprocess
+    import sys as _sys
+
     job_id = job["job_id"]
     sequence = job["sequence"]
-    smiles_list = job.get("ligand_smiles_list") or []
+    smiles_list = (job.get("ligand_smiles_list") or [])[:5]
     top_n = job.get("top_n", 50)
-    pdb_content = job.get("pdb_content", "")  # Optional uploaded PDB
+    pdb_content = job.get("pdb_content", "")
 
-    logger.info("Local worker processing job %s (%d ligands)", job_id, len(smiles_list))
+    logger.info("Spawning subprocess for job %s (%d ligands, %d aa)", job_id, len(smiles_list), len(sequence))
 
-    # Cap ligands to prevent OOM on small instances
-    if len(smiles_list) > 5:
-        logger.warning("Job %s has %d ligands — capping to 5 for stability", job_id, len(smiles_list))
-        smiles_list = smiles_list[:5]
+    # Write job data to stdin, worker reads and processes it
+    job_input = json.dumps({
+        "job_id": job_id,
+        "sequence": sequence,
+        "ligand_smiles_list": smiles_list,
+        "top_n": top_n,
+        "pdb_content": pdb_content,
+    })
+
+    worker_script = os.path.join(os.path.dirname(os.path.abspath(__file__)), "docking_worker.py")
 
     try:
-        from primerforge.pipelines.consensus_pipeline import run_consensus_pipeline
-        result = asyncio.run(run_consensus_pipeline(sequence, smiles_list, top_n, pdb_content=pdb_content))
-        if result.get("status") == "success":
-            complete_job(job_id, result)
-            logger.info("Local worker completed job %s", job_id)
+        proc = subprocess.run(
+            [_sys.executable, worker_script],
+            input=job_input,
+            capture_output=True,
+            text=True,
+            timeout=300,  # 5-minute hard timeout
+            env={**os.environ, "PYTHONUNBUFFERED": "1"},
+        )
+        if proc.returncode != 0:
+            # Worker crashed but gunicorn survived
+            stderr_tail = (proc.stderr or "")[-500:]
+            logger.error("Worker subprocess failed for job %s (rc=%d): %s", job_id, proc.returncode, stderr_tail)
+            # Check if job was already marked failed by the worker
+            from primerforge.docking_queue import get_job
+            current_job = get_job(job_id)
+            if current_job and current_job.get("status") != "completed":
+                complete_job(job_id, None, "Docking pipeline crashed. Try with fewer ligands or a shorter sequence.")
         else:
-            error = result.get("message", "Pipeline failed")
-            complete_job(job_id, None, error)
-            logger.error("Local worker failed job %s: %s", job_id, error)
-    except MemoryError:
-        complete_job(job_id, None, "Server ran out of memory. Try with fewer ligands or a shorter sequence.")
-        logger.error("Local worker OOM on job %s — ligands=%d, seq_len=%d", job_id, len(smiles_list), len(sequence))
-    except SystemExit:
-        complete_job(job_id, None, "Docking pipeline crashed. Please try again with fewer ligands.")
-        logger.error("Local worker SystemExit on job %s", job_id)
-    except BaseException as e:
-        complete_job(job_id, None, "Docking job failed: " + str(e)[:200])
-        logger.error("Local worker BaseException on job %s: %s", job_id, e)
+            logger.info("Worker subprocess completed for job %s", job_id)
+    except subprocess.TimeoutExpired:
+        logger.error("Worker subprocess timed out for job %s", job_id)
+        complete_job(job_id, None, "Docking timed out (5 min limit). Try with fewer ligands.")
+    except Exception as e:
+        logger.error("Failed to spawn worker for job %s: %s", job_id, e)
+        complete_job(job_id, None, f"Failed to start docking worker: {str(e)[:200]}")
 
 
 def _local_worker_loop(interval: float = 5.0):
