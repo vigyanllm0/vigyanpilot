@@ -29,22 +29,25 @@ logger = logging.getLogger("primerforge.database")
 
 # ── Connection Pool Configuration ─────────────────────────────────────────
 
-DATABASE_URL = os.environ.get("DATABASE_URL")
-if not DATABASE_URL:
-    raise RuntimeError(
-        "DATABASE_URL environment variable is required. "
-        "Set it to your PostgreSQL connection string, e.g.:\n"
-        "  postgresql://user:password@host:5432/dbname"
-    )
+def _get_database_url():
+    """Get DATABASE_URL, raising only when actually needed."""
+    url = os.environ.get("DATABASE_URL")
+    if not url:
+        raise RuntimeError(
+            "DATABASE_URL environment variable is required. "
+            "Set it to your PostgreSQL connection string, e.g.:\n"
+            "  postgresql://user:password@host:5432/dbname"
+        )
+    return url
+
+# Lazy DATABASE_URL - evaluated on first pool access
+DATABASE_URL = None
 
 # ── SSL / TLS Configuration ───────────────────────────────────────────────
 # Azure PostgreSQL enforces SSL. Set DB_SSL_MODE=require in the env.
 # If the URL already has ?sslmode=..., this is a no-op.
 # Otherwise ?sslmode=<DB_SSL_MODE> is appended to the DSN.
 DB_SSL_MODE = os.environ.get("DB_SSL_MODE", "").strip().lower()
-if DB_SSL_MODE and "sslmode" not in DATABASE_URL:
-    sep = "&" if "?" in DATABASE_URL else "?"
-    DATABASE_URL = f"{DATABASE_URL}{sep}sslmode={DB_SSL_MODE}"
 
 POOL_MIN = int(os.environ.get("DB_POOL_MIN", "2"))
 POOL_MAX = int(os.environ.get("DB_POOL_MAX", "10"))
@@ -55,9 +58,22 @@ _pool = None
 _POOL_LOCK = threading.Lock()
 
 
+def _init_database_url():
+    """Initialize DATABASE_URL with SSL mode if needed. Called once on first pool access."""
+    global DATABASE_URL
+    if DATABASE_URL is None:
+        DATABASE_URL = _get_database_url()
+        if DB_SSL_MODE and "sslmode" not in DATABASE_URL:
+            sep = "&" if "?" in DATABASE_URL else "?"
+            DATABASE_URL = f"{DATABASE_URL}{sep}sslmode={DB_SSL_MODE}"
+    return DATABASE_URL
+
+
 def _get_pool():
     """Lazy-init and return the global connection pool (BUG-06 FIX: Thread-safe)."""
     global _pool
+    # Ensure DATABASE_URL is initialized
+    _init_database_url()
     # Double-checked locking pattern
     if _pool is None:
         with _POOL_LOCK:
