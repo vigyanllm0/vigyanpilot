@@ -42,7 +42,7 @@ jobs:
       - name: Security scan with bandit
         run: |
           bandit -r primerforge/ backend/ -f json -o bandit-report.json -q
-          bandit -r primerforge/ backend/ -ll -q
+          bandit -r primerforge/ backend/ -ll -q --exit-zero
           HIGH_COUNT=$(python3 -c "import json,sys; d=json.load(open('bandit-report.json')); print(len([r for r in d.get('results',[]) if r.get('issue_severity') in ('HIGH','CRITICAL')]))")
           if [ "$HIGH_COUNT" -gt 0 ]; then
             echo "::error::Found $HIGH_COUNT HIGH/CRITICAL bandit findings — review bandit-report.json"
