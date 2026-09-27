@@ -7,6 +7,7 @@ Includes ALL pages with clean URLs (no .html), proper priorities, and changefreq
 import os
 import glob
 import datetime
+import re
 
 FRONTEND = os.path.join(os.path.dirname(__file__), "frontend")
 BRAND_URL = "https://www.vigyanllm.in"
@@ -98,9 +99,27 @@ EXCLUDE_PAGES = {
     "payment-success.html", "payment-failed.html",
     "admin-security.html", "blog-post.html", "login.html",
     "dashboard.html",
+    # HTML fragments (not pages) — Growth Playbook 1.8
+    "header.html", "footer.html",
+    # utility auth page: indexable via /login links but not sitemap-worthy
+    "signup.html",
 }
 
-EXCLUDE_DIR_PREFIXES = {"admin/", "api/"}
+EXCLUDE_DIR_PREFIXES = {"admin/", "api/", "partials/"}
+
+_NOINDEX_RE = re.compile(
+    r'<meta[^>]+name=["\']robots["\'][^>]+content=["\'][^"\']*noindex', re.I
+)
+
+
+def has_noindex(filepath):
+    """True if the page carries a noindex robots meta (must not be in sitemap)."""
+    try:
+        with open(filepath, encoding="utf-8", errors="replace") as fh:
+            # only the first 8KB — robots meta always lives in <head>
+            return bool(_NOINDEX_RE.search(fh.read(8192)))
+    except OSError:
+        return True  # unreadable → exclude rather than risk listing junk
 
 CHANGEFREQ_MAP = {
     "index.html": "weekly",
@@ -192,6 +211,8 @@ def generate_sitemap_xml():
             continue
         if any(rel.startswith(p) for p in EXCLUDE_DIR_PREFIXES):
             continue
+        if has_noindex(fp):
+            continue
         
         clean_url = get_clean_url(fp)
         priority = get_priority(fp, rel)
@@ -227,6 +248,10 @@ Allow: /
 Disallow: /api/
 Disallow: /admin/
 Disallow: /dashboard/
+# Header/footer HTML fragments — not pages, crawl waste (Growth Playbook 1.7)
+Disallow: /partials/
+Disallow: /header
+Disallow: /footer
 
 Crawl-delay: 2
 

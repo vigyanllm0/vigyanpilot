@@ -1,7 +1,10 @@
 /**
  * vl-includes.js — Shared header/footer loader
- * Fetches /partials/header.html and /partials/footer.html
+ * Fetches /partials/header and /partials/footer (clean URLs, no redirect)
  * and injects them into <div id="vl-header"> and <div id="vl-footer">.
+ * Falls back to the .html path if the clean URL is unavailable (dev servers
+ * without clean-URL routing). The .html path 301-redirects on production,
+ * so we never request it first — that redirect fired on every page view.
  *
  * Fires 'vl-includes-loaded' on document after both partials are injected
  * so page scripts can safely access #hamburger, #mobile-menu, etc.
@@ -19,7 +22,16 @@
     var el = document.getElementById(id);
     if (!el) { onLoad(); return; }
     fetch(url, { credentials: 'same-origin' })
-      .then(function(r) { return r.ok ? r.text() : ''; })
+      .then(function(r) {
+        if (r.ok) return r.text();
+        // Clean URL unavailable → try the .html path once (dev servers
+        // without clean-URL routing; production serves clean URLs 200).
+        if (url.indexOf('.html') === -1) {
+          return fetch(url + '.html', { credentials: 'same-origin' })
+            .then(function(r2) { return r2.ok ? r2.text() : ''; });
+        }
+        return '';
+      })
       .then(function(html) {
         if (html) {
           el.innerHTML = html;
@@ -86,12 +98,12 @@
   // Load header and footer when DOM is ready
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function() {
-      loadPartial('vl-header', '/partials/header.html');
-      loadPartial('vl-footer', '/partials/footer.html');
+      loadPartial('vl-header', '/partials/header');
+      loadPartial('vl-footer', '/partials/footer');
     });
   } else {
-    loadPartial('vl-header', '/partials/header.html');
-    loadPartial('vl-footer', '/partials/footer.html');
+    loadPartial('vl-header', '/partials/header');
+    loadPartial('vl-footer', '/partials/footer');
   }
 
   document.addEventListener('vl-includes-loaded', initA11y);
