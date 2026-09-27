@@ -9,7 +9,7 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&amp;family=Montserrat:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
 
     <script type="application/ld+json">
     {
@@ -26,16 +26,19 @@
     </script>
 
     <link rel="stylesheet" href="/design-tokens.css">
+    <link rel="stylesheet" href="/tools.css">
     <style>
         *{margin:0;padding:0;box-sizing:border-box}
-        body{font-family:'Inter',sans-serif;color:#1a1a2e;background:#f8f9fa;line-height:1.6}
+                :root{--navy:#0F172A;--navy-light:#1E293B;--white:#FFFFFF;--slate:#F8FAFC;--slate-border:#E2E8F0;--text:#0F172A;--text2:#475569;--muted:#94A3B8;--primary:#2563EB;--bio:#059669;--amber:#D97706;--accent:#22D3EE;--font-h:'Montserrat',sans-serif;--font-b:'Open Sans',sans-serif;--space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-5:20px;--space-6:24px;--space-8:32px;--space-10:40px;--space-12:48px;--space-16:64px;--space-20:80px;--space-24:96px;--max-w:1100px;--red:#ef4444;--red-soft:#fef2f2;--amber-soft:#fffbeb;--bio-soft:#f0fdf4;--primary-soft:#eff6ff;--blue:#1565C0;--blue-light:#42A5F5;--blue-bg:#E3F2FD;--navy:#0F172A;--black:#0A0A0F;--surface:#FFFFFF;--surface-alt:#F5F7FA;--outline:#E2E5EA;--text:#0A0A0F;--text2:#4A4A6A;--muted:#7A7A9A;--font-h:'Montserrat',sans-serif;--font-b:'Open Sans',sans-serif;--space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-5:20px;--space-6:24px;--space-8:32px;--space-10:40px;--space-12:48px;--space-16:64px;--space-20:80px;--space-24:96px;--max-w:1400px}
+        body{font-family:var(--font-b);color:var(--text);background:var(--surface);line-height:1.6}
         
 
-        .hero{background:linear-gradient(135deg,#0f172a,#1e293b);color:#fff;padding:3rem 1.5rem 2.5rem}
-        .hero-inner{max-width:900px;margin:0 auto}
-        .hero h1{color:#fff!important;font-size:2rem;font-weight:700;margin-bottom:.75rem}
-        .hero p{font-size:1.1rem;color:#94a3b8;max-width:600px}
-        .hero-badge{display:inline-block;background:rgba(13,148,136,.2);color:#2dd4bf;font-size:.75rem;font-weight:600;padding:.25rem .75rem;border-radius:999px;margin-bottom:.75rem;text-transform:uppercase;letter-spacing:.05em}
+.page-header{padding:32px 0 24px;border-bottom:1px solid var(--slate-border);background:transparent}
+        .page-header .container{max-width:var(--max-w);margin:0 auto;padding:0 24px;display:flex;align-items:flex-start;gap:20px;flex-wrap:wrap}
+        .ph-title-block{flex:1;min-width:300px}
+        .ph-eyebrow{font-family:var(--font-h);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--primary);margin-bottom:6px;display:flex;align-items:center;gap:10px}
+        .ph-title{font-family:var(--font-h);font-size:clamp(1.6rem,3.5vw,2.2rem);font-weight:700;margin-bottom:6px;color:var(--text)}
+        .ph-sub{font-size:14px;color:var(--text2);max-width:520px}
 
         .container{max-width:900px;margin:0 auto;padding:2rem 1.5rem}
 
@@ -43,23 +46,23 @@
         .card h2{font-size:1.1rem;font-weight:600;margin-bottom:.25rem;display:flex;align-items:center;gap:.5rem}
         .card .subtitle{font-size:.85rem;color:#64748b;margin-bottom:1rem}
 
-        textarea{width:100%;min-height:150px;font-family:'JetBrains Mono',monospace;font-size:.8rem;padding:.75rem;border:1px solid #d1d5db;border-radius:8px;resize:vertical;line-height:1.5}
-        textarea:focus{outline:none;border-color:#0d9488;box-shadow:0 0 0 3px rgba(13,148,136,.1)}
+        textarea{width:100%;min-height:150px;font-family:monospace;font-size:.8rem;padding:.75rem;border:1px solid #d1d5db;border-radius:8px;resize:vertical;line-height:1.5}
+        textarea:focus{outline:none;border-color:#2563EB;box-shadow:0 0 0 3px rgba(37,99,235,.1)}
 
         .input-row{display:flex;gap:1rem;align-items:end;margin-bottom:1rem}
         .input-group{flex:1}
         .input-group label{display:block;font-size:.8rem;font-weight:600;color:#475569;margin-bottom:.25rem}
         .input-group input,.input-group select{width:100%;padding:.5rem .75rem;border:1px solid #d1d5db;border-radius:8px;font-size:.9rem}
-        .input-group input:focus{outline:none;border-color:#0d9488}
+        .input-group input:focus{outline:none;border-color:#2563EB}
 
         .range-group{display:flex;align-items:center;gap:.75rem;margin-bottom:1rem}
         .range-group label{font-size:.85rem;font-weight:500;color:#475569;min-width:80px}
-        .range-group input[type="range"]{flex:1;accent-color:#0d9488}
-        .range-group .value{font-family:'JetBrains Mono',monospace;font-size:.9rem;font-weight:600;color:#0d9488;min-width:50px;text-align:right}
+        .range-group input[type="range"]{flex:1;accent-color:#2563EB}
+        .range-group .value{font-family:monospace;font-size:.9rem;font-weight:600;color:#2563EB;min-width:50px;text-align:right}
 
         .btn{display:inline-block;padding:.6rem 1.5rem;font-size:.9rem;font-weight:600;border:none;border-radius:8px;cursor:pointer;transition:all .2s}
-        .btn-primary{background:#0d9488;color:#fff}
-        .btn-primary:hover{background:#0f766e}
+        .btn-primary{background:#2563EB;color:#fff}
+        .btn-primary:hover{background:#1d4ed8}
         .btn-primary:disabled{background:#94a3b8;cursor:not-allowed}
         .btn-secondary{background:#f1f5f9;color:#475569;border:1px solid #e2e8f0}
         .btn-secondary:hover{background:#e2e8f0}
@@ -69,8 +72,8 @@
 
         .presets{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:.5rem;margin-bottom:1rem}
         .preset-btn{padding:.5rem .75rem;font-size:.8rem;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;cursor:pointer;text-align:left;transition:all .15s}
-        .preset-btn:hover{border-color:#0d9488;background:#f0fdfa}
-        .preset-btn.active{border-color:#0d9488;background:#f0fdfa;box-shadow:0 0 0 2px rgba(13,148,136,.2)}
+        .preset-btn:hover{border-color:#2563EB;background:#f0fdfa}
+        .preset-btn.active{border-color:#2563EB;background:#f0fdfa;box-shadow:0 0 0 2px rgba(37,99,235,.2)}
         .preset-btn .name{font-weight:600;color:#1a1a2e}
         .preset-btn .pdb-id{font-family:monospace;font-size:.75rem;color:#64748b}
 
@@ -88,7 +91,7 @@
         .result-body.open{display:block}
 
         .pocket-card{background:#f8fafc;border:1px solid #e5e7eb;border-radius:10px;padding:1rem;margin-bottom:.75rem;display:flex;gap:1rem;align-items:start}
-        .pocket-rank{width:36px;height:36px;border-radius:50%;background:#0d9488;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.9rem;flex-shrink:0}
+        .pocket-rank{width:36px;height:36px;border-radius:50%;background:#2563EB;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.9rem;flex-shrink:0}
         .pocket-info{flex:1}
         .pocket-info h4{font-size:.9rem;margin-bottom:.25rem}
         .pocket-meta{font-size:.8rem;color:#64748b;display:flex;gap:1rem;flex-wrap:wrap}
@@ -103,7 +106,7 @@
         .step-check{color:#16a34a;font-weight:700}
         .step-warn{color:#d97706;font-weight:700}
 
-        .gridbox-display{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:1rem;font-family:'JetBrains Mono',monospace;font-size:.8rem}
+        .gridbox-display{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:1rem;font-family:monospace;font-size:.8rem}
 
         </style>
 <link rel="canonical" href="https://www.vigyanllm.in/binding-site">
@@ -113,13 +116,15 @@
 
 <div id="vl-header"></div>
 
-<section class="hero">
-    <div class="hero-inner">
-        <span class="hero-badge">Docking Setup</span>
-        <h1>Binding Site Control</h1>
-        <p>Find the right pocket, prepare your protein, and set up the grid box — all before running a single docking pose.</p>
+<div class="page-header">
+        <div class="container">
+            <div class="ph-title-block" style="flex:1;min-width:300px">
+                <div class="ph-eyebrow">Docking Setup</div>
+                <h1 class="ph-title">Binding Site Control</h1>
+                <p class="ph-sub">Find the right pocket, prepare your protein, and set up the grid box — all before running a single docking pose.</p>
+            </div>
+        </div>
     </div>
-</section>
 
 <main class="container">
 

@@ -16,7 +16,7 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&amp;family=Montserrat:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
 
     <script type="application/ld+json">
     {
@@ -33,17 +33,20 @@
     </script>
 
     <link rel="stylesheet" href="/design-tokens.css">
+    <link rel="stylesheet" href="/tools.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Inter', sans-serif; color: #1a1a2e; background: #f8f9fa; line-height: 1.6; }
+                :root{--navy:#0F172A;--navy-light:#1E293B;--white:#FFFFFF;--slate:#F8FAFC;--slate-border:#E2E8F0;--text:#0F172A;--text2:#475569;--muted:#94A3B8;--primary:#2563EB;--bio:#059669;--amber:#D97706;--accent:#22D3EE;--font-h:'Montserrat',sans-serif;--font-b:'Open Sans',sans-serif;--space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-5:20px;--space-6:24px;--space-8:32px;--space-10:40px;--space-12:48px;--space-16:64px;--space-20:80px;--space-24:96px;--max-w:1100px;--red:#ef4444;--red-soft:#fef2f2;--amber-soft:#fffbeb;--bio-soft:#f0fdf4;--primary-soft:#eff6ff;--blue:#1565C0;--blue-light:#42A5F5;--blue-bg:#E3F2FD;--navy:#0F172A;--black:#0A0A0F;--surface:#FFFFFF;--surface-alt:#F5F7FA;--outline:#E2E5EA;--text:#0A0A0F;--text2:#4A4A6A;--muted:#7A7A9A;--font-h:'Montserrat',sans-serif;--font-b:'Open Sans',sans-serif;--space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-5:20px;--space-6:24px;--space-8:32px;--space-10:40px;--space-12:48px;--space-16:64px;--space-20:80px;--space-24:96px;--max-w:1400px}
+        body { font-family: var(--font-b); color: var(--text); background: var(--surface); line-height: 1.6; }
 
         
 
-        .hero { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: #fff; padding: 3rem 1.5rem 2.5rem; }
-        .hero-inner { max-width: 900px; margin: 0 auto; }
-        .hero h1 {color:#fff!important; font-size: 2rem; font-weight: 700; margin-bottom: 0.75rem; }
-        .hero p { font-size: 1.1rem; color: #94a3b8; max-width: 600px; }
-        .hero-badge { display: inline-block; background: rgba(13,148,136,0.2); color: #2dd4bf; font-size: 0.75rem; font-weight: 600; padding: 0.25rem 0.75rem; border-radius: 999px; margin-bottom: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; }
+.page-header{padding:32px 0 24px;border-bottom:1px solid var(--slate-border);background:transparent}
+        .page-header .container{max-width:var(--max-w);margin:0 auto;padding:0 24px;display:flex;align-items:flex-start;gap:20px;flex-wrap:wrap}
+        .ph-title-block{flex:1;min-width:300px}
+        .ph-eyebrow{font-family:var(--font-h);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--primary);margin-bottom:6px;display:flex;align-items:center;gap:10px}
+        .ph-title{font-family:var(--font-h);font-size:clamp(1.6rem,3.5vw,2.2rem);font-weight:700;margin-bottom:6px;color:var(--text)}
+        .ph-sub{font-size:14px;color:var(--text2);max-width:520px}
 
         .container { max-width: 900px; margin: 0 auto; padding: 2rem 1.5rem; }
 
@@ -51,19 +54,19 @@
         .input-section h2 { font-size: 1.1rem; font-weight: 600; margin-bottom: 1rem; }
         .tabs { display: flex; gap: 0; margin-bottom: 1rem; border-bottom: 2px solid #e5e7eb; }
         .tab-btn { padding: 0.5rem 1rem; border: none; background: none; font-size: 0.9rem; font-weight: 500; color: #64748b; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all 0.2s; }
-        .tab-btn.active { color: #0d9488; border-bottom-color: #0d9488; }
+        .tab-btn.active { color: #2563EB; border-bottom-color: #2563EB; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
 
-        textarea { width: 100%; min-height: 150px; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 8px; resize: vertical; line-height: 1.5; }
-        textarea:focus { outline: none; border-color: #0d9488; box-shadow: 0 0 0 3px rgba(13,148,136,0.1); }
+        textarea { width: 100%; min-height: 150px; font-family: monospace; font-size: 0.8rem; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 8px; resize: vertical; line-height: 1.5; }
+        textarea:focus { outline: none; border-color: #2563EB; box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
 
         .file-upload-zone { border: 2px dashed #d1d5db; border-radius: 8px; padding: 1.5rem; text-align: center; cursor: pointer; transition: all 0.2s; }
-        .file-upload-zone:hover, .file-upload-zone.dragover { border-color: #0d9488; background: rgba(13,148,136,0.05); }
+        .file-upload-zone:hover, .file-upload-zone.dragover { border-color: #2563EB; background: rgba(37,99,235,0.05); }
         .file-upload-zone input[type="file"] { display: none; }
 
-        .run-btn { display: inline-block; margin-top: 1rem; padding: 0.7rem 2rem; font-size: 1rem; font-weight: 600; background: #0d9488; color: #fff; border: none; border-radius: 8px; cursor: pointer; transition: all 0.2s; }
-        .run-btn:hover { background: #0f766e; }
+        .run-btn { display: inline-block; margin-top: 1rem; padding: 0.7rem 2rem; font-size: 1rem; font-weight: 600; background: #2563EB; color: #fff; border: none; border-radius: 8px; cursor: pointer; transition: all 0.2s; }
+        .run-btn:hover { background: #1d4ed8; }
         .run-btn:disabled { background: #94a3b8; cursor: not-allowed; }
         .spinner { display: none; width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.8s linear infinite; margin-right: 0.5rem; }
         .run-btn.loading .spinner { display: inline-block; }
@@ -93,7 +96,7 @@
         .badge-green { background: #f0fdf4; color: #16a34a; }
         .badge-purple { background: #faf5ff; color: #9333ea; }
         .badge-orange { background: #fff7ed; color: #ea580c; }
-        .badge-teal { background: #f0fdfa; color: #0d9488; }
+        .badge-blue { background: #f0fdfa; color: #2563EB; }
         .detail-body { padding: 0 1.25rem 1.25rem; display: none; }
         .detail-body.open { display: block; }
 
@@ -106,7 +109,7 @@
         .strength-weak { color: #64748b; }
 
         /* Binding site table */
-        .residue-tag { display: inline-block; padding: 0.15rem 0.4rem; border-radius: 4px; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; font-weight: 600; }
+        .residue-tag { display: inline-block; padding: 0.15rem 0.4rem; border-radius: 4px; font-family: monospace; font-size: 0.8rem; font-weight: 600; }
         .res-hbond { background: #dbeafe; color: #1d4ed8; }
         .res-hydrophobic { background: #fef3c7; color: #b45309; }
         .res-salt { background: #fce7f3; color: #be185d; }
@@ -122,13 +125,15 @@
 
 <div id="vl-header"></div>
 
-<section class="hero">
-    <div class="hero-inner">
-        <span class="hero-badge">Post-Docking Analysis</span>
-        <h1>Protein-Ligand Interaction Analyzer</h1>
-        <p>See exactly how your ligand binds. Hydrogen bonds, hydrophobic contacts, salt bridges, π-stacking — and which residues drive the interaction.</p>
+<div class="page-header">
+        <div class="container">
+            <div class="ph-title-block" style="flex:1;min-width:300px">
+                <div class="ph-eyebrow">Post-Docking Analysis</div>
+                <h1 class="ph-title">Protein-Ligand Interaction Analyzer</h1>
+                <p class="ph-sub">See exactly how your ligand binds. Hydrogen bonds, hydrophobic contacts, salt bridges, π-stacking — and which residues drive the interaction.</p>
+            </div>
+        </div>
     </div>
-</section>
 
 <main class="container">
     <div class="input-section">
@@ -204,7 +209,7 @@
         <div class="detail-section">
             <div class="detail-header" onclick="toggle(this)">
                 <span>🔮 π-π Stacking</span>
-                <span class="badge badge-teal" id="pi-badge">0</span>
+                <span class="badge badge-blue" id="pi-badge">0</span>
             </div>
             <div class="detail-body" id="pi-body">
                 <div id="pi-details"></div>
@@ -383,7 +388,7 @@ function renderResults(data) {
         <div class="summary-card"><div class="icon">⚡</div><div class="count" style="color:#be185d">${s.salt_bridges || 0}</div><div class="label">Salt Bridges</div></div>
         <div class="summary-card"><div class="icon">🔮</div><div class="count" style="color:#6d28d9">${s.pi_stacking || 0}</div><div class="label">π-Stacking</div></div>
         <div class="summary-card"><div class="icon">🎯</div><div class="count" style="color:#16a34a">${s.unique_receptor_residues || 0}</div><div class="label">Unique Residues</div></div>
-        <div class="summary-card"><div class="icon">💪</div><div class="count" style="color:#0d9488">${s.strong_interactions || 0}</div><div class="label">Strong</div></div>
+        <div class="summary-card"><div class="icon">💪</div><div class="count" style="color:#2563EB">${s.strong_interactions || 0}</div><div class="label">Strong</div></div>
     `;
 
     // Recommendation
