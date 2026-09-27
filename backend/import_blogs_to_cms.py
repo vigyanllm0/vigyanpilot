@@ -7,29 +7,43 @@ Usage:
 Requires JWT_SECRET env var and the CMS server running on port 8001.
 """
 
-import os, sys, json, re, glob, html as html_module
-from datetime import datetime
-import urllib.request, urllib.error
+import glob
+import html as html_module
+import json
+import os
+import re
+import sys
+import urllib.error
+import urllib.request
 
 JWT_SECRET = os.environ.get("JWT_SECRET")
 if not JWT_SECRET:
     print("ERROR: JWT_SECRET env var required")
     sys.exit(1)
 
-CMS_URL = "http://localhost:8001"
-AUTH_EMAIL = "contact@vigyanllm.in"
-AUTH_PASSWORD = "Vigyan@hemant.9817&hs"
+CMS_URL = os.environ.get("CMS_URL", "http://localhost:8001")
+AUTH_EMAIL = os.environ.get("AUTH_EMAIL", "contact@vigyanllm.in")
+AUTH_PASSWORD = os.environ.get("AUTH_PASSWORD")
+if not AUTH_PASSWORD:
+    print("ERROR: AUTH_PASSWORD env var required")
+    sys.exit(1)
 FRONTEND_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "frontend")
+_ALLOWED_SCHEMES = {"http", "https"}
+
+def _safe_urlopen(req, timeout=10):
+    if req.get_full_url().split(":", 1)[0].lower() not in _ALLOWED_SCHEMES:
+        raise ValueError(f"Disallowed URL scheme: {req.get_full_url()}")
+    return urllib.request.urlopen(req, timeout=timeout)  # noqa: S310
 
 def get_token():
     data = json.dumps({"email": AUTH_EMAIL, "password": AUTH_PASSWORD}).encode()
-    req = urllib.request.Request(
+    req = urllib.request.Request(  # noqa: S310
         f"{CMS_URL}/api/v1/cms/auth/login",
         data=data,
         headers={"Content-Type": "application/json"},
         method="POST",
     )
-    resp = urllib.request.urlopen(req)
+    resp = _safe_urlopen(req)
     body = json.loads(resp.read())
     return body["token"]
 
@@ -42,14 +56,14 @@ def cms_request(method, path, body=None, token=None):
         headers["Content-Type"] = "application/json"
     else:
         data = None
-    req = urllib.request.Request(
+    req = urllib.request.Request(  # noqa: S310
         f"{CMS_URL}{path}",
         data=data,
         headers=headers,
         method=method,
     )
     try:
-        resp = urllib.request.urlopen(req)
+        resp = _safe_urlopen(req)
         return json.loads(resp.read())
     except urllib.error.HTTPError as e:
         err = e.read().decode()
@@ -89,23 +103,23 @@ def html_to_tiptap_json(html_content):
     """Convert simple HTML to TipTap-compatible JSON structure."""
     if not html_content:
         return {"type": "doc", "content": [{"type": "paragraph"}]}
-    
+
     # Parse simple HTML blocks
     blocks = []
     # Split by block-level tags
     parts = re.split(r'(</?(?:p|h[1-6]|ul|ol|blockquote|pre|hr|div|section|figure)\b[^>]*>)', html_content, flags=re.DOTALL)
-    
+
     current_tag = None
     current_content = []
-    
+
     for part in parts:
         part = part.strip()
         if not part:
             continue
-        
+
         open_match = re.match(r'<(p|h[1-6]|ul|ol|blockquote|pre|hr|div|section|figure)\b[^>]*>', part)
         close_match = re.match(r'</(p|h[1-6]|ul|ol|blockquote|pre|hr|div|section|figure)>', part)
-        
+
         if open_match:
             current_tag = open_match.group(1)
             current_content = []
@@ -128,7 +142,7 @@ def html_to_tiptap_json(html_content):
                 })
     if not blocks:
         blocks.append({"type": "paragraph"})
-    
+
     # Drop empty text nodes and empty paragraphs
     clean_blocks = []
     for block in blocks:
@@ -142,7 +156,7 @@ def html_to_tiptap_json(html_content):
             continue
         clean_blocks.append(block)
     blocks = clean_blocks or [{"type": "paragraph"}]
-    
+
     return {"type": "doc", "content": blocks}
 
 def html_to_node(tag, inner):
@@ -185,23 +199,23 @@ def import_file(filepath, token, content_type="blog", dry_run=False):
     """Import a single HTML file as a CMS page."""
     filename = os.path.basename(filepath)
     rel_path = os.path.relpath(filepath, FRONTEND_DIR)
-    
-    with open(filepath, "r", encoding="utf-8", errors="ignore") as f:
+
+    with open(filepath, encoding="utf-8", errors="ignore") as f:
         content = f.read()
-    
+
     if is_cms_page(content):
         return None  # Skip CMS-powered pages
-    
+
     title = extract_title_from_html(content, filename)
     description = extract_description_from_html(content)
     body_html = extract_body_html(content)
     content_json = html_to_tiptap_json(body_html)
-    
+
     # Generate slug from filename
     slug = filename.replace(".html", "").lower()
     slug = re.sub(r'[^a-z0-9-]', '-', slug)
     slug = re.sub(r'-+', '-', slug)
-    
+
     # Determine content type
     if "glossary" in rel_path:
         ctype = "glossary"
@@ -209,12 +223,12 @@ def import_file(filepath, token, content_type="blog", dry_run=False):
         ctype = "blog"
     else:
         ctype = "page"
-    
+
     # Extract tags from breadcrumbs or categories
     tags = ctype
     if "glossary" in rel_path:
         tags = "glossary"
-    
+
     payload = {
         "slug": slug,
         "title": title[:500],
@@ -225,11 +239,11 @@ def import_file(filepath, token, content_type="blog", dry_run=False):
         "tags": tags,
         "change_note": f"Imported from {rel_path}",
     }
-    
+
     if dry_run:
         print(f"  [DRY RUN] Would import: {title} -> {slug}")
         return None
-    
+
     result = cms_request("POST", "/api/v1/cms/pages", payload, token)
     if result:
         print(f"  IMPORTED: {title} (/{slug}) [{ctype}]")
@@ -240,21 +254,21 @@ def import_file(filepath, token, content_type="blog", dry_run=False):
 
 def main():
     dry_run = "--dry-run" in sys.argv
-    
+
     print("=" * 60)
     print("Importing blogs and glossary pages to CMS")
     print("=" * 60)
-    
+
     token = get_token()
     print(f"Authenticated: {AUTH_EMAIL}")
-    
+
     blog_dir = os.path.join(FRONTEND_DIR, "blog")
     glossary_dir = os.path.join(FRONTEND_DIR, "glossary")
-    
+
     imported = 0
     skipped = 0
     failed = 0
-    
+
     # Import blog posts
     if os.path.isdir(blog_dir):
         print(f"\n--- Blog Posts ({blog_dir}) ---")
@@ -269,7 +283,7 @@ def main():
                 skipped += 1
             else:
                 failed += 1
-    
+
     # Import glossary pages
     if os.path.isdir(glossary_dir):
         print(f"\n--- Glossary Pages ({glossary_dir}) ---")
@@ -283,7 +297,7 @@ def main():
                 skipped += 1
             else:
                 failed += 1
-    
+
     print(f"\n{'=' * 60}")
     print(f"Summary: {imported} imported, {skipped} skipped, {failed} failed")
     if dry_run:

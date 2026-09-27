@@ -1,11 +1,21 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query
-from sqlalchemy.orm import Session
-from database import get_db
-from models import AdminUser, CMSPage, CMSPageRevision
-from schemas import PageCreate, PageUpdate, PageDetail, PageListItem, PageListResponse, PageCreateResponse, AuthorInfo, RevisionItem
-from deps import get_current_user, require_admin
 from datetime import datetime, timezone
+
+from database import get_db
+from deps import get_current_user, require_admin
+from fastapi import APIRouter, Depends, HTTPException, Query
+from models import AdminUser, CMSPage, CMSPageRevision
+from schemas import (
+    AuthorInfo,
+    PageCreate,
+    PageCreateResponse,
+    PageDetail,
+    PageListItem,
+    PageListResponse,
+    PageUpdate,
+    RevisionItem,
+)
 from sqlalchemy import desc
+from sqlalchemy.orm import Session
 
 router = APIRouter(prefix="/api/v1/cms/pages", tags=["cms-pages"])
 
@@ -266,7 +276,6 @@ def restore_revision(
     if not revision:
         raise HTTPException(status_code=404, detail="REVISION_NOT_FOUND")
 
-    old_content = page.content_json
     page.content_json = revision.content_json
     page.content_html = revision.content_html
     page.updated_at = datetime.now(timezone.utc)

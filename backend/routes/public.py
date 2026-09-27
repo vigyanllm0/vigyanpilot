@@ -25,12 +25,11 @@ import logging
 
 import bleach
 from bleach.css_sanitizer import CSSSanitizer
-from fastapi import APIRouter, Depends, HTTPException, Request
-from sqlalchemy.orm import Session
-from sqlalchemy import desc
-
 from database import get_db
-from models import AdminUser, CMSPage, CMSPageRevision
+from fastapi import APIRouter, Depends, HTTPException, Request
+from models import CMSPage, CMSPageRevision
+from sqlalchemy import desc
+from sqlalchemy.orm import Session
 
 logger = logging.getLogger("vigyanllm.cms.public")
 
@@ -96,12 +95,11 @@ def _sanitize_html(raw_html: str | None) -> str:
             attributes=_ALLOWED_ATTRIBUTES,
             protocols=_ALLOWED_PROTOCOLS,
             css_sanitizer=_CSS_SANITIZER,
-            strip=True,          # Remove disallowed tags rather than escaping
-            strip_comments=True, # Remove HTML comments (can hide payloads)
+            strip=True,
+            strip_comments=True,
         )
-    except Exception as exc:
+    except (ValueError, TypeError) as exc:
         logger.error("bleach sanitization failed: %s", exc)
-        # Fail-closed: return empty string rather than unsanitized content
         return ""
 
 
@@ -122,13 +120,13 @@ def track_page_view(
             )
             db.add(view)
             db.commit()
-    except Exception:
-        pass
+    except Exception as exc:  # noqa: BLE001 — telemetry is best-effort; log and continue
+        logger.debug("track_page_view failed: %s", exc)
     return {"ok": True}
 
 @router.get("")
 def public_list_pages(
-    content_type: str = None,
+    content_type: str | None = None,
     limit: int = 50,
     offset: int = 0,
     db: Session = Depends(get_db),

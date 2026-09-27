@@ -1,10 +1,10 @@
-from fastapi import APIRouter, Depends, Query
-from sqlalchemy.orm import Session
-from sqlalchemy import desc
 from database import get_db
-from models import AdminUser, CMSNotification, CMSPage
-from schemas import NotificationItem, AuthorInfo
 from deps import get_current_user
+from fastapi import APIRouter, Depends, HTTPException, Query
+from models import AdminUser, CMSNotification, CMSPage
+from schemas import NotificationItem
+from sqlalchemy import desc
+from sqlalchemy.orm import Session
 
 router = APIRouter(prefix="/api/v1/cms", tags=["cms-notifications"])
 
@@ -18,7 +18,7 @@ def list_notifications(
 ):
     q = db.query(CMSNotification).filter(CMSNotification.user_id == user.id)
     if unread:
-        q = q.filter(CMSNotification.is_read == False)
+        q = q.filter(not CMSNotification.is_read)
     total = q.count()
     notifs = q.order_by(desc(CMSNotification.created_at)).offset(offset).limit(limit).all()
     items = []

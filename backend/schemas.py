@@ -1,39 +1,41 @@
-from pydantic import BaseModel, Field, field_validator
-from typing import Optional, Any
-from datetime import datetime
 import re
+from datetime import datetime
+from typing import Any
+
+from pydantic import BaseModel, Field, field_validator
+
 
 class LoginRequest(BaseModel):
-    email: Optional[str] = None
-    password: Optional[str] = None
-    token: Optional[str] = None
+    email: str | None = None
+    password: str | None = None
+    token: str | None = None
 
 class UserInfo(BaseModel):
     id: str
     email: str
-    display_name: Optional[str] = None
+    display_name: str | None = None
     role: str
 
 class LoginResponse(BaseModel):
     token: str
     expires_at: str
-    user: Optional[UserInfo] = None
+    user: UserInfo | None = None
 
 class AuthorInfo(BaseModel):
-    display_name: Optional[str] = None
+    display_name: str | None = None
     email: str
 
 class PageListItem(BaseModel):
     id: str
     slug: str
     title: str
-    description: Optional[str] = None
+    description: str | None = None
     content_type: str = "page"
     status: str
-    tags: Optional[str] = None
+    tags: str | None = None
     author: AuthorInfo
-    published_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
+    published_at: datetime | None = None
+    updated_at: datetime | None = None
 
 class PageListResponse(BaseModel):
     pages: list[PageListItem]
@@ -45,36 +47,36 @@ class PageDetail(BaseModel):
     id: str
     slug: str
     title: str
-    description: Optional[str] = None
+    description: str | None = None
     content_json: Any
-    content_html: Optional[str] = None
-    hero_image: Optional[str] = None
-    meta_title: Optional[str] = None
-    tags: Optional[str] = None
-    publish_schedule_at: Optional[datetime] = None
+    content_html: str | None = None
+    hero_image: str | None = None
+    meta_title: str | None = None
+    tags: str | None = None
+    publish_schedule_at: datetime | None = None
     status: str
     content_type: str = "page"
     author: AuthorInfo
-    reviewer: Optional[AuthorInfo] = None
-    rejection_reason: Optional[str] = None
-    published_at: Optional[datetime] = None
-    submitted_at: Optional[datetime] = None
-    reviewed_at: Optional[datetime] = None
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
+    reviewer: AuthorInfo | None = None
+    rejection_reason: str | None = None
+    published_at: datetime | None = None
+    submitted_at: datetime | None = None
+    reviewed_at: datetime | None = None
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
 
 class PageCreate(BaseModel):
     slug: str
     title: str
-    description: Optional[str] = None
+    description: str | None = None
     content_json: dict
-    hero_image: Optional[str] = None
-    meta_title: Optional[str] = None
-    tags: Optional[str] = None
-    publish_schedule_at: Optional[datetime] = None
+    hero_image: str | None = None
+    meta_title: str | None = None
+    tags: str | None = None
+    publish_schedule_at: datetime | None = None
     status: str = "draft"
     content_type: str = "page"
-    change_note: Optional[str] = None
+    change_note: str | None = None
 
     @field_validator("slug")
     @classmethod
@@ -104,23 +106,23 @@ class PageCreate(BaseModel):
         return v
 
 class PageUpdate(BaseModel):
-    title: Optional[str] = None
-    description: Optional[str] = None
-    content_json: Optional[dict] = None
-    hero_image: Optional[str] = None
-    meta_title: Optional[str] = None
-    tags: Optional[str] = None
-    publish_schedule_at: Optional[datetime] = None
-    status: Optional[str] = None
-    content_type: Optional[str] = None
-    change_note: Optional[str] = None
+    title: str | None = None
+    description: str | None = None
+    content_json: dict | None = None
+    hero_image: str | None = None
+    meta_title: str | None = None
+    tags: str | None = None
+    publish_schedule_at: datetime | None = None
+    status: str | None = None
+    content_type: str | None = None
+    change_note: str | None = None
 
 class PageCreateResponse(BaseModel):
     id: str
     slug: str
     status: str
-    tags: Optional[str] = None
-    meta_title: Optional[str] = None
+    tags: str | None = None
+    meta_title: str | None = None
 
 class ReviewNoteCreate(BaseModel):
     note: str = Field(..., min_length=1, max_length=2048)
@@ -129,20 +131,20 @@ class ReviewNoteItem(BaseModel):
     id: str
     note: str
     author: AuthorInfo
-    created_at: Optional[datetime] = None
+    created_at: datetime | None = None
 
 class RejectRequest(BaseModel):
     reason: str = Field(..., min_length=10, max_length=1024)
-    change_note: Optional[str] = None
+    change_note: str | None = None
 
 class ReviewQueueItem(BaseModel):
     id: str
     slug: str
     title: str
     author: AuthorInfo
-    submitted_at: Optional[datetime] = None
-    waiting_hours: Optional[float] = None
-    content_html: Optional[str] = None
+    submitted_at: datetime | None = None
+    waiting_hours: float | None = None
+    content_html: str | None = None
 
 class ReviewQueueResponse(BaseModel):
     queue: list[ReviewQueueItem]
@@ -154,31 +156,31 @@ class NotificationItem(BaseModel):
     id: str
     type: str
     message: str
-    page_slug: Optional[str] = None
+    page_slug: str | None = None
     is_read: bool
-    created_at: Optional[datetime] = None
+    created_at: datetime | None = None
 
 class RevisionItem(BaseModel):
     id: str
-    change_note: Optional[str] = None
+    change_note: str | None = None
     changed_by: AuthorInfo
     status_at_save: str
-    created_at: Optional[datetime] = None
+    created_at: datetime | None = None
 
 class MediaItem(BaseModel):
     id: str
     filename: str
-    original_name: Optional[str] = None
+    original_name: str | None = None
     url: str
     mime_type: str
     media_type: str
     size_bytes: int
     width: int
     height: int
-    alt_text: Optional[str] = None
-    caption: Optional[str] = None
-    uploaded_by: Optional[AuthorInfo] = None
-    created_at: Optional[datetime] = None
+    alt_text: str | None = None
+    caption: str | None = None
+    uploaded_by: AuthorInfo | None = None
+    created_at: datetime | None = None
 
 class MediaUploadResponse(BaseModel):
     success: bool
@@ -191,13 +193,13 @@ class MediaListResponse(BaseModel):
 class SettingItem(BaseModel):
     id: str
     key: str
-    value: Optional[Any] = None
+    value: Any | None = None
     type: str
-    updated_at: Optional[datetime] = None
+    updated_at: datetime | None = None
 
 class SettingUpdate(BaseModel):
-    value: Optional[Any] = None
-    type: Optional[str] = None
+    value: Any | None = None
+    type: str | None = None
 
 class SettingListResponse(BaseModel):
     settings: list[SettingItem]
@@ -206,17 +208,17 @@ class BlockItem(BaseModel):
     id: str
     name: str
     slug: str
-    description: Optional[str] = None
+    description: str | None = None
     content_json: Any
-    content_html: Optional[str] = None
+    content_html: str | None = None
     category: str
-    created_by: Optional[AuthorInfo] = None
-    updated_at: Optional[datetime] = None
+    created_by: AuthorInfo | None = None
+    updated_at: datetime | None = None
 
 class BlockCreate(BaseModel):
     name: str
     slug: str
-    description: Optional[str] = None
+    description: str | None = None
     content_json: dict
     category: str = "custom"
 
@@ -248,10 +250,10 @@ class BlockCreate(BaseModel):
         return v
 
 class BlockUpdate(BaseModel):
-    name: Optional[str] = None
-    description: Optional[str] = None
-    content_json: Optional[dict] = None
-    category: Optional[str] = None
+    name: str | None = None
+    description: str | None = None
+    content_json: dict | None = None
+    category: str | None = None
 
 class BlockListResponse(BaseModel):
     blocks: list[BlockItem]
@@ -260,7 +262,7 @@ class BlockListResponse(BaseModel):
 class UserCreate(BaseModel):
     email: str
     password: str
-    display_name: Optional[str] = None
+    display_name: str | None = None
     role: str = "editor"
 
     @field_validator("email")
@@ -288,10 +290,10 @@ class UserCreate(BaseModel):
 class UserListItem(BaseModel):
     id: str
     email: str
-    display_name: Optional[str] = None
+    display_name: str | None = None
     role: str
-    last_login_at: Optional[datetime] = None
-    created_at: Optional[datetime] = None
+    last_login_at: datetime | None = None
+    created_at: datetime | None = None
 
 class UserListResponse(BaseModel):
     users: list[UserListItem]

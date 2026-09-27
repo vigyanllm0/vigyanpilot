@@ -1,15 +1,19 @@
-from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
+import json
+import urllib.request
+from datetime import datetime, timezone
+from urllib.error import URLError
+
+from auth import create_token, verify_password
 from database import get_db
+from fastapi import APIRouter, Depends, HTTPException
 from models import AdminUser
 from schemas import LoginRequest, LoginResponse, UserInfo
-from auth import hash_password, verify_password, create_token
-from datetime import datetime, timezone
-import urllib.request, json
+from sqlalchemy.orm import Session
+
+from config import MAIN_API_URL as MAIN_API
 
 router = APIRouter(prefix="/api/v1/cms/auth", tags=["auth"])
 
-from config import MAIN_API_URL as MAIN_API
 
 @router.post("/login")
 def login(req: LoginRequest, db: Session = Depends(get_db)):
@@ -31,8 +35,8 @@ def login(req: LoginRequest, db: Session = Depends(get_db)):
 
 def _exchange_token(pf_token: str, db: Session):
     try:
-        with urllib.request.urlopen(
-            urllib.request.Request(
+        with urllib.request.urlopen(  # noqa: S310
+            urllib.request.Request(  # noqa: S310
                 MAIN_API + "/auth/me",
                 headers={"Authorization": f"Bearer {pf_token}"},
             ),
@@ -62,5 +66,5 @@ def _exchange_token(pf_token: str, db: Session):
         )
     except HTTPException:
         raise
-    except Exception as e:
-        raise HTTPException(status_code=502, detail=f"Could not verify web token: {str(e)}")
+    except (URLError, json.JSONDecodeError) as e:
+        raise HTTPException(status_code=502, detail=f"Could not verify web token: {e!s}")

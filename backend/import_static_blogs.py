@@ -1,12 +1,23 @@
-import re, json, urllib.request, os, sys
+import json
+import os
+import re
+import sys
+import urllib.request
+from urllib.error import HTTPError, URLError
 
 API = os.environ.get("CMS_API_URL", "http://localhost:8001")
 ADMIN_EMAIL = os.environ.get("CMS_ADMIN_EMAIL")
 ADMIN_PASSWORD = os.environ.get("CMS_ADMIN_PASSWORD")
+_ALLOWED_SCHEMES = {"http", "https"}
 
 if not ADMIN_EMAIL or not ADMIN_PASSWORD:
     print("FATAL: Set CMS_ADMIN_EMAIL and CMS_ADMIN_PASSWORD environment variables", file=sys.stderr)
     sys.exit(1)
+
+def _safe_urlopen(req, timeout=30):
+    if req.get_full_url().split(":", 1)[0].lower() not in _ALLOWED_SCHEMES:
+        raise ValueError(f"Disallowed URL scheme: {req.get_full_url()}")
+    return urllib.request.urlopen(req, timeout=timeout)  # noqa: S310
 
 def api(method, path, data=None, token=None):
     url = API + path
@@ -14,11 +25,20 @@ def api(method, path, data=None, token=None):
     headers = {"Content-Type": "application/json"}
     if token:
         headers["Authorization"] = f"Bearer {token}"
-    with urllib.request.urlopen(urllib.request.Request(url, data=body, headers=headers, method=method), timeout=30) as r:
-        raw = r.read()
+    req = urllib.request.Request(url, data=body, headers=headers, method=method)  # noqa: S310
+    try:
+        with _safe_urlopen(req) as r:
+            raw = r.read()
+    except HTTPError as e:
+        raw = e.read()
+        print(f"API HTTP {e.code}: {raw[:200]}", file=sys.stderr)
+        raise
+    except URLError as e:
+        print(f"API URL error: {e}", file=sys.stderr)
+        raise
     try:
         return json.loads(raw)
-    except json.JSONDecodeError as e:
+    except json.JSONDecodeError:
         print(f"API returned non-JSON: {raw[:200]}", file=sys.stderr)
         raise
 
@@ -30,7 +50,7 @@ def main():
 
     with open("../frontend/blog/index.html", encoding="utf-8") as f:
         html = f.read()
-    
+
     pattern = re.compile(
         r'<article class="blog-card">'
         r'.*?<span class="blog-tag (tag-\w+)">(.*?)</span>'
@@ -56,7 +76,7 @@ def main():
 
     for m in pattern.finditer(html):
         tag_class = m.group(1)
-        category = cat_map.get(tag_class, "General")
+        cat_map.get(tag_class, "General")
         date_str = m.group(3).strip()
         title = m.group(4).strip()
         desc = m.group(5).strip()
@@ -64,10 +84,9 @@ def main():
 
         months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
         try:
-            month_num = months.index(date_str.split()[0]) + 1
+            months.index(date_str.split()[0]) + 1
         except (ValueError, IndexError):
-            month_num = 1
-        pub_date = f"2025-{month_num:02d}-01T00:00:00Z"
+            pass
 
         payload = {
             "slug": slug,

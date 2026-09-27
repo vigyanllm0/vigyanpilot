@@ -1,10 +1,11 @@
-from fastapi import APIRouter, Depends, Query
-from sqlalchemy.orm import Session
-from sqlalchemy import func
+from datetime import datetime, timedelta, timezone
+
 from database import get_db
-from models import CMSPage, CMSPageView, AdminUser
 from deps import get_current_user
-from datetime import datetime, timezone, timedelta
+from fastapi import APIRouter, Depends, Query
+from models import AdminUser, CMSPage, CMSPageView
+from sqlalchemy import func
+from sqlalchemy.orm import Session
 
 router = APIRouter(tags=["stats"])
 

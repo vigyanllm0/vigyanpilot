@@ -1,10 +1,11 @@
 import logging
+
+from database import engine
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from database import engine
 from models import Base
-from routes import auth, pages, review, upload, public, notifications, stats, media, settings, blocks, users
 from pii_mask import install_pii_mask
+from routes import auth, blocks, media, notifications, pages, public, review, settings, stats, upload, users
 
 logging.basicConfig(level=logging.INFO,
                     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
@@ -38,10 +39,9 @@ def startup():
     _seed_admin()
 
 def _seed_admin():
-    from sqlalchemy.orm import Session
+    from auth import hash_password
     from database import SessionLocal
     from models import AdminUser
-    from auth import hash_password
     db = SessionLocal()
     try:
         existing = db.query(AdminUser).filter(AdminUser.email == "contact@vigyanllm.in").first()

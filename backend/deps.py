@@ -1,14 +1,18 @@
-from fastapi import Depends, HTTPException, status
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from sqlalchemy.orm import Session
+import json
+import urllib.request
+from urllib.error import URLError
+
 from auth import decode_token
-from models import AdminUser
 from database import get_db
-import urllib.request, json
+from fastapi import Depends, HTTPException
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from models import AdminUser
+from sqlalchemy.orm import Session
+
+from config import MAIN_API_URL as MAIN_API
 
 security = HTTPBearer()
 
-from config import MAIN_API_URL as MAIN_API
 
 def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(security),
@@ -33,13 +37,11 @@ def require_admin(user: AdminUser = Depends(get_current_user)) -> AdminUser:
 
 def _validate_pf_token(token: str, db: Session):
     try:
-        with urllib.request.urlopen(
-            urllib.request.Request(
-                MAIN_API + "/auth/me",
-                headers={"Authorization": f"Bearer {token}"},
-            ),
-            timeout=5,
-        ) as r:
+        req = urllib.request.Request(  # noqa: S310
+            MAIN_API + "/auth/me",
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        with urllib.request.urlopen(req, timeout=5) as r:  # noqa: S310
             data = json.loads(r.read())
         email = data.get("email") or data.get("user", {}).get("email", "")
         role = data.get("role") or data.get("user", {}).get("role", "user")
@@ -54,5 +56,5 @@ def _validate_pf_token(token: str, db: Session):
         db.add(user)
         db.commit()
         return user
-    except Exception:
+    except (URLError, json.JSONDecodeError):
         return None

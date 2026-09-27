@@ -1,5 +1,5 @@
 import os
-from urllib.parse import urlparse, urlencode, parse_qs, urlunparse
+from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
 
 # Anchored to repo root so uploads resolve identically regardless of CWD.
 _BACKEND_DIR = os.path.dirname(os.path.abspath(__file__))

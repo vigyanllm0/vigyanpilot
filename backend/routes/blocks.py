@@ -1,12 +1,13 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.orm import Session
-from database import get_db
-from models import AdminUser, CMSBlock
-from schemas import BlockItem, BlockCreate, BlockUpdate, BlockListResponse, AuthorInfo
-from deps import get_current_user, require_admin
-from datetime import datetime, timezone
-from sqlalchemy import desc
 import logging
+from datetime import datetime, timezone
+
+from database import get_db
+from deps import require_admin
+from fastapi import APIRouter, Depends, HTTPException, Query
+from models import AdminUser, CMSBlock
+from schemas import AuthorInfo, BlockCreate, BlockItem, BlockListResponse, BlockUpdate
+from sqlalchemy import desc
+from sqlalchemy.orm import Session
 
 logger = logging.getLogger("vigyanllm.cms.blocks")
 

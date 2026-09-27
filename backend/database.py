@@ -1,5 +1,6 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+
 from config import DATABASE_URL, DB_CONNECT_ARGS
 
 connect_args = DB_CONNECT_ARGS if DB_CONNECT_ARGS else {}

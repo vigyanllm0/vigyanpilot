@@ -95,7 +95,6 @@ def main():
         cleaned = clean_text_nodes(cj)
         if cleaned is None:
             cleaned = {"type": "doc", "content": []}
-        raw = cleaned
         if cleaned != cj:
             page.content_json = cleaned
             page.content_html = json_to_html(cleaned)

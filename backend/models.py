@@ -1,8 +1,9 @@
-from sqlalchemy import create_engine, Column, String, Text, Boolean, DateTime, ForeignKey, Integer, TypeDecorator
-from sqlalchemy.orm import declarative_base, relationship
-from sqlalchemy.sql import func
 import json
 import uuid
+
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, Text, TypeDecorator
+from sqlalchemy.orm import declarative_base, relationship
+from sqlalchemy.sql import func
 
 Base = declarative_base()
 
@@ -136,7 +137,7 @@ class CMSMedia(Base):
     caption = Column(String(1024))
     uploaded_by = Column(String, ForeignKey("admin_users.id"))
     created_at = Column(DateTime(timezone=True), server_default=func.now())
-    
+
     uploader = relationship("AdminUser")
 
 class CMSSetting(Base):

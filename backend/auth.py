@@ -1,7 +1,10 @@
 from datetime import datetime, timedelta, timezone
-from jose import jwt, JWTError
+
 import bcrypt as _bcrypt
-from config import JWT_SECRET, JWT_ALGORITHM, JWT_EXPIRY_HOURS
+from jose import JWTError, jwt
+
+from config import JWT_ALGORITHM, JWT_EXPIRY_HOURS, JWT_SECRET
+
 
 def hash_password(password: str) -> str:
     return _bcrypt.hashpw(password.encode('utf-8'), _bcrypt.gensalt(rounds=12)).decode('utf-8')

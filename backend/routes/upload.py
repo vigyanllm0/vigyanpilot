@@ -17,17 +17,19 @@ Allowed MIME types: PNG, JPEG, WEBP, GIF, SVG
 Max file size: 5 MB (MAX_UPLOAD_SIZE from config)
 """
 
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
-from sqlalchemy.orm import Session
-from database import get_db
-from models import AdminUser, CMSMedia
-from deps import get_current_user
-from config import UPLOAD_DIR, MAX_UPLOAD_SIZE, ALLOWED_EXTENSIONS
-import os
-import uuid
-import struct
 import datetime
 import logging
+import os
+import struct
+import uuid
+
+from database import get_db
+from deps import get_current_user
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
+from models import AdminUser, CMSMedia
+from sqlalchemy.orm import Session
+
+from config import ALLOWED_EXTENSIONS, MAX_UPLOAD_SIZE, UPLOAD_DIR
 
 logger = logging.getLogger("vigyanllm.cms.upload")
 
@@ -40,8 +42,9 @@ router = APIRouter(prefix="/api/v1/cms", tags=["cms-upload"])
 # We now use defusedxml to parse the SVG and rebuild it clean.
 
 try:
-    import defusedxml.ElementTree as _det
-    import xml.etree.ElementTree as _et
+    import xml.etree.ElementTree as ET
+
+    import defusedxml.ElementTree as DET  # noqa: N814
     _DEFUSEDXML_AVAILABLE = True
 except ImportError:
     _DEFUSEDXML_AVAILABLE = False
@@ -107,13 +110,13 @@ def _sanitize_svg(raw_bytes: bytes) -> bytes:
         )
 
     try:
-        root = _det.fromstring(raw_bytes.decode("utf-8", errors="replace"))
-    except Exception as exc:
+        root = DET.fromstring(raw_bytes.decode("utf-8", errors="replace"))
+    except DET.ParseError as exc:
         raise HTTPException(status_code=400, detail=f"Invalid SVG: cannot parse XML. {exc}")
 
     _sanitize_element(root)
 
-    return _et.tostring(root, encoding="unicode", xml_declaration=False).encode("utf-8")
+    return ET.tostring(root, encoding="unicode", xml_declaration=False).encode("utf-8")
 
 
 def _sanitize_element(element) -> None:
@@ -207,7 +210,7 @@ def _get_dimensions(data: bytes, mime: str) -> tuple[int, int]:
                     w = struct.unpack('>H', data[i + 7:i + 9])[0]
                     return w, h
                 i += 1
-    except Exception as exc:
+    except struct.error as exc:
         logger.debug("Could not extract image dimensions: %s", exc)
     return 0, 0
 

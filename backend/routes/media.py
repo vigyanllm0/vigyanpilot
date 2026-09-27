@@ -1,17 +1,18 @@
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, Query
-from pydantic import BaseModel
-from typing import Optional
-from sqlalchemy.orm import Session
-from database import get_db
-from models import AdminUser, CMSMedia
-from schemas import MediaItem, MediaUploadResponse, MediaListResponse, AuthorInfo
-from deps import get_current_user
-from config import UPLOAD_DIR
-import os
-import uuid
-import struct
 import datetime
 import logging
+import os
+import struct
+import uuid
+
+from database import get_db
+from deps import get_current_user
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile
+from models import AdminUser, CMSMedia
+from pydantic import BaseModel
+from schemas import AuthorInfo, MediaItem, MediaListResponse, MediaUploadResponse
+from sqlalchemy.orm import Session
+
+from config import UPLOAD_DIR
 
 logger = logging.getLogger("vigyanllm.cms.media")
 
@@ -28,8 +29,8 @@ MAX_VIDEO_SIZE = 20 * 1024 * 1024
 
 
 class MediaUpdate(BaseModel):
-    alt_text: Optional[str] = None
-    caption: Optional[str] = None
+    alt_text: str | None = None
+    caption: str | None = None
 
 
 def _check_image_magic_bytes(data: bytes) -> str | None:
@@ -49,8 +50,9 @@ def _check_image_magic_bytes(data: bytes) -> str | None:
 
 def _get_dimensions(data: bytes, mime: str) -> tuple[int, int]:
     try:
-        from PIL import Image as PilImage
         import io
+
+        from PIL import Image as PilImage
         with PilImage.open(io.BytesIO(data)) as img:
             return img.size
     except ImportError:
@@ -68,8 +70,8 @@ def _get_dimensions(data: bytes, mime: str) -> tuple[int, int]:
                     w = struct.unpack('>H', data[i + 7:i + 9])[0]
                     return w, h
                 i += 1
-    except Exception:
-        pass
+    except struct.error as exc:
+        logger.debug("Could not extract image dimensions: %s", exc)
     return 0, 0
 
 
