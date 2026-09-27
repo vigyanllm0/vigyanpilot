@@ -51,8 +51,7 @@ jobs:
 
       - name: Check dependency vulnerabilities
         run: |
-          pip install --upgrade setuptools>=83.0.0 --quiet
-          safety check --full-report
+          safety check --full-report --policy-file safety-policy.yml
 
       - name: Run pytest with coverage
         run: |
