@@ -43,10 +43,24 @@ All public-facing pages must use the **identical header and footer mechanism** t
 ## Violation Protocol
 If a new page is created that does not follow the VL mechanism:
 1. **Add includes.js** before `</head>` or `</body>`
-2. **Add `#vl-header</div>`** before `<body>` (or at top of body)
-3. **Add `#vl-footer</div>`** before `</body>`
+2. **Add `<div id="vl-header"></div>`** at top of `<body>`
+3. **Add `<div id="vl-footer"></div>`** before `</body>`
 4. **Remove hardcoded `<header>`/`<footer>`** tags if present
-5. **Update this rule.md** with the new page exception (if it's a blog/glossary page)
+5. **Add `<link rel="stylesheet" href="/design-tokens.css">`** in `<head>` — the partials carry **no inline styles**; without this file (or `primer.css`, which also defines nav/footer rules) the injected header/footer renders unstyled
+6. **Never put `id="vl-header"` on a `<header>` element** — see failure modes below
+7. **Update this rule.md** with the new page exception (if it's a blog/glossary page)
+
+## Known failure modes (found & fixed 2026-09-27)
+
+1. **ID hijack**: `<header id="vl-header">…</header>` — a hardcoded page header that reuses the VL id. Naive detection (`id="vl-header"` present) reports the page as compliant, but the page renders its own white/simple header instead of the shared partial. Detect with `<(header)[^>]*id="vl-header"` (tag **and** id), not id alone. **Fixed on**: `protein-quality`, `binding-site`, `interactions`, `regenerate`.
+2. **Missing stylesheet**: VL divs + `includes.js` but no `design-tokens.css`/`primer.css` → partial injects unstyled. **Fixed on**: `admin-reviews` + the 4 pages above.
+3. **Duplicate footer**: hardcoded `<footer class="site-footer">` left alongside the injected `#vl-footer`. **Fixed on** the 4 pages above.
+4. **`!important` typography conflicts**: design-tokens forces `h1{color:var(--text)!important}` — a hero h1 inheriting white on a dark gradient becomes invisible. Pages must declare `.hero h1{color:#fff!important}`. **Fixed on** the 4 pages + `.admin-header h1` on `admin-reviews`.
+5. **Stale navy shade**: site standard is `--navy:#0F172A` (homepage `home.css` + `primer.css` override to it). `design-tokens.css` default was `#1a1a2e` → 430 design-tokens-only pages (blog/glossary) rendered nav/footer in the wrong shade. `primer.css` footer used `var(--black)` (`#0A0A0F`). All aligned to `#0F172A` on 2026-09-27 (`design-tokens.css`, `blog/index.html` inline tokens, `primer.css` footer rule).
+
+### Audit command
+Detect violations (must print 0 issues; blog/glossary hardcoded pages are exempt):
+`grep -rlE '<header[^>]*id="vl-header"|<footer class="site-footer"' frontend/ --include='*.html'` + check every `id="vl-header"` page also has `includes.js` and one of `design-tokens.css`/`primer.css`.
 
 ## Last validated
-2026-09-27 — 104/104 public-facing pages uniform; 306 blog/glossary pages exempt with hardcoded headers (content-appropriate).
+2026-09-27 — 223 VL-mechanism pages verified (render-tested via headless Chrome: nav bg `rgb(15,23,42)`, 56px, 6-item nav, 5-column footer on every page); 300 blog/glossary pages exempt with hardcoded-but-identical nav (same classes + design-tokens). Legacy root `header.html`/`footer.html` are dead files (unreferenced, not in sitemap).
