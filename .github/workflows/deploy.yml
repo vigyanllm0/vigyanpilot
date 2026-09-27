@@ -50,6 +50,7 @@ jobs:
 
       - name: Check dependency vulnerabilities
         run: |
+          pip install --upgrade setuptools>=83.0.0 --quiet
           safety check --full-report
 
       - name: Run pytest with coverage
