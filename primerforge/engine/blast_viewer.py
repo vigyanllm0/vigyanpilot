@@ -135,7 +135,8 @@ def run_remote_blast(
                 raw = status_resp.content
                 # NCBI now returns ZIP archives containing JSON2 results
                 if raw[:2] == b'PK':
-                    import io as _io, zipfile as _zipfile
+                    import io as _io
+                    import zipfile as _zipfile
                     zf = _zipfile.ZipFile(_io.BytesIO(raw))
                     data = {}
                     for name in zf.namelist():

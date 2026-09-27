@@ -22,7 +22,7 @@ def _gc_percent(sequence: str) -> float:
 def execute(input_data: dict[str, Any]) -> dict[str, Any]:
     """
     Step 7: Refine thermodynamics for all candidate pairs.
-    
+
     Input: candidate_pairs, buffer conditions
     Output: refined_pairs with NN-calculated Tm, salt-adjusted, Mg-adjusted
     """

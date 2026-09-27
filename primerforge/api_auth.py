@@ -1,12 +1,11 @@
 """API key authentication for VigyanLLM developer portal."""
 import hashlib
-import secrets
-import time
 import os
+import secrets
 from functools import wraps
 
-from flask import request, jsonify, g
 import psycopg2
+from flask import g, jsonify, request
 
 
 def generate_api_key():

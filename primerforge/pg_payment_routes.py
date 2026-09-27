@@ -41,11 +41,9 @@ from .database import (
 )
 from .pg_auth import check_usage, log_action, require_admin, require_auth
 from .price_registry import (
-    FREE_TRIAL_RUNS,
-    PRICE_REGISTRY,
-    TOPUP_PRICE_INR,
     ACADEMIC_DISCOUNT_PCT,
     PLAN_REGISTRY,
+    PRICE_REGISTRY,
     get_academic_price,
     get_amount_paise,
     get_designs_for_product,
@@ -1113,7 +1111,6 @@ def delete_result():
 def export_pdf():
     """Export analysis results as PDF."""
     import json as _json
-    import io
     data = request.get_json(silent=True) or {}
     tool = (data.get("tool") or "analysis").strip()
     inputs = data.get("inputs", {})
@@ -1157,7 +1154,6 @@ def export_pdf():
 @require_auth
 def export_pptx():
     """Export analysis results as PPTX."""
-    import json as _json
     import io
     data = request.get_json(silent=True) or {}
     tool = (data.get("tool") or "analysis").strip()
@@ -1481,7 +1477,8 @@ def admin_create_promo():
     expires_at = float(data.get("expires_at", 0))
     discount_pct = int(data.get("discount_pct", 0)) if promo_type == "discount" else 0
 
-    import secrets, string
+    import secrets
+    import string
     codes = []
     for _ in range(count):
         for attempt in range(10):

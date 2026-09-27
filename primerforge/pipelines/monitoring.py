@@ -75,7 +75,7 @@ def check_file_system() -> dict:
 
     # Check docking queue directories
     try:
-        from primerforge.docking_queue import PENDING_DIR, RUNNING_DIR, COMPLETE_DIR, FAILED_DIR
+        from primerforge.docking_queue import COMPLETE_DIR, FAILED_DIR, PENDING_DIR, RUNNING_DIR
         for name, path in [('pending', PENDING_DIR), ('running', RUNNING_DIR),
                            ('complete', COMPLETE_DIR), ('failed', FAILED_DIR)]:
             p = Path(path)

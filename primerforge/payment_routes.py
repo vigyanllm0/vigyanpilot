@@ -27,12 +27,12 @@ from .auth import (
     require_auth,
 )
 from .price_registry import (
-    PLAN_REGISTRY,
     ACADEMIC_DISCOUNT_PCT,
+    PLAN_REGISTRY,
     get_academic_price,
     get_amount_paise,
-    validate_plan,
     get_tier_from_plan,
+    validate_plan,
 )
 
 logger = logging.getLogger("primerforge.payment")

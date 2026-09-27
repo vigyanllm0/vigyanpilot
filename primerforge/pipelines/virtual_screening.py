@@ -21,9 +21,8 @@ import logging
 import os
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional
 
 logger = logging.getLogger(__name__)
 
@@ -183,7 +182,7 @@ class VirtualScreeningCampaign:
 
         try:
             # Import here to avoid circular imports
-            from primerforge.pipelines.docking_engine import VinaEngine, GNINAEngine
+            from primerforge.pipelines.docking_engine import GNINAEngine, VinaEngine
 
             # Run Vina
             vina = VinaEngine()

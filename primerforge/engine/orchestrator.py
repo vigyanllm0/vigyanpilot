@@ -63,7 +63,7 @@ class StepOutcome:
 
 def validate_step_output(step_number: int, step_name: str, output: dict[str, Any]) -> dict[str, Any]:
     """Validate step output — check for common issues and log warnings.
-    
+
     Returns the output unchanged (validation is advisory, not blocking).
     """
     if not isinstance(output, dict):

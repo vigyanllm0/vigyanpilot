@@ -104,7 +104,7 @@ def _load_model(report=None):
 
 def _extract_plddt_from_pdb(pdb_string: str) -> float:
     """Extract mean pLDDT from B-factor column (cols 55-60) in PDB ATOM records.
-    
+
     The ESMFold web API stores per-residue confidence in the B-factor field,
     0-100 scale. Falls back to 0 if no ATOM records can be parsed.
     """
@@ -123,7 +123,7 @@ def _extract_plddt_from_pdb(pdb_string: str) -> float:
 
 def _fetch_esmfold_api_pdb(sequence: str, report=None) -> dict[str, Any] | None:
     """Fetch protein structure from the free ESMFold web API (api.esmatlas.com).
-    
+
     Returns the same dict format as local ESMFold, or None on failure.
     The API has no auth, rate-limited to ~10 req/min per IP.
     """
@@ -190,7 +190,7 @@ _AA_COORD = {
 
 def _generate_fallback_pdb(sequence: str) -> str:
     """Generate a compact helical PDB from an amino acid sequence.
-    
+
     Wraps the sequence into an alpha-helical bundle shape (~5 Å diameter,
     ~100 Å length for a 150aa protein) so Vina can compute a reasonable
     search box within its 27,000 Å³ volume limit.

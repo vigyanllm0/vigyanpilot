@@ -86,7 +86,7 @@ def pdb_to_pdbqt(receptor_pdb: str, output_path: str) -> bool:
 async def run_vina_docking(receptor_pdb: str, ligand_smiles: str, exhaustiveness: int = 8, receptor_pdbqt_path: str = None) -> dict[str, Any]:
     """
     Runs AutoDock Vina physics engine locally.
-    
+
     If receptor_pdbqt_path is provided, skips receptor PDB→PDBQT conversion.
     """
     with tempfile.TemporaryDirectory() as temp_dir:

@@ -236,7 +236,7 @@ def _align_mafft(sequences: list[str], auto: bool = True, fast: bool = False) ->
 
 def _align_python(sequences: list[str]) -> list[str] | None:
     """Reference-based pairwise progressive alignment (pure Python).
-    
+
     Picks the longest sequence as reference and aligns all others
     to it via Needleman-Wunsch (or Biopython PairwiseAligner if available).
     Falls back to fast-padding for sets >100 sequences.

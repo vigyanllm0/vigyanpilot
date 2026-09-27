@@ -40,6 +40,7 @@ from dotenv import load_dotenv
 logging.basicConfig(level=logging.INFO,
                     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
 from primerforge.pii_mask import install_pii_mask
+
 install_pii_mask()
 logger = logging.getLogger("primerforge.server")
 
@@ -648,8 +649,6 @@ def create_app() -> Flask:
     if USE_POSTGRES:
         from primerforge.database import close_db, init_db
         from primerforge.pg_auth import (
-            check_docking_usage,
-            check_usage,
             consume_docking_token,
             consume_token,
             ensure_admin_exists,
@@ -694,8 +693,6 @@ def create_app() -> Flask:
         logger.info("Database: PostgreSQL (production mode)")
     else:
         from primerforge.auth import (
-            check_docking_usage,
-            check_usage,
             close_db,
             get_current_user,
             get_db,
@@ -779,7 +776,9 @@ def create_app() -> Flask:
     @app.route("/api/cookie-consent", methods=["POST"])
     def cookie_consent():
         import sqlite3
-        from primerforge.auth import get_db, init_db as _init_db
+
+        from primerforge.auth import get_db
+        from primerforge.auth import init_db as _init_db
         data = request.get_json(silent=True) or {}
         consent = str(data.get("consent", "accepted"))[:32]
         email = str(data.get("email", ""))[:255]
@@ -1107,7 +1106,8 @@ def create_app() -> Flask:
                 }), 500
 
     # ── CMS API Proxy ─────────────────────────────────────────────────────
-    import urllib.request, urllib.error
+    import urllib.error
+    import urllib.request
 
     CMS_BACKEND = os.environ.get("CMS_BACKEND_URL", "http://localhost:8001")
 
@@ -1115,7 +1115,6 @@ def create_app() -> Flask:
 
     @app.route("/api/v1/cms/<path:cms_path>", methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
     def proxy_cms(cms_path):
-        import io
         body = request.get_data()
         logger.info("CMS proxy: %s /api/v1/cms/%s (body_len=%d, body_start=%s, ct=%s, cl=%s)",
                      request.method, cms_path, len(body), body[:50].decode('utf-8','replace'),
@@ -1893,7 +1892,8 @@ def create_app() -> Flask:
 
         def _record_usage(user, tool_key, seq_count):
             if USE_POSTGRES:
-                from .database import fetch_one as pg_fetch_one, execute as pg_execute
+                from .database import execute as pg_execute
+                from .database import fetch_one as pg_fetch_one
                 try:
                     uid_row = pg_fetch_one("SELECT id FROM users WHERE email = %s", (user["email"],))
                     if uid_row:
@@ -2055,7 +2055,7 @@ def create_app() -> Flask:
 
     def _parse_oligo_file(text, return_meta=False):
         """Parse FASTA, CSV, or TSV text into a list of {name, forward, reverse, template} dicts.
-        
+
         Supports:
         - FASTA: >name / ATGC... / /rev ... / /template ...
         - CSV with header: name,forward,reverse,template or fwd,rev,sequence
@@ -2063,7 +2063,7 @@ def create_app() -> Flask:
         - CSV single-column (no header): one sequence per line
         - TSV with header: same column names as CSV
         - Raw list: one sequence per line (auto-named Primer1, Primer2...)
-        
+
         If return_meta=True, returns (entries, meta_dict) with parse count info.
         """
         import csv
@@ -2071,7 +2071,7 @@ def create_app() -> Flask:
         lines = [l.strip() for l in text.strip().split("\n") if l.strip()]
         if not lines:
             return ([] if not return_meta else ([], {"format": "empty", "count": 0}))
-        
+
         # ── Primer-BLAST / NCBI report detection (must come before CSV check, as first line may contain commas) ──
         has_primer_blast = any("primer pair" in l.lower()
                               or l.lower().startswith("forward primer sequence")
@@ -2113,12 +2113,12 @@ def create_app() -> Flask:
                 if return_meta:
                     return entries, {"format": "primer-blast", "count": len(entries), "has_header": True}
                 return entries
-        
+
         first = lines[0].lower()
         is_csv = "," in first
         is_tsv = not is_csv and "\t" in first
         has_fasta = first.startswith(">")
-        
+
         # ── Detect columnar formats (CSV/TSV) ────────────────────────
         KNOWN_COLUMNS = {"forward","fwd","primer","primer_sequence","sequence","seq",
                          "fwd_sequence","fwd_seq",
@@ -2130,7 +2130,7 @@ def create_app() -> Flask:
         REV_KEYS = ["reverse","rev","rev_sequence","rev_seq"]
         NAME_KEYS = ["name","id","primer_name"]
         TEMPLATE_KEYS = ["template","target"]
-        
+
         if (is_csv or is_tsv) and not has_fasta:
             header_cols = [c.strip().lower().replace('"','') for c in first.split("," if is_csv else "\t")]
             has_known_header = any(c in KNOWN_COLUMNS for c in header_cols)
@@ -2192,7 +2192,7 @@ def create_app() -> Flask:
             if return_meta:
                 return entries, {"format": "csv-headless" if is_csv else "tsv-headless", "count": len(entries), "has_header": False}
             return entries
-        
+
         # ── Single-column CSV/TSV detection (no header, one sequence per line) ──
         if (is_csv or is_tsv) and not has_fasta:
             rows = [r for r in csv.reader(io.StringIO(text), delimiter="," if is_csv else "\t") if r]
@@ -2210,7 +2210,7 @@ def create_app() -> Flask:
             if return_meta:
                 return entries, {"format": "csv-single" if is_csv else "tsv-single", "count": len(entries), "has_header": False}
             return entries
-        
+
         # ── FASTA parsing ────────────────────────────────────────────
         entries = []
         current = {"name": "", "forward": "", "reverse": "", "template": ""}
@@ -2232,7 +2232,7 @@ def create_app() -> Flask:
             if return_meta:
                 return entries, {"format": "fasta", "count": len(entries), "has_header": True}
             return entries
-        
+
         # ── Raw list fallback (one sequence per line, no header, no FASTA) ──
         for idx, line in enumerate(lines):
             seq = line.upper()
@@ -2441,13 +2441,12 @@ def create_app() -> Flask:
 
         if user:
             if USE_POSTGRES:
-                from .pg_auth import check_anon_usage as _noop
                 # Use the PG daily check helper
                 chk = _daily_check(user, "msa")
                 if chk.get("code") == "DAILY_LIMIT":
                     return jsonify(chk), 402
             else:
-                from .auth import check_daily_usage, record_daily_usage
+                from .auth import check_daily_usage
                 usage = check_daily_usage(user["email"], "msa")
                 if not usage["can_analyze"] and user.get("role") != "admin":
                     return jsonify({"error": "Daily limit reached.", "code": "DAILY_LIMIT", "usage": usage}), 402
@@ -2536,7 +2535,7 @@ def create_app() -> Flask:
                 if chk.get("code") == "DAILY_LIMIT":
                     return jsonify(chk), 402
             else:
-                from .auth import check_daily_usage, record_daily_usage
+                from .auth import check_daily_usage
                 usage = check_daily_usage(user["email"], "msa")
                 if not usage["can_analyze"] and user.get("role") != "admin":
                     return jsonify({"error": "Daily limit reached.", "code": "DAILY_LIMIT", "usage": usage}), 402
@@ -3102,10 +3101,13 @@ def create_app() -> Flask:
         3. Broken protein analysis (quality check)
         4. Pocket detection (find binding sites)
         """
-        from .pipelines.protein_preparer import prepare_protein, report_to_dict as prep_dict
-        from .pipelines.regenerative_folder import regenerate_structure, report_to_dict as regen_dict
-        from .pipelines.broken_protein_analyzer import analyze_protein, report_to_dict as analyze_dict
+        from .pipelines.broken_protein_analyzer import analyze_protein
+        from .pipelines.broken_protein_analyzer import report_to_dict as analyze_dict
         from .pipelines.pocket_detector import detect_pockets, pockets_to_dict
+        from .pipelines.protein_preparer import prepare_protein
+        from .pipelines.protein_preparer import report_to_dict as prep_dict
+        from .pipelines.regenerative_folder import regenerate_structure
+        from .pipelines.regenerative_folder import report_to_dict as regen_dict
 
         data = request.get_json(silent=True) or {}
         pdb_content = data.get("pdb_content", "").strip()
@@ -3371,7 +3373,7 @@ def create_app() -> Flask:
     @app.route("/api/primer/docking/metrics", methods=["GET"])
     def docking_metrics():
         """Quick metrics for monitoring dashboards."""
-        from .pipelines.monitoring import check_docking_queue, check_recent_jobs, check_memory
+        from .pipelines.monitoring import check_docking_queue, check_memory, check_recent_jobs
 
         queue = check_docking_queue()
         jobs = check_recent_jobs()
@@ -3394,7 +3396,7 @@ def create_app() -> Flask:
     @app.route("/api/primer/docking/queue/enqueue", methods=["POST"])
     def queue_enqueue():
         """Add a job to the persistent queue."""
-        from .pipelines.persistent_queue import get_queue, PRIORITY_URGENT, PRIORITY_NORMAL, PRIORITY_BATCH
+        from .pipelines.persistent_queue import PRIORITY_BATCH, PRIORITY_NORMAL, PRIORITY_URGENT, get_queue
 
         data = request.get_json(silent=True) or {}
         job_data = data.get("data", {})
@@ -3760,13 +3762,11 @@ def create_app() -> Flask:
                         if isinstance(v, (dict, list)):
                             v = _json.dumps(v)[:200]
                         pdf.multi_cell(0, 5, f"{k}: {v}")
-        import io
         return Response(bytes(pdf.output()), mimetype="application/pdf", headers={"Content-Disposition": f"attachment; filename={tool}_report.pdf"}), 200
 
     @app.route("/api/export/pptx", methods=["POST"])
     @require_auth
     def export_pptx():
-        import json as _json
         data = request.get_json(silent=True) or {}
         tool = (data.get("tool") or "analysis").strip()
         outputs = data.get("outputs", {})

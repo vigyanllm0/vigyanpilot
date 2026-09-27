@@ -1,7 +1,11 @@
 """API Management routes for VigyanLLM developer portal."""
-from flask import Blueprint, request, jsonify, g
-import hashlib, secrets, json, time
-from .api_auth import require_api_key, get_db_connection, generate_api_key
+import json
+import secrets
+import time
+
+from flask import Blueprint, g, jsonify, request
+
+from .api_auth import generate_api_key, get_db_connection, require_api_key
 
 api_bp = Blueprint('api_management', __name__)
 
@@ -186,8 +190,8 @@ def create_webhook():
     if not url:
         return jsonify({'error': 'URL required'}), 400
     # SSRF protection: validate URL scheme and block private/internal ranges
-    from urllib.parse import urlparse
     import ipaddress
+    from urllib.parse import urlparse
     try:
         parsed = urlparse(url)
     except Exception:
@@ -248,8 +252,8 @@ def test_webhook(hook_id):
         if not row:
             return jsonify({'error': 'Webhook not found'}), 404
         # SSRF re-validation on delivery
-        from urllib.parse import urlparse
         import ipaddress
+        from urllib.parse import urlparse
         try:
             parsed = urlparse(row[0])
             if parsed.scheme not in ('https',):
@@ -266,7 +270,10 @@ def test_webhook(hook_id):
                     pass
         except Exception:
             return jsonify({'error': 'Invalid webhook URL', 'success': False}), 400
-        import hmac, hashlib, requests
+        import hashlib
+        import hmac
+
+        import requests
         payload = json.dumps({
             'event': 'test',
             'timestamp': int(time.time()),
@@ -297,7 +304,7 @@ def api_v1_primer_design():
     # Rate limit check
     conn = get_db_connection()
     try:
-        from .api_auth import check_rate_limit, record_api_usage
+        from .api_auth import check_rate_limit
         if not check_rate_limit(conn, g.api_key_id, 60):
             return jsonify({'error': 'Rate limit exceeded (60/min)'}), 429
     finally:

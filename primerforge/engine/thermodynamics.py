@@ -97,10 +97,10 @@ class BufferConditions:
 def compute_nn_params(sequence: str) -> tuple[float, float]:
     """
     Compute total ΔH and ΔS for a DNA sequence using nearest-neighbor model.
-    
+
     Args:
         sequence: DNA sequence (5' to 3'), uppercase ACGT only
-    
+
     Returns:
         (total_dH in kcal/mol, total_dS in cal/(mol·K))
     """
@@ -144,13 +144,13 @@ def compute_nn_params(sequence: str) -> tuple[float, float]:
 def calculate_tm(sequence: str, buffer: BufferConditions = None) -> ThermoResult:
     """
     Calculate melting temperature using full SantaLucia NN model.
-    
+
     Tm = ΔH° / (ΔS°_salt + R·ln(Ct/4)) - 273.15
-    
+
     Args:
         sequence: Primer sequence (5'→3')
         buffer: PCR buffer conditions (defaults to standard)
-    
+
     Returns:
         ThermoResult with all thermodynamic parameters
     """
@@ -243,7 +243,7 @@ def predict_hairpin(sequence: str, buffer: BufferConditions = None) -> Structure
     """
     Predict most stable hairpin structure by scanning all possible loop positions.
     A hairpin forms when a single strand folds back on itself.
-    
+
     Minimum loop size: 3 nucleotides
     """
     seq = sequence.upper()

@@ -1,9 +1,10 @@
 """Structured JSON logging configuration for VigyanLLM."""
-import logging
 import json
+import logging
 import re
 import sys
 from datetime import datetime, timezone
+
 
 class JSONFormatter(logging.Formatter):
     """JSON log formatter with PII masking."""

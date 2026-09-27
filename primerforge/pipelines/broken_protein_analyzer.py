@@ -131,7 +131,7 @@ def _calc_distance(a1: dict, a2: dict) -> float:
 def analyze_plddt(pdb_string: str, plddt_scores: Optional[list] = None) -> dict:
     """
     Analyze pLDDT confidence scores per residue.
-    
+
     If plddt_scores not provided, estimates from B-factor (conformational diversity).
     ESMFold pLDDT ranges: 0-100 (higher = more confident).
     """
@@ -472,7 +472,7 @@ def compute_quality_score(
 ) -> tuple[float, str]:
     """
     Compute composite quality score (0-100) and grade (A-F).
-    
+
     Weights:
     - pLDDT confidence: 40%
     - Clash severity: 20%
@@ -519,11 +519,11 @@ def compute_quality_score(
 def analyze_protein(pdb_string: str, plddt_scores: Optional[list] = None) -> AnalysisReport:
     """
     Run complete broken protein analysis.
-    
+
     Args:
         pdb_string: PDB-format structure
         plddt_scores: Optional per-residue pLDDT scores from ESMFold
-    
+
     Returns:
         AnalysisReport with all findings
     """

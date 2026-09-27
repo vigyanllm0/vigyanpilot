@@ -11,8 +11,8 @@ DOES NOT import primerforge.* — uses raw file I/O to avoid import chain.
 import asyncio
 import json
 import os
-import sys
 import resource
+import sys
 import time
 
 # Ensure project root is on path

@@ -1,6 +1,5 @@
 """File-based job queue for docking dispatch to local worker."""
 
-import asyncio
 import json
 import logging
 import os
@@ -122,7 +121,7 @@ def list_running_jobs() -> list[dict]:
 
 def release_stale_jobs(max_age_minutes: float = 10.0):
     """Move running jobs older than max_age_minutes back to pending.
-    
+
     This handles the case where a worker crashes mid-job, leaving the
     job stuck in 'running' state forever. The next polling cycle will
     pick it up again.
@@ -160,7 +159,7 @@ _LOCAL_WORKER_RUNNING = False
 
 def _process_job(job: dict):
     """Run the consensus pipeline in a SEPARATE OS process.
-    
+
     If the pipeline segfaults or OOMs, only the subprocess dies — gunicorn survives.
     The subprocess writes results directly to disk (no primerforge imports for I/O).
     """
@@ -203,7 +202,7 @@ def _process_job(job: dict):
 
 def _local_worker_loop(interval: float = 5.0):
     """Background loop: poll pending, claim, process.
-    
+
     CRITICAL: This runs inside gunicorn. Any unhandled exception here
     can kill the gunicorn worker. Every operation is wrapped in try/except.
     """

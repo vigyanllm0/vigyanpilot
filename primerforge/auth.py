@@ -16,7 +16,7 @@ import logging
 import os
 import sqlite3
 import time
-from functools import wraps, partial
+from functools import wraps
 from pathlib import Path
 
 import bcrypt
