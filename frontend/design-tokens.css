@@ -121,6 +121,11 @@ nav[aria-label="Main navigation"]{position:sticky;top:0;background:var(--navy);z
 @media(max-width:768px){.nav-brand img{height:60px}}
 
 /* === NAV LINKS & DROPDOWN === */
+/* Chrome links (nav, dropdowns, mobile menu, footer) are never underlined.
+   The UA underlines every <a>; primer.css and home.css carry a global a{reset}, but
+   pages that load only design-tokens got raw UA underlines on every nav/footer link.
+   Screen-only so @media print keeps its link-underline intent; content/prose links untouched. */
+@media screen{nav a,.nav-links a,.drop-menu a,.mobile-menu a,.footer-col a,.footer-social a{text-decoration:none}}
 .nav-links{display:flex;gap:8px;align-items:center;margin-left:24px}
 .nav-links>a,.drop-trigger{font-family:var(--font-h);font-size:var(--font-base);color:rgba(255,255,255,.85);font-weight:700;cursor:pointer;padding:8px 14px;text-transform:uppercase;letter-spacing:.05em;transition:color .15s;white-space:nowrap;border-radius:4px}
 .nav-links>a:hover,.drop-trigger:hover{color:#fff;background:rgba(255,255,255,.08)}
