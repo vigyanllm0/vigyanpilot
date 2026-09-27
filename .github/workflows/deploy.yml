@@ -69,7 +69,7 @@ jobs:
 
       - name: Run pytest with coverage
         env:
-          DATABASE_URL: postgresql://test:test@localhost:5432/test
+          DATABASE_URL: postgresql://test:test@postgres:5432/test
         run: |
           python3 -m pytest tests/ -x -q --timeout=30 --ignore=tests/test_frontend.py --ignore=tests/test_order_serializer.py --ignore=tests/test_payment_routes.py \
             --cov=primerforge --cov-report=xml --cov-fail-under=70
