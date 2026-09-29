@@ -28,10 +28,10 @@ ALERT_THRESHOLDS = {
     'failure_rate_critical': 0.25,  # 25%
     'avg_time_warning': 120,        # seconds
     'avg_time_critical': 300,       # seconds
-    'disk_usage_warning': 0.80,     # 80%
-    'disk_usage_critical': 0.95,    # 95%
-    'memory_usage_warning': 0.80,
-    'memory_usage_critical': 0.95,
+    'disk_usage_warning': 80,       # 80%
+    'disk_usage_critical': 95,      # 95%
+    'memory_usage_warning': 80,
+    'memory_usage_critical': 95,
 }
 
 

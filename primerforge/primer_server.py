@@ -3087,6 +3087,8 @@ def create_app() -> Flask:
             report = regenerate_structure(pdb_content, plddt_scores=plddt_scores)
             result = report_to_dict(report)
             return jsonify(result), 200
+        except ValueError as exc:
+            return err(str(exc), "VALIDATION_ERROR", 400)
         except Exception as exc:
             logger.error("Regenerative folding error: %s", exc, exc_info=True)
             return err(f"Regeneration failed: {str(exc)}", "ANALYSIS_FAILED", 500)

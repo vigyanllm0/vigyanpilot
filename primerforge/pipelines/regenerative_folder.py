@@ -41,6 +41,28 @@ RANDOM_COIL = (-60, 60)
 CLASH_THRESHOLD = 1.5  # Angstrom overlap
 CLASH_REBUILD_RADIUS = 5.0  # Angstrom — rebuild zone around clash
 
+# Covalent radii (Å). A contact shorter than the sum of covalent radii plus
+# BOND_TOLERANCE is a real chemical bond, not a steric clash. Without this,
+# every peptide bond reads as a clash: C(i)-N(i+1) sits at 1.30-1.37 Å while
+# its van der Waals sum is 3.25 Å, i.e. a spurious "overlap" of ~1.9 Å that
+# blows past CLASH_THRESHOLD. A good crystal structure such as 1CRN
+# (46 residues, 45 peptide bonds) would be reported as 45 clashes.
+COVALENT_RADII = {"C": 0.76, "N": 0.71, "O": 0.66, "S": 1.05}
+BOND_TOLERANCE = 0.15  # Å slack for bond-length variation
+
+
+def _is_covalent(a: dict, b: dict, dist: float) -> bool:
+    """True when `a` and `b` are joined by a covalent bond.
+
+    Used to keep clash detection from flagging peptide bonds, disulfides and
+    other real linkages as steric clashes.
+    """
+    r1 = COVALENT_RADII.get(a["element"])
+    r2 = COVALENT_RADII.get(b["element"])
+    if r1 is None or r2 is None:
+        return False
+    return dist < (r1 + r2) + BOND_TOLERANCE
+
 # pLDDT thresholds
 PLDDT_LOW = 50
 PLDDT_MEDIUM = 70
@@ -289,6 +311,8 @@ def resolve_clashes(pdb_string: str, atoms: list) -> tuple[str, list]:
                             continue
 
                         d = _dist(atom, other)
+                        if _is_covalent(atom, other, d):
+                            continue
                         r1 = {'C': 1.7, 'N': 1.55, 'O': 1.52, 'S': 1.8}.get(atom['element'], 1.5)
                         r2 = {'C': 1.7, 'N': 1.55, 'O': 1.52, 'S': 1.8}.get(other['element'], 1.5)
                         overlap = (r1 + r2) - d
@@ -309,6 +333,7 @@ def resolve_clashes(pdb_string: str, atoms: list) -> tuple[str, list]:
     lines = pdb_string.split('\n')
     new_lines = []
     moved = 0
+    moved_res = []
 
     for line in lines:
         if not line.startswith('ATOM'):
@@ -325,7 +350,11 @@ def resolve_clashes(pdb_string: str, atoms: list) -> tuple[str, list]:
             new_lines.append(line)
             continue
 
-        # Move atom slightly along the longest vector to nearest neighbor
+        # Move atom slightly away from its closest non-bonded neighbour.
+        # Covalent neighbours are skipped: they sit at ~1.3-1.5 Å, so they
+        # would otherwise win the "largest overlap" contest and the atom would
+        # be shoved straight down its own bond axis — which is what used to
+        # push bond deviation from 0.015 Å up to 0.132 Å on a clean structure.
         x, y, z = float(line[30:38]), float(line[38:46]), float(line[46:54])
         max_overlap = 0
         move_x, move_y, move_z = 0, 0, 0
@@ -335,6 +364,8 @@ def resolve_clashes(pdb_string: str, atoms: list) -> tuple[str, list]:
                 continue
             d = _dist({'x': x, 'y': y, 'z': z}, other)
             if d < 3.0 and d > 0.1:
+                if _is_covalent({'x': x, 'y': y, 'z': z, 'element': line[76:78].strip() or line[12:16].strip()[0]}, other, d):
+                    continue
                 # Push away from this atom
                 dx = x - other['x']
                 dy = y - other['y']
@@ -354,11 +385,17 @@ def resolve_clashes(pdb_string: str, atoms: list) -> tuple[str, list]:
         new_line = line[:30] + f"{new_x:8.3f}{new_y:8.3f}{new_z:8.3f}" + line[54:]
         new_lines.append(new_line)
         moved += 1
+        key = f"{line[21].strip()}:{line[22:26].strip()} {line[17:20].strip()}"
+        if key not in moved_res:
+            moved_res.append(key)
 
     if moved > 0:
+        shown = ', '.join(moved_res[:3])
+        if len(moved_res) > 3:
+            shown += f", +{len(moved_res) - 3} more"
         actions.append(RepairAction(
             type='clash',
-            region='moved',
+            region=f"{len(moved_res)} residues ({shown})" if moved_res else f"{moved} atoms",
             description=f"Moved {moved} clashing atoms to resolve overlaps",
             atoms_changed=moved,
         ))
@@ -551,6 +588,8 @@ def _compute_stats(pdb_string: str) -> dict:
             if a1['chain'] == a2['chain'] and a1['res_num'] == a2['res_num']:
                 continue
             d = _dist(a1, a2)
+            if _is_covalent(a1, a2, d):
+                continue
             r1 = {'C': 1.7, 'N': 1.55, 'O': 1.52}.get(a1['element'], 1.5)
             r2 = {'C': 1.7, 'N': 1.55, 'O': 1.52}.get(a2['element'], 1.5)
             if (r1 + r2) - d > CLASH_THRESHOLD:
@@ -595,6 +634,12 @@ def regenerate_structure(
 
     # Before stats
     before = _compute_stats(pdb_string)
+    if before['residues'] == 0:
+        # Fail loudly rather than report an all-zero "B → A" comparison.
+        raise ValueError(
+            "No protein residues could be read from this PDB. Check that "
+            "coordinates use the standard fixed-width columns (31-38, 39-46, 47-54)."
+        )
 
     all_actions = []
     current_pdb = pdb_string
