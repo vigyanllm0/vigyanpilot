@@ -151,15 +151,37 @@ def init_security(app):
             "https://api.razorpay.com",
             "https://accounts.google.com",
             "https://www.googletagmanager.com",
+            # Microsoft Clarity is injected by the GTM container (tag ID xz5q0bpq5e);
+            # the tag loads www.clarity.ms, which then pulls scripts.clarity.ms.
+            # Without both, the tag is CSP-blocked on every page that loads GTM.
+            "https://www.clarity.ms",
+            "https://scripts.clarity.ms",
             "https://cdn.jsdelivr.net",
             "https://unpkg.com",
             "https://cdn.tiptap.dev",
             "https://fonts.googleapis.com",
             "https://code.jquery.com",
+            "https://cdn.sheetjs.com",  # xlsx reader on /biostatistics-calculator (file upload)
             "https://3Dmol.org",
         ],
-        "style-src": ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-        "font-src": ["'self'", "https://fonts.gstatic.com", "data:"],
+        "style-src": [
+            "'self'",
+            "'unsafe-inline'",
+            "https://fonts.googleapis.com",
+            # katex.min.css is loaded by 4 glossary pages (gc-content,
+            # melting-temperature, primer-design, primer); script-src already
+            # allows this host, so only the stylesheet was being blocked.
+            "https://cdn.jsdelivr.net",
+        ],
+        "font-src": [
+            "'self'",
+            "https://fonts.gstatic.com",
+            "data:",
+            # katex @font-face files (fonts/KaTeX_*.woff2) resolve relative to
+            # the stylesheet on cdn.jsdelivr.net; without this the KaTeX math
+            # fonts fall back and render with wrong metrics on glossary pages.
+            "https://cdn.jsdelivr.net",
+        ],
         "img-src": ["'self'", "data:", "https:", "blob:"],
         "connect-src": [
             "'self'",
@@ -169,7 +191,9 @@ def init_security(app):
             "https://www.googleapis.com",
             "https://www.google-analytics.com",
             "https://www.google.com",
+            "https://*.clarity.ms",
             "https://cdn.jsdelivr.net",
+            "https://files.rcsb.org",
             "http://localhost:8001",
             "http://127.0.0.1:8001",
         ],

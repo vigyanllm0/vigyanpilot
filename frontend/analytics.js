@@ -25,7 +25,7 @@
             if (window.gtag) {
                 gtag('event', event, params);
             }
-            console.debug('[VL Analytics]', event, params);
+            if (window.__VL_DEBUG) console.debug('[VL Analytics]', event, params);
         },
         
         trackToolRun(tool, inputSize, durationMs, success = true) {

@@ -23,7 +23,7 @@
 
   gtag('set', 'ads_data_redaction', true);
 </script>
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-PB0XMF4GEH" integrity="sha384-hACMoDCIDMba3jsHG3rMgdvIrTqUjGNEOMNz7cNKE+iuubQod4g9e9628Tl1SuzS" crossorigin="anonymous"></script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PB0XMF4GEH"></script>
 <script>
   gtag('js', new Date());
   gtag('config', 'G-PB0XMF4GEH');
@@ -494,6 +494,7 @@ footer{background:var(--navy);color:rgba(255,255,255,.8);padding:56px 0 24px}
 <link rel="icon" type="image/png" href="/logo.png">
 <link rel="apple-touch-icon" href="/logo.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <script src="https://accounts.google.com/gsi/client?hl=en" async defer></script>
 <script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.vigyanllm.in"}, {"@type": "ListItem", "position": 2, "name": "Glossary", "item": "https://www.vigyanllm.in/glossary"}, {"@type": "ListItem", "position": 3, "name": "Digital PCR", "item": "https://www.vigyanllm.in/glossary/digital-pcr"}]}</script>
@@ -505,7 +506,7 @@ footer{background:var(--navy);color:rgba(255,255,255,.8);padding:56px 0 24px}
 <nav aria-label="Main navigation">
 <div class="nav-inner">
   <a href="/" class="nav-brand">
-    <img src="logo.png" alt="VigyanLLM Logo" class="site-logo" style="height:36px;width:auto;object-fit:contain" loading="lazy">
+    <img src="/logo.png" alt="VigyanLLM Logo" class="site-logo" style="height:36px;width:auto;object-fit:contain" loading="lazy">
     <span>VigyanLLM</span>
   </a>
   <div class="nav-links">
@@ -733,7 +734,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <div class="footer-grid">
   <div class="footer-col">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
-      <img src="logo.png" alt="VigyanLLM Logo" class="site-logo" style="height:36px;width:auto;object-fit:contain" loading="lazy">
+      <img src="/logo.png" alt="VigyanLLM Logo" class="site-logo" style="height:36px;width:auto;object-fit:contain" loading="lazy">
       <span style="font-family:var(--font-h);font-size:13px;font-weight:800;color:#fff">VigyanLLM</span>
     </div>
     <p style="font-size:13px;color:rgba(255,255,255,.45);line-height:1.6">Sovereign Healthcare &amp; Life Sciences AI.<br>Built in India. For the world.</p>
@@ -802,5 +803,22 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
 
 </footer>
+  <script>
+  (function(){
+    if(!window.closeMobileMenu){
+      window.closeMobileMenu=function(){
+        var m=document.getElementById('mobile-menu'),h=document.getElementById('hamburger');
+        if(m)m.classList.remove('open');
+        if(h)h.classList.remove('active');
+      };
+    }
+    var h=document.getElementById('hamburger'),m=document.getElementById('mobile-menu');
+    if(!h||!m||h.getAttribute('data-vl-menu'))return;
+    h.setAttribute('data-vl-menu','1');
+    h.addEventListener('click',function(e){e.stopPropagation();h.classList.toggle('active');m.classList.toggle('open')});
+    document.addEventListener('click',function(e){if(!h.contains(e.target)&&!m.contains(e.target))window.closeMobileMenu()});
+    Array.prototype.forEach.call(m.querySelectorAll('a'),function(l){l.addEventListener('click',function(){window.closeMobileMenu()})});
+  })();
+  </script>
 </body>
 </html>

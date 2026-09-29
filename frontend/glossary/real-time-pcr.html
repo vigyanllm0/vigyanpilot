@@ -23,7 +23,7 @@ a:hover{text-decoration:underline}
 <nav aria-label="Main navigation">
 <div class="nav-inner">
   <a href="/" class="nav-brand">
-    <img src="logo.png" alt="VigyanLLM Logo" class="site-logo" style="height:36px;width:auto;object-fit:contain" loading="lazy">
+    <img src="/logo.png" alt="VigyanLLM Logo" class="site-logo" style="height:36px;width:auto;object-fit:contain" loading="lazy">
     <span>VigyanLLM</span>
   </a>
   <div class="nav-links">
@@ -156,7 +156,7 @@ a:hover{text-decoration:underline}
 <div class="footer-grid">
   <div class="footer-col">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
-      <img src="logo.png" alt="VigyanLLM Logo" class="site-logo" style="height:36px;width:auto;object-fit:contain" loading="lazy">
+      <img src="/logo.png" alt="VigyanLLM Logo" class="site-logo" style="height:36px;width:auto;object-fit:contain" loading="lazy">
       <span style="font-family:var(--font-h);font-size:13px;font-weight:800;color:#fff">VigyanLLM</span>
     </div>
     <p style="font-size:13px;color:rgba(255,255,255,.45);line-height:1.6">Sovereign Healthcare &amp; Life Sciences AI.<br>Built in India. For the world.</p>
@@ -225,5 +225,23 @@ a:hover{text-decoration:underline}
 
 
 </footer>
+  <script defer src="/auth-shared.js"></script>
+  <script>
+  (function(){
+    if(!window.closeMobileMenu){
+      window.closeMobileMenu=function(){
+        var m=document.getElementById('mobile-menu'),h=document.getElementById('hamburger');
+        if(m)m.classList.remove('open');
+        if(h)h.classList.remove('active');
+      };
+    }
+    var h=document.getElementById('hamburger'),m=document.getElementById('mobile-menu');
+    if(!h||!m||h.getAttribute('data-vl-menu'))return;
+    h.setAttribute('data-vl-menu','1');
+    h.addEventListener('click',function(e){e.stopPropagation();h.classList.toggle('active');m.classList.toggle('open')});
+    document.addEventListener('click',function(e){if(!h.contains(e.target)&&!m.contains(e.target))window.closeMobileMenu()});
+    Array.prototype.forEach.call(m.querySelectorAll('a'),function(l){l.addEventListener('click',function(){window.closeMobileMenu()})});
+  })();
+  </script>
 </body>
 </html>

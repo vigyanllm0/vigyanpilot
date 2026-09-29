@@ -599,6 +599,36 @@ def require_auth(f):
     return decorated
 
 
+def _credentials_supplied():
+    """True when the request carries a token/cookie at all (even an invalid one)."""
+    auth = request.headers.get("Authorization", "")
+    if auth.startswith("Bearer ") and auth[7:].strip():
+        return True
+    return bool(request.cookies.get("pf_token", ""))
+
+
+def optional_auth(f):
+    """Allow anonymous access; 401 only when credentials were sent but are invalid.
+
+    For endpoints the frontend probes on every page load (e.g. /api/auth/me),
+    a visitor with no session must not produce an error response — that is a
+    normal "not signed in" state, not an authentication failure. A request that
+    DOES carry credentials but fails verification still returns 401 so expired
+    sessions are cleared by the client.
+    """
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        user = get_current_user()
+        if user:
+            g.user = user
+            return f(*args, **kwargs)
+        if _credentials_supplied():
+            return jsonify({"error": "Authentication required", "code": "AUTH_REQUIRED"}), 401
+        g.user = None
+        return f(*args, **kwargs)
+    return decorated
+
+
 def require_admin(f):
     """Decorator: require admin role."""
     @wraps(f)

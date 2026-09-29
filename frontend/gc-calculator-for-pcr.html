@@ -22,7 +22,7 @@
   } catch (e) {}
   gtag('set', 'ads_data_redaction', true);
 </script>
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-PB0XMF4GEH" integrity="sha384-hACMoDCIDMba3jsHG3rMgdvIrTqUjGNEOMNz7cNKE+iuubQod4g9e9628Tl1SuzS" crossorigin="anonymous"></script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PB0XMF4GEH"></script>
 <script>
   gtag('js', new Date());
   gtag('config', 'G-PB0XMF4GEH');
@@ -142,6 +142,7 @@ img{max-width:100%}
 <link rel="icon" type="image/png" href="/logo.png">
 <link rel="apple-touch-icon" href="/logo.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <script src="https://accounts.google.com/gsi/client?hl=en" async defer></script>
 
@@ -297,5 +298,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <script>
 function calcGC(){var s=document.getElementById('gc-seq-input').value.replace(/[\s\d]/g,'').toUpperCase();if(!s){alert('Please enter a DNA sequence.');return}var a=(s.match(/A/g)||[]).length,t=(s.match(/T/g)||[]).length,g=(s.match(/G/g)||[]).length,c=(s.match(/C/g)||[]).length,other=s.length-a-t-g-c,len=s.length;if(other){alert('Invalid characters found. Only A, T, G, C allowed.');return}var gc=len?((g+c)/len*100):0,ratio=gc?((a+t)/(g+c)):0,basicTm=len<14?0:2*(a+t)+4*(g+c);var last3=s.slice(-3);var hasClamp=(last3.endsWith('G')||last3.endsWith('C'))?'Yes':'No';document.getElementById('gc-r-len').textContent=len+' bp';document.getElementById('gc-r-gc').textContent=gc.toFixed(1)+'%';document.getElementById('gc-r-ratio').textContent=ratio.toFixed(3);document.getElementById('gc-r-tm').textContent=basicTm>0?basicTm.toFixed(1)+'°C':'—';document.getElementById('gc-r-clamp').textContent=hasClamp;document.getElementById('gc-r-clamp').style.color=hasClamp==='Yes'?'#059669':'#DC2626';document.getElementById('gc-result-box').style.display='block'}
 </script>
+  <script defer src="/auth-shared.js"></script>
 </body>
 </html>

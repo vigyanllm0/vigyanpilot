@@ -372,6 +372,7 @@
         </style>
 <link rel="canonical" href="https://www.vigyanllm.in/protein-quality">
   <script src="/includes.js"></script>
+  <script defer src="/auth-shared.js"></script>
 </head>
 <body>
 
@@ -518,6 +519,12 @@ ATOM      2  CA  ALA A   1      26.266  25.425   2.841  1.00  7.23           C
         </div>
 
     </div>
+<div class="auth-overlay" id="auth-overlay" onclick="if(event.target===this)closeAuth()">
+  <div class="auth-modal">
+    <button type="button" class="close-btn" onclick="closeAuth()">&times;</button>
+    <div id="auth-content"></div>
+  </div>
+</div>
 </main>
 
 <!-- Footer -->
@@ -577,7 +584,9 @@ async function fetchFromPDB() {
         const resp = await fetch('https://files.rcsb.org/download/' + pdbId + '.pdb');
         if (!resp.ok) throw new Error('PDB not found');
         const text = await resp.text();
-        if (text.includes('ERROR') || text.length < 100) throw new Error('Invalid PDB content');
+        // Validate on PDB record type, not substrings — real PDB files legitimately
+        // contain "ERROR" (e.g. "REMARK 3 ESTIMATED COORDINATE ERROR.").
+        if (text.length < 100 || !/^(ATOM|HETATM|MODEL)\s/m.test(text)) throw new Error('Invalid PDB content');
         document.getElementById('pdb-input').value = text;
         // Switch to paste tab
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));

@@ -24,6 +24,7 @@ from .auth import (
     create_token,
     get_db,
     log_action,
+    optional_auth,
     require_admin,
     require_auth,
 )
@@ -224,8 +225,11 @@ def verify_academic():
 
 
 @auth_bp.route('/api/auth/me', methods=['GET'])
-@require_auth
+@optional_auth
 def me():
+    if g.user is None:
+        # No session at all — a normal signed-out state, not an error.
+        return jsonify({"user": None}), 200
     user = g.user
     db = get_db()
     row = db.execute("SELECT * FROM users WHERE email=?", (user['email'],)).fetchone()

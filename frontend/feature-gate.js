@@ -22,6 +22,9 @@ function fgToken() { return ''; }
 async function fgFetchStatus() {
   var now = Date.now();
   if (FG_CACHE && (now - FG_CACHE_TIME) < 60000) return FG_CACHE;
+  // No signed-in session -> nothing to fetch. Return null (auth gate) exactly
+  // as a 401 did, without logging a failed request for anonymous visitors.
+  if (!(sessionStorage.getItem('pf_user') || localStorage.getItem('pf_user'))) return null;
   try {
     var r = await fetch(FG_API + '/payments/status', { credentials: 'same-origin' });
     if (!r.ok) return null;

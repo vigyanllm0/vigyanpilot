@@ -43,6 +43,7 @@ from .pg_auth import (
     invalidate_token,
     log_action,
     login_user,
+    optional_auth,
     refresh_access_token,
     register_user,
     require_admin,
@@ -635,9 +636,12 @@ def reset_password():
 
 
 @auth_bp.route("/api/auth/me", methods=["GET"])
-@require_auth
+@optional_auth
 def me():
     """Get current user profile and usage data."""
+    if g.user is None:
+        # No session at all — a normal signed-out state, not an error.
+        return jsonify({"user": None}), 200
     try:
         user = fetch_one(
             """SELECT u.id, u.email, u.full_name, u.role, u.organization, u.created_at,

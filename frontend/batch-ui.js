@@ -40,7 +40,9 @@ BUI.count = function(text) {
 
 BUI.checkSize = async function(count) {
   try {
-    var r = await fetch(BUI.API + '/usage/check?tool=batch', { credentials: 'same-origin' });
+    var r = (sessionStorage.getItem('pf_user') || localStorage.getItem('pf_user'))
+      ? await fetch(BUI.API + '/usage/check?tool=batch', { credentials: 'same-origin' })
+      : { ok: false };
     if (r.ok) {
       var d = await r.json();
       var max = d.batch_max_seq || 1;

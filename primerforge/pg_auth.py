@@ -359,6 +359,35 @@ def require_auth(f):
     return decorated
 
 
+def _credentials_supplied():
+    """True when the request carries a token/cookie at all (even an invalid one)."""
+    auth = request.headers.get("Authorization", "")
+    if auth.startswith("Bearer ") and auth[7:].strip():
+        return True
+    return bool(request.cookies.get("pf_token", ""))
+
+
+def optional_auth(f):
+    """Allow anonymous access; 401 only when credentials were sent but are invalid.
+
+    See primerforge.auth.optional_auth — same contract, PostgreSQL path. Keeps
+    the session-probe endpoints (/api/auth/me) from logging a 401 for every
+    visitor who simply is not signed in, while an expired token still 401s so
+    the client clears its stale session state.
+    """
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        user = get_current_user()
+        if user:
+            g.user = user
+            return f(*args, **kwargs)
+        if _credentials_supplied():
+            return jsonify({"error": "Authentication required", "code": "AUTH_REQUIRED", "action": "show_auth"}), 401
+        g.user = None
+        return f(*args, **kwargs)
+    return decorated
+
+
 def require_admin(f):
     """Decorator: require admin role."""
     @wraps(f)

@@ -63,8 +63,67 @@ function logout(){
 function openAuthMode(){isRegister=false;showAuth()}
 function openRegMode(){isRegister=true;showAuth()}
 
-function showAuth(){
+/* Fallback for legacy/content pages that load this file but ship no
+   #auth-overlay markup: build the overlay on first open instead of
+   silently doing nothing. Pages that already have the markup are
+   untouched (ensureAuthOverlay returns the existing node). */
+var VL_AUTH_FALLBACK_CSS =
+'.auth-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center;padding:24px}'+
+'.auth-overlay.open{display:flex}'+
+'.auth-modal{background:#fff;border-radius:16px;padding:36px;width:100%;max-width:400px;box-shadow:0 24px 64px rgba(0,0,0,.25);position:relative;max-height:90vh;overflow-y:auto}'+
+'.auth-modal .close-btn{position:absolute;top:14px;right:16px;background:none;border:none;font-size:var(--font-sm,13px);cursor:pointer;color:var(--muted,#6b7280);line-height:1}'+
+'.auth-modal h2{font-family:var(--font-h,"Montserrat",sans-serif);font-size:var(--font-sm,13px);font-weight:800;color:var(--text,#2d2d2d);margin-bottom:2px}'+
+'.auth-modal .sub{font-size:var(--font-sm,13px);color:var(--muted,#6b7280);margin-bottom:24px}'+
+'.auth-modal .field{margin-bottom:14px}'+
+'.auth-modal .field label{display:block;font-size:var(--font-xs,12px);font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text2,#4A4A6A);margin-bottom:5px}'+
+'.auth-modal .field input{width:100%;padding:11px 13px;border:1px solid var(--outline,#e5e2dc);border-radius:8px;font-family:var(--font-b,"Open Sans",sans-serif);font-size:var(--font-base,14px);color:var(--text,#2d2d2d);transition:border-color .15s}'+
+'.auth-modal .field input:focus{outline:none;border-color:var(--blue,#1565C0);box-shadow:0 0 0 3px rgba(21,101,192,.1)}'+
+'.auth-modal .auth-btn{width:100%;padding:12px;background:var(--blue,#1565C0);color:#fff;border:none;border-radius:8px;font-family:var(--font-b,"Open Sans",sans-serif);font-size:var(--font-sm,13px);font-weight:700;cursor:pointer;transition:opacity .15s}'+
+'.auth-modal .auth-btn:hover{opacity:.9}'+
+'.auth-modal .toggle-link{text-align:center;font-size:var(--font-xs,12px);color:var(--muted,#6b7280);margin-top:14px}'+
+'.auth-modal .toggle-link a{color:var(--blue,#1565C0);font-weight:600;cursor:pointer}'+
+'.auth-modal .auth-err{color:var(--red,#e85d4c);font-size:var(--font-xs,12px);text-align:center;margin-top:8px;display:none}'+
+'.auth-tc-input{width:16px;height:16px;margin-top:1px;accent-color:var(--saffron,#e85d4c);cursor:pointer;flex-shrink:0}'+
+'.tc-field{margin-bottom:14px}'+
+'.tc-label{display:flex;align-items:flex-start;gap:8px;font-size:13px;line-height:1.5;color:var(--text2,#4A4A6A);cursor:pointer}'+
+'.tc-label a{color:var(--saffron,#e85d4c);text-decoration:underline}';
+
+function vlAuthCssLoaded(){
+  if(document.getElementById('vl-auth-fallback-css'))return true;
+  var sheets=document.styleSheets;
+  for(var i=0;i<sheets.length;i++){
+    var rules=null;
+    try{rules=sheets[i].cssRules}catch(e){continue}
+    if(!rules)continue;
+    for(var j=0;j<rules.length;j++){
+      if((rules[j].selectorText||'').indexOf('.auth-modal')>=0)return true;
+    }
+  }
+  return false;
+}
+
+function ensureAuthOverlay(){
   var o=document.getElementById('auth-overlay');
+  if(o)return o;
+  if(!document.body)return null;
+  if(!vlAuthCssLoaded()){
+    var st=document.createElement('style');
+    st.id='vl-auth-fallback-css';
+    st.textContent=VL_AUTH_FALLBACK_CSS;
+    document.head.appendChild(st);
+  }
+  var wrap=document.createElement('div');
+  wrap.className='auth-overlay';
+  wrap.id='auth-overlay';
+  wrap.innerHTML='<div class="auth-modal"><button type="button" class="close-btn" aria-label="Close">&times;</button><div id="auth-content"></div></div>';
+  wrap.addEventListener('click',function(e){if(e.target===wrap)closeAuth()});
+  wrap.querySelector('.close-btn').addEventListener('click',function(){closeAuth()});
+  document.body.appendChild(wrap);
+  return wrap;
+}
+
+function showAuth(){
+  var o=ensureAuthOverlay();
   if(o){o.classList.add('open');document.body.style.overflow='hidden';renderAuth()}
 }
 

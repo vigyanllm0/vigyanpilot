@@ -37,6 +37,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <link rel="icon" type="image/png" href="/logo.png">
 <link rel="apple-touch-icon" href="/logo.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.vigyanllm.in"}, {"@type": "ListItem", "position": 2, "name": "Free PCR Product Size Calculator"}]}</script>
@@ -224,26 +225,10 @@ img{max-width:100%}
 </div>
 </div>
 
-<div class="auth-overlay" id="auth-overlay">
+<div class="auth-overlay" id="auth-overlay" onclick="if(event.target===this)closeAuth()">
   <div class="auth-modal">
-    <button class="close-btn" onclick="closeAuthModal()">×</button>
-    <h2 id="authTitle">Sign in</h2>
-    <p class="sub" id="authSub">Access VigyanLLM tools and analysis</p>
-    <div class="auth-err" id="authErr"></div>
-    <div id="authNameField" class="field" style="display:none">
-      <label>Full Name</label>
-      <input type="text" id="authName" placeholder="Your name">
-    </div>
-    <div class="field">
-      <label>Email</label>
-      <input type="email" id="authEmail" placeholder="you@university.ac.in">
-    </div>
-    <div id="authPassField" class="field" style="display:none">
-      <label>Password</label>
-      <input type="password" id="authPass" placeholder="Min 8 characters">
-    </div>
-    <button class="auth-btn" id="authBtn" onclick="handleAuth()">Sign in</button>
-    <p class="toggle-link" id="authToggle">Don't have an account? <a onclick="toggleAuthMode()">Sign up</a></p>
+    <button class="close-btn" onclick="closeAuth()">×</button>
+    <div id="auth-content"></div>
   </div>
 </div>
 </main>

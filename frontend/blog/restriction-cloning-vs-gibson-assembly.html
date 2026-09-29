@@ -420,5 +420,23 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   });
 })();
 </script>
+  <script defer src="/auth-shared.js"></script>
+  <script>
+  (function(){
+    if(!window.closeMobileMenu){
+      window.closeMobileMenu=function(){
+        var m=document.getElementById('mobile-menu'),h=document.getElementById('hamburger');
+        if(m)m.classList.remove('open');
+        if(h)h.classList.remove('active');
+      };
+    }
+    var h=document.getElementById('hamburger'),m=document.getElementById('mobile-menu');
+    if(!h||!m||h.getAttribute('data-vl-menu'))return;
+    h.setAttribute('data-vl-menu','1');
+    h.addEventListener('click',function(e){e.stopPropagation();h.classList.toggle('active');m.classList.toggle('open')});
+    document.addEventListener('click',function(e){if(!h.contains(e.target)&&!m.contains(e.target))window.closeMobileMenu()});
+    Array.prototype.forEach.call(m.querySelectorAll('a'),function(l){l.addEventListener('click',function(){window.closeMobileMenu()})});
+  })();
+  </script>
 </body>
 </html>

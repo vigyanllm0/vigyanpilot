@@ -36,6 +36,7 @@
 <link rel="icon" type="image/png" href="/logo.png">
 <link rel="apple-touch-icon" href="/logo.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <script src="https://accounts.google.com/gsi/client?hl=en" async defer></script>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
@@ -619,7 +620,21 @@ html{overflow-x:hidden}
 <a href="/blog" style="display:inline-block;padding:8px 14px;background:#f8fafc;color:#475569;border:1px solid #e2e8f0;border-radius:6px;font-size:13px;font-weight:600;text-decoration:none">Blog</a>
 <a href="/glossary" style="display:inline-block;padding:8px 14px;background:#f8fafc;color:#475569;border:1px solid #e2e8f0;border-radius:6px;font-size:13px;font-weight:600;text-decoration:none">Glossary</a>
 </div>
-</section>
+<div class="auth-overlay" id="auth-overlay" onclick="if(event.target===this)closeAuthModal()">
+  <div class="auth-modal">
+    <button type="button" class="close-btn" onclick="closeAuthModal()">&times;</button>
+    <h2 id="authTitle">Sign in</h2>
+    <p class="sub" id="authSub">Access your VigyanLLM account</p>
+    <form onsubmit="return handleAuth(event)">
+      <div class="field" id="nameField" style="display:none"><label>Full Name</label><input type="text" id="authName" placeholder="Your name"></div>
+      <div class="field"><label>Email</label><input type="email" id="authEmail" placeholder="you@example.edu" required></div>
+      <div class="field"><label>Password</label><input type="password" id="authPass" placeholder="Min 8 characters" required></div>
+      <div class="auth-err" id="authError"></div>
+      <button type="submit" class="auth-btn" id="authSubmit">Sign in</button>
+    </form>
+    <div class="toggle-link" id="authToggle">Don't have an account? <a onclick="toggleAuthMode()">Register</a></div>
+  </div>
+</div>
 </main>
 
 <div id="vl-footer"></div>
@@ -1098,8 +1113,8 @@ function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').
 
 /* ── Auth Modal ─────────────────────────────── */
 var AUTH_MODE='login';
-function openAuthModal(){AUTH_MODE='login';document.getElementById('authOverlay').classList.add('show');document.getElementById('authTitle').textContent='Sign in';document.getElementById('authSub').textContent='Access your VigyanLLM account';document.getElementById('authSubmit').textContent='Sign in';document.getElementById('nameField').style.display='none'}
-function closeAuthModal(){document.getElementById('authOverlay').classList.remove('show')}
+function openAuthModal(){AUTH_MODE='login';document.getElementById('auth-overlay').classList.add('show');document.getElementById('authTitle').textContent='Sign in';document.getElementById('authSub').textContent='Access your VigyanLLM account';document.getElementById('authSubmit').textContent='Sign in';document.getElementById('nameField').style.display='none'}
+function closeAuthModal(){document.getElementById('auth-overlay').classList.remove('open','show')}
 function toggleAuthMode(){AUTH_MODE=AUTH_MODE==='login'?'register':'login';document.getElementById('authTitle').textContent=AUTH_MODE==='login'?'Sign in':'Create account';document.getElementById('authSub').textContent=AUTH_MODE==='login'?'Access your VigyanLLM account':'Start using VigyanLLM tools';document.getElementById('authSubmit').textContent=AUTH_MODE==='login'?'Sign in':'Create account';document.getElementById('nameField').style.display=AUTH_MODE==='register'?'block':'none';document.getElementById('authToggle').innerHTML=AUTH_MODE==='login'?'Don\'t have an account? <a onclick=\"toggleAuthMode()\">Register</a>':'Already have an account? <a onclick=\"toggleAuthMode()\">Sign in</a>'}
 async function handleAuth(e){e.preventDefault();var url=AUTH_MODE==='login'?'/api/auth/login':'/api/auth/register';var body={email:document.getElementById('authEmail').value,password:document.getElementById('authPass').value};if(AUTH_MODE==='register')body.full_name=document.getElementById('authName').value;try{var r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify(body)});var d=await r.json();if(!r.ok)throw new Error(d.error||'Authentication failed');localStorage.setItem('pf_user',JSON.stringify(d.user||{email:body.email}));closeAuthModal();location.reload()}catch(e){document.getElementById('authError').textContent=e.message}}
 </script>
