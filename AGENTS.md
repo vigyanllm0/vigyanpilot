@@ -1,6 +1,7 @@
 # AGENTS.md — Agent Handoff & Tracking
 
-**Session:** Admin Management Systems — 5 phases COMPLETE (monitoring, CI/CD, analytics, API portal, compliance). Commit `16e67912`. 58 files, +4,192 lines.
+**Session:** GSC Decline response — Tier-1 pushed (`a5d0c1ea`), Tier-2 complete in working tree (baked header/footer via `bake_partials.py`, 50 noindex + sitemap 429, duplicate-URL fixes, 10 gene expansions + fabricated-table removal). **Current tracker = `pending work.md`** (deploy steps, Tier-3 plan, new findings). Older plans: `PENDING_PLANS.md`.
+**Never commit:** `bandit-report.json`, `docking_queue/`, `deploy/aws/sync-frontend.sh` (run-only).
 
 ## Anti-Cannibalization Policy (from 2026-08-19 GSC analysis)
 

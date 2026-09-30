@@ -477,26 +477,31 @@ def main():
         f.write(robots_content)
     print(f"✓ robots.txt generated")
 
-    # 3. Update edge function with clean URLs
-    blog_slugs = sorted([
-        os.path.relpath(fp, FRONTEND).replace("blog/", "").replace(".html", "")
-        for fp in glob.glob(os.path.join(FRONTEND, "blog", "*.html"))
-        if os.path.relpath(fp, FRONTEND).replace("blog/", "").replace(".html", "") != "index"
-    ])
-    glossary_slugs = sorted([
-        os.path.relpath(fp, FRONTEND).replace("glossary/", "").replace(".html", "")
-        for fp in glob.glob(os.path.join(FRONTEND, "glossary", "*.html"))
-    ])
-    gene_slugs = sorted([
-        os.path.relpath(fp, FRONTEND).replace("gene-prefers/", "").replace(".html", "")
-        for fp in glob.glob(os.path.join(FRONTEND, "gene-prefers", "*.html"))
-    ])
-    landing_slugs = sorted([
-        os.path.relpath(fp, FRONTEND).replace("landing-pages/", "").replace(".html", "")
-        for fp in glob.glob(os.path.join(FRONTEND, "landing-pages", "*.html"))
-    ])
-    update_sitemap_edge_function(blog_slugs, glossary_slugs, gene_slugs, landing_slugs)
-    print(f"✓ api/sitemap.xml.js updated ({len(blog_slugs)} blog, {len(glossary_slugs)} glossary, {len(gene_slugs)} gene, {len(landing_slugs)} landing)")
+    # 3. Update edge function with clean URLs (legacy Vercel runtime —
+    #    retired when frontend moved to CloudFront+S3; never resurrect it)
+    edge_file = os.path.join(FRONTEND, "api", "sitemap.xml.js")
+    if not os.path.exists(edge_file):
+        print("✓ api/sitemap.xml.js absent (retired edge runtime) — skipped")
+    else:
+        blog_slugs = sorted([
+            os.path.relpath(fp, FRONTEND).replace("blog/", "").replace(".html", "")
+            for fp in glob.glob(os.path.join(FRONTEND, "blog", "*.html"))
+            if os.path.relpath(fp, FRONTEND).replace("blog/", "").replace(".html", "") != "index"
+        ])
+        glossary_slugs = sorted([
+            os.path.relpath(fp, FRONTEND).replace("glossary/", "").replace(".html", "")
+            for fp in glob.glob(os.path.join(FRONTEND, "glossary", "*.html"))
+        ])
+        gene_slugs = sorted([
+            os.path.relpath(fp, FRONTEND).replace("gene-prefers/", "").replace(".html", "")
+            for fp in glob.glob(os.path.join(FRONTEND, "gene-prefers", "*.html"))
+        ])
+        landing_slugs = sorted([
+            os.path.relpath(fp, FRONTEND).replace("landing-pages/", "").replace(".html", "")
+            for fp in glob.glob(os.path.join(FRONTEND, "landing-pages", "*.html"))
+        ])
+        update_sitemap_edge_function(blog_slugs, glossary_slugs, gene_slugs, landing_slugs)
+        print(f"✓ api/sitemap.xml.js updated ({len(blog_slugs)} blog, {len(glossary_slugs)} glossary, {len(gene_slugs)} gene, {len(landing_slugs)} landing)")
 
     print(f"\nTotal URLs in sitemap: {url_count}")
     print("Done.")

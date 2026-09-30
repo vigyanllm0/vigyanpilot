@@ -50,6 +50,14 @@ function handler(event) {
 
   // 6. CONTENT REDIRECTS (before clean URL rewrite)
   var redirects = {
+    // Duplicate URL variants of the home page / blog index (GSC Tier 2:
+    // consolidate duplicate clusters — one canonical URL per page).
+    '/index': '/',
+    '/blog/index': '/blog',
+    // Root-level header.html/footer.html are unbaked partial fragments,
+    // not pages — send crawlers to the home page instead of a raw fragment.
+    '/header': '/',
+    '/footer': '/',
     '/tools/dna-to-rna': '/dna-to-rna',
     '/primer-3-alternative': '/primer3-alternative',
     '/Learning-vigyanllm': '/learning-vigyanllm',

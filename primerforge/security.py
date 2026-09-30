@@ -163,6 +163,8 @@ def init_security(app):
             "https://code.jquery.com",
             "https://cdn.sheetjs.com",  # xlsx reader on /biostatistics-calculator (file upload)
             "https://3Dmol.org",
+            # lottie-web (homepage DNA hero animation) loads from cdnjs
+            "https://cdnjs.cloudflare.com",
         ],
         "style-src": [
             "'self'",
