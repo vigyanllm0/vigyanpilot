@@ -2,26 +2,29 @@
 
 > Created 2026-09-30 (GSC Tier-1 session). Items completed in past sessions are in `AGENTS.md`; plans older than that are in `PENDING_PLANS.md`.
 
-## ⚠️ 0. Committed but NOT live — deploy required
+## ⚠️ 0. Deploy status — frontend + CloudFront function LIVE (2026-09-30); backend deploy BLOCKED
 
-The Tier-1 fixes (and the earlier auth/CSP batch) are **committed locally, not deployed**:
+**✅ LIVE & verified on prod (2026-09-30, 18:40–19:00 UTC):**
+- **Tier-1 + Tier-2 frontend** via `deploy/aws/sync-frontend.sh` (dry-run: 537 up / 0 del; bucket = 793-file mirror, md5 == local) + CloudFront invalidation `I90UWDAZZD8DYNV8A96B3ND5KF`. Post-checks: favicon 404→200, sitemap 479→429 (0 noindexed), robots 429, 10 gene expansions live + fabricated seqs gone, 50 noindex live, baked headers (0 `/partials/` fetches, nesting OK), CTR titles/guide CTAs live, 15/15 key URLs 200, browser pass clean.
+- **CloudFront function** `vigyanllm-clean-urls-v6` → repo `viewer-request.js` (live-vs-repo diff was a strict superset: only the 4 new redirects) via `update-function` + `publish-function` (comment v13). Verified: `/index`, `/blog/index`, `/header`, `/footer` → 301 canonical; `.html` strip, `/tools/*`, `/crispr`, trailing-slash, AhrefsBot 403, `/api/*` passthrough all intact. Rollback assets: old code `/tmp/cf_fn_live.js`, pre-ETag `E3AEGXETSR30VB`, dist config `/tmp/dist_cfg_orig.json`.
+- **Unclosed hero `<header>` defect fixed (276 pages)** — found by the deploy gate; pre-existing (verified at pre-Tier-1 revision). 181 glossary `term-header` + 84 blog heroes + 6 `article-header` + 4 `gz-hero` + 1 `lh-hero` were missing their second `</header>`, nesting the whole article inside a `header` (the `@media print` rule hid the article body; header landmark swallowed the page). Inserted `</header>` at each hero/section boundary learned from the 6 already-correct reference files; assertions (h1 in hero, no h2) + DOM gate 11/11 pages PASS + 0 imbalanced files + `bake_partials.py --check` OK. Screen rendering and links were already fine (all resolve 200) — print + semantics were the impact.
+
+**Still pending:**
 
 | What | Where | Deploy step |
 |---|---|---|
-| Nav 404 leak (299 files), CTR titles (5 money pages), guide CTAs (5 guides), `favicon.ico` | frontend/ (Tier-1) | `deploy/aws/sync-frontend.sh` + CloudFront invalidation |
-| **Tier-2**: 223-file baked header/footer, duplicate-URL fixes, 50 noindex flips, sitemap 479→429, 10 gene expansions + fabricated-table removal | frontend/, `generate_sitemap.py`, `bake_partials.py` | same `sync-frontend.sh` + invalidation (frontend only) |
-| **CloudFront function redirect map** (`/index`→`/`, `/blog/index`→`/blog`, `/header`→`/`, `/footer`→`/`) | `deploy/aws/cloudfront-functions/viewer-request.js` | **CloudFront console → Functions → update the viewer-request function code** (not covered by sync-frontend.sh) |
-| CSP hosts (jsdelivr/clarity/sheetjs) + cdnjs (Tier-2 lottie), anonymous `/api/auth/me`, auth fixes | `primerforge/security.py`, `auth*.py`, `pg_auth*.py` (commits `4a7aa061`, Tier-2) | scp changed backend files to `ubuntu@13.235.133.206` + restart API — **CSP fix only takes effect after backend deploy** |
-| Pipeline pocket-detector / thresholds (commit `244cee46`) | `primerforge/` | same backend deploy |
+| CSP hosts (jsdelivr/clarity/sheetjs) + cdnjs (Tier-2 lottie), anonymous `/api/auth/me`, auth fixes | `primerforge/security.py`, `auth*.py`, `pg_auth*.py` (commit `4a7aa061`) | scp to `ubuntu@13.235.133.206` + restart API — **CSP fix only takes effect after backend deploy** |
+| Pipeline pocket-detector / thresholds (commit `244cee46`) | `primerforge/pipelines/*`, `primer_server.py` | same backend deploy |
+| **BLOCKED: backend access** — SSH `ubuntu@13.235.133.206` publickey rejected (local key not authorized); `13.207.60.92:22` times out; no SSM agent; `ec2-instance-connect:SendSSHPublicKey` denied for IAM user `vigyanllm-deploy`. Server = `i-05d610fc36db577c9`, `/home/ubuntu/vigyanpilot` (`vigyan.service`); **9 files** pending. | | Unblock options: **(A)** authorize local pubkey (in session transcript) in ubuntu's `authorized_keys`, **(B)** grant `SendSSHPublicKey` to `vigyanllm-deploy`, or **(C)** user runs the provided scp + `systemctl restart vigyan` commands |
 | Lambda@Edge CSP **still not attached** (prod pages serve NO CSP; live HSTS 63072000 ≠ repo 31536000) and repo file lacks the additive hosts (clarity/sheetjs/jsdelivr style+font, cdnjs) | `deploy/aws/lambda-edge/csp-headers.py` | **decision needed**: update hosts → publish Lambda@Edge version → attach to `E394TCXPIP8P6R` behavior (doing so also changes HSTS max-age — align the two values first) |
 
-After deploy: re-check `https://www.vigyanllm.in/favicon.ico` (was live 404, now shipped), spot-check one glossary + one blog nav link on prod, confirm `/blog/index` and `/index` 301 on prod, and confirm one gene page serves the baked header (view-source: no `/partials/` fetch).
+Post-backend-deploy checks: anon `/api/auth/me` shape, sign-in round-trip, CSP header on API responses (still none on HTML until the Lambda@Edge decision above).
 
 ---
 
-## 1. GSC plan — TIER 2 ✅ COMPLETE in-repo (2026-09-30) — deploy pending (§0), export items below remain
+## 1. GSC plan — TIER 2 ✅ COMPLETE (2026-09-30) — live on prod 2026-09-30 (§0); export items below remain
 
-- [x] **Consolidate duplicate clusters** — in-repo portion done: internal-link audit found **0** non-canonical hrefs (no `.html`/apex/http links); `/blog/index`→`/blog` fixed in 305 files + partials + vprime JS menu; cms-admin `/index`→`/`; `blog-post.html` canonical → `/blog`; sitemap serves clean form; CloudFront redirect map now also catches `/index`, `/blog/index`, `/header`, `/footer` (needs function deploy, §0). **Remaining (data-dependent)**: enumerate the GA4/GSC URL variants for the tool clusters (DNA→RNA 6+, GC calc 7+, docking 5+, PCR calc 3+, primer/BLAST/MSA 3–5 each) and 301 any live stragglers — needs the export; re-measure **Oct 3**.
+- [x] **Consolidate duplicate clusters** — in-repo portion done: internal-link audit found **0** non-canonical hrefs (no `.html`/apex/http links); `/blog/index`→`/blog` fixed in 305 files + partials + vprime JS menu; cms-admin `/index`→`/`; `blog-post.html` canonical → `/blog`; sitemap serves clean form; CloudFront redirect map now also catches `/index`, `/blog/index`, `/header`, `/footer` (**function deployed to prod 2026-09-30, §0**). **Remaining (data-dependent)**: enumerate the GA4/GSC URL variants for the tool clusters (DNA→RNA 6+, GC calc 7+, docking 5+, PCR calc 3+, primer/BLAST/MSA 3–5 each) and 301 any live stragglers — needs the export; re-measure **Oct 3**.
 - [x] **Thin-page triage**
   - **Noindex**: 50 flips done (42 gene pages + 8 species pages), verification errors 0; sitemap regenerated **479→429** (−50 exact), robots.txt regenerated, all 10 keep genes verified indexed in sitemap.
   - **Machine translations**: **none exist in this repo** — the locale list (Korean/Japanese/Russian/…) must be identified from a GSC Pages export first, then noindexed wherever they're served from.
