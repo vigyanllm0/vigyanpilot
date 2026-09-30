@@ -87,9 +87,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <link rel="preconnect" href="https://www.googletagmanager.com">
 <link rel="preload" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Open+Sans:wght@400;500;600;700&family=Source+Serif+4:wght@400;500&display=swap" as="style" onload="this.rel='stylesheet'">
 <noscript><link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Open+Sans:wght@400;500;600;700&family=Source+Serif+4:wght@400;500&display=swap" rel="stylesheet"></noscript>
-<!-- amCharts (1.4MB) + lottie-web are injected on demand by the map/DNA
-     loaders below — not on the critical path (Growth Playbook 2.2/2.1) -->
-<script src="https://accounts.google.com/gsi/client?hl=en" async defer></script>
+<!-- amCharts (1.4MB) injected on demand by the map loader below —
+     not on the critical path (Growth Playbook 2.2) -->
 <link rel="stylesheet" href="/home.css">
 <script src="/cookie-banner.js" defer></script>
   <link rel="alternate" hreflang="en-US" href="https://www.vigyanllm.in/" />
@@ -322,9 +321,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <span class="btn-micro">Free for all universities worldwide</span>
       </div>
     </div>
-  </div>
-  <div class="hero-right">
-    <div class="protein-stage" id="protein-stage"></div>
   </div>
 </section>
 
@@ -895,34 +891,6 @@ try {
   }
 })();
 
-function initDNAAnim(){
-  var el=document.getElementById('protein-stage');
-  if(!el||el.offsetParent===null||el.dataset.init)return;
-  el.dataset.init='1';
-  function start(){
-    lottie.loadAnimation({
-      container: el,
-      renderer: 'svg',
-      loop: true,
-      autoplay: true,
-      path: 'dna-loop.json'
-    });
-  }
-  function boot(){
-    if(window.lottie){start();return;}
-    // lottie-web lib loads on demand, then fetches the 3.6MB animation JSON
-    var s=document.createElement('script');
-    s.src='https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js';
-    s.onload=start;
-    s.onerror=function(){el.dataset.init='';}; // allow a later retry
-    document.head.appendChild(s);
-  }
-  // decorative animation — never compete with LCP; wait for browser idle
-  if('requestIdleCallback' in window) requestIdleCallback(boot,{timeout:2500});
-  else setTimeout(boot,2000);
-}
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initDNAAnim);
-else initDNAAnim();
 </script>
 <div class="auth-overlay" id="auth-overlay" onclick="if(event.target===this)closeAuth()">
   <div class="auth-modal">
