@@ -94,9 +94,9 @@ De-branded, de-ChatGPT'd, and re-scoped 8 blog posts with real worked examples. 
 | Landing page titles | 10 additional titles shortened to ≤60 chars | `34282892` |
 | #9: Canonical verification | All verified (www.vigyanllm.in) | verified |
 
-### Skipped (need user decision)
-- **Fix #8**: AI primer design landing page (2,717 imp) — repurpose `/primer-design` or create new `/free-primer-design-tool`?
-- **Fix #6**: Glossary expansion — start with gc-clamp page (pos 9.2, 452 imp, 0 clicks)
+### Skipped at the time → RESOLVED 2026-10-01 (see `pending work.md` §2b)
+- **Fix #8**: repurposed (not a new page) — `/primer-design` retitled "Automated Primer Design — How It Works, Step by Step (2026)" to stop the title split with `/primer` (`7711b8eb`). Original "ai primer design" query demand no longer exists in any GSC export since Aug 22.
+- **Fix #6**: gc-clamp expanded 2026-10-01 (`63707d46`, `bf091b9c`) — depth H1, early /gc-calculator tip, 5th FAQ, two false claims removed.
 
 ### Sep 5–10 GSC Measurement Plan
 | Metric | Before (Aug 28) | Signal of Success |
@@ -113,8 +113,8 @@ De-branded, de-ChatGPT'd, and re-scoped 8 blog posts with real worked examples. 
 | ✅ DONE | Gene-prefers validated fix, glossary bugs, rs verification, E-E-A-T blocker, BLAST E-value, all 8 tool rewrites |
 | ✅ DONE | **Week 3: Blog rewrites** (Agent 63 — **8/8 complete**) — pcr-steps `ffea1ea2`, pcr-primer-design-rules `62626eeb`, rt-pcr-vs-qpcr `1385cbe2`, primer-dimer-fix `aa401e5b`, real-time-pcr-data-analysis `6775a624`, digital-pcr-vs-qpcr `061ea5ee`, pcr-troubleshooting-guide `5d62d61a`, types-of-pcr `a246b9cc` |
 | ✅ DONE | **GSC fixes batch** (`34282892`) — www redirect, academic href, 10 title rewrites, 27 SoftwareApplication schemas |
-| ⏳ READY | **Fix #8**: AI primer design landing page (2,717 imp, 0 clicks) — needs decision: repurpose or new page |
-| ⏳ READY | **Fix #6**: Glossary gc-clamp expansion (pos 9.2, 452 imp, 0 clicks) — add content + link to GC calculator |
+| ✅ DONE | **Fix #8** (`7711b8eb`) — `/primer-design` retitle (differentiated from `/primer`), 24-step truth; LIVE 10-01 |
+| ✅ DONE | **Fix #6** (`63707d46`, `bf091b9c`) — gc-clamp depth H1 + tip + 5th FAQ + false-claim removals; LIVE 10-01. Also: site-wide `22-step`→`24-step` sweep `ad5a3be7` (engine = 24 steps) |
 | ⏳ READY | **Functional testing** (Agents 73-80 — buttons, forms, APIs, links, JS errors on live site) |
 | 🕐 DEFERRED | Pruning 130+ thin pages (past 08-27 measurement window) |
 | 🕐 DEFERRED | Primer BLAST verification, gene-specific param tuning |
