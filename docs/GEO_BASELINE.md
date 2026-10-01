@@ -40,3 +40,21 @@ The GEO Quick-Answer block pattern (below-H1, "What is this tool?" + "How do I u
 ## Methodology honesty
 - This used web-search results as a proxy for AI-assistant citation. It measures the **index layer** both Perplexity/ChatGPT/SGE retrieve from. It is not a literal Perplexity/ChatGPT query (those require per-platform UI access), but index-visibility is the necessary condition for any citation, so an absence here is a real gap signal.
 - A literal per-platform check (Perplexity/Google AI Overviews/ChatGPT with browsing) is a follow-up worth doing manually since it's UI-bound.
+
+---
+
+## HQ question baseline — added 2026-10-02 (re-check 10-05 and 10-08/09)
+
+**Question set:** "Where is VigyanLLM headquartered?" / "vigyanllm headquarters" — after the Gurgaon→New Delhi move (site copy updated 2026-10-01, entity signals 2026-10-02).
+
+| Platform | Answer as of 2026-10-01/02 | Expected flip | Re-check |
+|---|---|---|---|
+| Google AI Overview | **Gurgaon, Haryana, India** (stale index of old `/about` — user screenshot 10-01) | days→2 weeks after recrawl | 10-05, 10-08/09 |
+| Google SERP snippet (`/about`) | **Gurgaon** (old indexed copy) | ~3–14 days after request-indexing | 10-05, 10-08/09 |
+| ChatGPT | not yet measured (UI-bound) | weeks (own crawl) | manual, 10-08/09 |
+| Perplexity | not yet measured (UI-bound) | weeks (own crawl + index) | manual, 10-08/09 |
+| Gemini | not yet measured (UI-bound) | follows Google index | manual, 10-08/09 |
+| Bing search | not yet measured; Bing Webmaster setup pending | after Bing recrawl | manual, 10-08/09 |
+
+**Signal sources shipped to flip this:** site copy (4 pages, 10-01), sitemap lastmod bumps + `/about` Organization+FAQPage schema + homepage PostalAddress city (10-02), `llms.txt`, IndexNow, GitHub org location; off-site (LinkedIn/Crunchbase/MCA/DPIIT) = user actions tracked in `docs/HQ_PROPAGATION.md`.
+

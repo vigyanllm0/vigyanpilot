@@ -68,6 +68,15 @@ Fresh Sep-30 GSC export drove the decisions (position for `/primer-design` 32–
 - [x] **HQ change — 9 lines / 4 files, all verified + LIVE on prod 2026-10-01 (§0)**: `team.html:315` + `about.html:312` badges "Building from Gurgaon"→"Building from New Delhi"; `about.html:352` "Headquarters: Gurgaon, Haryana, India"→"New Delhi, India"; `about.html:353` "Registered under Haryana GST"→"Delhi GST" (**user chose: change all, GST included**); `about/sovereign-ai.html:187` JSON-LD `foundingLocation`→"New Delhi, India"; `sovereign-ai:391,427` prose→"New Delhi"; `primer-design-india.html:328`→"New Delhi"; `primer-design-india:396` registered-company line→"New Delhi, Delhi, India" (full form per user's address). Gate: repo grep **0** `gurgaon|gurugram|haryana`; JSON-LD parses (2/2); tag balance 4/4; test-client 200 ×4; browser gate PASS (0 console errors, new text rendered, old text absent).
 - Note: `terms.html` jurisdiction already said "New Delhi" (no change needed); `index.html` Organization JSON-LD has only `addressCountry: IN` (unchanged — no city claim).
 
+## 2d. HQ propagation to search & AI (flip "Gurgaon" → "New Delhi") — 🔄 SHIPPED 2026-10-02, awaiting user actions
+
+**Trigger:** Google SERP + AI Overview still show Gurgaon (stale index of pre-10-01 `/about`; AI Overview cites our old pages). Full plan/status board: **`docs/HQ_PROPAGATION.md`**.
+
+- [x] **Shipped 10-02** (verify in deploy below): sitemap `lastmod` bumps (about/sovereign-ai/index→10-02, team/india→10-01); `/about` gains **Organization + PostalAddress + FAQPage** (2 HQ Q&As, exact visible↔JSON-LD mirror); homepage Organization PostalAddress += `addressLocality: New Delhi`, `addressRegion: Delhi`; sovereign-ai Organization += address; new `llms.txt`; new IndexNow key `frontend/0ee82…831b.txt` + `deploy/aws/indexnow_ping.sh` (run after each deploy — NOT sync-frontend.sh, that file stays run-only).
+- [ ] **User (today):** GSC request-indexing ×4 URLs (`/about` first) — exact steps in HQ_PROPAGATION.md §6; LinkedIn company location → New Delhi (§8).
+- [ ] **User (this week):** Bing Webmaster verify + sitemap (§7); X bio, Crunchbase, DPIIT/Startup India profiles (§9–10); MCA INC-22 filing via CA (§11).
+- [ ] **Re-check 10-05 + 10-08/09:** SERP `vigyanllm headquarters`, AI Overview, ChatGPT/Perplexity/Gemini "Where is VigyanLLM headquartered?" → log in `docs/GEO_BASELINE.md` § HQ question baseline (Google AI Overview baseline = Gurgaon, 10-01).
+
 ## 3. Data-dependent (needs user's GSC/GA4 export)
 
 - [ ] Export GSC → Pages → "Not found (404)" (23 URLs as of Sep 30) and 301 any **legacy/external** URLs. *Internal-source 404s are already fixed by the site-wide crawl (see §4); the export is to catch old URLs still linked from outside the site.*
