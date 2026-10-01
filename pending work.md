@@ -4,6 +4,8 @@
 
 ## ⚠️ 0. Deploy status — frontend LIVE (latest refresh 2026-10-01); backend deploy BLOCKED
 
+**✅ LIVE & verified on prod (2026-10-01, HQ update):** **HQ Gurgaon → New Delhi** (`5e87eb05`, 9 lines / 4 files — badges, Headquarters, GST→Delhi, JSON-LD foundingLocation, prose, registered-company line; audit §2c) — dry-run 4 up / 0 del → `sync-frontend.sh` (bucket **792** = local, md5 **4/4** on the changed files, HTML cache `max-age=300` intact) + invalidation `I7UQN85KK9KIS9ZNYUVQOC8C49` Completed. **Live gates 4/4**: `/about`, `/team`, `/about/sovereign-ai`, `/primer-design-india` all 200 with new wording + **0× gurgaon/haryana**, sovereign-ai JSON-LD parses.
+
 **✅ LIVE & verified on prod (2026-10-01):** **Tier-3 (money page + speed fixes) + backlog fixes (Fix #8 retitle, Fix #6 gc-clamp, 22→24-step sweep)** — dry-run 148 up / 0 del → `sync-frontend.sh` (final bucket **792 = local**, `dna-loop.json` deleted, md5 8/8 on key files incl. `primer-design.html`, `gc-clamp.html`, `logo.png`, `home.css`; cache headers intact: HTML 300s, PNG immutable, CSS SWR) + invalidation `IDGE6B1LVZLQYKAZR8NMEX4T6Q` Completed. **Live gates: 37/37** (new title/H1/breadcrumb + 9-FAQ money page + gc-clamp depth H1/5th FAQ/no false claims + no dna-loop/lottie + logo 20,161 B + gsi only on /primer + 24-step everywhere, 0× 22-step, RSS valid) + **prod browser gate PASS** (amCharts4 map renders SVG, 0 console errors).
 
 **✅ LIVE & verified on prod (2026-09-30, 18:40–19:00 UTC):**

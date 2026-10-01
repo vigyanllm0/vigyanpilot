@@ -115,6 +115,8 @@ De-branded, de-ChatGPT'd, and re-scoped 8 blog posts with real worked examples. 
 | ✅ DONE | **GSC fixes batch** (`34282892`) — www redirect, academic href, 10 title rewrites, 27 SoftwareApplication schemas |
 | ✅ DONE | **Fix #8** (`7711b8eb`) — `/primer-design` retitle (differentiated from `/primer`), 24-step truth; LIVE 10-01 |
 | ✅ DONE | **Fix #6** (`63707d46`, `bf091b9c`) — gc-clamp depth H1 + tip + 5th FAQ + false-claim removals; LIVE 10-01. Also: site-wide `22-step`→`24-step` sweep `ad5a3be7` (engine = 24 steps) |
+| ✅ DONE | **HQ Gurgaon → New Delhi** (`5e87eb05`) — 9 lines / 4 files (badges, HQ line, GST→Delhi, JSON-LD foundingLocation, prose); name audit: ChinhAI/SubBrain present (deferred by user), "legal AI"/"VigyanLLM AI" = 0 found anywhere; LIVE 10-01 — details `pending work.md` §2c |
+| 🕐 DEFERRED | **ChinhAI/SubBrain invented-agent cleanup** — 8/6 files, 7 live pages; user: "for now no need to change" (10-01); plan specced in chat |
 | ⏳ READY | **Functional testing** (Agents 73-80 — buttons, forms, APIs, links, JS errors on live site) |
 | 🕐 DEFERRED | Pruning 130+ thin pages (past 08-27 measurement window) |
 | 🕐 DEFERRED | Primer BLAST verification, gene-specific param tuning |
