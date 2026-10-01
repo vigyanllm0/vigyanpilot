@@ -58,6 +58,14 @@ Fresh Sep-30 GSC export drove the decisions (position for `/primer-design` 32–
 - [ ] **FAQPage mirror drift audit across the other FAQ pages** — pattern found on 2 pages (en-dash vs hyphen, US/UK spellings, inline-link text): could not have broken any previously-mirrored pair (both sides changed identically), but other pages may have **pre-existing** drift. Reusable script: `/tmp/sync_faq_ld.py` (syncs JSON-LD from visible text; extend pattern per template) — run audit across all FAQPage pages, fix diffs.
 - [ ] **Orphan amCharts 5 files** — `frontend/amcharts-index.js`, `amcharts-map.js`, `amcharts-worldLow.js`, `amcharts-worldIndiaLow.js` are referenced by **nothing** (homepage lazy-loads amCharts 4: `amcharts4-*.js`, verified rendering on prod). They deploy to S3 (dead weight, ~hundreds of KB). Cleanup candidate — grep every extension for dynamic refs before deleting.
 
+## 2c. HQ address change (Gurgaon → New Delhi) + name audit — ✅ DONE 2026-10-01
+
+**User request**: audit for names "chinh AI / Subbrain / legal AI / VigyanLLM AI"; HQ moved Gurgaon → New Delhi (current address: New Delhi, Delhi, India).
+
+- [x] **Name audit (repo + 4 SQLite/CMS DBs incl. 265-page `backend/cms.db` snapshot + all SQL + 517 live pages crawled)**: **ChinhAI** = 11 matches / 8 files (7 live pages + `fix_all_seo.py`); **SubBrain** = 7 matches / 6 files; **"legal AI"** = **0 anywhere**; **"VigyanLLM AI"** = **0 anywhere** (nearest legit = blog callout "VigyanLLM: AI-Native Molecular Biology Tools"). Both found names are part of the invented "three-agent (Core, SubBrain, ChinhAI)" story. **User decision: leave agent names untouched for now** → see deferred item §7.
+- [x] **HQ change — 9 lines / 4 files, all verified + LIVE on prod 2026-10-01 (§0)**: `team.html:315` + `about.html:312` badges "Building from Gurgaon"→"Building from New Delhi"; `about.html:352` "Headquarters: Gurgaon, Haryana, India"→"New Delhi, India"; `about.html:353` "Registered under Haryana GST"→"Delhi GST" (**user chose: change all, GST included**); `about/sovereign-ai.html:187` JSON-LD `foundingLocation`→"New Delhi, India"; `sovereign-ai:391,427` prose→"New Delhi"; `primer-design-india.html:328`→"New Delhi"; `primer-design-india:396` registered-company line→"New Delhi, Delhi, India" (full form per user's address). Gate: repo grep **0** `gurgaon|gurugram|haryana`; JSON-LD parses (2/2); tag balance 4/4; test-client 200 ×4; browser gate PASS (0 console errors, new text rendered, old text absent).
+- Note: `terms.html` jurisdiction already said "New Delhi" (no change needed); `index.html` Organization JSON-LD has only `addressCountry: IN` (unchanged — no city claim).
+
 ## 3. Data-dependent (needs user's GSC/GA4 export)
 
 - [ ] Export GSC → Pages → "Not found (404)" (23 URLs as of Sep 30) and 301 any **legacy/external** URLs. *Internal-source 404s are already fixed by the site-wide crawl (see §4); the export is to catch old URLs still linked from outside the site.*
@@ -76,6 +84,7 @@ Fresh Sep-30 GSC export drove the decisions (position for `/primer-design` 32–
 
 ## 5. Pre-existing defects (need a decision or out of scope)
 
+- [ ] **Invented agent names "ChinhAI" / "SubBrain" (the "three-agent" story) — deferred by user 2026-10-01** ("for now change registration address, no need to change other things"). Present in 8/6 files → 7 live pages: `solution.html`, `architecture.html`, `about.html`, `biomedical-ai-platform.html`, `primer-design-pipeline.html`, `validated-primer-design.html`, `roadmap.html` + would re-inject via `fix_all_seo.py` if re-run. Same class as PA-09's removed "VigyanInferenceEngine". When approved: reword to functional labels (Stage 1–3 / "verification layer" / "domain reasoning") — plan was specced in chat 2026-10-01.
 - [ ] **CMS sidebar nav missing**: `cms-admin.html` JS references `.sidebar-nav a[data-tab]` (lines ~510–511) but that markup exists nowhere — tabs only switch via in-content buttons. Rebuild needs user input on items + order.
 - [ ] **59-page modal variant without × close button** — those modals close only via backdrop click/Esc; audit + add close button (needs approval, cosmetic pass over 59 files).
 - [ ] **Local Postgres.app refuses connections** — dev environment only; run server with forced SQLite (`/tmp/run_sqlite_server.py`).
