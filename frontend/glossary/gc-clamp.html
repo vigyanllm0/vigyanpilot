@@ -102,46 +102,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   </script>
 
   <!-- JSON-LD: FAQPage -->
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    "mainEntity": [
-      {
-        "@type": "Question",
-        "name": "What is a GC clamp in PCR primer design?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "A GC clamp is a short sequence of guanine (G) or cytosine (C) nucleotides placed at the 3' end of a PCR primer. Because G-C base pairs form three hydrogen bonds (compared to two for A-T), a GC clamp anchors the primer's 3' end to the template, improving binding stability and reducing the chance of primer slippage during thermal cycling."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "How many G or C bases should a GC clamp contain?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "A typical GC clamp contains 1–3 G or C bases at the 3' end. Two G/C bases are sufficient for most standard PCR applications. More than three can over-stabilize the 3' end, making the primer less tolerant of mismatches and potentially increasing non-specific binding. The optimal number depends on the overall primer Tm and the GC content of the target region."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "Does a GC clamp affect melting temperature (Tm)?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Yes. Each G-C base pair contributes approximately 4°C to the primer's melting temperature via the nearest-neighbor model, compared to roughly 2°C for each A-T pair. Adding a two-base GC clamp at the 3' end can raise Tm by 4–8°C depending on the flanking sequence context. This is why VigyanLLM's Tm calculator reports the effect of terminal G/C bases separately."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "Should every primer have a GC clamp?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Not necessarily. A GC clamp is recommended when the 3' end of the primer has low intrinsic stability (e.g., ends with A or T). If the 3' region already contains G/C bases naturally, adding an extra clamp may over-stabilize the primer. For multiplex PCR, consistent GC clamp presence across all primer pairs helps harmonize annealing behavior. VigyanLLM's auto-design pipeline automatically evaluates whether a GC clamp improves or harms each candidate primer."
-        }
-      }
-    ]
-  }
-  </script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What is a GC clamp in PCR primer design?","acceptedAnswer":{"@type":"Answer","text":"A GC clamp is a short sequence of guanine (G) or cytosine (C) nucleotides placed at the 3' end of a PCR primer. Because G-C base pairs form three hydrogen bonds (compared to two for A-T), a GC clamp anchors the primer's 3' end to the template, improving binding stability and reducing the chance of primer slippage during thermal cycling."}},{"@type":"Question","name":"How many G or C bases should a GC clamp contain?","acceptedAnswer":{"@type":"Answer","text":"A typical GC clamp contains 1–3 G or C bases at the 3' end. Two G/C bases are sufficient for most standard PCR applications. More than three can over-stabilise the 3' end, making the primer less tolerant of mismatches and potentially increasing non-specific binding. The optimal number depends on the overall primer Tm and the GC content of the target region."}},{"@type":"Question","name":"Does a GC clamp affect melting temperature (Tm)?","acceptedAnswer":{"@type":"Answer","text":"Yes. Each G-C base pair contributes approximately 4°C to the primer's melting temperature via the nearest-neighbor model, compared to roughly 2°C for each A-T pair. Adding a two-base GC clamp at the 3' end can raise Tm by 4–8°C depending on the flanking sequence context. This is why VigyanLLM's Tm calculator reports the effect of terminal G/C bases separately."}},{"@type":"Question","name":"Should every primer have a GC clamp?","acceptedAnswer":{"@type":"Answer","text":"Not necessarily. A GC clamp is recommended when the 3' end of the primer has low intrinsic stability (e.g., ends with A or T). If the 3' region already contains G/C bases naturally, adding an extra clamp may over-stabilise the primer. For multiplex PCR, consistent GC clamp presence across all primer pairs helps harmonise annealing behaviour. VigyanLLM's auto-design pipeline automatically evaluates whether a GC clamp improves or harms each candidate primer."}},{"@type":"Question","name":"How do I check whether my primer has a GC clamp?","acceptedAnswer":{"@type":"Answer","text":"Read the last one to three bases of the primer's 3' end (written 5'→3'): if two of them are G or C, you have a standard clamp. To see how those bases affect the whole primer, paste the sequence into the free GC calculator for GC% and predicted Tm, and confirm the 3' end does not run more than three consecutive G/C bases, which can reduce mismatch specificity."}}]}</script>
 
   <style>
     html { overflow-x: hidden; }
@@ -311,8 +272,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <nav class="breadcrumb" aria-label="Breadcrumb">
     <a href="/">Home</a> / <a href="/glossary">Glossary</a> / <span>GC Clamp</span>
   </nav>
-  <h1>GC Clamp</h1>
-  <p class="subtitle">A short stretch of G or C bases at the 3' end of a PCR primer that stabilizes template binding through stronger hydrogen bonding.</p>
+  <h1>GC clamp, the G or C bases at a primer's 3' end that anchor it to the template</h1>
+  <p class="subtitle">When does your primer need one, how many G/C bases are too many, and how does a clamp shift melting temperature — with examples from AT-rich targets.</p>
 </section>
 
 <main class="content-wrap">
@@ -320,6 +281,10 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <h2>What Is a GC Clamp?</h2>
 <p>A <strong>GC clamp</strong> is a deliberate placement of one or more guanine (G) or cytosine (C) nucleotides at the 3' end of a PCR primer. The term "clamp" reflects the stabilizing function: G-C base pairs form <strong>three hydrogen bonds</strong> (compared to two for A-T pairs), creating a stronger anchor at the primer's binding edge.</p>
 <p>In practical terms, a GC clamp ensures that the 3' terminus — the exact position where <a href="https://en.wikipedia.org/wiki/DNA_polymerase" target="_blank" rel="noopener">DNA polymerase</a> begins extending the new strand — is firmly hybridised to the template. This reduces the risk of primer slippage, mispriming, and failed amplification, particularly in AT-rich target regions where the 3' end would otherwise have weak intrinsic stability.</p>
+
+<div class="tip-card">
+  <strong>Quick check:</strong> paste any primer into VigyanLLM's <a href="/gc-calculator">free GC calculator</a> to see its GC% and predicted melting temperature instantly — before you commit to a synthesis order.
+</div>
 
 <h2>In Practice</h2>
 <p>GC clamps solve real problems in the lab. Key scenarios where they matter:</p>
@@ -415,7 +380,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
 <div class="vigyanllm-section">
   <h3>How VigyanLLM Handles GC Clamps</h3>
-  <p>VigyanLLM's 24-step primer design pipeline automatically evaluates 3' stability at step 18 (thermodynamic scoring). The algorithm:</p>
+  <p>VigyanLLM's 24-step primer design pipeline automatically evaluates 3' stability when scoring and ranking every candidate primer. The algorithm:</p>
   <ul style="margin-left:20px;margin-bottom:16px">
     <li>Checks whether the 3' end has ≥1 G/C base — if not, tests adding a terminal G or C.</li>
     <li>Recalculates Tm with the proposed clamp using SantaLucia 1998 nearest-neighbor parameters.</li>
@@ -459,6 +424,11 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <details>
   <summary>Should every primer have a GC clamp?</summary>
   <div class="faq-answer">Not necessarily. A GC clamp is recommended when the 3' end of the primer has low intrinsic stability (e.g., ends with A or T). If the 3' region already contains G/C bases naturally, adding an extra clamp may over-stabilise the primer. For multiplex PCR, consistent GC clamp presence across all primer pairs helps harmonise annealing behaviour. VigyanLLM's auto-design pipeline automatically evaluates whether a GC clamp improves or harms each candidate primer.</div>
+</details>
+
+<details>
+  <summary>How do I check whether my primer has a GC clamp?</summary>
+  <div class="faq-answer">Read the last one to three bases of the primer's 3' end (written 5'→3'): if two of them are G or C, you have a standard clamp. To see how those bases affect the whole primer, paste the sequence into the free GC calculator for GC% and predicted Tm, and confirm the 3' end does not run more than three consecutive G/C bases, which can reduce mismatch specificity.</div>
 </details>
 </section>
 
