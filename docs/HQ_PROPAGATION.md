@@ -11,14 +11,14 @@
 | 2 | Sitemap `lastmod` bumps (about/sovereign-ai/index → 10-02, team/india → 10-01) | us | ✅ shipped 10-02 |
 | 3 | `/about` Organization + FAQPage schema; homepage PostalAddress city/region; sovereign-ai address | us | ✅ shipped 10-02 |
 | 4 | `llms.txt` at site root | us | ✅ shipped 10-02 |
-| 5 | IndexNow key + `deploy/aws/indexnow_ping.sh` (run after each deploy) | us | ✅ shipped 10-02 |
+| 5 | IndexNow key + `deploy/aws/indexnow_ping.sh` (run after each deploy) | us | ✅ shipped 10-02; first ping → **HTTP 202** (accepted) |
 | 6 | **GSC: live-test + Request Indexing ×4** | **you** | ⬜ do today |
 | 7 | **Bing Webmaster: verify + submit sitemap** | **you** | ⬜ this week |
 | 8 | **LinkedIn company location → New Delhi** | **you** | ⬜ today (2 min) |
 | 9 | **X/Twitter bio, Crunchbase location** | **you** | ⬜ this week |
 | 10 | **Startup India / DPIIT profile → New Delhi** | **you** | ⬜ this week |
 | 11 | **MCA/ROC registered-office change (INC-22)** via CA | **you** | ⬜ when paperwork ready |
-| 12 | GitHub org location | us | ✅ see below |
+| 12 | GitHub profile location | **you** (login as `vigyanllm`) | ⬜ 2 min — see §8–10 |
 | 13 | Re-check: SERP + AI Overview + ChatGPT/Perplexity/Gemini | you+us | ⬜ 10-05 and 10-08/09 |
 
 ---
@@ -50,7 +50,7 @@
 | **X / Twitter** | Profile → Edit → location field (bio too if it mentions Gurgaon) | New Delhi, India |
 | **Crunchbase** | Organization profile → **Edit profile** → Location | New Delhi, Delhi, India |
 | **Startup India / DPIIT** | dpiit.gov.in → startup recognition profile → registered/office address | New Delhi, Delhi, India |
-| **GitHub org** | github.com/vigyanllm → org **Settings → Profile → Location** | we set it (verify: profile shows New Delhi, India) |
+| **GitHub** | github.com/**vigyanllm** → **Edit profile** (it's a *user* account, not an org; log in as `vigyanllm` — the site's sameAs points here; its location field is currently empty) | New Delhi, India |
 
 ## 11. MCA/ROC registered-office change (the authoritative record)
 

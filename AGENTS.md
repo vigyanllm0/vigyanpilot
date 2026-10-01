@@ -116,7 +116,7 @@ De-branded, de-ChatGPT'd, and re-scoped 8 blog posts with real worked examples. 
 | ✅ DONE | **Fix #8** (`7711b8eb`) — `/primer-design` retitle (differentiated from `/primer`), 24-step truth; LIVE 10-01 |
 | ✅ DONE | **Fix #6** (`63707d46`, `bf091b9c`) — gc-clamp depth H1 + tip + 5th FAQ + false-claim removals; LIVE 10-01. Also: site-wide `22-step`→`24-step` sweep `ad5a3be7` (engine = 24 steps) |
 | ✅ DONE | **HQ Gurgaon → New Delhi** (`5e87eb05`) — 9 lines / 4 files (badges, HQ line, GST→Delhi, JSON-LD foundingLocation, prose); name audit: ChinhAI/SubBrain present (deferred by user), "legal AI"/"VigyanLLM AI" = 0 found anywhere; LIVE 10-01 — details `pending work.md` §2c |
-| 🔄 SHIPPED | **HQ propagation to search/AI** (10-02) — sitemap lastmod, `/about` Organization+FAQPage, homepage PostalAddress city, `llms.txt`, IndexNow key+ping script; **user: GSC request-indexing ×4, Bing, LinkedIn/MCA/etc.; re-check 10-05 + 10-08** — `docs/HQ_PROPAGATION.md`, `pending work.md` §2d |
+| 🔄 SHIPPED | **HQ propagation to search/AI** (10-02) — sitemap lastmod, `/about` Organization+FAQPage, homepage PostalAddress city, `llms.txt`, IndexNow key+ping (202 ✓); **user: GSC request-indexing ×4, Bing, LinkedIn/GitHub/MCA/etc.; re-check 10-05 + 10-08** — `docs/HQ_PROPAGATION.md`, `pending work.md` §2d |
 | 🕐 DEFERRED | **ChinhAI/SubBrain invented-agent cleanup** — 8/6 files, 7 live pages; user: "for now no need to change" (10-01); plan specced in chat |
 | ⏳ READY | **Functional testing** (Agents 73-80 — buttons, forms, APIs, links, JS errors on live site) |
 | 🕐 DEFERRED | Pruning 130+ thin pages (past 08-27 measurement window) |
