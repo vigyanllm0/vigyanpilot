@@ -1,6 +1,6 @@
 # AGENTS.md — Agent Handoff & Tracking
 
-**Session:** GSC Decline response — Tier-1 pushed (`a5d0c1ea`), Tier-2 complete in working tree (baked header/footer via `bake_partials.py`, 50 noindex + sitemap 429, duplicate-URL fixes, 10 gene expansions + fabricated-table removal). **Current tracker = `pending work.md`** (deploy steps, Tier-3 plan, new findings). Older plans: `PENDING_PLANS.md`.
+**Session (latest):** **Human-First update — `WEBSITE_UPDATE_PLAN.md` Steps 1–7 COMPLETE 2026-10-02, LOCAL ONLY, ZERO commits (540 files uncommitted, HEAD `4b1e1c34`)** — governing `rules.md` (Part 1) + `docs/CLAIMS_LEDGER.md` + `scripts/rules_lint.py` gate; P0 trust/privacy fixes (aggregateRating out, `/support`, 3-button cookie banner, D-06b GTM-only: 487 direct gtag loaders stripped, 0 page-level Clarity); TRUST-02/03 claim sweeps → `audit-ready`/`lab-ready`/`clinical-grade` = **0 site-wide**; all gates green (lint 0 err/2 warn, bake 0 stale, routes 432/432, browser 27/27, JSON-LD 1011). **Full record + queued user actions = `pending work.md` §7; awaiting user final approval to commit.** Prior session: GSC Decline response — Tier-1 pushed (`a5d0c1ea`), Tier-2 complete in working tree (baked header/footer via `bake_partials.py`, 50 noindex + sitemap 429, duplicate-URL fixes, 10 gene expansions + fabricated-table removal). **Current tracker = `pending work.md`** (deploy steps, Tier-3 plan, new findings). Older plans: `PENDING_PLANS.md`.
 **Never commit:** `bandit-report.json`, `docking_queue/`, `deploy/aws/sync-frontend.sh` (run-only).
 
 ## Anti-Cannibalization Policy (from 2026-08-19 GSC analysis)
@@ -106,10 +106,14 @@ De-branded, de-ChatGPT'd, and re-scoped 8 blog posts with real worked examples. 
 | "Page with redirect" errors | 239 | Should start resolving |
 | Overall CTR | 0.44% | Small lift from title improvements |
 
-## Current Board State — 2026-09-01
+## Current Board State — 2026-10-02
 
 | Status | Item |
 |--------|------|
+| ✅ DONE | **Human-First update — `WEBSITE_UPDATE_PLAN.md` Steps 1–7** (10-02, **LOCAL ONLY, 0 commits**) — `rules.md` Part 1 governing + `CLAIMS_LEDGER` + `rules_lint` gate; TRUST-04/02/03 sweeps (`audit-ready`/`lab-ready`/`clinical-grade` → **0 site-wide**); D-06b GTM-only (487 gtag loaders stripped, 494 pages GTM+consent, 0 page Clarity); 3-button cookie banner; `/support`; aggregateRating out; all gates green — details `pending work.md` §7 |
+| ⏳ AWAITING | **User final approval → commit/push** of the ~540-file working tree (zero commits this session; HEAD `4b1e1c34`) |
+| 🆕 USER ACTION | **GTM container: Clarity tag → Consent Settings → require "Analytics"** — repo cannot gate container tags; until set, `privacy.html`'s Clarity-on-decline claim may not hold for undecided/non-EEA visitors (`pending work.md` §7) |
+| ⚠️ NEW FINDING | **58 schema-only FAQPage questions / 25 files** (pre-existing, byte-identical at HEAD) — JSON-LD questions never shown visibly → Google FAQ rich-result/manual-action risk; decide sync-vs-drop (`pending work.md` §7) |
 | ✅ DONE | Gene-prefers validated fix, glossary bugs, rs verification, E-E-A-T blocker, BLAST E-value, all 8 tool rewrites |
 | ✅ DONE | **Week 3: Blog rewrites** (Agent 63 — **8/8 complete**) — pcr-steps `ffea1ea2`, pcr-primer-design-rules `62626eeb`, rt-pcr-vs-qpcr `1385cbe2`, primer-dimer-fix `aa401e5b`, real-time-pcr-data-analysis `6775a624`, digital-pcr-vs-qpcr `061ea5ee`, pcr-troubleshooting-guide `5d62d61a`, types-of-pcr `a246b9cc` |
 | ✅ DONE | **GSC fixes batch** (`34282892`) — www redirect, academic href, 10 title rewrites, 27 SoftwareApplication schemas |

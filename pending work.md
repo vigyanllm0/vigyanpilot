@@ -1,6 +1,8 @@
 # Pending Work
 
 > Created 2026-09-30 (GSC Tier-1 session). Items completed in past sessions are in `AGENTS.md`; plans older than that are in `PENDING_PLANS.md`.
+>
+> **Latest: §7 — Human-First update (2026-10-02) COMPLETE, local-only (540 uncommitted files), awaiting final commit approval.**
 
 ## ⚠️ 0. Deploy status — frontend LIVE (latest refresh 2026-10-01); backend deploy BLOCKED
 
@@ -102,8 +104,8 @@ Fresh Sep-30 GSC export drove the decisions (position for `/primer-design` 32–
 - [ ] **59-page modal variant without × close button** — those modals close only via backdrop click/Esc; audit + add close button (needs approval, cosmetic pass over 59 files).
 - [ ] **Local Postgres.app refuses connections** — dev environment only; run server with forced SQLite (`/tmp/run_sqlite_server.py`).
 - [ ] **Apex `vigyanllm.in` A record → 13.235.133.206** in hPanel (user action; www works).
-- [ ] **Local dev server doesn't serve** `/blog/` dir-index, `robots.txt`, `favicon.ico`, `*.mp4` (prod serves all — verified live 200). Dev-parity nicety only.
-- [ ] **Double-tracking risk**: 58 pages load direct `gtag.js` AND GTM — decide inside GTM container whether GA4 fires there (config decision, not code).
+- [ ] **Local dev server static gaps** — ✅ mostly fixed 2026-10-02 (§7): `serve_static` now falls back to `<dir>/index.html` (**`/blog` 200**) and serves `.txt`/`.mp4` (**`robots.txt`, `llms.txt`, IndexNow key, `*.mp4` all 200**); `favicon.ico` already 200. Prod was always fine — dev-parity only.
+- [x] ~~Double-tracking risk~~ — **RESOLVED 2026-10-02 (D-06b, §7)**: direct `gtag.js` loader removed from **487 pages**; single GTM container (`GTM-KRP5LLPR`) owns GA4 — container-injection of `gtag/js?id=G-PB0XMF4GEH&gtm=…` browser-verified — and Clarity (`?ref=gtm`). Final: 494 pages = GTM + consent-default, consent always precedes GTM; 0 direct gtag / 0 page-level Clarity remain.
 - [ ] Dev-only: `/api/reviews/public` 500s on SQLite (missing `rating` column — prod is PG). Harmless in prod; add column to the SQLite schema if local testing needs reviews.
 - [ ] Design-audit Sprint 2+ (inline-style → design-token extraction, primer.html 338 inline styles first).
 - [ ] Functional testing pass (Agents 73–80): buttons, forms, APIs, links, JS errors on live site.
@@ -115,3 +117,26 @@ Fresh Sep-30 GSC export drove the decisions (position for `/primer-design` 32–
 - [ ] Gene-specific parameter tuning — deferred.
 - [ ] Faculty outreach emails using `/validation` as the credibility hook (Task 2.3) — drafted, not sent (user action).
 - [ ] Directory submissions (bio.tools, AlternativeTo, TAAFT, OMICtools) — payload ready in `biotools-payload.json` (user action).
+
+## 7. Human-First website update (`WEBSITE_UPDATE_PLAN.md`) — ✅ COMPLETE 2026-10-02 (LOCAL ONLY — 0 commits, awaiting final approval)
+
+**Scope**: ran the plan's final 7 steps under the new Human-First rules — now **governing** as `rules.md` Part 1, enforced by `scripts/rules_lint.py` (0 errors = ship gate) + `docs/CLAIMS_LEDGER.md`. Working tree = **540 uncommitted files**, HEAD `4b1e1c34`. **Nothing committed/pushed/deployed this session.**
+
+- [x] **Step 1 — plan hygiene**: stale refs fixed in `WEBSITE_UPDATE_PLAN.md`; §10 decisions table marked "OWNER DECIDED 2026-10-02"; sitemap regenerated (430 URLs incl. `/support`).
+- [x] **Step 2 — TRUST-04 (D-04 "remove all, no evidence")**: adoption numbers, institution name-drop, 99.5% uptime, both testimonials removed (7 files). Ledger CLM-003..008 → RESOLVED; CLM-009 conditional.
+- [x] **Step 3 — TRUST-02 (D-03 "hosted-only today, on-prem on roadmap")**: ~55 files — index hero; `features/on-premises.html` + `about/sovereign-ai.html` retitled roadmap-honest; 27 landing pages → "Runs in your browser and on our hosted servers"; 19 bespoke + 4 utility + 3 blogs. Ledger CLM-010/011/012/017 → RESOLVED. Residual `air-gapped` = roadmap framing (accepted lint warning).
+- [x] **Step 4 — PRIV-02 / D-06b "GTM only, remove direct gtag"**: 487 direct `gtag` loaders stripped (consent-default kept), 16 gtag-only pages → GTM + body noscript, 6 GTM-only pages → consent block → final = **494 GTM + consent, consent always precedes GTM**; 487 `ads_data_redaction` lines dropped; **0 page-level Clarity loaders** (browser-proved the container itself fires Clarity); `vl_cookie_consent` CustomEvent added to `cookie-banner.js`; policy texts synced (`privacy`/`cookies`/`dpdp`). Browser gate 27/27.
+- [x] **Step 5 — TRUST-03**: **167 context-aware replacements / 97 files** — `audit-ready` 136→0, `lab-ready` 26→0, `clinical-grade` 4→0 (+1 unflagged `audit-grade`); clinical-landing H1/breadcrumb → "Fully Documented Primer Design…"; glossary FAQ mirror replaced identically on both sides. Ledger CLM-013/014/015 → RESOLVED. `/validation`-backed "validated" kept per instruction.
+- [x] **Step 6 — gates ALL GREEN**: rules_lint **0 errors / 2 warning groups** (baseline 5; remaining = accepted `air-gapped`×4 + `no data leaves`×2 client-side); bake **0 stale/224**; route smoke **432/432 → 200** incl `/support`, `/blog`; browser gate **27/27**; pytest trio 11 passed + 2 baseline-known failures (byte-identical at HEAD); JSON-LD **1011/1011 valid**; FAQ-mirror **0 introduced** (58 pre-existing, below).
+- [x] **Step 7 — trackers**: this section + AGENTS.md board.
+
+**Shipped as part of Step 6 (dev-server fixes, local only):**
+- 🔧 `serve_static` (`primerforge/primer_server.py`) — directory-index fallback (`/blog` was a sitemap+footer URL 404ing on dev) + `.txt`/`.mp4` static types → `/blog`, `robots.txt`, `llms.txt`, IndexNow key, `*.mp4` all 200; 404s and `/api/*` unchanged; AST + pytest re-verified after each edit. (Prod was always fine.)
+
+**New finding (pre-existing — needs a decision):**
+- ⚠️ **58 schema-only FAQPage questions across 25 files** — JSON-LD questions with no matching visible text (e.g. `dna-3d.html` "What is the difference between A-DNA, B-DNA, and Z-DNA?" exists only inside `<script>`; sampled 21/58 all schema-only, 0 wording drift; counts byte-identical at HEAD). Google requires FAQ content visible on-page → rich-result/manual-action risk. Fix = render each question visibly or drop it from schema; overlaps §2b FAQ-mirror-drift audit (reusable `/tmp/sync_faq_ld.py`).
+
+**User actions queued:**
+1. **Final approval** → then I commit/push (zero commits without it).
+2. **GTM container (new)**: set the Clarity tag → Consent Settings → require **Analytics** — repo cannot gate container tags; until then `privacy.html`'s Clarity-on-decline claim may not hold for undecided/non-EEA visitors.
+3. Still open from earlier: backend deploy unblock A/B/C (§0), apex A-record, GSC/Bing/LinkedIn off-site edits (§2d), backlink emails + PR re-checks (§2).
