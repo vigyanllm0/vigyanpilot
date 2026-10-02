@@ -379,7 +379,24 @@ img{max-width:100%}
 </section>
   <p class="lead">Convert a DNA sequence to its RNA transcript. Thymine (T) is replaced by Uracil (U). No login required, completely free.</p>
 
-  <!-- ══ LLMO: DNA to RNA Transcription Converter ══ -->
+  <form class="tool-card" onsubmit="return false">
+    <label for="dna-input">Enter DNA Template Sequence (5&prime;&rarr;3&prime;)</label>
+    <textarea id="dna-input" placeholder="Paste your DNA sequence here&#10;Example: ATGGCCTGAACCGTT"></textarea>
+    <div class="row">
+      <button type="button" class="btn-primary" onclick="transcribe()">Transcribe to RNA</button>
+      <button type="button" class="btn-secondary" onclick="clearAll()">Clear</button>
+      <span id="char-count" style="font-size:12px;color:var(--muted)">0 bp</span>
+    </div>
+  </form>
+
+  <div class="tool-card">
+    <label>RNA Transcript (5&prime;&rarr;3&prime;)</label>
+    <div class="output-box" id="rna-output"><span class="ph">RNA sequence will appear here</span></div>
+    <div class="row">
+      <span style="font-size:12px;color:var(--muted)" id="rna-count"></span>
+      <button type="button" class="btn-secondary" style="margin-left:auto" onclick="copyRna()">Copy RNA</button>
+    </div>
+  </div><!-- ══ LLMO: DNA to RNA Transcription Converter ══ -->
 <section style="max-width:900px;margin:0 auto;padding:0 24px 24px">
 <h2 style="font-family:var(--font-h);font-size:13px;font-weight:700;margin-bottom:12px">A Worked Example: GAPDH, From Coding Strand to mRNA</h2>
 <p style="color:var(--text2);font-size:14px;line-height:1.7;margin-bottom:16px">Take the human <strong>GAPDH</strong> coding region start. The DNA coding strand reads:</p>
@@ -468,24 +485,7 @@ img{max-width:100%}
 <p style="color:var(--text2);font-size:14px;line-height:1.7;margin-top:16px">If your next step is primer design, the sensible order is to design primers against the original DNA first and only then think about the transcript &mdash; our <a href="/primer" style="color:#2563EB">primer design tool</a> handles that directly, and the <a href="/tm-calculator" style="color:#2563EB">Tm calculator</a> covers melting temperature when those primers will anneal to RNA-derived cDNA.</p>
 </section>
 
-  <form class="tool-card" onsubmit="return false">
-    <label for="dna-input">Enter DNA Template Sequence (5&prime;&rarr;3&prime;)</label>
-    <textarea id="dna-input" placeholder="Paste your DNA sequence here&#10;Example: ATGGCCTGAACCGTT"></textarea>
-    <div class="row">
-      <button type="button" class="btn-primary" onclick="transcribe()">Transcribe to RNA</button>
-      <button type="button" class="btn-secondary" onclick="clearAll()">Clear</button>
-      <span id="char-count" style="font-size:12px;color:var(--muted)">0 bp</span>
-    </div>
-  </form>
-
-  <div class="tool-card">
-    <label>RNA Transcript (5&prime;&rarr;3&prime;)</label>
-    <div class="output-box" id="rna-output"><span class="ph">RNA sequence will appear here</span></div>
-    <div class="row">
-      <span style="font-size:12px;color:var(--muted)" id="rna-count"></span>
-      <button type="button" class="btn-secondary" style="margin-left:auto" onclick="copyRna()">Copy RNA</button>
-    </div>
-  </div>
+  
 </div>
 
 <div class="seo-content" style="max-width:var(--max-w);margin:0 auto;padding:48px 24px 24px">
