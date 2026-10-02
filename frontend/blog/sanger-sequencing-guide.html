@@ -243,54 +243,52 @@ footer{background:var(--navy);color:rgba(255,255,255,.8);padding:56px 0 24px}
   <script src="https://accounts.google.com/gsi/client?hl=en" async defer></script>
 <script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.vigyanllm.in"}, {"@type": "ListItem", "position": 2, "name": "Blog", "item": "https://www.vigyanllm.in/blog"}, {"@type": "ListItem", "position": 3, "name": "Sanger Sequencing Guide", "item": "https://www.vigyanllm.in/blog/sanger-sequencing-guide"}]}</script>
 <script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "Sanger Sequencing — How It Works & Primer Design (2026)", "description": "Understand Sanger sequencing from first principles. Learn how it works, design sequencing primers, and interpret chromatograms.", "url": "https://www.vigyanllm.in/blog/sanger-sequencing-guide", "mainEntityOfPage": "https://www.vigyanllm.in/blog/sanger-sequencing-guide", "author": {"@type": "Organization", "name": "VigyanLLM Research Team", "url": "https://www.vigyanllm.in/about", "sameAs": ["https://github.com/vigyanllm", "https://www.linkedin.com/company/vigyanllm/"]}, "publisher": {"@type": "Organization", "name": "VigyanLLM Private Limited", "logo": {"@type": "ImageObject", "url": "https://www.vigyanllm.in/logo.png"}}, "datePublished": "2026-09-06", "dateModified": "2026-09-06"}</script>
-<script type="application/ld+json">
-{
- "@context": "https://schema.org",
- "@type": "FAQPage",
- "mainEntity": [
-  {
-   "@type": "Question",
-   "name": "How does Sanger sequencing work?",
-   "acceptedAnswer": {
-    "@type": "Answer",
-    "text": "Sanger sequencing uses dideoxynucleotide chain termination. A DNA template is mixed with a primer, DNA polymerase, normal dNTPs, and fluorescently labelled dideoxynucleotides (ddNTPs). Each ddNTP lacks a 3-prime hydroxyl group, so when it is incorporated by the polymerase, the growing chain terminates. This produces fragments of every possible length, each ending with a fluorescently labelled ddNTP. The fragments are separated by capillary electrophoresis, and a laser detects the fluorescent label at each fragment endpoint, producing a chromatogram."
-   }
-  },
-  {
-   "@type": "Question",
-   "name": "What is a chromatogram?",
-   "acceptedAnswer": {
-    "@type": "Answer",
-    "text": "A chromatogram (or electropherogram) is the raw output of a Sanger sequencing run. It displays four coloured peaks plotted against migration time. Each peak represents DNA fragments of the same length, terminated at that nucleotide position. High-quality sequencing produces clean, evenly spaced, well-resolved peaks. Overlapping peaks or noisy baselines indicate problems with the template, primer, or sequencing reaction."
-   }
-  },
-  {
-   "@type": "Question",
-   "name": "How do I design Sanger sequencing primers?",
-   "acceptedAnswer": {
-    "@type": "Answer",
-    "text": "Design Sanger sequencing primers following standard PCR primer guidelines: 18-25 nt length, 55-65C Tm, 40-60% GC content, no runs of 4+ identical bases, and no stable secondary structures. Place the primer 100-300 bp upstream of the region you want to sequence. Use VigyanLLM Primer Design to check Tm, GC%, and hairpin/dimer potential."
-   }
-  },
-  {
-   "@type": "Question",
-   "name": "What is the read length of Sanger sequencing?",
-   "acceptedAnswer": {
-    "@type": "Answer",
-    "text": "A standard Sanger sequencing run produces reliable reads of 700-900 nucleotides, with quality declining after approximately 700 nt. The first 15-30 bases are often noisy and should be trimmed. For longer templates, walk the sequencing by designing multiple primer pairs spaced 700 bp apart."
-   }
-  },
-  {
-   "@type": "Question",
-   "name": "What is the difference between Sanger and NGS?",
-   "acceptedAnswer": {
-    "@type": "Answer",
-    "text": "Sanger sequencing reads one DNA fragment at a time (one read per reaction, approximately 700-900 nt) and is ideal for small-scale projects: confirming a single mutation, sequencing a PCR product, or validating a clone. NGS runs millions of reads in parallel, producing gigabases of data per run. NGS is needed for whole-genome sequencing, transcriptome analysis, and metagenomics. Sanger remains the gold standard for accuracy and is still used for validating individual variants identified by NGS."
-   }
-  }
- ]
-}
-      </script>
+<script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "How does Sanger sequencing work?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Sanger sequencing uses dideoxynucleotide chain termination. A DNA template is mixed with a primer, DNA polymerase, normal dNTPs, and fluorescently labelled dideoxynucleotides (ddNTPs). Each ddNTP lacks a 3' hydroxyl group, so when it is incorporated by the polymerase, the growing chain terminates. This produces fragments of every possible length, each ending with a fluorescently labelled ddNTP. The fragments are separated by capillary electrophoresis, and a laser detects the fluorescent label at each fragment endpoint, producing a chromatogram that reads the sequence from shortest to longest fragment."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What is a chromatogram?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "A chromatogram (or electropherogram) is the raw output of a Sanger sequencing run. It displays four coloured peaks — one for each nucleotide (A, green; T, red; C, blue; G, black or yellow) — plotted against migration time. Each peak represents a population of DNA fragments of the same length, terminated at that nucleotide position. High-quality sequencing produces clean, evenly spaced, well-resolved peaks. Overlapping peaks, broad peaks, or noisy baselines indicate problems with the template, primer, or sequencing reaction."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How do I design Sanger sequencing primers?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Design Sanger sequencing primers following standard PCR primer guidelines: 18-25 nt length, 55-65°C Tm, 40-60% GC content, no runs of 4+ identical bases, and no stable secondary structures. Place the primer 100-300 bp upstream of the region you want to sequence. For complete gene sequencing, design forward and reverse primer pairs that produce overlapping amplicons. Use VigyanLLM Primer Design to check Tm, GC%, and hairpin/dimer potential, and VigyanLLM GC Calculator to verify GC content."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What is the read length of Sanger sequencing?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "A standard Sanger sequencing run produces reliable reads of 700-900 nucleotides, with quality declining after ~700 nt. The first 15-30 bases are often noisy and should be trimmed. For a typical PCR product of 1,000-1,500 bp, a single forward and reverse read (each ~700-800 nt) will provide overlapping coverage. For longer templates, walk the sequencing by designing multiple primer pairs spaced 700 bp apart. Illumina NGS is preferred for reads above 1,000 nt or when thousands of sequences are needed simultaneously."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What is the difference between Sanger and NGS?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Sanger sequencing reads one DNA fragment at a time (one read per reaction, ~700-900 nt) and is ideal for small-scale projects: confirming a single mutation, sequencing a PCR product, or validating a clone. NGS (next-generation sequencing) runs millions of reads in parallel, producing gigabases of data per run. NGS is needed for whole-genome sequencing, transcriptome analysis, ChIP-seq, metagenomics, and any project requiring thousands of sequences simultaneously. Sanger remains the gold standard for accuracy and is still used for validating individual variants identified by NGS."
+      }
+    }
+  ]
+}</script>
 <script src="/cookie-banner.js" defer></script>
 </head>
 <body>
