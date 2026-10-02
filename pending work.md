@@ -2,7 +2,7 @@
 
 > Created 2026-09-30 (GSC Tier-1 session). Items completed in past sessions are in `AGENTS.md`; plans older than that are in `PENDING_PLANS.md`.
 >
-> **Latest: §7 — Human-First update (2026-10-02) COMPLETE, local-only (540 uncommitted files), awaiting final commit approval.**
+> **Latest: §7 — Human-First update (2026-10-02) COMPLETE → committed + pushed (6 commits `4542626a`..`1433b5b6`); prod deploy still pending.**
 
 ## ⚠️ 0. Deploy status — frontend LIVE (latest refresh 2026-10-01); backend deploy BLOCKED
 
@@ -118,9 +118,9 @@ Fresh Sep-30 GSC export drove the decisions (position for `/primer-design` 32–
 - [ ] Faculty outreach emails using `/validation` as the credibility hook (Task 2.3) — drafted, not sent (user action).
 - [ ] Directory submissions (bio.tools, AlternativeTo, TAAFT, OMICtools) — payload ready in `biotools-payload.json` (user action).
 
-## 7. Human-First website update (`WEBSITE_UPDATE_PLAN.md`) — ✅ COMPLETE 2026-10-02 (LOCAL ONLY — 0 commits, awaiting final approval)
+## 7. Human-First website update (`WEBSITE_UPDATE_PLAN.md`) — ✅ COMPLETE 2026-10-02 → committed + pushed (prod deploy pending)
 
-**Scope**: ran the plan's final 7 steps under the new Human-First rules — now **governing** as `rules.md` Part 1, enforced by `scripts/rules_lint.py` (0 errors = ship gate) + `docs/CLAIMS_LEDGER.md`. Working tree = **540 uncommitted files**, HEAD `4b1e1c34`. **Nothing committed/pushed/deployed this session.**
+**Scope**: ran the plan's final 7 steps under the new Human-First rules — now **governing** as `rules.md` Part 1, enforced by `scripts/rules_lint.py` (0 errors = ship gate) + `docs/CLAIMS_LEDGER.md`. **Approved by user → committed as 6 logical commits `4542626a` (governance) … `1433b5b6` (docs), 541 files, pushed to `origin/main`; only `bandit-report.json` left untracked by policy. NOT deployed to prod (S3/CloudFront sync is a separate, run-only action).**
 
 - [x] **Step 1 — plan hygiene**: stale refs fixed in `WEBSITE_UPDATE_PLAN.md`; §10 decisions table marked "OWNER DECIDED 2026-10-02"; sitemap regenerated (430 URLs incl. `/support`).
 - [x] **Step 2 — TRUST-04 (D-04 "remove all, no evidence")**: adoption numbers, institution name-drop, 99.5% uptime, both testimonials removed (7 files). Ledger CLM-003..008 → RESOLVED; CLM-009 conditional.
@@ -137,6 +137,6 @@ Fresh Sep-30 GSC export drove the decisions (position for `/primer-design` 32–
 - ⚠️ **58 schema-only FAQPage questions across 25 files** — JSON-LD questions with no matching visible text (e.g. `dna-3d.html` "What is the difference between A-DNA, B-DNA, and Z-DNA?" exists only inside `<script>`; sampled 21/58 all schema-only, 0 wording drift; counts byte-identical at HEAD). Google requires FAQ content visible on-page → rich-result/manual-action risk. Fix = render each question visibly or drop it from schema; overlaps §2b FAQ-mirror-drift audit (reusable `/tmp/sync_faq_ld.py`).
 
 **User actions queued:**
-1. **Final approval** → then I commit/push (zero commits without it).
+1. ~~Final approval → commit/push~~ — ✅ **DONE 2026-10-02**: approved and pushed (`4542626a`..`1433b5b6`). **Remaining decision: when to deploy to prod** (dry-run → `deploy/aws/sync-frontend.sh` → CloudFront invalidation → live gates, per §0 pattern).
 2. **GTM container (new)**: set the Clarity tag → Consent Settings → require **Analytics** — repo cannot gate container tags; until then `privacy.html`'s Clarity-on-decline claim may not hold for undecided/non-EEA visitors.
 3. Still open from earlier: backend deploy unblock A/B/C (§0), apex A-record, GSC/Bing/LinkedIn off-site edits (§2d), backlink emails + PR re-checks (§2).
