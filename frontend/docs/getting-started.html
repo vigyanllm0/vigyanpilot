@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- Google tag (gtag.js) -->
+<!-- Consent Mode default (dataLayer) -->
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
@@ -21,13 +21,8 @@
     }
   } catch (e) {}
 
-  gtag('set', 'ads_data_redaction', true);
 </script>
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-PB0XMF4GEH"></script>
-<script>
-  gtag('js', new Date());
-  gtag('config', 'G-PB0XMF4GEH');
-</script>
+
 
 <!-- Google Tag Manager -->
 <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
@@ -46,24 +41,23 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <link rel="alternate" type="application/rss+xml" title="VigyanLLM Blog RSS" href="/blog/rss.xml" />
 <meta name="theme-color" content="#0F172A" />
 <meta name="twitter:image" content="https://www.vigyanllm.in/poster.png">
-<meta name="twitter:description" content="Complete guide to the VigyanLLM 24-step biophysical primer/probe design pipeline. From sequence input to lab-ready PDF report.">
+<meta name="twitter:description" content="Complete guide to the VigyanLLM 24-step biophysical primer/probe design pipeline. From sequence input to complete PDF report.">
 <meta name="twitter:title" content="Getting Started — VigyanLLM Pipeline Guide">
 <meta name="twitter:card" content="summary_large_image">
 <meta property="og:site_name" content="VigyanLLM">
 <meta property="og:image" content="https://www.vigyanllm.in/poster.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-<meta property="og:description" content="Complete guide to the VigyanLLM 24-step biophysical primer/probe design pipeline. From sequence input to lab-ready PDF report.">
+<meta property="og:description" content="Complete guide to the VigyanLLM 24-step biophysical primer/probe design pipeline. From sequence input to complete PDF report.">
 <meta property="og:title" content="Getting Started — VigyanLLM Pipeline Guide">
 <meta property="og:url" content="https://www.vigyanllm.in/docs/getting-started">
 <meta property="og:type" content="website">
 <meta name="keywords" content="VigyanLLM, bioinformatics pipeline, computational pipeline, validation pipeline, processing workflow, molecular biology, analysis pipeline, oligonucleotide, bioinformatics, forward primer, reverse primer, synthetic dna, primer pair, pcr primer, pipeline" />
 <meta name="robots" content="index, follow" />
 <meta name="author" content="VigyanLLM Private Limited" />
-<meta name="description" content="Complete guide to the VigyanLLM 24-step biophysical primer/probe design pipeline. From sequence input to lab-ready PDF report.">
+<meta name="description" content="Complete guide to the VigyanLLM 24-step biophysical primer/probe design pipeline. From sequence input to complete PDF report.">
 <link rel="canonical" href="https://www.vigyanllm.in/docs/getting-started">
 <link rel="alternate" hreflang="en" href="https://www.vigyanllm.in/docs/getting-started" />
-<link rel="alternate" hreflang="en-IN" href="https://www.vigyanllm.in/docs/getting-started" />
 <link rel="alternate" hreflang="x-default" href="https://www.vigyanllm.in/docs/getting-started" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -334,14 +328,14 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
 <section class="hero">
 <h1>Getting Started with VigyanLLM</h1>
-<p>Design lab-ready primer and probe pairs with our 24-step biophysical validation pipeline. From sequence input to an audit-ready PDF report in minutes.</p>
+<p>Design validated primer and probe pairs with our 24-step biophysical validation pipeline. From sequence input to an fully documented PDF report in minutes.</p>
 </section>
 
 <div class="container">
 
 <h2 style="font-family:'Montserrat',sans-serif;font-size:13px;color:#0F172A;margin:32px 0 16px">How the Pipeline Works</h2>
 <p style="font-size:14px;color:#0F172A;line-height:1.8;margin-bottom:24px">
-VigyanLLM's pipeline is a fully automated 24-step primer and probe design engine. It takes a DNA sequence or gene name as input and produces lab-ready primer pairs with an audit-grade PDF report. The entire pipeline runs server-side — the browser submits the job and polls for results.
+VigyanLLM's pipeline is a fully automated 24-step primer and probe design engine. It takes a DNA sequence or gene name as input and produces validated primer pairs with an fully documented PDF report. The entire pipeline runs server-side — the browser submits the job and polls for results.
 </p>
 
 <h3 style="font-size:13px;color:#0F172A;margin:24px 0 12px">Architecture Overview</h3>
@@ -402,7 +396,7 @@ When you submit a target sequence, the job is dispatched to a Flask backend runn
 Each of the 24-steps contributes a weighted sub-score to the final 0&ndash;100 rating.
 Thermodynamic penalties (hairpin, self-dimer, cross-dimer) carry the heaviest weight
 because they directly affect PCR efficiency. BLAST off-target count and SNP overlap
-also reduce the score. Pairs scoring <strong>80+</strong> are marked green (lab-ready),
+also reduce the score. Pairs scoring <strong>80+</strong> are marked green (recommended),
 <strong>60&ndash;79</strong> are yellow (requires verification),
 <strong>40&ndash;59</strong> are orange (use with caution),
 and <strong>&lt;40</strong> are red (discard).
@@ -430,7 +424,7 @@ and <strong>&lt;40</strong> are red (discard).
 
 <div class="step">
 <h2><span class="num">4</span>Review Results</h2>
-<p>Each primer pair is scored 0&ndash;100. Green (80+) pairs are lab-ready. Yellow/orange pairs need verification. Red pairs should be discarded. Expand any row to see full metrics: Tm, GC%, hairpin &Delta;G, self-dimer &Delta;G, cross-dimer &Delta;G, and BLAST off-target hits.</p>
+<p>Each primer pair is scored 0&ndash;100. Green (80+) pairs are recommended. Yellow/orange pairs need verification. Red pairs should be discarded. Expand any row to see full metrics: Tm, GC%, hairpin &Delta;G, self-dimer &Delta;G, cross-dimer &Delta;G, and BLAST off-target hits.</p>
 </div>
 
 <div class="step">
@@ -546,8 +540,7 @@ document.addEventListener('DOMContentLoaded', function(){
     <a href="/refund">Refund</a>
     <a href="/security">Security</a>
     <a href="/cite-vigyanllm">Cite Us</a>
-    <a href="/cms-login" style="margin-top:8px;opacity:.5;font-size:var(--font-xs)">CMS Login</a>
-    <a href="/admin-security" style="opacity:.5;font-size:var(--font-xs)">Admin Panel</a>
+    <a href="/support">Support</a>
   </div>
 </div>
 <div class="footer-bottom"> <span>&copy; 2026 VigyanLLM Private Limited · Sovereign Research AI</span>

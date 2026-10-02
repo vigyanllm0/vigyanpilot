@@ -1,4 +1,23 @@
 <html lang="en"><head>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('consent', 'default', {
+    'ad_storage': 'denied',
+    'ad_user_data': 'denied',
+    'ad_personalization': 'denied',
+    'analytics_storage': 'denied',
+    'region': ['AT','BE','BG','HR','CY','CZ','DK','EE','FI','FR','DE','GR','HU','IE','IT','LV','LT','LU','MT','NL','PL','PT','RO','SK','SI','ES','SE','IS','LI','NO','GB','CH']
+  });
+  try {
+    var vlcs = JSON.parse(localStorage.getItem('vigyanllm_cookie_consent') || 'null');
+    if (vlcs && vlcs.consent === 'accepted') {
+      gtag('consent', 'update', { 'ad_storage': 'granted', 'ad_user_data': 'granted', 'ad_personalization': 'granted', 'analytics_storage': 'granted' });
+    } else if (vlcs && vlcs.consent === 'declined') {
+      gtag('consent', 'update', { 'ad_storage': 'denied', 'ad_user_data': 'denied', 'ad_personalization': 'denied', 'analytics_storage': 'denied' });
+    }
+  } catch (e) {}
+</script>
 <!-- Google Tag Manager -->
 <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
 new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
@@ -16,7 +35,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <link rel="canonical" href="https://www.vigyanllm.in/pcr-product-calculator">
 <link rel="stylesheet" href="/primer.css">
 <link rel="alternate" hreflang="en" href="https://www.vigyanllm.in/pcr-product-calculator">
-<link rel="alternate" hreflang="en-IN" href="https://www.vigyanllm.in/pcr-product-calculator">
 <link rel="alternate" hreflang="x-default" href="https://www.vigyanllm.in/pcr-product-calculator">
 
 <meta name="twitter:image" content="https://www.vigyanllm.in/poster.png">
@@ -350,7 +368,7 @@ img{max-width:100%}
     </table>
   </div>
 
-  <div class="watermark">Powered by <strong>VigyanLLM's Sovereign AI Engine</strong> — On-Premises Biomedical AI Platform</div>
+  <div class="watermark">Powered by <strong>VigyanLLM's Sovereign AI Engine</strong> — Biomedical AI that runs in your browser</div>
 
   <div style="margin-top:40px">
     <div class="info-box">
@@ -369,7 +387,7 @@ img{max-width:100%}
     </div>
     <div class="info-box">
       <h2>About VigyanLLM</h2>
-      <p>VigyanLLM is India's first sovereign, on-premises biomedical AI platform. The full primer design tool includes automated PCR product size calculation as part of its 24-parameter validation pipeline, along with BLAST specificity checking, dimer prediction, and melting temperature analysis. <a href="/primer" style="color:var(--blue);text-decoration:underline">Try the full primer designer.</a> Free for Indian universities.</p>
+      <p>VigyanLLM is India's sovereign biomedical AI platform. The full primer design tool includes automated PCR product size calculation as part of its 24-parameter validation pipeline, along with BLAST specificity checking, dimer prediction, and melting temperature analysis. <a href="/primer" style="color:var(--blue);text-decoration:underline">Try the full primer designer.</a> Free for Indian universities.</p>
     </div>
   </div>
 </div>
@@ -527,8 +545,7 @@ function clearPCR(){
     <a href="/refund">Refund</a>
     <a href="/security">Security</a>
     <a href="/cite-vigyanllm">Cite Us</a>
-    <a href="/cms-login" style="margin-top:8px;opacity:.5;font-size:var(--font-xs)">CMS Login</a>
-    <a href="/admin-security" style="opacity:.5;font-size:var(--font-xs)">Admin Panel</a>
+    <a href="/support">Support</a>
   </div>
 </div>
 <div class="footer-bottom"> <span>&copy; 2026 VigyanLLM Private Limited · Sovereign Research AI</span>
