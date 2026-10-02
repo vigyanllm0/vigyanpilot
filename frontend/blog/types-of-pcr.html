@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en-IN">
 <head>
-<!-- Google tag (gtag.js) -->
+<!-- Consent Mode default (dataLayer) -->
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
@@ -21,13 +21,8 @@
     }
   } catch (e) {}
 
-  gtag('set', 'ads_data_redaction', true);
 </script>
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-PB0XMF4GEH"></script>
-<script>
-  gtag('js', new Date());
-  gtag('config', 'G-PB0XMF4GEH');
-</script>
+
 
 <!-- Google Tag Manager -->
 <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
@@ -59,7 +54,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="keywords" content="types of PCR, RT-PCR, qPCR, real-time PCR, multiplex PCR, nested PCR, digital PCR, PCR variants">
   <link rel="canonical" href="https://www.vigyanllm.in/blog/types-of-pcr">
 <link rel="alternate" hreflang="en" href="https://www.vigyanllm.in/blog/types-of-pcr" />
-<link rel="alternate" hreflang="en-IN" href="https://www.vigyanllm.in/blog/types-of-pcr" />
 <link rel="alternate" hreflang="x-default" href="https://www.vigyanllm.in/blog/types-of-pcr" />
   <meta property="og:title" content="Types of PCR: Which One Actually Fits Your Experiment?">
   <meta property="og:description" content="Not sure between qPCR, RT-PCR, nested, multiplex, or digital? Pick by your sample type, whether you need a number, and how many targets you will chase.">
@@ -259,7 +253,6 @@ footer{background:var(--navy);color:rgba(255,255,255,.8);padding:56px 0 24px}
 
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What is the difference between RT-PCR and real-time PCR?","acceptedAnswer":{"@type":"Answer","text":"RT-PCR (reverse transcription PCR) converts RNA to cDNA with reverse transcriptase, then amplifies it \u2014 it is about the template being RNA. Real-time PCR (qPCR) measures fluorescence every cycle to quantify a DNA target. The two are different axes; RT-qPCR combines both. A fuller comparison is in RT-PCR vs qPCR."}},{"@type":"Question","name":"Can I use regular PCR instead of qPCR just to check if something is present?","acceptedAnswer":{"@type":"Answer","text":"Yes. If you only need presence or absence, end-point conventional PCR on a gel is enough and cheaper. Reach for qPCR only when you need a number \u2014 relative quantification, melt-curve checking, or a fold-change above about two-fold."}},{"@type":"Question","name":"Is digital PCR worth the extra cost for a typical gene expression experiment?","acceptedAnswer":{"@type":"Answer","text":"Rarely. For a healthy >2-fold expression change across many samples, qPCR is sufficient and far cheaper per reaction, and dPCR's low throughput hurts large screens. Reserve digital PCR for rare-allele detection, absolute copy numbers, and small copy-number changes where qPCR precision falls short."}},{"@type":"Question","name":"What is the most common mistake when choosing a PCR type?","acceptedAnswer":{"@type":"Answer","text":"Two closely related ones: using qPCR when a presence-absence endpoint would do (paying for quantification you never need), and forgetting the reverse-transcription step when the template is RNA \u2014 a DNA polymerase cannot use RNA directly, so you get an empty lane."}},{"@type":"Question","name":"Do I need a hot-start polymerase?","acceptedAnswer":{"@type":"Answer","text":"For most reactions yes \u2014 the extra cost is small compared to the specificity gain. A hot-start enzyme stays inactive during room-temperature setup, so primers cannot anneal and extend spurious primer-dimer bands before cycling begins. It will not fix a genuine mis-anneal, but it removes the most common setup artefact."}},{"@type":"Question","name":"Can I combine PCR types?","acceptedAnswer":{"@type":"Answer","text":"Yes \u2014 combinations are routine. Nested qPCR pairs two rounds with real-time readout; multiplex RT-qPCR detects several RNA targets and quantifies them in one reaction. Just remember each added layer brings its own design cost, especially Tm harmonisation and dimer avoidance for multiplex."}}]}</script>
 <script src="/cookie-banner.js" defer></script>
-  <link rel="alternate" hreflang="en-US" href="https://www.vigyanllm.in/blog/types-of-pcr" />
 </head>
 <body>
 
@@ -500,14 +493,14 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       </table>
 
       <h2>How I Pick a PCR Type in Five Minutes</h2>
-      <p>When a protocol says \u201cPCR\u201d and nothing else, I run a quick mental filter before touching a pipette:</p>
+      <p>When a protocol says “PCR” and nothing else, I run a quick mental filter before touching a pipette:</p>
       <ol>
         <li><strong>Template first.</strong> RNA? Then the RT branch is non-negotiable; DNA keeps the rest of the tree.</li>
-        <li><strong>Question second.</strong> Presence-absence vs a number changes everything \u2014 band vs Cq vs droplet count.</li>
-        <li><strong>Precision third.</strong> Am I resolving a 1.3\u00d7 change or a 50\u00d7 change? The smaller the change, the more I lean toward dPCR or the tightest qPCR controls.</li>
+        <li><strong>Question second.</strong> Presence-absence vs a number changes everything — band vs Cq vs droplet count.</li>
+        <li><strong>Precision third.</strong> Am I resolving a 1.3× change or a 50× change? The smaller the change, the more I lean toward dPCR or the tightest qPCR controls.</li>
         <li><strong>Throughput last.</strong> A hundred samples to screen favours multiplex or 384-well qPCR; one rare-allele question favours dPCR even at higher cost.</li>
       </ol>
-      <p>That order \u2014 template, question, precision, throughput \u2014 has steered me right more often than any single list of \u201cbest\u201d PCRs. Once the type is chosen, primer design follows: short amplicons for qPCR, Tm-harmonised pairs for multiplex, two non-overlapping sets for nested. The type determines the design constraints, and getting that first decision right is the cheapest step of the experiment.</p>
+      <p>That order — template, question, precision, throughput — has steered me right more often than any single list of “best” PCRs. Once the type is chosen, primer design follows: short amplicons for qPCR, Tm-harmonised pairs for multiplex, two non-overlapping sets for nested. The type determines the design constraints, and getting that first decision right is the cheapest step of the experiment.</p>
 
       <div class="cta-box">
         <h3>Design Primers for Any PCR Type</h3>
@@ -680,7 +673,6 @@ document.addEventListener('DOMContentLoaded',function(){var h=document.getElemen
     <a href="/refund">Refund</a>
     <a href="/security">Security</a>
     <a href="/cite-vigyanllm">Cite Us</a>
-    <a href="/cms-login" style="margin-top:8px;opacity:.5;font-size:var(--font-xs)">CMS Login</a>
   </div>
 </div>
 <div class="footer-bottom"> <span>&copy; <script>2026</script> VigyanLLM Private Limited · Sovereign Research AI</span>

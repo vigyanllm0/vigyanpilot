@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en-IN">
 <head>
-<!-- Google tag (gtag.js) -->
+<!-- Consent Mode default (dataLayer) -->
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
@@ -21,13 +21,8 @@
     }
   } catch (e) {}
 
-  gtag('set', 'ads_data_redaction', true);
 </script>
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-PB0XMF4GEH"></script>
-<script>
-  gtag('js', new Date());
-  gtag('config', 'G-PB0XMF4GEH');
-</script>
+
 
 <!-- Google Tag Manager -->
 <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
@@ -59,7 +54,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="keywords" content="real-time PCR data analysis, qPCR data analysis, Ct values, amplification efficiency, melt curve analysis, qPCR standard curve">
   <link rel="canonical" href="https://www.vigyanllm.in/blog/real-time-pcr-data-analysis">
 <link rel="alternate" hreflang="en" href="https://www.vigyanllm.in/blog/real-time-pcr-data-analysis" />
-<link rel="alternate" hreflang="en-IN" href="https://www.vigyanllm.in/blog/real-time-pcr-data-analysis" />
 <link rel="alternate" hreflang="x-default" href="https://www.vigyanllm.in/blog/real-time-pcr-data-analysis" />
   <meta property="og:title" content="qPCR Data Analysis: From Raw Cq Values to Fold Change">
   <meta property="og:description" content="Take qPCR data from raw Cq values through efficiency correction, ΔΔCq normalisation, and fold-change calculation. Includes a worked example with a reference gene and error propagation."">
@@ -266,7 +260,6 @@ footer{background:var(--navy);color:rgba(255,255,255,.8);padding:56px 0 24px}
 
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"My reference gene Cq varies by 1.5 cycles between samples. Is that okay?","acceptedAnswer":{"@type":"Answer","text":"It is borderline. A reference that shifts by more than about 1.5 cycles between groups is not stable enough to normalise with confidence. Validate two or three candidate references with geNorm or NormFinder for your exact cell line and treatment, and use the most stable ones."}},{"@type":"Question","name":"My efficiency is 85%. Can I still use the ΔΔCq method?","acceptedAnswer":{"@type":"Answer","text":"Only if target and reference have matching efficiency within about 10%. If both sit near 85% you can proceed with the relative method, but if they differ, use the Pfaffl method or an efficiency-adjusted exponent. Best practice is to fix the assay so efficiency is 90-110% first."}},{"@type":"Question","name":"When should I use the Pfaffl method instead of ΔΔCq?","acceptedAnswer":{"@type":"Answer","text":"Use Pfaffl whenever the amplification efficiency of the target and reference genes differ by more than about 10%. The Pfaffl equation weights each gene by its own efficiency (E^ΔCq per gene) so unequal amplification does not bias the fold-change."}},{"@type":"Question","name":"How many technical replicates do I need?","acceptedAnswer":{"@type":"Answer","text":"Three technical replicates per sample is standard practice to catch pipetting error. But the statistics of a qPCR experiment come from biological replicates — the technical triplicate averages into one ΔCq per biological sample, and you need at least three biological replicates per group to run a meaningful t-test."}},{"@type":"Question","name":"My no-template control amplifies at Cq 38. Is that contamination?","acceptedAnswer":{"@type":"Answer","text":"Almost certainly. A rising NTC at any Cq is primer-dimer or amplicon contamination, and late-Cq NTC signal can still leak into your quantification if the threshold sits near it. Identify the source (clean bench, fresh reagents, verify primers for dimer) and re-run before trusting the plate."}}]}</script>
 <script src="/cookie-banner.js" defer></script>
-  <link rel="alternate" hreflang="en-US" href="https://www.vigyanllm.in/blog/real-time-pcr-data-analysis" />
 </head>
 <body>
 
@@ -667,7 +660,6 @@ document.addEventListener('DOMContentLoaded',function(){var h=document.getElemen
     <a href="/refund">Refund</a>
     <a href="/security">Security</a>
     <a href="/cite-vigyanllm">Cite Us</a>
-    <a href="/cms-login" style="margin-top:8px;opacity:.5;font-size:var(--font-xs)">CMS Login</a>
   </div>
 </div>
 <div class="footer-bottom"> <span>&copy; <script>2026</script> VigyanLLM Private Limited · Sovereign Research AI</span>

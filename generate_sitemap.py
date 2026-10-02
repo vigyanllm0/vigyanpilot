@@ -217,10 +217,13 @@ def generate_sitemap_xml():
         clean_url = get_clean_url(fp)
         priority = get_priority(fp, rel)
         changefreq = get_changefreq(fp, rel)
-        
+        # Per-file lastmod from source mtime (was: stamping TODAY on every URL,
+        # which made every regen look like a full-site change — SEO-05)
+        lastmod = datetime.date.fromtimestamp(os.path.getmtime(fp)).isoformat()
+
         urls.append(f'  <url>\n'
                     f'    <loc>{clean_url}</loc>\n'
-                    f'    <lastmod>{TODAY}</lastmod>\n'
+                    f'    <lastmod>{lastmod}</lastmod>\n'
                     f'    <changefreq>{changefreq}</changefreq>\n'
                     f'    <priority>{priority:.1f}</priority>\n'
                     f'  </url>')
@@ -246,8 +249,15 @@ def generate_robots_txt(url_count):
 User-agent: *
 Allow: /
 Disallow: /api/
-Disallow: /admin/
-Disallow: /dashboard/
+# Account/admin surfaces — exact routes (previous /admin/ + /dashboard/ rules
+# matched nothing; robots is crawl guidance, not authorization)
+Disallow: /dashboard
+Disallow: /usage-billing
+Disallow: /cms-login
+Disallow: /admin-security
+Disallow: /cms-admin
+Disallow: /cms-editor
+Disallow: /cms-test
 # Header/footer HTML fragments — not pages, crawl waste (Growth Playbook 1.7)
 Disallow: /partials/
 Disallow: /header

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en-IN">
 <head>
-<!-- Google tag (gtag.js) -->
+<!-- Consent Mode default (dataLayer) -->
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
@@ -21,13 +21,8 @@
     }
   } catch (e) {}
 
-  gtag('set', 'ads_data_redaction', true);
 </script>
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-PB0XMF4GEH"></script>
-<script>
-  gtag('js', new Date());
-  gtag('config', 'G-PB0XMF4GEH');
-</script>
+
 
 
 <!-- Google Tag Manager -->
@@ -60,13 +55,12 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <meta name="description" content="Analyze any oligo free online — Tm, hairpin ΔG, dimer ΔG, GC% and molecular weight in seconds. No login required.">
 <link rel="canonical" href="https://www.vigyanllm.in/tm-calculator">
 <link rel="alternate" hreflang="en" href="https://www.vigyanllm.in/tm-calculator" />
-<link rel="alternate" hreflang="en-IN" href="https://www.vigyanllm.in/tm-calculator" />
 <link rel="alternate" hreflang="x-default" href="https://www.vigyanllm.in/tm-calculator" />
 <meta property="og:title" content="Free Oligo Analyzer — Tm, Hairpins, Dimers (No Login)">
 <meta property="og:description" content="Analyze any oligo free online — Tm, hairpin ΔG, dimer ΔG, GC% and molecular weight in seconds. No login required.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://www.vigyanllm.in/tm-calculator">
-<meta name="robots" content="index, follow"><!-- Google tag (gtag.js) -->
+<meta name="robots" content="index, follow">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Open+Sans:wght@400;500;600;700&family=Source+Serif+4:wght@400;500&display=swap" rel="stylesheet">
@@ -136,7 +130,7 @@ img{max-width:100%}
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.vigyanllm.in"}, {"@type": "ListItem", "position": 2, "name": "Primer Melting Temperature (Tm) Calculator", "item": "https://www.vigyanllm.in/tm-calculator"}]}</script>
-<script type="application/ld+json">{"@context":"https://schema.org","@type":["SoftwareApplication","WebApplication"],"name":"VigyanLLM Melting Temperature Calculator","url":"https://www.vigyanllm.in/tm-calculator","description":"Primer melting temperature calculator using nearest-neighbor thermodynamics for PCR optimization.","applicationCategory":"BioinformaticsApplication","featureList": ["Nearest-neighbor Tm calculation", "Salt (Na+) correction", "Mg2+ correction", "More accurate than the basic 4+2 rule", "Oligo concentration input", "No login required"],"operatingSystem":"Web Browser","offers":{"@type":"Offer","price":"0","priceCurrency":"INR"},"aggregateRating":{"@type":"AggregateRating","ratingValue":"4.8","ratingCount":"127"},"author":{"@type":"Organization","name":"VigyanLLM Private Limited"}}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":["SoftwareApplication","WebApplication"],"name":"VigyanLLM Melting Temperature Calculator","url":"https://www.vigyanllm.in/tm-calculator","description":"Primer melting temperature calculator using nearest-neighbor thermodynamics for PCR optimization.","applicationCategory":"BioinformaticsApplication","featureList": ["Nearest-neighbor Tm calculation", "Salt (Na+) correction", "Mg2+ correction", "More accurate than the basic 4+2 rule", "Oligo concentration input", "No login required"],"operatingSystem":"Web Browser","offers":{"@type":"Offer","price":"0","priceCurrency":"INR"},"author":{"@type":"Organization","name":"VigyanLLM Private Limited"}}</script>
 
 <script type="application/ld+json">
 {
@@ -154,7 +148,6 @@ img{max-width:100%}
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Why does my Tm differ from IDT's OligoAnalyzer?","acceptedAnswer":{"@type":"Answer","text":"IDT reports a nearest-neighbour value for the salt you specify; the biggest discrepancy is between a 2+4 (Wallace) result and a nearest-neighbour result on the same primer. Compare our NN output at 50 mM Na+ to OligoAnalyzer's NN value and they land a matter of a degree apart."}},{"@type":"Question","name":"What salt concentration should I use?","acceptedAnswer":{"@type":"Answer","text":"50 mM Na+ is a common default for published protocols, and 1.5-2.0 mM MgCl2 reflects most commercial Taq buffers. If your master mix is different, enter those exact values, because salt shifts Tm by a few degrees."}},{"@type":"Question","name":"Does MgCl2 really shift the Tm that much?","acceptedAnswer":{"@type":"Answer","text":"Yes. Divalent cations stabilise the duplex more strongly than monovalent ones, and 1.5-2.0 mM Mg2+ raises primer Tm by roughly 3-5 C. On the 19-nt GAPDH primer, the NN+Mg2+ value is a couple of degrees higher than plain NN."}},{"@type":"Question","name":"What is the nearest-neighbour model?","acceptedAnswer":{"@type":"Answer","text":"It predicts Tm by summing per-base-pair stacking energies (delta-G, delta-H, delta-S) and initiation terms instead of counting GC alone. It is the validated standard for short DNA oligos."}},{"@type":"Question","name":"Why is my Tm 72 C for a 20-mer with 70% GC?","acceptedAnswer":{"@type":"Answer","text":"That is expected. A GC-rich 20-mer genuinely melts in the low 70s because G-C pairs form three hydrogen bonds. High-GC oligos amplify poorly, so consider lowering the GC content or adding a denaturant such as DMSO."}},{"@type":"Question","name":"Should I use the annealing temperature or the Tm?","acceptedAnswer":{"@type":"Answer","text":"Use both, deliberately: set the annealing step 3-5 C below the Tm so primers bind specifically. Enter your real buffer, read the Tm, then run the cycler at about Tm minus 3-5 C."}}]}</script>
 
 <script src="/cookie-banner.js" defer></script>
-  <link rel="alternate" hreflang="en-US" href="https://www.vigyanllm.in/tm-calculator" />
 </head>
 <body>
 
@@ -666,8 +659,7 @@ async function handleAuth(e){e.preventDefault();var err=document.getElementById(
     <a href="/refund">Refund</a>
     <a href="/security">Security</a>
     <a href="/cite-vigyanllm">Cite Us</a>
-    <a href="/cms-login" style="margin-top:8px;opacity:.5;font-size:var(--font-xs)">CMS Login</a>
-    <a href="/admin-security" style="opacity:.5;font-size:var(--font-xs)">Admin Panel</a>
+    <a href="/support">Support</a>
   </div>
 </div>
 <div class="footer-bottom"> <span>&copy; 2026 VigyanLLM Private Limited · Sovereign Research AI</span>

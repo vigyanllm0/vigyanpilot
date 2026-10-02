@@ -1,13 +1,20 @@
 # robots.txt — VigyanLLM
 # https://vigyanllm.in/robots.txt
-# Generated: 2026-09-30
+# Generated: 2026-10-02
 
 # ── Default rules ────────────────────────────────────────────────────────
 User-agent: *
 Allow: /
 Disallow: /api/
-Disallow: /admin/
-Disallow: /dashboard/
+# Account/admin surfaces — exact routes (previous /admin/ + /dashboard/ rules
+# matched nothing; robots is crawl guidance, not authorization)
+Disallow: /dashboard
+Disallow: /usage-billing
+Disallow: /cms-login
+Disallow: /admin-security
+Disallow: /cms-admin
+Disallow: /cms-editor
+Disallow: /cms-test
 # Header/footer HTML fragments — not pages, crawl waste (Growth Playbook 1.7)
 Disallow: /partials/
 Disallow: /header
@@ -123,5 +130,5 @@ User-agent: AspiegelBot
 Disallow: /
 
 # ── Sitemap details ──────────────────────────────────────────────────────
-# Total URLs in sitemap: 429
-# Coverage: Core tools, platform pages, blog (60), glossary (339), gene-prefers pages, landing pages, hub pages
+# Total URLs in sitemap: 430
+# Coverage: Core tools, platform pages, blog (60), glossary (340), gene-prefers pages, landing pages, hub pages
