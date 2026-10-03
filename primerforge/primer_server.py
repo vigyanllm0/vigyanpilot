@@ -1242,7 +1242,7 @@ def create_app() -> Flask:
 
     @app.route("/<path:filename>")
     def serve_static(filename):
-        if filename.endswith((".html", ".css", ".js", ".png", ".ico", ".svg", ".json", ".xml", ".txt", ".mp4")):
+        if filename.endswith((".html", ".css", ".js", ".png", ".jpg", ".jpeg", ".webp", ".gif", ".ico", ".svg", ".json", ".xml", ".txt", ".mp4")):
             filepath = os.path.join(STATIC_DIR, filename)
             if os.path.isfile(filepath):
                 return send_from_directory(STATIC_DIR, filename)
