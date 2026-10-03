@@ -1,0 +1,1019 @@
+<!DOCTYPE html>
+<html lang="en-IN">
+<head>
+<!-- Consent Mode default (dataLayer) -->
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('consent', 'default', {
+    'ad_storage': 'denied',
+    'ad_user_data': 'denied',
+    'ad_personalization': 'denied',
+    'analytics_storage': 'denied',
+    'region': ['AT','BE','BG','HR','CY','CZ','DK','EE','FI','FR','DE','GR','HU','IE','IT','LV','LT','LU','MT','NL','PL','PT','RO','SK','SI','ES','SE','IS','LI','NO','GB','CH']
+  });
+  try {
+    var vlcs = JSON.parse(localStorage.getItem('vigyanllm_cookie_consent') || 'null');
+    if (vlcs && vlcs.consent === 'accepted') {
+      gtag('consent', 'update', { 'ad_storage': 'granted', 'ad_user_data': 'granted', 'ad_personalization': 'granted', 'analytics_storage': 'granted' });
+    } else if (vlcs && vlcs.consent === 'declined') {
+      gtag('consent', 'update', { 'ad_storage': 'denied', 'ad_user_data': 'denied', 'ad_personalization': 'denied', 'analytics_storage': 'denied' });
+    }
+  } catch (e) {}
+
+</script>
+
+
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-KRP5LLPR');</script>
+<!-- End Google Tag Manager -->
+
+<meta name="google-site-verification" content="WP61CgW3hd6FNvLabkXLmVU0rNzXpkK8ynYRxr5FqBo">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Custom Bioinformatics Pipeline Development | VigyanLLM</title>
+<link rel="stylesheet" href="/design-tokens.css">
+<link rel="stylesheet" href="/primer.css">
+<link rel="alternate" type="application/rss+xml" title="VigyanLLM Blog RSS" href="/blog/rss.xml" />
+<meta name="theme-color" content="#0F172A" />
+<meta property="og:site_name" content="VigyanLLM">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://www.vigyanllm.in/custom-pipeline-development">
+<meta property="og:title" content="Custom Bioinformatics Pipeline Development | VigyanLLM">
+<meta property="og:description" content="Custom bioinformatics pipelines built to your spec: NGS, variants, structural biology, reverse vaccinology. Scoped fixed price by email.">
+<meta property="og:image" content="https://www.vigyanllm.in/poster.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Custom Bioinformatics Pipeline Development | VigyanLLM">
+<meta name="twitter:description" content="Custom bioinformatics pipelines built to your spec: NGS, variants, structural biology, reverse vaccinology. Scoped fixed price by email.">
+<meta name="twitter:image" content="https://www.vigyanllm.in/poster.png">
+<meta name="keywords" content="custom bioinformatics pipeline, bioinformatics pipeline development India, NGS analysis pipeline, variant analysis pipeline, reverse vaccinology pipeline, bioinformatics software services" />
+<meta name="author" content="VigyanLLM Private Limited" />
+<meta name="description" content="Custom bioinformatics pipelines built to your spec: NGS, variants, structural biology, reverse vaccinology. Scoped fixed price by email.">
+<link rel="canonical" href="https://www.vigyanllm.in/custom-pipeline-development">
+<link rel="alternate" hreflang="en" href="https://www.vigyanllm.in/custom-pipeline-development" />
+<link rel="alternate" hreflang="x-default" href="https://www.vigyanllm.in/custom-pipeline-development" />
+<meta name="robots" content="index, follow"><link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Open+Sans:wght@400;500;600;700&family=Source+Serif+4:wght@400;500&display=swap" rel="stylesheet">
+<style>
+
+html { overflow-x: hidden; }
+
+:root{--blue:#1565C0;--blue-light:#42A5F5;--blue-bg:#E3F2FD;--navy:#0F172A;--black:#0A0A0F;--surface:#FFFFFF;--surface-alt:#F5F7FA;--outline:#E2E5EA;--text:#0A0A0F;--text2:#4A4A6A;--muted:#7A7A9A;--font-h:'Montserrat',sans-serif;--font-b:'Open Sans',sans-serif;--space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-5:20px;--space-6:24px;--space-8:32px;--space-10:40px;--space-12:48px;--space-16:64px;--space-20:80px;--space-24:96px;--max-w:1400px}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--surface);color:var(--text);font-family:var(--font-b);line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{text-decoration:none;color:inherit}
+img{max-width:100%}
+
+@media(max-width:768px){}
+
+.ns-icon{position:absolute;right:10px;top:50%;transform:translateY(-50%);color:rgba(255,255,255,.35);pointer-events:none}
+
+.mm-group{margin-bottom:20px}
+.mm-hdr{font-size:13px;font-weight:700;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+.mm-group a{display:block;padding:10px 0;font-size:13px;color:rgba(255,255,255,.8);border-bottom:1px solid rgba(255,255,255,.05)}
+
+.user-popup{position:absolute;top:80px;right:24px;background:var(--surface);border-radius:12px;box-shadow:0 16px 48px rgba(0,0,0,.15);padding:24px;min-width:280px}
+.user-popup-close{float:right;background:none;border:none;font-size:13px;cursor:pointer;color:var(--muted)}
+.user-popup-header{margin-bottom:16px}
+.user-popup-avatar{width:48px;height:48px;border-radius:50%;background:var(--blue);display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:700;margin-bottom:8px}
+.user-popup-email{font-size:14px;color:var(--text2);word-break:break-all}
+.user-popup-item{display:block;padding:10px 14px;border-radius:8px;font-size:14px;color:var(--text);cursor:pointer}
+.user-popup-item:hover{background:var(--surface-alt)}
+.user-popup-logout{color:#DC2626}
+
+@media(max-width:768px){.user-popup{right:12px;left:12px;min-width:auto}}
+
+.page-header{background:linear-gradient(135deg,var(--navy) 0%,#0F2040 100%);color:#fff;padding:64px 24px 56px;text-align:center}
+.page-header h1{font-family:var(--font-h);font-size:36px;font-weight:800;margin-bottom:12px;line-height:1.2;color:#fff!important}
+.page-header p{font-size:16px;color:rgba(255,255,255,.72);max-width:760px;margin:0 auto;line-height:1.75}
+.hero-ctas{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:24px}
+.btn-mail{display:inline-flex;align-items:center;gap:8px;background:#fff;color:var(--navy);font-family:var(--font-h);font-size:15px;font-weight:700;padding:13px 26px;border-radius:8px}
+.btn-mail:hover{background:#E3F2FD}
+.btn-ghost{display:inline-flex;align-items:center;gap:8px;border:1px solid rgba(255,255,255,.4);color:#fff;font-family:var(--font-h);font-size:15px;font-weight:600;padding:12px 26px;border-radius:8px}
+.btn-ghost:hover{border-color:#fff;background:rgba(255,255,255,.08)}
+
+.container{max-width:var(--max-w);margin:0 auto;padding:0 24px}
+section{padding:40px 0}
+section>*:last-child{margin-bottom:0}
+
+h2{font-family:var(--font-h);font-size:26px;font-weight:700;margin-bottom:16px;color:var(--text)}
+h3{font-family:var(--font-h);font-size:13px;font-weight:600;margin-bottom:12px;color:var(--text)}
+p{font-size:15px;color:var(--text2);line-height:1.7;margin-bottom:16px}
+.container section p{max-width:80ch}
+.ilink{color:var(--blue);text-decoration:underline;text-underline-offset:2px}
+
+.callout{background:var(--blue-bg);border-left:4px solid var(--blue);border-radius:8px;padding:20px;margin:24px 0}
+.callout-title{font-weight:700;font-size:14px;color:var(--blue);margin-bottom:6px}
+.callout p{margin:0;font-size:15px;color:var(--text2)}
+
+.cap-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin-top:8px}
+.cap-card{background:var(--surface-alt);border:1px solid var(--outline);border-radius:12px;padding:20px}
+.cap-card h3{font-size:15px;font-weight:700;margin-bottom:8px;color:var(--navy)}
+.cap-card p{margin:0;font-size:15px;color:var(--text2)}
+.cap-tools{display:block;margin-top:10px;font-size:13px;color:var(--muted);line-height:1.6}
+.cap-card.featured{background:var(--blue-bg);border-color:#BBDEFB;box-shadow:0 1px 0 rgba(21,101,192,.08)}
+
+.steps{counter-reset:step;list-style:none;padding:0;margin:8px 0 0}
+.steps li{counter-increment:step;position:relative;padding:0 0 20px 46px;border-left:2px solid var(--outline);margin-left:14px}
+.steps li:last-child{border-left-color:transparent;padding-bottom:0}
+.steps li::before{content:counter(step);position:absolute;left:-15px;top:-2px;width:28px;height:28px;border-radius:50%;background:var(--blue);color:#fff;font-family:var(--font-h);font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.steps h3{font-size:14px;font-weight:700;margin-bottom:4px;color:var(--text)}
+.steps p{margin:0;font-size:15px}
+
+.deliver-list{list-style:none;padding:0;margin:8px 0 0;border-top:1px solid var(--outline)}
+.deliver-list li{display:flex;gap:14px;align-items:baseline;padding:13px 0;border-bottom:1px solid var(--outline);margin:0;font-size:15px;color:var(--text2);line-height:1.7}
+.deliver-list strong{flex:0 0 auto;min-width:190px;font-family:var(--font-h);font-size:15px;font-weight:700;color:var(--navy)}
+.deliver-list span{color:var(--text2)}
+@media(max-width:600px){.deliver-list li{display:block}.deliver-list strong{display:block;margin-bottom:2px}}
+
+table{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:15px}
+.table-wrap{overflow-x:auto;max-width:100%}
+th,td{padding:12px 16px;text-align:left;border-bottom:1px solid var(--outline)}
+th{background:var(--surface-alt);font-weight:700;color:var(--text);font-family:var(--font-h);font-size:14px;text-transform:uppercase;letter-spacing:0.5px}
+td{color:var(--text2)}
+tr:last-child td{border-bottom:none}
+
+ul,ol{padding-left:20px;margin-bottom:16px}
+li{font-size:15px;color:var(--text2);line-height:1.7;margin-bottom:4px}
+
+.tag{display:inline-block;background:rgba(37,99,235,.1);color:var(--blue);font-size:12px;font-weight:600;padding:3px 10px;border-radius:99px;margin-bottom:8px}
+
+.faq-item{border-bottom:1px solid var(--outline);padding:16px 0}
+.faq-item:last-child{border-bottom:none}
+.faq-panel{background:var(--surface-alt);border:1px solid var(--outline);border-radius:14px;padding:6px 28px;margin-top:4px}
+
+.contact-panel{background:var(--navy);color:#fff;border-radius:14px;padding:32px;margin-top:8px}
+.contact-panel h2{color:#fff;margin-bottom:8px}
+.contact-panel p{color:rgba(255,255,255,.78);font-size:16px}
+.contact-panel .btn-mail{background:#fff}
+.contact-checklist{list-style:none;padding:0;margin:14px 0 20px}
+.contact-checklist li{color:rgba(255,255,255,.82);font-size:15px;padding-left:22px;position:relative;margin-bottom:8px}
+.contact-checklist li::before{content:"\2713";position:absolute;left:0;color:#4ADE80;font-weight:700}
+.copy-btn{display:inline-flex;align-items:center;gap:6px;margin-top:10px;padding:8px 16px;background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.3);border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font-b)}
+.copy-btn:hover{background:rgba(255,255,255,.2)}
+.copy-btn.copied{background:#059669;border-color:#059669}
+
+.footer-col{display:flex;flex-direction:column;gap:10px}
+
+.footer-bottom span{letter-spacing:0.5px}
+
+@media(max-width:900px){.page-header h1{font-size:28px}}
+@media(max-width:600px){.hero-ctas{flex-direction:column;align-items:stretch}.btn-mail,.btn-ghost{justify-content:center}}
+
+/* ===== Visual upgrade: hero, figures, motion ===== */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+}
+
+/* --- hero split --- */
+.page-header{text-align:left}
+.hero-grid{max-width:1152px;margin:0 auto;position:relative;z-index:1;display:grid;grid-template-columns:1.02fr .98fr;gap:48px;align-items:center;perspective:1200px}
+.page-header p{max-width:560px;margin:0}
+.hero-ctas{justify-content:flex-start}
+.hero-eyebrow{display:inline-flex;align-items:flex-start;gap:8px;font-family:var(--font-h);font-size:11px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;color:#7DD3FC;margin-bottom:14px}
+.hero-eyebrow::before{content:"";width:6px;height:6px;border-radius:50%;background:#22D3EE;margin-top:5px;flex:0 0 auto;animation:heroPulse 2.2s infinite}
+@keyframes heroPulse{0%{box-shadow:0 0 0 0 rgba(34,211,238,.5)}70%{box-shadow:0 0 0 7px rgba(34,211,238,0)}100%{box-shadow:0 0 0 0 rgba(34,211,238,0)}}
+.hero-copy>*{opacity:0;transform:translateY(16px);animation:heroUp .7s cubic-bezier(.2,.7,.3,1) forwards}
+.hero-copy>*:nth-child(1){animation-delay:.05s}
+.hero-copy>*:nth-child(2){animation-delay:.15s}
+.hero-copy>*:nth-child(3){animation-delay:.25s}
+.hero-copy>*:nth-child(4){animation-delay:.35s}
+@keyframes heroUp{to{opacity:1;transform:translateY(0)}}
+.hero-visual{position:relative}
+.hero-visual::before{content:"";position:absolute;inset:-6% -4%;background:radial-gradient(closest-side,rgba(34,211,238,.30),rgba(34,211,238,0) 72%);filter:blur(14px);animation:glowPulse 5s ease-in-out infinite;pointer-events:none}
+@keyframes glowPulse{0%,100%{opacity:.55}50%{opacity:1}}
+.hero-card{position:relative;z-index:1;border-radius:16px;overflow:hidden;border:1px solid rgba(255,255,255,.16);box-shadow:0 28px 64px rgba(2,6,23,.55);opacity:0;animation:heroFade .9s .3s ease forwards,heroFloat 6.5s 1.3s ease-in-out infinite}
+@keyframes heroFade{to{opacity:1}}
+@keyframes heroFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
+.hero-card img{display:block;width:100%;height:auto}
+
+/* --- figures --- */
+.fig{margin:0}
+.fig-frame{border-radius:14px;overflow:hidden;border:1px solid var(--outline);box-shadow:0 10px 30px rgba(15,23,42,.10);background:var(--surface-alt)}
+.fig-frame img{display:block;width:100%;height:auto;transform:scale(1.04);transition:transform .9s cubic-bezier(.2,.7,.3,1)}
+.in .fig-frame img{transform:scale(1)}
+.fig figcaption{margin-top:10px;font-size:13px;color:var(--muted);line-height:1.6}
+.fig figcaption::before{content:"";display:inline-block;width:18px;height:1px;background:var(--outline);vertical-align:middle;margin-right:8px}
+
+/* --- layout helpers --- */
+.sec-intro{display:grid;grid-template-columns:1.15fr .85fr;gap:36px;align-items:center}
+.sec-split{display:grid;grid-template-columns:1.25fr .75fr;gap:36px;align-items:start;margin-bottom:8px}
+.sec-split .fig{position:sticky;top:88px}
+.sec-duo{display:grid;grid-template-columns:1.25fr .75fr;gap:36px;align-items:center}
+.sec-duo.rev{grid-template-columns:.75fr 1.25fr}
+
+/* --- scroll reveal --- */
+.reveal{opacity:0;transform:translateY(22px);transition:opacity .6s ease,transform .6s ease}
+.reveal.in{opacity:1;transform:translateY(0)}
+
+/* --- hover motion --- */
+.cap-card{transition:transform .25s ease,box-shadow .25s ease,border-color .25s ease}
+.cap-card:hover{transform:translateY(-4px);box-shadow:0 14px 30px rgba(15,23,42,.10);border-color:#BBDEFB}
+.btn-mail,.btn-ghost{position:relative;overflow:hidden;transition:transform .2s ease,background .2s ease,border-color .2s ease}
+.btn-mail:hover,.btn-ghost:hover{transform:translateY(-1px)}
+.btn-mail::after{content:"";position:absolute;top:0;left:-75%;width:45%;height:100%;background:linear-gradient(100deg,transparent,rgba(21,101,192,.16),transparent);transform:skewX(-18deg);transition:left .55s ease;pointer-events:none}
+.btn-mail:hover::after{left:135%}
+.btn-ghost::after{content:"";position:absolute;top:0;left:-75%;width:45%;height:100%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.30),transparent);transform:skewX(-18deg);transition:left .55s ease;pointer-events:none}
+.btn-ghost:hover::after{left:135%}
+
+/* --- steps cascade --- */
+.steps li::before{transform:scale(0);transition:transform .4s cubic-bezier(.3,1.5,.5,1)}
+.steps li.in::before{transform:scale(1)}
+.steps li:nth-child(1)::before{transition-delay:.10s}
+.steps li:nth-child(2)::before{transition-delay:.20s}
+.steps li:nth-child(3)::before{transition-delay:.30s}
+.steps li:nth-child(4)::before{transition-delay:.40s}
+.steps li:nth-child(5)::before{transition-delay:.50s}
+
+/* --- deliverables checks --- */
+.deliver-list li::before{content:"\2713";flex:0 0 auto;align-self:center;display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:rgba(37,99,235,.1);color:var(--blue);font-size:11px;font-weight:700;transform:scale(0);transition:transform .35s cubic-bezier(.3,1.6,.5,1)}
+.deliver-list.in li::before{transform:scale(1)}
+.deliver-list li:nth-child(1)::before{transition-delay:.05s}
+.deliver-list li:nth-child(2)::before{transition-delay:.12s}
+.deliver-list li:nth-child(3)::before{transition-delay:.19s}
+.deliver-list li:nth-child(4)::before{transition-delay:.26s}
+.deliver-list li:nth-child(5)::before{transition-delay:.33s}
+.deliver-list li:nth-child(6)::before{transition-delay:.40s}
+
+/* --- contact band --- */
+.contact-panel{position:relative;overflow:hidden}
+.contact-panel>*{position:relative;z-index:1}
+.contact-bg{position:absolute;inset:0;z-index:0;background:linear-gradient(rgba(15,23,42,.84),rgba(15,23,42,.90)),url('/assets/cp-plexus-band.jpg') center/cover no-repeat;animation:panelPan 30s ease-in-out infinite alternate;pointer-events:none}
+@keyframes panelPan{from{transform:scale(1.02)}to{transform:scale(1.10)}}
+.contact-panel .p{position:absolute;z-index:0;width:6px;height:6px;border-radius:50%;background:rgba(34,211,238,.6);animation:drift 8s ease-in-out infinite;pointer-events:none}
+.contact-panel .p1{left:10%;top:24%}
+.contact-panel .p2{left:82%;top:70%;width:4px;height:4px;background:rgba(147,197,253,.6);animation-delay:2.6s}
+.contact-panel .p3{left:64%;top:16%;width:5px;height:5px;animation-delay:5.2s}
+@keyframes drift{0%,100%{transform:translateY(0);opacity:.3}50%{transform:translateY(-16px);opacity:.95}}
+
+/* --- hero background motion (light animation, motion-video feel) --- */
+.page-header{position:relative;overflow:hidden}
+.hero-fx{position:absolute;inset:0;z-index:0;pointer-events:none}
+.fx-blob{position:absolute;border-radius:50%;filter:blur(46px);will-change:transform,opacity}
+.fx-b1{width:520px;height:520px;left:-8%;top:-30%;background:radial-gradient(closest-side,rgba(34,211,238,.34),transparent 70%);animation:fxb1 17s ease-in-out infinite alternate}
+.fx-b2{width:640px;height:640px;right:-12%;top:8%;background:radial-gradient(closest-side,rgba(99,102,241,.30),transparent 70%);animation:fxb2 21s ease-in-out infinite alternate}
+.fx-b3{width:380px;height:380px;left:38%;bottom:-35%;background:radial-gradient(closest-side,rgba(14,165,233,.26),transparent 70%);animation:fxb3 15s ease-in-out infinite alternate}
+@keyframes fxb1{from{transform:translate3d(0,0,0) scale(1);opacity:.7}to{transform:translate3d(90px,60px,0) scale(1.15);opacity:1}}
+@keyframes fxb2{from{transform:translate3d(0,0,0) scale(1.05);opacity:.55}to{transform:translate3d(-110px,-50px,0) scale(.95);opacity:.95}}
+@keyframes fxb3{from{transform:translate3d(0,0,0) scale(.95);opacity:.45}to{transform:translate3d(70px,-70px,0) scale(1.2);opacity:.9}}
+.fx-streak{position:absolute;top:-20%;left:-40%;width:36%;height:140%;background:linear-gradient(100deg,transparent 0%,rgba(186,230,253,.14) 45%,rgba(255,255,255,.22) 50%,rgba(186,230,253,.14) 55%,transparent 100%);transform:translateX(0) skewX(-18deg);animation:fxstreak 8.5s cubic-bezier(.4,0,.2,1) infinite;opacity:0}
+@keyframes fxstreak{0%{transform:translateX(0) skewX(-18deg);opacity:0}6%{opacity:1}50%{opacity:1}58%,100%{transform:translateX(460%) skewX(-18deg);opacity:0}}
+.fx-grid{position:absolute;inset:0;background-image:radial-gradient(rgba(148,197,253,.13) 1px,transparent 1.4px);background-size:30px 30px;-webkit-mask-image:radial-gradient(ellipse at 62% 40%,rgba(0,0,0,.85),transparent 75%);mask-image:radial-gradient(ellipse at 62% 40%,rgba(0,0,0,.85),transparent 75%);animation:fxgrid 34s linear infinite alternate}
+@keyframes fxgrid{from{background-position:0 0}to{background-position:30px 60px}}
+.fx-dust{position:absolute;width:4px;height:4px;border-radius:50%;background:rgba(186,230,253,.9);box-shadow:0 0 8px rgba(125,211,252,.8);opacity:0;animation:fxdust 11s ease-in-out infinite}
+.fx-dust.d1{left:8%;top:78%}
+.fx-dust.d2{left:22%;top:30%;width:3px;height:3px;animation-delay:2.4s}
+.fx-dust.d3{left:47%;top:64%;animation-delay:4.8s}
+.fx-dust.d4{left:63%;top:22%;width:3px;height:3px;animation-delay:6.2s}
+.fx-dust.d5{left:78%;top:70%;animation-delay:8.1s}
+.fx-dust.d6{left:91%;top:40%;width:3px;height:3px;animation-delay:9.6s}
+@keyframes fxdust{0%{transform:translateY(0);opacity:0}12%{opacity:.85}70%{opacity:.5}100%{transform:translateY(-90px);opacity:0}}
+.hero-card img{transform-origin:52% 45%;animation:heroKB 26s ease-in-out infinite alternate}
+@keyframes heroKB{from{transform:scale(1)}to{transform:scale(1.07)}}
+.hero-card::after{content:"";position:absolute;left:0;right:0;top:0;height:34%;background:linear-gradient(180deg,transparent,rgba(125,211,252,.13) 55%,transparent);animation:heroScan 7.5s linear infinite;pointer-events:none}
+@keyframes heroScan{from{transform:translateY(-120%)}to{transform:translateY(420%)}}
+
+/* --- editorial section rhythm (numbered labels + hairlines + drawn rules) --- */
+section+section{border-top:1px solid var(--outline)}
+h2[data-num]{position:relative}
+h2[data-num]::before{content:attr(data-num);display:block;font-family:var(--font-h);font-size:11px;font-weight:700;letter-spacing:3px;color:var(--blue);margin-bottom:6px;opacity:0;transform:translateY(6px);transition:opacity .5s ease,transform .5s ease}
+h2[data-num]::after{content:"";display:block;width:48px;height:2px;background:var(--blue);margin-top:14px;transform:scaleX(0);transform-origin:left;transition:transform .6s cubic-bezier(.2,.7,.3,1) .15s}
+.reveal.in h2[data-num]::before,h2.reveal.in[data-num]::before{opacity:1;transform:translateY(0)}
+.reveal.in h2[data-num]::after,h2.reveal.in[data-num]::after{transform:scaleX(1)}
+.contact-panel h2[data-num]::before{color:#7DD3FC}
+.contact-panel h2[data-num]::after{background:#22D3EE}
+
+/* --- cascading rows (table + deliverables) --- */
+@keyframes rowIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.table-wrap.in tbody tr,.table-wrap.in thead tr{animation:rowIn .55s ease backwards}
+.table-wrap.in tr:nth-child(1){animation-delay:.06s}
+.table-wrap.in tr:nth-child(2){animation-delay:.14s}
+.table-wrap.in tr:nth-child(3){animation-delay:.22s}
+.table-wrap.in tr:nth-child(4){animation-delay:.30s}
+.table-wrap.in tr:nth-child(5){animation-delay:.38s}
+.table-wrap.in tr:nth-child(6){animation-delay:.46s}
+.table-wrap.in tr:nth-child(7){animation-delay:.54s}
+.table-wrap.in tr:nth-child(8){animation-delay:.62s}
+.deliver-list.in li{animation:rowIn .55s ease backwards}
+.deliver-list.in li:nth-child(1){animation-delay:.05s}
+.deliver-list.in li:nth-child(2){animation-delay:.11s}
+.deliver-list.in li:nth-child(3){animation-delay:.17s}
+.deliver-list.in li:nth-child(4){animation-delay:.23s}
+.deliver-list.in li:nth-child(5){animation-delay:.29s}
+.deliver-list.in li:nth-child(6){animation-delay:.35s}
+
+/* --- step connector line grows as each step appears --- */
+.steps li.reveal{border-left-color:transparent;transition:opacity .6s ease,transform .6s ease,border-color .7s ease .3s}
+.steps li.reveal.in{border-left-color:var(--outline)}
+.steps li.reveal.in:last-child{border-left-color:transparent}
+
+/* --- desktop keeps capability cards in a 3-up row (1200 grid) --- */
+.cap-grid{grid-template-columns:repeat(3,1fr)}
+
+/* --- responsive --- */
+@media(max-width:900px){
+  .hero-grid{grid-template-columns:1fr;gap:32px}
+  .sec-intro,.sec-split,.sec-duo,.sec-duo.rev{grid-template-columns:1fr}
+  .sec-split .fig{position:static}
+  .page-header p{max-width:100%}
+  .cap-grid{grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+}
+@media(max-width:600px){
+  .deliver-list li::before{float:left;margin:1px 8px 0 0}
+}
+
+</style>
+<noscript><style>.reveal{opacity:1;transform:none}</style></noscript>
+<link rel="manifest" href="/manifest.json">
+<script>if('serviceWorker'in navigator)navigator.serviceWorker.register('/sw.js')</script>
+
+<link rel="icon" type="image/png" href="/logo.png">
+<link rel="apple-touch-icon" href="/logo.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<script src="/cookie-banner.js" defer></script>
+<script type="application/ld+json">{
+ "@context": "https://schema.org",
+ "@type": "BreadcrumbList",
+ "itemListElement": [
+  {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.vigyanllm.in"},
+  {"@type": "ListItem", "position": 2, "name": "Custom Pipeline Development", "item": "https://www.vigyanllm.in/custom-pipeline-development"}
+ ]
+}</script>
+<script type="application/ld+json">{
+ "@context": "https://schema.org",
+ "@type": "FAQPage",
+ "mainEntity": [
+  {
+   "@type": "Question",
+   "name": "What do you need from me to estimate a project?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Your field of study, what the input data looks like (type and format), what output you need (tables, variants, ranked lists, reports), and your timeline. If a paper, protocol, or existing script shows what you mean, reference it — that usually removes several email round trips."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "How much does a custom pipeline cost?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "It is quoted as a scoped fixed price after the discovery email, based on the written specification — not billed by the hour. The quote, the scope, and the delivery window are in the same document, and changes to scope are priced only by mutual agreement before the work happens."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "How long does a project take?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "A focused single-purpose pipeline is typically a few weeks; a multi-step production workflow with deeper validation typically takes a couple of months. Both are indicative ranges, not guarantees — your written spec states the delivery window we commit to for your scope."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Who owns the code you write?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "You do. The deliverable is source code handed to your team, with permission to run, modify, and reuse it internally. We do not hold your pipeline hostage behind a licence, and there is no per-run fee after handover."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Can you work with our existing scripts or HPC?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Yes. Common starting points are a script only one person understands, a workflow that runs on a shared cluster, or analysis spread across several tools. We can modernise what exists, integrate it into one pipeline, and shape the delivery for the environment where it will actually run."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "What data do I have to send, and where does it go?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "For estimation, none — example structures or a small sample of reads are usually enough once work starts. Data-handling terms are agreed in writing before any file changes hands, and your first email should describe data in words rather than attaching it. Never send patient-identifiable data to a first contact."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "How do you prove the pipeline works before I rely on it?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "By running it on a golden dataset whose correct output is already known — a published dataset or your own hand-checked results — and including that stage-by-stage comparison in the deliverable, along with any step where the outputs differ and why."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Do you also do wet-lab or clinical services?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "No. We build in silico analysis pipelines and software. Outputs are research-use-only predictions that your experiments confirm; we do not perform experiments, and nothing delivered is a diagnostic or clinical result."
+   }
+  }
+ ]
+}</script>
+</head>
+<body>
+<div id="vl-header"><!--vl-header-bake-start--><a href="#main-content" class="skip-link">Skip to content</a><header>
+<nav aria-label="Main navigation">
+<div class="nav-inner">
+  <a href="/" class="nav-brand">
+    <img src="/logo.png" alt="VigyanLLM Logo" class="site-logo" width="150" height="36" style="height:36px;width:auto;object-fit:contain" loading="lazy">
+    <span>VigyanLLM</span>
+  </a>
+  <div class="nav-links">
+    <div class="drop-wrap">
+      <span class="drop-trigger" role="button" tabindex="0" aria-haspopup="true" aria-expanded="false">Products ▾</span>
+      <div class="drop-menu">
+        <a href="/primer">Primer Design</a>
+        <a href="/search">Sequence Search</a>
+        <a href="/blast">BLAST</a>
+        <a href="/msa">MSA</a>
+        <a href="/pcr-analysis">PCR Analysis</a>
+        <a href="/crispr-analysis">CRISPR Analysis <span style="font-size:var(--font-xs);font-weight:700;color:#1a1a1a;background:#FEF3C7;padding:2px 6px;border-radius:var(--radius-pill);line-height:1.3">Coming Soon</span></a>
+        <a href="/tm-calculator">Tm Calculator</a>
+        <a href="/gc-calculator">GC Calculator</a>
+        <a href="/protein-docking">Protein Docking</a>
+        <a href="/docking">Molecular Docking</a>
+        <a href="/protein-quality">Protein Quality</a>
+        <a href="/interactions">Interactions</a>
+        <a href="/binding-site">Binding Site</a>
+        <a href="/regenerate">Regenerate</a>
+        <a href="/dna-3d">3D DNA Viewer</a>
+        <a href="/dna-to-rna" style="display:flex;align-items:center;gap:6px">DNA → RNA Converter</a>
+        <a href="/reverse-complement" style="display:flex;align-items:center;gap:6px">Reverse Complement <span style="font-size:9px;font-weight:700;color:#fff;background:#16A34A;padding:2px 7px;border-radius:var(--radius-pill);line-height:1.4">Free</span></a>
+        <a href="/dna-to-protein" style="display:flex;align-items:center;gap:6px">DNA → Protein <span style="font-size:9px;font-weight:700;color:#fff;background:#16A34A;padding:2px 7px;border-radius:var(--radius-pill);line-height:1.4">Free</span></a>
+        <a href="/pcr-product-calculator" style="display:flex;align-items:center;gap:6px">PCR Product Calc <span style="font-size:9px;font-weight:700;color:#fff;background:#16A34A;padding:2px 7px;border-radius:var(--radius-pill);line-height:1.4">Free</span></a>
+        <a href="/restriction-enzyme-finder" style="display:flex;align-items:center;gap:6px">Restriction Enzyme Finder <span style="font-size:9px;font-weight:700;color:#fff;background:#16A34A;padding:2px 7px;border-radius:var(--radius-pill);line-height:1.4">Free</span></a>
+        <a href="/cloning-simulator" style="display:flex;align-items:center;gap:6px">Cloning Simulator <span style="font-size:9px;font-weight:700;color:#fff;background:#16A34A;padding:2px 7px;border-radius:var(--radius-pill);line-height:1.4">Free</span></a>
+        <a href="/biostatistics-calculator" style="display:flex;align-items:center;gap:6px">Biostatistics Calculator <span style="font-size:9px;font-weight:700;color:#fff;background:#16A34A;padding:2px 7px;border-radius:var(--radius-pill);line-height:1.4">Free</span></a>
+      </div>
+    </div>
+    <div class="drop-wrap">
+      <span class="drop-trigger" role="button" tabindex="0" aria-haspopup="true" aria-expanded="false">Services ▾</span>
+      <div class="drop-menu">
+        <a href="/custom-pipeline-development">Customised Pipeline</a>
+      </div>
+    </div>
+    <a href="/learning-vigyanllm">Learning</a>
+    <a href="https://forms.gle/63vdQQ1Ka6WF3ZJg7" target="_blank" rel="noopener noreferrer">Partnership</a>
+    <a href="/pricing">Pricing</a>
+    <a href="/developer">Developer</a>
+  </div>
+  <div class="nav-right">
+    <div class="nav-search-wrap">
+      <input type="text" id="navSearchInput" placeholder="Search tools &amp; resources" autocomplete="off">
+      <span class="ns-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
+      <div class="nav-search-results" id="navSearchResults"></div>
+    </div>
+    <div class="nav-btns" id="navBtns">
+      <button type="button" class="btn-nav-outline" onclick="openAuthModal()">Sign in</button>
+      <button type="button" class="btn-nav-fill" onclick="openAuthModal()">Get started</button>
+    </div>
+    <div class="nav-profile" id="navProfile" style="display:none">
+      <div class="nav-avatar" id="navAvatar" role="button" tabindex="0" aria-expanded="false" onclick="toggleUserMenu()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span class="nav-avatar-letter" id="navAvatarLetter"></span>
+      </div>
+      <div class="user-dropdown" id="userDropdown">
+        <div class="user-dropdown-header">
+          <div class="ud-name" id="udName"></div>
+          <div class="ud-email" id="udEmail"></div>
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:2px">
+            <span class="ud-plan" id="udPlan"></span>
+            <span class="ud-expiry" id="udExpiry" style="font-size:11px;color:var(--muted)"></span>
+          </div>
+          <div class="ud-usage" id="udUsage" style="margin-top:6px;display:none">
+            <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:2px">
+              <span id="udUsageLabel">Today's analyses</span>
+              <span id="udUsageCount"></span>
+            </div>
+            <div style="height:4px;background:var(--outline);border-radius:2px;overflow:hidden">
+              <div id="udUsageBar" style="height:100%;border-radius:2px;transition:width .3s"></div>
+            </div>
+          </div>
+        </div>
+        <a class="ud-item" href="/dashboard">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+          Dashboard
+        </a>
+        <a class="ud-item" href="/usage-billing">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+          Usage &amp; Billing
+        </a>
+
+        <a class="ud-item ud-manage" href="/pricing" style="display:none">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+          Manage Subscription
+        </a>
+        <a class="ud-item ud-upgrade" href="/pricing" style="display:none">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          Upgrade to Pro
+        </a>
+        <div class="ud-item logout" role="button" tabindex="0" onclick="logout()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          Logout
+        </div>
+      </div>
+    </div>
+  </div>
+    </div>
+  <button type="button" class="hamburger" id="hamburger" aria-label="Menu" aria-expanded="false" aria-controls="mobile-menu">
+    <span></span><span></span><span></span>
+  </button>
+<div class="mobile-menu" id="mobile-menu">
+  <div class="mm-user" id="mmUser" style="display:none;padding:12px 16px;background:rgba(255,255,255,.05);border-radius:12px;margin-bottom:12px">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div id="mmAvatar" style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#3B82F6,#1D4ED8);display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:13px"></div>
+      <div>
+        <div id="mmName" style="font-weight:600;color:#fff;font-size:14px"></div>
+        <div id="mmPlan" style="font-size:11px;color:rgba(255,255,255,.5)"></div>
+      </div>
+    </div>
+  </div>
+  <div class="mm-group"><div class="mm-hdr">Products</div>
+    <a href="/primer" aria-label="Primer Design (menu)">Primer Design</a>
+    <a href="/search" aria-label="Sequence Search (menu)">Sequence Search</a>
+    <a href="/blast" aria-label="BLAST (menu)">BLAST</a>
+    <a href="/msa" aria-label="MSA (menu)">MSA</a>
+    <a href="/pcr-analysis" aria-label="PCR Analysis (menu)">PCR Analysis</a>
+    <a href="/crispr-analysis" aria-label="CRISPR Analysis (menu)">CRISPR Analysis <span style="font-size:var(--font-xs);font-weight:700;color:#1a1a1a;background:#FEF3C7;padding:2px 6px;border-radius:var(--radius-pill);line-height:1.3">Coming Soon</span></a>
+    <a href="/tm-calculator" aria-label="Tm Calculator (menu)">Tm Calculator</a>
+    <a href="/gc-calculator" aria-label="GC Calculator (menu)">GC Calculator</a>
+    <a href="/protein-docking" aria-label="Protein Docking (menu)">Protein Docking</a>
+    <a href="/docking" aria-label="Molecular Docking (menu)">Molecular Docking</a>
+    <a href="/protein-quality" aria-label="Protein Quality (menu)">Protein Quality</a>
+    <a href="/interactions" aria-label="Interactions (menu)">Interactions</a>
+    <a href="/binding-site" aria-label="Binding Site (menu)">Binding Site</a>
+    <a href="/regenerate" aria-label="Regenerate (menu)">Regenerate</a>
+        <a href="/dna-3d" aria-label="3D DNA Viewer (menu)">3D DNA Viewer</a>
+        <a href="/dna-to-rna" style="display:flex;align-items:center;gap:6px" aria-label="DNA to RNA Converter (menu)">DNA → RNA Converter</a>
+        <a href="/reverse-complement" aria-label="Reverse Complement (menu)">Reverse Complement</a>
+        <a href="/dna-to-protein" aria-label="DNA to Protein (menu)">DNA → Protein</a>
+        <a href="/pcr-product-calculator" aria-label="PCR Product Calculator (menu)">PCR Product Calculator</a>
+        <a href="/restriction-enzyme-finder" aria-label="Restriction Enzyme Finder (menu)">Restriction Enzyme Finder</a>
+        <a href="/cloning-simulator" aria-label="Cloning Simulator (menu)">Cloning Simulator</a>
+        <a href="/biostatistics-calculator" aria-label="Biostatistics Calculator (menu)">Biostatistics Calculator</a>
+  </div>
+  <div class="mm-group"><div class="mm-hdr">Services</div>
+    <a href="/custom-pipeline-development" aria-label="Customised Pipeline (menu)">Customised Pipeline</a>
+  </div>
+  <div class="mm-group">
+    <a href="/learning-vigyanllm" aria-label="Learning (menu)">Learning</a>
+    <a href="https://forms.gle/63vdQQ1Ka6WF3ZJg7" target="_blank" rel="noopener noreferrer" aria-label="Academic Partnership (menu)">Academic Partnership</a>
+    <a href="/pricing" aria-label="Pricing (menu)">Pricing</a>
+    <a href="/developer" aria-label="Developer API (menu)">Developer</a>
+    <a href="mailto:contact@vigyanllm.in">Enterprise Inquiry</a>
+  </div>
+  <a href="#" onclick="closeMobileMenu();var e=document.getElementById('navSearchInput');if(e){e.focus();e.scrollIntoView({behavior:'smooth',block:'center'})};return false" class="mm-cta" style="background:transparent;border:1px solid rgba(255,255,255,.25);color:rgba(255,255,255,.8);margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:8px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Search</a>
+  <a href="#" class="mm-cta" onclick="openAuthModal();return false">Sign in</a>
+</div>
+</nav>
+</header><!--vl-header-bake-end--></div>
+
+<main id="main-content">
+
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-KRP5LLPR"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+
+<div class="page-header">
+  <div class="hero-fx" aria-hidden="true">
+    <span class="fx-blob fx-b1"></span>
+    <span class="fx-blob fx-b2"></span>
+    <span class="fx-blob fx-b3"></span>
+    <span class="fx-grid"></span>
+    <span class="fx-streak"></span>
+    <span class="fx-dust d1"></span>
+    <span class="fx-dust d2"></span>
+    <span class="fx-dust d3"></span>
+    <span class="fx-dust d4"></span>
+    <span class="fx-dust d5"></span>
+    <span class="fx-dust d6"></span>
+  </div>
+  <div class="hero-grid">
+    <div class="hero-copy">
+      <span class="hero-eyebrow">Scoped by email · Fixed price · Source you own</span>
+      <h1>Custom Bioinformatics Pipeline Development</h1>
+      <p>Bring us the analysis you keep doing by hand — sequencing, variants, structure, vaccines, molecular
+      biology — and we build the pipeline that does it end to end, tested against results you already trust.
+      Scoped fixed price, quoted after a discovery email. No forms; a person reads every message.</p>
+      <div class="hero-ctas">
+        <a class="btn-mail" href="mailto:contact@vigyanllm.in?subject=Custom%20pipeline%20development%20inquiry&amp;body=Field%20of%20study%3A%0A%0AInput%20data%20%28type%20and%20format%29%3A%0A%0ADesired%20output%20%28tables%2C%20plots%2C%20VCF%2C%20reports%29%3A%0A%0ADeadline%20or%20timeline%3A%0A%0AAnything%20we%20should%20read%20first%20%28paper%2C%20protocol%2C%20existing%20script%29%3A%0A" onclick="window.dataLayer&amp;&amp;dataLayer.push({event:'cta_click',cta:'custom_pipeline_mailto_hero'})">Email us about your project</a>
+        <a class="btn-ghost" href="#how-we-work">See how we work</a>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="hero-card">
+        <img src="/assets/cp-hero-dna-hud.jpg" width="1182" height="590" fetchpriority="high" decoding="async" alt="DNA analysis dashboard with sequence charts, graphs and a glowing double helix">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container" style="max-width:1200px">
+
+  <section>
+    <div class="sec-intro reveal">
+      <div>
+        <h2 data-num="01">What we build</h2>
+        <p>We are <a href="/about" class="ilink">bioinformaticians</a> who write production code. Every pipeline below is scoped to your data and
+        your questions — not a template with your logo on it — and delivered as source your team owns and can
+        rerun without us. If a step is done by a well-known published tool, we use that tool rather than
+        reinventing it, and we tell you exactly which version ran.</p>
+      </div>
+      <figure class="fig">
+        <div class="fig-frame"><img src="/assets/cp-hexagon-domains.jpg" width="612" height="370" loading="lazy" decoding="async" alt="Hexagonal grid of science icons — DNA helix, microscope, cloud, chip and charts"></div>
+        <figcaption>Six pipeline families, one delivery model: sequencing, variants, structure, vaccines, molecular biology, and the web tools around them.</figcaption>
+      </figure>
+    </div>
+    <div class="cap-grid">
+      <div class="cap-card featured reveal" data-delay="0">
+        <h3>NGS analysis pipelines</h3>
+        <p>Raw reads to result tables: quality control, trimming, alignment or assembly, quantification,
+        and a summary report your collaborators can read. Bulk and targeted sequencing, RNA-seq,
+        metagenomic and <a href="/pcr-analysis" class="ilink">amplicon</a> workflows.</p>
+        <span class="cap-tools">Built around standard tools such as FastQC/fastp, STAR/BWA, featureCounts</span>
+      </div>
+      <div class="cap-card reveal">
+        <h3>Variant analysis pipelines</h3>
+        <p>Germline or somatic variant calling, joint filtering, annotation, and a prioritised table with
+        the evidence attached — reproducible from raw data to the final list with one documented command
+        per stage.</p>
+        <span class="cap-tools">Built around standard tools such as GATK/bcftools, VEP/SnpEff</span>
+      </div>
+      <div class="cap-card reveal">
+        <h3>Structural bioinformatics pipelines</h3>
+        <p>Structure preparation, docking and screening workflows, and ranked-result reporting. The
+        docking engines are the same AutoDock Vina and GNINA class of tools our own
+        <a href="/docking" class="ilink">molecular docking</a>
+        page runs.</p>
+        <span class="cap-tools">Built around standard tools such as AutoDock Vina, GNINA</span>
+      </div>
+      <div class="cap-card reveal">
+        <h3>Reverse vaccinology pipelines</h3>
+        <p>Genome to candidate antigen list: open reading frame calling, subcellular localization,
+        transmembrane topology, antigenicity and epitope screening, then allergen, toxin and
+        conservation filters — with every intermediate table kept for review.</p>
+        <span class="cap-tools">Multi-step screening with documented thresholds at each filter</span>
+      </div>
+      <div class="cap-card reveal">
+        <h3>Molecular biology pipelines</h3>
+        <p>Primer and assay design workflows, CRISPR guide-RNA pipelines, cloning and sequence-manipulation
+        scripts, and QC checks. This is the ground our own <a href="/primer" class="ilink">primer
+        design</a> engine is built on.</p>
+        <span class="cap-tools">Built around standard tools such as Primer3 with SantaLucia thermodynamics</span>
+      </div>
+      <div class="cap-card reveal">
+        <h3>Custom web tools and reporting</h3>
+        <p>Internal calculators, dashboards, and automated report generation that turn pipeline output into
+        something a lab meeting can use. The <a href="/platform" class="ilink">public tools on this
+        site</a> are examples of what our team ships.</p>
+        <span class="cap-tools">Browser tools, internal web apps, PDF/CSV report generators</span>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="reveal" data-num="02">Why custom beats buying — and when it does not</h2>
+    <p>Off-the-shelf software wins when your data already fits its assumptions. Custom development wins
+    in three situations we see repeatedly — and we will tell you plainly when not to build.</p>
+    <div class="table-wrap reveal">
+    <table>
+      <thead>
+        <tr><th>Situation</th><th>Custom build wins when</th><th>Buy instead when</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Data format</strong></td>
+          <td>Unusual sample sheets, local databases, or an instrument that exports something no tool parses</td>
+          <td>Your data already fits the tool's documented assumptions</td>
+        </tr>
+        <tr>
+          <td><strong>Reproducibility</strong></td>
+          <td>The run must repeat on demand: one documented command, pinned tool versions, expected outputs checked automatically</td>
+          <td>The product's standard run already produces what you need, repeatably</td>
+        </tr>
+        <tr>
+          <td><strong>Method ownership</strong></td>
+          <td>A screening cascade or filter logic that is part of your work and cannot be bought as a product</td>
+          <td>A published tool with a configuration file covers the whole analysis</td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+    <p>The middle case is the one that bites: a colleague's laptop script that nobody else dares to run.
+    If a published tool with a configuration file solves your problem, that is our answer in the
+    discovery reply — you should not pay us to re-implement something that already exists and works.
+    An honest "you don't need this" saves both sides a project.</p>
+  </section>
+
+  <section id="how-we-work">
+    <div class="sec-split">
+      <div>
+        <h2 class="reveal" data-num="03">How we work</h2>
+        <ol class="steps">
+      <li class="reveal">
+        <h3>Discovery email</h3>
+        <p>You email <a href="mailto:contact@vigyanllm.in" class="ilink">contact@vigyanllm.in</a>
+        with your field, input data, desired output, and timeline. If you have a paper, protocol, or an
+        existing script that almost works, point us at it. We reply with questions and a clear read on
+        whether this is a build, a configuration, or neither.</p>
+      </li>
+      <li class="reveal">
+        <h3>Written spec and fixed quote</h3>
+        <p>Before any paid work, you receive a written specification: inputs, each processing step, the
+        outputs, how validation will be judged, the delivery window, and one fixed price for the whole
+        scope. If the spec changes later, the price changes only by agreement — never silently.</p>
+      </li>
+      <li class="reveal">
+        <h3>Build</h3>
+        <p>We develop against your example data in short reviewable increments. You see progress as
+        running code and result tables, not a demo at the end. Most projects are written in Python and
+        shell with pinned dependencies; if your team already runs a workflow manager, we deliver in that
+        format.</p>
+      </li>
+      <li class="reveal">
+        <h3>Validation</h3>
+        <p>The pipeline is run against a golden dataset — published results, your own previously
+        hand-checked output, or reference data with known answers — and the comparison is part of the
+        deliverable, including any step where it does not match and why.</p>
+      </li>
+      <li class="reveal">
+        <h3>Handover</h3>
+        <p>You receive the source code, the runnable environment, test data with expected outputs,
+        parameter documentation, and a walkthrough session so your team can run and modify it. The code
+        is yours.</p>
+      </li>
+    </ol>
+    <div class="callout reveal">
+      <div class="callout-title">See the process end to end</div>
+      <p>Our own <a href="/primer-design-pipeline" class="ilink">24-step primer design pipeline</a> is a
+      finished example of this shape: a documented, validated pipeline with defined inputs, checks at
+      each stage, and Primer3/SantaLucia thermodynamics at its core. The step-by-step walkthrough is on
+      that page; the benchmark evidence is on our <a href="/validation" class="ilink">validation</a> page.</p>
+    </div>
+      </div>
+      <figure class="fig reveal">
+        <div class="fig-frame"><img src="/assets/cp-pipeline-flow.jpg" width="596" height="335" loading="lazy" decoding="async" alt="Diagram of data points connecting through a network into aligned output arrows"></div>
+        <figcaption>Inputs become stages, stages become checked outputs — every one reviewable before handover.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="reveal" data-num="04">What you get</h2>
+    <ul class="deliver-list reveal">
+      <li><strong>Versioned source code</strong><span>Full project history in Git, delivered to your repository or handed over as an archive.</span></li>
+      <li><strong>Runnable environment</strong><span>Pinned dependencies or a container, so the pipeline runs the same way a year from now.</span></li>
+      <li><strong>Test data with expected outputs</strong><span>A small dataset and the exact results it must produce, so anyone can verify a change.</span></li>
+      <li><strong>Parameter documentation</strong><span>What each option means, safe ranges, and which parameters were tuned for your data.</span></li>
+      <li><strong>Run log template</strong><span>Tool and database versions recorded per run, for methods sections and for debugging.</span></li>
+      <li><strong>Walkthrough session</strong><span>A live handover call where your team runs the pipeline and asks questions.</span></li>
+    </ul>
+  </section>
+
+  <section>
+    <div class="sec-duo reveal">
+      <div>
+        <h2 data-num="05">How we validate</h2>
+        <p>Validation means the pipeline reproduces results that are already known to be right. Depending on
+        your field, the golden dataset is a published dataset with an expected answer, output you have
+        already checked by hand, or reference material from the same instrument. We run it through, compare
+        stage by stage, and hand you the comparison.</p>
+        <p>Two honest limits, stated up front. Reproducing a known result shows the pipeline implements the
+        method correctly; it does not guarantee every future dataset will behave identically — input quality
+        still matters, and the pipeline reports what it cannot process instead of guessing. And everything
+        here is in silico: results are research-use-only predictions that your experiments confirm, not
+        diagnostic calls. This matches how we document evidence on our
+        <a href="/validation" class="ilink">validation</a> page.</p>
+      </div>
+      <figure class="fig">
+        <div class="fig-frame"><img src="/assets/cp-sequence-chem.jpg" width="460" height="259" loading="lazy" decoding="async" alt="Chemical structure diagrams beside rows of coloured DNA sequence letters"></div>
+        <figcaption>Validation compares the pipeline's output against results already known to be right.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-duo rev reveal">
+      <figure class="fig">
+        <div class="fig-frame"><img src="/assets/cp-scientist.jpg" width="739" height="415" loading="lazy" decoding="async" alt="Researcher in a white lab coat beside a glowing DNA double helix and molecular structures"></div>
+        <figcaption>For groups who need the analysis to repeat exactly — on any machine, without the original author present.</figcaption>
+      </figure>
+      <div>
+        <h2 data-num="06">Who this is for</h2>
+        <p><a href="/academic-partnership" class="ilink">Academic labs</a> and CGHS-funded research groups that have outgrown spreadsheets and one-off scripts;
+        CROs standardising a repeatable analysis for clients; vaccine, agricultural and biotech R&D teams
+        with a screening or annotation workflow that runs too often to stay manual; PhD groups that need a
+        defensible, documented method section rather than a folder of notebooks. If you are unsure whether
+        your project fits, ask — the discovery reply is free.</p>
+        <p>Engagement is deliberately simple: one discovery email, one written spec with a <strong>scoped
+        fixed price</strong>, then build, validation, and handover. We quote per project because scope drives
+        cost; that is also why we do not publish generic price cards for custom work. Team subscriptions for
+        the self-service tools on this site are separate and listed on
+        <a href="/pricing" class="ilink">/pricing</a>. Data-handling
+        terms are agreed in writing before any file changes hands.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="reveal" data-num="07">Frequently asked questions</h2>
+    <div class="faq-panel">
+    <div class="faq-item"><h3 style="font-size:1rem;font-family:var(--font-h);margin-bottom:6px">What do you need from me to estimate a project?</h3><p style="color:var(--text2);font-size:.95rem">Your field of study, what the input data looks like (type and format), what output you need (tables, variants, ranked lists, reports), and your timeline. If a paper, protocol, or existing script shows what you mean, reference it — that usually removes several email round trips.</p></div>
+    <div class="faq-item"><h3 style="font-size:1rem;font-family:var(--font-h);margin-bottom:6px">How much does a custom pipeline cost?</h3><p style="color:var(--text2);font-size:.95rem">It is quoted as a scoped fixed price after the discovery email, based on the written specification — not billed by the hour. The quote, the scope, and the delivery window are in the same document, and changes to scope are priced only by mutual agreement before the work happens.</p></div>
+    <div class="faq-item"><h3 style="font-size:1rem;font-family:var(--font-h);margin-bottom:6px">How long does a project take?</h3><p style="color:var(--text2);font-size:.95rem">A focused single-purpose pipeline is typically a few weeks; a multi-step production workflow with deeper validation typically takes a couple of months. Both are indicative ranges, not guarantees — your written spec states the delivery window we commit to for your scope.</p></div>
+    <div class="faq-item"><h3 style="font-size:1rem;font-family:var(--font-h);margin-bottom:6px">Who owns the code you write?</h3><p style="color:var(--text2);font-size:.95rem">You do. The deliverable is source code handed to your team, with permission to run, modify, and reuse it internally. We do not hold your pipeline hostage behind a licence, and there is no per-run fee after handover.</p></div>
+    <div class="faq-item"><h3 style="font-size:1rem;font-family:var(--font-h);margin-bottom:6px">Can you work with our existing scripts or HPC?</h3><p style="color:var(--text2);font-size:.95rem">Yes. Common starting points are a script only one person understands, a workflow that runs on a shared cluster, or analysis spread across several tools. We can modernise what exists, integrate it into one pipeline, and shape the delivery for the environment where it will actually run.</p></div>
+    <div class="faq-item"><h3 style="font-size:1rem;font-family:var(--font-h);margin-bottom:6px">What data do I have to send, and where does it go?</h3><p style="color:var(--text2);font-size:.95rem">For estimation, none — example structures or a small sample of reads are usually enough once work starts. Data-handling terms are agreed in writing before any file changes hands, and your first email should describe data in words rather than attaching it. Never send patient-identifiable data to a first contact.</p></div>
+    <div class="faq-item"><h3 style="font-size:1rem;font-family:var(--font-h);margin-bottom:6px">How do you prove the pipeline works before I rely on it?</h3><p style="color:var(--text2);font-size:.95rem">By running it on a golden dataset whose correct output is already known — a published dataset or your own hand-checked results — and including that stage-by-stage comparison in the deliverable, along with any step where the outputs differ and why.</p></div>
+    <div class="faq-item"><h3 style="font-size:1rem;font-family:var(--font-h);margin-bottom:6px">Do you also do wet-lab or clinical services?</h3><p style="color:var(--text2);font-size:.95rem">No. We build in silico analysis pipelines and software. Outputs are research-use-only predictions that your experiments confirm; we do not perform experiments, and nothing delivered is a diagnostic or clinical result.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="contact-panel reveal">
+      <div class="contact-bg" aria-hidden="true"></div>
+      <span class="p p1" aria-hidden="true"></span>
+      <span class="p p2" aria-hidden="true"></span>
+      <span class="p p3" aria-hidden="true"></span>
+      <h2 data-num="08">Start with one email</h2>
+      <p>No form, no sales funnel — a person reads every message sent to contact@vigyanllm.in and replies
+      with questions, an honest read on scope, and then a written spec with a fixed price.</p>
+      <ul class="contact-checklist">
+        <li>Field of study and what the project has to produce</li>
+        <li>Input data — type and format, described in words</li>
+        <li>Desired output: tables, VCF, ranked lists, plots, reports</li>
+        <li>Timeline or deadline, if there is one</li>
+        <li>A paper, protocol, or existing script to look at first</li>
+      </ul>
+      <div>
+        <a class="btn-mail" href="mailto:contact@vigyanllm.in?subject=Custom%20pipeline%20development%20inquiry&amp;body=Field%20of%20study%3A%0A%0AInput%20data%20%28type%20and%20format%29%3A%0A%0ADesired%20output%20%28tables%2C%20plots%2C%20VCF%2C%20reports%29%3A%0A%0ADeadline%20or%20timeline%3A%0A%0AAnything%20we%20should%20read%20first%20%28paper%2C%20protocol%2C%20existing%20script%29%3A%0A" onclick="window.dataLayer&amp;&amp;dataLayer.push({event:'cta_click',cta:'custom_pipeline_mailto_footer'})">contact@vigyanllm.in</a>
+      </div>
+      <button class="copy-btn" type="button" onclick="copyText(this,'contact@vigyanllm.in')">Copy email address</button>
+      <p style="margin-top:18px;font-size:13px;color:rgba(255,255,255,.55)">Custom development is a separate engagement from the self-service tools on this site.
+      Tool plans and limits are always on <a href="/pricing" style="color:#90CAF9;text-decoration:underline">/pricing</a>.</p>
+    </div>
+  </section>
+
+</div>
+
+<div class="auth-overlay" id="auth-overlay"><div class="auth-card"><div class="auth-title" id="auth-modal-title">Log in to VigyanLLM</div><div class="auth-sub" id="auth-modal-sub">Sign in to save &amp; export your results</div><div id="auth-content"></div></div></div></main>
+
+<script defer src="/search-index.js"></script>
+<script defer src="/auth-shared.js"></script>
+<script>
+function copyText(btn,text){
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(text).then(function(){
+      var orig=btn.textContent;
+      btn.textContent='Copied!';
+      btn.classList.add('copied');
+      setTimeout(function(){btn.textContent=orig;btn.classList.remove('copied')},2000)
+    })
+  }else{
+    var ta=document.createElement('textarea');
+    ta.value=text;
+    ta.style.position='fixed';ta.style.left='-9999px';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    var orig=btn.textContent;
+    btn.textContent='Copied!';
+    btn.classList.add('copied');
+    setTimeout(function(){btn.textContent=orig;btn.classList.remove('copied')},2000)
+  }
+}
+</script>
+
+<div id="vl-footer"><!--vl-footer-bake-start--><footer>
+
+<div class="footer-grid">
+  <div class="footer-col">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+      <img src="logo.png" alt="VigyanLLM Logo" class="site-logo" style="height:36px;width:auto;object-fit:contain" loading="lazy">
+      <span style="font-family:var(--font-h);font-size:var(--font-sm);font-weight:800;color:#fff">VigyanLLM</span>
+    </div>
+    <p style="font-size:var(--font-sm);color:rgba(255,255,255,.60);line-height:1.6">Sovereign Healthcare &amp; Life Sciences AI.<br>Built in India. For the world.</p>
+    <a href="mailto:contact@vigyanllm.in" style="color:var(--saffron-light,#ff8a7a);font-size:var(--font-sm);display:block;margin-top:12px">contact@vigyanllm.in</a>
+    <div class="footer-social">
+      <a href="https://github.com/vigyanllm" rel="me" aria-label="GitHub"><svg aria-hidden="true" fill="#fff" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg></a>
+      <a href="https://www.linkedin.com/company/vigyanllm/" rel="me" aria-label="LinkedIn"><svg aria-hidden="true" fill="#0077B5" viewBox="0 0 24 24"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg></a>
+      <a href="https://www.facebook.com/vigyanllm" rel="me" aria-label="Facebook"><svg aria-hidden="true" fill="#1877F2" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></a>
+      <a href="https://www.youtube.com/@VigyanLLM" rel="me" aria-label="YouTube"><svg aria-hidden="true" fill="#FF0000" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+    </div>
+  </div>
+  <div class="footer-col">
+    <p class="footer-col-title">Products</p>
+    <a href="/primer">Primer Design</a>
+    <a href="/search">Sequence Search</a>
+    <a href="/blast">BLAST</a>
+    <a href="/msa">MSA</a>
+    <a href="/pcr-analysis">PCR Analysis</a>
+    <a href="/crispr-analysis">CRISPR <span style="font-size:var(--font-xs);font-weight:700;color:#1a1a1a;background:#FEF3C7;padding:2px 6px;border-radius:var(--radius-pill);line-height:1.3">Coming Soon</span></a>
+    <a href="/protein-docking">Docking</a>
+    <a href="/biostatistics-calculator">Biostatistics</a>
+  </div>
+  <div class="footer-col">
+    <p class="footer-col-title">Platform</p>
+    <a href="/platform">Overview</a>
+    <a href="/architecture">Architecture</a>
+    <a href="/problem">Problem</a>
+    <a href="/solution">Solution</a>
+    <a href="/compare">Compare</a>
+    <a href="/roadmap">Roadmap</a>
+    <a href="/about/sovereign-ai">Sovereign AI</a>
+    <a href="/features/on-premises">On-Premises</a>
+  </div>
+  <div class="footer-col">
+    <p class="footer-col-title">Resources</p>
+    <a href="/blog">Blog</a>
+    <a href="/faq">FAQ</a>
+    <a href="/about">About</a>
+    <a href="/demo">Demo</a>
+    <a href="/learning-vigyanllm">Learning</a>
+    <a href="https://forms.gle/63vdQQ1Ka6WF3ZJg7" target="_blank" rel="noopener noreferrer">Academic Partnership</a>
+    <a href="/pricing">Pricing</a>
+  </div>
+  <div class="footer-col">
+    <p class="footer-col-title">Contact</p>
+    <a href="/custom-pipeline-development">Custom Pipeline Development</a>
+    <a href="mailto:contact@vigyanllm.in">contact@vigyanllm.in</a>
+    <a href="/privacy">Privacy</a>
+    <a href="/terms">Terms</a>
+    <a href="/cookies">Cookies</a>
+    <a href="/refund">Refund</a>
+    <a href="/security">Security</a>
+    <a href="/cite-vigyanllm">Cite Us</a>
+    <a href="/support">Support</a>
+  </div>
+</div>
+<div class="footer-bottom"> <span>&copy; 2026 VigyanLLM Private Limited · Sovereign Research AI</span>
+  <div style="display:flex;align-items:center;gap:16px">
+    <span>www.vigyanllm.in</span>
+  </div>
+</div>
+
+</footer><!--vl-footer-bake-end--></div>
+<div class="mobile-sticky-cta">
+  <a href="/" class="cta-primary">Get Started</a>
+  <a href="/pricing" class="cta-secondary">View Pricing</a>
+</div>
+<script src="/includes.js"></script>
+<script>
+(function(){
+var h=document.getElementById('hamburger'),m=document.getElementById('mobile-menu');
+if(!h||!m)return;
+h.addEventListener('click',function(){h.classList.toggle('active');m.classList.toggle('open')});
+document.addEventListener('click',function(e){if(!h.contains(e.target)&&!m.contains(e.target)){h.classList.remove('active');m.classList.remove('open')}});
+})();
+</script>
+<script>
+(function(){
+  var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var els=[].slice.call(document.querySelectorAll('.reveal'));
+  function show(el){var d=el.getAttribute('data-delay');if(d)el.style.transitionDelay=d+'s';el.classList.add('in')}
+  if(reduce||!('IntersectionObserver' in window)){els.forEach(show)}
+  else{
+    var io=new IntersectionObserver(function(entries){
+      entries.forEach(function(e){if(e.isIntersecting){show(e.target);io.unobserve(e.target)}});
+    },{threshold:.12,rootMargin:'0px 0px -40px 0px'});
+    els.forEach(function(el){io.observe(el)});
+    /* stagger groups: cards and steps cascade in reading order */
+    [['.cap-grid',.06],['.steps',.08]].forEach(function(g){
+      [].slice.call(document.querySelectorAll(g[0])).forEach(function(p){
+        [].slice.call(p.children).forEach(function(k,i){
+          if(k.classList.contains('reveal')&&!k.hasAttribute('data-delay'))k.setAttribute('data-delay',(i*g[1]).toFixed(2));
+        });
+      });
+    });
+    /* hero mouse parallax + subtle 3D tilt (fine pointers, motion allowed) */
+    var hv=document.querySelector('.hero-visual');
+    if(hv&&!reduce&&window.matchMedia('(pointer:fine)').matches){
+      var tx=0,ty=0,cx=0,cy=0,raf=null;
+      function tick(){
+        cx+=(tx-cx)*.08;cy+=(ty-cy)*.08;
+        hv.style.transform='translate3d('+cx.toFixed(2)+'px,'+cy.toFixed(2)+'px,0) rotateX('+(-cy*.35).toFixed(3)+'deg) rotateY('+(cx*.4).toFixed(3)+'deg)';
+        if(Math.abs(tx-cx)>.05||Math.abs(ty-cy)>.05){raf=requestAnimationFrame(tick)}else{raf=null}
+      }
+      window.addEventListener('mousemove',function(ev){
+        tx=((ev.clientX/window.innerWidth)-.5)*10;
+        ty=((ev.clientY/window.innerHeight)-.5)*8;
+        if(!raf)raf=requestAnimationFrame(tick);
+      },{passive:true});
+    }
+  }
+})();
+</script>
+</body>
+</html>
