@@ -65,6 +65,7 @@ PRIORITY_MAP = {
     "contact.html": 0.65,
     "cite.html": 0.85,
     "academic-partnership.html": 0.85,
+    "custom-pipeline-development.html": 0.70,
     "Learning-vigyanllm.html": 0.85,
     "sitemap.html": 0.70,
     "demo.html": 0.75,
@@ -411,7 +412,7 @@ const CORE = [
   "/gene-prefers","/landing-pages","/hub",
   "/docs/getting-started","/docs/pipeline-config",
   "/autodock-vs-swissdock","/blast-vs-diamond","/clustal-vs-muscle","/idt-vs-vigyanllm",
-  "/validation",
+  "/validation","/custom-pipeline-development",
 ];
 
 const BLOG = {blog_json};
