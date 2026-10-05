@@ -699,7 +699,9 @@ def register_user(email: str, password: str, name: str = "", ip_address: str = "
     if not valid:
         return {"error": err}
 
-    valid, err = validate_password(password)
+    # Bind the password to the account identity (email local-part must not
+    # appear inside it) — the email is known here, unlike at reset time.
+    valid, err = validate_password(password, email=email)
     if not valid:
         return {"error": err}
 

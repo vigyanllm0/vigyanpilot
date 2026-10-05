@@ -40,8 +40,31 @@ class _FakeApi:
         self.created = []
 
     def create(self, payload):
-        self.created.append(payload)
-        return {"id": f"{self.prefix}_{len(self.created)}", **payload}
+        result = {"id": f"{self.prefix}_{len(self.created) + 1}", **payload}
+        self.created.append(result)
+        return result
+
+
+class _FakePaymentApi:
+    """Mirrors razorpay.Client.payment.fetch(payment_id).
+
+    Used by the server-side confirm (PAY-01): answers from the most recently
+    created order, which is the one the test verifies.
+    """
+
+    def __init__(self, owner):
+        self.owner = owner
+
+    def fetch(self, payment_id):
+        last = self.owner.order.created[-1]
+        return {
+            "id": payment_id,
+            "status": "captured",
+            "captured": True,
+            "order_id": last.get("id", ""),
+            "amount": last.get("amount"),
+            "currency": last.get("currency", "USD"),
+        }
 
 
 class _FakeRazorpayClient:
@@ -49,6 +72,7 @@ class _FakeRazorpayClient:
         self.order = _FakeApi("order")
         self.plan = _FakeApi("plan")
         self.subscription = _FakeApi("sub")
+        self.payment = _FakePaymentApi(self)
 
 
 @pytest.fixture
@@ -76,7 +100,7 @@ def _register(app, tag):
         "/api/auth/register",
         json={
             "email": email,
-            "password": "Secret123!",
+            "password": "Vault-Key!Pr1mer26",
             "name": "Promo Tester",
             "consent_accepted": True,
         },
@@ -94,7 +118,7 @@ def _admin_client(app):
         db.execute("UPDATE users SET role='admin' WHERE email=?", (email,))
         db.commit()
     r = client.post(
-        "/api/auth/login", json={"email": email, "password": "Secret123!"}
+        "/api/auth/login", json={"email": email, "password": "Vault-Key!Pr1mer26"}
     )
     assert r.status_code == 200, r.data
     return client

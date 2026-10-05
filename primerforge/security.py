@@ -450,16 +450,110 @@ def validate_email(email) -> tuple:
     return True, ""
 
 
-def validate_password(password) -> tuple:
-    """
-    Validate password strength against VigyanLLM password policy.
+# ── Password policy (strength) ────────────────────────────────────────────
+# Minimum length for every NEW password (register / change / reset).
+# Existing users keep their current password — this only gates setting a new one.
+PASSWORD_MIN_LENGTH = 12
+PASSWORD_MAX_LENGTH = 128
+# A password must contain at least this many DISTINCT characters.
+PASSWORD_MIN_DISTINCT = 8
+# Reject a run of N identical characters ("aaaaaaaaaaaa") and an N-step
+# monotonic run ("1234", "abcd", "4321").
+PASSWORD_MIN_RUN = 4
 
-    Policy (BUG-19 FIX — added special character requirement):
-      - Minimum 8 characters, maximum 128 characters
+# Leet substitutions used before comparing against the common-password list.
+_LEET_MAP = str.maketrans({
+    "0": "o", "1": "l", "3": "e", "4": "a", "5": "s", "7": "t",
+    "@": "a", "$": "s", "+": "t",
+})
+
+# Curated common-password blocklist (matched on the letter-skeleton of the
+# password, after lowercasing and leet-normalisation). This stops the
+# passwords credential-stuffing bots try first — e.g. "Password1!",
+# "Admin123!", "Welcome1!" — which otherwise satisfy every class rule.
+COMMON_PASSWORDS = frozenset({
+    "password", "passwort", "passw0rd", "passwrd", "passwords",
+    "qwerty", "qwertyuiop", "qwertz", "azerty", "qweasd",
+    "letmein", "welcome", "login", "hello", "changeme", "default",
+    "iloveyou", "sunshine", "princess", "football", "baseball",
+    "monkey", "dragon", "master", "shadow", "superman", "batman",
+    "trustno", "whatever", "freedom", "starwar", "pokemon",
+    "computer", "internet", "samsung", "michael", "jennifer",
+    "jordan", "harley", "ranger", "hunter", "buster", "soccer",
+    "killer", "george", "charlie", "andrew", "thomas", "daniel",
+    "summer", "winter", "spring", "autumn", "secret", "secrets",
+    "admin", "administrator", "root", "guest", "test", "testing",
+    "demo", "temp", "temporary", "pass", "manager", "service",
+    "abc", "abcdef", "abcdefg", "abcd", "qazwsx", "zaqwsx",
+    "matrix", "ninja", "warrior", "phoenix", "legend", "nothing",
+    "chocolate", "flower", "butterfly", "diamond", "ginger",
+    "hammer", "silver", "purple", "orange", "yellow", "rainbow",
+    "nicole", "jessica", "amanda", "joshua", "anthony", "robert",
+    "forever", "family", "friend", "lovely", "love", "babygirl",
+    "naruto", "minecraft", "fortnite", "spotify", "facebook",
+    "google", "amazon", "apple", "windows", "linux", "oracle",
+    "vigyan", "vigyanllm", "bioinformatics", "science", "laboratory",
+    "security", "secure", "access", "account", "bank", "billing",
+    "nopassword", "passwordpassword", "passwordpasswordpassword",
+    "woaini", "woainiwoaini", "xiaoming", "wangyi",
+})
+
+
+def _password_letter_skeleton(password: str) -> set:
+    """Letter-only, lowercased, leet-normalised variants used for blocklist lookups."""
+    low = password.lower()
+    leet = low.translate(_LEET_MAP)
+    return {re.sub(r"[^a-z]", "", low), re.sub(r"[^a-z]", "", leet)}
+
+
+def _has_char_run(password: str) -> bool:
+    """True when N or more identical characters appear consecutively."""
+    run = 1
+    for i in range(1, len(password)):
+        run = run + 1 if password[i] == password[i - 1] else 1
+        if run >= PASSWORD_MIN_RUN:
+            return True
+    return False
+
+
+def _has_sequence(password: str) -> bool:
+    """True when N or more consecutive ascending/descending characters appear."""
+    if len(password) < PASSWORD_MIN_RUN:
+        return False
+    asc = desc = 1
+    for i in range(1, len(password)):
+        delta = ord(password[i]) - ord(password[i - 1])
+        asc = asc + 1 if delta == 1 else 1
+        desc = desc + 1 if delta == -1 else 1
+        if asc >= PASSWORD_MIN_RUN or desc >= PASSWORD_MIN_RUN:
+            return True
+    return False
+
+
+def validate_password(password, email=None) -> tuple:
+    """
+    Validate password strength against the VigyanLLM password policy.
+
+    Every NEW password (register / change / reset) must pass this single
+    source of truth — no endpoint may substitute a weaker duplicate check.
+
+    Policy:
+      - Minimum 12 characters, maximum 128 characters
       - At least one uppercase letter (A-Z)
       - At least one lowercase letter (a-z)
       - At least one digit (0-9)
       - At least one special character (!@#$%^&*()-_=+[]{}|;:',.<>?/`~)
+      - At least 8 distinct characters (blocks trivial shuffles)
+      - No run of 4 identical characters ("aaaaaaaaaaaa")
+      - No 4-step monotonic run ("1234", "abcd", "4321")
+      - Not a well-known/common password (letter-skeleton match, leet-aware)
+      - Must not contain the account's email local-part (when email given)
+
+    Args:
+        password: The candidate password.
+        email: Optional account email — when provided, the password must not
+            embed its local-part (e.g. "arjun123A!" is rejected for
+            arjun@example.com).
 
     Returns:
         (is_valid: bool, error_message: str) — error_message is "" on success.
@@ -468,10 +562,10 @@ def validate_password(password) -> tuple:
         return False, "Invalid password format."
     if not password:
         return False, "Password is required."
-    if len(password) < 8:
-        return False, "Password must be at least 8 characters."
-    if len(password) > 128:
-        return False, "Password is too long (max 128 characters)."
+    if len(password) < PASSWORD_MIN_LENGTH:
+        return False, f"Password must be at least {PASSWORD_MIN_LENGTH} characters."
+    if len(password) > PASSWORD_MAX_LENGTH:
+        return False, f"Password is too long (max {PASSWORD_MAX_LENGTH} characters)."
     if not re.search(r"[A-Z]", password):
         return False, "Password must contain at least one uppercase letter."
     if not re.search(r"[a-z]", password):
@@ -480,6 +574,23 @@ def validate_password(password) -> tuple:
         return False, "Password must contain at least one digit (0-9)."
     if not re.search(r"[!@#$%^&*()\-_=+\[\]{}|;:',.<>?/`~]", password):
         return False, "Password must contain at least one special character (!@#$%^&* etc.)."
+    if len(set(password)) < PASSWORD_MIN_DISTINCT:
+        return False, (
+            f"Password must use at least {PASSWORD_MIN_DISTINCT} different characters."
+        )
+    if _has_char_run(password):
+        return False, "Password must not repeat the same character 4 times in a row."
+    if _has_sequence(password):
+        return False, "Password must not contain 4 sequential characters (e.g. 1234 or abcd)."
+    if _password_letter_skeleton(password) & COMMON_PASSWORDS:
+        return False, (
+            "That password is too common and easy to guess. "
+            "Choose something unique — a passphrase of several unrelated words works well."
+        )
+    if email and isinstance(email, str):
+        local = email.split("@")[0].strip().lower()
+        if len(local) >= 4 and local in password.lower():
+            return False, "Password must not contain your email address or username."
     return True, ""
 
 

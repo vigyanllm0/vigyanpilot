@@ -275,8 +275,15 @@ class UserCreate(BaseModel):
     @field_validator("password")
     @classmethod
     def validate_password(cls, v):
-        if len(v) < 8:
-            raise ValueError("Password must be at least 8 characters")
+        # Delegate to the shared VigyanLLM password policy (12 characters,
+        # character classes, common-password blocklist, sequence/repeat
+        # guards) rather than a weaker local check — admin and editor accounts
+        # must not be able to set a password the main app would reject.
+        # Imported lazily so this module keeps no import-time dependency.
+        from primerforge.security import validate_password as _policy
+        ok, err = _policy(v)
+        if not ok:
+            raise ValueError(err)
         return v
 
     @field_validator("role")

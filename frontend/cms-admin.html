@@ -405,7 +405,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     </div>
     <div class="form-group">
       <label>Password</label>
-      <input type="password" id="userPassword" placeholder="Min 8 characters">
+      <input type="password" id="userPassword" placeholder="Min 12 characters">
     </div>
     <div class="form-group">
       <label>Role</label>
@@ -1150,7 +1150,7 @@ function inviteUser(){
   const password = document.getElementById('userPassword').value;
   const role = document.getElementById('userRole').value;
   if (!email || !password) { showToast('Email and password are required', 'error'); return }
-  if (password.length < 8) { showToast('Password must be at least 8 characters', 'error'); return }
+  if (password.length < 12) { showToast('Password must be at least 12 characters with upper, lower, digit & special', 'error'); return }
   authFetch(API_BASE + '/api/v1/cms/users', {
     method:'POST',
     body: JSON.stringify({ email, display_name, password, role })

@@ -20,13 +20,38 @@ class _FakeRazorpayOrderApi:
         self.created = []
 
     def create(self, payload):
-        self.created.append(payload)
-        return {"id": f"order_test_{len(self.created)}", **payload}
+        result = {"id": f"order_test_{len(self.created) + 1}", **payload}
+        self.created.append(result)
+        return result
+
+
+class _FakeRazorpayPaymentApi:
+    """Mirrors razorpay.Client.payment.fetch(payment_id).
+
+    The server-side confirm (PAY-01) asks Razorpay whether this payment was
+    captured and which order/amount/currency it settled. The fake answers from
+    the most recently created order, which is the one each test verifies.
+    """
+
+    def __init__(self, owner):
+        self.owner = owner
+
+    def fetch(self, payment_id):
+        last = self.owner.order.created[-1]
+        return {
+            "id": payment_id,
+            "status": "captured",
+            "captured": True,
+            "order_id": last.get("id", ""),
+            "amount": last.get("amount"),
+            "currency": last.get("currency", "USD"),
+        }
 
 
 class _FakeRazorpayClient:
     def __init__(self):
         self.order = _FakeRazorpayOrderApi()
+        self.payment = _FakeRazorpayPaymentApi(self)
 
 
 def _register(client):
@@ -35,7 +60,7 @@ def _register(client):
         "/api/auth/register",
         json={
             "email": email,
-            "password": "Secret123!",
+            "password": "Vault-Key!Pr1mer26",
             "name": "Pay User",
             "consent_accepted": True,
         },

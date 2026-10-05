@@ -63,6 +63,11 @@ RAZORPAY_KEY_ID = os.environ.get("RAZORPAY_KEY_ID", "")
 RAZORPAY_KEY_SECRET = os.environ.get("RAZORPAY_KEY_SECRET", "")
 RAZORPAY_WEBHOOK_SECRET = os.environ.get("RAZORPAY_WEBHOOK_SECRET", "")
 
+# Fixed amount of the $1 trial-verification order created by the promo flow.
+# Step 1 charges exactly this; step 2 must confirm the payment settled exactly
+# this — a signature replayed from any cheaper order is then rejected.
+TRIAL_VERIFY_AMOUNT_MINOR = 100
+
 if not RAZORPAY_KEY_ID or not RAZORPAY_KEY_SECRET:
     logger.warning("RAZORPAY_KEY_ID or RAZORPAY_KEY_SECRET not set — payment endpoints will fail")
 
@@ -103,6 +108,13 @@ def _verify_signature(order_id: str, payment_id: str, signature: str) -> bool:
     Returns:
         True if signature matches, False otherwise.
     """
+    # Fail closed: an empty key secret would produce a *forgeable* HMAC that
+    # any attacker who knows the secret is unset could reproduce. Without a
+    # configured secret there is nothing to verify against.
+    if not RAZORPAY_KEY_SECRET:
+        logger.error("RAZORPAY_KEY_SECRET not configured — refusing to verify payment signature")
+        return False
+
     message = f"{order_id}|{payment_id}"
     expected = hmac.new(
         RAZORPAY_KEY_SECRET.encode("utf-8"),
@@ -112,39 +124,98 @@ def _verify_signature(order_id: str, payment_id: str, signature: str) -> bool:
     return hmac.compare_digest(expected, signature)
 
 
-def _confirm_payment_server_side(payment_id: str) -> bool:
+def _confirm_payment_server_side(payment_id: str, order_id: str = None,
+                                 expected_amount=None, expected_currency: str = None) -> bool:
     """
     Confirm payment status via Razorpay API (PAY-01 FIX).
 
     HMAC signature verification alone is insufficient: a sophisticated attacker
-    who knows the HMAC secret could forge a valid signature for a payment that
-    was never actually captured. This function calls the Razorpay API directly
-    to verify the payment is in 'captured' status before crediting tokens.
+    who knows the HMAC secret could forge a valid signature pairing a genuine
+    payment with a *different* order — or for a payment that was never
+    captured. This function calls the Razorpay API directly and binds the
+    payment to the order being credited:
+
+      * payment.status must be 'captured' (and the captured flag not False)
+      * payment.order_id must equal the order we are about to credit
+        — a captured payment for order A can never settle order B
+      * payment.currency must equal the order's stored currency
+      * payment.amount must equal the order's stored amount (minor units)
+
+    Every check fails closed: any mismatch, missing field, or API error
+    returns False and nothing is credited.
 
     Args:
-        payment_id: Razorpay payment ID to verify.
+        payment_id:       Razorpay payment ID to verify.
+        order_id:         Razorpay order ID being credited (payment.order_id
+                          must match it).
+        expected_amount:  Order amount in minor units, or None to skip the
+                          amount check (legacy rows whose unit convention is
+                          ambiguous).
+        expected_currency: Order currency, or None to skip the currency check.
 
     Returns:
-        True if payment.status == 'captured', False otherwise.
-        Returns False on API error (fail-closed).
+        True only if the payment is captured AND belongs to this order for
+        the expected amount and currency. False otherwise (fail-closed).
     """
     if not rz_client:
         logger.error("Razorpay client not initialised — cannot confirm payment server-side")
         return False
     try:
         payment = rz_client.payment.fetch(payment_id)
-        status = payment.get("status", "")
-        if status != "captured":
-            logger.warning(
-                "PAY-01: Razorpay API returned status '%s' for payment %s (expected 'captured')",
-                status, payment_id,
-            )
-            return False
-        return True
     except Exception as e:
         logger.error("Razorpay API confirmation failed for payment %s: %s", payment_id, e)
         # Fail-closed: do not credit tokens if we cannot confirm with Razorpay
         return False
+
+    status = payment.get("status", "")
+    if status != "captured":
+        logger.warning(
+            "PAY-01: Razorpay API returned status '%s' for payment %s (expected 'captured')",
+            status, payment_id,
+        )
+        return False
+
+    # Razorpay also exposes an explicit boolean; treat an explicit False as a
+    # rejection (absent key is tolerated for older API responses).
+    if payment.get("captured") is False:
+        logger.warning("PAY-01: payment %s reports captured=False", payment_id)
+        return False
+
+    # Bind the payment to the order being credited. Without this, a payment
+    # captured for a cheaper order could be replayed against an expensive one.
+    if order_id:
+        paid_order = payment.get("order_id", "") or ""
+        if paid_order != order_id:
+            logger.error(
+                "PAY-01: payment %s belongs to order %s, not the credited order %s — rejected",
+                payment_id, paid_order or "<none>", order_id,
+            )
+            return False
+
+    if expected_currency:
+        paid_currency = payment.get("currency", "") or ""
+        if paid_currency != expected_currency:
+            logger.error(
+                "PAY-01: payment %s currency %r != order currency %r — rejected",
+                payment_id, paid_currency, expected_currency,
+            )
+            return False
+
+    if expected_amount is not None:
+        try:
+            paid_amount = int(payment.get("amount") or 0)
+            want_amount = int(expected_amount)
+        except (TypeError, ValueError):
+            logger.error("PAY-01: uncomparable amount for payment %s", payment_id)
+            return False
+        if want_amount > 0 and paid_amount != want_amount:
+            logger.error(
+                "PAY-01: payment %s amount %s != order amount %s — rejected",
+                payment_id, paid_amount, want_amount,
+            )
+            return False
+
+    return True
 
 
 def _credit_tokens_atomic(user_id: int, order_id: str, product_id: str,
@@ -424,9 +495,11 @@ def verify_payment():
         return jsonify({"error": "Missing payment verification fields."}), 400
 
     # Look up order FIRST to prevent CPU exhaustion on fake payloads (Task 15)
+    # Scoped to the caller's own email — an order belonging to another account
+    # can never be verified here (blocks cross-user order replay / IDOR).
     order = fetch_one(
         """SELECT p.id, p.user_id, p.product_type, p.tokens_purchased, p.status,
-                  p.metadata
+                  p.metadata, p.amount, p.currency, p.gateway_order_id
            FROM payments p
            JOIN users u ON u.id = p.user_id
            WHERE p.gateway_order_id = %s AND u.email = %s""",
@@ -450,8 +523,21 @@ def verify_payment():
         return jsonify({"error": "Payment verification failed."}), 400
 
     # PAY-01 FIX: Server-side confirmation via Razorpay API
-    # HMAC alone cannot prove payment was captured — confirm with Razorpay directly
-    if not _confirm_payment_server_side(razorpay_payment_id):
+    # HMAC alone cannot prove the payment was captured, nor that it actually
+    # settled THIS order for THIS amount — confirm all three directly with
+    # Razorpay before crediting anything.
+    order_currency = (order.get("currency") or "").strip()
+    # Only compare amounts when the row's unit convention is unambiguous:
+    # USD rows store minor units (cents), exactly like Razorpay's
+    # payment.amount. Legacy INR rows are left unchecked rather than risk
+    # rejecting a legitimate payment on a units mismatch.
+    expected_amount = order.get("amount") if order_currency == "USD" else None
+    if not _confirm_payment_server_side(
+        razorpay_payment_id,
+        order_id=razorpay_order_id,
+        expected_amount=expected_amount,
+        expected_currency=order_currency or None,
+    ):
         logger.error(
             "Server-side payment confirmation FAILED for order %s payment %s by %s",
             razorpay_order_id, razorpay_payment_id, g.user["email"],
@@ -515,6 +601,20 @@ def razorpay_webhook():
     raw_body = request.get_data(as_text=True)
     webhook_signature = request.headers.get("X-Razorpay-Signature", "")
 
+    # FAIL CLOSED on a missing webhook secret. hmac.new(b"", ...) is still a
+    # perfectly valid MAC — it would just be computed over an empty key, so an
+    # attacker could recompute it locally and forge a `payment.captured` event
+    # to activate a plan on an order they never paid for. With no secret there
+    # is nothing to verify against, so reject instead of degrading silently.
+    if not RAZORPAY_WEBHOOK_SECRET:
+        logger.error(
+            "RAZORPAY_WEBHOOK_SECRET is unset — rejecting webhook without processing."
+        )
+        return jsonify({"status": "webhook_not_configured"}), 500
+
+    if not webhook_signature:
+        return jsonify({"status": "missing_signature"}), 400
+
     # Verify webhook signature
     expected_sig = hmac.new(
         RAZORPAY_WEBHOOK_SECRET.encode(),
@@ -522,8 +622,19 @@ def razorpay_webhook():
         hashlib.sha256
     ).hexdigest()
 
-    # Store webhook regardless of validation
     validation_status = "verified" if hmac.compare_digest(expected_sig, webhook_signature) else "untrusted"
+
+    # Reject untrusted payloads BEFORE any database write. The endpoint is
+    # unauthenticated by design (Razorpay signs each event), so inserting rows
+    # prior to verification would let anyone on the internet fill
+    # gateway_webhooks with arbitrary payloads — an unauthenticated write and
+    # storage-exhaustion vector. Failed attempts are recorded in logs instead.
+    if validation_status == "untrusted":
+        logger.warning(
+            "Webhook signature verification failed (body_bytes=%d, origin=%s) — rejected, not stored",
+            len(raw_body), request.remote_addr,
+        )
+        return jsonify({"status": "signature_invalid"}), 400
 
     try:
         event = json.loads(raw_body)
@@ -532,7 +643,7 @@ def razorpay_webhook():
 
     event_type = event.get("event", "")
 
-    # Log webhook to gateway_webhooks table
+    # Log verified webhook to gateway_webhooks table
     try:
         conn = get_db_standalone()
         cur = conn.cursor()
@@ -543,12 +654,6 @@ def razorpay_webhook():
              json.dumps(dict(request.headers)))
         )
         conn.commit()
-
-        if validation_status == "untrusted":
-            logger.warning("Webhook signature failed for event: %s", event_type)
-            cur.close()
-            put_db_standalone(conn)
-            return jsonify({"status": "signature_invalid"}), 200
 
         # Process payment.captured
         if event_type == "payment.captured":
@@ -1324,14 +1429,14 @@ def apply_promo():
                 return jsonify({"error": "Payment service not configured."}), 503
             try:
                 order = _current_client().order.create({
-                    "amount": 100, "currency": row["currency"] or CURRENCY,
+                    "amount": TRIAL_VERIFY_AMOUNT_MINOR, "currency": row["currency"] or CURRENCY,
                     "receipt": f"promo_{int(time.time())}_{code}",
                     "notes": {"email": email, "promo_code": code, "type": "trial_verification"}
                 })
             except Exception as e:
                 logger.error("Failed to create promo order: %s", e)
                 return jsonify({"error": "Failed to create payment order."}), 500
-            return jsonify({"order_id": order["id"], "amount": 100, "currency": row["currency"] or CURRENCY,
+            return jsonify({"order_id": order["id"], "amount": TRIAL_VERIFY_AMOUNT_MINOR, "currency": row["currency"] or CURRENCY,
                             "key_id": RAZORPAY_KEY_ID, "prefill": {"email": email}}), 200
 
         # Step 2: Verify + activate
@@ -1346,7 +1451,29 @@ def apply_promo():
         message = f"{rz_order_id}|{rz_payment_id}"
         expected_sig = hmac.new(RAZORPAY_KEY_SECRET.encode(), message.encode(), hashlib.sha256).hexdigest()
         if not hmac.compare_digest(expected_sig, rz_signature):
+            logger.warning("Promo apply: signature mismatch for %s", email)
             return jsonify({"error": "Payment verification failed."}), 400
+
+        # PAY-01: confirm directly with Razorpay that this payment captured
+        # THIS order for exactly the $1 trial-verification charge before
+        # provisioning a paid plan. The HMAC alone never binds the order id to
+        # this flow, so a signature replayed from a cheaper order the attacker
+        # actually paid for would otherwise be accepted. Fail-closed.
+        if not _confirm_payment_server_side(
+            rz_payment_id,
+            order_id=rz_order_id,
+            expected_amount=TRIAL_VERIFY_AMOUNT_MINOR,
+            expected_currency=(row["currency"] or CURRENCY),
+        ):
+            logger.error(
+                "Promo apply: server-side confirmation failed for %s order %s payment %s",
+                email, rz_order_id, rz_payment_id,
+            )
+            return jsonify({
+                "error": "Payment could not be confirmed with the payment gateway. "
+                         "Please wait a few minutes and contact support if your payment was charged.",
+                "code": "PAYMENT_UNCONFIRMED",
+            }), 400
 
         # Create Razorpay Plan if needed
         plan_id_cached = row.get("razorpay_plan_id", "")

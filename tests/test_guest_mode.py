@@ -110,7 +110,7 @@ def test_logged_in_free_user_is_daily_limited(client):
     email = _unique_email()
     reg = client.post(
         "/api/auth/register",
-        json={"email": email, "password": "Secret123!", "name": "Free User"},
+        json={"email": email, "password": "Vault-Key!Pr1mer26", "name": "Free User"},
     )
     assert reg.status_code == 201
     token = reg.headers.get("Set-Cookie", "").split("pf_token=")[1].split(";")[0]

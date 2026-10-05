@@ -66,7 +66,7 @@ def _google_token_info(payload: dict) -> dict:
 def test_register_sets_http_only_cookie(client):
     resp = client.post(
         "/api/auth/register",
-        json={"email": _unique_email(), "password": "Secret123!", "name": "Cookie Tester"},
+        json={"email": _unique_email(), "password": "Vault-Key!Pr1mer26", "name": "Cookie Tester"},
     )
     assert resp.status_code == 201
     cookie = resp.headers.get("Set-Cookie", "")
@@ -79,11 +79,11 @@ def test_login_sets_http_only_cookie_and_me_returns_provider(client):
     email = _unique_email()
     client.post(
         "/api/auth/register",
-        json={"email": email, "password": "Secret123!", "name": "Cookie Tester"},
+        json={"email": email, "password": "Vault-Key!Pr1mer26", "name": "Cookie Tester"},
     )
     resp = client.post(
         "/api/auth/login",
-        json={"email": email, "password": "Secret123!"},
+        json={"email": email, "password": "Vault-Key!Pr1mer26"},
     )
     assert resp.status_code == 200
     cookie = resp.headers.get("Set-Cookie", "")

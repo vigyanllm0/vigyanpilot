@@ -55,9 +55,90 @@ rz_client = (
 if not RAZORPAY_KEY_ID or not RAZORPAY_KEY_SECRET:
     logger.warning("RAZORPAY_KEY_ID/RAZORPAY_KEY_SECRET not set — payment endpoints return 503")
 
+# Fixed amount of the $1 trial-verification order created by the promo flow.
+# Step 1 charges exactly this; step 2 must confirm the payment settled exactly
+# this — a signature replayed from any cheaper order is then rejected.
+TRIAL_VERIFY_AMOUNT_MINOR = 100
+
 
 def _current_client():
     return rz_client
+
+
+def _confirm_payment_server_side(payment_id, order_id=None,
+                                 expected_amount=None, expected_currency=None):
+    """
+    Confirm the payment directly with Razorpay before crediting (parity with
+    the production path).
+
+    The HMAC check proves Razorpay signed this order_id/payment_id pair, but it
+    does not by itself prove the payment was captured, that it settled *this*
+    order, or that it carried the expected amount and currency. Querying
+    Razorpay closes all three gaps, and every failure mode is fail-closed.
+
+    Args:
+        payment_id:       Razorpay payment ID being claimed.
+        order_id:         Order being credited — payment.order_id must match.
+        expected_amount:  Order amount in minor units, or None to skip.
+        expected_currency: Order currency, or None to skip.
+
+    Returns:
+        True only when the payment is captured, belongs to `order_id`, and
+        matches the expected amount/currency. False otherwise.
+    """
+    if not rz_client:
+        logger.error("Razorpay client not initialised — cannot confirm payment server-side")
+        return False
+    try:
+        payment = rz_client.payment.fetch(payment_id)
+    except Exception as e:
+        logger.error("Razorpay API confirmation failed for payment %s: %s", payment_id, e)
+        return False
+
+    if payment.get("status", "") != "captured":
+        logger.warning(
+            "Server-side confirm: payment %s status %r != 'captured' — rejected",
+            payment_id, payment.get("status", ""),
+        )
+        return False
+
+    if payment.get("captured") is False:
+        logger.warning("Server-side confirm: payment %s reports captured=False", payment_id)
+        return False
+
+    if order_id:
+        paid_order = payment.get("order_id", "") or ""
+        if paid_order != order_id:
+            logger.error(
+                "Server-side confirm: payment %s belongs to order %s, not %s — rejected",
+                payment_id, paid_order or "<none>", order_id,
+            )
+            return False
+
+    if expected_currency:
+        paid_currency = payment.get("currency", "") or ""
+        if paid_currency != expected_currency:
+            logger.error(
+                "Server-side confirm: payment %s currency %r != order currency %r — rejected",
+                payment_id, paid_currency, expected_currency,
+            )
+            return False
+
+    if expected_amount is not None:
+        try:
+            paid_amount = int(payment.get("amount") or 0)
+            want_amount = int(expected_amount)
+        except (TypeError, ValueError):
+            logger.error("Server-side confirm: uncomparable amount for payment %s", payment_id)
+            return False
+        if want_amount > 0 and paid_amount != want_amount:
+            logger.error(
+                "Server-side confirm: payment %s amount %s != order amount %s — rejected",
+                payment_id, paid_amount, want_amount,
+            )
+            return False
+
+    return True
 
 
 def _sanitize_name(raw_name: str) -> str:
@@ -275,8 +356,10 @@ def verify_payment():
     db = get_db()
 
     # Find the order (LIKE: upi_ref becomes "order|payment" after first verify)
+    # Scoped to the caller's own email — another account's order cannot be
+    # settled here (blocks cross-user order replay / IDOR).
     order_row = db.execute(
-        """SELECT id, amount, plan_id, billing_cycle, status, product_type, runs_purchased, metadata
+        """SELECT id, amount, currency, plan_id, billing_cycle, status, product_type, runs_purchased, metadata
            FROM payments
            WHERE user_email=? AND upi_ref LIKE ?
            ORDER BY id DESC LIMIT 1""",
@@ -294,6 +377,29 @@ def verify_payment():
             "runs_purchased": 0,
             "plan": plan,
         }), 200
+
+    # PAY-01 parity: confirm with Razorpay that this payment actually captured
+    # THIS order for the expected amount and currency before granting anything.
+    order_currency = (order_row["currency"] or "").strip()
+    # USD rows store minor units (cents), matching Razorpay's payment.amount.
+    # Legacy rows whose unit convention is ambiguous skip the amount check
+    # rather than risk rejecting a legitimate payment.
+    expected_amount = order_row["amount"] if order_currency == "USD" else None
+    if not _confirm_payment_server_side(
+        razorpay_payment_id,
+        order_id=razorpay_order_id,
+        expected_amount=expected_amount,
+        expected_currency=order_currency or None,
+    ):
+        logger.error(
+            "Server-side payment confirmation FAILED for order %s payment %s by %s",
+            razorpay_order_id, razorpay_payment_id, email,
+        )
+        return jsonify({
+            "error": "Payment could not be confirmed with the payment gateway. "
+                     "Please wait a few minutes and contact support if your payment was charged.",
+            "code": "PAYMENT_UNCONFIRMED",
+        }), 400
 
     # Update payment status
     cur = db.execute(
@@ -504,7 +610,20 @@ def razorpay_webhook():
     """Razorpay server-to-server webhook for subscription events."""
     raw_body = request.get_data(as_text=True)
     webhook_signature = request.headers.get('X-Razorpay-Signature', '')
-    webhook_secret = os.environ.get('RAZORPAY_WEBHOOK_SECRET', RAZORPAY_KEY_SECRET)
+
+    # PAY-04: the webhook secret must be configured explicitly and must NOT
+    # fall back to RAZORPAY_KEY_SECRET (compromising one would then compromise
+    # the other). FAIL CLOSED when unset — hmac.new(b"", ...) would still
+    # produce a valid-looking MAC over an empty key, which anyone could
+    # recompute and forge to mark their own unpaid order as paid.
+    webhook_secret = os.environ.get('RAZORPAY_WEBHOOK_SECRET') or ''
+
+    if not webhook_secret:
+        logger.error(
+            "RAZORPAY_WEBHOOK_SECRET not set — rejecting webhook (fail-closed). "
+            "Set it to the secret configured in Razorpay Dashboard → Webhooks."
+        )
+        return jsonify({"error": "Webhook is not configured."}), 503
 
     if not webhook_signature:
         return jsonify({"error": "Missing webhook signature"}), 400
@@ -541,29 +660,39 @@ def razorpay_webhook():
             ).fetchone()
 
             if order and order['status'] != 'verified':
-                conn.execute(
+                # Guard the credit on the UPDATE's own rowcount, not on the
+                # earlier SELECT: two concurrent writers (client verify + this
+                # webhook) can both observe status='pending' and both pass the
+                # check above. Only the writer whose UPDATE actually moved a row
+                # may credit — otherwise the plan/runs would be granted twice.
+                cur = conn.execute(
                     "UPDATE payments SET status='verified', verified_at=? WHERE upi_ref LIKE ? AND user_email=? AND status!='verified'",
                     (time.time(), f"{order_id}%", email)
                 )
-                product_type = order['product_type'] or ''
-                if product_type in ('top_up', 'dock_top_up'):
-                    # Top-up order: credit runs, do NOT touch the subscription plan.
-                    runs = order['runs_purchased'] or 1
-                    col = 'paid_runs' if product_type == 'top_up' else 'dock_paid_runs'
-                    conn.execute(f"UPDATE users SET {col} = {col} + ? WHERE email=?", (runs, email))
-                    conn.commit()
-                    logger.info("Webhook: credited %s x %s for %s (order %s)", runs, product_type, email, order_id)
+                if cur.rowcount > 0:
+                    product_type = order['product_type'] or ''
+                    if product_type in ('top_up', 'dock_top_up'):
+                        # Top-up order: credit runs, do NOT touch the subscription plan.
+                        runs = order['runs_purchased'] or 1
+                        col = 'paid_runs' if product_type == 'top_up' else 'dock_paid_runs'
+                        conn.execute(f"UPDATE users SET {col} = {col} + ? WHERE email=?", (runs, email))
+                        conn.commit()
+                        logger.info("Webhook: credited %s x %s for %s (order %s)", runs, product_type, email, order_id)
+                    else:
+                        plan_id = order['plan_id']
+                        billing_cycle = order['billing_cycle'] or 'monthly'
+                        tier = get_tier_from_plan(plan_id)
+                        expires_at = _compute_plan_expiry(plan_id)
+                        conn.execute(
+                            "UPDATE users SET plan=?, billing_cycle=?, plan_activated_at=?, plan_expires_at=? WHERE email=?",
+                            (tier, billing_cycle, time.time(), expires_at, email)
+                        )
+                        conn.commit()
+                        logger.info("Webhook: activated %s for %s (order %s)", tier, email, order_id)
                 else:
-                    plan_id = order['plan_id']
-                    billing_cycle = order['billing_cycle'] or 'monthly'
-                    tier = get_tier_from_plan(plan_id)
-                    expires_at = _compute_plan_expiry(plan_id)
-                    conn.execute(
-                        "UPDATE users SET plan=?, billing_cycle=?, plan_activated_at=?, plan_expires_at=? WHERE email=?",
-                        (tier, billing_cycle, time.time(), expires_at, email)
-                    )
-                    conn.commit()
-                    logger.info("Webhook: activated %s for %s (order %s)", tier, email, order_id)
+                    # Another writer already settled this order — nothing to credit.
+                    conn.rollback()
+                    logger.info("Webhook: order %s already settled by a concurrent writer — skipping credit", order_id)
 
             conn.close()
 
@@ -791,7 +920,7 @@ def apply_promo():
 
         try:
             order = _current_client().order.create({
-                "amount": 100,  # $1.00 verification charge in USD cents
+                "amount": TRIAL_VERIFY_AMOUNT_MINOR,  # $1.00 verification charge in USD cents
                 "currency": row["currency"] or CURRENCY,
                 "receipt": f"promo_{int(time.time())}_{code}",
                 "notes": {
@@ -806,7 +935,7 @@ def apply_promo():
 
         return jsonify({
             "order_id": order["id"],
-            "amount": 100,
+            "amount": TRIAL_VERIFY_AMOUNT_MINOR,
             "currency": row["currency"] or CURRENCY,
             "key_id": RAZORPAY_KEY_ID,
             "prefill": {"email": email, "name": user_name}
@@ -830,6 +959,27 @@ def apply_promo():
     if not hmac.compare_digest(expected_sig, rz_signature):
         logger.warning("Promo apply: signature mismatch for %s", email)
         return jsonify({"error": "Payment verification failed."}), 400
+
+    # PAY-01: confirm directly with Razorpay that this payment captured THIS
+    # order for exactly the $1 trial-verification charge. A valid signature
+    # would otherwise also be replayable from any other (cheaper) order the
+    # attacker had paid for — the order id is never bound to this flow by the
+    # HMAC alone. Fail-closed: nothing is provisioned unless Razorpay agrees.
+    if not _confirm_payment_server_side(
+        rz_payment_id,
+        order_id=rz_order_id,
+        expected_amount=TRIAL_VERIFY_AMOUNT_MINOR,
+        expected_currency=(row["currency"] or CURRENCY),
+    ):
+        logger.error(
+            "Promo apply: server-side confirmation failed for %s order %s payment %s",
+            email, rz_order_id, rz_payment_id,
+        )
+        return jsonify({
+            "error": "Payment could not be confirmed with the payment gateway. "
+                     "Please wait a few minutes and contact support if your payment was charged.",
+            "code": "PAYMENT_UNCONFIRMED",
+        }), 400
 
     # Create Razorpay Plan (if needed)
     plan_id_cached = row["razorpay_plan_id"]

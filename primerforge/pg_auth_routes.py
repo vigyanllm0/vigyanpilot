@@ -587,17 +587,6 @@ def reset_password():
     if not token or not new_password:
         return jsonify({"error": "Token and new password are required."}), 400
 
-    if len(new_password) < 8:
-        return jsonify({"error": "Password must be at least 8 characters."}), 400
-    if not any(c.isupper() for c in new_password):
-        return jsonify({"error": "Password must contain an uppercase letter."}), 400
-    if not any(c.islower() for c in new_password):
-        return jsonify({"error": "Password must contain a lowercase letter."}), 400
-    if not any(c.isdigit() for c in new_password):
-        return jsonify({"error": "Password must contain a digit."}), 400
-    if not any(c in "!@#$%^&*()_+-=[]{}|;:',.<>?/`~" for c in new_password):
-        return jsonify({"error": "Password must contain a special character."}), 400
-
     try:
         row = fetch_one(
             """SELECT pr.user_id, pr.expires_at, u.email
@@ -617,6 +606,17 @@ def reset_password():
     expires_at = row["expires_at"]
     if isinstance(expires_at, _dt) and expires_at.timestamp() < __import__("time").time():
         return jsonify({"error": "Reset token has expired. Please request a new one."}), 400
+
+    # Single source of truth for password strength. This endpoint previously
+    # duplicated a weaker policy of its own (8 characters, no common-password
+    # blocklist, no sequence/repeat guards), so a password rejected at
+    # registration could still be set here. Now every entry point — register,
+    # change, reset — enforces the identical rule, and the account's email is
+    # available here so the local-part guard can apply too.
+    from .security import validate_password
+    valid, pw_err = validate_password(new_password, email=row["email"])
+    if not valid:
+        return jsonify({"error": pw_err}), 400
 
     user_id = row["user_id"]
     pw_hash = _bcrypt.hashpw(new_password.encode(), _bcrypt.gensalt(rounds=12)).decode()

@@ -35,7 +35,7 @@ def admin_client(client):
     """Register an admin user and return authenticated client."""
     email = f"admin-{uuid.uuid4().hex[:8]}@test.com"
     r = client.post("/api/auth/register", json={
-        "email": email, "password": "Admin123!", "name": "Test Admin",
+        "email": email, "password": "Ops-Vault!Adm1n26", "name": "Test Admin",
         "consent_accepted": True,
     })
     assert r.status_code in (200, 201), f"Register failed: {r.data[:200]}"
@@ -49,7 +49,7 @@ def admin_client(client):
         db.commit()
 
     # Login
-    r = client.post("/api/auth/login", json={"email": email, "password": "Admin123!"})
+    r = client.post("/api/auth/login", json={"email": email, "password": "Ops-Vault!Adm1n26"})
     assert r.status_code == 200, f"Login failed: {r.data[:200]}"
     return client
 

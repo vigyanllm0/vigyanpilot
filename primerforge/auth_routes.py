@@ -74,7 +74,10 @@ def register():
     valid_email, email_err = validate_email(email)
     if not valid_email:
         return jsonify({"error": email_err}), 422
-    valid_pw, pw_err = validate_password(password)
+    # Bind the password to the account identity: the email local-part (and the
+    # full address) may not appear inside it — e.g. "Arjun1990!" for
+    # arjun1990@example.com is rejected.
+    valid_pw, pw_err = validate_password(password, email=email)
     if not valid_pw:
         return jsonify({"error": pw_err}), 422
 
