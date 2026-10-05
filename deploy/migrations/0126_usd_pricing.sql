@@ -1,13 +1,13 @@
 -- 0126: USD pricing migration
 -- ============================================================
 -- From this release, ALL amounts are minor units of the row's
--- currency (USD cents for new orders; `currency` column = 'USD').
+-- currency (USD cents for new orders, `currency` column = 'USD').
 --
 -- Storage rules (documented once, enforced by application code):
---   * payments.amount: 'USD' rows = minor units (cents);
+--   * payments.amount: 'USD' rows = minor units (cents)
 --     legacy 'INR' rows (pre-0126) = MAJOR rupees (readers
 --     normalise per-row by currency — no data rewrite needed).
---   * promo_codes.price_inr: legacy field NAME kept; from now on
+--   * promo_codes.price_inr: legacy field NAME kept — from now on
 --     the value is MINOR units of promo_codes.currency.
 --
 -- Legacy promo codes stored MAJOR rupees (e.g. 699 = ₹699).
@@ -33,6 +33,6 @@ UPDATE promo_codes
    AND (expires_at = 0 OR expires_at > 1);
 
 -- 3) New-code defaults follow the USD regime (values are always supplied
---    explicitly by the app; this keeps the schema honest for manual inserts).
+--    explicitly by the app, which keeps the schema honest for manual inserts).
 ALTER TABLE promo_codes ALTER COLUMN price_inr SET DEFAULT 999;
 ALTER TABLE promo_codes ALTER COLUMN currency SET DEFAULT 'USD';
