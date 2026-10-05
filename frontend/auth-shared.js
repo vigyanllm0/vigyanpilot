@@ -443,3 +443,32 @@ function openAuthModal(){isRegister=false;showAuth()}
   });
   window.addEventListener('storage', function(){ updateAuthUI(); });
 })();
+
+// ── Staff entries in the account dropdown (revealed only for role === 'admin') ──
+(function injectStaffMenu(){
+  function build(){
+    var dd = document.getElementById('userDropdown');
+    if (!dd || document.getElementById('udAdminPanel')) return;
+    function mk(id, label, href){
+      var a = document.createElement('a');
+      a.className = 'ud-item'; a.id = id; a.href = href;
+      a.setAttribute('data-admin-show', '');
+      a.style.display = 'none';
+      a.textContent = label;
+      return a;
+    }
+    var admin = mk('udAdminPanel', 'Admin panel', '/admin-security');
+    var cms   = mk('udCmsPanel',   'CMS panel',   '/cms-login');
+    var logout = dd.querySelector('.ud-item.logout') || null;
+    dd.insertBefore(admin, logout);
+    dd.insertBefore(cms, logout);
+    // Reveal immediately when this session is already an admin (the shared
+    // [data-admin-show] sweep runs elsewhere in this file and on auth events).
+    try {
+      var u = JSON.parse(sessionStorage.getItem('pf_user') || 'null');
+      if (u && u.role === 'admin') { admin.style.display = ''; cms.style.display = ''; }
+    } catch(e){}
+  }
+  if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', build); }
+  else { build(); }
+})();

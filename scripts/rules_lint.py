@@ -13,6 +13,7 @@ Checks (ERROR level):
   E4  no "22-step"/"22 validation steps" leftovers — engine ground truth is 24 (CLM-019)
   E5  every public page has at least one <h1> (SEO-03)
   E6  no public page links to the admin shells /cms-login, /admin-security (SEC-01)
+      — exception: /login (staff-entry buttons, owner decision 2026-10-05)
   E7  no en-IN/en-US hreflang (only en + x-default; SEO-04 / D-09)
 
 Checks (WARN level, promoted by TRUST-03 completion):
@@ -35,6 +36,10 @@ SHELLS = {f"{FRONTEND}/cms-login.html", f"{FRONTEND}/admin-security.html"}
 COMPONENTS = {f"{FRONTEND}/header.html", f"{FRONTEND}/footer.html"}
 # Admin-tool pages are allowed to reference the shells internally (they are not public nav)
 ADMIN_UI = {f"{FRONTEND}/cms-admin.html", f"{FRONTEND}/cms-editor.html", f"{FRONTEND}/cms-test.html"}
+# Staff entry points: /login carries the Admin panel + CMS panel buttons so the
+# owner can reach both shells by click (owner decision, 2026-10-05). Exposure is
+# deliberately limited to that one page — no other public page may link the shells.
+STAFF_ENTRY = {f"{FRONTEND}/login.html"}
 BANNED_CLAIMS = [
     "audit-ready", "lab-ready", "air-gapped",
     "zero external api", "clinical-grade", "no data leaves",
@@ -90,8 +95,9 @@ def main() -> int:
         if not is_shell and not re.search(r"<h1[\s>]", text):
             errors.append(f"E5 {f}: no <h1>")
 
-        # E6 — admin-shell links (shells + admin tool pages excluded)
-        if not (is_shell or f in ADMIN_UI):
+        # E6 — admin-shell links (shells, admin tool pages and the /login staff
+        # entry excluded)
+        if not (is_shell or f in ADMIN_UI or f in STAFF_ENTRY):
             if re.search(r'href="/(?:cms-login|admin-security)"', text):
                 errors.append(f"E6 {f}: links to admin shell (SEC-01)")
 
