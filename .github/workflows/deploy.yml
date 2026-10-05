@@ -198,41 +198,48 @@ jobs:
             # Run database migrations
             python deploy/migrations/migrate.py
 
-            # Restart backend via systemd
-            sudo systemctl restart vigyan
+            # Restart backend via systemd.
+            #
+            # An unmanaged gunicorn has historically held 127.0.0.1:11436, so
+            # `systemctl restart vigyan` was a SILENT NO-OP: the unit's bind
+            # (0.0.0.0:11436 via gunicorn.conf.py) fails with EADDRINUSE while
+            # the orphaned process keeps serving pre-deploy code. Health checks
+            # still passed because they hit the orphan. Take the port over
+            # deliberately, then gate on the payload we just deployed.
+            sudo systemctl stop vigyan 2>/dev/null || true
+            sudo pkill -f 'gunicorn.*11436' 2>/dev/null || true
+            sleep 3
 
-            # Verify
-            sleep 4
-            curl -sf http://localhost:11436/health && echo " OK" || echo " FAIL"
-          ENDSSH
+            if ! sudo systemctl restart vigyan; then
+              echo " ::warning::vigyan.service failed to start"
+              sudo systemctl status vigyan --no-pager -l 2>/dev/null | tail -20 || true
+            fi
+            sleep 6
 
-      # Read-only: which process actually serves live /api? CI restarts
-      # vigyan.service (:11436) but nginx may proxy to a different upstream.
-      - name: Diagnose live API routing
-        run: |
-          ssh ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'ENDSSH'
-            set +e
-            echo "=== git HEAD ==="
-            cd ~/vigyanpilot && git log --oneline -1
-            echo "=== listening sockets (5000/11436/8001/80) ==="
-            sudo ss -ltnp 2>/dev/null | grep -E ':(5000|11436|8001|80|443) ' | head -20
-            echo "=== app processes ==="
-            ps -eo pid,etime,cmd 2>/dev/null | grep -E 'gunicorn|uvicorn|wsgi:app|celery' | grep -v grep | head -20
-            echo "=== docker ==="
-            docker ps --format '{{.Names}} | {{.Image}} | {{.Ports}}' 2>/dev/null | head -10
-            echo "=== pricing via :11436 (what CI restarts) ==="
-            curl -s -m 8 http://localhost:11436/api/payments/pricing | head -c 260; echo
-            echo "=== pricing via :5000 (legacy upstream candidate) ==="
-            curl -s -m 8 http://localhost:5000/api/payments/pricing | head -c 260; echo
-            echo "=== health via :11436 vs :5000 ==="
-            curl -s -o /dev/null -w '11436=%{http_code}\n' -m 8 http://localhost:11436/health
-            curl -s -o /dev/null -w '5000=%{http_code}\n' -m 8 http://localhost:5000/health
-            echo "=== nginx: upstreams, api/health locations, cache ==="
-            sudo nginx -T 2>/dev/null | grep -nE 'upstream|server .*:[0-9]+;|location[ ]+/api|location[ ]+/health|location[ ]+ \{|proxy_pass|proxy_cache' | head -50
-            echo "=== nginx config files in use ==="
-            ls -l /etc/nginx/sites-enabled/ /etc/nginx/conf.d/ 2>/dev/null | head -20
-            echo "=== other checkouts ==="
-            ls -d /opt/vigyanllm /opt/vigyan* 2>/dev/null
+            # Fallback: the unit may have failed (e.g. hardening/port). Use the
+            # exact invocation proven to serve production, so the deploy can
+            # never leave the API down or stale.
+            if ! curl -sf -m 8 http://localhost:11436/health >/dev/null 2>&1; then
+              echo " ::warning::vigyan.service not serving — starting gunicorn directly"
+              sudo systemctl stop vigyan 2>/dev/null || true
+              setsid nohup .venv/bin/gunicorn --bind 127.0.0.1:11436 --workers 2 \
+                --timeout 120 primerforge.primer_server:create_app() \
+                > /var/log/vigyan/fallback.log 2>&1 < /dev/null &
+              sleep 8
+            fi
+
+            # GATE: :11436 must serve the code we just deployed, not merely be up.
+            PRICE=$(curl -sf -m 10 http://localhost:11436/api/payments/pricing || true)
+            echo "pricing payload: $(echo "$PRICE" | head -c 300)"
+            if ! echo "$PRICE" | .venv/bin/python -c \
+                "import json,sys; d=json.load(sys.stdin); sys.exit(0 if d.get('currency')=='USD' else 1)" \
+                2>/dev/null; then
+              echo " ::error::Backend :11436 is NOT serving the deployed USD code — deploy did not take effect"
+              sudo ss -ltnp 2>/dev/null | grep 11436 || true
+              exit 1
+            fi
+            echo " OK: :11436 serving deployed code (USD pricing)"
+            curl -sf http://localhost:11436/health && echo " health OK" || { echo " health FAIL"; exit 1; }
           ENDSSH
 
       - name: Health check via CloudFront
@@ -240,7 +247,15 @@ jobs:
           sleep 5
           curl -sf https://www.vigyanllm.in/health || { echo " — CloudFront health FAIL"; exit 1; }
           curl -sf https://www.vigyanllm.in/api/config/public || { echo " — API config FAIL"; exit 1; }
-          echo " — All endpoints OK"
+          # End-to-end gate: live pricing must be the USD payload we deployed.
+          LIVE=$(curl -sf -m 15 "https://www.vigyanllm.in/api/payments/pricing?cb=$(date +%s)" || true)
+          if ! echo "$LIVE" | python3 -c \
+              "import json,sys; d=json.load(sys.stdin); sys.exit(0 if d.get('currency')=='USD' else 1)" \
+              2>/dev/null; then
+            echo " — Live pricing API is NOT serving the USD payload: $(echo "$LIVE" | head -c 200)"
+            exit 1
+          fi
+          echo " — All endpoints OK (live pricing = USD)"
 
       - name: Deploy notification
         if: always()
