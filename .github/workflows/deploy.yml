@@ -223,7 +223,7 @@ jobs:
               echo " ::warning::vigyan.service not serving — starting gunicorn directly"
               sudo systemctl stop vigyan 2>/dev/null || true
               setsid nohup .venv/bin/gunicorn --bind 127.0.0.1:11436 --workers 2 \
-                --timeout 120 primerforge.primer_server:create_app() \
+                --timeout 120 'primerforge.primer_server:create_app()' \
                 > /var/log/vigyan/fallback.log 2>&1 < /dev/null &
               sleep 8
             fi
