@@ -428,8 +428,9 @@ async function loadBilling(){
         if(planLabel==='subscription')planLabel='Pro Trial';
         else planLabel=planLabel.replace(/_/g,' ').replace(/\b\w/g,function(c){return c.toUpperCase()});
         var dateStr=p.created_at?formatDate(p.created_at*1000):'—';
-        var amt=p.amount_inr||0;
-        h+='<div class="bill-row"><div class="bill-row-left"><div class="bill-row-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 10h20"/></svg></div><div><div class="bill-row-plan">'+planLabel+'</div><div class="bill-row-date">'+dateStr+'</div></div></div><div class="bill-row-right"><span class="bill-row-amt">'+(amt?'₹'+amt:'—')+'</span><span class="'+sCls+'">'+sLabel+'</span></div></div>';
+        var amt=p.amount_minor||0;
+        var amtTxt=!amt?'—':(p.currency==='USD'?'$'+(amt/100).toFixed(2):'₹'+Math.round(amt/100));
+        h+='<div class="bill-row"><div class="bill-row-left"><div class="bill-row-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 10h20"/></svg></div><div><div class="bill-row-plan">'+planLabel+'</div><div class="bill-row-date">'+dateStr+'</div></div></div><div class="bill-row-right"><span class="bill-row-amt">'+amtTxt+'</span><span class="'+sCls+'">'+sLabel+'</span></div></div>';
       });
       tb.innerHTML=h;
     }

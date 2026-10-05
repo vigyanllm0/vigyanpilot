@@ -262,7 +262,7 @@ body{background:var(--surface-alt);color:var(--text);font-family:var(--font-b);-
     </div>
     <div class="checkout-body">
       <div class="order-summary" id="orderSummary">
-        <div class="price-big" id="display-price"><span class="curr">&#8377;</span><span id="price-amount">0</span><span class="period" id="price-period"></span></div>
+        <div class="price-big" id="display-price"><span class="curr">$</span><span id="price-amount">0</span><span class="period" id="price-period"></span></div>
         <div id="academic-discount-info" style="display:none" class="academic-badge">&#127891; 30% academic discount applied</div>
         <div class="summary-row"><span class="summary-label">Plan</span><span class="summary-value" id="display-plan">—</span></div>
         <div class="summary-row"><span class="summary-label">Billing</span><span class="summary-value" id="display-billing">—</span></div>
@@ -320,6 +320,9 @@ var CHECKOUT_PROMO_CODE = null;
 var CHECKOUT_PROMO_DISCOUNT = 0;
 var CHECKOUT_BASE_AMOUNT = 0;
 
+// Amounts come from the price registry in USD minor units (cents).
+function usdNum(cents) { return (Number(cents || 0) / 100).toFixed(2); }
+
 // Auth is carried by the HttpOnly pf_token cookie (same-origin). 'pf_user'
 // is a non-sensitive profile marker used only for UI/login-state decisions.
 function isLoggedIn() { return !!sessionStorage.getItem('pf_user'); }
@@ -361,6 +364,7 @@ function renderOrder(plan, pricing) {
   document.getElementById('display-batch').textContent = plan.batch_max_seq > 1 ? plan.batch_max_seq + ' sequences' : '1 sequence';
   document.getElementById('display-api').textContent = plan.api_calls_per_month > 0 ? plan.api_calls_per_month.toLocaleString() + ' / month' : 'Not included';
 
+  // price_inr is the legacy field name; the backend now serves USD cents.
   var amount = plan.price_inr;
   CHECKOUT_BASE_AMOUNT = amount;
   var period = plan.billing === 'yearly' ? '/year' : '/month';
@@ -389,7 +393,7 @@ function renderOrder(plan, pricing) {
       })
       .catch(function() { updatePriceDisplay(); });
   } else {
-    document.getElementById('price-amount').textContent = amount;
+    document.getElementById('price-amount').textContent = usdNum(amount);
     document.getElementById('price-period').textContent = period;
   }
 }
@@ -513,15 +517,15 @@ function updatePriceDisplay() {
 
   if (totalDiscount > 0) {
     var discounted = Math.round(amount * (100 - totalDiscount) / 100);
-    document.getElementById('price-amount').innerHTML = '<span class="price-original">&#8377;' + amount + '</span> <span class="price-discounted">&#8377;' + discounted + '</span>';
+    document.getElementById('price-amount').innerHTML = '<span class="price-original">$' + usdNum(amount) + '</span> <span class="price-discounted">$' + usdNum(discounted) + '</span>';
     document.getElementById('price-period').textContent = period;
     if (CHECKOUT_PROMO_DISCOUNT > 0) {
       document.getElementById('promo-discount-display').style.display = 'block';
       document.getElementById('promo-discount-label').textContent = CHECKOUT_PROMO_CODE + ' (' + CHECKOUT_PROMO_DISCOUNT + '% off)';
-      document.getElementById('promo-discount-value').textContent = '-₹' + Math.round(amount * CHECKOUT_PROMO_DISCOUNT / 100);
+      document.getElementById('promo-discount-value').textContent = '-$' + usdNum(Math.round(amount * CHECKOUT_PROMO_DISCOUNT / 100));
     }
   } else {
-    document.getElementById('price-amount').textContent = amount;
+    document.getElementById('price-amount').textContent = usdNum(amount);
     document.getElementById('price-period').textContent = period;
     document.getElementById('promo-discount-display').style.display = 'none';
   }
@@ -558,12 +562,12 @@ async function openRazorpayCheckout(order) {
   var options = {
     key: order.key_id,
     amount: order.amount,
-    currency: order.currency || 'INR',
+    currency: order.currency || 'USD',
     name: 'VigyanLLM',
     description: order.description || 'Plan purchase',
     order_id: order.order_id,
     theme: { color: '#1565C0' },
-    config: { display: { blocks: { upi: { name: 'Pay using UPI', instruments: [{method: 'upi'}] }, card: { name: 'Pay using Card', instruments: [{method: 'card'}] }, netbanking: { name: 'Pay using Netbanking', instruments: [{method: 'netbanking'}] } }, sequence: ['block.upi', 'block.card', 'block.netbanking'], preferences: { show_default_blocks: true } } },
+    config: { display: { blocks: { card: { name: 'Pay by Card', instruments: [{method: 'card'}] } }, sequence: ['block.card'], preferences: { show_default_blocks: true } } },
     handler: async function(response) {
       try {
         var vr = await fetch(API + '/payments/verify-payment', {

@@ -297,7 +297,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   document.getElementById('d-billing').textContent = billing.charAt(0).toUpperCase() + billing.slice(1);
   document.getElementById('d-order').textContent = params.get('order_id') || stored.order_id || '—';
   document.getElementById('d-payment').textContent = params.get('payment_id') || stored.payment_id || '—';
-  document.getElementById('d-amount').textContent = '₹' + (params.get('amount') || stored.amount || '0');
+  var amtRaw = Number(params.get('amount') || stored.amount || 0);
+  if (!isFinite(amtRaw) || amtRaw < 0) amtRaw = 0;
+  document.getElementById('d-amount').textContent = '$' + amtRaw.toFixed(2);
   if (plan) {
     document.getElementById('success-sub').textContent = 'Your ' + plan.charAt(0).toUpperCase() + plan.slice(1) + ' plan is now active. You have access to all included features.';
   }

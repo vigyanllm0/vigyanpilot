@@ -57,8 +57,8 @@ def admin_client(client):
 def test_admin_can_create_promo_codes(admin_client):
     r = admin_client.post("/api/admin/promo/create", json={
         "prefix": "TEST", "count": 3, "trial_days": 15, "tier": "pro",
-        "daily_analyses": 25, "batch_max": 10, "price_inr": 699,
-        "currency": "INR", "max_uses": 1, "has_export": 1,
+        "daily_analyses": 25, "batch_max": 10, "price_inr": 999,
+        "currency": "USD", "max_uses": 1, "has_export": 1,
     })
     assert r.status_code == 200
     d = r.get_json()
@@ -72,7 +72,7 @@ def test_admin_can_list_promo_codes(admin_client):
     # Create some codes first
     admin_client.post("/api/admin/promo/create", json={
         "prefix": "LIST", "count": 2, "trial_days": 30,
-        "price_inr": 699, "max_uses": 1,
+        "price_inr": 999, "currency": "USD", "max_uses": 1,
     })
 
     r = admin_client.get("/api/admin/promo/list")
@@ -81,8 +81,13 @@ def test_admin_can_list_promo_codes(admin_client):
     assert "codes" in d
     assert "summary" in d
     assert d["summary"]["total_codes"] >= 2
-    assert d["summary"]["total_used"] == 0
-    assert d["summary"]["total_unused"] == d["summary"]["total_codes"]
+    # Assert on THIS test's codes only — the suite shares one sqlite file
+    # (auth.DB_PATH binds at import), so global totals include codes redeemed
+    # by other test files.
+    fresh = [c for c in d["codes"] if c["code"].startswith("LIST-")]
+    assert len(fresh) >= 2
+    assert all(c["used_count"] == 0 for c in fresh)
+    assert d["summary"]["total_unused"] <= d["summary"]["total_codes"]
 
 
 def test_admin_can_record_expense(admin_client):

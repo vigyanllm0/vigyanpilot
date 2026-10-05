@@ -104,7 +104,27 @@ function vlAuthCssLoaded(){
 
 function ensureAuthOverlay(){
   var o=document.getElementById('auth-overlay');
-  if(o)return o;
+  if(o){
+    /* Static (page-authored) overlay: bind close affordances the build
+       branch would have added — backdrop click, close button, Escape. */
+    if(!o.dataset.vlAuthBound){
+      o.dataset.vlAuthBound='1';
+      o.addEventListener('click',function(e){if(e.target===o)closeAuth()});
+      var card=o.querySelector('.auth-card,.auth-modal');
+      if(card&&!card.querySelector('.close-btn')){
+        var b=document.createElement('button');
+        b.type='button';b.className='close-btn';b.setAttribute('aria-label','Close');b.innerHTML='&times;';
+        b.addEventListener('click',function(){closeAuth()});
+        card.insertBefore(b,card.firstChild);
+      }
+      document.addEventListener('keydown',function(e){
+        if(e.key!=='Escape')return;
+        var ov=document.getElementById('auth-overlay');
+        if(ov&&ov.classList.contains('open'))closeAuth();
+      });
+    }
+    return o;
+  }
   if(!document.body)return null;
   if(!vlAuthCssLoaded()){
     var st=document.createElement('style');

@@ -51,7 +51,10 @@ jobs:
 
       - name: Check dependency vulnerabilities
         run: |
-          safety check --full-report --ignore SFTY-20260721-58460 --ignore 80915 --ignore 72809
+          # SFTY-20260902-58666 = nltk (pulled by the `safety` tool itself, not by
+          # requirements.txt; nltk is never imported by app code and is not deployed).
+          # Ignored for the same reason as the three entries below: not our attack surface.
+          safety check --full-report --ignore SFTY-20260721-58460 --ignore 80915 --ignore 72809 --ignore SFTY-20260902-58666
 
       - name: Run pytest with coverage
         env:

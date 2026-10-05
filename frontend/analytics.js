@@ -45,7 +45,7 @@
             this.track('login', { method });
         },
         
-        trackPurchase(transactionId, value, plan, currency = 'INR') {
+        trackPurchase(transactionId, value, plan, currency = 'USD') {
             this.track('purchase', {
                 transaction_id: transactionId,
                 value: value,

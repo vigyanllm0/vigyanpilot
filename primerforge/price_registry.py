@@ -2,19 +2,26 @@
 """
 VigyanLLM Price Registry — 4-Tier Subscription Model
 =====================================================
-Free | Pro (₹699/mo or ₹5,999/yr) | Lab (₹3,999/mo or ₹32,999/yr) | Enterprise (custom)
+Free | Pro ($9.99/mo or $89/yr) | Lab ($49/mo or $399/yr) | Enterprise (custom)
 
-Tiers:
-  - Free:        ₹0     → 5 analyses/day, 1 seq/analysis, no batch, no API, no export
-  - Pro Monthly:  ₹699  → 100 analyses/day, 50 seq/batch, API 1000 calls/mo, PDF/PPT export
-  - Pro Yearly:  ₹5,999 → same as Pro Monthly (2 months free equivalent)
-  - Lab Monthly:  ₹3,999 → 500 analyses/day, 200 seq/batch, team collab (5 seats), admin
-  - Lab Yearly:  ₹32,999 → same as Lab Monthly
-  - Enterprise:  custom → unlimited everything, SSO, SLA, on-premise, dedicated support
+ALL amounts in this registry are MINOR UNITS of CURRENCY (USD cents).
+  - Free:        $0      → 5 analyses/day, 1 seq/analysis, no batch, no API, no export
+  - Pro Monthly:  999¢   → 100 analyses/day, 50 seq/batch, API 1000 calls/mo, PDF/PPT export
+  - Pro Yearly:  8900¢   → same as Pro Monthly (save 26% with annual billing)
+  - Lab Monthly:  4900¢   → 500 analyses/day, 200 seq/batch, team collab (5 seats), admin
+  - Lab Yearly:  39900¢   → same as Lab Monthly (save 32% with annual billing)
+  - Enterprise:  custom  → unlimited everything, SSO, SLA, on-premise, dedicated support
+
+Legacy naming: `price_inr` survives as a deprecated property alias that returns
+price_minor (the old *100 conversion is intentionally gone — callers must treat
+every amount as minor units of CURRENCY).
 """
 
 from dataclasses import dataclass
 from enum import Enum
+
+#: Site-wide billing currency. All prices/amounts are minor units of this.
+CURRENCY: str = "USD"
 
 
 class BillingCycle(Enum):
@@ -38,7 +45,7 @@ class PlanConfig:
     tier: PlanTier
     display_name: str
     billing: BillingCycle
-    price_inr: int
+    price_minor: int  # minor units of CURRENCY (USD cents)
     daily_analyses: int
     batch_max_seq: int
     api_calls_per_month: int
@@ -62,6 +69,11 @@ class PlanConfig:
     description: str
     is_active: bool = True
 
+    @property
+    def price_inr(self) -> int:
+        """Deprecated legacy alias — returns price_minor (minor units of CURRENCY)."""
+        return self.price_minor
+
 
 # ═══════════════════════════════════════════════════════════════════════════
 # CANONICAL PRICING — Single source of truth
@@ -74,7 +86,7 @@ PLAN_REGISTRY: dict[str, PlanConfig] = {
         tier=PlanTier.FREE,
         display_name="Free",
         billing=BillingCycle.ONETIME,
-        price_inr=0,
+        price_minor=0,
         daily_analyses=5,
         batch_max_seq=1,
         api_calls_per_month=0,
@@ -103,7 +115,7 @@ PLAN_REGISTRY: dict[str, PlanConfig] = {
         tier=PlanTier.PRO,
         display_name="Pro",
         billing=BillingCycle.MONTHLY,
-        price_inr=699,
+        price_minor=999,
         daily_analyses=100,
         batch_max_seq=50,
         api_calls_per_month=1000,
@@ -132,7 +144,7 @@ PLAN_REGISTRY: dict[str, PlanConfig] = {
         tier=PlanTier.PRO,
         display_name="Pro",
         billing=BillingCycle.YEARLY,
-        price_inr=5999,
+        price_minor=8900,
         daily_analyses=100,
         batch_max_seq=50,
         api_calls_per_month=1000,
@@ -153,7 +165,7 @@ PLAN_REGISTRY: dict[str, PlanConfig] = {
         has_sla=False,
         has_custom_tool_dev=False,
         period="yearly",
-        description="Same as Pro monthly — save 28% with annual billing"
+        description="Same as Pro monthly — save 26% with annual billing"
     ),
     # ── Lab Monthly ────────────────────────────────────────────────────────
     "lab-monthly": PlanConfig(
@@ -161,7 +173,7 @@ PLAN_REGISTRY: dict[str, PlanConfig] = {
         tier=PlanTier.LAB,
         display_name="Lab",
         billing=BillingCycle.MONTHLY,
-        price_inr=3999,
+        price_minor=4900,
         daily_analyses=500,
         batch_max_seq=200,
         api_calls_per_month=10000,
@@ -190,7 +202,7 @@ PLAN_REGISTRY: dict[str, PlanConfig] = {
         tier=PlanTier.LAB,
         display_name="Lab",
         billing=BillingCycle.YEARLY,
-        price_inr=32999,
+        price_minor=39900,
         daily_analyses=500,
         batch_max_seq=200,
         api_calls_per_month=10000,
@@ -211,7 +223,7 @@ PLAN_REGISTRY: dict[str, PlanConfig] = {
         has_sla=False,
         has_custom_tool_dev=False,
         period="yearly",
-        description="Same as Lab monthly — save 31% with annual billing"
+        description="Same as Lab monthly — save 32% with annual billing"
     ),
     # ── Enterprise ─────────────────────────────────────────────────────────
     "enterprise": PlanConfig(
@@ -219,7 +231,7 @@ PLAN_REGISTRY: dict[str, PlanConfig] = {
         tier=PlanTier.ENTERPRISE,
         display_name="Enterprise",
         billing=BillingCycle.CUSTOM,
-        price_inr=0,  # Custom pricing
+        price_minor=0,  # Custom pricing
         daily_analyses=999999,
         batch_max_seq=999999,
         api_calls_per_month=999999,
@@ -250,7 +262,7 @@ PLAN_REGISTRY: dict[str, PlanConfig] = {
         tier=PlanTier.TRIAL,
         display_name="Academic Trial",
         billing=BillingCycle.CUSTOM,
-        price_inr=0,
+        price_minor=0,
         daily_analyses=50,
         batch_max_seq=20,
         api_calls_per_month=0,
@@ -271,7 +283,7 @@ PLAN_REGISTRY: dict[str, PlanConfig] = {
         has_sla=False,
         has_custom_tool_dev=False,
         period="trial",
-        description="30-day Pro trial with autopay — verify with ₹1, cancel anytime"
+        description="30-day Pro trial with autopay — verify with $1, cancel anytime"
     ),
 }
 
@@ -289,8 +301,8 @@ class TrialConfig:
     batch_max: int = 20          # trial-period batch limit
     has_export: bool = True
     trial_days: int = 30         # configurable per code
-    price_inr: int = 699         # recurring price after trial
-    currency: str = "INR"        # INR/USD/EUR/GBP
+    price_minor: int = 999       # recurring price after trial (USD cents)
+    currency: str = "USD"        # minor units of this currency
     max_uses: int = 1            # single-use enforcement
 
 
@@ -301,9 +313,9 @@ class TrialConfig:
 ACADEMIC_DISCOUNT_PCT: int = 30  # 30% off for .edu / .ac.in emails
 
 
-def get_academic_price(price_inr: int) -> int:
-    """Apply 30% academic discount, rounded to nearest rupee."""
-    return int(price_inr * (100 - ACADEMIC_DISCOUNT_PCT) / 100)
+def get_academic_price(price_minor: int) -> int:
+    """Apply 30% academic discount, truncated to whole minor units (cents)."""
+    return int(price_minor * (100 - ACADEMIC_DISCOUNT_PCT) / 100)
 
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -348,12 +360,28 @@ def get_tier_limits(tier: str) -> dict:
 # UTILITY FUNCTIONS
 # ═══════════════════════════════════════════════════════════════════════════
 
+def get_amount_minor(product_id: str, quantity: int = 1) -> int:
+    """Exact payment amount in minor units of CURRENCY (USD cents). Integer arithmetic only.
+
+    Accepts subscription plan ids (pro-monthly, ...) and one-off top-up
+    products (top_up, dock_top_up). Raises ValueError for unknown products.
+    """
+    plan = PLAN_REGISTRY.get(product_id)
+    if plan is not None:
+        return plan.price_minor * quantity
+    pack = TOPUP_PRODUCTS.get(product_id)
+    if pack is not None:
+        return pack["unit_price_minor"] * quantity
+    raise ValueError(f"Unknown product: {product_id}")
+
+
 def get_amount_paise(plan_id: str, quantity: int = 1) -> int:
-    """Calculate exact payment amount in paise. Integer arithmetic only."""
-    plan = PLAN_REGISTRY.get(plan_id)
-    if not plan:
-        raise ValueError(f"Unknown plan_id: {plan_id}")
-    return plan.price_inr * 100 * quantity
+    """Deprecated alias of get_amount_minor — kept for legacy imports.
+
+    NOTE: the returned value is minor units of CURRENCY (USD cents),
+    NOT paise. No *100 conversion should ever be applied to it.
+    """
+    return get_amount_minor(plan_id, quantity)
 
 
 def validate_plan(plan_id: str) -> str | None:
@@ -379,7 +407,16 @@ def get_tier_from_plan(plan_id: str) -> str:
 # ═══════════════════════════════════════════════════════════════════════════
 
 FREE_TRIAL_RUNS = 5
-TOPUP_PRICE_INR = 0
+TOPUP_PRICE_MINOR = 100  # USD cents per analysis run (legacy constant name kept)
+
+# One-off pay-as-you-go products (sold via create-order, not subscriptions).
+# Prices are minor units of CURRENCY — server-authoritative, never trust client amounts.
+# NOTE: Razorpay USD orders have a hard $1.00 (100¢) payment-time minimum — any
+# lower amount gets clamped at checkout and then rejected as an amount mismatch.
+TOPUP_PRODUCTS: dict[str, dict] = {
+    "top_up": {"unit_price_minor": 100, "label": "Analysis run"},    # $1.00 / run
+    "dock_top_up": {"unit_price_minor": 100, "label": "Docking run"}, # $1.00 / run
+}
 
 
 class _LegacyPlanWrap:
@@ -389,7 +426,8 @@ class _LegacyPlanWrap:
         self.display_name = plan.display_name
         self.product_type = plan.tier
         self.designs_included = plan.daily_analyses
-        self.price_inr = plan.price_inr
+        self.price_minor = plan.price_minor
+        self.price_inr = plan.price_minor  # legacy name — minor units of CURRENCY
         self.period = plan.period
         self.max_seats = plan.max_seats
         self.description = plan.description
@@ -411,7 +449,9 @@ def get_dock_runs_for_product(product_id: str, quantity: int = 1) -> int:
 
 
 def validate_order_request(product_id: str, quantity: int) -> str | None:
-    """Backward compatibility: validate plan exists and is active."""
+    """Validate a create-order request: plan or top-up product, active, qty sane."""
+    if product_id in TOPUP_PRODUCTS:
+        return None
     if product_id not in PLAN_REGISTRY:
         return f"Unknown product: {product_id}"
     plan = PLAN_REGISTRY[product_id]

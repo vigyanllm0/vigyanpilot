@@ -44,11 +44,14 @@ ADMIN_PASSWORD = os.environ.get("PRIMERFORGE_ADMIN_PASSWORD")
 if not ADMIN_PASSWORD:
     raise RuntimeError("PRIMERFORGE_ADMIN_PASSWORD environment variable is required")
 
-# Pricing
-PRICE_PER_DESIGN = 49  # ₹49 per primer design run
-FREE_RUNS = 2          # 2 free runs per new user
-PRICE_PER_DOCK = 99    # ₹99 per docking run
-FREE_DOCK_RUNS = 2     # 2 free docking runs per new user
+# Pricing — minor units of CURRENCY (USD cents). Derived from price_registry so
+# server order pricing and the displayed run price can never drift apart.
+from .price_registry import TOPUP_PRODUCTS as _TOPUPS
+
+PRICE_PER_DESIGN = _TOPUPS["top_up"]["unit_price_minor"]      # $1.00 per analysis run
+FREE_RUNS = 2           # 2 free runs per new user
+PRICE_PER_DOCK = _TOPUPS["dock_top_up"]["unit_price_minor"]   # $1.00 per docking run
+FREE_DOCK_RUNS = 2      # 2 free docking runs per new user
 UPI_ID = os.environ.get("PRIMERFORGE_UPI_ID", "vigyanllm@upi")  # unused — kept for backwards compat
 
 
@@ -158,7 +161,10 @@ def init_db():
         CREATE TABLE IF NOT EXISTS payments (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             user_email TEXT NOT NULL,
+            -- amount = minor units of `currency` for USD rows (new writes).
+            -- Legacy rows have currency IS NULL and store MAJOR INR (display-normalized).
             amount INTEGER NOT NULL,
+            currency TEXT DEFAULT 'USD',
             upi_ref TEXT DEFAULT '',
             status TEXT DEFAULT 'pending',
             runs_purchased INTEGER DEFAULT 1,
@@ -260,8 +266,8 @@ def init_db():
             batch_max INTEGER DEFAULT 20,
             has_export INTEGER DEFAULT 1,
             trial_days INTEGER NOT NULL DEFAULT 30,
-            price_inr INTEGER NOT NULL DEFAULT 699,
-            currency TEXT DEFAULT 'INR',
+            price_inr INTEGER NOT NULL DEFAULT 999,
+            currency TEXT DEFAULT 'USD',
             razorpay_plan_id TEXT DEFAULT '',
             max_uses INTEGER DEFAULT 1,
             used_count INTEGER DEFAULT 0,
@@ -379,6 +385,28 @@ def init_db():
         pass
     try:
         db.execute("ALTER TABLE payments ADD COLUMN metadata TEXT DEFAULT '{}'")
+    except sqlite3.OperationalError:
+        pass
+    # USD migration: new column for existing DBs. NO default → legacy rows read
+    # back as NULL (= historical major-INR amounts); new writes set 'USD' explicitly.
+    try:
+        db.execute("ALTER TABLE payments ADD COLUMN currency TEXT")
+    except sqlite3.OperationalError:
+        pass
+    # Retire legacy INR-priced promo codes (idempotent). Their price_inr values
+    # were MAJOR rupees; all readers now interpret price_inr as minor units of the
+    # row currency, so re-reading a ₹699 code would mean 699 paise. We refuse to
+    # guess an FX conversion — block redemption instead (admins re-issue USD codes).
+    try:
+        db.execute(
+            """UPDATE promo_codes SET max_uses = used_count
+               WHERE currency = 'INR' AND price_inr > 0 AND max_uses > used_count"""
+        )
+        db.execute(
+            """UPDATE promo_codes SET expires_at = 1
+               WHERE currency = 'INR' AND price_inr > 0 AND max_uses = 0
+                 AND (expires_at = 0 OR expires_at > 1)"""
+        )
     except sqlite3.OperationalError:
         pass
     db.commit()

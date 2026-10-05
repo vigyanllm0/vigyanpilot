@@ -48,14 +48,21 @@ async function refreshAll(){
   $('s-bans').textContent=threats.active_bans||0;
   $('s-threats').textContent=threats.total_violations_tracked||0;
 
-  // Revenue & Cost from dedicated endpoint (revenue=payments only, cost=infra only)
+  // Revenue & Cost from dedicated endpoint (revenue=payments only, cost=infra only).
+  // Per-currency, no FX conversion: USD revenue (cents) and legacy INR revenue
+  // are shown separately; cost stays INR (expense ledger is ₹ by design).
   const revStats=await api('/api/payments/revenue-stats');
-  const totalRev=revStats?revStats.revenue.total_inr:0;
-  const totalCogs=revStats?revStats.cost.total_inr:0;
+  const usdMinor=revStats?+revStats.revenue.total_usd_minor||0:0;
+  const inrRev=revStats?+revStats.revenue.total_inr||0:0;
+  const totalCogs=revStats?+revStats.cost.total_inr||0:0;
   const marginPct=revStats?revStats.margin.margin_percent:0;
-  $('s-revenue').textContent='₹'+Math.round(totalRev).toLocaleString('en-IN');
+  let revTxt='';
+  if(usdMinor>0)revTxt='$'+(usdMinor/100).toFixed(2);
+  if(inrRev>0)revTxt+=(revTxt?' + ':'')+'₹'+Math.round(inrRev).toLocaleString('en-IN');
+  $('s-revenue').textContent=revTxt||'₹0';
   $('s-cogs').textContent='₹'+Math.round(totalCogs).toLocaleString('en-IN');
-  $('s-margin').textContent=marginPct+'%';
+  if(usdMinor>0){$('s-margin').textContent='—';$('s-margin').title='USD and INR revenue are not combined into one margin figure — no exchange rate is assumed.';}
+  else{$('s-margin').textContent=marginPct+'%';$('s-margin').title='Computed on INR revenue vs INR cost.';}
 
   // Revenue vs Cost chart (top 6 users by cost generated)
   const ulist=users.users||[];
@@ -148,7 +155,11 @@ async function loadPromos(){
   $('promo-total').textContent=s.total_codes||0;
   $('promo-used').textContent=s.total_used||0;
   $('promo-unused').textContent=s.total_unused||0;
-  $('promo-value').textContent='₹'+(s.total_trial_value_inr||0).toLocaleString('en-IN');
+  const pvUsd=+s.total_trial_value_usd_minor||0,pvInr=+s.total_trial_value_inr||0;
+  let pvTxt='';
+  if(pvUsd>0)pvTxt='$'+(pvUsd/100).toFixed(2);
+  if(pvInr>0)pvTxt+=(pvTxt?' + ':'')+'₹'+pvInr.toLocaleString('en-IN');
+  $('promo-value').textContent=pvTxt||'₹0';
 
   const codes=d.codes||[];
   const tbody=$('tbl-promos');
@@ -160,7 +171,7 @@ async function loadPromos(){
     const statusClass=expired?'pill-red':fully_used?'pill-orange':'pill-green';
     const typeClass=c.promo_type==='academic'?'pill-purple':'pill-blue';
     const canRevoke=!expired&&!fully_used&&c.used_count<c.max_uses;
-    return`<tr style="${expired||fully_used?'opacity:.6':''}"><td class="mono" style="font-size:.75rem;font-weight:600">${c.code}</td><td><span class="pill ${typeClass}">${c.promo_type||'trial'}</span></td><td><span class="pill pill-blue">${c.tier}</span></td><td>${c.trial_days}d</td><td>${c.daily_analyses}</td><td>${c.batch_max}</td><td>₹${c.price_inr}</td><td><span class="pill ${statusClass}">${c.used_count}/${c.max_uses}</span></td><td>${c.has_export?'✓':'✗'}</td><td style="font-size:.7rem">${created}</td><td>${canRevoke?`<button class="btn btn-sm" onclick="revokePromo('${c.code}')" style="background:var(--red);color:#fff;font-size:.65rem;padding:.2rem .5rem">Revoke</button>`:''}</td></tr>`;
+    return`<tr style="${expired||fully_used?'opacity:.6':''}"><td class="mono" style="font-size:.75rem;font-weight:600">${c.code}</td><td><span class="pill ${typeClass}">${c.promo_type||'trial'}</span></td><td><span class="pill pill-blue">${c.tier}</span></td><td>${c.trial_days}d</td><td>${c.daily_analyses}</td><td>${c.batch_max}</td><td>${c.currency==='USD'?'$'+(c.price_inr/100).toFixed(2):'₹'+c.price_inr}</td><td><span class="pill ${statusClass}">${c.used_count}/${c.max_uses}</span></td><td>${c.has_export?'✓':'✗'}</td><td style="font-size:.7rem">${created}</td><td>${canRevoke?`<button class="btn btn-sm" onclick="revokePromo('${c.code}')" style="background:var(--red);color:#fff;font-size:.65rem;padding:.2rem .5rem">Revoke</button>`:''}</td></tr>`;
   }).join('');
 }
 
@@ -178,7 +189,7 @@ async function generatePromos(){
     tier:$('promo-tier').value,
     daily_analyses:parseInt($('promo-daily').value)||50,
     batch_max:parseInt($('promo-batch').value)||20,
-    price_inr:promoType==='academic'?0:parseInt($('promo-price').value)||699,
+    price_inr:promoType==='academic'?0:parseInt($('promo-price').value)||999,
     currency:$('promo-currency').value,
     max_uses:parseInt($('promo-maxuses').value)||1,
     has_export:parseInt($('promo-export').value)||1,
@@ -216,8 +227,8 @@ window.togglePromoType = function(){
   $('promo-price').disabled=isAcademic;
   $('promo-currency').disabled=isAcademic;
   if(isAcademic){$('promo-price').value=0;$('promo-prefix').placeholder='ACAD';$('promo-discount-pct').value=0}
-  else if(isDiscount){$('promo-price').value=699;$('promo-prefix').placeholder='DISC';$('promo-discount-pct').placeholder='e.g. 10, 20, 30'}
-  else{$('promo-price').value=699;$('promo-prefix').placeholder='IITB';$('promo-discount-pct').value=0}
+  else if(isDiscount){$('promo-price').value=999;$('promo-prefix').placeholder='DISC';$('promo-discount-pct').placeholder='e.g. 10, 20, 30'}
+  else{$('promo-price').value=999;$('promo-prefix').placeholder='IITB';$('promo-discount-pct').value=0}
 }
 
 // ── ACADEMIC CLAIMS ──

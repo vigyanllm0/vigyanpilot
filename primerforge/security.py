@@ -148,6 +148,9 @@ def init_security(app):
             "'self'",
             "'unsafe-inline'",
             "https://checkout.razorpay.com",
+            # checkout.js (build b6+) pulls the risk-detection bundle from
+            # cdn.razorpay.com; without it the script is CSP-blocked.
+            "https://cdn.razorpay.com",
             "https://api.razorpay.com",
             "https://accounts.google.com",
             "https://www.googletagmanager.com",

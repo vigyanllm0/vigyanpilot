@@ -28,12 +28,15 @@ from .auth import (
 )
 from .price_registry import (
     ACADEMIC_DISCOUNT_PCT,
+    CURRENCY,
     PLAN_REGISTRY,
+    TOPUP_PRODUCTS,
     get_academic_price,
-    get_amount_paise,
+    get_amount_minor,
     get_tier_from_plan,
-    validate_plan,
+    validate_order_request,
 )
+from .security import validate_quantity
 
 logger = logging.getLogger("primerforge.payment")
 
@@ -89,35 +92,44 @@ def _compute_plan_expiry(plan_id: str) -> int:
 @payment_bp.route('/api/create-order', methods=['POST'])
 @require_auth
 def create_order():
-    """Create a Razorpay order for a subscription plan.
+    """Create a Razorpay order for a subscription plan or a run top-up.
 
-    Request body: { plan_id: 'pro-monthly' }
-    Optional: { plan_id: 'pro-monthly', discount: 30, email: 'user@edu.in' }
+    Request body: { plan_id: 'pro-monthly' }                    — subscription
+                  { product_id: 'top_up', quantity: 3 }         — run credits
+    Optional:     { discount: 30, promo_code: 'CODE' }
+    All amounts are computed server-side in USD cents (CURRENCY) — never trusted from the client.
     """
     data = request.get_json(silent=True) or {}
-    plan_id = data.get("plan_id", "")
+    product_id = data.get("product_id") or data.get("plan_id", "")
 
-    if not plan_id:
-        return jsonify({"error": "Missing plan_id. Options: pro-monthly, pro-yearly, lab-monthly, lab-yearly, enterprise"}), 400
+    if not isinstance(product_id, str) or not product_id:
+        return jsonify({"error": "Missing product_id. Options: pro-monthly, pro-yearly, lab-monthly, lab-yearly, top_up, dock_top_up"}), 400
 
-    err = validate_plan(plan_id)
+    # Quantity (tolerates legacy "runs" key); centralized validator blocks NaN/Inf/negatives.
+    valid, quantity, qty_err = validate_quantity(data.get("quantity", data.get("runs", 1)))
+    if not valid:
+        return jsonify({"error": qty_err}), 400
+
+    err = validate_order_request(product_id, quantity)
     if err:
         return jsonify({"error": err}), 400
 
-    plan = PLAN_REGISTRY[plan_id]
+    is_plan = product_id in PLAN_REGISTRY
+    plan = PLAN_REGISTRY.get(product_id)
 
-    # Calculate amount
-    amount = get_amount_paise(plan_id)
+    # Calculate amount — USD cents, integer arithmetic only
+    amount = get_amount_minor(product_id, quantity)
 
-    # Apply academic discount if applicable
+    # Apply academic discount if applicable (checkout sends it for plans)
     discount = data.get("discount", 0)
-    if discount:
+    if discount and is_plan:
         # Verify discount is reasonable (max 30%)
         discount = min(int(discount), ACADEMIC_DISCOUNT_PCT)
         amount = int(amount * (100 - discount) / 100)
 
-    if amount < 100 and amount > 0:
-        return jsonify({"error": "Minimum amount is ₹1 (100 paise)."}), 400
+    if amount <= 0:
+        # free / trial / enterprise (quote-only) are not purchasable online
+        return jsonify({"error": "This item is not available for online checkout."}), 400
 
     if not _current_client():
         return jsonify({
@@ -154,14 +166,16 @@ def create_order():
     try:
         order = _current_client().order.create({
             "amount": amount,
-            "currency": "INR",
-            "receipt": f"pf_{int(time.time())}_{plan_id}",
+            "currency": CURRENCY,
+            "receipt": f"pf_{int(time.time())}_{product_id}",
             "notes": {
                 "email": user_email,
-                "plan_id": plan_id,
-                "plan_name": plan.display_name,
-                "tier": plan.tier.value,
-                "product": "VigyanLLM Subscription",
+                "product_id": product_id,
+                "quantity": str(quantity),
+                "plan_id": product_id,
+                "plan_name": plan.display_name if plan else TOPUP_PRODUCTS[product_id]["label"],
+                "tier": plan.tier.value if plan else "topup",
+                "product": "VigyanLLM Subscription" if plan else "VigyanLLM Run Credits",
                 "promo_code": promo_code or "",
                 "promo_discount_pct": str(promo_discount_pct),
             }
@@ -173,35 +187,56 @@ def create_order():
         logger.error("Razorpay error: %s", e)
         return jsonify({"error": "Payment service unavailable."}), 500
 
-    # Store order in DB
-    metadata_json = json.dumps({"promo_code": promo_code or None, "promo_discount_pct": promo_discount_pct})
+    # Store order in DB.
+    # amount = minor units of `currency` (USD cents) — never divide it down.
+    metadata_json = json.dumps({
+        "promo_code": promo_code or None,
+        "promo_discount_pct": promo_discount_pct,
+        "product_id": product_id,
+        "quantity": quantity,
+    })
     db.execute(
-        """INSERT INTO payments (user_email, amount, upi_ref, status, runs_purchased, product_type, plan_id, billing_cycle, metadata)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-        (user_email, amount // 100, order['id'], "created", 0, "subscription", plan_id, plan.billing.value, metadata_json)
+        """INSERT INTO payments (user_email, amount, currency, upi_ref, status, runs_purchased, product_type, plan_id, billing_cycle, metadata)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+        (user_email, amount, CURRENCY, order['id'], "created",
+         0 if is_plan else quantity,
+         "subscription" if is_plan else product_id,
+         product_id,
+         plan.billing.value if plan else "",
+         metadata_json)
     )
     db.commit()
 
     log_action(user_email, "order_created",
-               f"Order {order['id']} for plan {plan_id}, ₹{amount // 100}")
+               f"Order {order['id']} for {product_id} (x{quantity}), US${amount / 100:.2f}")
 
-    return jsonify({
+    response = {
         "order_id": order['id'],
         "amount": amount,
-        "currency": "INR",
+        "currency": CURRENCY,
         "key_id": RAZORPAY_KEY_ID,
-        "plan_id": plan_id,
-        "plan_name": plan.display_name,
-        "tier": plan.tier.value,
-        "billing": plan.billing.value,
-        "description": f"VigyanLLM {plan.display_name} ({plan.billing.value})",
+        "product_id": product_id,
+        "quantity": quantity,
+        "runs": 0 if is_plan else quantity,
+        "tokens": plan.daily_analyses if plan else quantity,
         "discount_pct": promo_discount_pct,
         "promo_code": promo_code or None,
         "prefill": {
             "name": user_name,
             "email": user_email,
         }
-    }), 200
+    }
+    if is_plan:
+        response.update({
+            "plan_id": product_id,
+            "plan_name": plan.display_name,
+            "tier": plan.tier.value,
+            "billing": plan.billing.value,
+            "description": f"VigyanLLM {plan.display_name} ({plan.billing.value})",
+        })
+    else:
+        response["description"] = f"VigyanLLM {quantity} x {TOPUP_PRODUCTS[product_id]['label']}"
+    return jsonify(response), 200
 
 
 # ══════════════════════════════════════════════════════════════════════════
@@ -239,12 +274,13 @@ def verify_payment():
     email = g.user['email']
     db = get_db()
 
-    # Find the order
+    # Find the order (LIKE: upi_ref becomes "order|payment" after first verify)
     order_row = db.execute(
-        """SELECT id, amount, plan_id, billing_cycle, status FROM payments
-           WHERE user_email=? AND upi_ref=?
+        """SELECT id, amount, plan_id, billing_cycle, status, product_type, runs_purchased, metadata
+           FROM payments
+           WHERE user_email=? AND upi_ref LIKE ?
            ORDER BY id DESC LIMIT 1""",
-        (email, razorpay_order_id)
+        (email, f"{razorpay_order_id}%")
     ).fetchone()
 
     if not order_row:
@@ -255,6 +291,7 @@ def verify_payment():
         return jsonify({
             "success": True,
             "message": "Payment already verified.",
+            "runs_purchased": 0,
             "plan": plan,
         }), 200
 
@@ -266,9 +303,35 @@ def verify_payment():
     )
     if cur.rowcount == 0:
         db.commit()
-        return jsonify({"success": True, "message": "Payment already verified."}), 200
+        return jsonify({"success": True, "message": "Payment already verified.", "runs_purchased": 0}), 200
 
-    # Activate plan for user
+    # ── Top-up orders credit runs instead of activating a subscription plan ──
+    product_type = order_row["product_type"] or ""
+    if product_type in ("top_up", "dock_top_up"):
+        runs = order_row["runs_purchased"] or 1
+        col = "paid_runs" if product_type == "top_up" else "dock_paid_runs"
+        db.execute(f"UPDATE users SET {col} = {col} + ? WHERE email=?", (runs, email))
+        # Top-up orders normally carry no promo code; honor metadata if present.
+        try:
+            raw_meta = order_row["metadata"]
+            meta = json.loads(raw_meta) if isinstance(raw_meta, str) and raw_meta else {}
+            promo_code = meta.get("promo_code") or ""
+            if promo_code:
+                db.execute("UPDATE promo_codes SET used_count = used_count + 1 WHERE code = ? AND used_count < max_uses", (promo_code,))
+        except Exception as e:
+            logger.warning("Failed to record promo usage: %s", e)
+        db.commit()
+        log_action(email, "payment_verified",
+                   f"Order {razorpay_order_id}: credited {runs} x {product_type}")
+        return jsonify({
+            "success": True,
+            "message": f"{runs} run(s) credited.",
+            "runs_purchased": runs,
+            "product_type": product_type,
+            "plan": get_user_plan(email),
+        }), 200
+
+    # ── Subscription order: activate plan ──
     plan_id = order_row["plan_id"]
     billing_cycle = order_row["billing_cycle"] or "monthly"
     tier = get_tier_from_plan(plan_id)
@@ -284,7 +347,8 @@ def verify_payment():
 
     # Mark promo code as used (only after payment succeeds)
     try:
-        meta = json.loads(order_row.get("metadata") or "{}") if isinstance(order_row.get("metadata"), str) else {}
+        raw_meta = order_row["metadata"]
+        meta = json.loads(raw_meta) if isinstance(raw_meta, str) and raw_meta else {}
         promo_code = meta.get("promo_code", "")
         if promo_code:
             db.execute("UPDATE promo_codes SET used_count = used_count + 1 WHERE code = ? AND used_count < max_uses", (promo_code,))
@@ -375,8 +439,12 @@ def pricing():
             "display_name": cfg.display_name,
             "tier": cfg.tier.value,
             "billing": cfg.billing.value,
-            "price_inr": cfg.price_inr,
-            "academic_price_inr": get_academic_price(cfg.price_inr) if cfg.price_inr > 0 else 0,
+            # price_minor is canonical; price_inr is a legacy alias — both are
+            # MINOR units of `currency` (USD cents). Never multiply by 100.
+            "price_minor": cfg.price_minor,
+            "price_inr": cfg.price_minor,
+            "academic_price_minor": get_academic_price(cfg.price_minor) if cfg.price_minor > 0 else 0,
+            "academic_price_inr": get_academic_price(cfg.price_minor) if cfg.price_minor > 0 else 0,
             "daily_analyses": cfg.daily_analyses,
             "batch_max_seq": cfg.batch_max_seq,
             "api_calls_per_month": cfg.api_calls_per_month,
@@ -387,8 +455,17 @@ def pricing():
 
     return jsonify({
         "plans": plans,
+        "topups": [
+            {
+                "product_id": pid,
+                "label": meta["label"],
+                "unit_price_minor": meta["unit_price_minor"],
+                "currency": CURRENCY,
+            }
+            for pid, meta in TOPUP_PRODUCTS.items()
+        ],
         "academic_discount_pct": ACADEMIC_DISCOUNT_PCT,
-        "currency": "INR",
+        "currency": CURRENCY,
     }), 200
 
 
@@ -459,26 +536,34 @@ def razorpay_webhook():
             conn.row_factory = sqlite3.Row
 
             order = conn.execute(
-                "SELECT plan_id, billing_cycle, status FROM payments WHERE upi_ref LIKE ? AND user_email=?",
+                "SELECT plan_id, billing_cycle, status, product_type, runs_purchased FROM payments WHERE upi_ref LIKE ? AND user_email=?",
                 (f"{order_id}%", email)
             ).fetchone()
 
             if order and order['status'] != 'verified':
-                plan_id = order['plan_id']
-                billing_cycle = order['billing_cycle'] or 'monthly'
-                tier = get_tier_from_plan(plan_id)
-                expires_at = _compute_plan_expiry(plan_id)
-
                 conn.execute(
                     "UPDATE payments SET status='verified', verified_at=? WHERE upi_ref LIKE ? AND user_email=? AND status!='verified'",
                     (time.time(), f"{order_id}%", email)
                 )
-                conn.execute(
-                    "UPDATE users SET plan=?, billing_cycle=?, plan_activated_at=?, plan_expires_at=? WHERE email=?",
-                    (tier, billing_cycle, time.time(), expires_at, email)
-                )
-                conn.commit()
-                logger.info("Webhook: activated %s for %s (order %s)", tier, email, order_id)
+                product_type = order['product_type'] or ''
+                if product_type in ('top_up', 'dock_top_up'):
+                    # Top-up order: credit runs, do NOT touch the subscription plan.
+                    runs = order['runs_purchased'] or 1
+                    col = 'paid_runs' if product_type == 'top_up' else 'dock_paid_runs'
+                    conn.execute(f"UPDATE users SET {col} = {col} + ? WHERE email=?", (runs, email))
+                    conn.commit()
+                    logger.info("Webhook: credited %s x %s for %s (order %s)", runs, product_type, email, order_id)
+                else:
+                    plan_id = order['plan_id']
+                    billing_cycle = order['billing_cycle'] or 'monthly'
+                    tier = get_tier_from_plan(plan_id)
+                    expires_at = _compute_plan_expiry(plan_id)
+                    conn.execute(
+                        "UPDATE users SET plan=?, billing_cycle=?, plan_activated_at=?, plan_expires_at=? WHERE email=?",
+                        (tier, billing_cycle, time.time(), expires_at, email)
+                    )
+                    conn.commit()
+                    logger.info("Webhook: activated %s for %s (order %s)", tier, email, order_id)
 
             conn.close()
 
@@ -605,6 +690,8 @@ def validate_promo():
         "daily_analyses": row["daily_analyses"],
         "batch_max": row["batch_max"],
         "has_export": bool(row["has_export"]),
+        # price_inr = legacy alias of price_minor — minor units of `currency`.
+        "price_minor": row["price_inr"],
         "price_inr": row["price_inr"],
         "currency": row["currency"],
         "tier": row["tier"],
@@ -622,7 +709,7 @@ def apply_promo():
     """Apply promo code — two-step flow.
 
     Step 1 (create_order): { code, step: 'create_order' }
-    → Returns Razorpay order for ₹1 verification charge
+    → Returns Razorpay order for the $1.00 verification charge
 
     Step 2 (verify): { code, razorpay_payment_id, razorpay_order_id, razorpay_signature }
     → Verifies payment, creates subscription, activates trial
@@ -689,11 +776,12 @@ def apply_promo():
             "pro_expires_at": pro_expires_at,
             "daily_analyses": row["daily_analyses"],
             "batch_max": row["batch_max"],
+            "price_minor": row["price_inr"],
             "price_inr": row["price_inr"],
         }), 200
 
-    # ── Trial promo: Rs.1 Razorpay verification → trial → auto-debit ──
-    # ── Step 1: Create ₹1 Razorpay order ──
+    # ── Trial promo: $1 Razorpay verification → trial → auto-debit ──
+    # ── Step 1: Create $1 (100 cents) Razorpay order ──
     if step == "create_order":
         if not _current_client():
             return jsonify({"error": "Payment service not configured."}), 503
@@ -703,8 +791,8 @@ def apply_promo():
 
         try:
             order = _current_client().order.create({
-                "amount": 100,  # ₹1 in paise
-                "currency": row["currency"] or "INR",
+                "amount": 100,  # $1.00 verification charge in USD cents
+                "currency": row["currency"] or CURRENCY,
                 "receipt": f"promo_{int(time.time())}_{code}",
                 "notes": {
                     "email": email,
@@ -719,7 +807,7 @@ def apply_promo():
         return jsonify({
             "order_id": order["id"],
             "amount": 100,
-            "currency": row["currency"] or "INR",
+            "currency": row["currency"] or CURRENCY,
             "key_id": RAZORPAY_KEY_ID,
             "prefill": {"email": email, "name": user_name}
         }), 200
@@ -750,9 +838,10 @@ def apply_promo():
             rz_plan = rz_client.plan.create({
                 "item": {
                     "name": f"VigyanLLM Pro ({row['trial_days']}d trial)",
-                    "amount": row["price_inr"] * 100,
-                    "currency": row["currency"],
-                    "description": f"Academic trial — {row['trial_days']} days free, then {row['currency']} {row['price_inr']}/mo"
+                    # price_inr stores MINOR units of its currency (USD cents) — no *100.
+                    "amount": row["price_inr"],
+                    "currency": row["currency"] or CURRENCY,
+                    "description": f"Academic trial — {row['trial_days']} days free, then {row['currency'] or CURRENCY} {row['price_inr'] / 100:.2f}/mo"
                 },
                 "interval": 1,
                 "period": "monthly"
@@ -812,15 +901,16 @@ def apply_promo():
     log_action(email, "trial_activated",
                f"Promo {code}, {row['trial_days']}d trial, sub {sub_id}")
 
-    # Log company expenses: ₹1 verification charge + estimated trial service cost
-    _log_expense("verification_charge", f"Razorpay verification charge for promo {code}",
-                 1.0, promo_code=code, user_email=email, subscription_id=sub_id,
+    # Log company expenses (ledger is in ₹): Razorpay fee on the $1 international
+    # card verification ≈ 3% + 18% GST ≈ $0.035 ≈ ₹3.1, plus estimated trial infra cost.
+    _log_expense("verification_charge", f"Razorpay verification fee for promo {code}",
+                 3.1, promo_code=code, user_email=email, subscription_id=sub_id,
                  metadata={"razorpay_payment_id": rz_payment_id, "razorpay_order_id": rz_order_id})
     estimated_trial_cost = row["daily_analyses"] * row["trial_days"] * 0.50  # ~₹0.50 per analysis infra cost
     _log_expense("trial_service", f"Estimated {row['trial_days']}d trial service cost ({row['daily_analyses']} analyses/day)",
                  estimated_trial_cost, promo_code=code, user_email=email, subscription_id=sub_id,
                  metadata={"daily_analyses": row["daily_analyses"], "trial_days": row["trial_days"],
-                           "price_inr": row["price_inr"], "estimated": True})
+                           "price_minor": row["price_inr"], "estimated": True})
 
     return jsonify({
         "success": True,
@@ -830,6 +920,7 @@ def apply_promo():
         "subscription_id": sub_id,
         "daily_analyses": row["daily_analyses"],
         "batch_max": row["batch_max"],
+        "price_minor": row["price_inr"],
         "price_inr": row["price_inr"],
     }), 200
 
@@ -899,8 +990,9 @@ def trial_status():
         "daily_analyses": promo["daily_analyses"] if promo else 50,
         "batch_max": promo["batch_max"] if promo else 20,
         "has_export": bool(promo["has_export"]) if promo else True,
-        "price_inr": promo["price_inr"] if promo else 699,
-        "currency": promo["currency"] if promo else "INR",
+        "price_minor": promo["price_inr"] if promo else 999,
+        "price_inr": promo["price_inr"] if promo else 999,
+        "currency": promo["currency"] if promo else "USD",
     }), 200
 
 
@@ -944,8 +1036,8 @@ def admin_create_promo():
         daily_analyses: 50,
         batch_max: 20,
         trial_days: 30,
-        price_inr: 699,
-        currency: "INR",
+        price_inr: 999,          # MINOR units of `currency` (USD cents) — legacy field name
+        currency: "USD",
         max_uses: 1,
         expires_at: 0
     }
@@ -964,8 +1056,9 @@ def admin_create_promo():
     batch_max = int(data.get("batch_max", 20))
     has_export = int(data.get("has_export", 1))
     trial_days = int(data.get("trial_days", 30))
-    price_inr = int(data.get("price_inr", 699)) if promo_type != "academic" else 0
-    currency = data.get("currency", "INR") if promo_type != "academic" else "INR"
+    # price_inr is a legacy field name — value = MINOR units of `currency` (USD cents).
+    price_inr = int(data.get("price_inr", 999)) if promo_type != "academic" else 0
+    currency = data.get("currency", "USD") if promo_type != "academic" else "USD"
     max_uses = int(data.get("max_uses", 1))
     expires_at = float(data.get("expires_at", 0))
     discount_pct = int(data.get("discount_pct", 0)) if promo_type == "discount" else 0
@@ -1047,9 +1140,13 @@ def admin_list_promos():
         })
 
     # Summary stats
+    # Summary stats — per-currency: price_inr holds MINOR units of the
+    # row's currency ('USD' = cents) but LEGACY codes hold MAJOR rupees,
+    # so the two are summed separately and never added together.
     total = len(codes)
     total_used = sum(c["used_count"] for c in codes)
-    total_value = sum(c["used_count"] * c["price_inr"] for c in codes)
+    total_value_inr = sum(c["used_count"] * c["price_inr"] for c in codes if c["currency"] != "USD")
+    total_value_usd_minor = sum(c["used_count"] * c["price_inr"] for c in codes if c["currency"] == "USD")
 
     return jsonify({
         "codes": codes,
@@ -1057,7 +1154,8 @@ def admin_list_promos():
             "total_codes": total,
             "total_used": total_used,
             "total_unused": total - total_used,
-            "total_trial_value_inr": total_value,
+            "total_trial_value_inr": total_value_inr,
+            "total_trial_value_usd_minor": total_value_usd_minor,
         }
     }), 200
 
@@ -1195,16 +1293,26 @@ def revenue_stats():
 
     db = get_db()
 
-    # Revenue: from payments table
+    # Revenue from payments, split per currency — NO FX conversion:
+    #   * USD rows (new regime) store MINOR units (cents).
+    #   * Legacy rows (currency IS NULL / 'INR') store MAJOR rupees.
+    # Sums stay separate so cents are never added to rupees.
     try:
-        rev = db.execute(
+        rev_usd = db.execute(
             "SELECT COALESCE(SUM(amount),0) AS total, COUNT(*) AS cnt "
-            "FROM payments WHERE status='captured'"
+            "FROM payments WHERE status='captured' AND currency='USD'"
         ).fetchone()
     except Exception:
-        rev = {"total": 0, "cnt": 0}
+        rev_usd = {"total": 0, "cnt": 0}
+    try:
+        rev_inr = db.execute(
+            "SELECT COALESCE(SUM(amount),0) AS total, COUNT(*) AS cnt "
+            "FROM payments WHERE status='captured' AND (currency IS NULL OR currency<>'USD')"
+        ).fetchone()
+    except Exception:
+        rev_inr = {"total": 0, "cnt": 0}
 
-    # Cost: from cost_ledger if it exists
+    # Cost: from cost_ledger if it exists (INR ledger — unchanged by design)
     try:
         cost = db.execute(
             "SELECT COALESCE(SUM(total_cogs_inr),0) AS total FROM cost_ledger"
@@ -1212,14 +1320,20 @@ def revenue_stats():
     except Exception:
         cost = {"total": 0}
 
-    total_rev = float(rev["total"]) if rev else 0
+    total_rev = float(rev_inr["total"]) if rev_inr else 0          # legacy INR (major)
+    total_usd_minor = float(rev_usd["total"]) if rev_usd else 0    # USD cents
+    payments_count = (rev_usd["cnt"] if rev_usd else 0) + (rev_inr["cnt"] if rev_inr else 0)
     total_cost = float(cost["total"]) if cost else 0
+    # Margin is computed on the INR slice only (same-currency basis);
+    # USD revenue is reported separately rather than converted at an
+    # invented exchange rate.
     margin = total_rev - total_cost
 
     return jsonify({
         "revenue": {
             "total_inr": total_rev,
-            "payments_count": rev["cnt"] if rev else 0,
+            "total_usd_minor": total_usd_minor,
+            "payments_count": payments_count,
             "tokens_sold": 0,
         },
         "cost": {
@@ -1231,6 +1345,7 @@ def revenue_stats():
         "margin": {
             "gross_profit_inr": margin,
             "margin_percent": round(margin / total_rev * 100, 1) if total_rev > 0 else 0,
+            "basis": "inr_only",
         }
     }), 200
 
@@ -1317,18 +1432,25 @@ def billing_history():
     from .auth import get_db
     db = get_db()
     rows = db.execute(
-        """SELECT product_type, status, amount_paise, currency, created_at, captured_at
-           FROM payments WHERE user_email = ? AND status IN ('captured', 'initiated')
+        """SELECT product_type, status, amount, currency, created_at, verified_at
+           FROM payments WHERE user_email = ? AND status IN ('created', 'verified', 'captured', 'initiated')
            ORDER BY created_at DESC LIMIT 10""",
         (email,)
     ).fetchall()
     history = []
     for r in rows or []:
+        # Storage rule: USD rows store MINOR units; legacy rows (currency NULL/'INR')
+        # store MAJOR rupees. Normalise to minor units for the client.
+        cur = r["currency"] or "INR"
+        stored = int(r["amount"] or 0)
+        amount_minor = stored if cur == "USD" else stored * 100
         history.append({
             "plan": r["product_type"], "status": r["status"],
-            "amount_inr": (r["amount_paise"] or 0) // 100,
-            "currency": r["currency"] or "INR",
+            "amount_minor": amount_minor,
+            # legacy key — major INR only; null for USD rows (use amount_minor)
+            "amount_inr": stored if cur != "USD" else None,
+            "currency": cur,
             "created_at": int(r["created_at"] or 0),
-            "captured_at": int(r["captured_at"] or 0),
+            "captured_at": int(r["verified_at"] or 0),
         })
     return jsonify(history), 200

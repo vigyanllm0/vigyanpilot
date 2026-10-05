@@ -33,10 +33,10 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <link rel="manifest" href="/manifest.json" />
 <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
 <meta name="theme-color" content="#0F172A" />
-<meta name="description" content="Start a 30-day free Pro trial of VigyanLLM. Enter your promo code, verify with ₹1, get full access to all bioinformatics tools with autopay.">
+<meta name="description" content="Start a 30-day free Pro trial of VigyanLLM. Enter your promo code, verify with $1, get full access to all bioinformatics tools with autopay.">
 <link rel="canonical" href="https://www.vigyanllm.in/trial">
 <meta property="og:title" content="Academic Trial — 30 Days Free Pro | VigyanLLM">
-<meta property="og:description" content="Start a 30-day free Pro trial. Enter promo code, verify with ₹1, get full access. Autopay — cancel anytime.">
+<meta property="og:description" content="Start a 30-day free Pro trial. Enter promo code, verify with $1, get full access. Autopay — cancel anytime.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://www.vigyanllm.in/trial">
 <meta property="og:image" content="https://www.vigyanllm.in/poster.png">
@@ -289,7 +289,7 @@ a{text-decoration:none;color:inherit}
     <div id="step1" class="step active">
       <div class="trial-icon">🎓</div>
       <h1 class="trial-title">Academic Trial</h1>
-      <p class="trial-subtitle">Start your 30-day free Pro trial. Verify with ₹1 (non-refundable), cancel anytime.</p>
+      <p class="trial-subtitle">Start your 30-day free Pro trial. Verify with $1 (non-refundable), cancel anytime.</p>
 
       <div class="step-label">Step 1 of 2</div>
       <h2 class="step-title">Enter your promo code</h2>
@@ -319,15 +319,15 @@ a{text-decoration:none;color:inherit}
         </div>
         <div class="trial-detail-row">
           <span class="trial-detail-label">Card verification</span>
-          <span id="td-verify" class="trial-detail-value">₹1 (non-refundable)</span>
+          <span id="td-verify" class="trial-detail-value">$1 (non-refundable)</span>
         </div>
         <div class="trial-detail-row">
           <span class="trial-detail-label">After trial</span>
-          <span id="td-price" class="trial-detail-value">₹699/month (autopay)</span>
+          <span id="td-price" class="trial-detail-value">$9.99/month (autopay)</span>
         </div>
         <div class="price-row">
           <span class="price-label">Pay now</span>
-          <span class="price-value" id="td-now">₹1</span>
+          <span class="price-value" id="td-now">$1</span>
         </div>
       </div>
 
@@ -340,10 +340,10 @@ a{text-decoration:none;color:inherit}
       <div id="step2-trial" style="display:none">
         <div class="step-label">Step 2 of 2</div>
         <h2 class="step-title">Verify your card</h2>
-        <p style="font-size:13px;color:var(--text2);margin-bottom:16px">We'll charge ₹1 to verify your card. This is non-refundable. After your trial ends, you'll be automatically billed <strong id="step2-price">₹699/month</strong>.</p>
+        <p style="font-size:13px;color:var(--text2);margin-bottom:16px">We'll charge $1 to verify your card. This is non-refundable. After your trial ends, you'll be automatically billed <strong id="step2-price">$9.99/month</strong>.</p>
         <div id="rzpay-container"></div>
         <button class="btn-start" onclick="openCheckout()" id="btn-pay" style="background:var(--green)">
-          Pay ₹1 & Start Trial →
+          Pay $1 & Start Trial →
         </button>
         <p style="font-size:11px;color:var(--muted);text-align:center;margin-top:12px">🔒 Secured by Razorpay. Cancel anytime before trial ends.</p>
       </div>
@@ -365,7 +365,7 @@ a{text-decoration:none;color:inherit}
       <div class="success-box">
         <div class="success-icon">🎉</div>
         <h2 class="success-title">Your trial is active!</h2>
-        <p class="success-subtitle" id="success-msg">30 days of Pro access. Your card will be charged ₹699/month after the trial ends.</p>
+        <p class="success-subtitle" id="success-msg">30 days of Pro access. Your card will be charged $9.99/month after the trial ends.</p>
         <a href="/primer" class="btn-cta">Start Designing →</a>
       </div>
     </div>
@@ -398,6 +398,9 @@ a{text-decoration:none;color:inherit}
 var API = window.VIGYAN_BACKEND_URL || '/api';
 var promoData = null;
 
+// Backend serves USD minor units (cents).
+function usdAmt(cents) { return '$' + (Number(cents || 0) / 100).toFixed(2); }
+
 (function init() {
   checkExistingTrial();
   // Resume from login redirect — restore saved promo data and auto-proceed
@@ -417,9 +420,9 @@ var promoData = null;
         document.getElementById('td-price').textContent = 'Expires after ' + promoData.trial_days + ' days';
         document.getElementById('td-now').textContent = 'Free';
       } else {
-        document.getElementById('td-verify').textContent = '₹1 (non-refundable)';
-        document.getElementById('td-price').textContent = '₹' + promoData.price_inr + '/month (autopay)';
-        document.getElementById('td-now').textContent = '₹1';
+        document.getElementById('td-verify').textContent = '$1 (non-refundable)';
+        document.getElementById('td-price').textContent = usdAmt(promoData.price_inr) + '/month (autopay)';
+        document.getElementById('td-now').textContent = '$1';
       }
       document.getElementById('trial-details').style.display = 'block';
       document.getElementById('btn-proceed').style.display = 'block';
@@ -497,10 +500,10 @@ async function validateCode() {
       document.getElementById('td-price').textContent = 'Expires after ' + d.trial_days + ' days';
       document.getElementById('td-now').textContent = 'Free';
     } else {
-      document.getElementById('td-verify').textContent = '₹1 (non-refundable)';
-      document.getElementById('td-price').textContent = '₹' + d.price_inr + '/month (autopay)';
-      document.getElementById('td-now').textContent = '₹1';
-      document.getElementById('step2-price').textContent = '₹' + d.price_inr + '/month';
+      document.getElementById('td-verify').textContent = '$1 (non-refundable)';
+      document.getElementById('td-price').textContent = usdAmt(d.price_inr) + '/month (autopay)';
+      document.getElementById('td-now').textContent = '$1';
+      document.getElementById('step2-price').textContent = usdAmt(d.price_inr) + '/month';
     }
 
     document.getElementById('trial-details').style.display = 'block';
@@ -547,7 +550,7 @@ async function openCheckout() {
   hideError('pay-error');
 
   try {
-    // Create ₹1 verification order
+    // Create $1 verification order
     var orderR = await fetch(API + '/promo/apply', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -562,7 +565,7 @@ async function openCheckout() {
     if (!orderR.ok || !orderD.order_id) {
       showError('pay-error', orderD.error || 'Failed to create order.');
       btn.disabled = false;
-      btn.textContent = 'Pay ₹1 & Start Trial →';
+      btn.textContent = 'Pay $1 & Start Trial →';
       return;
     }
 
@@ -571,9 +574,9 @@ async function openCheckout() {
       key: orderD.key_id,
       order_id: orderD.order_id,
       amount: orderD.amount,
-      currency: orderD.currency || 'INR',
+      currency: orderD.currency || 'USD',
       name: 'VigyanLLM',
-      description: 'Academic Trial — Card Verification (₹1)',
+      description: 'Academic Trial — Card Verification ($1)',
       handler: function(response) {
         verifyAndActivate(response);
       },
@@ -582,7 +585,7 @@ async function openCheckout() {
       modal: {
         ondismiss: function() {
           btn.disabled = false;
-          btn.textContent = 'Pay ₹1 & Start Trial →';
+          btn.textContent = 'Pay $1 & Start Trial →';
         }
       }
     };
@@ -601,14 +604,14 @@ async function openCheckout() {
       s.onerror = function() {
         showError('pay-error', 'Failed to load payment SDK. Refresh and try again.');
         btn.disabled = false;
-        btn.textContent = 'Pay ₹1 & Start Trial →';
+        btn.textContent = 'Pay $1 & Start Trial →';
       };
       document.head.appendChild(s);
     }
   } catch (e) {
     showError('pay-error', 'Network error. Try again.');
     btn.disabled = false;
-    btn.textContent = 'Pay ₹1 & Start Trial →';
+    btn.textContent = 'Pay $1 & Start Trial →';
   }
 }
 
@@ -633,17 +636,17 @@ async function verifyAndActivate(rzResponse) {
     if (!r.ok) {
       showError('pay-error', d.error || 'Verification failed.');
       btn.disabled = false;
-      btn.textContent = 'Pay ₹1 & Start Trial →';
+      btn.textContent = 'Pay $1 & Start Trial →';
       return;
     }
 
     document.getElementById('success-msg').textContent =
-      d.trial_days + ' days of Pro access (' + d.daily_analyses + ' analyses/day, batch ' + d.batch_max + '). Your card will be charged ₹' + (d.price_inr || 699) + '/month after the trial ends.';
+      d.trial_days + ' days of Pro access (' + d.daily_analyses + ' analyses/day, batch ' + d.batch_max + '). Your card will be charged ' + usdAmt(d.price_inr || 999) + '/month after the trial ends.';
     showStep('step3');
   } catch (e) {
     showError('pay-error', 'Network error. Contact support.');
     btn.disabled = false;
-    btn.textContent = 'Pay ₹1 & Start Trial →';
+    btn.textContent = 'Pay $1 & Start Trial →';
   }
 }
 
