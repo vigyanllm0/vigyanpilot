@@ -206,6 +206,35 @@ jobs:
             curl -sf http://localhost:11436/health && echo " OK" || echo " FAIL"
           ENDSSH
 
+      # Read-only: which process actually serves live /api? CI restarts
+      # vigyan.service (:11436) but nginx may proxy to a different upstream.
+      - name: Diagnose live API routing
+        run: |
+          ssh ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'ENDSSH'
+            set +e
+            echo "=== git HEAD ==="
+            cd ~/vigyanpilot && git log --oneline -1
+            echo "=== listening sockets (5000/11436/8001/80) ==="
+            sudo ss -ltnp 2>/dev/null | grep -E ':(5000|11436|8001|80|443) ' | head -20
+            echo "=== app processes ==="
+            ps -eo pid,etime,cmd 2>/dev/null | grep -E 'gunicorn|uvicorn|wsgi:app|celery' | grep -v grep | head -20
+            echo "=== docker ==="
+            docker ps --format '{{.Names}} | {{.Image}} | {{.Ports}}' 2>/dev/null | head -10
+            echo "=== pricing via :11436 (what CI restarts) ==="
+            curl -s -m 8 http://localhost:11436/api/payments/pricing | head -c 260; echo
+            echo "=== pricing via :5000 (legacy upstream candidate) ==="
+            curl -s -m 8 http://localhost:5000/api/payments/pricing | head -c 260; echo
+            echo "=== health via :11436 vs :5000 ==="
+            curl -s -o /dev/null -w '11436=%{http_code}\n' -m 8 http://localhost:11436/health
+            curl -s -o /dev/null -w '5000=%{http_code}\n' -m 8 http://localhost:5000/health
+            echo "=== nginx: upstreams, api/health locations, cache ==="
+            sudo nginx -T 2>/dev/null | grep -nE 'upstream|server .*:[0-9]+;|location[ ]+/api|location[ ]+/health|location[ ]+ \{|proxy_pass|proxy_cache' | head -50
+            echo "=== nginx config files in use ==="
+            ls -l /etc/nginx/sites-enabled/ /etc/nginx/conf.d/ 2>/dev/null | head -20
+            echo "=== other checkouts ==="
+            ls -d /opt/vigyanllm /opt/vigyan* 2>/dev/null
+          ENDSSH
+
       - name: Health check via CloudFront
         run: |
           sleep 5
