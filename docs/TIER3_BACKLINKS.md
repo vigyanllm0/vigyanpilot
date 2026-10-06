@@ -8,7 +8,7 @@ Status log maintained in `pending work.md` §2.
 | # | Target | Type | Status |
 |---|--------|------|--------|
 | 1 | [danielecook/Awesome-Bioinformatics](https://github.com/danielecook/Awesome-Bioinformatics) | awesome-list PR | ✅ **PR #172 OPEN** (2026-10-01) — new `## Primer Design` section (Primer3, Primer-BLAST, PrimerBank, VigyanLLM) |
-| 2 | [brandonhimpfen/awesome-bioinformatics](https://github.com/brandonhimpfen/awesome-bioinformatics) | awesome-list PR | ✅ **PR #29 OPEN** (2026-10-01) — one entry under *Data Analysis & Visualization* |
+| 2 | [brandonhimpfen/awesome-bioinformatics](https://github.com/brandonhimpfen/awesome-bioinformatics) | awesome-list PR | ❌ **PR #29 CLOSED w/o merge** (2026-10-01 — maintainer pass, independent-validation bar; reason logged below, no re-litigating) |
 | 3 | Medford Lab, Colorado State — *Molecular Biology Web Tools* | university outreach | 📝 draft ready — **user sends** (see below) |
 | 4 | BYU DNA Sequencing Center — *Resources* (`Primers & Primer Design`) | university outreach | 📝 draft ready — **user sends** |
 | 5 | Arizona State LibGuides — *Bioinformatics Resources and Tools* | university outreach | 📝 draft ready — **user sends** |
@@ -22,7 +22,17 @@ Status log maintained in `pending work.md` §2.
   `Check URLs` workflow; all 8 links pre-verified 200.
 - **#29** — branch `vigyanllm0:add-vigyanllm` → `brandonhimpfen:main`. Single objective entry
   (their CONTRIBUTING bans multi-link self-promotion — kept to one).
-- Re-check both PRs on **Oct 3 and Oct 8**; respond to review comments promptly; if closed
+  **Outcome (re-check 2026-10-06):** closed **2026-10-01 by the maintainer without merge**.
+  Reason given ([comment](https://github.com/brandonhimpfen/awesome-bioinformatics/pull/29#issuecomment-5923368880)):
+  (a) *Data Analysis & Visualization* is only a partial fit — VigyanLLM is an integrated
+  analysis platform, not a visualization tool; (b) maintainer "could not establish sufficient
+  independent evidence for the project's broader adoption, recognition, or scientific
+  validation" — they want independently observable validation, not self-published claims;
+  the project "may be reconsidered in the future as that independent footprint develops".
+  → Revisit only after third-party citations/validation accumulate (e.g. `/validation`
+  referenced by external sites, published citations). Do not re-open now.
+- Re-check **#172** on **Oct 8** (Oct-3 slot performed 2026-10-06: still OPEN, MERGEABLE,
+  0 comments/reviews since opening 10-01); respond to review comments promptly; if closed
   without merge, note the reason and move on (no re-litigating).
 
 ### Considered & rejected (fit/quality — don't re-chase)
@@ -139,7 +149,10 @@ VigyanLLM — vigyanllm.in
 |------|--------|--------|
 | 2026-10-01 | PR #172 opened (danielecook) | open |
 | 2026-10-01 | PR #29 opened (brandonhimpfen) | open |
+| 2026-10-01 | PR #29 closed by maintainer (no merge) | declined — partial fit + no independent validation evidence |
+| 2026-10-06 | Re-check #172 (Oct-3 slot, overdue) | **still OPEN**, MERGEABLE, 0 comments / 0 reviews, 1 file +10 |
+| 2026-10-06 | Re-check #29 (Oct-3 slot, overdue) | **CLOSED w/o merge** (see reason above) |
 | | Drafts 1–3 prepared | awaiting send |
 
-Next checks: **Oct 3** (PR state + any review comments), **Oct 8** (merge/close outcome;
-log referral sessions in GSC → Settings → Links after merges).
+Next check: **Oct 8** — PR #172 state/any review comments (log referral sessions in
+GSC → Settings → Links if it merges). #29 is closed; not re-chased.

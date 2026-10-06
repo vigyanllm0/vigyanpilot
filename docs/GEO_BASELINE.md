@@ -58,3 +58,15 @@ The GEO Quick-Answer block pattern (below-H1, "What is this tool?" + "How do I u
 
 **Signal sources shipped to flip this:** site copy (4 pages, 10-01), sitemap lastmod bumps + `/about` Organization+FAQPage schema + homepage PostalAddress city (10-02), `llms.txt`, IndexNow, GitHub org location; off-site (LinkedIn/Crunchbase/MCA/DPIIT) = user actions tracked in `docs/HQ_PROPAGATION.md`.
 
+### Re-check 1 — 2026-10-06 (10-05 slot, done late; next 10-08/09)
+
+| Platform | Answer as of 2026-10-06 | Delta vs 10-01/02 baseline |
+|---|---|---|
+| Google SERP (index layer via web-search API) | **✅ New Delhi** — `/about` result snippet reads *"VigyanLLM Private Limited is headquartered in New Delhi, Delhi, India. Is VigyanLLM an Indian company? Yes."* | **FLIPPED** (baseline: Gurgaon, stale /about) |
+| DuckDuckGo (independent index) | **New Delhi / Delhi** — top results: `/about`, credonex *"VIGYANLLM PRIVATE LIMITED (New Delhi, Delhi)"*, falconebiz *"…located at South Delhi, Delhi"*, Tracxn/registries with CIN **U62011DL2026PTC469162** (DL = Delhi) | **Delhi-consistent** — no Gurgaon anywhere in top 10 |
+| Bing (direct) | **No data** — `bing.com/search` returned degraded/unrelated results (no VigyanLLM hit at all); Bing Webmaster verification still pending (user action, `HQ_PROPAGATION.md` §7) | no data |
+| Google AI Overview | **Not measurable programmatically** — Google blocks non-browser fetch (consent/JS wall); needs manual browser check | manual, 10-08/09 |
+| ChatGPT / Perplexity / Gemini | still UI-bound per methodology above | manual, 10-08/09 |
+
+**Verdict:** the index layer has flipped to New Delhi on Google + DuckDuckGo within the expected 3–14 day window (site signals 10-01/10-02). Remaining: manual AI-assistant checks (10-08/09) + Bing Webmaster setup. Note: third-party MCA registries show the registered office as *South Delhi, Delhi* (falconebiz) — different phrasing, same city/UT, no conflict with site copy "New Delhi"; no action unless a source still says **Gurgaon**.
+
