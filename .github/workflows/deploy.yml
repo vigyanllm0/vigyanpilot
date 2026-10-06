@@ -147,10 +147,15 @@ jobs:
               uv pip install psycopg2-binary==2.9.10 --only-binary :all: --quiet 2>/dev/null || \
                 echo "psycopg2-binary wheel not found via uv — will build from source"
               uv pip install -r requirements.txt --quiet
+              # CMS (FastAPI) deps — overlap pins (psycopg2/bcrypt) are kept
+              # identical in backend/requirements.txt so this never downgrades
+              # anything the main app installed above.
+              uv pip install -r backend/requirements.txt --quiet
             else
               pip install psycopg2-binary==2.9.10 --only-binary :all: --no-cache-dir --quiet 2>/dev/null || \
                 echo "psycopg2-binary wheel not found via pip — will build from source"
               pip install -r requirements.txt --no-cache-dir --quiet
+              pip install -r backend/requirements.txt --no-cache-dir --quiet
             fi
 
             # Write .env file from GitHub Secrets
@@ -168,6 +173,13 @@ jobs:
             printf '%s\n' "RAZORPAY_KEY_SECRET=${{ secrets.RAZORPAY_KEY_SECRET }}" >> .env
             printf '%s\n' "RAZORPAY_WEBHOOK_SECRET=${{ secrets.RAZORPAY_WEBHOOK_SECRET }}" >> .env
             printf '%s\n' "GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}" >> .env
+            # CMS (FastAPI :8001) — JWT_SECRET is required by backend/config.py
+            # at import time; admin credential is seeded/rotated from env by
+            # backend/main.py _seed_admin() (no credentials in code).
+            printf '%s\n' "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
+            printf '%s\n' "CMS_ADMIN_EMAIL=${{ secrets.CMS_ADMIN_EMAIL }}" >> .env
+            printf '%s\n' "CMS_ADMIN_PASSWORD=${{ secrets.CMS_ADMIN_PASSWORD }}" >> .env
+            printf '%s\n' "MAIN_API_URL=http://127.0.0.1:11436/api" >> .env
 
             # Start PostgreSQL
             if command -v pg_isready &>/dev/null && pg_isready -q 2>/dev/null; then
@@ -194,6 +206,15 @@ jobs:
               sudo systemctl enable vigyan
             fi
             echo "Updated vigyan.service"
+
+            # Install/update the CMS unit (FastAPI on 127.0.0.1:8001) —
+            # started after the main API gates below.
+            sudo cp deploy/vigyan-cms.service /etc/systemd/system/vigyan-cms.service
+            sudo systemctl daemon-reload
+            if ! systemctl is-enabled vigyan-cms &>/dev/null; then
+              sudo systemctl enable vigyan-cms
+            fi
+            echo "Updated vigyan-cms.service"
 
             # Run database migrations
             python deploy/migrations/migrate.py
@@ -240,6 +261,47 @@ jobs:
             fi
             echo " OK: :11436 serving deployed code (USD pricing)"
             curl -sf http://localhost:11436/health && echo " health OK" || { echo " health FAIL"; exit 1; }
+
+            # ── CMS (FastAPI :8001) — same deliberate port-takeover pattern ──
+            # Startup seeds/rotates the admin from CMS_ADMIN_* env (backend/
+            # main.py _seed_admin) and creates cms_*/admin_users tables via
+            # Base.metadata.create_all — no migrations needed for these.
+            sudo systemctl stop vigyan-cms 2>/dev/null || true
+            sudo pkill -f 'uvicorn.*8001' 2>/dev/null || true
+            sleep 2
+            if ! sudo systemctl restart vigyan-cms; then
+              echo " ::warning::vigyan-cms.service failed to start"
+              sudo systemctl status vigyan-cms --no-pager -l 2>/dev/null | tail -20 || true
+            fi
+            sleep 5
+            if ! curl -sf -m 8 http://127.0.0.1:8001/health >/dev/null; then
+              echo " ::error::CMS :8001 health gate FAILED"
+              sudo journalctl -u vigyan-cms --no-pager -n 40 2>/dev/null || true
+              exit 1
+            fi
+            echo " OK: CMS :8001 healthy"
+
+            # GATE: end-to-end CMS login with the configured credential.
+            # Credential JSON is built from .env at runtime — no secret value or
+            # issued token is ever written to the (public) workflow log.
+            LOGIN_JSON=$(python3 -c "import json; env=dict(l.strip().split('=',1) for l in open('.env') if l.strip().startswith('CMS_ADMIN_') and '=' in l); print(json.dumps({'email': env.get('CMS_ADMIN_EMAIL',''), 'password': env.get('CMS_ADMIN_PASSWORD','')}))")
+            CLOGIN=$(curl -s -m 10 -o /tmp/cms_login.json -w '%{http_code}' -X POST \
+              http://127.0.0.1:8001/api/v1/cms/auth/login \
+              -H 'Content-Type: application/json' -d "$LOGIN_JSON" || true)
+            if [ "$CLOGIN" != "200" ] || ! python3 -c "import json,sys; d=json.load(open('/tmp/cms_login.json')); sys.exit(0 if d.get('token') else 1)" 2>/dev/null; then
+              echo " ::error::CMS login gate FAILED (HTTP $CLOGIN) — response keys: $(python3 -c "import json; print(sorted(json.load(open('/tmp/cms_login.json')).keys()))" 2>/dev/null || echo non-JSON)"
+              sudo journalctl -u vigyan-cms --no-pager -n 40 2>/dev/null || true
+              exit 1
+            fi
+            rm -f /tmp/cms_login.json
+            echo " OK: CMS login gate passed (token issued, not logged)"
+
+            # nginx config is now versioned + idempotent (was "run once"):
+            # opens /api/v1/cms/ to CloudFront origin traffic. nginx -t inside
+            # the script gates a bad config before reload; a failure here fails
+            # the deploy while the running nginx keeps its previous config.
+            bash deploy/deploy-nginx-ec2.sh
+            echo " OK: nginx config deployed (CMS API path opened)"
           ENDSSH
 
       - name: Health check via CloudFront
@@ -256,6 +318,50 @@ jobs:
             exit 1
           fi
           echo " — All endpoints OK (live pricing = USD)"
+
+          # ── Production CMS enablement gates ──────────────────────────────
+          # 1) The /cms-admin shell must be reachable at the edge again
+          #    (viewer-request function updated before this push).
+          CM=$(curl -sL -o /dev/null -w '%{http_code}' -m 15 https://www.vigyanllm.in/cms-admin)
+          if [ "$CM" != "200" ]; then
+            echo " — /cms-admin edge gate FAILED (HTTP $CM)"
+            exit 1
+          fi
+          # 2) Full CloudFront → nginx → uvicorn login chain + an authorized
+          #    read. Secrets are GitHub-interpolated (values masked in logs);
+          #    the issued token is never printed.
+          CMS_EMAIL='${{ secrets.CMS_ADMIN_EMAIL }}' \
+          CMS_PASSWORD='${{ secrets.CMS_ADMIN_PASSWORD }}' \
+          python3 - <<'PYCMS'
+          import json, os, urllib.request
+
+          def _login():
+              req = urllib.request.Request(
+                  "https://www.vigyanllm.in/api/v1/cms/auth/login",
+                  data=json.dumps({"email": os.environ["CMS_EMAIL"],
+                                   "password": os.environ["CMS_PASSWORD"]}).encode(),
+                  headers={"Content-Type": "application/json"},
+                  method="POST",
+              )
+              with urllib.request.urlopen(req, timeout=20) as r:
+                  return r.status, json.loads(r.read())
+
+          def _read(token):
+              req = urllib.request.Request(
+                  "https://www.vigyanllm.in/api/v1/cms/pages",
+                  headers={"Authorization": "Bearer " + token},
+              )
+              with urllib.request.urlopen(req, timeout=20) as r:
+                  return r.status
+
+          status, body = _login()
+          token = body.get("token") or ""
+          if status != 200 or not token:
+              raise SystemExit(f"live CMS login status={status} keys={sorted(body)}")
+          if _read(token) != 200:
+              raise SystemExit("authorized GET /api/v1/cms/pages failed")
+          print(" — live CMS chain OK (login + authorized read; token not logged)")
+          PYCMS
 
       - name: Deploy notification
         if: always()

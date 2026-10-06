@@ -1,0 +1,74 @@
+[Unit]
+Description=VigyanLLM CMS API (FastAPI, 127.0.0.1:8001)
+Documentation=https://vigyanllm.in
+After=network-online.target postgresql.service vigyan.service
+Wants=postgresql.service
+Requires=network-online.target
+
+[Service]
+Type=simple
+User=ubuntu
+Group=ubuntu
+WorkingDirectory=/home/ubuntu/vigyanpilot/backend
+
+# ── Environment ────────────────────────────────────────────────────────────
+# PATH: same venv as the main app (both requirements files are installed).
+# PYTHONPATH: backend/ FIRST so top-level names (main, database, routes,
+#   config, auth, deps, schemas) resolve to the CMS package even if a
+#   similarly-named module ever appears at the repo root; repo root second so
+#   the lazy `from primerforge.security import validate_password` in
+#   backend/schemas.py resolves (the box venv has no editable primerforge).
+Environment=PATH=/home/ubuntu/vigyanpilot/.venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+Environment=PYTHONPATH=/home/ubuntu/vigyanpilot/backend:/home/ubuntu/vigyanpilot
+EnvironmentFile=/home/ubuntu/vigyanpilot/.env
+
+# ── Application ────────────────────────────────────────────────────────────
+# Single worker on purpose: the login-throttle state lives in-process and must
+# stay consistent. --app-dir is explicit belt-and-suspenders beside PYTHONPATH.
+ExecStart=/home/ubuntu/vigyanpilot/.venv/bin/uvicorn \
+    --app-dir /home/ubuntu/vigyanpilot/backend \
+    main:app --host 127.0.0.1 --port 8001 --workers 1
+
+# ── Process Lifecycle ──────────────────────────────────────────────────────
+Restart=on-failure
+RestartSec=5
+RestartSteps=3
+RestartMaxDelaySec=30
+TimeoutStartSec=60
+TimeoutStopSec=30
+
+# ── Resource Limits ────────────────────────────────────────────────────────
+LimitNOFILE=65536
+LimitNPROC=4096
+LimitCORE=0
+
+# ── Security Hardening (mirrors vigyan.service) ────────────────────────────
+# Prevent privilege escalation via setuid binaries
+NoNewPrivileges=true
+
+# Restrict filesystem access — writeable only where needed (uploads land in
+# repo/frontend/uploads/cms; logs go to the unit journal)
+ProtectSystem=strict
+ReadWritePaths=/home/ubuntu/vigyanpilot /var/log/vigyan /tmp
+
+# Isolate /tmp — noexec, nosuid, nodev
+PrivateTmp=true
+
+# Kernel protection (safe on all systems)
+ProtectKernelModules=true
+ProtectKernelTunables=true
+ProtectKernelLogs=true
+ProtectClock=true
+
+# Isolate from hostname changes
+ProtectHostname=true
+
+# Remove inherited IPC resources on exit
+RemoveIPC=true
+
+# NOTE: same omissions as vigyan.service — ProtectHome blocks /home/ubuntu
+# paths on some systemd versions; MemoryDenyWriteExecute breaks Python C
+# extensions; SystemCallFilter/CapabilityBoundingSet interfere with DB drivers.
+
+[Install]
+WantedBy=multi-user.target

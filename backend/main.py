@@ -1,4 +1,5 @@
 import logging
+import os
 
 from database import engine
 from fastapi import FastAPI
@@ -39,25 +40,65 @@ def startup():
     _seed_admin()
 
 def _seed_admin():
-    from auth import hash_password
+    """Create or rotate the CMS admin from environment configuration.
+
+    CMS_ADMIN_EMAIL / CMS_ADMIN_PASSWORD are written to .env by CI from
+    GitHub secrets (same pattern as PRIMERFORGE_ADMIN_*). No credential
+    lives in code: when the stored hash does not verify against the
+    configured password, the hash is re-derived — changing the secret
+    rotates the credential and the old password stops working. Skips
+    with a warning when unset so local tooling can still boot the app.
+    """
+    from auth import hash_password, verify_password
     from database import SessionLocal
     from models import AdminUser
+
+    email = os.environ.get("CMS_ADMIN_EMAIL", "").strip()
+    password = os.environ.get("CMS_ADMIN_PASSWORD", "")
+    if not email or not password:
+        logging.warning(
+            "CMS admin seeding skipped: CMS_ADMIN_EMAIL / CMS_ADMIN_PASSWORD not set"
+        )
+        return
+
+    def _pw_ok(stored):
+        if not stored:
+            return False
+        try:
+            return bool(verify_password(password, stored))
+        except (ValueError, TypeError):
+            return False  # malformed/legacy hash → treated as mismatch, re-derived
+
     db = SessionLocal()
     try:
-        existing = db.query(AdminUser).filter(AdminUser.email == "contact@vigyanllm.in").first()
-        if not existing:
-            hashed = hash_password("Vigyan@hemant.9817&hs")
-            user = AdminUser(
-                email="contact@vigyanllm.in",
-                password_hash=hashed,
-                display_name="CMS Admin",
-                role="admin",
+        user = db.query(AdminUser).filter(AdminUser.email == email).first()
+        if user is None:
+            db.add(
+                AdminUser(
+                    email=email,
+                    password_hash=hash_password(password),
+                    display_name="CMS Admin",
+                    role="admin",
+                )
             )
-            db.add(user)
             db.commit()
-            print("CMS admin created: contact@vigyanllm.in / Vigyan@hemant.9817&hs")
+            logging.info("CMS admin seeded: %s", email)
+        elif not _pw_ok(user.password_hash):
+            user.password_hash = hash_password(password)
+            user.role = "admin"
+            db.commit()
+            logging.info("CMS admin credential rotated from environment: %s", email)
+        elif user.role != "admin":
+            user.role = "admin"
+            db.commit()
     finally:
         db.close()
+
+
+@app.get("/health")
+def health():
+    """Liveness probe for deploy gates (service binds 127.0.0.1:8001 only)."""
+    return {"status": "ok", "service": "vigyan-cms"}
 
 app.include_router(auth.router)
 app.include_router(pages.router)

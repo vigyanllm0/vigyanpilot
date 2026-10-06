@@ -18,8 +18,10 @@ function handler(event) {
   // 1b. API + HEALTH + ACME — pass through to EC2 origin untouched
   if (u.indexOf('/api/') === 0 || u === '/health' || u.indexOf('/.well-known/') === 0) return r;
 
-  // 1c. ADMIN PAGES — block directly (no forwarding to EC2)
-  if (u === '/admin' || u === '/admin-reviews' || u === '/cms-admin'
+  // 1c. LEGACY ADMIN PAGES - block directly (no forwarding to EC2).
+  // /cms-admin is deliberately NOT blocked: production CMS login serves the
+  //   shell from S3; the API behind it enforces Bearer-JWT auth + require_admin.
+  if (u === '/admin' || u === '/admin-reviews'
       || u.indexOf('/admin/') === 0) {
     return { statusCode: 403, statusDescription: 'Forbidden',
       headers: { 'content-type': { value: 'text/plain' } }, body: 'Forbidden' };

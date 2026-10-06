@@ -1,9 +1,11 @@
 fastapi==0.115.0
 uvicorn==0.30.0
 sqlalchemy==2.0.35
-psycopg2-binary==2.9.9
+# psycopg2-binary + bcrypt overlap with root requirements.txt — keep the pins
+# identical there so installing this file never downgrades the main app.
+psycopg2-binary==2.9.10
 python-jose==3.3.0
-bcrypt==4.2.0
+bcrypt==5.0.0
 python-multipart==0.0.12
 aiofiles==24.1.0
 pydantic==2.9.0

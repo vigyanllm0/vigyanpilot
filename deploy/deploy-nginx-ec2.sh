@@ -46,10 +46,10 @@ server {
     add_header Access-Control-Allow-Headers "Authorization, Content-Type, X-Requested-With" always;
     add_header Access-Control-Allow-Credentials "true" always;
 
-    # CMS proxy (port 8001) — localhost only
+    # CMS proxy (FastAPI on 127.0.0.1:8001). Reachable through CloudFront like
+    # the rest of /api/* — authentication is enforced by the CMS itself
+    # (Bearer JWT + require_admin; login endpoint rate-limited in-app).
     location /api/v1/cms/ {
-        allow 127.0.0.1;
-        deny all;
         proxy_pass http://127.0.0.1:8001/api/v1/cms/;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
