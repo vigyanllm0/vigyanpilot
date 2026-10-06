@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+from html import escape as _esc
 
 from database import get_db
 from deps import get_current_user, require_admin
@@ -328,6 +329,23 @@ def _render_node(node: dict) -> str:
         lang_attr = f' class="language-{lang}"' if lang else ""
         inner = _render_children(node)
         return f"<pre><code{lang_attr}>{inner}</code></pre>"
+    elif t == "table":
+        inner = "".join([_render_node(c) for c in node.get("content", [])])
+        return f"<table>{inner}</table>"
+    elif t == "tableRow":
+        inner = "".join([_render_node(c) for c in node.get("content", [])])
+        return f"<tr>{inner}</tr>"
+    elif t in ("tableHeader", "tableCell"):
+        col = attrs.get("colspan", 1) or 1
+        row = attrs.get("rowspan", 1) or 1
+        extra = ""
+        if int(col) > 1:
+            extra += f' colspan="{int(col)}"'
+        if int(row) > 1:
+            extra += f' rowspan="{int(row)}"'
+        tag_name = "th" if t == "tableHeader" else "td"
+        inner = _render_children(node)
+        return f"<{tag_name}{extra}>{inner}</{tag_name}>"
     elif t == "horizontalRule":
         return "<hr>"
     elif t == "hardBreak":
@@ -340,23 +358,25 @@ def _render_node(node: dict) -> str:
         align = attrs.get("align", "")
         style = attrs.get("style", "")
         loading = attrs.get("loading", "lazy") or "lazy"
-        attrs_out = f' src="{src}"'
+        attrs_out = f' src="{_esc(src)}"'
         if alt:
-            attrs_out += f' alt="{alt}"'
+            attrs_out += f' alt="{_esc(alt)}"'
         if title:
-            attrs_out += f' title="{title}"'
+            attrs_out += f' title="{_esc(title)}"'
         if style:
-            attrs_out += f' style="{style}"'
+            attrs_out += f' style="{_esc(style)}"'
         if align:
-            attrs_out += f' align="{align}"'
-        attrs_out += f' loading="{loading}"'
+            attrs_out += f' align="{_esc(align)}"'
+        attrs_out += f' loading="{_esc(loading)}"'
         img = f"<img{attrs_out}>"
         if caption:
-            fig_class = f' class="vl-figure vl-align-{align}"' if align else ' class="vl-figure"'
-            return f'<figure{fig_class}>{img}<figcaption>{caption}</figcaption></figure>'
+            fig_class = f' class="vl-figure vl-align-{_esc(align)}"' if align else ' class="vl-figure"'
+            return f'<figure{fig_class}>{img}<figcaption>{_esc(caption)}</figcaption></figure>'
         return img
     elif t == "text":
-        text = node.get("text", "")
+        # escape: text nodes are plain text by TipTap convention — raw "<"/"&"
+        # (e.g. inside code samples) would otherwise corrupt content_html
+        text = _esc(node.get("text", ""), quote=False)
         for m in marks:
             mt = m.get("type")
             if mt == "bold":
@@ -368,7 +388,7 @@ def _render_node(node: dict) -> str:
             elif mt == "strike":
                 text = f"<s>{text}</s>"
             elif mt == "link":
-                href = m.get("attrs", {}).get("href", "")
+                href = _esc(m.get("attrs", {}).get("href", ""))
                 text = f'<a href="{href}" target="_blank" rel="noopener">{text}</a>'
             elif mt == "code":
                 text = f"<code>{text}</code>"
