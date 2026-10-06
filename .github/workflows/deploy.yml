@@ -180,6 +180,14 @@ jobs:
             printf '%s\n' "CMS_ADMIN_EMAIL=${{ secrets.CMS_ADMIN_EMAIL }}" >> .env
             printf '%s\n' "CMS_ADMIN_PASSWORD=${{ secrets.CMS_ADMIN_PASSWORD }}" >> .env
             printf '%s\n' "MAIN_API_URL=http://127.0.0.1:11436/api" >> .env
+            # CMS media → S3 (CloudFront default origin bucket). boto3 picks
+            # AWS_ACCESS_KEY_ID/AWS_SECRET_ACCESS_KEY up from the process env
+            # (default credential chain); S3_BUCKET switches storage.py out of
+            # its local-disk dev fallback.
+            printf '%s\n' "S3_BUCKET=vigyanllm-frontend" >> .env
+            printf '%s\n' "S3_BUCKET_REGION=ap-south-1" >> .env
+            printf '%s\n' "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> .env
+            printf '%s\n' "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> .env
 
             # Start PostgreSQL
             if command -v pg_isready &>/dev/null && pg_isready -q 2>/dev/null; then

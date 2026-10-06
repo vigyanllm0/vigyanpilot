@@ -29,7 +29,8 @@ from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from models import AdminUser, CMSMedia
 from sqlalchemy.orm import Session
 
-from config import ALLOWED_EXTENSIONS, MAX_UPLOAD_SIZE, UPLOAD_DIR
+from config import ALLOWED_EXTENSIONS, MAX_UPLOAD_SIZE
+from storage import StorageError, store
 
 logger = logging.getLogger("vigyanllm.cms.upload")
 
@@ -276,31 +277,29 @@ async def upload_image(
     if max(w, h) > 4096:
         raise HTTPException(status_code=400, detail="Image dimensions exceed 4096 px maximum")
 
-    # Build output path
+    # Build output path segments (shared by S3 key and local dev path)
     now = datetime.datetime.now()
     year = str(now.year)
     month = f"{now.month:02d}"
-    upload_path = os.path.join(UPLOAD_DIR, year, month)
-    os.makedirs(upload_path, exist_ok=True)
 
     stem = os.path.splitext(file.filename)[0]
     safe_stem = "".join(c for c in stem if c.isalnum() or c in "-_")
     random_prefix = uuid.uuid4().hex[:8]
     new_filename = f"{random_prefix}-{safe_stem}{ext}"
-    full_path = os.path.join(upload_path, new_filename)
 
     # SVG sanitization (SEC-09 / BUG-08 FIX — replaces naive str.replace())
     if magic_mime == "image/svg+xml":
-        sanitized_data = _sanitize_svg(data)
-        write_data = sanitized_data
+        write_data = _sanitize_svg(data)
     else:
         write_data = data
 
-    # BUG-24 FIX: Always use context manager so file handle is closed on error
-    with open(full_path, "wb") as f:
-        f.write(write_data)
-
-    url = f"/uploads/cms/{year}/{month}/{new_filename}"
+    # S3 in production (CloudFront default origin), local disk in dev —
+    # a rejected write raises StorageError (502) instead of returning a
+    # URL that would 404 through the CDN.
+    try:
+        url = store(year, month, new_filename, write_data, magic_mime)
+    except StorageError as exc:
+        raise HTTPException(status_code=502, detail=f"Media storage unavailable: {exc}") from exc
     logger.info(
         "Uploaded %s (%s, %d bytes) by user %s",
         new_filename, magic_mime, len(write_data), user.email if hasattr(user, "email") else "unknown",

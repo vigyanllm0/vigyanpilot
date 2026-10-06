@@ -11,8 +11,7 @@ from models import AdminUser, CMSMedia
 from pydantic import BaseModel
 from schemas import AuthorInfo, MediaItem, MediaListResponse, MediaUploadResponse
 from sqlalchemy.orm import Session
-
-from config import UPLOAD_DIR
+from storage import StorageError, remove, store
 
 logger = logging.getLogger("vigyanllm.cms.media")
 
@@ -136,20 +135,17 @@ async def upload_media(
     now = datetime.datetime.now()
     year = str(now.year)
     month = f"{now.month:02d}"
-    upload_path = os.path.join(UPLOAD_DIR, year, month)
-    os.makedirs(upload_path, exist_ok=True)
 
     ext = os.path.splitext(file.filename)[1].lower()
     stem = os.path.splitext(file.filename)[0]
     safe_stem = "".join(c for c in stem if c.isalnum() or c in "-_")
     random_prefix = uuid.uuid4().hex[:8]
     new_filename = f"{random_prefix}-{safe_stem}{ext}"
-    full_path = os.path.join(upload_path, new_filename)
 
-    with open(full_path, "wb") as f:
-        f.write(data)
-
-    url = f"/uploads/cms/{year}/{month}/{new_filename}"
+    try:
+        url = store(year, month, new_filename, data, mime)
+    except StorageError as exc:
+        raise HTTPException(status_code=502, detail=f"Media storage unavailable: {exc}") from exc
 
     record = CMSMedia(
         filename=new_filename,
@@ -232,9 +228,7 @@ def delete_media(
     media = db.query(CMSMedia).filter(CMSMedia.id == media_id).first()
     if not media:
         raise HTTPException(status_code=404, detail="Media not found")
-    file_path = os.path.join(UPLOAD_DIR, media.url.replace("/uploads/cms/", ""))
-    if os.path.exists(file_path):
-        os.remove(file_path)
+    remove(media.url)  # best-effort: S3 object (prod) or local file (dev)
     db.delete(media)
     db.commit()
     return {"success": True}
