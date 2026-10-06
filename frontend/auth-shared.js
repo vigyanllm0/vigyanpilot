@@ -102,6 +102,18 @@ function vlAuthCssLoaded(){
   return false;
 }
 
+/* Staff entry row (Admin panel → /admin-security, CMS panel → /cms-login)
+   shown inside the sign-in modal on every page — owner request 2026-10-05
+   ("make them visible on frontend"). Variant A overlays (#auth-content) get
+   it from renderAuth(); page-authored variant B forms get it from the
+   ensureAuthOverlay() static branch below — the guards keep it to one row. */
+function vlStaffRowHTML(){
+  return '<div class="vl-staff-row" style="margin-top:16px;padding-top:12px;border-top:1px solid var(--outline,#e5e7eb);display:flex;gap:8px">'+
+    '<a href="/admin-security" style="flex:1;padding:8px 10px;border:1px solid var(--outline,#e5e7eb);border-radius:8px;font-size:12px;font-weight:600;text-align:center;color:var(--text,#2d2d2d);text-decoration:none">Admin panel</a>'+
+    '<a href="/cms-login" style="flex:1;padding:8px 10px;border:1px solid var(--outline,#e5e7eb);border-radius:8px;font-size:12px;font-weight:600;text-align:center;color:var(--text,#2d2d2d);text-decoration:none">CMS panel</a>'+
+    '</div>';
+}
+
 function ensureAuthOverlay(){
   var o=document.getElementById('auth-overlay');
   if(o){
@@ -122,6 +134,13 @@ function ensureAuthOverlay(){
         var ov=document.getElementById('auth-overlay');
         if(ov&&ov.classList.contains('open'))closeAuth();
       });
+    }
+    /* Page-authored modal form (no #auth-content → renderAuth can't fill it):
+       append the staff row once. Overlays that DO have #auth-content receive
+       it from renderAuth() instead, so no page ever gets two rows. */
+    var staffCard=o.querySelector('.auth-card,.auth-modal');
+    if(staffCard && !o.querySelector('#auth-content') && !staffCard.querySelector('.vl-staff-row')){
+      staffCard.insertAdjacentHTML('beforeend', vlStaffRowHTML());
     }
     return o;
   }
@@ -165,7 +184,8 @@ function renderAuth(){
     '<div class="field tc-field"><label class="tc-label"><input type="checkbox" id="auth-tc" class="auth-tc-input"> I agree to the <a href="/terms" target="_blank" rel="noopener">Terms &amp; Conditions</a> and <a href="/privacy" target="_blank" rel="noopener">Privacy Policy</a></label></div>'+
     '<button class="auth-btn" id="auth-submit">'+(isRegister?'Create account':'Sign in')+'</button>'+
     '<div class="auth-err" id="auth-err"></div>'+
-    '<div class="toggle-link">'+(isRegister?'Already have an account? <a onclick="openAuthMode()">Sign in</a>':"Don't have an account? <a onclick='openRegMode()'>Create one</a>")+'</div>';
+    '<div class="toggle-link">'+(isRegister?'Already have an account? <a onclick="openAuthMode()">Sign in</a>':"Don't have an account? <a onclick='openRegMode()'>Create one</a>")+'</div>'+
+    vlStaffRowHTML();
   document.getElementById('auth-submit').addEventListener('click',submitAuth);
   renderGoogleBtn();
 }

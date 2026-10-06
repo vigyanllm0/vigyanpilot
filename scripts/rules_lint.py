@@ -36,10 +36,12 @@ SHELLS = {f"{FRONTEND}/cms-login.html", f"{FRONTEND}/admin-security.html"}
 COMPONENTS = {f"{FRONTEND}/header.html", f"{FRONTEND}/footer.html"}
 # Admin-tool pages are allowed to reference the shells internally (they are not public nav)
 ADMIN_UI = {f"{FRONTEND}/cms-admin.html", f"{FRONTEND}/cms-editor.html", f"{FRONTEND}/cms-test.html"}
-# Staff entry points: /login carries the Admin panel + CMS panel buttons so the
-# owner can reach both shells by click (owner decision, 2026-10-05). Exposure is
-# deliberately limited to that one page — no other public page may link the shells.
-STAFF_ENTRY = {f"{FRONTEND}/login.html"}
+# Staff entry points: /login and /signup carry the two panel buttons so the
+# owner can reach both shells by click (owner decisions, 2026-10-05 — page
+# buttons + sign-in modal row injected by auth-shared.js). Exposure is
+# deliberately limited to these auth surfaces — no other public page may
+# link the shells.
+STAFF_ENTRY = {f"{FRONTEND}/login.html", f"{FRONTEND}/signup.html"}
 BANNED_CLAIMS = [
     "audit-ready", "lab-ready", "air-gapped",
     "zero external api", "clinical-grade", "no data leaves",
