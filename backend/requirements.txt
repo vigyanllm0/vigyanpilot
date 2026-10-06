@@ -1,11 +1,15 @@
-fastapi==0.115.0
-uvicorn==0.30.0
-sqlalchemy==2.0.35
-# psycopg2-binary + bcrypt overlap with root requirements.txt — keep the pins
-# identical there so installing this file never downgrades the main app.
+# CMS (FastAPI) deps. Overlap pins (psycopg2-binary, bcrypt) are kept identical
+# to root requirements.txt so installing this file never downgrades the main app.
+# fastapi/uvicorn/pydantic/sqlalchemy pins match the stack verified by the local
+# CMS E2E (health, login, auth read, throttle 429, credential rotation); the
+# prod venv runs Python 3.14, so pins are chosen to have cp314 wheels where a
+# compiled wheel is involved (pydantic-core) or a py3-none-any fallback.
+fastapi==0.131.0
+uvicorn==0.41.0
+sqlalchemy==2.0.48
 psycopg2-binary==2.9.10
-python-jose==3.3.0
+python-jose==3.5.0
 bcrypt==5.0.0
-python-multipart==0.0.12
-aiofiles==24.1.0
-pydantic==2.9.0
+python-multipart==0.0.22
+aiofiles==25.1.0
+pydantic==2.13.5
