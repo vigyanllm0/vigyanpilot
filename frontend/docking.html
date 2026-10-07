@@ -721,6 +721,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           <span id="run-btn-text">Run Consensus Docking</span>
           <span style="font-size:16px;opacity:.7">&rarr;</span>
         </button>
+        <button type="button" id="stop-btn" onclick="stopDocking()" style="display:none;margin-top:8px;padding:10px 24px;font-size:13px;font-weight:700;border-radius:10px;background:transparent;border:1px solid #ef4444;color:#ef4444;cursor:pointer;align-items:center;justify-content:center;gap:6px">&#9632; Stop run</button>
+        <div id="dock-note" style="display:none;margin-top:10px;padding:10px 14px;font-size:12px;line-height:1.5;border-radius:8px;background:#f8fafc;border:1px solid #e2e8f0;color:#334155"></div>
         <div class="slow-warn" id="slow-warn" style="display:none;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:10px 14px;font-size:12px;color:#1d4ed8;margin-top:12px">
           This run may take several minutes depending on ligand count and server load.
         </div>
@@ -1498,7 +1500,190 @@ function detectFASTA(text) {
 }
 
 // ── Main docking runner ─────────────────────────────────────────────────
+// ══ Active-run persistence: refresh resumes, Stop cancels ═══════════════
+// A submitted job id is remembered in localStorage so that (a) a page refresh
+// mid-run re-attaches to the live run instead of losing it, (b) a second
+// submit can't double-spike the queue while one is still running, and
+// (c) finished results re-render after refresh (server keeps jobs ~2h).
+var DOCK_STORE_KEY = 'pf_dock_active';
+var _dockPoll = null;
+
+function dockStoreRead() {
+  try { var r = JSON.parse(localStorage.getItem(DOCK_STORE_KEY) || 'null'); return (r && r.job_id) ? r : null; }
+  catch (e) { return null; }
+}
+function dockStoreSet(jobId, phase) {
+  try { localStorage.setItem(DOCK_STORE_KEY, JSON.stringify({ job_id: jobId, phase: phase, started_at: Date.now() })); } catch (e) {}
+}
+function dockStoreClear() { try { localStorage.removeItem(DOCK_STORE_KEY); } catch (e) {} }
+
+function stopDockPolling() { if (_dockPoll) { clearInterval(_dockPoll); _dockPoll = null; } }
+
+function showStopBtn(show) {
+  var b = $('stop-btn');
+  if (!b) return;
+  b.style.display = show ? 'flex' : 'none';
+  if (show) { b.disabled = false; b.textContent = '■ Stop run'; }
+}
+function dockNote(msg) {
+  var n = $('dock-note');
+  if (!n) return;
+  if (msg) { n.textContent = msg; n.style.display = 'block'; }
+  else { n.style.display = 'none'; }
+}
+function dockNoteHide() { dockNote(null); }
+
+function resetRunUI() {
+  $('run-btn').disabled = false;
+  $('run-spinner').classList.remove('show');
+  $('run-btn-text').textContent = 'Run Consensus Docking';
+  $('slow-warn').style.display = 'none';
+  showStopBtn(false);
+}
+
+function startDockPolling(jobId) {
+  stopDockPolling();
+  $('run-btn').disabled = true;
+  $('run-spinner').classList.add('show');
+  $('run-btn-text').textContent = 'Running...';
+  showStopBtn(true);
+  // Poll for results (max 500 attempts × 2s ≈ 17 minutes — must exceed
+  // the server's 900s worst-case job budget for 100-ligand runs)
+  var pollAttempts = 0;
+  _dockPoll = setInterval(async function() {
+    try {
+      var pr = await fetch(API + '/primer/docking/status/' + jobId);
+      if (!pr.ok) {
+        if ((pr.status === 502 || pr.status === 503) && pollAttempts < 10) { pollAttempts++; return; }
+        stopDockPolling();
+        setStage(1, 'fail', 'API error: ' + pr.status);
+        showError('Server returned ' + pr.status + ' — the EC2 instance may be overloaded. Try again with fewer ligands.');
+        resetRunUI();
+        return;
+      }
+      var statusResult = await pr.json();
+      if (statusResult.error) {
+        stopDockPolling();
+        if (statusResult.error.indexOf('Stopped by user') !== -1) {
+          dockStoreClear();
+          setStage(1, 'fail', 'Stopped by user');
+          dockNote('Run stopped — the server-side job was cancelled.');
+        } else {
+          dockStoreClear();
+          setStage(1, 'fail', statusResult.error);
+          showError(statusResult.error);
+        }
+        resetRunUI();
+        return;
+      }
+      if (statusResult.status === 'completed') {
+        stopDockPolling();
+        dockStoreSet(jobId, 'done');   // keep for refresh re-render (2h retention)
+        _jobId = statusResult.job_id || '';
+        displayResults(statusResult.result);
+        dockNoteHide();
+        resetRunUI();
+      } else if (statusResult.status === 'failed') {
+        stopDockPolling();
+        dockStoreClear();
+        setStage(1, 'fail', statusResult.error || 'Pipeline failed');
+        showError(statusResult.error || 'Pipeline failed');
+        resetRunUI();
+      } else {
+        pollAttempts++;
+        if (pollAttempts > 500) {
+          stopDockPolling();
+          setStage(1, 'fail', 'Timed out after ~17 minutes');
+          showError('Docking timed out. The server may be overloaded. Try again with fewer ligands.');
+          resetRunUI();
+          // keep the stored run: refresh resumes it, Stop cancels it
+          dockNote('Polling timed out — refresh to resume, or press Stop run to cancel.');
+        }
+      }
+    } catch (e) {
+      pollAttempts++;
+      if (pollAttempts > 500) {
+        stopDockPolling();
+        setStage(1, 'fail', 'Network error');
+        showError('Lost connection to server. Try again.');
+        resetRunUI();
+        dockNote('Lost connection — refresh to resume, or press Stop run to cancel.');
+      }
+    }
+  }, 2000);
+}
+
+async function stopDocking() {
+  var rec = dockStoreRead();
+  var btn = $('stop-btn');
+  if (!rec || !btn) return;
+  btn.disabled = true;
+  btn.textContent = 'Stopping…';
+  try {
+    var r = await fetch(API + '/primer/docking/cancel/' + rec.job_id, { method: 'POST' });
+    if (r.status === 404) {
+      dockStoreClear(); stopDockPolling(); resetRunUI();
+      dockNote('Run not found on the server (it may have expired) — cleared.');
+      return;
+    }
+    if (r.status === 409) {
+      // finished while we asked — let polling render the outcome
+      btn.disabled = false; btn.textContent = '■ Stop run';
+      dockNote('Run already finished — showing results.');
+      return;
+    }
+    // 200 cancelled (was pending) / 202 stopping (running, killed in ~1s):
+    // the polling loop reports the terminal state either way
+    dockNote('Stopping… cancelling the server-side job.');
+  } catch (e) {
+    btn.disabled = false; btn.textContent = '■ Stop run';
+    dockNote('Could not reach the server — press Stop run again.');
+  }
+}
+
+async function resumeDockRun() {
+  var rec = dockStoreRead();
+  if (!rec) return;
+  try {
+    var pr = await fetch(API + '/primer/docking/status/' + rec.job_id);
+    if (!pr.ok) {
+      if (pr.status === 404) dockStoreClear();  // expired (2h retention) — forget silently
+      return;
+    }
+    var st = await pr.json();
+    if (st.status === 'completed' && st.result) {
+      dockStoreSet(rec.job_id, 'done');
+      _jobId = st.job_id || rec.job_id;
+      displayResults(st.result);
+      dockNote('Showing results from your last docking run (saved in this browser).');
+    } else if (st.status === 'failed') {
+      dockStoreClear();
+      if (st.error && st.error.indexOf('Stopped by user') === -1) {
+        dockNote('Your previous docking run failed: ' + st.error);
+      }
+    } else {
+      // pending/running → re-attach to the live run
+      resetPipeline();
+      $('empty-state').style.display = 'none';
+      $('results-wrap').style.display = 'none';
+      $('results-body').innerHTML = '';
+      setStage(1, 'running', 'Job ' + rec.job_id + ' queued — resuming…');
+      setStage(2, 'stub', 'Waiting for stage 1');
+      setStage(3, 'stub', 'Waiting for stage 2');
+      dockNote('↻ Resumed your in-progress docking run — refresh-safe, no need to re-submit.');
+      startDockPolling(rec.job_id);
+    }
+  } catch (e) { /* offline — keep storage; the next load retries */ }
+}
+
 async function runDocking() {
+  // One active run per browser tab-profile: block duplicate submits that
+  // would stack queue work after a refresh (resume/stop handle the rest).
+  var _activeRun = dockStoreRead();
+  if (_activeRun && _activeRun.phase === 'running') {
+    dockNote('A docking run is already in progress in this browser — let it finish, or press Stop run first.');
+    return;
+  }
   var seq = '';
   var smilesList = [];
   var topN = parseInt($('top-n-slider').value) || 50;
@@ -1654,79 +1839,11 @@ async function runDocking() {
     setStage(1, 'running', 'Job ' + jobId + ' queued — processing...');
     setStage(2, 'stub', 'Waiting for stage 1');
     setStage(3, 'stub', 'Waiting for stage 2');
-    // Poll for results (max 500 attempts × 2s ≈ 17 minutes — must exceed
-    // the server's 900s worst-case job budget for 100-ligand runs)
-    var pollAttempts = 0;
-    var pollInterval = setInterval(async function() {
-      try {
-        var pr = await fetch(API + '/primer/docking/status/' + jobId);
-        if (!pr.ok) {
-          // 502/503 from nginx means gunicorn crashed — retry a few times before giving up
-          if ((pr.status === 502 || pr.status === 503) && pollAttempts < 10) {
-            pollAttempts++;
-            return; // skip this tick, try again on next interval
-          }
-          clearInterval(pollInterval);
-          setStage(1, 'fail', 'API error: ' + pr.status);
-          showError('Server returned ' + pr.status + ' — the EC2 instance may be overloaded. Try again with fewer ligands.');
-          $('run-btn').disabled = false;
-          $('run-spinner').classList.remove('show');
-          $('run-btn-text').textContent = 'Run Consensus Docking';
-          $('slow-warn').style.display = 'none';
-          return;
-        }
-        var statusResult = await pr.json();
-        if (statusResult.error) {
-          clearInterval(pollInterval);
-          setStage(1, 'fail', statusResult.error);
-          showError(statusResult.error);
-          $('run-btn').disabled = false;
-          $('run-spinner').classList.remove('show');
-          $('run-btn-text').textContent = 'Run Consensus Docking';
-          $('slow-warn').style.display = 'none';
-          return;
-        }
-        if (statusResult.status === 'completed') {
-          clearInterval(pollInterval);
-          _jobId = statusResult.job_id || '';
-          displayResults(statusResult.result);
-          $('run-btn').disabled = false;
-          $('run-spinner').classList.remove('show');
-          $('run-btn-text').textContent = 'Run Consensus Docking';
-          $('slow-warn').style.display = 'none';
-        } else if (statusResult.status === 'failed') {
-          clearInterval(pollInterval);
-          setStage(1, 'fail', statusResult.error || 'Pipeline failed');
-          showError(statusResult.error || 'Pipeline failed');
-          $('run-btn').disabled = false;
-          $('run-spinner').classList.remove('show');
-          $('run-btn-text').textContent = 'Run Consensus Docking';
-          $('slow-warn').style.display = 'none';
-        } else {
-          pollAttempts++;
-          if (pollAttempts> 500) {
-            clearInterval(pollInterval);
-            setStage(1, 'fail', 'Timed out after ~17 minutes');
-            showError('Docking timed out. The server may be overloaded. Try again with fewer ligands.');
-            $('run-btn').disabled = false;
-            $('run-spinner').classList.remove('show');
-            $('run-btn-text').textContent = 'Run Consensus Docking';
-            $('slow-warn').style.display = 'none';
-          }
-        }
-      } catch(e) {
-        pollAttempts++;
-        if (pollAttempts> 500) {
-          clearInterval(pollInterval);
-          setStage(1, 'fail', 'Network error');
-          showError('Lost connection to server. Try again.');
-          $('run-btn').disabled = false;
-          $('run-spinner').classList.remove('show');
-          $('run-btn-text').textContent = 'Run Consensus Docking';
-          $('slow-warn').style.display = 'none';
-        }
-      }
-    }, 2000);
+    // Persist BEFORE polling: a refresh mid-run re-attaches (resumeDockRun)
+    // instead of losing the job, and blocks a duplicate submit.
+    dockStoreSet(jobId, 'running');
+    dockNoteHide();
+    startDockPolling(jobId);
   } catch(e) {
     setStage(1, 'fail', 'Network error');
     showError('Network error: ' + e.message);
@@ -2243,6 +2360,8 @@ async function downloadResults(fmt) {
 // ── Init ────────────────────────────────────────────────────────────────
 loadAuth();
 rehydrateSession();
+// Re-attach to a docking run persisted before a refresh (no-op without one)
+resumeDockRun();
 // Drag-and-drop support for file uploads
 function setupDragDrop(zoneId, inputId, handler) {
   var zone = $(zoneId);
