@@ -64,13 +64,26 @@ def claim_job(job_id: str) -> bool:
         if not os.path.exists(src):
             return False
         dst = os.path.join(RUNNING_DIR, f"{job_id}.json")
-        with open(src) as f:
-            job = json.load(f)
+        try:
+            with open(src) as f:
+                job = json.load(f)
+        except FileNotFoundError:
+            # Cancelled (or cleaned) between exists() and read.
+            return False
         job["status"] = "running"
         job["updated_at"] = time.time()
         with open(dst, "w") as f:
             json.dump(job, f)
-        os.remove(src)
+        try:
+            os.remove(src)
+        except FileNotFoundError:
+            # cancel_job() failed this job while we were claiming it — undo
+            # our running copy so its "Stopped by user." record wins.
+            try:
+                os.remove(dst)
+            except OSError:
+                pass
+            return False
     return True
 
 def complete_job(job_id: str, result: dict, error: str = None) -> bool:
@@ -152,6 +165,82 @@ def release_stale_jobs(max_age_minutes: float = 10.0):
         logger.info("Released %d stale running job(s) back to pending", released)
     return released
 
+
+# ── User-initiated stop ("Stop run") ───────────────────────────────────────
+
+def _cancel_marker_path(job_id: str) -> str:
+    """Filesystem flag written by cancel_job() for a running job.
+
+    Survives worker crashes/restarts: if the queue releases the job back to
+    pending, _process_job()'s pre-spawn check sees the marker and fails the
+    job as stopped instead of re-running it.
+    """
+    return os.path.join(RUNNING_DIR, f"{job_id}.cancel")
+
+
+def _remove_quiet(path: str):
+    try:
+        os.remove(path)
+    except OSError:
+        pass
+
+
+def cancel_job(job_id: str) -> str:
+    """Stop a docking run on user request.
+
+    Returns one of:
+      'not_found' — no job with this id anywhere
+      'cancelled' — still pending: failed immediately, never runs
+      'stopping'  — running: marker written; the queue's wait loop kills the
+                    worker process tree within ~1s and fails the job
+      'finished'  — already completed/failed; nothing to stop
+    """
+    _ensure_dirs()
+    pending = os.path.join(PENDING_DIR, f"{job_id}.json")
+    running = os.path.join(RUNNING_DIR, f"{job_id}.json")
+    with _lock:
+        # ── pending: atomically-as-possible win over claim_job ──────────
+        if os.path.exists(pending):
+            try:
+                with open(pending) as f:
+                    job = json.load(f)
+            except FileNotFoundError:
+                job = None  # claimed by the worker while we read
+            if job is not None:
+                failed_dst = os.path.join(FAILED_DIR, f"{job_id}.json")
+                job["status"] = "failed"
+                job["error"] = "Stopped by user."
+                job["updated_at"] = time.time()
+                with open(failed_dst, "w") as f:
+                    json.dump(job, f)
+                try:
+                    os.remove(pending)
+                except FileNotFoundError:
+                    # Worker claimed it first — take its running file instead.
+                    _remove_quiet(failed_dst)
+                else:
+                    _remove_quiet(_cancel_marker_path(job_id))
+                    logger.info("Job %s cancelled while pending", job_id)
+                    try:
+                        from primerforge.docking_db import complete_job as db_complete
+                        db_complete(job_id, None, "Stopped by user.")
+                    except Exception:
+                        pass
+                    return "cancelled"
+
+        # ── running: flag it; the queue wait-loop does the kill ─────────
+        if os.path.exists(running):
+            marker = _cancel_marker_path(job_id)
+            with open(marker, "w"):
+                pass  # touch
+            logger.info("Job %s stop requested (running)", job_id)
+            return "stopping"
+
+    for d in (COMPLETE_DIR, FAILED_DIR):
+        if os.path.exists(os.path.join(d, f"{job_id}.json")):
+            return "finished"
+    return "not_found"
+
 # ── Local worker thread ──────────────────────────────────────────────────
 # Processes pending docking jobs directly on this server instead of waiting
 # for an external Azure worker. Spawned by start_local_worker().
@@ -172,11 +261,38 @@ def _job_timeout_seconds(sequence: str, n_ligands: int, has_pdb: bool) -> int:
     return int(max(300, min(300 + 8 * n + seq_cost, 900)))
 
 
+# Cancel/timeout check cadence inside _process_job's wait loop.
+# Module-level so tests can shrink it (real runs poll once per second).
+_WAIT_POLL_SECONDS = 1.0
+
+
+def _kill_process_tree(proc):
+    """SIGKILL the worker AND its descendants (vina/obabel/esmfold children).
+
+    The worker is spawned with start_new_session=True, so its process group is
+    its own pid — killpg can never reach the queue/gunicorn group. Falls back
+    to killing just the worker if the group is already gone.
+    """
+    import signal
+    try:
+        os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
+    except (ProcessLookupError, PermissionError, OSError):
+        try:
+            proc.kill()
+        except Exception:
+            pass
+
+
 def _process_job(job: dict):
     """Run the consensus pipeline in a SEPARATE OS process.
 
     If the pipeline segfaults or OOMs, only the subprocess dies — gunicorn survives.
     The subprocess writes results directly to disk (no primerforge imports for I/O).
+
+    Waits with a 1s poll loop instead of subprocess.run(): each tick checks the
+    user "Stop run" marker (running/<id>.cancel) and the dynamic budget, and
+    kills the worker's whole process tree (vina/obabel children included — the
+    worker gets its own session via start_new_session=True).
     """
     import subprocess
     import sys as _sys
@@ -191,6 +307,15 @@ def _process_job(job: dict):
     logger.info("Spawning subprocess for job %s (%d ligands, %d aa, budget %ds)",
                 job_id, len(smiles_list), len(sequence), budget)
 
+    cancel_path = _cancel_marker_path(job_id)
+
+    # Re-claimed after a stale release + stop: die before spawning anything.
+    if os.path.exists(cancel_path):
+        _remove_quiet(cancel_path)
+        if complete_job(job_id, None, "Stopped by user."):
+            logger.info("Job %s was stopped before it started", job_id)
+        return
+
     job_input = json.dumps({
         "job_id": job_id,
         "sequence": sequence,
@@ -201,18 +326,62 @@ def _process_job(job: dict):
 
     worker_script = os.path.join(os.path.dirname(os.path.abspath(__file__)), "docking_worker.py")
 
+    # Job JSON via temp file, not stdin: payloads can carry a 5MB PDB, which
+    # would block on the 64KB pipe across communicate(timeout=…) retries.
+    input_path = os.path.join(RUNNING_DIR, f"{job_id}.input")
+    with open(input_path, "w") as f:
+        f.write(job_input)
+
+    start = time.time()
     try:
-        proc = subprocess.run(
-            [_sys.executable, worker_script],
-            input=job_input,
-            capture_output=True,
+        proc = subprocess.Popen(
+            [_sys.executable, worker_script, "--job-file", input_path],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
             text=True,
-            timeout=budget,
             env={**os.environ, "PYTHONUNBUFFERED": "1"},
+            start_new_session=True,  # own process group → killpg can't hit ours
         )
-    except subprocess.TimeoutExpired:
-        # Kill happened inside subprocess.run; the job never wrote a result —
-        # fail it with actionable guidance instead of "Internal worker error".
+    except Exception as e:
+        logger.error("Failed to spawn worker for job %s: %s", job_id, e)
+        _remove_quiet(input_path)
+        complete_job(job_id, None, f"Failed to start docking worker: {e}")
+        return
+
+    cancelled = False
+    timed_out = False
+    while True:
+        try:
+            _, err = proc.communicate(timeout=_WAIT_POLL_SECONDS)
+            break
+        except subprocess.TimeoutExpired:
+            if os.path.exists(cancel_path):
+                cancelled = True
+                _kill_process_tree(proc)
+                _, err = proc.communicate()
+                break
+            if time.time() - start >= budget:
+                timed_out = True
+                _kill_process_tree(proc)
+                _, err = proc.communicate()
+                break
+
+    # Marker read AFTER the loop: a stop that raced a normal completion still
+    # resolves to the stop outcome if the worker died non-zero.
+    marker_present = os.path.exists(cancel_path)
+    _remove_quiet(cancel_path)
+    _remove_quiet(input_path)
+
+    if cancelled:
+        if complete_job(job_id, None, "Stopped by user."):
+            logger.info("Job %s stopped by user request (worker process tree killed)", job_id)
+        else:
+            logger.info("Job %s finished before the stop request took effect", job_id)
+        return
+
+    if timed_out:
+        # The job never wrote a result — fail it with actionable guidance
+        # instead of "Internal worker error".
         logger.error("Job %s exceeded the %ds budget — failed", job_id, budget)
         complete_job(job_id, None,
                      f"Docking timed out after {budget // 60} minutes. "
@@ -224,13 +393,16 @@ def _process_job(job: dict):
         # The worker moves the job file itself; if it never got that far
         # (segfault/OS OOM-kill), fail it HERE — otherwise the job would sit
         # in running/ and be re-claimed every 5 minutes forever.
-        logger.error("Worker failed (rc=%d): %s", proc.returncode, (proc.stderr or "")[-500:])
-        tail = (proc.stderr or "").strip().splitlines()[-1][:200] if (proc.stderr or "").strip() else ""
+        logger.error("Worker failed (rc=%d): %s", proc.returncode, (err or "")[-500:])
+        if marker_present:
+            complete_job(job_id, None, "Stopped by user.")
+            return
+        tail = (err or "").strip().splitlines()[-1][:200] if (err or "").strip() else ""
         complete_job(job_id, None,
                      f"Docking worker crashed (exit {proc.returncode}). {tail}".strip())
     else:
         logger.info("Worker completed job %s", job_id)
-        logger.debug("Worker stderr: %s", (proc.stderr or "")[-200:])
+        logger.debug("Worker stderr: %s", (err or "")[-200:])
 
 
 def _local_worker_loop(interval: float = 5.0):
@@ -317,5 +489,16 @@ def cleanup_old_jobs(max_age_hours: float = 1.0):
                     os.remove(path)
                     removed += 1
             except Exception as e: logger.debug("Suppressed exception: %s", e)
+    # Orphaned stop markers / worker input files (queue died mid-flight).
+    # Active ones are minutes old — never swept against the hour-scale cutoff.
+    for fname in os.listdir(RUNNING_DIR):
+        if not (fname.endswith(".cancel") or fname.endswith(".input")):
+            continue
+        path = os.path.join(RUNNING_DIR, fname)
+        try:
+            if os.path.getmtime(path) < cutoff:
+                os.remove(path)
+                removed += 1
+        except Exception as e: logger.debug("Suppressed exception: %s", e)
     if removed:
         logger.info("Cleaned up %d old docking job(s) (>%sh old)", removed, max_age_hours)

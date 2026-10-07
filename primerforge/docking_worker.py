@@ -4,7 +4,7 @@ Standalone docking worker — runs in a SEPARATE OS process from gunicorn.
 If this crashes (OOM, segfault), gunicorn survives.
 
 Called by docking_queue.py via subprocess.Popen.
-Reads job JSON from stdin, writes result to job files on disk.
+Reads job JSON from a --job-file path (or stdin), writes result to job files on disk.
 DOES NOT import primerforge.* — uses raw file I/O to avoid import chain.
 """
 
@@ -88,8 +88,11 @@ def write_result(job_id, result=None, error=None):
 
 def main():
     log("Worker process started")
-    raw = sys.stdin.read()
-    job = json.loads(raw)
+    if len(sys.argv) >= 3 and sys.argv[1] == "--job-file":
+        with open(sys.argv[2]) as f:
+            job = json.load(f)
+    else:
+        job = json.loads(sys.stdin.read())
     job_id = job["job_id"]
     sequence = job["sequence"]
     smiles_list = (job.get("ligand_smiles_list") or [])

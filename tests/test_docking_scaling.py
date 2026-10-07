@@ -387,21 +387,48 @@ def test_process_job_timeout_yields_actionable_error(monkeypatch, tmp_path):
     with open(os.path.join(dq.RUNNING_DIR, "tjob1.json"), "w") as f:
         json.dump(job, f)
 
-    seen: dict = {}
+    # Fake clock: each time.time() call jumps +1000s, so the wait loop's
+    # first budget check (start already consumed call #1) trips immediately.
+    calls = {"n": 0}
 
-    def fake_run(cmd, **kwargs):
-        seen["timeout"] = kwargs.get("timeout")
-        raise subprocess.TimeoutExpired(cmd=cmd, timeout=kwargs.get("timeout", 0))
+    def fake_clock():
+        calls["n"] += 1
+        return calls["n"] * 1000.0
 
-    monkeypatch.setattr(subprocess, "run", fake_run)
+    monkeypatch.setattr(dq, "time", type("T", (), {"time": staticmethod(fake_clock)}))
+
+    procs: list = []
+
+    class FakeProc:
+        pid = 0xDEAD
+        returncode = None
+        killed = False
+
+        def communicate(self, timeout=None):
+            if timeout is None:
+                return ("", "")
+            raise subprocess.TimeoutExpired(cmd=["fake"], timeout=timeout)
+
+        def kill(self):
+            self.killed = True
+            self.returncode = -9
+
+    def fake_popen(cmd, **kwargs):
+        procs.append(FakeProc())
+        return procs[-1]
+
+    monkeypatch.setattr(subprocess, "Popen", fake_popen)
     dq._process_job(job)
 
-    assert seen["timeout"] == dq._job_timeout_seconds(_seq(60), 1, False)
+    # spawned in its own session so killpg can't hit the queue's group
+    assert procs and procs[0].killed
     with open(os.path.join(dq.FAILED_DIR, "tjob1.json")) as f:
         failed = json.load(f)
     assert failed["status"] == "failed"
     assert "timed out" in failed["error"].lower()
     assert "fewer ligands" in failed["error"]
+    # temp job-input file cleaned up
+    assert not os.path.exists(os.path.join(dq.RUNNING_DIR, "tjob1.input"))
 
 
 def test_worker_heartbeat_keeps_long_jobs_out_of_stale_release(monkeypatch, tmp_path):
@@ -437,3 +464,147 @@ def test_no_silent_ligand_truncation_in_queue_or_worker():
         with open(os.path.join(root, rel)) as f:
             src = f.read()
         assert pattern not in src, f"{rel} reintroduced silent ligand truncation"
+
+
+# ══════════════════════════════════════════════════════════════════════════
+# 6. Stop run  (cancel route + queue marker + process-tree kill)
+# ══════════════════════════════════════════════════════════════════════════
+
+@pytest.fixture
+def qdirs(monkeypatch, tmp_path):
+    """Isolated queue directories — never the repo's docking_queue/."""
+    import primerforge.docking_queue as dq
+
+    for attr in ("PENDING_DIR", "RUNNING_DIR", "COMPLETE_DIR", "FAILED_DIR"):
+        monkeypatch.setattr(dq, attr, str(tmp_path / attr.lower()))
+    for d in (dq.PENDING_DIR, dq.RUNNING_DIR, dq.COMPLETE_DIR, dq.FAILED_DIR):
+        os.makedirs(d, exist_ok=True)
+    return dq
+
+
+def _write_job(dq, directory, job_id, status):
+    job = {"job_id": job_id, "status": status, "type": "docking",
+           "sequence": _seq(60), "ligand_smiles_list": ["CCO"], "top_n": 5,
+           "pdb_content": "", "created_at": time.time(),
+           "updated_at": time.time(), "result": None, "error": None}
+    with open(os.path.join(directory, f"{job_id}.json"), "w") as f:
+        json.dump(job, f)
+    return job
+
+
+def test_cancel_pending_job_fails_immediately(qdirs):
+    dq = qdirs
+    _write_job(dq, dq.PENDING_DIR, "c1", "pending")
+    assert dq.cancel_job("c1") == "cancelled"
+    assert not os.path.exists(os.path.join(dq.PENDING_DIR, "c1.json"))
+    job = dq.get_job("c1")
+    assert job["status"] == "failed"
+    assert job["error"] == "Stopped by user."
+    assert not os.path.exists(dq._cancel_marker_path("c1"))
+
+
+def test_cancel_running_job_writes_marker_only(qdirs):
+    """Running → the route must NOT fail the job itself; it flags the queue's
+    wait loop, which kills the process tree within ~1s."""
+    dq = qdirs
+    _write_job(dq, dq.RUNNING_DIR, "c2", "running")
+    assert dq.cancel_job("c2") == "stopping"
+    job = dq.get_job("c2")
+    assert job["status"] == "running"
+    assert os.path.exists(dq._cancel_marker_path("c2"))
+
+
+def test_cancel_unknown_and_finished_jobs(qdirs):
+    dq = qdirs
+    assert dq.cancel_job("nope") == "not_found"
+    _write_job(dq, dq.COMPLETE_DIR, "c3", "completed")
+    assert dq.cancel_job("c3") == "finished"
+    assert dq.get_job("c3")["status"] == "completed"  # untouched
+
+
+def test_process_job_pre_spawn_marker_stops_without_spawn(qdirs, monkeypatch):
+    """A stop that lands while the job is re-queued must not burn CPU."""
+    dq = qdirs
+    _write_job(dq, dq.RUNNING_DIR, "c4", "running")
+    with open(dq._cancel_marker_path("c4"), "w"):
+        pass
+
+    def forbid_spawn(*args, **kwargs):
+        raise AssertionError("worker must not spawn for a stopped job")
+
+    monkeypatch.setattr(subprocess, "Popen", forbid_spawn)
+    dq._process_job(dq.get_job("c4"))
+    job = dq.get_job("c4")
+    assert job["status"] == "failed"
+    assert job["error"] == "Stopped by user."
+    assert not os.path.exists(dq._cancel_marker_path("c4"))
+
+
+def test_process_job_kills_running_worker_on_marker(qdirs, monkeypatch):
+    """Marker written mid-run → wait loop kills the tree, fails the job,
+    and cleans marker + input file."""
+    dq = qdirs
+    _write_job(dq, dq.RUNNING_DIR, "c5", "running")
+    marker = dq._cancel_marker_path("c5")
+    procs: list = []
+
+    class FakeProc:
+        pid = 0xBEEF
+        returncode = None
+
+        def __init__(self):
+            self.killed = False
+            self._calls = 0
+
+        def communicate(self, timeout=None):
+            if timeout is None:
+                return ("", "")
+            self._calls += 1
+            if self._calls == 1:
+                with open(marker, "w"):
+                    pass  # user presses Stop while the job runs
+            raise subprocess.TimeoutExpired(cmd=["fake"], timeout=timeout)
+
+        def kill(self):
+            self.killed = True
+            self.returncode = -9
+
+    def fake_popen(cmd, **kwargs):
+        assert kwargs.get("start_new_session") is True, \
+            "worker must own its process group so killpg can't hit the queue"
+        p = FakeProc()
+        procs.append(p)
+        return p
+
+    monkeypatch.setattr(subprocess, "Popen", fake_popen)
+    dq._process_job(dq.get_job("c5"))
+
+    assert procs and procs[0].killed
+    job = dq.get_job("c5")
+    assert job["status"] == "failed"
+    assert job["error"] == "Stopped by user."
+    assert not os.path.exists(marker)
+    assert not os.path.exists(os.path.join(dq.RUNNING_DIR, "c5.input"))
+
+
+def test_cancel_route_status_codes(env, qdirs):
+    """POST /api/primer/docking/cancel/<id>: 200 pending, 202 running,
+    409 finished, 404 unknown — and the status route reflects the stop."""
+    client, _ = env
+    dq = qdirs  # same monkeypatched dirs the route module reads
+    _write_job(dq, dq.PENDING_DIR, "r1", "pending")
+    assert client.post("/api/primer/docking/cancel/r1").status_code == 200
+    assert client.post("/api/primer/docking/cancel/r1").status_code == 409  # already stopped
+
+    _write_job(dq, dq.RUNNING_DIR, "r2", "running")
+    assert client.post("/api/primer/docking/cancel/r2").status_code == 202
+
+    _write_job(dq, dq.COMPLETE_DIR, "r3", "completed")
+    assert client.post("/api/primer/docking/cancel/r3").status_code == 409
+
+    assert client.post("/api/primer/docking/cancel/nope").status_code == 404
+
+    # status endpoint reports the stopped job as failed with the stop error
+    st = client.get("/api/primer/docking/status/r1").get_json()
+    assert st["status"] == "failed"
+    assert st["error"] == "Stopped by user."

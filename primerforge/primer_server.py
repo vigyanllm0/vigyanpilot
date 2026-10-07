@@ -2839,6 +2839,31 @@ def create_app() -> Flask:
             logger.error("docking_status error for %s: %s", job_id, e)
             return jsonify({"job_id": job_id, "status": "unknown", "error": str(e)}), 200
 
+    @app.route("/api/primer/docking/cancel/<job_id>", methods=["POST"])
+    @(_docking_limiter.limit("10 per minute") if _docking_limiter else lambda f: f)
+    def docking_cancel(job_id):
+        """User-initiated "Stop run".
+
+        Pending → failed immediately (never spawns a worker). Running → the
+        queue's wait loop kills the worker process tree within ~1s. Same
+        capability model as the status route: possession of the job id.
+        """
+        try:
+            from primerforge.docking_queue import cancel_job
+            outcome = cancel_job(job_id)
+        except Exception as e:
+            logger.error("docking_cancel error for %s: %s", job_id, e)
+            return err("Cancel failed.", "SERVER_ERROR", 500)
+        if outcome == "not_found":
+            return err("Job not found.", "NOT_FOUND", 404)
+        if outcome == "finished":
+            job = get_job(job_id)
+            status = job.get("status", "finished") if job else "finished"
+            return jsonify({"job_id": job_id, "status": status}), 409
+        if outcome == "cancelled":
+            return jsonify({"job_id": job_id, "status": "cancelled"}), 200
+        return jsonify({"job_id": job_id, "status": "stopping"}), 202
+
     @app.route("/api/primer/docking/structure/<job_id>/<int:rank>", methods=["GET"])
     def docking_structure(job_id, rank):
         job = get_job(job_id)
