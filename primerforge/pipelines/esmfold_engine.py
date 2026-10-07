@@ -1,15 +1,19 @@
 """
-VigyanLLM — ESMFold Engine (Commercial-Safe Local Structure Prediction)
+VigyanLLM — ESMFold Engine (Commercial-Safe Structure Prediction)
 License: MIT (facebook/esmfold_v1 via HuggingFace)
 Replaces: AlphaFold 3 API (which is NON-COMMERCIAL)
 
-Model is downloaded once (~2.5GB) and cached at ~/.cache/huggingface/
-No API calls, no rate limits, fully offline after first run.
+GPU hosts (CUDA / Apple MPS): the local model is downloaded once (~8.4GB)
+and cached at ~/.cache/huggingface/ — fully offline after the first run.
+GPU-less hosts (the production cloud box has none): the free ESMFold web
+API (remote GPU) is used instead; the local model is never loaded there
+(no 8.4GB download, no >10GB RAM OOM, no 300s job-timeout blowout).
 """
 
 import asyncio
 import logging
 import os
+import time
 import urllib.error
 import urllib.request
 from typing import Any
@@ -19,6 +23,10 @@ logger = logging.getLogger(__name__)
 # ESMFold web API — free, no auth, used as fallback when local model OOMs
 _ESMFOLD_API_URL = "https://api.esmatlas.com/foldSequence/v1/pdb/"
 
+# One fast retry for 429/5xx (rate-limit responses return immediately, so
+# the extra wait still fits the 300s docking-job budget).
+_ESMFOLD_RETRY_DELAY_S = 15
+
 # Lazy-load so the model only loads when first needed (saves memory on startup)
 _esmfold_model = None
 _esmfold_tokenizer = None
@@ -26,6 +34,24 @@ _esmfold_lock = None
 import threading
 
 _esmfold_lock = threading.Lock()
+
+
+def _local_gpu_available() -> bool:
+    """True only when local ESMFold inference has a real GPU to run on.
+
+    The production cloud box has NO GPU. Loading the local model there would
+    download ~8.4GB of weights, pull >10GB into RAM (OOM-killing the host)
+    and then exceed the 300s docking-job timeout during CPU inference.
+    So the local model is only ever attempted on CUDA / Apple MPS hosts;
+    GPU-less hosts go straight to the free ESMFold web API (remote GPU).
+    """
+    try:
+        import torch
+    except ImportError:
+        return False
+    if torch.cuda.is_available():
+        return True
+    return bool(hasattr(torch.backends, "mps") and torch.backends.mps.is_available())
 
 
 def _load_model(report=None):
@@ -103,21 +129,30 @@ def _load_model(report=None):
 # ── ESMFold Web API Fallback ──────────────────────────────────────────────
 
 def _extract_plddt_from_pdb(pdb_string: str) -> float:
-    """Extract mean pLDDT from B-factor column (cols 55-60) in PDB ATOM records.
+    """Extract mean pLDDT from the B-factor column (PDB cols 61-66) of ATOM records.
 
-    The ESMFold web API stores per-residue confidence in the B-factor field,
-    0-100 scale. Falls back to 0 if no ATOM records can be parsed.
+    The ESMFold web API (api.esmatlas.com) writes per-residue confidence into
+    the B-factor field on a 0-1 fraction scale, while standard ESMFold PDBs
+    use 0-100. Detect the scale from the observed range and always return a
+    percentage (0-100). Falls back to 0 if no ATOM records can be parsed.
+
+    (Previously this read cols 55-60 — the *occupancy* column, which is
+    always 1.00 — so every web-API structure reported pLDDT = 1.0, and the
+    frontend's fraction→percent guard then displayed a false "100%".)
     """
     b_factors = []
     for line in pdb_string.splitlines():
         if line.startswith(("ATOM  ", "HETATM")):
             try:
-                b = float(line[54:60].strip())
+                b = float(line[60:66])
                 b_factors.append(b)
             except (ValueError, IndexError):
                 continue
     if b_factors:
-        return sum(b_factors) / len(b_factors)
+        mean = sum(b_factors) / len(b_factors)
+        if max(b_factors) <= 1.5:  # 0-1 fraction scale → percent
+            mean *= 100.0
+        return round(mean, 2)
     return 0.0
 
 
@@ -126,6 +161,11 @@ def _fetch_esmfold_api_pdb(sequence: str, report=None) -> dict[str, Any] | None:
 
     Returns the same dict format as local ESMFold, or None on failure.
     The API has no auth, rate-limited to ~10 req/min per IP.
+
+    Transient HTTP failures (429 rate-limit / 5xx) get ONE fast retry after
+    15s — a rate-limited response returns immediately, so the retry still
+    fits inside the 300s docking-job budget. Slow fold timeouts raise
+    URLError/socket errors and do not retry (180s x 2 would blow the budget).
     """
     def _log(msg: str):
         logger.info(msg)
@@ -142,39 +182,50 @@ def _fetch_esmfold_api_pdb(sequence: str, report=None) -> dict[str, Any] | None:
     seq = sequence.strip().upper().replace(" ", "").replace("\n", "")
     _log("ESMFold web API: submitting %daa sequence..." % len(seq))
 
-    try:
-        data = seq.encode()
-        req = urllib.request.Request(
-            _ESMFOLD_API_URL,
-            data=data,
-            method="POST",
-            headers={"Content-Type": "text/plain; charset=utf-8"},
-        )
-        with urllib.request.urlopen(req, timeout=180) as resp:
-            pdb_string = resp.read().decode()
+    for attempt in (1, 2):
+        if attempt == 2:
+            time.sleep(_ESMFOLD_RETRY_DELAY_S)
+        try:
+            data = seq.encode()
+            req = urllib.request.Request(
+                _ESMFOLD_API_URL,
+                data=data,
+                method="POST",
+                headers={"Content-Type": "text/plain; charset=utf-8"},
+            )
+            with urllib.request.urlopen(req, timeout=180) as resp:
+                pdb_string = resp.read().decode()
 
-        if not pdb_string or len(pdb_string) < 100:
-            _log("ESMFold web API: response too short (%d bytes)" % len(pdb_string))
+            if not pdb_string or len(pdb_string) < 100:
+                _log("ESMFold web API: response too short (%d bytes)" % len(pdb_string))
+                return None
+
+            plddt = _extract_plddt_from_pdb(pdb_string)
+            _log("ESMFold web API: structure received (pLDDT=%.1f%%)" % plddt)
+
+            return {
+                "status": "success",
+                "tool": "ESMFold (web API, free)",
+                "pdb_string": pdb_string,
+                "plddt_score": round(plddt, 2),
+                "sequence_length": len(seq),
+                "message": (
+                    "Structure predicted via ESMFold web API (api.esmatlas.com). "
+                    "Free service provided by Meta AI — no API key required."
+                ),
+                "license": "MIT — ESMFold (Meta AI)",
+            }
+        except urllib.error.HTTPError as e:
+            if getattr(e, "code", None) in (429, 500, 502, 503, 504) and attempt == 1:
+                _log("ESMFold web API: HTTP %s — retrying once in %ds"
+                     % (e.code, _ESMFOLD_RETRY_DELAY_S))
+                continue
+            _log("ESMFold web API: failed — %s" % e)
             return None
-
-        plddt = _extract_plddt_from_pdb(pdb_string)
-        _log("ESMFold web API: structure received (pLDDT=%.1f%%)" % plddt)
-
-        return {
-            "status": "success",
-            "tool": "ESMFold (web API, free)",
-            "pdb_string": pdb_string,
-            "plddt_score": round(plddt, 2),
-            "sequence_length": len(seq),
-            "message": (
-                "Structure predicted via ESMFold web API (api.esmatlas.com). "
-                "Free service provided by Meta AI — no API key required."
-            ),
-            "license": "MIT — ESMFold (Meta AI)",
-        }
-    except Exception as e:
-        _log("ESMFold web API: failed — %s" % e)
-        return None
+        except Exception as e:
+            _log("ESMFold web API: failed — %s" % e)
+            return None
+    return None
 
 
 # ── Residue library for fallback PDB generation ──────────────────────────
@@ -252,7 +303,16 @@ def _generate_fallback_pdb(sequence: str) -> str:
 async def predict_structure(sequence: str, progress_callback=None) -> dict[str, Any]:
     """
     Predict protein 3D structure from amino acid sequence using ESMFold.
-    Falls back to extended-chain PDB if ESMFold model is unavailable.
+
+    Execution path (no-GPU aware — the production cloud box has no GPU):
+
+      * GPU host (CUDA / Apple MPS) → local ESMFold model (best quality).
+      * No GPU, or torch not installed → free ESMFold web API (remote GPU).
+        The local model is NEVER loaded on a GPU-less host: it would
+        download ~8.4GB of weights, pull >10GB into RAM (OOM-killing the
+        whole box) and exceed the 300s job timeout on CPU inference.
+      * Web API unreachable → approximate helical-bundle fallback with
+        plddt_score = 0, honestly labelled so the UI shows the warning.
     """
     import asyncio
 
@@ -260,14 +320,16 @@ async def predict_structure(sequence: str, progress_callback=None) -> dict[str, 
         if progress_callback:
             await progress_callback("STAGE 1 / ESMFold", msg)
 
-    try:
-        import torch
-    except ImportError:
-        await _internal_report("PyTorch not available — trying ESMFold Web API...")
+    if not _local_gpu_available():
+        await _internal_report(
+            "No GPU on this host — using ESMFold web API (remote GPU inference)..."
+        )
         api_result = _fetch_esmfold_api_pdb(sequence)
         if api_result:
             return api_result
-        await _internal_report("ESMFold Web API unavailable — generating fallback helical bundle")
+        await _internal_report(
+            "ESMFold web API unavailable — generating approximate fallback structure"
+        )
         seq = sequence.strip().upper().replace(" ", "").replace("\n", "")
         pdb = _generate_fallback_pdb(seq)
         return {
@@ -277,8 +339,9 @@ async def predict_structure(sequence: str, progress_callback=None) -> dict[str, 
             "plddt_score": 0,
             "sequence_length": len(seq),
             "message": (
-                "PyTorch not available and Web API unreachable — generated helical bundle for Vina docking. "
-                "Results are approximate; install torch and ESMFold for accurate structure prediction."
+                "ESMFold web API unavailable (or rate-limited) and this server "
+                "has no GPU for local folding — generated an approximate "
+                "helical bundle for Vina docking. Treat the pose as rough."
             ),
             "license": "MIT",
         }

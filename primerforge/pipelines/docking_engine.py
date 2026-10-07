@@ -46,6 +46,57 @@ def _compute_box_center(pdb_path: str, default_size: float = 25.0) -> tuple[floa
     return cx, cy, cz, sx, sy, sz
 
 
+def _mol_from_pdb(receptor_pdb: str):
+    """Parse a (possibly imperfect) PDB block into an RDKit mol.
+
+    Predicted structures (ESMFold/AlphaFold) and some uploaded PDBs contain
+    pairs of atoms from *different* residues closer than a covalent bond
+    (side-chain clashes in low-confidence loops, e.g. an Asp OD1 sitting
+    1.5 A from a Ser OG). RDKit's proximity bonding then creates an
+    impossible bond and sanitization raises, which used to abort the whole
+    docking job. We re-parse without sanitization and drop ONLY such
+    inter-residue non-backbone bonds (peptide C-N and disulfide SG-SG are
+    kept). Dropping a bond does not move any atom, so Vina's geometry — and
+    the coordinates the 3D viewer renders — stay exact.
+    Returns an RDKit Mol, or None if the block is unparsable/unfixable.
+    """
+    from rdkit import Chem
+    mol = Chem.MolFromPDBBlock(receptor_pdb, removeHs=False)
+    if mol is not None:
+        return mol
+    mol = Chem.MolFromPDBBlock(receptor_pdb, removeHs=False, sanitize=False)
+    if mol is None:
+        return None
+    rw = Chem.RWMol(mol)
+    to_remove = []
+    for bond in rw.GetBonds():
+        a1, a2 = bond.GetBeginAtom(), bond.GetEndAtom()
+        i1, i2 = a1.GetPDBResidueInfo(), a2.GetPDBResidueInfo()
+        if i1 is None or i2 is None:
+            continue
+        same_res = (i1.GetChainId() == i2.GetChainId()
+                    and i1.GetResidueNumber() == i2.GetResidueNumber()
+                    and i1.GetResidueName() == i2.GetResidueName())
+        if same_res:
+            continue
+        names = {i1.GetName().strip(), i2.GetName().strip()}
+        if names == {"C", "N"} or names == {"SG", "SG"}:
+            continue  # legitimate peptide bond / disulfide
+        to_remove.append((a1.GetIdx(), a2.GetIdx()))
+    for idx1, idx2 in to_remove:
+        rw.RemoveBond(idx1, idx2)
+    if to_remove:
+        logger.warning("PDB parse: dropped %d spurious inter-residue clash bond(s) from proximity bonding",
+                       len(to_remove))
+    mol = rw.GetMol()
+    try:
+        Chem.SanitizeMol(mol)
+    except Exception as e:
+        logger.error("PDB parse: sanitize still failing after clash-bond cleanup: %s", e)
+        return None
+    return mol
+
+
 def pdb_to_pdbqt(receptor_pdb: str, output_path: str) -> bool:
     """Convert receptor PDB to PDBQT format (once, cached for reuse)."""
     # Write PDB to temp file first, then convert with obabel
@@ -61,7 +112,7 @@ def pdb_to_pdbqt(receptor_pdb: str, output_path: str) -> bool:
             logger.debug("Suppressed exception: %s", e)
     from meeko import MoleculePreparation
     from rdkit import Chem
-    mol = Chem.MolFromPDBBlock(receptor_pdb, removeHs=False)
+    mol = _mol_from_pdb(receptor_pdb)
     if mol:
         frags = Chem.GetMolFrags(mol, asMols=True)
         if frags:
@@ -223,17 +274,23 @@ async def run_vina_docking(receptor_pdb: str, ligand_smiles: str, exhaustiveness
                 except Exception as e:
                     logger.debug("PDBQT-to-SDF conversion failed: %s", e)
             if not ligand_view:
-                # Fallback: extract ATOM/HETATM from PDBQT as plain PDB
+                # Fallback: extract ATOM/HETATM from Vina's PDBQT as plain PDB.
+                # Vina writes ONE MODEL per pose (model 1 = best) — take only
+                # the first model. Concatenating every model's ATOM lines (what
+                # this used to do) handed 3Dmol ~9 overlapping copies of the
+                # ligand as a single structure → garbled render.
                 try:
                     with open(out_pdbqt_path) as f:
                         raw = f.read()
                     clean = []
                     for line in raw.splitlines():
+                        if line.startswith(("MODEL", "ENDMDL")) and clean:
+                            break  # first model complete (model 1 = best pose)
                         if line.startswith(("ATOM", "HETATM")):
                             clean.append(line[:66])
                     if clean:
                         ligand_view = "\n".join(clean) + "\n"
-                        logger.debug("Using stripped-PDB fallback for ligand viewer")
+                        logger.debug("Using stripped-PDB fallback for ligand viewer (best pose only)")
                 except Exception as e:
                     logger.debug("PDB fallback failed: %s", e)
             if not ligand_view:

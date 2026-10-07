@@ -137,13 +137,16 @@ async def _run_pipeline_inner(
             return {**result, "status": "error", "message": "ESMFold engine not loaded. Install: pip install transformers einops"}
 
         try:
-            import torch
-            device = "MPS (Apple Silicon)" if hasattr(torch.backends, "mps") and torch.backends.mps.is_available() else "CPU (Standard)"
-            mode_str = f"Mode: Local GPU Inference on {device}"
-        except ImportError:
-            device = "CPU (ESMFold fallback)"
-            mode_str = "Mode: Extended-chain fallback (no torch)"
-            torch = None
+            from primerforge.pipelines.esmfold_engine import _local_gpu_available
+            if _local_gpu_available():
+                device = "GPU (local ESMFold)"
+                mode_str = "Mode: Local ESMFold on GPU"
+            else:
+                device = "ESMFold web API"
+                mode_str = "Mode: ESMFold web API (host has no GPU — remote inference)"
+        except Exception:
+            device = "ESMFold web API"
+            mode_str = "Mode: ESMFold web API (remote inference)"
 
         await _progress("PIPELINE", f"Initializing Consensus Discovery Suite on {device}...")
         await _progress("STAGE 1 / ESMFold", f"Commencing structural folding for sequence (Length: {len(sequence)}aa, {mode_str})...")
@@ -236,6 +239,7 @@ async def _run_pipeline_inner(
         return result
 
     gnina_semaphore = asyncio.Semaphore(1)  # GNINA is heavier — 1 at a time
+    gnina_failures: list[str] = []
 
     async def refine_candidate(candidate: dict, idx: int):
         async with gnina_semaphore:
@@ -250,7 +254,11 @@ async def _run_pipeline_inner(
                 candidate["status"] = "refined"
                 return candidate
             except Exception as e:
-                logger.debug("GNINA failed for candidate: %s", e)
+                # Keep the reason visible in the job result (surfaced via the
+                # status API) — previously GNINA failures were logged at DEBUG
+                # only and vanished, making prod breakage undiagnosable.
+                logger.warning("GNINA failed for candidate: %s", e)
+                gnina_failures.append(str(e)[:300])
                 candidate["gnina_score"] = None
                 candidate["status"] = "gnina_failed"
                 return candidate
@@ -274,6 +282,12 @@ async def _run_pipeline_inner(
         "refined": len(refined),
         "best_gnina_score": refined[0].get("gnina_score") if refined else None,
     }
+    if gnina_failures:
+        # Surface why GNINA re-scoring degraded to Vina-only (visible via the
+        # status API so production breakage is diagnosable without SSH).
+        result["stage3"]["status"] = "gnina_failed" if all(
+            c.get("gnina_score") is None for c in refined) else "partial"
+        result["stage3"]["failure_reasons"] = gnina_failures[:5]
     result["ranked_results"] = refined
     result["best_molecule"] = refined[0] if refined else None
     result["status"] = "success"
