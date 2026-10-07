@@ -13,6 +13,7 @@ import json
 import os
 import resource
 import sys
+import threading
 import time
 
 # Ensure project root is on path
@@ -30,9 +31,37 @@ def log(msg):
     print(f"[docking-worker] {msg}", file=sys.stderr, flush=True)
 
 
+def _queue_base() -> str:
+    """Queue directory (env override matches docking_queue.py exactly)."""
+    return os.environ.get("DOCKING_QUEUE_DIR") or os.path.join(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "docking_queue")
+
+
+def _start_heartbeat(job_id: str, interval: float = 20.0):
+    """Touch running/<job>.json every `interval` seconds while this worker lives.
+
+    release_stale_jobs() uses the RUNNING file's mtime as its ONLY liveness
+    signal (the status endpoint never rewrites the file). Without this beat,
+    any job running longer than the stale threshold (5 min) would be re-queued
+    and executed a second time alongside the first.
+    """
+    path = os.path.join(_queue_base(), "running", f"{job_id}.json")
+    stop = threading.Event()
+
+    def _beat():
+        while not stop.wait(interval):
+            try:
+                os.utime(path, None)
+            except OSError:
+                pass  # job already moved to complete/failed — nothing to touch
+
+    threading.Thread(target=_beat, daemon=True).start()
+    return stop
+
+
 def write_result(job_id, result=None, error=None):
     """Write result directly to disk — NO primerforge imports."""
-    base = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "docking_queue")
+    base = _queue_base()
     running = os.path.join(base, "running", f"{job_id}.json")
     complete = os.path.join(base, "complete", f"{job_id}.json")
     failed = os.path.join(base, "failed", f"{job_id}.json")
@@ -63,42 +92,51 @@ def main():
     job = json.loads(raw)
     job_id = job["job_id"]
     sequence = job["sequence"]
-    smiles_list = (job.get("ligand_smiles_list") or [])[:5]
+    smiles_list = (job.get("ligand_smiles_list") or [])
     top_n = job.get("top_n", 50)
     pdb_content = job.get("pdb_content", "")
 
     log(f"Job {job_id}: {len(sequence)}aa, {len(smiles_list)} ligands")
 
-    # Try to import the pipeline (heavy — may OOM on small instances)
-    try:
-        from primerforge.pipelines.consensus_pipeline import run_consensus_pipeline
-        log("Pipeline imported OK")
-    except MemoryError:
-        write_result(job_id, error="Server cannot load docking engine — not enough RAM (need GPU instance).")
-        return
-    except ImportError as e:
-        write_result(job_id, error=f"Docking engine not available: {e}")
-        return
-    except Exception as e:
-        write_result(job_id, error=f"Failed to load docking engine: {str(e)[:300]}")
-        return
+    # Keep running/<job>.json mtime fresh for release_stale_jobs — without
+    # it, any job longer than the 5-min stale threshold would be re-queued
+    # and run twice. Stopped in finally so a crash stops the beat.
+    heartbeat_stop = _start_heartbeat(job_id)
 
-    # Run the pipeline
     try:
-        log("Starting pipeline...")
-        result = asyncio.run(run_consensus_pipeline(sequence, smiles_list, top_n, pdb_content=pdb_content))
-        log(f"Pipeline finished: status={result.get('status', 'unknown')}")
-        if result.get("status") == "success":
-            write_result(job_id, result=result)
-        else:
-            write_result(job_id, error=result.get("message", "Pipeline failed"))
-    except MemoryError:
-        write_result(job_id, error="Docking ran out of memory. Try shorter sequence (< 200 aa) and fewer ligands (< 3).")
-    except Exception as e:
-        log(f"Pipeline error: {e}")
-        write_result(job_id, error=f"Docking error: {str(e)[:300]}")
+        # Try to import the pipeline (heavy — may OOM on small instances)
+        try:
+            from primerforge.pipelines.consensus_pipeline import run_consensus_pipeline
+            log("Pipeline imported OK")
+        except MemoryError:
+            write_result(job_id, error="Server cannot load docking engine — not enough RAM.")
+            return
+        except ImportError as e:
+            write_result(job_id, error=f"Docking engine not available: {e}")
+            return
+        except Exception as e:
+            write_result(job_id, error=f"Failed to load docking engine: {str(e)[:300]}")
+            return
 
-    log("Worker process exiting")
+        # Run the pipeline
+        try:
+            log("Starting pipeline...")
+            result = asyncio.run(run_consensus_pipeline(sequence, smiles_list, top_n, pdb_content=pdb_content))
+            log(f"Pipeline finished: status={result.get('status', 'unknown')}")
+            if result.get("status") == "success":
+                write_result(job_id, result=result)
+            else:
+                write_result(job_id, error=result.get("message", "Pipeline failed"))
+        except MemoryError:
+            write_result(job_id, error=(
+                "Docking ran out of memory on the server. Try fewer ligands (≤100) "
+                "and a shorter sequence (≤400 aa), or upload a smaller PDB."))
+        except Exception as e:
+            log(f"Pipeline error: {e}")
+            write_result(job_id, error=f"Docking error: {str(e)[:300]}")
+    finally:
+        heartbeat_stop.set()
+        log("Worker process exiting")
 
 
 if __name__ == "__main__":

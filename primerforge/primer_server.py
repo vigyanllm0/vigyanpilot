@@ -2675,6 +2675,16 @@ def create_app() -> Flask:
     # ── Docking rate limit: 5/min per IP (expensive compute) ────────────
     _docking_limiter = app.extensions.get("limiter")
 
+    # ── Route-level caps (must match frontend + pipeline validation) ─────
+    # Consensus runs dock every ligand individually — 100 is the ceiling;
+    # larger libraries belong on /docking/screen (up to 500).
+    MAX_LIGANDS_PER_RUN = 100
+    MAX_PDB_CONTENT_BYTES = 5 * 1024 * 1024  # matches the frontend PDB upload cap
+    try:
+        from .pipelines.esmfold_engine import MAX_SEQUENCE_LENGTH
+    except ImportError:
+        MAX_SEQUENCE_LENGTH = 400
+
     @app.route("/api/primer/docking/consensus", methods=["POST"])
     @(_docking_limiter.limit("5 per minute") if _docking_limiter else lambda f: f)
     def docking_consensus():
@@ -2691,15 +2701,64 @@ def create_app() -> Flask:
                 top_n = int(data.get("top_n", 50))
             except (ValueError, TypeError):
                 return err("'top_n' must be an integer.", "VALIDATION_ERROR", 400)
+            top_n = max(1, min(top_n, 100))  # matches the frontend slider (5-100)
 
             if not sequence and not pdb_content:
                 return err("Protein amino acid 'sequence' or 'pdb_content' is required.", "VALIDATION_ERROR", 400)
             if not ligand_smiles_list or not isinstance(ligand_smiles_list, list):
                 return err("'ligand_smiles_list' must be a non-empty list of SMILES strings.", "VALIDATION_ERROR", 400)
+            if len(ligand_smiles_list) > MAX_LIGANDS_PER_RUN:
+                return err(
+                    f"Maximum {MAX_LIGANDS_PER_RUN} ligands per consensus run (you sent "
+                    f"{len(ligand_smiles_list)}). For larger libraries use virtual screening: "
+                    "POST /api/primer/docking/screen (up to 500 ligands).",
+                    "VALIDATION_ERROR", 400)
+            if any(not isinstance(s, str) for s in ligand_smiles_list):
+                return err("'ligand_smiles_list' must contain only SMILES strings.", "VALIDATION_ERROR", 400)
+            # Normalize: strip whitespace, drop empties, dedupe — duplicate
+            # SMILES would otherwise burn the full Vina time for nothing.
+            _seen, _norm = set(), []
+            for s in ligand_smiles_list:
+                t = s.strip()
+                if t and t not in _seen:
+                    _seen.add(t)
+                    _norm.append(t)
+            if not _norm:
+                return err("'ligand_smiles_list' must be a non-empty list of SMILES strings.", "VALIDATION_ERROR", 400)
+            ligand_smiles_list = _norm
 
-            # ── Memory pre-check: refuse if total RAM < 4GB ─────────────────
-            # Importing torch/ESMFold needs ≥2GB. On 908MB t3.micro it OOM-kills
-            # the entire machine. Check total RAM, not just available.
+            if pdb_content:
+                # PDB-upload mode skips structure prediction — sequence
+                # length/charset limits do not apply; the file is the structure.
+                if len(pdb_content.encode("utf-8", "ignore")) > MAX_PDB_CONTENT_BYTES:
+                    return err(f"PDB file too large (max {MAX_PDB_CONTENT_BYTES // (1024 * 1024)} MB).",
+                               "VALIDATION_ERROR", 400)
+                if "ATOM" not in pdb_content:
+                    return err("Uploaded PDB contains no ATOM records.", "VALIDATION_ERROR", 400)
+            else:
+                # Sequence mode: the free ESMFold web API hard-rejects bodies
+                # over ~400 aa with HTTP 413 (probed 2026-10-07: 400 OK, 403
+                # rejected) — refuse early with guidance instead of letting
+                # the pipeline fall back to a fake helical bundle.
+                seq = "".join(sequence.split()).upper()
+                if len(seq) < 10:
+                    return err("Protein sequence must be at least 10 amino acids.", "VALIDATION_ERROR", 400)
+                if len(seq) > MAX_SEQUENCE_LENGTH:
+                    return err(
+                        f"Sequence too long ({len(seq)} residues) — web structure prediction "
+                        f"supports up to {MAX_SEQUENCE_LENGTH} amino acids. For longer proteins, "
+                        "upload the protein PDB file instead (PDB tab).",
+                        "VALIDATION_ERROR", 400)
+                bad = sorted(set(seq) - set("ACDEFGHIKLMNPQRSTVWY"))
+                if bad:
+                    return err(f"Invalid amino acids: {', '.join(bad)}. Only standard 20 amino acids accepted.",
+                               "VALIDATION_ERROR", 400)
+                sequence = seq
+
+            # ── Memory pre-check: refuse if total RAM < 3GB ─────────────────
+            # Docking runs in a 600MB-capped subprocess (rdkit/obabel/vina)
+            # alongside the API — on very small instances the OS OOM-kills
+            # the whole box. Check total RAM, not just available.
             try:
                 with open("/proc/meminfo") as f:
                     for line in f:
@@ -2707,7 +2766,7 @@ def create_app() -> Flask:
                             total_kb = int(line.split()[1])
                             if total_kb < 3000000:  # < 3GB
                                 return jsonify({
-                                    "error": "Docking engine requires a GPU server (≥4GB RAM). This server has insufficient memory. Contact support to enable GPU docking.",
+                                    "error": "Docking requires at least 3GB of server RAM. This server has insufficient memory. Contact support to enable docking.",
                                     "code": "RESOURCE_EXHAUSTED"
                                 }), 503
                             break
@@ -3804,7 +3863,10 @@ def create_app() -> Flask:
     if READY:
         try:
             from primerforge.docking_queue import start_local_worker
-            start_local_worker(interval=5.0)
+            # 1s poll: a submitted job starts within ~1s instead of up to 5s
+            # (each cycle is a cheap directory scan; stale/cleanup guards run
+            # inside the same loop).
+            start_local_worker(interval=1.0)
         except Exception as e:
             logger.warning("Failed to start local docking worker: %s", e)
 

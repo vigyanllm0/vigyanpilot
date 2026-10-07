@@ -28,6 +28,10 @@ except ImportError:
     run_gnina_docking = None
     logger.warning("Docking engine not available.")
 
+# GNINA's CNN re-scoring is the slowest step on CPU — only the top-K Vina
+# hits get refined; the rest are ranked on Vina-only consensus (see stage 3).
+GNINA_REFINE_TOP_K = 10
+
 
 async def run_consensus_pipeline(
     sequence: str,
@@ -57,19 +61,34 @@ async def run_consensus_pipeline(
     """
 
     # Input validation
-    if not sequence or len(sequence) < 10:
-        return {"status": "error", "message": "Protein sequence must be at least 10 amino acids."}
-    valid_aa = set("ACDEFGHIKLMNPQRSTVWY")
-    clean_seq = "".join(c for c in sequence.upper() if c.isalpha())
-    invalid = set(clean_seq) - valid_aa
-    if invalid:
-        return {"status": "error", "message": f"Invalid amino acids: {', '.join(sorted(invalid))}. Only standard 20 amino acids accepted."}
-    if len(clean_seq) > 2000:
-        return {"status": "error", "message": "Sequence too long (max 2000 residues for web docking)."}
+    if pdb_content:
+        # PDB-upload mode skips structure prediction entirely, so sequence
+        # length/charset limits do not apply — the file IS the structure.
+        if "ATOM" not in pdb_content:
+            return {"status": "error", "message": "Uploaded PDB contains no ATOM records."}
+    else:
+        if not sequence or len(sequence) < 10:
+            return {"status": "error", "message": "Protein sequence must be at least 10 amino acids."}
+        valid_aa = set("ACDEFGHIKLMNPQRSTVWY")
+        clean_seq = "".join(c for c in sequence.upper() if c.isalpha())
+        invalid = set(clean_seq) - valid_aa
+        if invalid:
+            return {"status": "error", "message": f"Invalid amino acids: {', '.join(sorted(invalid))}. Only standard 20 amino acids accepted."}
+        try:
+            from .esmfold_engine import MAX_SEQUENCE_LENGTH
+        except ImportError:
+            MAX_SEQUENCE_LENGTH = 400
+        if len(clean_seq) > MAX_SEQUENCE_LENGTH:
+            return {"status": "error", "message": (
+                f"Sequence too long ({len(clean_seq)} residues) — web structure prediction "
+                f"supports up to {MAX_SEQUENCE_LENGTH} amino acids. For longer proteins, "
+                "upload the protein PDB file instead (Protein → PDB tab).")}
     if not ligand_smiles_list:
         return {"status": "error", "message": "At least one ligand SMILES required."}
-    if len(ligand_smiles_list) > 50:
-        return {"status": "error", "message": "Maximum 50 ligands per run."}
+    if len(ligand_smiles_list) > 100:
+        return {"status": "error", "message": (
+            "Maximum 100 ligands per consensus run. For larger libraries, use "
+            "virtual screening (POST /api/primer/docking/screen — up to 500 ligands).")}
 
     async def _progress(stage: str, msg: str, metadata: dict = None):
         logger.info("[%s] %s", stage, msg)
@@ -178,8 +197,15 @@ async def _run_pipeline_inner(
     failed = 0
     total_ligands = len(ligand_smiles_list)
 
-    # Run Vina for all ligands — one at a time to stay within 908MB RAM / 2-core limits
-    semaphore = asyncio.Semaphore(1)
+    # Parallelism sized for the production box (2 vCPU): two concurrent Vina
+    # processes × (--cpu = cores/2 threads each) saturates the CPUs without
+    # oversubscription. Each Vina/obabel child is its own OS process (own
+    # RLIMIT_AS), so memory stays bounded; on a 1-core host this degrades to
+    # the old serial behavior automatically.
+    _cores = os.cpu_count() or 1
+    vina_parallelism = min(2, _cores)
+    cpu_per_vina = max(1, _cores // vina_parallelism)
+    semaphore = asyncio.Semaphore(vina_parallelism)
 
     async def screen_ligand(smiles: str, idx: int):
         nonlocal failed
@@ -188,7 +214,9 @@ async def _run_pipeline_inner(
                 if idx % 5 == 0 or idx == total_ligands - 1:
                     await _progress("STAGE 2 / Vina", f"Screening ligand {idx+1}/{total_ligands}...", {"current": idx+1, "total": total_ligands})
 
-                docking_result = await run_vina_docking(receptor_pdb, smiles, exhaustiveness=2, receptor_pdbqt_path=_receptor_pdbqt_path)
+                docking_result = await run_vina_docking(
+                    receptor_pdb, smiles, exhaustiveness=2,
+                    receptor_pdbqt_path=_receptor_pdbqt_path, cpu=cpu_per_vina)
                 return {
                     "smiles": smiles,
                     "vina_score": docking_result.get("binding_affinity"),
@@ -225,8 +253,14 @@ async def _run_pipeline_inner(
     # ══════════════════════════════════════════════════════════════════════════
     # STAGE 3: GNINA — CNN Deep-Learning Re-Scoring
     # ══════════════════════════════════════════════════════════════════════════
-    total_refined = len(top_candidates)
-    await _progress("STAGE 3 / GNINA", f"Re-scoring {total_refined} candidates with GNINA CNN...", {"current": 0, "total": total_refined})
+    # CNN re-scoring is the slowest step on CPU — refine only the best K by
+    # Vina score (GNINA_REFINE_TOP_K). Remaining candidates keep Vina-only
+    # consensus via the g=v fallback below and still get ranked, so output
+    # size/top_n semantics are unchanged.
+    refine_list = top_candidates[:GNINA_REFINE_TOP_K]
+    total_refined = len(refine_list)
+    vina_only = len(top_candidates) - total_refined
+    await _progress("STAGE 3 / GNINA", f"Re-scoring top {total_refined} of {len(top_candidates)} candidates with GNINA CNN...", {"current": 0, "total": total_refined})
 
     if not run_gnina_docking:
         logger.warning("GNINA not available — returning Vina-only results.")
@@ -240,9 +274,30 @@ async def _run_pipeline_inner(
 
     gnina_semaphore = asyncio.Semaphore(1)  # GNINA is heavier — 1 at a time
     gnina_failures: list[str] = []
+    gnina_broken_reason: list[str] = []  # sentinel: first BINARY-level failure
+
+    def _binary_error(e: Exception) -> bool:
+        """True when GNINA itself can't run (missing/exec-format/permission),
+        as opposed to a per-ligand docking failure."""
+        if isinstance(e, (FileNotFoundError, PermissionError)):
+            return True
+        if isinstance(e, OSError) and getattr(e, "errno", None) in (8, 13, 2):
+            return True
+        msg = str(e).lower()
+        return ("exec format error" in msg or "permission denied" in msg
+                or "no such file or directory" in msg or "not found" in msg)
 
     async def refine_candidate(candidate: dict, idx: int):
         async with gnina_semaphore:
+            if gnina_broken_reason:
+                # Fail fast (inside the lock — ordering guarantees the flag is
+                # already set by the first failed candidate): the binary itself
+                # is unusable, so don't re-attempt for every remaining
+                # candidate (prod previously burned tens of subprocess
+                # attempts on an executable that could never run).
+                candidate["gnina_score"] = None
+                candidate["status"] = "gnina_failed"
+                return candidate
             try:
                 if idx % 2 == 0 or idx == total_refined - 1:
                     await _progress("STAGE 3 / GNINA", f"Refining candidate {idx+1}/{total_refined}...", {"current": idx+1, "total": total_refined})
@@ -259,11 +314,16 @@ async def _run_pipeline_inner(
                 # only and vanished, making prod breakage undiagnosable.
                 logger.warning("GNINA failed for candidate: %s", e)
                 gnina_failures.append(str(e)[:300])
+                if _binary_error(e) and not gnina_broken_reason:
+                    gnina_broken_reason.append(str(e)[:300])
+                    logger.warning("GNINA binary unusable — skipping remaining refinements: %s", e)
                 candidate["gnina_score"] = None
                 candidate["status"] = "gnina_failed"
                 return candidate
 
-    refined = await asyncio.gather(*[refine_candidate(c, i) for i, c in enumerate(top_candidates)])
+    refined_top = await asyncio.gather(*[refine_candidate(c, i) for i, c in enumerate(refine_list)])
+    # Merge refined top-K with Vina-only remainder — one ranked list of size top_n
+    refined = list(refined_top) + list(top_candidates[total_refined:])
 
     # Final consensus ranking:
     # Weighted score = 0.4 * vina_score + 0.6 * gnina_score (both negative, lower = better)
@@ -279,8 +339,10 @@ async def _run_pipeline_inner(
         candidate["consensus_score"] = round(consensus_score(candidate), 3)
 
     result["stage3"] = {
-        "refined": len(refined),
-        "best_gnina_score": refined[0].get("gnina_score") if refined else None,
+        "refined": len(refined_top),
+        "vina_only": vina_only,
+        "best_gnina_score": next(
+            (c.get("gnina_score") for c in refined if c.get("gnina_score") is not None), None),
     }
     if gnina_failures:
         # Surface why GNINA re-scoring degraded to Vina-only (visible via the

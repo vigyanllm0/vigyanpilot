@@ -11,6 +11,8 @@ API (remote GPU) is used instead; the local model is never loaded there
 """
 
 import asyncio
+import hashlib
+import json
 import logging
 import os
 import time
@@ -22,6 +24,14 @@ logger = logging.getLogger(__name__)
 
 # ESMFold web API — free, no auth, used as fallback when local model OOMs
 _ESMFOLD_API_URL = "https://api.esmatlas.com/foldSequence/v1/pdb/"
+
+# ── Maximum sequence length for web-API structure prediction ─────────────
+# Empirically probed 2026-10-07 against api.esmatlas.com/foldSequence:
+#   L=400 → HTTP 200 in ~27s;  L=403/406/412/425/450/500/1000/2000 → HTTP 413.
+# The service hard-rejects longer request bodies, so sequence-mode docking
+# is capped here (route + pipeline both enforce). Longer proteins must use
+# the PDB-upload path (which skips structure prediction entirely).
+MAX_SEQUENCE_LENGTH = 400
 
 # One fast retry for 429/5xx (rate-limit responses return immediately, so
 # the extra wait still fits the 300s docking-job budget).
@@ -182,6 +192,12 @@ def _fetch_esmfold_api_pdb(sequence: str, report=None) -> dict[str, Any] | None:
     seq = sequence.strip().upper().replace(" ", "").replace("\n", "")
     _log("ESMFold web API: submitting %daa sequence..." % len(seq))
 
+    # Scale fold patience with sequence length: a 400-aa fold measured ~27s
+    # in probing but can take a couple of minutes under load; a flat 180s
+    # was knife-edge for long sequences. Hard cap 300s keeps one fold inside
+    # the dynamic docking-job budget (which scales with sequence length).
+    fold_timeout = min(300, max(180, 60 + len(seq) // 2))
+
     for attempt in (1, 2):
         if attempt == 2:
             time.sleep(_ESMFOLD_RETRY_DELAY_S)
@@ -193,7 +209,7 @@ def _fetch_esmfold_api_pdb(sequence: str, report=None) -> dict[str, Any] | None:
                 method="POST",
                 headers={"Content-Type": "text/plain; charset=utf-8"},
             )
-            with urllib.request.urlopen(req, timeout=180) as resp:
+            with urllib.request.urlopen(req, timeout=fold_timeout) as resp:
                 pdb_string = resp.read().decode()
 
             if not pdb_string or len(pdb_string) < 100:
@@ -220,6 +236,10 @@ def _fetch_esmfold_api_pdb(sequence: str, report=None) -> dict[str, Any] | None:
                 _log("ESMFold web API: HTTP %s — retrying once in %ds"
                      % (e.code, _ESMFOLD_RETRY_DELAY_S))
                 continue
+            if getattr(e, "code", None) == 413:
+                _log("ESMFold web API: HTTP 413 — %daa exceeds the web API's request limit "
+                     "(cap = %d residues; route validation should have blocked this)"
+                     % (len(seq), MAX_SEQUENCE_LENGTH))
             _log("ESMFold web API: failed — %s" % e)
             return None
         except Exception as e:
@@ -300,6 +320,74 @@ def _generate_fallback_pdb(sequence: str) -> str:
     return "\n".join(lines)
 
 
+# ── Structure cache ──────────────────────────────────────────────────────
+# Folding the same sequence twice costs 30–90s of web-API time for an
+# identical structure. Predictions are cached on disk keyed by sequence
+# SHA-256, so repeat runs start Stage 2 immediately. Fallback helical
+# bundles are NEVER cached (a transient outage must not poison the cache
+# for the whole TTL).
+_CACHE_TTL_S = 7 * 86400          # structures are deterministic per sequence
+_CACHE_MAX_ENTRIES = 200          # ≈ tens of MB; oldest evicted on write
+
+
+def _structure_cache_dir() -> str:
+    base = os.environ.get("DOCKING_QUEUE_DIR") or os.path.join(
+        os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+        "docking_queue",
+    )
+    return os.path.join(base, "structure_cache")
+
+
+def _cache_get(sequence: str) -> dict[str, Any] | None:
+    path = os.path.join(_structure_cache_dir(), hashlib.sha256(sequence.encode()).hexdigest() + ".json")
+    try:
+        if not os.path.exists(path):
+            return None
+        if time.time() - os.path.getmtime(path) > _CACHE_TTL_S:
+            os.remove(path)
+            return None
+        with open(path) as f:
+            result = json.load(f)
+        if isinstance(result, dict) and result.get("pdb_string"):
+            return result
+    except Exception as e:
+        logger.debug("Structure cache read skipped: %s", e)
+    return None
+
+
+def _cache_put(sequence: str, result: dict[str, Any]) -> None:
+    """Atomically persist a real prediction; prune oldest entries beyond cap."""
+    try:
+        cache_dir = _structure_cache_dir()
+        os.makedirs(cache_dir, exist_ok=True)
+        path = os.path.join(cache_dir, hashlib.sha256(sequence.encode()).hexdigest() + ".json")
+        tmp = path + ".tmp"
+        with open(tmp, "w") as f:
+            json.dump(result, f)
+        os.replace(tmp, path)
+        entries = [os.path.join(cache_dir, n) for n in os.listdir(cache_dir) if n.endswith(".json")]
+        if len(entries) > _CACHE_MAX_ENTRIES:
+            entries.sort(key=os.path.getmtime)
+            for old in entries[: len(entries) - _CACHE_MAX_ENTRIES]:
+                try:
+                    os.remove(old)
+                except OSError:
+                    pass
+    except Exception as e:
+        logger.debug("Structure cache write skipped: %s", e)
+
+
+def _cache_if_real(sequence: str, result: dict[str, Any]) -> dict[str, Any]:
+    """Cache only genuine predictions (not the helical fallback)."""
+    try:
+        if (isinstance(result, dict) and result.get("pdb_string")
+                and not str(result.get("tool", "")).startswith("Fallback")):
+            _cache_put(sequence, result)
+    except Exception as e:
+        logger.debug("Structure cache put skipped: %s", e)
+    return result
+
+
 async def predict_structure(sequence: str, progress_callback=None) -> dict[str, Any]:
     """
     Predict protein 3D structure from amino acid sequence using ESMFold.
@@ -311,8 +399,11 @@ async def predict_structure(sequence: str, progress_callback=None) -> dict[str, 
         The local model is NEVER loaded on a GPU-less host: it would
         download ~8.4GB of weights, pull >10GB into RAM (OOM-killing the
         whole box) and exceed the 300s job timeout on CPU inference.
+      * Repeats of the same sequence are served from the on-disk structure
+        cache (7-day TTL) — Stage 2 starts immediately, no API call.
       * Web API unreachable → approximate helical-bundle fallback with
         plddt_score = 0, honestly labelled so the UI shows the warning.
+        Fallback structures are never cached.
     """
     import asyncio
 
@@ -320,13 +411,23 @@ async def predict_structure(sequence: str, progress_callback=None) -> dict[str, 
         if progress_callback:
             await progress_callback("STAGE 1 / ESMFold", msg)
 
+    seq = sequence.strip().upper().replace(" ", "").replace("\n", "")
+    cached = _cache_get(seq)
+    if cached:
+        await _internal_report(
+            "Structure cache hit — this sequence was folded before; skipping the web-API call..."
+        )
+        hit = dict(cached)
+        hit["message"] = (str(hit.get("message") or "") + " [served from structure cache]").strip()
+        return hit
+
     if not _local_gpu_available():
         await _internal_report(
             "No GPU on this host — using ESMFold web API (remote GPU inference)..."
         )
         api_result = _fetch_esmfold_api_pdb(sequence)
         if api_result:
-            return api_result
+            return _cache_if_real(seq, api_result)
         await _internal_report(
             "ESMFold web API unavailable — generating approximate fallback structure"
         )
@@ -348,7 +449,7 @@ async def predict_structure(sequence: str, progress_callback=None) -> dict[str, 
 
     loop = asyncio.get_running_loop()
     result = await loop.run_in_executor(None, _run_esmfold_sync, sequence, loop, _internal_report)
-    return result
+    return _cache_if_real(seq, result)
 
 
 def _run_esmfold_sync(sequence: str, main_loop: asyncio.AbstractEventLoop, progress_report_coro=None) -> dict[str, Any]:

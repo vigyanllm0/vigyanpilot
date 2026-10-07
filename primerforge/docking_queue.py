@@ -157,6 +157,21 @@ def release_stale_jobs(max_age_minutes: float = 10.0):
 # for an external Azure worker. Spawned by start_local_worker().
 _LOCAL_WORKER_RUNNING = False
 
+def _job_timeout_seconds(sequence: str, n_ligands: int, has_pdb: bool) -> int:
+    """Dynamic subprocess budget (was a flat 300s that killed long jobs).
+
+    Base covers worker cold start + receptor prep + queue jitter; +8s per
+    ligand covers obabel prep + Vina screening (two run concurrently);
+    sequence mode adds 0.25s/residue for the web-API fold (≤400 aa → ≤100s;
+    a 400-aa fold measured ~27s). PDB-upload mode skips folding entirely.
+    Clamped to [300, 900] — the frontend polls ~1000s, so every job fits
+    inside the UI budget.
+    """
+    n = max(0, int(n_ligands))
+    seq_cost = 0 if has_pdb else int(0.25 * len(sequence or ""))
+    return int(max(300, min(300 + 8 * n + seq_cost, 900)))
+
+
 def _process_job(job: dict):
     """Run the consensus pipeline in a SEPARATE OS process.
 
@@ -168,11 +183,13 @@ def _process_job(job: dict):
 
     job_id = job["job_id"]
     sequence = job["sequence"]
-    smiles_list = (job.get("ligand_smiles_list") or [])[:5]
+    smiles_list = (job.get("ligand_smiles_list") or [])
     top_n = job.get("top_n", 50)
     pdb_content = job.get("pdb_content", "")
 
-    logger.info("Spawning subprocess for job %s (%d ligands, %d aa)", job_id, len(smiles_list), len(sequence))
+    budget = _job_timeout_seconds(sequence, len(smiles_list), bool(pdb_content))
+    logger.info("Spawning subprocess for job %s (%d ligands, %d aa, budget %ds)",
+                job_id, len(smiles_list), len(sequence), budget)
 
     job_input = json.dumps({
         "job_id": job_id,
@@ -184,17 +201,33 @@ def _process_job(job: dict):
 
     worker_script = os.path.join(os.path.dirname(os.path.abspath(__file__)), "docking_worker.py")
 
-    proc = subprocess.run(
-        [_sys.executable, worker_script],
-        input=job_input,
-        capture_output=True,
-        text=True,
-        timeout=300,
-        env={**os.environ, "PYTHONUNBUFFERED": "1"},
-    )
+    try:
+        proc = subprocess.run(
+            [_sys.executable, worker_script],
+            input=job_input,
+            capture_output=True,
+            text=True,
+            timeout=budget,
+            env={**os.environ, "PYTHONUNBUFFERED": "1"},
+        )
+    except subprocess.TimeoutExpired:
+        # Kill happened inside subprocess.run; the job never wrote a result —
+        # fail it with actionable guidance instead of "Internal worker error".
+        logger.error("Job %s exceeded the %ds budget — failed", job_id, budget)
+        complete_job(job_id, None,
+                     f"Docking timed out after {budget // 60} minutes. "
+                     "Try fewer ligands (≤100) or a shorter sequence (≤400 aa).")
+        return
+
     # Worker writes results to disk directly. Just log what happened.
     if proc.returncode != 0:
+        # The worker moves the job file itself; if it never got that far
+        # (segfault/OS OOM-kill), fail it HERE — otherwise the job would sit
+        # in running/ and be re-claimed every 5 minutes forever.
         logger.error("Worker failed (rc=%d): %s", proc.returncode, (proc.stderr or "")[-500:])
+        tail = (proc.stderr or "").strip().splitlines()[-1][:200] if (proc.stderr or "").strip() else ""
+        complete_job(job_id, None,
+                     f"Docking worker crashed (exit {proc.returncode}). {tail}".strip())
     else:
         logger.info("Worker completed job %s", job_id)
         logger.debug("Worker stderr: %s", (proc.stderr or "")[-200:])

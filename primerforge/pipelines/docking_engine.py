@@ -134,11 +134,14 @@ def pdb_to_pdbqt(receptor_pdb: str, output_path: str) -> bool:
     return False
 
 
-async def run_vina_docking(receptor_pdb: str, ligand_smiles: str, exhaustiveness: int = 8, receptor_pdbqt_path: str = None) -> dict[str, Any]:
+async def run_vina_docking(receptor_pdb: str, ligand_smiles: str, exhaustiveness: int = 8, receptor_pdbqt_path: str = None, cpu: int = None) -> dict[str, Any]:
     """
     Runs AutoDock Vina physics engine locally.
 
     If receptor_pdbqt_path is provided, skips receptor PDB→PDBQT conversion.
+    cpu: threads for this Vina process (None = vina auto-detects all cores).
+         The consensus pipeline passes cores//N when running N ligands in
+         parallel so concurrent searches don't oversubscribe the box.
     """
     with tempfile.TemporaryDirectory() as temp_dir:
         receptor_pdb_path = os.path.join(temp_dir, "receptor.pdb")
@@ -208,6 +211,8 @@ async def run_vina_docking(receptor_pdb: str, ligand_smiles: str, exhaustiveness
                 "--size_x", str(round(sx, 1)), "--size_y", str(round(sy, 1)), "--size_z", str(round(sz, 1)),
                 "--exhaustiveness", str(exhaustiveness), "--out", out_pdbqt_path
             ]
+            if cpu:
+                vina_cmd += ["--cpu", str(int(cpu))]
 
             # Redirect stdout/stderr to files instead of PIPE to avoid pipe-buffer
             # deadlock when multiple Vina processes run concurrently on low-core

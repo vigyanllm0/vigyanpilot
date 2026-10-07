@@ -30,6 +30,14 @@ from primerforge.pipelines.docking_engine import _mol_from_pdb
 from primerforge.pipelines.esmfold_engine import _extract_plddt_from_pdb
 
 
+@pytest.fixture(autouse=True)
+def _isolated_structure_cache(tmp_path, monkeypatch):
+    """predict_structure caches real predictions under DOCKING_QUEUE_DIR —
+    point it at a per-test tmp dir so tests never read/write the repo cache
+    (cross-test contamination would defeat path-selection assertions)."""
+    monkeypatch.setenv("DOCKING_QUEUE_DIR", str(tmp_path / "docking_queue"))
+
+
 # ── 1. pLDDT extraction ─────────────────────────────────────────────────────
 
 _PDB_TEMPLATE = (
@@ -169,7 +177,7 @@ def test_gnina_failure_reasons_surfaced(monkeypatch):
                 "plddt_score": 88.0, "sequence_length": len(sequence)}
 
     async def fake_vina(receptor_pdb, ligand_smiles, exhaustiveness=8,
-                        receptor_pdbqt_path=None):
+                        receptor_pdbqt_path=None, cpu=None):
         return {"binding_affinity": -7.5, "structure": {"ligand": fake_pdb}}
 
     async def fake_gnina(receptor_pdb, ligand_smiles, exhaustiveness=4,

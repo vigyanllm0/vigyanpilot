@@ -1549,8 +1549,8 @@ async function runDocking() {
     $('protein-seq').classList.add('error');
     return;
   }
-  if (validAA.length > 2000) {
-    $('seq-error').textContent = 'Protein sequence must not exceed 2000 residues for web docking. For longer sequences, use a local Vina installation.';
+  if (_inputMode !== 'pdb' && validAA.length > 400) {
+    $('seq-error').textContent = 'Sequence mode supports up to 400 residues (the web structure-prediction service rejects longer sequences). For longer proteins, open the PDB tab and upload the protein structure file.';
     $('seq-error').classList.add('show');
     $('protein-seq').classList.add('error');
     return;
@@ -1567,8 +1567,8 @@ async function runDocking() {
     $('smiles-error').classList.add('show');
     return;
   }
-  if (smilesList.length > 50) {
-    $('smiles-error').textContent = 'Maximum 50 ligands per run. You entered ' + smilesList.length + '.';
+  if (smilesList.length > 100) {
+    $('smiles-error').textContent = 'Maximum 100 ligands per consensus run. You entered ' + smilesList.length + '.';
     $('smiles-error').classList.add('show');
     return;
   }
@@ -1654,7 +1654,8 @@ async function runDocking() {
     setStage(1, 'running', 'Job ' + jobId + ' queued — processing...');
     setStage(2, 'stub', 'Waiting for stage 1');
     setStage(3, 'stub', 'Waiting for stage 2');
-    // Poll for results (max 180 attempts = 9 minutes)
+    // Poll for results (max 500 attempts × 2s ≈ 17 minutes — must exceed
+    // the server's 900s worst-case job budget for 100-ligand runs)
     var pollAttempts = 0;
     var pollInterval = setInterval(async function() {
       try {
@@ -1703,9 +1704,9 @@ async function runDocking() {
           $('slow-warn').style.display = 'none';
         } else {
           pollAttempts++;
-          if (pollAttempts> 180) {
+          if (pollAttempts> 500) {
             clearInterval(pollInterval);
-            setStage(1, 'fail', 'Timed out after 9 minutes');
+            setStage(1, 'fail', 'Timed out after ~17 minutes');
             showError('Docking timed out. The server may be overloaded. Try again with fewer ligands.');
             $('run-btn').disabled = false;
             $('run-spinner').classList.remove('show');
@@ -1715,7 +1716,7 @@ async function runDocking() {
         }
       } catch(e) {
         pollAttempts++;
-        if (pollAttempts> 180) {
+        if (pollAttempts> 500) {
           clearInterval(pollInterval);
           setStage(1, 'fail', 'Network error');
           showError('Lost connection to server. Try again.');
@@ -1725,7 +1726,7 @@ async function runDocking() {
           $('slow-warn').style.display = 'none';
         }
       }
-    }, 3000);
+    }, 2000);
   } catch(e) {
     setStage(1, 'fail', 'Network error');
     showError('Network error: ' + e.message);
