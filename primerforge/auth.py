@@ -85,16 +85,27 @@ def _retry_on_lock(max_attempts=3, delay=0.05):
 
 
 def get_db():
-    """Get thread-local database connection."""
-    if 'db' not in g:
-        g.db = sqlite3.connect(DB_PATH, timeout=5)
-        g.db.row_factory = sqlite3.Row
-    return g.db
+    """Get thread-local SQLite connection.
+
+    Stored under `g.sqlitedb` — deliberately NOT `g.db`. In production
+    (DATABASE_URL set), primerforge.database.get_db() puts a raw psycopg2
+    connection in `g.db` on every authenticated request (pg_auth.get_current_user
+    → verify_token blacklist query / set_rls_context). Sharing the key made
+    these SQLite helpers call `.execute()` on psycopg2 →
+    AttributeError: 'psycopg2.extensions.connection' object has no attribute
+    'execute' → HTTP 500 on any logged-in request that also touches an
+    auth.py helper (surfaced 2026-10-07 on POST /docking/consensus).
+    """
+    if 'sqlitedb' not in g:
+        g.sqlitedb = sqlite3.connect(DB_PATH, timeout=5)
+        g.sqlitedb.row_factory = sqlite3.Row
+    return g.sqlitedb
 
 
 def close_db(e=None):
-    """Close database connection."""
-    db = g.pop('db', None)
+    """Close the SQLite connection (teardown). Pops only our own key —
+    never database.py's pooled psycopg2 `g.db`."""
+    db = g.pop('sqlitedb', None)
     if db is not None:
         db.close()
 
