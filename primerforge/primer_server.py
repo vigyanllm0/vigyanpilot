@@ -660,6 +660,19 @@ def create_app() -> Flask:
         from primerforge.pg_auth_routes import auth_bp
         from primerforge.pg_payment_routes import payment_bp
         init_db()
+        # The SQLite side stays in service even in PG mode — shared helpers
+        # (auth.check_daily_usage → get_user_plan, cookie-consent inserts,
+        # visitor routes) read primerforge.db via auth.get_db(). If its schema
+        # init never runs, a legacy box file keeps a pre-`trial_ends_at`
+        # users table and every logged-in usage check 500s with
+        # "no such column: trial_ends_at" (prod, 2026-10-08). init_db() is
+        # idempotent (CREATE IF NOT EXISTS + per-column ALTERs) — failure must
+        # not take the API down, but must be loud in the logs.
+        try:
+            from primerforge.auth import init_db as init_sqlite_db
+            init_sqlite_db()
+        except Exception as e:
+            logger.error("SQLite schema init failed — auth.py helpers may 500: %s", e)
         app.teardown_appcontext(close_db)
         app.register_blueprint(auth_bp)
         app.register_blueprint(payment_bp)
