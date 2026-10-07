@@ -316,6 +316,16 @@ jobs:
         run: |
           sleep 5
           curl -sf https://www.vigyanllm.in/health || { echo " — CloudFront health FAIL"; exit 1; }
+          # SQLite schema gate (RCA 2026-10-08): a stale primerforge.db makes every
+          # logged-in usage check 500 ("no such column: trial_ends_at"). Cache-busted
+          # so we read the origin's fresh /health, never a CDN-cached one.
+          H=$(curl -sf -m 15 "https://www.vigyanllm.in/health?cb=$(date +%s)" || true)
+          if ! echo "$H" | python3 -c \
+              "import json,sys; d=json.load(sys.stdin); sys.exit(0 if d.get('sqlite_schema_ok') is True else 1)" \
+              2>/dev/null; then
+            echo " — SQLite schema probe NOT ok (logged-in usage checks would 500): $(echo "$H" | head -c 300)"
+            exit 1
+          fi
           curl -sf https://www.vigyanllm.in/api/config/public || { echo " — API config FAIL"; exit 1; }
           # End-to-end gate: live pricing must be the USD payload we deployed.
           LIVE=$(curl -sf -m 15 "https://www.vigyanllm.in/api/payments/pricing?cb=$(date +%s)" || true)

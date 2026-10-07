@@ -776,7 +776,22 @@ def create_app() -> Flask:
 
     @app.route("/health", methods=["GET"])
     def health():
-        return jsonify({"status": "ok"}), 200
+        payload = {"status": "ok"}
+        # SQLite schema probe: /health must prove the exact read path that
+        # 500'd logged-in usage checks in prod (auth.get_user_plan's SELECT,
+        # "no such column: trial_ends_at", 2026-10-08) can actually run.
+        # CI asserts sqlite_schema_ok is true, so a stale/legacy primerforge.db
+        # fails the deploy gate instead of silently 500-ing in production.
+        try:
+            from primerforge.auth import get_user_plan, get_db
+            get_user_plan("__health__")          # read-only SELECT; no such row
+            get_db().execute("SELECT count(*) FROM daily_usage").fetchone()
+            payload["sqlite_schema_ok"] = True
+        except Exception as e:
+            payload["status"] = "degraded"
+            payload["sqlite_schema_ok"] = False
+            payload["sqlite_schema_error"] = str(e)[:200]
+        return jsonify(payload), 200
 
     @app.route("/api/config/public", methods=["GET"])
     def public_config():

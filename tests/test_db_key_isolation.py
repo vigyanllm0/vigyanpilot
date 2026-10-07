@@ -31,6 +31,11 @@ def ctx(monkeypatch, tmp_path):
     # writes to the repo-root default; full-suite runs bind auth.DB_PATH
     # at first import like every other test (session tmp sqlite).
     monkeypatch.setenv("PRIMERFORGE_DB", str(tmp_path / "iso.db"))
+    # auth.py import requires these (CI/workflow env + test_verification_fix
+    # cover suite runs; set here so standalone runs work too).
+    monkeypatch.setenv("PRIMERFORGE_ADMIN_EMAIL", "db-key-iso@test.com")
+    monkeypatch.setenv("PRIMERFORGE_ADMIN_PASSWORD", "DbKeyIso!12345")
+    monkeypatch.setenv("PRIMERFORGE_SECRET", "db-key-iso-secret-0123456789abcdef")
 
     import primerforge.auth as auth
 
