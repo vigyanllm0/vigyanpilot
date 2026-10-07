@@ -405,6 +405,13 @@ def test_process_job_timeout_yields_actionable_error(monkeypatch, tmp_path):
 
 
 def test_worker_heartbeat_keeps_long_jobs_out_of_stale_release(monkeypatch, tmp_path):
+    # docking_worker applies RLIMIT_AS=600MB at import — correct for its
+    # standalone subprocess role, but Linux ENFORCES it (macOS ignores it),
+    # which would cap pytest's own address space and wedge Thread.start()
+    # inside this test. Neutralize before the module's first import.
+    import resource as _res
+
+    monkeypatch.setattr(_res, "setrlimit", lambda *args, **kwargs: None)
     from primerforge import docking_worker as dw
 
     monkeypatch.setenv("DOCKING_QUEUE_DIR", str(tmp_path))
