@@ -589,6 +589,61 @@ def _build_pipeline_status(pairs: list, elapsed_ms: int, error: str = None) -> d
         "stages": stages,
     }
 
+
+def _cancel_orphan_job(job_id: str):
+    """Best-effort stop of a just-queued docking job (see _settle_docking_job)."""
+    try:
+        from primerforge.docking_queue import cancel_job
+        cancel_job(job_id)
+    except Exception as e:
+        logger.error("Failed to cancel orphaned docking job %s: %s", job_id, e)
+
+
+def _settle_docking_job(job_id, user, use_postgres, consume_fn, increment_fn):
+    """Consume the run's credit AFTER queuing — without ever stranding an orphan.
+
+    The job is already on disk when this runs (queuing first means a failed
+    submit never burns a token). If the credit check then fails, a
+    client-visible error must not race an invisible run that completes with
+    nobody watching:
+
+      * no docking tokens left (consume → False)  → cancel + 402
+      * credit layer threw (PostgreSQL)           → cancel + 500 (money path:
+                                                    never let an unsettled run
+                                                    execute)
+      * SQLite bookkeeping threw (run counter)    → logged, run proceeds: the
+        client already has its 202, and dock_run_count is non-authoritative
+
+    Returns (body, status) for the route to send, or None to report success.
+    """
+    if not user or user.get("role") == "admin":
+        return None
+    try:
+        if use_postgres and consume_fn:
+            if not consume_fn(user.get("user_id"), user["email"]):
+                _cancel_orphan_job(job_id)
+                return ({
+                    "error": "No docking tokens remaining. Purchase more to continue.",
+                    "code": "PAYMENT_REQUIRED",
+                    "action": "show_docking_payment",
+                }, 402)
+        elif increment_fn:
+            increment_fn(user["email"])
+    except Exception as e:
+        if use_postgres:
+            logger.error("Docking credit consumption failed for job %s: %s", job_id, e)
+            _cancel_orphan_job(job_id)
+            return ({
+                "error": "Could not verify your docking credits for this run. Please try again.",
+                "code": "SERVER_ERROR",
+            }, 500)
+        # SQLite-side bookkeeping (dock_run_count / usage log) — non-authoritative:
+        # the daily gate already passed, so let the run the client was told about
+        # actually happen.
+        logger.error("Docking usage bookkeeping failed for job %s: %s", job_id, e)
+    return None
+
+
 def create_app() -> Flask:
     app = Flask(__name__)
 
@@ -610,6 +665,13 @@ def create_app() -> Flask:
 
     @app.errorhandler(Exception)
     def handle_global_error(e):
+        # Routing-level HTTPExceptions (404/405/415…) must keep their real
+        # status codes — only genuine exceptions become 500s. Without this a
+        # POST to a GET-only rule surfaced as a fake 500 (deep-audit, 2026-10-08).
+        from werkzeug.exceptions import HTTPException
+        if isinstance(e, HTTPException):
+            logger.warning("HTTP %s %s %s: %s", e.code, request.method, request.path, e.name)
+            return jsonify({"error": e.name or "Error", "code": str(e.code)}), e.code
         logger.error("Unhandled Exception: %s: %s", type(e).__name__, e, exc_info=True)
         return jsonify({
             "error": "Internal server error",
@@ -645,6 +707,11 @@ def create_app() -> Flask:
 
     # ── Database Setup: PostgreSQL (production) or SQLite (fallback) ───────
     USE_POSTGRES = bool(os.environ.get("DATABASE_URL"))
+
+    # Bound to auth.increment_docking_usage in the SQLite branch below; stays
+    # None under PostgreSQL (where consume_docking_token is the only credit
+    # path). _settle_docking_job reads both, so name it unconditionally.
+    increment_docking_usage = None
 
     if USE_POSTGRES:
         from primerforge.database import close_db, init_db
@@ -2813,14 +2880,13 @@ def create_app() -> Flask:
 
             job_id = create_job(sequence, ligand_smiles_list, top_n, pdb_content=pdb_content)
 
-            # Consume token AFTER successful queuing (both SQLite and PostgreSQL)
-            if user and user.get('role') != 'admin':
-                if USE_POSTGRES and consume_docking_token:
-                    if not consume_docking_token(user.get('user_id'), user['email']):
-                        return jsonify({"error": "No docking tokens remaining. Purchase more to continue.",
-                                       "code": "PAYMENT_REQUIRED", "action": "show_docking_payment"}), 402
-                else:
-                    increment_docking_usage(user['email'])
+            # Consume token AFTER successful queuing (both SQLite and
+            # PostgreSQL) — and never leave an invisible run behind if the
+            # credit accounting fails: see _settle_docking_job.
+            settled = _settle_docking_job(job_id, user, USE_POSTGRES,
+                                           consume_docking_token, increment_docking_usage)
+            if settled is not None:
+                return settled
 
             return jsonify({"job_id": job_id, "status": "queued"}), 202
         except Exception as e:
@@ -2941,7 +3007,11 @@ def create_app() -> Flask:
         import json as jmod
         import os
 
-        from primerforge.docking_queue import COMPLETE_DIR, FAILED_DIR, RUNNING_DIR
+        from primerforge.docking_queue import COMPLETE_DIR, FAILED_DIR, RUNNING_DIR, valid_job_id
+        if not valid_job_id(job_id):
+            # This route joins the client id into a path directly (not via
+            # get_job) — same id policy as the queue.
+            return err("Job not found.", "NOT_FOUND", 404)
         data = request.get_json(silent=True) or {}
         # Find the job file in complete or failed dir
         for d in (COMPLETE_DIR, FAILED_DIR, RUNNING_DIR):

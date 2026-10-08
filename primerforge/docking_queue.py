@@ -3,11 +3,33 @@
 import json
 import logging
 import os
+import re
 import threading
 import time
 import uuid
 
 logger = logging.getLogger(__name__)
+
+# Every job id that reaches this module can come straight from a client URL
+# (status/cancel/structure routes). Ids we mint are uuid4().hex[:12], but path
+# safety must not depend on the caller: reject anything that is not a plain
+# token before it reaches os.path.join. (Flask routing already 404s '%2F'-
+# style separators — verified against both werkzeug and gunicorn — so this is
+# defense in depth against traversal, NUL bytes and oversized ids.)
+_JOB_ID_RE = re.compile(r"^[A-Za-z0-9_-]{1,64}$")
+
+
+def valid_job_id(job_id) -> bool:
+    """True when job_id is safe to embed in queue file paths."""
+    return isinstance(job_id, str) and bool(_JOB_ID_RE.match(job_id))
+
+
+def _atomic_dump(obj, path: str):
+    """Write JSON via temp file + os.replace — readers never see a half dump."""
+    tmp = f"{path}.tmp{os.getpid()}"
+    with open(tmp, "w") as f:
+        json.dump(obj, f)
+    os.replace(tmp, path)
 
 QUEUE_DIR = os.environ.get("DOCKING_QUEUE_DIR", os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "docking_queue"))
 PENDING_DIR = os.path.join(QUEUE_DIR, "pending")
@@ -39,8 +61,7 @@ def create_job(sequence: str, ligand_smiles_list: list, top_n: int = 50, pdb_con
     }
     with _lock:
         path = os.path.join(PENDING_DIR, f"{job_id}.json")
-        with open(path, "w") as f:
-            json.dump(job, f)
+        _atomic_dump(job, path)
     logger.info("Docking job %s created (%d ligands)", job_id, len(ligand_smiles_list))
     try:
         from primerforge.docking_db import save_job as db_save
@@ -50,14 +71,26 @@ def create_job(sequence: str, ligand_smiles_list: list, top_n: int = 50, pdb_con
     return job_id
 
 def get_job(job_id: str) -> dict | None:
+    if not valid_job_id(job_id):
+        return None
     for directory in (PENDING_DIR, RUNNING_DIR, COMPLETE_DIR, FAILED_DIR):
         path = os.path.join(directory, f"{job_id}.json")
         if os.path.exists(path):
-            with open(path) as f:
-                return json.load(f)
+            try:
+                with open(path) as f:
+                    return json.load(f)
+            except (OSError, ValueError) as e:
+                # Truncated/corrupt record (writer crashed mid-dump): report it
+                # as missing so the status route 404s and the UI clears its
+                # stored run, instead of raising on every poll for the client's
+                # full ~17-minute attempt budget.
+                logger.error("Unreadable docking job file %s: %s", path, e)
+                return None
     return None
 
 def claim_job(job_id: str) -> bool:
+    if not valid_job_id(job_id):
+        return False
     _ensure_dirs()
     with _lock:
         src = os.path.join(PENDING_DIR, f"{job_id}.json")
@@ -70,10 +103,15 @@ def claim_job(job_id: str) -> bool:
         except FileNotFoundError:
             # Cancelled (or cleaned) between exists() and read.
             return False
+        except (OSError, ValueError) as e:
+            # Corrupt pending record — unreadable, so drop it instead of
+            # re-claiming (and failing) it every poll cycle forever.
+            logger.error("Dropping corrupt pending docking job %s: %s", src, e)
+            _remove_quiet(src)
+            return False
         job["status"] = "running"
         job["updated_at"] = time.time()
-        with open(dst, "w") as f:
-            json.dump(job, f)
+        _atomic_dump(job, dst)
         try:
             os.remove(src)
         except FileNotFoundError:
@@ -87,6 +125,8 @@ def claim_job(job_id: str) -> bool:
     return True
 
 def complete_job(job_id: str, result: dict, error: str = None) -> bool:
+    if not valid_job_id(job_id):
+        return False
     _ensure_dirs()
     with _lock:
         src = os.path.join(RUNNING_DIR, f"{job_id}.json")
@@ -94,14 +134,20 @@ def complete_job(job_id: str, result: dict, error: str = None) -> bool:
             return False
         dst_dir = FAILED_DIR if error else COMPLETE_DIR
         dst = os.path.join(dst_dir, f"{job_id}.json")
-        with open(src) as f:
-            job = json.load(f)
+        try:
+            with open(src) as f:
+                job = json.load(f)
+        except (OSError, ValueError) as e:
+            # Corrupt running record — remove it so the job can't loop through
+            # stale-release forever; status then 404s and the UI clears.
+            logger.error("Dropping corrupt running docking job %s: %s", src, e)
+            _remove_quiet(src)
+            return False
         job["status"] = "failed" if error else "completed"
         job["updated_at"] = time.time()
         job["result"] = result
         job["error"] = error
-        with open(dst, "w") as f:
-            json.dump(job, f)
+        _atomic_dump(job, dst)
         os.remove(src)
     try:
         from primerforge.docking_db import complete_job as db_complete
@@ -150,13 +196,19 @@ def release_stale_jobs(max_age_minutes: float = 10.0):
         try:
             mtime = os.path.getmtime(path)
             if mtime < cutoff:
-                with open(path) as f:
-                    job = json.load(f)
+                try:
+                    with open(path) as f:
+                        job = json.load(f)
+                except (OSError, ValueError) as e:
+                    # Corrupt running record: drop it (status 404s → the UI
+                    # clears) instead of re-reading the same garbage each cycle.
+                    logger.error("Dropping corrupt running docking job %s: %s", path, e)
+                    os.remove(path)
+                    continue
                 job["status"] = "pending"
                 job["updated_at"] = now
                 dst = os.path.join(PENDING_DIR, fname)
-                with open(dst, "w") as f:
-                    json.dump(job, f)
+                _atomic_dump(job, dst)
                 os.remove(path)
                 released += 1
                 logger.info("Released stale job %s back to pending", job.get("job_id"))
@@ -195,6 +247,8 @@ def cancel_job(job_id: str) -> str:
                     worker process tree within ~1s and fails the job
       'finished'  — already completed/failed; nothing to stop
     """
+    if not valid_job_id(job_id):
+        return "not_found"
     _ensure_dirs()
     pending = os.path.join(PENDING_DIR, f"{job_id}.json")
     running = os.path.join(RUNNING_DIR, f"{job_id}.json")
@@ -206,13 +260,18 @@ def cancel_job(job_id: str) -> str:
                     job = json.load(f)
             except FileNotFoundError:
                 job = None  # claimed by the worker while we read
+            except (OSError, ValueError) as e:
+                # Unreadable record: drop it (claim_job would too) and let the
+                # caller see 'not_found' instead of a 500.
+                logger.error("Dropping corrupt pending docking job %s: %s", pending, e)
+                _remove_quiet(pending)
+                job = None
             if job is not None:
                 failed_dst = os.path.join(FAILED_DIR, f"{job_id}.json")
                 job["status"] = "failed"
                 job["error"] = "Stopped by user."
                 job["updated_at"] = time.time()
-                with open(failed_dst, "w") as f:
-                    json.dump(job, f)
+                _atomic_dump(job, failed_dst)
                 try:
                     os.remove(pending)
                 except FileNotFoundError:
@@ -480,7 +539,7 @@ def cleanup_old_jobs(max_age_hours: float = 1.0):
     removed = 0
     for directory in (COMPLETE_DIR, FAILED_DIR):
         for fname in os.listdir(directory):
-            if not fname.endswith(".json"):
+            if not (fname.endswith(".json") or ".json.tmp" in fname):
                 continue
             path = os.path.join(directory, fname)
             try:

@@ -608,3 +608,198 @@ def test_cancel_route_status_codes(env, qdirs):
     st = client.get("/api/primer/docking/status/r1").get_json()
     assert st["status"] == "failed"
     assert st["error"] == "Stopped by user."
+
+
+# ════════════════════════════════════════════════════════════════════════════
+# 7. Deep-audit hardening (2026-10-08)
+#    - job-id path safety: client ids never reach os.path.join unvalidated
+#    - corrupt job records → 404 (UI clears) instead of a ~17-minute poll loop
+#    - credit settlement never strands an invisible orphan run
+#    - submit-path UI always re-enables the run button (verified headless;
+#      covered here server-side via the accounting contract)
+# ════════════════════════════════════════════════════════════════════════════
+
+def test_job_id_guard_blocks_traversal_reads_and_moves(qdirs):
+    """A '../x' id must never resolve outside the queue directories.
+
+    Planted record sits at exactly where pending/../x.json would land —
+    without valid_job_id() get_job would read it and cancel_job would MOVE it
+    into the failed dir."""
+    dq = qdirs
+    outside = os.path.join(os.path.dirname(dq.PENDING_DIR), "x.json")
+    with open(outside, "w") as f:
+        json.dump({"job_id": "../x", "status": "completed",
+                   "result": {"planted": True}}, f)
+    try:
+        assert dq.get_job("../x") is None
+        assert dq.cancel_job("../x") == "not_found"
+        assert os.path.exists(outside)  # untouched — no move, no delete
+        # other hostile shapes: sub-dir traversal, bare dots, NUL, oversize
+        assert dq.get_job("a/b") is None
+        assert dq.cancel_job("a/b") == "not_found"
+        for bad in ("..", "a\\b", "ab\x00cd", "x" * 65, "", None):
+            assert dq.get_job(bad) is None
+            assert dq.cancel_job(bad) == "not_found"
+            assert dq.claim_job(bad) is False
+            assert dq.complete_job(bad, {}) is False
+        # valid ids (uuid-hex in prod, short tokens in tests) keep working
+        _write_job(dq, dq.PENDING_DIR, "ok-1_Ab9", "pending")
+        assert dq.get_job("ok-1_Ab9")["status"] == "pending"
+        assert dq.cancel_job("ok-1_Ab9") == "cancelled"
+    finally:
+        if os.path.exists(outside):
+            os.remove(outside)
+
+
+def test_status_route_rejects_unsafe_ids(env, qdirs):
+    """Route level: '%2F' separators die in routing (werkzeug AND gunicorn —
+    probed empirically), ids that survive routing die in the id guard."""
+    client, _ = env
+    assert client.get(
+        "/api/primer/docking/status/..%2F..%2Fetc%2Fpasswd").status_code == 404
+    # Routing-level rejection keeps its real code (404/405) — never a fake 500
+    resp = client.post("/api/primer/docking/cancel/..%2F..%2Fx")
+    assert resp.status_code in (404, 405)
+    assert resp.get_json()["code"] != "500"
+    assert client.get("/api/primer/docking/status/..").status_code == 404
+    # a dot survives routing but fails the id policy → guard (not routing)
+    assert client.get("/api/primer/docking/status/bad.id").status_code == 404
+    assert client.post("/api/primer/docking/structure/upload/bad.id/1").status_code == 404
+
+
+def test_corrupt_job_record_is_404_not_polling_forever(env, qdirs):
+    """Truncated job file (writer crash) must read as missing so the frontend
+    404s, clears its stored run and stops — never raises on every poll."""
+    client, _ = env
+    with open(os.path.join(qdirs.COMPLETE_DIR, "deadbeef0001.json"), "w") as f:
+        f.write('{"job_id": "deadbeef0001", "status": "comp')  # crash mid-dump
+    assert qdirs.get_job("deadbeef0001") is None
+    resp = client.get("/api/primer/docking/status/deadbeef0001")
+    assert resp.status_code == 404
+    assert resp.get_json()["code"] == "NOT_FOUND"
+
+
+def test_corrupt_pending_record_is_dropped_not_retried_forever(qdirs):
+    """claim_job must drop an unreadable pending file instead of re-claiming
+    (and failing) it every poll cycle forever."""
+    dq = qdirs
+    p = os.path.join(dq.PENDING_DIR, "bad00bad0001.json")
+    with open(p, "w") as f:
+        f.write('{"job_id": "bad00bad0001", "status": "pend')
+    assert dq.claim_job("bad00bad0001") is False
+    assert not os.path.exists(p)
+
+
+def test_settle_no_tokens_cancels_orphan_job(qdirs):
+    """PG consume → False (402) must also stop the just-queued job — before
+    this fix the job ran to completion invisibly while the user only saw a
+    payment prompt."""
+    from primerforge.primer_server import _settle_docking_job
+    dq = qdirs
+    _write_job(dq, dq.PENDING_DIR, "orphan402a", "pending")
+    user = {"email": "u@example.com", "role": "user", "user_id": 7}
+    out = _settle_docking_job("orphan402a", user, True, lambda uid, email: False, None)
+    assert out is not None
+    body, status = out
+    assert status == 402
+    assert body["code"] == "PAYMENT_REQUIRED"
+    job = dq.get_job("orphan402a")
+    assert job["status"] == "failed"
+    assert job["error"] == "Stopped by user."
+
+
+def test_settle_credit_exception_cancels_orphan_job(qdirs):
+    """Money path: if consume_docking_token throws, the run must not execute
+    unsettled — cancel + 500, never a silent free run."""
+    from primerforge.primer_server import _settle_docking_job
+    dq = qdirs
+    _write_job(dq, dq.PENDING_DIR, "orphan500x", "pending")
+
+    def boom(uid, email):
+        raise RuntimeError("pg down")
+
+    out = _settle_docking_job("orphan500x", {"email": "u@e.c", "role": "user", "user_id": 7},
+                              True, boom, None)
+    assert out is not None and out[1] == 500
+    assert dq.get_job("orphan500x")["status"] == "failed"
+
+
+def test_settle_bookkeeping_failure_lets_run_proceed(qdirs):
+    """SQLite counter drift is non-authoritative: the client already holds
+    its 202, so the run must survive a usage-log failure."""
+    from primerforge.primer_server import _settle_docking_job
+    dq = qdirs
+    _write_job(dq, dq.PENDING_DIR, "keepme12345", "pending")
+
+    def boom(email):
+        raise RuntimeError("db locked")
+
+    out = _settle_docking_job("keepme12345", {"email": "u@e.c", "role": "user"},
+                              False, None, boom)
+    assert out is None
+    assert dq.get_job("keepme12345")["status"] == "pending"
+
+
+def test_settle_admin_and_guest_skip_accounting(qdirs):
+    from primerforge.primer_server import _settle_docking_job
+    called = []
+    assert _settle_docking_job("x1", {"email": "a@b.c", "role": "admin"},
+                               True, lambda *a: called.append(a), None) is None
+    assert _settle_docking_job("x2", None, True,
+                               lambda *a: called.append(a), None) is None
+    assert called == []
+
+
+@pytest.fixture
+def raise_increment(monkeypatch):
+    """Replace auth.increment_docking_usage BEFORE env's create_app binds it
+    (fixture is listed first on purpose — the test asserts it was called, so
+    a reordering fails loudly instead of silently passing)."""
+    import primerforge.auth as auth_mod
+
+    called = {"n": 0}
+
+    def boom(email):
+        called["n"] += 1
+        raise RuntimeError("usage db locked")
+
+    monkeypatch.setattr(auth_mod, "increment_docking_usage", boom)
+    return called
+
+
+def test_consensus_bookkeeping_failure_still_returns_202(raise_increment, env, qdirs):
+    """Logged-in submit where usage bookkeeping throws: client gets the 202
+    it was promised (job proceeds), error is logged — not an orphaned run
+    behind a 500."""
+    client, _ = env
+    assert raise_increment is not None  # fixture ordering sanity
+    reg = client.post(
+        "/api/auth/register",
+        json={"email": "settle-user@example.com", "password": "Vault-Key!Pr1mer26",
+              "name": "Settle User"},
+    )
+    assert reg.status_code == 201
+    token = reg.headers.get("Set-Cookie", "").split("pf_token=")[1].split(";")[0]
+
+    resp = client.post(
+        "/api/primer/docking/consensus",
+        data=json.dumps({
+            "sequence": "MKTAYIAKQRQISFVKSHFSRQLEERLGLIEVQAPDHERGLVDRFYKVELAPTHKGGFGLRGDGFNICKDG",
+            "ligand_smiles_list": ["CCO"],
+            "top_n": 5,
+        }),
+        headers={"Content-Type": "application/json", "Cookie": f"pf_token={token}"},
+    )
+    assert resp.status_code == 202
+    assert resp.get_json().get("job_id")
+    assert raise_increment["n"] == 1  # the patched path really ran
+
+
+def test_http_exceptions_keep_their_status_codes(env):
+    """Routing-level HTTPExceptions must keep their real status codes: a POST
+    to a GET-only rule used to surface as a fake 500 (the catch-all
+    Exception handler swallowed MethodNotAllowed)."""
+    client, _ = env
+    resp = client.post("/health")
+    assert resp.status_code == 405
+    assert resp.get_json()["code"] == "405"

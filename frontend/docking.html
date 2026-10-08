@@ -1772,20 +1772,24 @@ async function runDocking() {
   if (smilesList.length > 1 && !(await requireFeature('batch'))) {
     $('run-btn').disabled = false;
     $('run-spinner').classList.remove('show');
-    $('run-btn-text').textContent = 'Run Docking';
+    $('run-btn-text').textContent = 'Run Consensus Docking';
     return;
   }
-  // Gate: daily usage check
-  var tkn = authUser ? authToken : '';
-  if (tkn) {
+  // Gate: daily usage check. The cookie session is enough (Bearer optional),
+  // and admin is exempt server-side — mirror that so admins are never gated
+  // here. (The old `var tkn = authUser ? authToken : ''` read the hoisted
+  // LOCAL `var authToken` declared further down in this function — always
+  // undefined at this point — so this pre-check silently never ran.)
+  if (authUser && authUser.role !== 'admin') {
     try {
-      var _ur = await fetch(API + '/usage/check?tool=docking', { credentials: 'include', headers: { 'Authorization': 'Bearer ' + tkn } });
+      var _uh = {};
+      var _tkn = window.authToken || '';
+      if (_tkn) _uh['Authorization'] = 'Bearer ' + _tkn;
+      var _ur = await fetch(API + '/usage/check?tool=docking', { credentials: 'include', headers: _uh });
       if (_ur.ok) {
         var _ud = await _ur.json();
         if (!_ud.can_analyze) {
-          $('run-btn').disabled = false;
-          $('run-spinner').classList.remove('show');
-          $('run-btn-text').textContent = 'Run Docking';
+          resetRunUI();
           showUpgradeGate({ tier: 'pro', label: 'Pro', desc: 'You\'ve used all ' + _ud.daily_limit + ' daily analyses. Upgrade to Pro for more.' });
           return;
         }
@@ -1803,36 +1807,50 @@ async function runDocking() {
   // Mark stage 1 running
   setStage(1, 'running', 'Submitting docking job...');
   try {
-    var authToken = window.authToken || '';
+    var submitToken = window.authToken || '';
     var headers = { 'Content-Type': 'application/json' };
-    if (authToken) headers['Authorization'] = 'Bearer ' + authToken;
+    if (submitToken) headers['Authorization'] = 'Bearer ' + submitToken;
     var r = await fetch(API + '/primer/docking/consensus', {
       method: 'POST',
       headers: headers,
       body: JSON.stringify({ sequence: validAA, ligand_smiles_list: smilesList, top_n: topN, pdb_content: (_inputMode === 'pdb' && _uploadedPDB) ? _uploadedPDB : '' })
     });
-    var submitResult = await r.json();
+    var submitResult = {};
+    try { submitResult = await r.json(); } catch (_jerr) { /* non-JSON error page (413/502) */ }
     if (r.status === 401) {
       setStage(1, 'fail', 'Login required');
+      resetRunUI();
       showAuth();
       return;
     }
     if (r.status === 402) {
       setStage(1, 'fail', 'Docking limit reached');
+      resetRunUI();
       showDockingPayment(submitResult.usage);
       return;
     }
     if (!r.ok) {
-      setStage(1, 'fail', submitResult.error || 'Request failed');
-      showError(submitResult.error || 'Server returned status ' + r.status);
+      var _errMsg = submitResult.error || ('Server returned status ' + r.status);
+      setStage(1, 'fail', _errMsg);
+      resetRunUI();
+      showError(_errMsg);
       return;
     }
     var jobId = submitResult.job_id;
-    // Record usage
-    if (authToken) {
+    if (!jobId) {
+      setStage(1, 'fail', 'Unexpected server response');
+      resetRunUI();
+      showError('Server accepted the run but returned no job id. Please try again.');
+      return;
+    }
+    // Record usage — cookie session is enough, Bearer optional
+    if (authUser) {
+      var _rh = { 'Content-Type': 'application/json' };
+      if (submitToken) _rh['Authorization'] = 'Bearer ' + submitToken;
       fetch(API + '/usage/record', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken },
+        headers: _rh,
+        credentials: 'include',
         body: JSON.stringify({ tool: 'docking', sequences_count: smilesList.length })
       }).catch(function(){});
     }
@@ -1846,6 +1864,7 @@ async function runDocking() {
     startDockPolling(jobId);
   } catch(e) {
     setStage(1, 'fail', 'Network error');
+    resetRunUI();
     showError('Network error: ' + e.message);
   }
 }
