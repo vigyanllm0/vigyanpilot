@@ -80,8 +80,15 @@ def write_result(job_id, result=None, error=None):
 
     dst = failed if error else complete
     os.makedirs(os.path.dirname(dst), exist_ok=True)
-    with open(dst, "w") as f:
+    # Atomic write: readers (status polls, get_job) must never see the
+    # truncated empty file between open("w") and json.dump() — an empty read
+    # is reported as a 404 and makes the UI abandon a run that is actually
+    # finishing. Same tmp+os.replace pattern as docking_queue._atomic_dump
+    # (kept import-free by design).
+    tmp = f"{dst}.tmp{os.getpid()}"
+    with open(tmp, "w") as f:
         json.dump(job, f)
+    os.replace(tmp, dst)
     os.remove(running)
     log(f"Job {job_id} → {'failed' if error else 'complete'}")
 

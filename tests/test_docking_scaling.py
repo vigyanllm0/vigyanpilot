@@ -803,3 +803,43 @@ def test_http_exceptions_keep_their_status_codes(env):
     resp = client.post("/health")
     assert resp.status_code == 405
     assert resp.get_json()["code"] == "405"
+
+
+def test_worker_write_result_is_atomic(tmp_path, monkeypatch):
+    """The worker subprocess's result write must be atomic (tmp + os.replace):
+    a truncated empty file in complete/ would surface as a status 404
+    mid-completion and make the UI abandon a run that is actually finishing
+    (live flake, 2026-10-08 — the last non-atomic writer in the queue path)."""
+    import resource as _res
+    monkeypatch.setattr(_res, "setrlimit", lambda *a, **k: None)  # see test_worker heartbeat note
+    from primerforge import docking_worker as dw
+
+    base = str(tmp_path / "q")
+    monkeypatch.setenv("DOCKING_QUEUE_DIR", base)
+    for d in ("pending", "running", "complete", "failed"):
+        os.makedirs(os.path.join(base, d), exist_ok=True)
+    running = os.path.join(base, "running", "wtest01.json")
+    with open(running, "w") as f:
+        json.dump({"job_id": "wtest01", "status": "running", "sequence": "MK",
+                   "ligand_smiles_list": ["CCO"], "top_n": 5}, f)
+
+    dw.write_result("wtest01", result={"vina_score": -7.2})
+
+    final = os.path.join(base, "complete", "wtest01.json")
+    assert os.path.exists(final)
+    with open(final) as f:
+        job = json.load(f)
+    assert job["status"] == "completed"
+    assert job["result"]["vina_score"] == -7.2
+    assert not os.path.exists(running)
+    leftovers = os.listdir(os.path.join(base, "complete"))
+    assert not any(".tmp" in n for n in leftovers), leftovers
+
+    # error path: same guarantees, lands in failed/
+    running2 = os.path.join(base, "running", "wtest02.json")
+    with open(running2, "w") as f:
+        json.dump({"job_id": "wtest02", "status": "running"}, f)
+    dw.write_result("wtest02", error="Docking failed")
+    with open(os.path.join(base, "failed", "wtest02.json")) as f:
+        assert json.load(f)["error"] == "Docking failed"
+    assert not any(".tmp" in n for n in os.listdir(os.path.join(base, "failed")))
