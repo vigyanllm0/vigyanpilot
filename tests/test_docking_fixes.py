@@ -177,11 +177,11 @@ def test_gnina_failure_reasons_surfaced(monkeypatch):
                 "plddt_score": 88.0, "sequence_length": len(sequence)}
 
     async def fake_vina(receptor_pdb, ligand_smiles, exhaustiveness=8,
-                        receptor_pdbqt_path=None, cpu=None):
+                        receptor_pdbqt_path=None, cpu=None, box=None):
         return {"binding_affinity": -7.5, "structure": {"ligand": fake_pdb}}
 
     async def fake_gnina(receptor_pdb, ligand_smiles, exhaustiveness=4,
-                         receptor_pdbqt_path=None):
+                         receptor_pdbqt_path=None, box=None):
         raise RuntimeError("Gnina failed: [Errno 8] Exec format error: 'gnina'")
 
     async def noop_progress(stage, msg, metadata=None):
@@ -190,6 +190,10 @@ def test_gnina_failure_reasons_surfaced(monkeypatch):
     monkeypatch.setattr(cp, "esmfold_predict", fake_esmfold)
     monkeypatch.setattr(cp, "run_vina_docking", fake_vina)
     monkeypatch.setattr(cp, "run_gnina_docking", fake_gnina)
+    # Availability probe stubbed OK — this test exercises the in-loop
+    # fail-fast path with a fake GNINA; the real probe would skip stage 3.
+    monkeypatch.setattr(cp, "gnina_available", lambda **kw: {
+        "ok": True, "path": "gnina", "version": "test", "reason": None})
     # receptor PDB→PDBQT conversion: stub the file write
     import primerforge.pipelines.docking_engine as de
 

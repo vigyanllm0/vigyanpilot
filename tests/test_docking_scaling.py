@@ -34,6 +34,28 @@ FAKE_PDB = (
 )
 
 
+def multi_res_pdb(n: int = 12) -> str:
+    """n-residue poly-ALA backbone with valid fixed-width ATOM records.
+
+    The consensus route pre-validates uploaded structures at ≥10 CA
+    residues (Phase 4) — single-residue payloads are rejected with 400.
+    """
+    lines = []
+    serial = 1
+    for i in range(n):
+        for name, el in (("N", "N"), ("CA", "C"), ("C", "C"), ("O", "O")):
+            x = 3.8 * (i + 1)
+            y = 1.2 if name == "N" else 0.0
+            lines.append(
+                f"ATOM  {serial:>5d} {name:^4s} ALA A{i + 1:>4d}    "
+                f"{x:>8.3f}{y:>8.3f}{0.0:>8.3f}  1.00 50.00          {el:>2s}"
+            )
+            serial += 1
+    lines.append("TER")
+    lines.append("END")
+    return "\n".join(lines) + "\n"
+
+
 def _seq(n: int) -> str:
     """Deterministic standard-amino-acid sequence of length n."""
     aa = "ACDEFGHIKLMNPQRSTVWY"
@@ -52,10 +74,14 @@ def _score(smiles: str) -> float:
 def test_job_timeout_scales_and_clamps():
     from primerforge.docking_queue import _job_timeout_seconds
 
-    # base 300 + 8/ligand + 0.25/residue (sequence mode)
-    assert _job_timeout_seconds(_seq(100), 1, has_pdb=False) == 300 + 8 + 25
-    # PDB-upload mode skips folding → no per-residue cost
-    assert _job_timeout_seconds(_seq(400), 1, has_pdb=True) == 308
+    # base 300 + 8/ligand + 0.25/residue (sequence mode) + 45/GNINA refine
+    # (top-K=10; n=1 → 1 refine) — mirrors consensus_pipeline's stage-3 cost
+    assert _job_timeout_seconds(_seq(100), 1, has_pdb=False) == 300 + 8 + 25 + 45
+    # PDB-upload mode skips folding → no per-residue cost (GNINA term remains)
+    assert _job_timeout_seconds(_seq(400), 1, has_pdb=True) == 300 + 8 + 45
+    # GNINA term saturates at top-K=10 — ligand 11 costs only the Vina term
+    # (838 vs 830, both under the 900 clamp; +53 if GNINA were uncapped)
+    assert _job_timeout_seconds("", 11, True) == _job_timeout_seconds("", 10, True) + 8
     # grows with ligand count
     assert _job_timeout_seconds("", 50, True) > _job_timeout_seconds("", 10, True)
     # clamps: floor 300, ceiling 900 (frontend polls ~1000s)
@@ -83,7 +109,7 @@ def env(monkeypatch, tmp_path):
 
     captured: dict = {}
 
-    def fake_create(sequence, ligand_smiles_list, top_n=50, pdb_content=""):
+    def fake_create(sequence, ligand_smiles_list, top_n=50, pdb_content="", box=None):
         captured.update(sequence=sequence, ligands=list(ligand_smiles_list),
                         top_n=top_n, pdb_content=pdb_content)
         return "fakejobid1234"
@@ -167,7 +193,7 @@ def test_pdb_mode_exemptions_and_limits(env):
     client, captured = env
     # PDB mode: long extracted sequence is fine (structure is given)
     long_seq = _seq(1500)
-    pdb = FAKE_PDB * 40  # multi-residue-ish ATOM payload
+    pdb = multi_res_pdb(12)  # ≥10 CA residues (route pre-validation, Phase 4)
     r = _post(client, {"sequence": long_seq, "ligand_smiles_list": ["CCO"], "pdb_content": pdb})
     assert r.status_code == 202, r.get_json()
     assert captured["sequence"] == long_seq
@@ -178,6 +204,10 @@ def test_pdb_mode_exemptions_and_limits(env):
     r = _post(client, {"sequence": "", "ligand_smiles_list": ["CCO"], "pdb_content": "REMARK nothing here\n"})
     assert r.status_code == 400
     assert "ATOM" in r.get_json()["error"]
+    # <10 CA residues (here: 1) → 400 BEFORE anything is queued (Phase 4)
+    r = _post(client, {"sequence": "", "ligand_smiles_list": ["CCO"], "pdb_content": FAKE_PDB})
+    assert r.status_code == 400, r.get_json()
+    assert "CA" in r.get_json()["error"]
     # oversized PDB (> 5MB) → 400 (below Flask's 10MB request cap)
     big = "ATOM" + "A" * (5 * 1024 * 1024 + 10)
     r = _post(client, {"sequence": "", "ligand_smiles_list": ["CCO"], "pdb_content": big})
@@ -263,7 +293,7 @@ def _run_pipeline(monkeypatch, ligands, top_n=None, gnina_stub=...):
     conc = {"cur": 0, "max": 0}
 
     async def fake_vina(receptor_pdb, ligand_smiles, exhaustiveness=8,
-                        receptor_pdbqt_path=None, cpu=None):
+                        receptor_pdbqt_path=None, cpu=None, box=None):
         conc["cur"] += 1
         conc["max"] = max(conc["max"], conc["cur"])
         await asyncio.sleep(0.03)
@@ -284,6 +314,10 @@ def _run_pipeline(monkeypatch, ligands, top_n=None, gnina_stub=...):
     monkeypatch.setattr(de, "pdb_to_pdbqt", fake_pdbqt)
     if gnina_stub is not ...:
         monkeypatch.setattr(cp, "run_gnina_docking", gnina_stub)
+    # Stub the availability probe as OK — these tests exercise the run path
+    # with fake binaries; the real probe would legitimately skip stage 3.
+    monkeypatch.setattr(cp, "gnina_available", lambda **kw: {
+        "ok": True, "path": "gnina", "version": "test", "reason": None})
 
     result = asyncio.run(cp.run_consensus_pipeline(
         _seq(40), ligands, top_n=top_n if top_n is not None else len(ligands),
@@ -313,7 +347,7 @@ def test_gnina_refines_only_top_k(monkeypatch):
     calls = {"n": 0}
 
     async def ok_gnina(receptor_pdb, ligand_smiles, exhaustiveness=4,
-                       receptor_pdbqt_path=None):
+                       receptor_pdbqt_path=None, box=None):
         calls["n"] += 1
         return {"binding_affinity": -8.0, "cnn_affinity": 0.9,
                 "structure": {"ligand": FAKE_PDB}}
@@ -337,7 +371,7 @@ def test_gnina_binary_error_fails_fast(monkeypatch):
     calls = {"n": 0}
 
     async def broken_gnina(receptor_pdb, ligand_smiles, exhaustiveness=4,
-                           receptor_pdbqt_path=None):
+                           receptor_pdbqt_path=None, box=None):
         calls["n"] += 1
         raise FileNotFoundError("gnina: No such file or directory")
 
@@ -359,7 +393,7 @@ def test_gnina_per_ligand_error_does_not_fail_fast(monkeypatch):
     calls = {"n": 0}
 
     async def flaky_gnina(receptor_pdb, ligand_smiles, exhaustiveness=4,
-                          receptor_pdbqt_path=None):
+                          receptor_pdbqt_path=None, box=None):
         calls["n"] += 1
         raise RuntimeError("CNN scoring failed for this molecule")
 
