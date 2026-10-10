@@ -27,6 +27,7 @@ from primerforge.pipelines.consensus_pipeline import (
     _INTERACTION_DETAIL_TOP,
     _INTERACTION_LIST_CAPS,
     _INTERACTION_RESIDUE_CAP,
+    _attach_depictions,
     _attach_metrics,
 )
 
@@ -329,3 +330,47 @@ def test_pipeline_end_to_end_attaches_metrics(monkeypatch):
     inter = top["interactions"]
     assert inter["counts"]["total_interactions"] >= 0
     assert "detail" in inter                          # rank 1 ≤ detail top
+
+
+# ══════════════════════════════════════════════════════════════════════════
+# 2D ligand depictions (SVG → base64) — ranked-table thumbnails ("one thing")
+# ══════════════════════════════════════════════════════════════════════════
+
+def test_depiction_valid_smiles_renders_svg():
+    import base64 as _b64
+
+    result = _res(("CC(=O)Oc1ccccc1C(=O)O", -5.2))        # aspirin
+    _attach_depictions(result)
+    dep = result["ranked_results"][0].get("depiction")
+    assert dep, "depiction missing for a valid SMILES"
+    svg = _b64.b64decode(dep).decode("utf-8")
+    assert svg.lstrip().startswith("<svg") and "</svg>" in svg
+    assert "<?xml" not in svg                            # prolog stripped
+
+    # idempotent: a second pass never duplicates/rewrites
+    before = result["ranked_results"][0]["depiction"]
+    _attach_depictions(result)
+    assert result["ranked_results"][0]["depiction"] == before
+
+
+def test_depiction_unparseable_smiles_skipped():
+    result = _res(("not_a_smiles", -5.2))
+    _attach_depictions(result)                           # warn-allow: no raise
+    assert "depiction" not in result["ranked_results"][0]
+
+
+def test_depiction_capped_at_20():
+    ranked = [{"smiles": "CCO", "vina_score": -5.0} for _ in range(25)]
+    _attach_depictions({"ranked_results": ranked})
+    assert sum(1 for c in ranked if "depiction" in c) == 20
+    assert "depiction" in ranked[0] and "depiction" in ranked[19]
+    assert "depiction" not in ranked[20]
+
+
+def test_attach_metrics_still_attaches_depictions():
+    # integration: thumbnails ride the real success path alongside
+    # efficiency + interactions, and do not depend on analyze_poses
+    result = _res(("CCCCCO", -6.0))
+    _attach_metrics(result, RECEPTOR)
+    top = result["ranked_results"][0]
+    assert top.get("depiction") and top.get("efficiency")

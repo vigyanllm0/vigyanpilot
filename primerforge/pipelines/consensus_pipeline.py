@@ -371,6 +371,52 @@ def _prepare_upload(pdb_content: str) -> tuple[str, dict]:
         return pdb_content, {"performed": False, "error": str(exc)}
 
 
+def _attach_depictions(result: dict, cap: int = 20) -> None:
+    """2D ligand-structure thumbnails (SVG → base64) for the ranked table.
+
+    The results page previously showed every ligand as raw SMILES text only —
+    hard to read at a glance. RDKit renders each ranked ligand's 2D depiction
+    once, server-side, and the frontend embeds it as a data-URI image in the
+    ranked table and the Best Molecule card. Capped at ``cap`` ligands to keep
+    the job JSON bounded (~4 KB each). Warn-allow by contract: a depiction
+    failure (unparseable SMILES, draw error) leaves that ligand rendered by
+    SMILES text exactly as before, and never fails the run.
+    """
+    ranked = result.get("ranked_results") or []
+    if not ranked:
+        return
+    try:
+        import base64
+
+        from rdkit import Chem
+        from rdkit.Chem import Draw, rdDepictor
+    except Exception as exc:
+        logger.warning("Ligand depictions unavailable: %s", exc)
+        return
+    for i, cand in enumerate(ranked[:cap]):
+        smiles = cand.get("smiles") or ""
+        if not smiles or cand.get("depiction"):
+            continue
+        try:
+            mol = Chem.MolFromSmiles(smiles)
+            if mol is None:
+                continue
+            rdDepictor.Compute2DCoords(mol)
+            drawer = Draw.MolDraw2DSVG(220, 160)
+            # Transparent background: the frontend puts the SVG on its own
+            # white chip so it reads on both light cards and dark panels.
+            drawer.drawOptions().clearBackground = False
+            drawer.drawOptions().addStereoAnnotation = True
+            drawer.DrawMolecule(mol)
+            drawer.FinishDrawing()
+            svg = drawer.GetDrawingText()
+            if svg.lstrip().startswith("<?xml"):
+                svg = svg.split("?>", 1)[-1].lstrip()
+            cand["depiction"] = base64.b64encode(svg.encode("utf-8")).decode("ascii")
+        except Exception as exc:
+            logger.debug("Depiction failed for ranked ligand %d: %s", i, exc)
+
+
 def _attach_metrics(result: dict, receptor_pdb: str) -> None:
     """Release 4 — post-run efficiency (task 5.1) + interactions (5.2/3.3).
 
@@ -387,6 +433,7 @@ def _attach_metrics(result: dict, receptor_pdb: str) -> None:
     binding-mode consistency, honest summary/recommendations).
     """
     ranked = result.get("ranked_results") or []
+    _attach_depictions(result)   # 2D thumbnails — independent of analyze_poses
     if not ranked or analyze_poses is None or _advanced_report_dict is None:
         return
 
