@@ -323,6 +323,32 @@ footer{padding:32px 0;border-top:1px solid var(--slate-border)}
 .mv-foot .mol-btn{font-size:12px;padding:3px 8px;border:1px solid var(--slate-border);border-radius:4px;background:transparent;cursor:pointer;color:var(--text2);transition:all .15s}
 .mv-foot .mol-btn:hover{border-color:var(--primary);color:var(--primary)}
 .mv-foot .mol-btn.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+/* Tasks 3.1–3.4: viewer toolbar, fullscreen overlay, contacts panel, 2D view */
+.mv-head{flex-wrap:wrap;gap:8px;justify-content:space-between}
+.mv-head .mv-info{flex:1 1 100%;order:3}
+.mv-tools{display:flex;gap:5px;align-items:center;flex-wrap:wrap}
+.mv-sel{font-size:11px;padding:3px 5px;border:1px solid var(--slate-border);border-radius:4px;background:#fff;color:var(--text);cursor:pointer;font-family:var(--font-b)}
+.mv-btn{font-size:11px;padding:3px 8px;border:1px solid var(--slate-border);border-radius:4px;background:#fff;color:var(--text2);cursor:pointer;transition:all .15s;font-family:var(--font-b);white-space:nowrap;line-height:1.5}
+.mv-btn:hover{border-color:var(--primary);color:var(--primary)}
+.mv-btn.on{background:var(--primary);color:#fff;border-color:var(--primary)}
+.mv-step{padding:3px 9px;font-size:14px;font-weight:700}
+.mol-viewer-wrap.mv-expanded{position:fixed;inset:0;z-index:90000;border-radius:0;margin:0;display:flex;flex-direction:column;background:#fff}
+.mol-viewer-wrap.mv-expanded #mol-3d-viewer{flex:1 1 auto;height:auto}
+.mol-viewer-wrap.mv-expanded .mv-inter-panel{max-height:32vh}
+.mv-inter-panel{max-height:190px;overflow-y:auto;padding:9px 14px;border-top:1px solid var(--slate-border);background:var(--slate);font-size:11px;line-height:1.55;color:var(--text)}
+.mv-inter-panel.hidden{display:none}
+.mv-ix-head{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:6px 0 3px}
+.mv-ix-row{display:flex;gap:7px;align-items:baseline;padding:2px 0;border-bottom:1px dashed rgba(0,0,0,.07)}
+.mv-ix-row:last-child{border-bottom:none}
+.mv-ix-dot{width:7px;height:7px;border-radius:50%;flex:0 0 auto;position:relative;top:-1px}
+.mv-ix-dist{margin-left:auto;font-weight:700;font-family:var(--font-b);white-space:nowrap}
+.mv-2d-modal{position:fixed;inset:0;z-index:90010;background:rgba(15,23,42,.62);display:flex;align-items:center;justify-content:center;padding:24px}
+.mv-2d-modal.hidden{display:none}
+.mv-2d-card{background:#fff;border-radius:12px;padding:16px 18px;max-width:560px;width:100%;box-shadow:0 24px 64px rgba(0,0,0,.3);max-height:88vh;overflow:auto}
+.mv-2d-card h4{margin:0 0 4px;font-size:14px;font-family:var(--font-h)}
+.mv-2d-card .mv-2d-sub{font-size:11px;color:var(--muted);margin-bottom:10px}
+.mv-2d-close{float:right;border:1px solid var(--slate-border);background:#fff;border-radius:6px;font-size:12px;padding:3px 10px;cursor:pointer}
+.mv-2d-svg{background:#f8fafc;border:1px solid var(--slate-border);border-radius:8px;display:block;margin:0 auto}
 .cta-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
 .btn-hero{border:none;border-radius:8px;padding:11px 18px;font-size:13px;font-weight:800;cursor:pointer;background:var(--primary);color:#fff}
 .btn-hero.secondary{background:transparent;color:var(--text);border:1.5px solid var(--slate-border)}
@@ -712,8 +738,49 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             <span id="top-n-val" style="font-weight:700;font-size:14px;color:var(--primary);min-width:30px">50</span>
           </div>
         </div>
+        <!-- Advanced: search box override (Phase 2, task 2.2) -->
+        <div class="form-group" style="margin-bottom:0">
+          <button type="button" id="adv-box-toggle" class="quick-btn" style="width:100%" aria-expanded="false" aria-controls="adv-box-panel" onclick="toggleAdvBox()">&#9881; Advanced: search box <span id="adv-box-summary" style="font-weight:400;color:var(--muted)">&mdash; auto (pocket detection)</span></button>
+          <div id="adv-box-panel" class="hidden" style="margin-top:8px;padding:12px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px">
+            <label class="form-label" for="box-mode">Docking box targeting</label>
+            <select id="box-mode" class="form-input" style="margin-bottom:8px" onchange="onBoxModeChange()">
+              <option value="auto">Auto &mdash; detect the binding pocket (recommended)</option>
+              <option value="blind">Blind &mdash; whole-protein centroid</option>
+              <option value="manual">Manual &mdash; center + size</option>
+              <option value="residue">Residue range &mdash; center on residues</option>
+            </select>
+            <div id="box-manual-fields" class="hidden">
+              <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:6px">
+                <input type="number" step="0.1" id="box-cx" class="form-input" placeholder="Center X (&Aring;)" aria-label="Box center X">
+                <input type="number" step="0.1" id="box-cy" class="form-input" placeholder="Center Y (&Aring;)" aria-label="Box center Y">
+                <input type="number" step="0.1" id="box-cz" class="form-input" placeholder="Center Z (&Aring;)" aria-label="Box center Z">
+              </div>
+              <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:8px">
+                <input type="number" step="1" min="6" max="40" id="box-sx" class="form-input" placeholder="Size X (&Aring;)" aria-label="Box size X">
+                <input type="number" step="1" min="6" max="40" id="box-sy" class="form-input" placeholder="Size Y (&Aring;)" aria-label="Box size Y">
+                <input type="number" step="1" min="6" max="40" id="box-sz" class="form-input" placeholder="Size Z (&Aring;)" aria-label="Box size Z">
+              </div>
+              <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+                <input type="number" id="box-radius" class="form-input" placeholder="Radius (Å)" value="15" min="4" max="30" style="width:110px" aria-label="Pocket radius">
+                <button type="button" class="quick-btn" onclick="computeBoxPreview('manual')">Compute size from radius</button>
+                <span style="font-size:11px;color:var(--muted)">size = 2&times;radius + 4 &Aring;</span>
+              </div>
+            </div>
+            <div id="box-residue-fields" class="hidden">
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">
+                <input type="text" id="box-chain" class="form-input" placeholder="Chain (A)" maxlength="4" aria-label="Chain">
+                <input type="number" id="box-start" class="form-input" placeholder="Start res #" min="1" aria-label="Start residue">
+                <input type="number" id="box-end" class="form-input" placeholder="End res #" min="1" aria-label="End residue">
+              </div>
+              <button type="button" class="quick-btn" style="margin-top:8px" onclick="computeBoxPreview('residue')">Preview box from structure</button>
+            </div>
+            <div id="box-preview" style="display:none;margin-top:8px;padding:8px 10px;font-size:12px;background:#fff;border:1px solid #e2e8f0;border-radius:6px;font-family:monospace;word-break:break-all"></div>
+            <div class="error-msg" id="box-error"></div>
+            <div style="font-size:11px;color:var(--muted);margin-top:8px;line-height:1.5">The same box is used for Vina screening <em>and</em> GNINA re-scoring. Server clamps each side to 12&ndash;30&nbsp;&Aring; (Vina volume limit).</div>
+          </div>
+        </div>
         <div class="quick-load">
-          <button type="button" class="quick-btn" onclick="loadExample()">&#x1F4E6; Load Example (Aspirin)</button>
+          <button type="button" class="quick-btn" onclick="loadExample()">&#x1F4E6; Load Example (E. coli DHFR + trimethoprim)</button>
           <button type="button" class="quick-btn" onclick="loadKinaseExample()">&#x1F4E6; Kinase Library</button><span style="font-size:12px;color:var(--muted);margin-left:6px">Pre-loaded kinase panel for drug discovery screens.</span>
         </div>
         <button type="button" class="btn-primary" id="run-btn" onclick="runDocking()" style="margin-top:12px;padding:14px 24px;font-size:14px;font-weight:800;border-radius:10px;background:linear-gradient(135deg,#0d9488,#0f766e);box-shadow:0 4px 14px rgba(13,148,136,.3);display:flex;align-items:center;justify-content:center;gap:8px">
@@ -738,15 +805,42 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <div class="mv-head">
           <span>3D Structure Viewer</span>
           <span class="mv-info" id="mol-viewer-info">Protein backbone (cartoon)</span>
+          <span class="mv-tools">
+            <select id="mv-protein-style" class="mv-sel" onchange="setProteinStyle(this.value)" title="Protein representation">
+              <option value="spectrum">Cartoon · spectrum</option>
+              <option value="chain">Cartoon · chain</option>
+              <option value="bfactor">Cartoon · B-factor (pLDDT)</option>
+              <option value="surface">Surface + cartoon</option>
+              <option value="lines">Lines</option>
+            </select>
+            <select id="mv-ligand-style" class="mv-sel" onchange="setLigandStyle(this.value)" title="Ligand representation">
+              <option value="stick">Ligand · stick</option>
+              <option value="ballstick">Ligand · ball &amp; stick</option>
+              <option value="spacefill">Ligand · spacefill</option>
+              <option value="line">Ligand · lines</option>
+            </select>
+            <button type="button" id="mv-inter-btn" class="mv-btn" onclick="toggleInteractions()" title="Show protein-ligand contact lines with measured distances">&#x1F91D; Contacts</button>
+            <button type="button" id="mv-spin-btn" class="mv-btn" onclick="toggleSpin()" title="Spin the structure">&#x1F504; Spin</button>
+            <button type="button" class="mv-btn" onclick="zoomViewer(1.35)" title="Zoom in">&#x2B06;</button>
+            <button type="button" class="mv-btn" onclick="zoomViewer(0.74)" title="Zoom out">&#x2B07;</button>
+            <button type="button" class="mv-btn" onclick="snapshotViewer()" title="Save a PNG snapshot of the view">&#x1F4F7;</button>
+            <button type="button" class="mv-btn" onclick="showPose2D()" title="2D top-down view of the selected docked pose">&#x1F4D0; 2D</button>
+            <button type="button" id="mv-expand-btn" class="mv-btn" onclick="toggleViewerExpand()" title="Expand the viewer to full screen (Esc to exit)">&#x26F6; Expand</button>
+          </span>
         </div>
         <div id="mol-3d-viewer"></div>
         <div class="mv-foot">
+          <button type="button" class="mv-btn mv-step" onclick="stepPose(-1)" title="Previous pose">&#x2039;</button>
           <div class="mol-selector" id="mol-selector">
             <button type="button" class="mol-btn active" data-view="protein" onclick="showViewerMol(-1)">Protein</button>
           </div>
+          <button type="button" class="mv-btn mv-step" onclick="stepPose(1)" title="Next pose">&#x203A;</button>
+          <button type="button" id="box-overlay-btn" class="btn-secondary btn-sm" style="display:none" onclick="toggleBoxOverlay()">&#9633; Search box</button>
           <span id="mv-download-links"></span>
         </div>
+        <div id="mv-inter-panel" class="mv-inter-panel hidden"></div>
       </div>
+      <div id="mv-2d-modal" class="mv-2d-modal hidden"></div>
       <div id="results-body"></div>
     </div>
     <!-- Empty state -->
@@ -786,7 +880,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         </div>
         <div style="background:#fefce8;border:1px solid #fde68a;border-radius:8px;padding:10px 12px">
           <strong style="color:#d97706;display:block;margin-bottom:2px">Top N Candidates</strong>
-          <p style="color:#475569;margin:0">Top Vina hits forwarded to GNINA. Default: 50.</p>
+          <p style="color:#475569;margin:0">How many top Vina hits appear in the ranking. GNINA CNN re-scores the best 10 of them.</p>
         </div>
       </div>
     </div>
@@ -1335,9 +1429,12 @@ $('ligand-smiles').addEventListener('input', function() {
 function loadExample() {
   setInputMode('seq');
   setLigandMode('smiles');
-  $('protein-seq').value = 'MKTAYIAKQRQISFVKSHFSRQLEERLGLIEVQAPDHERGLVDRFYKVELAPTHKGGFGLRGDGFNICKDG';
+  // E. coli K-12 dihydrofolate reductase — UniProt P0ABQ4 (159 aa), the
+  // antibacterial target of trimethoprim (PubChem CID 5578). Real, known
+  // protein-ligand pair; both fetched from the source databases 2026-10-08.
+  $('protein-seq').value = 'MISLIAALAVDRVIGMENAMPWNLPADLAWFKRNTLNKPVIMGRHTWESIGRPLPGRKNIILSSQPGTDDRVTWVKSVDEAIAACGDVPEIMVIGGGRVYEQFLPKAQKLYLTHIDAEVEGDTHFPDYEPDDWESVFSEFHDADAQNSHSYCFEILERR';
   $('aa-len').textContent = $('protein-seq').value.length;
-  $('ligand-smiles').value = 'CC(=O)Oc1ccccc1C(=O)O';
+  $('ligand-smiles').value = 'COC1=CC(=CC(=C1OC)OC)CC2=CN=C(N=C2N)N';
   $('smiles-count').textContent = '1';
   $('top-n-slider').value = '10';
   $('top-n-val').textContent = '10';
@@ -1532,6 +1629,120 @@ function dockNote(msg) {
   else { n.style.display = 'none'; }
 }
 function dockNoteHide() { dockNote(null); }
+
+// ── Advanced: search box override (Phase 2, task 2.2) ────────────────────────
+function toggleAdvBox() {
+  var p = $('adv-box-panel'), b = $('adv-box-toggle');
+  if (!p || !b) return;
+  var opening = p.classList.contains('hidden');
+  p.classList.toggle('hidden', !opening);
+  b.setAttribute('aria-expanded', opening ? 'true' : 'false');
+}
+function onBoxModeChange() {
+  var m = $('box-mode').value;
+  $('box-manual-fields').classList.toggle('hidden', m !== 'manual');
+  $('box-residue-fields').classList.toggle('hidden', m !== 'residue');
+  $('box-preview').style.display = 'none';
+  $('box-error').classList.remove('show');
+  var labels = { auto: 'auto (pocket detection)', blind: 'blind (whole protein)',
+                 manual: 'manual center/size', residue: 'residue range' };
+  var s = $('adv-box-summary');
+  if (s) s.textContent = '\u2014 ' + (labels[m] || m);
+}
+// Returns: null = auto (default) · object = override · undefined = invalid
+// (invalid aborts the submit before anything is queued or billed).
+function collectBoxOverride() {
+  var err = $('box-error');
+  err.classList.remove('show');
+  var m = $('box-mode').value;
+  if (m === 'auto') return null;
+  if (m === 'blind') return { blind: true };
+  if (m === 'residue') {
+    var chain = ($('box-chain').value || '').trim();
+    var s = parseInt($('box-start').value, 10), e = parseInt($('box-end').value, 10);
+    if (!isFinite(s) || !isFinite(e) || s < 1 || e < s) {
+      err.textContent = 'Residue range: enter start and end residues (start \u2264 end, \u2265 1).';
+      err.classList.add('show');
+      return undefined;
+    }
+    return { residues: { chain: chain, start: s, end: e } };
+  }
+  var ids = ['box-cx', 'box-cy', 'box-cz', 'box-sx', 'box-sy', 'box-sz'];
+  var vals = ids.map(function (id) { return parseFloat($(id).value); });
+  for (var i = 0; i < vals.length; i++) {
+    if (!isFinite(vals[i])) {
+      err.textContent = 'Manual box: enter a number in all six fields (center X/Y/Z, size X/Y/Z).';
+      err.classList.add('show');
+      return undefined;
+    }
+  }
+  for (var j = 3; j < 6; j++) {
+    if (vals[j] < 6 || vals[j] > 40) {
+      err.textContent = 'Box size per side must be 6\u201340 \u00C5 (the server clamps it to 12\u201330 \u00C5).';
+      err.classList.add('show');
+      return undefined;
+    }
+  }
+  return { center: vals.slice(0, 3), size: vals.slice(3) };
+}
+// Server-computed box preview via /docking/gridbox (task 2.2).
+function computeBoxPreview(mode) {
+  mode = mode || $('box-mode').value;
+  var out = $('box-preview'), err = $('box-error');
+  err.classList.remove('show');
+  function fail(msg) { err.textContent = msg; err.classList.add('show'); }
+  function render(b) {
+    out.innerHTML = 'center [' + b.center.x.toFixed(2) + ', ' + b.center.y.toFixed(2) + ', ' + b.center.z.toFixed(2) +
+      '] &middot; size ' + b.size.x.toFixed(1) + '&times;' + b.size.y.toFixed(1) + '&times;' + b.size.z.toFixed(1) + ' &Aring;' +
+      (b.residues ? ' &middot; residues ' + b.residues.chain + ':' + b.residues.start + '-' + b.residues.end : '');
+    out.style.display = 'block';
+  }
+  if (mode === 'residue') {
+    var chain = ($('box-chain').value || '').trim();
+    var s = parseInt($('box-start').value, 10), e = parseInt($('box-end').value, 10);
+    if (!isFinite(s) || !isFinite(e) || s < 1 || e < s) return fail('Enter a valid residue range first (start \u2264 end).');
+    var pdb = _uploadedPDB;
+    if (!pdb) return fail('Residue-range preview needs a structure \u2014 upload a PDB file (PDB tab). Sequence runs fold at submit time.');
+    fetch(API + '/primer/docking/gridbox', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pdb_content: pdb, residues: { chain: chain, start: s, end: e } })
+    }).then(function (r) { return r.json().then(function (d) { if (!r.ok) throw new Error(d.error || ('HTTP ' + r.status)); return d; }); })
+      .then(render)
+      .catch(function (ex) { fail(ex.message || 'Could not compute that box.'); });
+    return;
+  }
+  // manual: size from center + radius
+  var c = [parseFloat($('box-cx').value), parseFloat($('box-cy').value), parseFloat($('box-cz').value)];
+  if (!isFinite(c[0]) || !isFinite(c[1]) || !isFinite(c[2])) return fail('Enter the box center (X/Y/Z) first.');
+  var radius = parseFloat($('box-radius').value);
+  if (!isFinite(radius) || radius <= 0 || radius > 30) return fail('Radius must be > 0 and \u2264 30 \u00C5.');
+  fetch(API + '/primer/docking/gridbox', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ center: c, radius: radius })
+  }).then(function (r) { return r.json().then(function (d) { if (!r.ok) throw new Error(d.error || ('HTTP ' + r.status)); return d; }); })
+    .then(function (b) {
+      $('box-sx').value = b.size.x; $('box-sy').value = b.size.y; $('box-sz').value = b.size.z;
+      render(b);
+    })
+    .catch(function (ex) { fail(ex.message || 'Could not compute that box.'); });
+}
+// Human-readable label for a stage2.box (server-stamped source + extras).
+function boxSourceLabel(b) {
+  if (!b) return 'auto';
+  var src = b.source || 'protein_centroid';
+  if (src === 'pocket') {
+    return 'pocket-centered \u00B7 pocket #' + (b.pocket_id || '?') + ' \u00B7 ' +
+      (b.druggability || 'unknown') + ' druggability' +
+      (b.pockets_found ? ' \u00B7 ' + b.pockets_found + ' pocket(s) found' : '');
+  }
+  if (src === 'manual') return 'manual override (advanced panel)';
+  if (src === 'residue_range') {
+    var r = b.residues || {};
+    return 'residues ' + (r.chain || '?') + ':' + r.start + '-' + r.end;
+  }
+  if (src === 'protein_centroid') return 'blind, whole-protein centroid';
+  return src;
+}
 
 function resetRunUI() {
   $('run-btn').disabled = false;
@@ -1796,6 +2007,14 @@ async function runDocking() {
       }
     } catch (_ue) {}
   }
+  // Search-box override (Phase 2) — invalid panel input aborts BEFORE the
+  // job is queued (server would 400 anyway; fail fast, no spinner, no bill).
+  var boxOverride = collectBoxOverride();
+  if (boxOverride === undefined) {
+    resetRunUI();
+    dockNote('Fix the search-box settings in the Advanced panel, then run again.');
+    return;
+  }
   // Reset pipeline UI
   resetPipeline();
   $('empty-state').style.display = 'none';
@@ -1813,7 +2032,7 @@ async function runDocking() {
     var r = await fetch(API + '/primer/docking/consensus', {
       method: 'POST',
       headers: headers,
-      body: JSON.stringify({ sequence: validAA, ligand_smiles_list: smilesList, top_n: topN, pdb_content: (_inputMode === 'pdb' && _uploadedPDB) ? _uploadedPDB : '' })
+      body: JSON.stringify({ sequence: validAA, ligand_smiles_list: smilesList, top_n: topN, box: boxOverride, pdb_content: (_inputMode === 'pdb' && _uploadedPDB) ? _uploadedPDB : '' })
     });
     var submitResult = {};
     try { submitResult = await r.json(); } catch (_jerr) { /* non-JSON error page (413/502) */ }
@@ -1899,19 +2118,99 @@ function resetPipeline() {
   }
 }
 // ══ Results display ═══════════════════════════════════════════════════
+// ── Task 5.2: interaction-summary chips + tooltip (shared by table/card) ──
+function ixTooltip(mol) {
+  var inter = mol && mol.interactions;
+  if (!inter || !inter.counts) return '';
+  var c = inter.counts;
+  var parts = [(c.hydrogen_bonds || 0) + ' H-bonds',
+    (c.hydrophobic_contacts || 0) + ' hydrophobic contacts',
+    (c.salt_bridges || 0) + ' salt bridges',
+    (c.pi_stacking || 0) + ' π-stacking',
+    (c.total_interactions || 0) + ' total'];
+  var res = (inter.residues || []).slice(0, 6).map(function (r) {
+    return (r.residue || '?') + ' ' + (r.chain || '') + ':' + (r.number || '') +
+      ' (' + (r.contacts || 0) + ' contact' + (r.contacts === 1 ? '' : 's') + ')';
+  });
+  return parts.join(' · ') + (res.length ? ' — pocket: ' + res.join(', ') : '');
+}
+function ixChips(mol, max) {
+  var c = (mol && mol.interactions && mol.interactions.counts) || null;
+  if (!c) return '<span style="color:var(--muted)">—</span>';
+  var defs = [
+    ['hydrogen_bonds', 'HB', '#2563eb'],
+    ['hydrophobic_contacts', 'HY', '#0d9488'],
+    ['salt_bridges', 'SB', '#7c3aed'],
+    ['pi_stacking', 'π', '#db2777']
+  ];
+  var out = [], title = esc(ixTooltip(mol));
+  for (var i = 0; i < defs.length && out.length < max; i++) {
+    var v = Number(c[defs[i][0]] || 0);
+    if (v > 0) {
+      out.push('<span title="' + title + '" style="font-size:9px;font-weight:700;color:' + defs[i][2] +
+        ';background:' + defs[i][2] + '14;border:1px solid ' + defs[i][2] + '33;border-radius:3px;padding:0 3px;white-space:nowrap">' +
+        v + ' ' + defs[i][1] + '</span>');
+    }
+  }
+  if (!out.length) out.push('<span title="' + title + '" style="font-size:10px;color:var(--muted)">0</span>');
+  return out.join(' ');
+}
+// Pocket-residue chips from the interaction report (top contacts first)
+function resChips(mol, max) {
+  var res = (mol && mol.interactions && mol.interactions.residues) || [];
+  if (!res.length) return '';
+  return res.slice(0, max || 12).map(function (r) {
+    return '<span style="font-size:10px;font-weight:600;color:#475569;background:var(--slate);border:1px solid var(--line,#e6e6e6);border-radius:3px;padding:1px 5px;white-space:nowrap" title="' +
+      esc((r.role || 'contact').replace(/_/g, ' ') + ' — ' + (r.contacts || 0) + ' ligand contact(s) within 5 Å') + '">' +
+      esc((r.residue || '?') + ' ' + (r.chain || '') + ':' + (r.number || '')) + '</span>';
+  }).join(' ');
+}
 function displayResults(result) {
   $('results-wrap').style.display = 'block';
   $('empty-state').style.display = 'none';
   window._lastDockingResult = result;
+  // Search-box overlay state (Phase 2): legacy results have no stage2.box.
+  _dockBox = (result.stage2 && result.stage2.box) || null;
+  _showBoxOverlay = !!_dockBox;
+  var _boxBtn = $('box-overlay-btn');
+  if (_boxBtn) {
+    _boxBtn.style.display = _dockBox ? 'inline-block' : 'none';
+    _boxBtn.title = _dockBox ? ('Search box \u00B7 ' + boxSourceLabel(_dockBox)) : 'Search box';
+    _boxBtn.textContent = '\u25CB Search box';
+    _boxBtn.style.opacity = '1';
+  }
   var html = '';
 
   // ── Summary Hero Card ─────────────────────────────────────────────────
   var bestVina = result.stage2 && result.stage2.best_vina_score;
   var ranked = result.ranked_results || [];
   var plddt = result.stage1 && result.stage1.plddt_score;
+  // One source of truth: the analyzer's per-residue mean (what the quality
+  // card, stage chip and confidence strip show) wins over stage1's global
+  // scalar — the two disagreed (90.42 vs 90.8 rendered "90%" next to "91%"
+  // for the same structure). "unavailable" source = no confidence data in
+  // the file → keep null (tile shows "PDB", never a fabricated number).
+  var _s1q = result.stage1 && result.stage1.quality;
+  if (_s1q && _s1q.plddt && _s1q.plddt_source !== 'unavailable' &&
+      _s1q.plddt.mean !== null && _s1q.plddt.mean !== undefined && _s1q.plddt.mean > 0) {
+    plddt = _s1q.plddt.mean;
+  }
   var seqLen = result.stage1 && result.stage1.sequence_length;
-  var hasGnina = result.stage3 && result.stage3.status !== 'skipped';
-  var bestGnina = result.stage3 && result.stage3.best_gnina_score;
+  var s3 = result.stage3 || {};
+  // Honest consensus mode: what ACTUALLY ran (backend tags it since
+  // 2026-10-08). Legacy jobs kept ≤2h may lack consensus_mode — infer from
+  // status, and never claim "CNN re-scored" without a real CNN number
+  // (the old `status !== 'skipped'` check did exactly that for gnina_failed).
+  var consensusMode = s3.consensus_mode ||
+    (result.stage3 && s3.status !== 'skipped' ? 'partial' : 'vina_only');
+  var cnnRefined = (s3.cnn_refined !== null && s3.cnn_refined !== undefined) ? s3.cnn_refined
+    : (s3.status === 'gnina_failed' ? 0 : (s3.refined || 0));
+  if (consensusMode === 'partial' && cnnRefined === 0) consensusMode = 'vina_only';
+  var bestGnina = s3.best_gnina_score;
+  var hasCnn = bestGnina !== null && bestGnina !== undefined;   // a real CNN number exists
+  var modeChip = consensusMode === 'full' ? '2-method consensus &middot; Vina + CNN'
+    : consensusMode === 'partial' ? ('Vina + CNN on top ' + cnnRefined + ' &middot; rest ranked by Vina')
+    : (s3.status === 'gnina_failed' ? 'Vina-only &middot; CNN failed to run' : 'Vina-only &middot; CNN did not run');
   var bestConsensus = result.best_molecule && result.best_molecule.consensus_score;
   var elapsed = result.stage1 && result.stage1.computation_time;
 
@@ -1940,33 +2239,161 @@ function displayResults(result) {
   }
 
   html += '<div class="result-summary">' +
-    '<div class="result-summary-title">Consensus Docking Results</div>' +
+    '<div class="result-summary-title">Consensus Docking Results<span style="font-weight:600;font-size:11px;color:var(--text2);margin-left:10px">' + modeChip + '</span></div>' +
     '<div class="result-summary-grid">' +
-      '<div class="summary-metric"><div class="sm-value ' + bindClass + '">' + (bestVina !== null && bestVina !== undefined ? bestVina.toFixed(1) : '—') + '</div><div class="sm-label">Best Vina Score</div><div class="sm-sub">kcal/mol &middot; ' + bindLabel + '</div>' +
+      '<div class="summary-metric"><div class="sm-value ' + bindClass + '">' + (bestVina !== null && bestVina !== undefined ? bestVina.toFixed(2) : '—') + '</div><div class="sm-label">Best Vina Score</div><div class="sm-sub">kcal/mol &middot; ' + bindLabel + '</div>' +
         '<div class="score-bar"><div class="score-bar-fill ' + bindClass + '" style="width:' + bindPct + '%"></div></div></div>' +
       '<div class="summary-metric"><div class="sm-value ' + plddtClass + '">' + (plddt !== null && plddt !== undefined ? Math.round(plddt) + '%' : 'PDB') + '</div><div class="sm-label">pLDDT Confidence</div><div class="sm-sub">' + plddtLabel + (seqLen ? ' &middot; ' + seqLen + ' aa' : '') + '</div></div>' +
-      '<div class="summary-metric"><div class="sm-value neutral">' + ranked.length + '</div><div class="sm-label">Molecules Screened</div><div class="sm-sub">' + (result.stage2 ? result.stage2.successful + ' successful' : '') + '</div></div>' +
-      '<div class="summary-metric"><div class="sm-value ' + (hasGnina && bestGnina !== null ? 'good' : 'neutral') + '">' + (hasGnina && bestGnina !== null ? bestGnina.toFixed(1) : '—') + '</div><div class="sm-label">Best GNINA Score</div><div class="sm-sub">' + (hasGnina ? 'CNN re-scored' : 'Vina only') + '</div></div>' +
+      '<div class="summary-metric"><div class="sm-value neutral">' + ranked.length + '</div><div class="sm-label">' + (ranked.length === 1 ? 'Molecule' : 'Molecules') + ' Screened</div><div class="sm-sub">' + (result.stage2 ? result.stage2.successful + ' successful' : '') + '</div></div>' +
+      '<div class="summary-metric"><div class="sm-value ' + (hasCnn ? 'good' : 'neutral') + '">' + (hasCnn ? bestGnina.toFixed(2) : '—') + '</div><div class="sm-label">Best GNINA Score</div><div class="sm-sub">' +
+        (hasCnn ? (consensusMode === 'full' ? 'CNN re-scored all' : 'CNN top ' + cnnRefined) : (s3.status === 'gnina_failed' ? 'CNN failed &mdash; Vina only' : 'Vina only')) + '</div></div>' +
       (bestConsensus !== null && bestConsensus !== undefined ?
-        '<div class="summary-metric"><div class="sm-value ' + (bestConsensus < -7 ? 'good' : bestConsensus < -5 ? 'ok' : 'bad') + '">' + bestConsensus.toFixed(2) + '</div><div class="sm-label">Consensus Score</div><div class="sm-sub">Vina + GNINA rank</div></div>' : '') +
+        '<div class="summary-metric"><div class="sm-value ' + (bestConsensus < -7 ? 'good' : bestConsensus < -5 ? 'ok' : 'bad') + '">' + bestConsensus.toFixed(2) + '</div><div class="sm-label">Consensus Score</div><div class="sm-sub">' +
+          (consensusMode === 'full' ? 'Vina + GNINA rank' : consensusMode === 'partial' ? 'Vina + CNN (top ' + cnnRefined + ')' : 'Vina rank (no CNN)') + '</div></div>' : '') +
     '</div></div>';
 
-  // ── Stage 1: ESMFold ──────────────────────────────────────────────────
+  // ── Stage 1: structure + Phase-4 quality verdict (broken or perfect) ──
   if (result.stage1) {
     var s1 = result.stage1;
-    var isLow = plddt !== null && plddt !== undefined && plddt < 50;
-    setStage(1, 'done', plddt !== null ? 'pLDDT: ' + Math.round(plddt) + '%' : 'PDB loaded');
+    var q = s1.quality || null;
+    var qErr = (q && q.error) ? String(q.error) : null;
+    var qv = (!qErr && q && q.verdict) ? q.verdict : null;
+    var qSrc = q ? q.plddt_source : null;
+    var noData = qSrc === 'unavailable';
+    var qMean = (q && q.plddt && q.plddt.mean !== null && q.plddt.mean !== undefined) ? q.plddt.mean : null;
+    // Effective confidence: analyzer mean wins when present, else stage-1's own pLDDT.
+    var effMean = (qMean !== null) ? qMean : plddt;
+    var hasEff = effMean !== null && effMean !== undefined && !noData;
+    var isLow = hasEff && effMean < 50;
+    var isCaution = hasEff && effMean >= 50 && effMean < 70;
+    // Verdict rules (server): A/B good, C usable, D/F poor; pLDDT < 50 forces poor.
+    var indicative = (qv === 'poor') || isLow;
+    var cautionQ = !indicative && ((qv === 'usable') || isCaution);
+    var vWord = qv ? (qv.charAt(0).toUpperCase() + qv.slice(1)) : null;
+    var qBadgeCls = qv === 'good' ? 'bio' : qv === 'usable' ? 'amber' : qv === 'poor' ? 'red' : '';
+    var qTotals = (q && q.totals) ? q.totals : null;
+    setStage(1, 'done', hasEff
+      ? 'pLDDT: ' + Math.round(effMean) + '%' + (vWord ? ' · ' + vWord : '')
+      : (vWord || 'PDB loaded'));
 
-    html += '<div class="result-card ' + (isLow ? 'fail-card' : 'pass-card') + '">' +
-      '<div class="rc-head"><div class="rc-head-left"><div class="rank-badge ' + (isLow ? '' : 'top') + '" style="background:var(--primary)">1</div><div><div style="font-weight:700;font-size:13px">ESMFold &mdash; Structure Prediction</div><div style="font-size:12px;color:var(--text2)">' + (s1.tool || 'Local ESMFold') + '</div></div></div>' +
-      '<div class="badge ' + (isLow ? 'red' : 'bio') + '">' + (plddt !== null ? Math.round(plddt) + '% pLDDT' : 'PDB Structure') + '</div></div>' +
+    var badgeConf = noData ? 'pLDDT N/A'
+      : qSrc === 'b_factor_estimate' ? Math.round(effMean) + '% est.'
+      : hasEff ? Math.round(effMean) + '% pLDDT'
+      : (plddt !== null && plddt !== undefined ? Math.round(plddt) + '% pLDDT' : 'PDB Structure');
+    var confText = noData ? 'Not available — no confidence data in this file'
+      : qSrc === 'b_factor_estimate' ? Math.round(effMean) + '% (B-factor estimate — experimental structure)'
+      : hasEff ? Math.round(effMean) + '% — ' + (effMean >= 90 ? 'High' : effMean >= 70 ? 'Medium' : effMean >= 50 ? 'Low' : 'Very low')
+      : 'N/A';
+
+    // ── Per-region confidence strip + table (Phase 4.4) ──
+    var qRegions = (q && q.plddt && q.plddt.regions) ? q.plddt.regions : [];
+    var tierCol = { high: '#059669', medium: '#0d9488', low: '#d97706', very_low: '#dc2626' };
+    var tierWord = { high: 'Trustworthy', medium: 'OK', low: 'Caution', very_low: 'Unreliable' };
+    var tierRange = { high: '≥90%', medium: '70–89%', low: '50–69%', very_low: '<50%' };
+    var qBody = '';
+    if (qRegions.length && !noData) {
+      var legendTiers = [];
+      qRegions.forEach(function (r) { if (legendTiers.indexOf(r.tier) === -1) legendTiers.push(r.tier); });
+      qBody += '<div style="margin-top:12px">' +
+        '<div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--muted);letter-spacing:.05em;margin-bottom:6px">Per-residue confidence &mdash; ' +
+          (qSrc === 'b_factor_estimate' ? 'B-factor estimate' : 'pLDDT') + ' by region</div>' +
+        '<div class="plddt-strip">' + qRegions.map(function (r) {
+          return '<div class="ps-seg" style="flex:' + (r.count || 1) + ';background:' + (tierCol[r.tier] || '#94a3b8') + '" title="' + esc(r.chain) + ':' + r.start + '-' + r.end + ' — ' + r.mean + '% mean"></div>';
+        }).join('') + '</div>' +
+        '<div style="display:flex;gap:12px;flex-wrap:wrap;font-size:10px;color:var(--muted);margin-top:4px">' +
+        legendTiers.map(function (t) {
+          return '<span><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:' + (tierCol[t] || '#94a3b8') + ';margin-right:4px"></span>' + (tierWord[t] || t) + ' (' + (tierRange[t] || '') + ')</span>';
+        }).join('') + '</div>';
+      qBody += '<div class="dock-table-wrap" style="margin-top:10px"><table class="dock-table"><thead><tr><th>Region</th><th>Residues</th><th>Mean confidence</th><th>Trust</th></tr></thead><tbody>' +
+        qRegions.slice(0, 40).map(function (r) {
+          return '<tr><td>' + esc(r.chain) + ':' + r.start + '-' + r.end + '</td><td>' + r.count + '</td><td>' + r.mean + '%</td>' +
+            '<td style="font-weight:700;color:' + (tierCol[r.tier] || '#94a3b8') + '">' + (tierWord[r.tier] || r.tier) + '</td></tr>';
+        }).join('') + '</tbody></table></div>' +
+        (qRegions.length > 40 ? '<div style="font-size:11px;color:var(--muted);margin-top:4px">&hellip; ' + (qRegions.length - 40) + ' more regions (first 40 shown)</div>' : '') +
+        '</div>';
+    }
+
+    // Repair suggestion (Phase 4.3) — only what regenerative folding fixes.
+    var repairBits = [];
+    if (q && !qErr) {
+      var gN = qTotals ? qTotals.gaps : (q.missing_residues || []).length;
+      var cN = qTotals ? qTotals.clashes : (q.clashes || []).length;
+      if (gN > 0) repairBits.push(gN + ' chain gap(s)');
+      if (cN > 0) repairBits.push(cN + ' steric clash(es)');
+    }
+    var showRepair = q && !qErr && q.repair_suggested && repairBits.length > 0;
+
+    // Receptor preparation report (Phase 2, task 2.3) — PDB uploads only.
+    var prepRow = '', prepCard = '';
+    var prep = s1.preparation;
+    if (prep) {
+      if (prep.error) {
+        prepRow = '<div class="stage-detail"><div class="stage-metric"><span class="label">Structure Preparation</span><span class="value" style="color:#d97706">skipped &mdash; original file used</span></div></div>';
+        prepCard = '<div class="info-card" style="margin-top:10px;font-size:12px"><strong>Preparation unavailable:</strong> ' + esc(prep.error) + '</div>';
+      } else {
+        var wN = prep.waters_removed || 0, iN = prep.ions_removed || 0;
+        var hetN = (prep.hetatm_removed || []).length;
+        var clean = !prep.changed_structure;
+        var hetBits = [];
+        if (wN) hetBits.push(wN + ' water');
+        if (iN) hetBits.push(iN + ' ion' + (iN === 1 ? '' : 's'));
+        if (hetN) hetBits.push(hetN + ' HETATM');
+        prepRow = '<div class="stage-detail"><div class="stage-metric"><span class="label">Structure Preparation</span><span class="value"' +
+          (clean ? '' : ' style="font-weight:700;color:var(--bio)"') + '>' +
+          (clean ? 'clean &mdash; nothing removed' : hetBits.map(esc).join(' &middot; ') + ' removed') +
+          '</span></div></div>';
+        if (!clean) {
+          var pBits = [];
+          if (wN) pBits.push(wN + ' water (HOH)');
+          if (iN) pBits.push(iN + ' ion' + (iN === 1 ? '' : 's'));
+          if (hetN) pBits.push('heteroatoms ' + (prep.hetatm_removed || []).join(', '));
+          var pN = prep.protonation_count || (prep.protonation_changes || []).length;
+          if (pN) pBits.push(pN + ' protonation state' + (pN === 1 ? '' : 's') + ' noted at pH 7.4');
+          prepCard = '<div class="info-card" style="margin-top:10px;font-size:12px"><strong>Receptor prepared for docking:</strong> ' +
+            pBits.map(esc).join(' &middot; ') +
+            ((prep.missing_residues || []).length ? ' &middot; ' + prep.missing_residues.length + ' missing residue(s) kept as gaps' : '') +
+            '. Solvent and loose heteroatoms block real pockets and waste search volume &mdash; they are stripped before the box is chosen.</div>';
+        }
+      }
+    }
+
+    html += '<div class="result-card ' + (indicative ? 'fail-card' : 'pass-card') + '">' +
+      '<div class="rc-head"><div class="rc-head-left"><div class="rank-badge ' + (indicative ? '' : 'top') + '" style="background:var(--primary)">1</div><div><div style="font-weight:700;font-size:13px">' +
+        (s1.mode === 'upload' ? 'Protein Structure &mdash; Quality Check' : 'ESMFold &mdash; Structure Prediction') + '</div><div style="font-size:12px;color:var(--text2)">' + (s1.tool || 'Local ESMFold') + '</div></div></div>' +
+      '<div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;align-items:center">' +
+      '<div class="badge ' + (isLow ? 'red' : isCaution ? 'amber' : 'bio') + '">' + badgeConf + '</div>' +
+      (qv ? '<div class="badge ' + qBadgeCls + '" title="Composite structure quality: confidence + clashes + geometry + H-bonds + gaps">' + vWord + ' &middot; ' + esc(q.quality_grade) + ' (' + Math.round(q.quality_score) + '/100)</div>' : '') +
+      '</div></div>' +
       '<div class="rc-body">' +
-      (isLow ? '<div class="error-card" style="margin-bottom:12px"><strong>&#x26A0;&#xFE0F; Low-confidence structure &mdash; results may be unreliable.</strong> pLDDT &lt; 50% often indicates a helical bundle fallback. For better results, provide an experimental PDB structure.</div>' : '') +
+      (indicative ? '<div class="error-card" style="margin-bottom:12px"><strong>&#x26A0;&#xFE0F; INDICATIVE ONLY &mdash; these scores are not decision-grade.</strong> ' +
+        (isLow ? 'Confidence is below 50%: the coordinates themselves are unreliable (a helical fallback or a badly predicted region). ' : '') +
+        (qv === 'poor' ? 'Structure quality is Poor (' + Math.round(q.quality_score) + '/100, grade ' + esc(q.quality_grade) + '). ' + esc(q.recommendation || '') + ' ' : '') +
+        'Docking still runs so you can explore, but for results that matter use an experimental PDB (PDB tab).</div>' : '') +
+      (cautionQ ? '<div style="margin-bottom:12px;padding:10px 12px;border:1px solid #fcd34d;background:#fffbeb;border-radius:8px;font-size:12px;line-height:1.6;color:#92400e"><strong>&#x26A0;&#xFE0F; Moderate-quality structure &mdash; treat rankings with caution.</strong> ' +
+        (isCaution ? 'Confidence is 50&ndash;69%: part of the model is uncertain and docked poses in those regions may be unreliable. ' : '') +
+        ((qv === 'usable' && !isCaution) ? 'Structure quality is Usable (' + Math.round(q.quality_score) + '/100, grade ' + esc(q.quality_grade) + '): flagged issues may affect some regions. ' : '') +
+        'See the per-region confidence table below, and prefer an experimental PDB (PDB tab) for decisions that matter.</div>' : '') +
+      (qErr ? '<div class="info-card" style="margin-bottom:12px;font-size:12px"><strong>Quality check unavailable:</strong> ' + esc(qErr) + ' &mdash; docking proceeded without a structure verdict.</div>' : '') +
       '<div class="stage-detail"><div class="stage-metric"><span class="label">Sequence Length</span><span class="value">' + (seqLen || '?') + ' aa</span></div></div>' +
-      '<div class="stage-detail"><div class="stage-metric"><span class="label">Mean pLDDT</span><span class="value">' + (plddt !== null ? Math.round(plddt) + '% &mdash; ' + plddtLabel : 'N/A (uploaded PDB)') + '</span></div></div>' +
-      '<div class="stage-detail"><div class="stage-metric"><span class="label">Computation Time</span><span class="value">' + (elapsed || 'N/A') + '</span></div></div>' +
+      '<div class="stage-detail"><div class="stage-metric"><span class="label">Mean pLDDT</span><span class="value">' + confText + '</span></div></div>' +
+      (qv ? '<div class="stage-detail"><div class="stage-metric"><span class="label">Structure Quality</span><span class="value" style="font-weight:700;color:' +
+        (qv === 'good' ? 'var(--bio)' : qv === 'usable' ? '#d97706' : 'var(--red)') + '">' + vWord + ' &middot; grade ' + esc(q.quality_grade) + ' (' + Math.round(q.quality_score) + '/100)</span></div></div>' : '') +
+      (q && q.defect_count ? '<div class="stage-detail"><div class="stage-metric"><span class="label">Defects</span><span class="value">' +
+        q.defect_count.critical + ' critical &middot; ' + q.defect_count.warning + ' warnings &middot; ' +
+        (qTotals ? qTotals.gaps : (q.missing_residues || []).length) + ' gaps &middot; ' +
+        (qTotals ? qTotals.clashes : (q.clashes || []).length) + ' clashes &middot; ' +
+        (qTotals ? qTotals.ramachandran_outliers : (q.ramachandran_outliers || []).length) + ' outliers</span></div></div>' : '') +
+      prepRow +
+      (elapsed ? '<div class="stage-detail"><div class="stage-metric"><span class="label">Computation Time</span><span class="value">' + esc(String(elapsed)) + '</span></div></div>' : '') +
       (s1.message ? '<div class="info-card" style="margin-top:10px;font-size:12px">' + esc(s1.message) + '</div>' : '') +
+      prepCard +
+      qBody +
+      (q && !qErr && !indicative && q.recommendation ? '<div class="interp-card" style="margin-top:10px;font-size:12px"><span class="interp-icon">&#x2705;</span>' + esc(q.recommendation) + '</div>' : '') +
       '<div style="margin-top:12px"><button type="button" class="btn-secondary btn-sm" onclick="downloadPDB()">&#x2B07; Download Protein PDB</button></div>' +
+      (showRepair ? '<div style="margin-top:10px;padding:10px 12px;border:1px solid #c7d2fe;background:#eef2ff;border-radius:8px;font-size:12px;line-height:1.6;color:#3730a3">' +
+        '<strong>&#x1F527; Repairable defects found</strong> &mdash; ' + repairBits.join(', ') + '. Regenerative folding can model missing loops and resolve steric clashes before you re-run.' +
+        '<div style="margin-top:8px"><button type="button" class="btn-secondary btn-sm" id="repair-btn" onclick="repairStructure()">Repair structure</button></div>' +
+        '<div id="repair-result" style="margin-top:8px"></div></div>' : '') +
       '</div></div>';
   } else {
     setStage(1, 'fail', 'Stage skipped/failed');
@@ -1989,43 +2416,80 @@ function displayResults(result) {
         '<div style="text-align:center;padding:10px;background:var(--slate);border-radius:8px"><div style="font-size:22px;font-weight:800;color:var(--primary)">' + s2.top_n_selected + '</div><div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">Top N</div></div>' +
       '</div>' +
       '<div class="stage-detail"><div class="stage-metric"><span class="label">Best Vina Score</span><span class="value" style="font-weight:800;font-size:15px;color:' + (vinaClass === 'good' ? 'var(--bio)' : vinaClass === 'ok' ? 'var(--amber)' : 'var(--red)') + '">' + (s2.best_vina_score ? s2.best_vina_score.toFixed(2) + ' kcal/mol' : 'N/A') + '</span></div></div>' +
+      (s2.exhaustiveness ? '<div class="stage-detail"><div class="stage-metric"><span class="label">Search Exhaustiveness</span><span class="value">' + s2.exhaustiveness + '</span></div></div>' : '') +
+      (s2.box && s2.box.size ? '<div class="stage-detail"><div class="stage-metric"><span class="label">Search Box</span><span class="value">' + s2.box.size.join('&times;') + ' &Aring; &middot; ' + esc(boxSourceLabel(s2.box)) + '</span></div></div>' : '') +
+      (s2.box_note ? '<div style="font-size:11px;color:#b45309;margin-top:4px">&#9888; ' + esc(s2.box_note) + '</div>' : '') +
+      (s2.computation_time ? '<div class="stage-detail"><div class="stage-metric"><span class="label">Screening Time</span><span class="value">' + s2.computation_time + '</span></div></div>' : '') +
       '</div></div>';
   } else {
     setStage(2, 'fail', 'Stage skipped/failed');
   }
 
   // ── Stage 3: GNINA ────────────────────────────────────────────────────
-  if (hasGnina) {
-    var s3 = result.stage3;
-    setStage(3, 'done', s3.refined + ' candidates refined');
-    html += '<div class="result-card pass-card">' +
-      '<div class="rc-head"><div class="rc-head-left"><div class="rank-badge" style="background:var(--primary)">3</div><div><div style="font-weight:700;font-size:13px">GNINA &mdash; CNN Re-scoring</div><div style="font-size:12px;color:var(--text2)">Deep learning refinement</div></div></div>' +
-      '<div class="badge bio">Best: ' + (s3.best_gnina_score ? s3.best_gnina_score.toFixed(2) : 'N/A') + ' kcal/mol</div></div>' +
-      '<div class="rc-body">' +
-      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:8px">' +
-        '<div style="text-align:center;padding:10px;background:var(--slate);border-radius:8px"><div style="font-size:22px;font-weight:800;color:var(--primary)">' + s3.refined + '</div><div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">Refined</div></div>' +
-        '<div style="text-align:center;padding:10px;background:var(--slate);border-radius:8px"><div style="font-size:22px;font-weight:800;color:var(--bio)">' + (s3.best_gnina_score ? s3.best_gnina_score.toFixed(2) : '—') + '</div><div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">Best Score</div></div>' +
-      '</div>' +
-      '<div class="interp-card"><span class="interp-icon">&#x1F4CA;</span><strong>Consensus scoring:</strong> Top Vina hits re-scored with GNINA CNN model. Consensus rank = 0.4 &times; Vina + 0.6 &times; GNINA for improved reliability.</div>' +
-      '</div></div>';
+  if (result.stage3) {
+    var s3c = result.stage3;
+    var failReasons = s3c.failure_reasons || [];
+    var cnnRan = consensusMode !== 'vina_only' && (s3c.cnn_refined === undefined || s3c.cnn_refined > 0);
+    if (!cnnRan) {
+      var cnnFailed = s3c.status === 'gnina_failed';
+      setStage(3, cnnFailed ? 'fail' : 'done', cnnFailed ? 'CNN failed to run' : 'Vina-only mode');
+      html += '<div class="result-card info-card-stage">' +
+        '<div class="rc-head"><div class="rc-head-left"><div class="rank-badge" style="background:#64748b">3</div><div><div style="font-weight:700;font-size:13px">GNINA &mdash; CNN Re-scoring</div><div style="font-size:12px;color:var(--text2)">' + (cnnFailed ? 'Attempted &mdash; did not complete' : 'Deep learning refinement') + '</div></div></div>' +
+        '<div class="badge" style="border-color:#cbd5e1;color:#64748b">Vina-only</div></div>' +
+        '<div class="rc-body">' +
+        '<div class="interp-card" style="background:#f1f5f9;border-color:#cbd5e1;color:#475569"><span class="interp-icon">&#x2139;&#xFE0F;</span><span>' +
+          (cnnFailed
+            ? '<strong>GNINA did not run in this environment.</strong> Every candidate is ranked by its Vina score and tagged &ldquo;V&rdquo; &mdash; no CNN number is shown because none was computed.'
+            : '<strong>GNINA not available in this environment.</strong> Results are ranked by Vina score only. Consensus scoring with GNINA CNN is available on the production server.' +
+              (s3c.reason ? '<div style="margin-top:6px;font-size:12px;color:#64748b">' + esc(s3c.reason) + '</div>' : '')) +
+        '</span>' +
+        '</div>' +
+        (failReasons.length ? '<div class="error-card" style="margin-top:8px;font-size:12px"><strong>Why:</strong><ul style="margin:6px 0 0 16px;padding:0">' + failReasons.map(function(r){ return '<li>' + esc(r) + '</li>'; }).join('') + '</ul></div>' : '') +
+        '</div></div>';
+    } else {
+      setStage(3, 'done', s3c.refined + ' candidates refined');
+      html += '<div class="result-card pass-card">' +
+        '<div class="rc-head"><div class="rc-head-left"><div class="rank-badge" style="background:var(--primary)">3</div><div><div style="font-weight:700;font-size:13px">GNINA &mdash; CNN Re-scoring</div><div style="font-size:12px;color:var(--text2)">' + (consensusMode === 'full' ? 'All candidates re-scored' : 'Top ' + cnnRefined + ' re-scored, rest Vina-ranked') + '</div></div></div>' +
+        '<div class="badge bio">Best: ' + (s3c.best_gnina_score ? s3c.best_gnina_score.toFixed(2) : 'N/A') + ' kcal/mol</div></div>' +
+        '<div class="rc-body">' +
+        '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:8px">' +
+          '<div style="text-align:center;padding:10px;background:var(--slate);border-radius:8px"><div style="font-size:22px;font-weight:800;color:var(--primary)">' + cnnRefined + '</div><div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">CNN Re-scored</div></div>' +
+          '<div style="text-align:center;padding:10px;background:var(--slate);border-radius:8px"><div style="font-size:22px;font-weight:800;color:var(--text2)">' + (s3c.vina_only || 0) + '</div><div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">Vina-only</div></div>' +
+          '<div style="text-align:center;padding:10px;background:var(--slate);border-radius:8px"><div style="font-size:22px;font-weight:800;color:var(--bio)">' + (s3c.best_gnina_score ? s3c.best_gnina_score.toFixed(2) : '—') + '</div><div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">Best GNINA</div></div>' +
+        '</div>' +
+        (s3c.cnn_model ? '<div class="stage-detail"><div class="stage-metric"><span class="label">CNN Model</span><span class="value">' + esc(s3c.cnn_model) + ' (CPU, single-model)</span></div></div>' : '') +
+        (s3c.gnina_exhaustiveness ? '<div class="stage-detail"><div class="stage-metric"><span class="label">Redock Exhaustiveness</span><span class="value">' + s3c.gnina_exhaustiveness + (s3c.refine_top_k ? ' &middot; top ' + s3c.refine_top_k + ' Vina hits' : '') + '</span></div></div>' : '') +
+        (s3c.computation_time ? '<div class="stage-detail"><div class="stage-metric"><span class="label">Refinement Time</span><span class="value">' + s3c.computation_time + '</span></div></div>' : '') +
+        (failReasons.length ? '<div class="error-card" style="margin-top:8px;font-size:12px"><strong>Some refinements failed:</strong><ul style="margin:6px 0 0 16px;padding:0">' + failReasons.map(function(r){ return '<li>' + esc(r) + '</li>'; }).join('') + '</ul></div>' : '') +
+        '<div class="interp-card" style="margin-top:10px"><span class="interp-icon">&#x1F4CA;</span>' +
+          (consensusMode === 'full'
+            ? '<strong>Full consensus:</strong> every ranked candidate was re-scored with the GNINA CNN. Consensus rank = 0.4 &times; Vina + 0.6 &times; GNINA (kcal/mol, lower = tighter).'
+            : '<strong>Partial consensus:</strong> the top ' + cnnRefined + ' Vina hits were re-scored with the GNINA CNN (consensus = 0.4 &times; Vina + 0.6 &times; GNINA); the remaining ' + (s3c.vina_only || 0) + ' were ranked by their Vina score alone and are tagged &ldquo;V&rdquo; in the table.') +
+        '</div>' +
+        '</div></div>';
+    }
   } else {
-    setStage(3, result.stage3 && result.stage3.status === 'skipped' ? 'done' : 'stub', 'Vina-only mode');
-    html += '<div class="result-card info-card-stage">' +
-      '<div class="rc-head"><div class="rc-head-left"><div class="rank-badge" style="background:#64748b">3</div><div><div style="font-weight:700;font-size:13px">GNINA &mdash; CNN Re-scoring</div><div style="font-size:12px;color:var(--text2)">Deep learning refinement</div></div></div>' +
-      '<div class="badge" style="border-color:#cbd5e1;color:#64748b">Vina-only</div></div>' +
-      '<div class="rc-body">' +
-      '<div class="interp-card" style="background:#f1f5f9;border-color:#cbd5e1;color:#475569"><span class="interp-icon">&#x2139;&#xFE0F;</span><strong>GNINA not available in this environment.</strong> Results are ranked by Vina score only. Consensus scoring with GNINA CNN is available on the production server.</div>' +
-      '</div></div>';
+    setStage(3, 'fail', 'Stage skipped/failed');
   }
 
   // ── Ranked Molecules Table ─────────────────────────────────────────────
   if (ranked.length > 0) {
     html += '<div class="result-card">' +
-      '<div class="rc-head"><div class="rc-head-left"><div style="font-weight:700;font-size:13px">Ranked Molecules</div></div><div style="font-size:12px;color:var(--muted)">' + ranked.length + ' molecules &mdash; click a row to view in 3D</div></div>' +
+      '<div class="rc-head"><div class="rc-head-left"><div style="font-weight:700;font-size:13px">Ranked Molecules</div></div><div style="font-size:12px;color:var(--muted)">' + ranked.length + (ranked.length === 1 ? ' molecule' : ' molecules') + ' &mdash; click a row to view in 3D</div></div>' +
       '<div class="rc-body"><div class="dock-table-wrap"><table class="dock-table">' +
+      // Columns appear only when the data actually exists (a status flag is
+      // NOT enough — gnina_failed runs have no CNN numbers to show).
       '<thead><tr><th style="width:40px">Rank</th><th>SMILES</th><th style="text-align:right">Vina<br>(kcal/mol)</th>';
-    if (hasGnina) html += '<th style="text-align:right">GNINA<br>(kcal/mol)</th>';
-    html += '<th style="text-align:right">Consensus</th><th style="width:50px"></th></tr></thead><tbody>';
+    var showGninaCol = ranked.some(function(m){ return m.gnina_score !== null && m.gnina_score !== undefined; });
+    var showCnnCol = ranked.some(function(m){ return m.cnn_score !== null && m.cnn_score !== undefined; });
+    if (showGninaCol) html += '<th style="text-align:right">GNINA<br>(kcal/mol)</th>';
+    if (showCnnCol) html += '<th style="text-align:right">CNN pose<br>score</th>';
+    html += '<th style="text-align:right">Consensus</th>';
+    var showEffCol = ranked.some(function(m){ return m.efficiency && m.efficiency.le !== undefined; });
+    var showInterCol = ranked.some(function(m){ return m.interactions && m.interactions.counts; });
+    if (showEffCol) html += '<th style="text-align:right">LE<br>kcal/mol/HA</th><th style="width:44px;text-align:center">Pose<br>cluster</th>';
+    if (showInterCol) html += '<th style="text-align:center">Interactions</th>';
+    html += '<th style="width:50px"></th></tr></thead><tbody>';
     for (var i = 0; i < ranked.length; i++) {
       var mol = ranked[i];
       var vina = mol.vina_score;
@@ -2035,16 +2499,78 @@ function displayResults(result) {
       var gClass = gnina !== null && gnina !== undefined ? (gnina < -7 ? 'score-good' : (gnina < -5 ? 'score-ok' : 'score-bad')) : '';
       var hasStruct = mol._has_structure;
       var isBest = i === 0;
+      var vinaOnlyTag = mol.score_source === 'vina'
+        ? ' <span title="Ranked by Vina score — this candidate has no CNN score" style="font-size:9px;color:var(--muted);font-weight:700;border:1px solid var(--line,#e6e6e6);border-radius:3px;padding:0 3px">V</span>'
+        : '';
       html += '<tr class="' + (isBest ? 'best-row' : '') + '" style="cursor:' + (hasStruct ? 'pointer' : 'default') + '" onclick="' + (hasStruct ? 'viewMol3D(' + i + ')' : '') + '" title="' + (hasStruct ? 'Click to view docked pose in 3D' : '') + '">' +
         '<td><span class="rank-num ' + (isBest ? 'top-rank' : '') + '">' + (isBest ? '&#x2605;' : '#' + (i + 1)) + '</span></td>' +
         '<td class="smiles-cell">' + esc(mol.smiles || '') + '</td>' +
         '<td style="text-align:right"><span class="' + vClass + '">' + (vina !== null && vina !== undefined ? vina.toFixed(2) : '—') + '</span></td>';
-      if (hasGnina) html += '<td style="text-align:right"><span class="' + gClass + '">' + (gnina !== null && gnina !== undefined ? gnina.toFixed(2) : '—') + '</span></td>';
-      html += '<td style="text-align:right;font-weight:700">' + (cs !== null && cs !== undefined ? cs.toFixed(3) : '—') + '</td>' +
-        '<td style="text-align:center">' + (hasStruct ? '<span style="color:var(--primary);font-size:11px;cursor:pointer" title="View in 3D">&#x1F52D;</span>' : '') + '</td>' +
+      if (showGninaCol) html += '<td style="text-align:right"><span class="' + gClass + '">' + (gnina !== null && gnina !== undefined ? gnina.toFixed(2) : '—') + '</span></td>';
+      if (showCnnCol) html += '<td style="text-align:right"><span style="color:' + (mol.cnn_score != null && mol.cnn_score >= 0.7 ? 'var(--bio)' : 'var(--text2)') + ';font-weight:600">' + (mol.cnn_score !== null && mol.cnn_score !== undefined ? (mol.cnn_score * 100).toFixed(0) + '%' : '—') + '</span></td>';
+      html += '<td style="text-align:right;font-weight:700">' + (cs !== null && cs !== undefined ? cs.toFixed(3) : '—') + vinaOnlyTag + '</td>';
+      if (showEffCol) {
+        var effc = mol.efficiency || {};
+        var leVal = (effc.le !== undefined && effc.le !== null) ? Number(effc.le) : null;
+        html += '<td style="text-align:right;font-weight:600;color:' + (leVal !== null && leVal >= 0.4 ? 'var(--bio)' : leVal !== null && leVal >= 0.2 ? 'var(--text)' : 'var(--text2)') + '" title="' +
+          (leVal !== null ? esc('LE ' + leVal.toFixed(3) + ' kcal/mol per heavy atom · LLE ' + Number(effc.lle || 0).toFixed(2) + ' · BEI ' + Number(effc.bei || 0).toFixed(1) + ' · ' + (effc.heavy_atoms || '?') + ' heavy atoms · MW ' + (effc.mw || '?') + ' · confidence-weighted score ' + Number(effc.confidence_weighted || 0).toFixed(2) + ' (receptor pLDDT applied)') : '') +
+          '">' + (leVal !== null ? leVal.toFixed(3) : '—') + '</td>' +
+          '<td style="text-align:center" title="' + (effc.cluster !== undefined ? esc('Score-based pose cluster c' + effc.cluster + ' (score-proxy grouping across the ranked set)' + (effc.cluster_rep ? ' · representative of its cluster' : '')) : '') + '">' +
+          (effc.cluster !== undefined
+            ? '<span style="font-size:10px;font-weight:700;color:' + (effc.cluster_rep ? 'var(--primary)' : 'var(--muted)') + ';background:' + (effc.cluster_rep ? 'rgba(37,99,235,.1)' : 'var(--slate)') + ';border-radius:3px;padding:1px 4px">c' + effc.cluster + (effc.cluster_rep ? ' \u2605' : '') + '</span>'
+            : '—') + '</td>';
+      }
+      if (showInterCol) html += '<td style="text-align:center">' + ixChips(mol, 4) + '</td>';
+      html += '<td style="text-align:center">' + (hasStruct ? '<span style="color:var(--primary);font-size:11px;cursor:pointer" title="View in 3D">&#x1F52D;</span>' : '') + '</td>' +
         '</tr>';
     }
-    html += '</tbody></table></div></div></div>';
+    html += '</tbody></table></div>' +
+      (showInterCol ? '<div style="font-size:11px;color:var(--muted);margin-top:6px">Interaction counts computed from the docked pose against the prepared receptor \u00B7 H-bonds (donor\u2013acceptor \u2264 3.5 \u00C5), hydrophobic contacts (\u2264 4.5 \u00C5), salt bridges (\u2264 4.0 \u00C5), \u03C0-stacking (\u2264 5.5 \u00C5). Click a row to inspect them in 3D.</div>' : '') +
+      '</div></div>';
+
+    // ── Efficiency & pocket-interaction screen report (tasks 5.1 / 5.2) ──
+    var effR = result.efficiency;
+    if (effR && effR.summary) {
+      var bmModes = effR.binding_modes || {};
+      var effClusters = effR.clusters || [];
+      var topPose = (effR.poses && effR.poses[0]) || null;
+      var topMol = ranked[0] || {};
+      var effGrid = '';
+      function effCell(val, label, sub) {
+        return '<div style="text-align:center;padding:10px;background:var(--slate);border-radius:8px">' +
+          '<div style="font-size:18px;font-weight:800;color:var(--primary)">' + val + '</div>' +
+          '<div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">' + label + '</div>' +
+          (sub ? '<div style="font-size:10px;color:var(--text2);margin-top:2px">' + sub + '</div>' : '') + '</div>';
+      }
+      effGrid += effCell(topPose ? Number(topPose.ligand_efficiency).toFixed(3) : '—', 'Best LE', 'kcal/mol per heavy atom');
+      effGrid += effCell(effClusters.length, 'Pose clusters', 'score-proxy grouping');
+      // Machine tokens never render raw: "insufficient_poses" is a state
+      // ("single pose, nothing to spread"), not a measurement.
+      var _spreadVal = '—', _spreadSub = '';
+      if (bmModes.consistency === 'insufficient_poses') {
+        _spreadVal = 'n/a';
+        _spreadSub = 'single pose — no spread';
+      } else if (bmModes.consistency) {
+        _spreadVal = bmModes.consistency.charAt(0).toUpperCase() + bmModes.consistency.slice(1);
+        _spreadSub = (bmModes.top5_score_range !== undefined && bmModes.top5_score_range !== null)
+          ? ('top-5 Δ ' + bmModes.top5_score_range + ' kcal/mol') : '';
+      }
+      effGrid += effCell(_spreadVal, 'Score spread', _spreadSub);
+      effGrid += effCell(topMol.interactions && topMol.interactions.counts ? topMol.interactions.counts.total_interactions : '—', 'Pocket contacts', 'rank #1 vs receptor');
+      html += '<div class="result-card" style="margin-top:16px">' +
+        '<div class="rc-head"><div class="rc-head-left"><div style="font-weight:700;font-size:13px">Ligand Efficiency & Pocket Interactions</div>' +
+        '<div style="font-size:11px;color:var(--text2);margin-top:2px">' + esc(effR.summary) + '</div></div></div>' +
+        '<div class="rc-body">' +
+        '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px">' + effGrid + '</div>' +
+        (topMol.interactions ? '<div style="margin-top:12px"><div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--muted);letter-spacing:.05em;margin-bottom:6px">Rank #1 pocket residues</div>' +
+          '<div style="display:flex;gap:6px;flex-wrap:wrap">' + (resChips(topMol, 12) || '<span style="font-size:11px;color:var(--muted)">No receptor contacts within 5 Å</span>') + '</div></div>' : '') +
+        (effR.recommendations && effR.recommendations.length
+          ? '<div class="interp-card" style="margin-top:12px"><span class="interp-icon">&#x1F4A1;</span><strong>Notes:</strong><ul style="margin:6px 0 0 16px;padding:0">' +
+            effR.recommendations.map(function (r) { return '<li>' + esc(r) + '</li>'; }).join('') + '</ul></div>'
+          : '') +
+        '<div style="font-size:10px;color:var(--muted);margin-top:8px;line-height:1.5">LE = |docking score| / heavy atoms (larger is better; &gt; 0.3 usually good). Pose clusters and spread are score-based proxies \u2014 they group similar SCORING behaviour, not 3D superposition across different molecules.</div>' +
+        '</div></div>';
+    }
 
     // ── Best Molecule Highlight ──────────────────────────────────────────
     var best = result.best_molecule;
@@ -2062,8 +2588,11 @@ function displayResults(result) {
             '<div style="font-family:monospace;font-size:12px;color:#166534;word-break:break-all;margin-bottom:6px">' + esc(best.smiles || '') + '</div>' +
             '<div style="display:flex;gap:16px;font-size:12px;color:#166534;flex-wrap:wrap">' +
               '<span><strong>Vina:</strong> ' + (best.vina_score !== null ? best.vina_score.toFixed(2) : '—') + ' kcal/mol</span>' +
-              (best.gnina_score !== null && best.gnina_score !== undefined ? '<span><strong>GNINA:</strong> ' + best.gnina_score.toFixed(2) + '</span>' : '') +
+              (best.gnina_score !== null && best.gnina_score !== undefined ? '<span><strong>GNINA:</strong> ' + best.gnina_score.toFixed(2) + ' kcal/mol</span>' : '') +
+              (best.cnn_score !== null && best.cnn_score !== undefined ? '<span><strong>CNN pose:</strong> ' + (best.cnn_score * 100).toFixed(0) + '%</span>' : '') +
+              (best.cnn_affinity !== null && best.cnn_affinity !== undefined ? '<span><strong>CNN affinity:</strong> ' + best.cnn_affinity.toFixed(2) + ' (log mol/L)</span>' : '') +
               '<span><strong>Consensus:</strong> ' + (best.consensus_score ? best.consensus_score.toFixed(3) : '—') + '</span>' +
+              (best.score_source === 'vina' ? '<span style="font-weight:700;color:#92400e">&#x26A0; Ranked by Vina &mdash; this candidate has no CNN score</span>' : '') +
             '</div>' +
             '<div style="margin-top:8px;font-size:12px;color:#166534;line-height:1.6">' + bestInterp + '</div>' +
           '</div>' +
@@ -2072,19 +2601,29 @@ function displayResults(result) {
     }
 
     // ── Interpretation Guide ─────────────────────────────────────────────
+    // (mode-aware: every claim must match what actually ran — the old text
+    // referenced a removed status-flag and over-promised "both engines")
     html += '<div class="interp-card" style="margin-top:16px">' +
       '<span class="interp-icon">&#x1F4D6;</span><strong>How to interpret:</strong> ' +
       '<strong>Vina &lt; -7 kcal/mol</strong> = strong binding. <strong>-5 to -7</strong> = moderate. <strong>&gt; -5</strong> = weak. ' +
-      (hasGnina ? '<strong>GNINA confidence &gt; 0.7</strong> = high-confidence pose. ' : '') +
-      '<strong>pLDDT &gt; 90</strong> = high confidence protein structure. ' +
-      '<strong>Consensus</strong> combines both engines for improved reliability.' +
+      (showCnnCol ? '<strong>CNN pose score &gt; 0.7</strong> = GNINA is confident in that pose; <strong>CNN affinity</strong> is its model-estimated affinity in log mol/L (an estimate, not a measured Ki). ' : '') +
+      '<strong>pLDDT:</strong> &gt; 90 high, 70&ndash;90 medium, 50&ndash;69 caution, &lt; 50 unreliable. ' +
+      (consensusMode === 'full'
+        ? '<strong>Consensus</strong> = 0.4 &times; Vina + 0.6 &times; GNINA for every candidate.'
+        : consensusMode === 'partial'
+        ? '<strong>Consensus</strong> = 0.4 &times; Vina + 0.6 &times; GNINA for CNN-scored candidates; the rest are ranked by Vina (tagged &ldquo;V&rdquo;).'
+        : '<strong>Consensus did not run &mdash; rankings are Vina-only.</strong>') +
       '</div>';
 
-    // ── Download Buttons ─────────────────────────────────────────────────
+    // ── Download Buttons (tasks 5.3: complex PDB / quality / interactions) ──
+    var hasAnyInter = ranked.some(function(m){ return m.interactions && m.interactions.counts; });
     html += '<div class="dl-row" style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap">' +
       '<button type="button" class="btn-secondary btn-sm" onclick="downloadResults(\'json\')">&#x1F4E5; Download JSON</button>' +
       '<button type="button" class="btn-secondary btn-sm" onclick="downloadResults(\'csv\')">&#x1F4E5; Download CSV</button>' +
       '<button type="button" class="btn-secondary btn-sm" onclick="downloadPDB()">&#x1F4E5; Download Protein PDB</button>' +
+      ((best && ranked[0] && ranked[0].structure && ranked[0].structure.ligand) ? '<button type="button" class="btn-secondary btn-sm" onclick="downloadComplexPDB(0)">&#x1F9EC; Download Complex PDB (best pose)</button>' : '') +
+      '<button type="button" class="btn-secondary btn-sm" onclick="downloadQualityReport()">&#x1F4CA; Quality report (JSON)</button>' +
+      (hasAnyInter ? '<button type="button" class="btn-secondary btn-sm" onclick="downloadInteractionsJSON()">&#x1F91D; Interactions (JSON)</button>' : '') +
       '</div>';
   }
 
@@ -2116,6 +2655,7 @@ function showError(msg) {
 var _viewer = null;
 var _proteinPdb = '';
 var _jobId = '';
+var _repairedPDB = null;
 var _structureCache = {};
 var _batchLigands = [];
 var _ligandColors = [
@@ -2124,6 +2664,492 @@ var _ligandColors = [
   '#F0B27A', '#82E0AA', '#F1948A', '#85929E', '#73C6B6',
 ];
 var _ligandModels = [];
+// ── Search-box overlay (Phase 2, task 2.4) ──────────────────────────────────
+var _dockBox = null;          // stage2.box {center,size,source,pocket?}
+var _showBoxOverlay = true;   // viewer toggle state
+function drawSearchOverlay() {
+  if (!_viewer || typeof _viewer.removeAllShapes !== 'function') return;
+  try { _viewer.removeAllShapes(); } catch (e) { return; }
+  var b = _dockBox;
+  if (_showBoxOverlay && b && b.center && b.size) {
+    try {
+      _viewer.addBox({
+        center: {x: b.center[0], y: b.center[1], z: b.center[2]},
+        dimensions: {w: b.size[0], h: b.size[1], d: b.size[2]},
+        color: '#f59e0b', alpha: 0.12
+      });
+      if (b.pocket && b.pocket.center && b.pocket.radius) {
+        _viewer.addSphere({
+          center: {x: b.pocket.center[0], y: b.pocket.center[1], z: b.pocket.center[2]},
+          radius: b.pocket.radius, color: '#22d3ee', alpha: 0.3
+        });
+      }
+    } catch (e) { console.warn('Search-box overlay failed:', e); }
+  }
+  if (_showContacts) { try { _drawContactShapes(); } catch (e) { /* not ready */ } }
+  try { _viewer.render(); } catch (e) { /* viewer torn down mid-redraw */ }
+}
+function toggleBoxOverlay() {
+  _showBoxOverlay = !_showBoxOverlay;
+  var btn = $('box-overlay-btn');
+  if (btn) {
+    btn.textContent = (_showBoxOverlay ? '\u25CB ' : '\u25CF ') + 'Search box';
+    btn.style.opacity = _showBoxOverlay ? '1' : '0.55';
+  }
+  drawSearchOverlay();
+}
+// ── Tasks 3.1–3.4: style controls, fullscreen, contacts overlay, carousel,
+//    snapshot, 2D projection ───────────────────────────────────────────────
+var _curMolIdx = -1;          // isolated batch index (−1 = protein + all)
+var _proteinModelId = null;   // model selector for the receptor
+var _mvSpin = false;
+var _mvExpanded = false;
+var _proteinStyle = 'spectrum';
+var _ligandStyle = 'stick';
+var _showContacts = false;
+var _ixDetailCache = {};      // batch index → {hydrogen_bonds:[…], …}
+var _receptorCoordMap = null;
+var _chainPalette = ['#5DADE2', '#E74C3C', '#58D68D', '#F4D03F', '#BB8FCE', '#EC7063', '#48C9B0', '#EB984E'];
+function _chainColor(ch) {
+  var s = String(ch || 'A'), h = 0;
+  for (var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
+  return _chainPalette[h % _chainPalette.length];
+}
+// B-factor palette — for predicted structures the PDB B-factor column IS the
+// pLDDT score (0–100); for experimental uploads it is the crystallographic
+// B-factor (labelled honestly as such in the option text).
+function _bColor(b) {
+  b = Number(b) || 0;
+  if (b >= 90) return '#0053d6';
+  if (b >= 70) return '#65cbf3';
+  if (b >= 50) return '#ffdb13';
+  return '#ff7d45';
+}
+function proteinStyleSpec() {
+  if (_proteinStyle === 'chain') return {cartoon: {colorfunc: function (a) { return _chainColor(a.chain); }}};
+  if (_proteinStyle === 'bfactor') return {cartoon: {colorfunc: function (a) { return _bColor(a.b); }}};
+  if (_proteinStyle === 'lines') return {line: {color: '#8fa3bf'}};
+  return {cartoon: {color: 'spectrum'}};   // spectrum (surface mode adds a surface on top)
+}
+function ligandStyleSpec(batchIdx) {
+  var cs = {prop: 'elem', map: {C: _ligandColors[batchIdx % _ligandColors.length], N: '#5DADE2', O: '#E74C3C', S: '#F4D03F', P: '#E67E22', F: '#2ECC71', Cl: '#2ECC71', Br: '#A569BD', I: '#8E44AD'}};
+  if (_ligandStyle === 'line') return {line: {colorscheme: cs}};
+  if (_ligandStyle === 'spacefill') return {sphere: {colorscheme: cs}};
+  if (_ligandStyle === 'ballstick') return {stick: {radius: 0.18, colorscheme: cs}, sphere: {radius: 0.45, colorscheme: cs}};
+  return {stick: {radius: 0.25, colorscheme: cs}};
+}
+function _updateSurface() {
+  if (!_viewer || typeof _viewer.removeAllSurfaces !== 'function') return;
+  try { _viewer.removeAllSurfaces(); } catch (e) { /* no surfaces yet */ }
+  if (_proteinStyle === 'surface' && _proteinModelId !== null && _proteinModelId !== undefined) {
+    try {
+      var st = (typeof $3Dmol !== 'undefined' && $3Dmol.SurfaceType) ? $3Dmol.SurfaceType.VDW : 1;
+      var p = _viewer.addSurface(st, {opacity: 0.8, color: '#9fb4dd'}, {model: _proteinModelId}, {});
+      if (p && typeof p.then === 'function') p.then(function () { try { _viewer.render(); } catch (e) { /* torn down */ } });
+    } catch (e) { console.warn('addSurface failed:', e); }
+  }
+}
+function applyViewerStyles() {
+  if (!_viewer) return;
+  try {
+    if (_proteinModelId !== null && _proteinModelId !== undefined) {
+      _viewer.setStyle({model: _proteinModelId}, proteinStyleSpec());
+    }
+    for (var i = 0; i < _ligandModels.length; i++) {
+      _viewer.setStyle({model: _ligandModels[i].model}, ligandStyleSpec(_ligandModels[i].batch || 0));
+    }
+    _updateSurface();
+    _viewer.render();
+  } catch (e) { console.warn('applyViewerStyles failed:', e); }
+}
+function setProteinStyle(v) { _proteinStyle = v; var s = $('mv-protein-style'); if (s) s.value = v; applyViewerStyles(); }
+function setLigandStyle(v) { _ligandStyle = v; var s = $('mv-ligand-style'); if (s) s.value = v; applyViewerStyles(); }
+function toggleSpin() {
+  _mvSpin = !_mvSpin;
+  var b = $('mv-spin-btn');
+  if (b) b.classList.toggle('on', _mvSpin);
+  if (!_viewer) return;
+  try { if (_mvSpin) _viewer.spin('y', 1); else _viewer.spin(false); }
+  catch (e) { console.warn('spin failed:', e); }
+}
+function zoomViewer(f) {
+  if (!_viewer) return;
+  try { _viewer.zoom(f, 250); } catch (e) { console.warn('zoom failed:', e); }
+}
+function snapshotViewer() {
+  if (!_viewer) return;
+  try {
+    var uri = _viewer.pngURI();
+    var a = document.createElement('a');
+    a.href = uri;
+    a.download = 'docking_view_rank' + (_curMolIdx >= 0 && _batchLigands[_curMolIdx] ? _batchLigands[_curMolIdx].rank : 'all') + '.png';
+    a.click();
+  } catch (e) { console.warn('snapshot failed:', e); }
+}
+function toggleViewerExpand() {
+  var wrap = $('mol-viewer-container');
+  if (!wrap) return;
+  _mvExpanded = !_mvExpanded;
+  wrap.classList.toggle('mv-expanded', _mvExpanded);
+  document.body.style.overflow = _mvExpanded ? 'hidden' : '';
+  var b = $('mv-expand-btn');
+  if (b) b.innerHTML = _mvExpanded ? '&#x2715; Exit full view' : '&#x26F6; Expand';
+  if (_viewer) {
+    setTimeout(function () {
+      try { _viewer.resize(); } catch (e) { /* viewer torn down */ }
+      try { _viewer.render(); } catch (e) { /* viewer torn down */ }
+    }, 60);
+  }
+}
+document.addEventListener('keydown', function (e) {
+  if ((e.key === 'Escape' || e.key === 'Esc') && _mvExpanded) toggleViewerExpand();
+  if (e.key === 'Escape' && !$('mv-2d-modal').classList.contains('hidden')) closePose2D();
+});
+function _firstLigIdx() {
+  for (var i = 0; i < _batchLigands.length; i++) if (_batchLigands[i].ligand_sdf) return i;
+  return -1;
+}
+function stepPose(dir) {
+  var idxs = [];
+  for (var i = 0; i < _batchLigands.length; i++) if (_batchLigands[i].ligand_sdf) idxs.push(i);
+  if (!idxs.length) return;
+  var pos = idxs.indexOf(_curMolIdx);
+  var next = pos === -1
+    ? (dir > 0 ? idxs[0] : idxs[idxs.length - 1])
+    : idxs[(pos + dir + idxs.length) % idxs.length];
+  showViewerMol(next);
+}
+// ── Task 3.3: contact overlay with measured distances ─────────────────────
+function toggleInteractions() {
+  _showContacts = !_showContacts;
+  var b = $('mv-inter-btn');
+  if (b) b.classList.toggle('on', _showContacts);
+  var panel = $('mv-inter-panel');
+  if (!_showContacts) {
+    if (_viewer) {
+      try { _viewer.removeAllLabels(); } catch (e) { /* none */ }
+      drawSearchOverlay();   // clears shapes, redraws the search box
+    }
+    if (panel) { panel.classList.add('hidden'); panel.innerHTML = ''; }
+    return;
+  }
+  if (panel) panel.classList.remove('hidden');
+  drawContactOverlay();
+}
+function _jobContactLists(li) {
+  var lig = _batchLigands[li];
+  var ranked = (window._lastDockingResult && window._lastDockingResult.ranked_results) || [];
+  var entry = (lig && ranked[lig.rank - 1]) || ranked[li];
+  var d = entry && entry.interactions && entry.interactions.detail;
+  if (d && (d.hydrogen_bonds || d.hydrophobic_contacts || d.salt_bridges || d.pi_stacking)) return d;
+  return null;
+}
+// On-demand analysis for ranks beyond the server's bounded detail (or legacy
+// jobs): the client already holds receptor + ligand structures.
+function _fetchContactLists(li) {
+  var lig = _batchLigands[li];
+  if (!lig || !_proteinPdb || !lig.ligand_sdf) return Promise.resolve(null);
+  return fetch(API + '/primer/docking/interactions', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({receptor_pdb: _proteinPdb, ligand_sdf: lig.ligand_sdf})
+  }).then(function (rr) { return rr.ok ? rr.json() : null; })
+    .then(function (rep) {
+      if (!rep) return null;
+      return {
+        hydrogen_bonds: rep.hydrogen_bonds || [],
+        hydrophobic_contacts: rep.hydrophobic_contacts || [],
+        salt_bridges: rep.salt_bridges || [],
+        pi_stacking: rep.pi_stacking || []
+      };
+    })
+    .catch(function () { return null; });
+}
+function drawContactOverlay() {
+  if (!_viewer) return;
+  var li = _curMolIdx >= 0 ? _curMolIdx : _firstLigIdx();
+  var panel = $('mv-inter-panel');
+  if (li < 0) { if (panel) panel.innerHTML = '<em>No ligand structure loaded.</em>'; return; }
+  var ready;
+  if (_ixDetailCache[li] !== undefined) {
+    ready = Promise.resolve(_ixDetailCache[li]);
+  } else {
+    var jobLists = _jobContactLists(li);   // job JSON detail (top ranks)
+    ready = (jobLists ? Promise.resolve(jobLists) : _fetchContactLists(li))
+      .then(function (v) { _ixDetailCache[li] = v; return v; });
+  }
+  ready.then(function (lists) {
+    if (!_showContacts) return;
+    _drawContactShapes();
+    _renderContactPanel(li, lists);
+    try { _viewer.render(); } catch (e) { /* torn down */ }
+  });
+}
+var _IX_GROUPS = [
+  ['hydrogen_bonds', '#2563eb', 'Hydrogen bonds'],
+  ['salt_bridges', '#7c3aed', 'Salt bridges'],
+  ['pi_stacking', '#db2777', 'π-stacking'],
+  ['hydrophobic_contacts', '#0d9488', 'Hydrophobic contacts']
+];
+function _receptorCoords() {
+  if (_receptorCoordMap) return _receptorCoordMap;
+  var atoms = {}, residues = {};
+  if (_proteinPdb) {
+    var lines = _proteinPdb.split('\n');
+    for (var i = 0; i < lines.length; i++) {
+      var l = lines[i];
+      if (l.substr(0, 6) !== 'ATOM  ' && l.substr(0, 6) !== 'HETATM') continue;
+      if (l.length < 54) continue;
+      var x = parseFloat(l.substring(30, 38)), y = parseFloat(l.substring(38, 46)), z = parseFloat(l.substring(46, 54));
+      if (isNaN(x) || isNaN(y) || isNaN(z)) continue;
+      var nm = l.substring(12, 16).trim().toUpperCase();
+      var ch = l.substring(21, 22).trim() || 'A';
+      var num = l.substring(22, 26).trim();
+      var p = {x: x, y: y, z: z};
+      var ak = ch + ':' + num + ':' + nm;
+      if (!atoms[ak]) atoms[ak] = p;
+      var rk = ch + ':' + num;
+      if (!residues[rk]) residues[rk] = [];
+      residues[rk].push(p);
+    }
+  }
+  _receptorCoordMap = {atoms: atoms, residues: residues};
+  return _receptorCoordMap;
+}
+function _parseLigandAtoms(ligStr) {
+  var atoms = [];
+  if (!ligStr) return atoms;
+  var lines = ligStr.split('\n'), i;
+  if (ligStr.indexOf('$$$$') >= 0) {
+    // SDF — mirror the analyzer's fixed-column parse exactly
+    for (i = 0; i < lines.length; i++) {
+      var l = lines[i];
+      if (l.length < 34) continue;
+      var x = parseFloat(l.substring(0, 10)), y = parseFloat(l.substring(10, 20)), z = parseFloat(l.substring(20, 30));
+      if (isNaN(x) || isNaN(y) || isNaN(z)) continue;
+      var nm = l.substring(30, 34).trim();
+      if (!nm) continue;
+      atoms.push({x: x, y: y, z: z, name: nm});
+    }
+  } else {
+    for (i = 0; i < lines.length; i++) {
+      var t = lines[i];
+      if (t.substr(0, 6) !== 'ATOM  ' && t.substr(0, 6) !== 'HETATM') continue;
+      if (t.length < 54) continue;
+      var xx = parseFloat(t.substring(30, 38)), yy = parseFloat(t.substring(38, 46)), zz = parseFloat(t.substring(46, 54));
+      if (isNaN(xx) || isNaN(yy) || isNaN(zz)) continue;
+      atoms.push({x: xx, y: yy, z: zz, name: t.substring(12, 16).trim()});
+    }
+  }
+  return atoms;
+}
+function _lookupReceptorAtom(resStr, atomName) {
+  var rec = _receptorCoords();
+  var head = String(resStr || '').split(' ')[0];        // "A:42" of "A:42 ASP"
+  var parts = head.split(':');
+  var chain = parts.length > 1 ? parts[0] : '';
+  var num = parts.length > 1 ? parts[1] : head;
+  var hit = rec.atoms[chain + ':' + num + ':' + String(atomName || '').toUpperCase()];
+  if (hit) return hit;
+  var res = rec.residues[chain + ':' + num];
+  return (res && res.length) ? res[0] : null;            // residue-level fallback
+}
+function _lookupLigandAtom(latoms, ligName, nearPos) {
+  if (!latoms.length) return null;
+  var want = String(ligName || '').toUpperCase();
+  var elem = want.replace(/[^A-Z]/g, '');
+  var cands = [], i;
+  for (i = 0; i < latoms.length; i++) {
+    var n = String(latoms[i].name || '').toUpperCase();
+    if (n === want || n.replace(/[^A-Z]/g, '') === elem) cands.push(latoms[i]);
+  }
+  if (!cands.length) {
+    var sx = 0, sy = 0, sz = 0;
+    for (i = 0; i < latoms.length; i++) { sx += latoms[i].x; sy += latoms[i].y; sz += latoms[i].z; }
+    return {x: sx / latoms.length, y: sy / latoms.length, z: sz / latoms.length};
+  }
+  if (cands.length === 1 || !nearPos) return cands[0];
+  var best = cands[0], bd = Infinity;
+  for (i = 0; i < cands.length; i++) {
+    var dx = cands[i].x - nearPos.x, dy = cands[i].y - nearPos.y, dz = cands[i].z - nearPos.z;
+    var d = dx * dx + dy * dy + dz * dz;
+    if (d < bd) { bd = d; best = cands[i]; }
+  }
+  return best;
+}
+function _drawContactShapes() {
+  var li = _curMolIdx >= 0 ? _curMolIdx : _firstLigIdx();
+  var lists = _ixDetailCache[li];
+  if (!lists || !_viewer) return;
+  var lig = _batchLigands[li];
+  var latoms = _parseLigandAtoms(lig ? lig.ligand_sdf : '');
+  var drawn = 0, labels = 0;
+  // Distance labels pile up inside a compact pocket (every midpoint lands
+  // within a few Å → overlapping text, unreadable). Cap the labels and
+  // stagger their anchors along the line; every measured value is still
+  // listed in the contacts panel.
+  var _LABEL_MAX = 5, _FRACS = [0.38, 0.62, 0.5];
+  for (var g = 0; g < _IX_GROUPS.length && drawn < 24; g++) {
+    var arr = lists[_IX_GROUPS[g][0]] || [];
+    var color = _IX_GROUPS[g][1];
+    for (var j = 0; j < arr.length && drawn < 24; j++) {
+      var it = arr[j];
+      var rpos = _lookupReceptorAtom(it.receptor_residue, it.receptor_atom);
+      var lpos = _lookupLigandAtom(latoms, it.ligand_atom, rpos);
+      if (!rpos || !lpos) continue;
+      try {
+        _viewer.addSphere({center: rpos, radius: 0.32, color: color, alpha: 0.9});
+        try { _viewer.addLine({start: rpos, end: lpos, color: color, dashed: true}); }
+        catch (eD) { _viewer.addLine({start: rpos, end: lpos, color: color}); }
+        if (labels < _LABEL_MAX && it.distance !== undefined && it.distance !== null && it.distance !== '') {
+          var f = _FRACS[labels % _FRACS.length];
+          labels++;
+          _viewer.addLabel(Number(it.distance).toFixed(1) + ' Å', {
+            position: {x: rpos.x + (lpos.x - rpos.x) * f,
+                       y: rpos.y + (lpos.y - rpos.y) * f,
+                       z: rpos.z + (lpos.z - rpos.z) * f},
+            fontSize: 10, fontColor: '#ffffff', backgroundColor: color,
+            backgroundOpacity: 0.85, borderThickness: 0
+          });
+        }
+        drawn++;
+      } catch (e) { /* this pair skipped */ }
+    }
+  }
+}
+function _renderContactPanel(li, lists) {
+  var panel = $('mv-inter-panel');
+  if (!panel) return;
+  var lig = _batchLigands[li] || {};
+  if (!lists) {
+    panel.innerHTML = '<em>No contact data for this pose (structure format not analysable).</em>';
+    return;
+  }
+  var html = '<div class="mv-ix-head">Measured contacts — rank #' + (lig.rank || '?') +
+    ' vs prepared receptor · straight-line distances between the analysed atom pairs</div>';
+  var total = 0;
+  for (var g = 0; g < _IX_GROUPS.length; g++) {
+    var arr = lists[_IX_GROUPS[g][0]] || [];
+    if (!arr.length) continue;
+    total += arr.length;
+    html += '<div class="mv-ix-head" style="color:' + _IX_GROUPS[g][1] + '">' + _IX_GROUPS[g][2] + ' (' + arr.length + ')</div>';
+    for (var j = 0; j < arr.length; j++) {
+      var it = arr[j];
+      // Ligand atom names are often element-only ("N"); the parsed index
+      // tells apart two rows that hit DIFFERENT ligand atoms.
+      var lIdx = it.ligand_atom_index !== undefined && it.ligand_atom_index !== null
+        ? ' <span style="color:var(--text2);font-weight:600">#' + it.ligand_atom_index + '</span>' : '';
+      html += '<div class="mv-ix-row"><span class="mv-ix-dot" style="background:' + _IX_GROUPS[g][1] + '"></span>' +
+        '<span>' + esc(String(it.receptor_residue || '?')) +
+        ' <span style="color:var(--muted)">' + esc(String(it.receptor_atom || '?')) + ' … ' + esc(String(it.ligand_atom || '?')) + lIdx + '</span></span>' +
+        '<span class="mv-ix-dist" style="color:' + _IX_GROUPS[g][1] + '">' +
+        (it.distance !== undefined && it.distance !== null ? Number(it.distance).toFixed(2) + ' Å' : '—') + '</span></div>';
+    }
+  }
+  if (!total) html += '<em>No receptor contacts within the analysis cutoffs for this pose.</em>';
+  else if (total > 5) html += '<div class="mv-ix-head" style="color:var(--muted)">5 of ' + total + ' distances labeled in 3D (labels overlap in tight pockets) — all values listed here</div>';
+  panel.innerHTML = html;
+}
+// ── Task 3.4: 2D top-down projection of the docked pose ───────────────────
+var _ELEM2D = {C: '#6b7280', N: '#2563eb', O: '#e74c3c', S: '#eab308', P: '#ea580c', F: '#16a34a', CL: '#16a34a', BR: '#a855f7', I: '#9333ea', H: '#cbd5e1'};
+function closePose2D() {
+  var m = $('mv-2d-modal');
+  if (m) { m.classList.add('hidden'); m.innerHTML = ''; }
+}
+function showPose2D() {
+  var modal = $('mv-2d-modal');
+  if (!modal) return;
+  var li = _curMolIdx >= 0 ? _curMolIdx : _firstLigIdx();
+  var lig = _batchLigands[li];
+  if (!lig || !lig.ligand_sdf) return;
+  var parsed = _parse2DGeometry(lig.ligand_sdf);
+  modal.onclick = function (e) { if (e.target === modal) closePose2D(); };
+  modal.innerHTML = '<div class="mv-2d-card">' +
+    '<button type="button" class="mv-2d-close" onclick="closePose2D()">&#x2715; Close</button>' +
+    '<h4>2D view — rank #' + lig.rank + '</h4>' +
+    '<div class="mv-2d-sub">Top-down (x/y) projection of the docked pose coordinates from this job’s structure file — a real-coordinate view, not a chemical layout diagram.' +
+    (parsed.bonds.length ? '' : ' Bond connectivity is not present in this structure format, so atoms are shown without bonds.') + '</div>' +
+    _build2DSvg(parsed) + '</div>';
+  modal.classList.remove('hidden');
+}
+function _parse2DGeometry(str) {
+  var atoms = [], bonds = [], lines = str.split('\n'), i;
+  if (str.indexOf('$$$$') >= 0) {
+    var countsIdx = -1;
+    for (i = 0; i < lines.length; i++) if (lines[i].indexOf('V2000') >= 0) { countsIdx = i; break; }
+    if (countsIdx >= 0) {
+      var na = parseInt(lines[countsIdx].substring(0, 3), 10) || 0;
+      var nb = parseInt(lines[countsIdx].substring(3, 6), 10) || 0;
+      for (i = 0; i < na && countsIdx + 1 + i < lines.length; i++) {
+        var l = lines[countsIdx + 1 + i];
+        var x = parseFloat(l.substring(0, 10)), y = parseFloat(l.substring(10, 20));
+        if (isNaN(x) || isNaN(y)) continue;
+        atoms.push({x: x, y: y, el: (l.substring(30, 34).trim() || 'C').toUpperCase()});
+      }
+      for (i = 0; i < nb && countsIdx + 1 + na + i < lines.length; i++) {
+        var bl = lines[countsIdx + 1 + na + i];
+        var i1 = (parseInt(bl.substring(0, 3), 10) || 0) - 1;
+        var i2 = (parseInt(bl.substring(3, 6), 10) || 0) - 1;
+        var ord = parseInt(bl.substring(6, 9), 10) || 1;
+        if (i1 >= 0 && i2 >= 0 && i1 < atoms.length && i2 < atoms.length) bonds.push({a: i1, b: i2, o: ord});
+      }
+    }
+  } else {
+    for (i = 0; i < lines.length; i++) {
+      var t = lines[i];
+      if (t.substr(0, 6) !== 'ATOM  ' && t.substr(0, 6) !== 'HETATM') continue;
+      if (t.length < 54) continue;
+      var xx = parseFloat(t.substring(30, 38)), yy = parseFloat(t.substring(38, 46));
+      if (isNaN(xx) || isNaN(yy)) continue;
+      atoms.push({x: xx, y: yy, el: (t.substring(17, 20).trim() || 'C').toUpperCase()});
+    }
+  }
+  return {atoms: atoms, bonds: bonds};
+}
+function _build2DSvg(geo) {
+  if (!geo.atoms.length) return '<div class="mv-2d-sub">No drawable coordinates in this structure file.</div>';
+  var W = 460, H = 300, PAD = 34;
+  var minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity, i;
+  for (i = 0; i < geo.atoms.length; i++) {
+    var a = geo.atoms[i];
+    if (a.x < minX) minX = a.x; if (a.x > maxX) maxX = a.x;
+    if (a.y < minY) minY = a.y; if (a.y > maxY) maxY = a.y;
+  }
+  var rx = Math.max(maxX - minX, 0.001), ry = Math.max(maxY - minY, 0.001);
+  var sc = Math.min((W - 2 * PAD) / rx, (H - 2 * PAD) / ry);
+  var ox = (W - rx * sc) / 2, oy = (H - ry * sc) / 2;
+  function px(a) { return ox + (a.x - minX) * sc; }
+  function py(a) { return oy + (maxY - a.y) * sc; }   // SDF y-up → SVG y-down
+  var s = '<svg class="mv-2d-svg" width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + ' ' + H + '">';
+  // bonds first (under atoms)
+  for (i = 0; i < geo.bonds.length; i++) {
+    var b = geo.bonds[i], A = geo.atoms[b.a], B = geo.atoms[b.b];
+    var x1 = px(A), y1 = py(A), x2 = px(B), y2 = py(B);
+    var dx = x2 - x1, dy = y2 - y1, len = Math.sqrt(dx * dx + dy * dy) || 1;
+    var ux = -dy / len, uy = dx / len;             // unit perpendicular
+    var offs = b.o >= 3 ? [-3.6, 0, 3.6] : (b.o === 2 ? [-2.2, 2.2] : [0]);
+    if (b.o === 4) offs = [0];                     // aromatic → single line
+    for (var k = 0; k < offs.length; k++) {
+      var o = offs[k];
+      s += '<line x1="' + (x1 + ux * o).toFixed(1) + '" y1="' + (y1 + uy * o).toFixed(1) +
+        '" x2="' + (x2 + ux * o).toFixed(1) + '" y2="' + (y2 + uy * o).toFixed(1) +
+        '" stroke="#475569" stroke-width="1.6" stroke-linecap="round"/>';
+    }
+  }
+  // atoms
+  for (i = 0; i < geo.atoms.length; i++) {
+    var at = geo.atoms[i], cx = px(at), cy = py(at);
+    var el = at.el.charAt(0) + at.el.substring(1).toLowerCase();
+    var col = _ELEM2D[at.el] || '#94a3b8';
+    var r = el === 'C' ? 6.5 : (el === 'H' ? 4.5 : 10);
+    s += '<circle cx="' + cx.toFixed(1) + '" cy="' + cy.toFixed(1) + '" r="' + r + '" fill="' + col + '" stroke="#fff" stroke-width="1.2"/>';
+    if (el !== 'C' && el !== 'H') {
+      s += '<text x="' + cx.toFixed(1) + '" y="' + (cy + 3.4).toFixed(1) + '" text-anchor="middle" font-size="10" font-weight="700" fill="#fff" font-family="sans-serif">' + el + '</text>';
+    }
+  }
+  s += '</svg>';
+  return s;
+}
 function initViewer() {
   var container = $('mol-viewer-container');
   container.style.display = 'block';
@@ -2149,10 +3175,13 @@ function initViewer() {
     void el.offsetHeight;
     _viewer = $3Dmol.createViewer(el, {backgroundColor: '#0f0f0f'});
     if (!_viewer) return;
+    _curMolIdx = -1;
+    _proteinModelId = null;
+    _receptorCoordMap = null;
+    _ixDetailCache = {};
     var allCount = 0;
     if (_proteinPdb) {
-      _viewer.addModel(_proteinPdb, 'pdb');
-      _viewer.setStyle({}, {cartoon: {color: 'spectrum'}});
+      _proteinModelId = _viewer.addModel(_proteinPdb, 'pdb');
       allCount++;
     }
     _ligandModels = [];
@@ -2160,24 +3189,22 @@ function initViewer() {
       var lig = _batchLigands[i];
       var ligStr = lig.ligand_sdf || '';
       if (!ligStr) continue;
-      var color = _ligandColors[i % _ligandColors.length];
       try {
         var model = _viewer.addModel(ligStr, ligStr.indexOf('$$$$')>= 0 ? 'sdf' : 'pdb');
         if (model) {
-          _viewer.setStyle({model: model}, {
-            stick: {radius: 0.25, colorscheme: {prop: 'elem', map: {C: color, N: '#5DADE2', O: '#E74C3C', S: '#F4D03F', P: '#E67E22', F: '#2ECC71', Cl: '#2ECC71', Br: '#A569BD', I: '#8E44AD'}}}
-          });
-          _ligandModels.push({model: model, rank: lig.rank, lig: lig});
+          _ligandModels.push({model: model, rank: lig.rank, lig: lig, batch: i});
           allCount++;
         }
       } catch(e) {
         console.warn('3Dmol parse error for rank', lig.rank, e);
       }
     }
+    applyViewerStyles();
     if (allCount> 0) {
       _viewer.zoomTo();
       _viewer.render();
     }
+    drawSearchOverlay();
     updateViewerInfo(-1);
     updateMolSelector(-1);
   });
@@ -2220,9 +3247,9 @@ function showViewerMol(idx) {
   if (!_viewer) return;
   _viewer.removeAllModels();
   _ligandModels = [];
+  _proteinModelId = null;
   if (_proteinPdb) {
-    _viewer.addModel(_proteinPdb, 'pdb');
-    _viewer.setStyle({}, {cartoon: {color: 'spectrum'}});
+    _proteinModelId = _viewer.addModel(_proteinPdb, 'pdb');
   }
   var allLigands = (idx === -1);
   for (var i = 0; i < _batchLigands.length; i++) {
@@ -2230,34 +3257,36 @@ function showViewerMol(idx) {
     var lig = _batchLigands[i];
     var ligStr = lig.ligand_sdf || '';
     if (!ligStr) continue;
-    var color = _ligandColors[i % _ligandColors.length];
     try {
       var model = _viewer.addModel(ligStr, ligStr.indexOf('$$$$')>= 0 ? 'sdf' : 'pdb');
       if (model) {
-        _viewer.setStyle({model: model}, {
-          stick: {radius: 0.25, colorscheme: {prop: 'elem', map: {C: color, N: '#5DADE2', O: '#E74C3C', S: '#F4D03F', P: '#E67E22', F: '#2ECC71', Cl: '#2ECC71', Br: '#A569BD', I: '#8E44AD'}}}
-        });
-        _ligandModels.push({model: model, rank: lig.rank, lig: lig});
+        _ligandModels.push({model: model, rank: lig.rank, lig: lig, batch: i});
       }
     } catch(e) {
       console.warn('3Dmol parse error for rank', lig.rank, e);
     }
   }
+  _curMolIdx = idx;
+  applyViewerStyles();
   updateViewerInfo(idx);
   _viewer.zoomTo();
   _viewer.render();
+  drawSearchOverlay();
   updateMolSelector(idx);
+  if (_showContacts) drawContactOverlay();   // re-measure for the shown pose
 }
 function updateViewerInfo(idx) {
   var info = $('mol-viewer-info');
   if (idx === -1) {
     var count = _batchLigands.filter(function(l){return l.ligand_sdf;}).length;
-    info.textContent = 'All ' + count + ' top ligands docked at predicted binding sites — click a rank to isolate';
+    info.textContent = 'All ' + count + (count === 1 ? ' top ligand' : ' top ligands') + ' docked at predicted binding sites — click a rank to isolate';
   } else if (idx>= 0 && _batchLigands[idx]) {
     var lig = _batchLigands[idx];
     var txt = 'Rank #' + lig.rank + ' — Vina: ' + (lig.vina_score !== null && lig.vina_score !== undefined ? lig.vina_score.toFixed(2) : '—') + ' kcal/mol';
     if (lig.gnina_score !== null && lig.gnina_score !== undefined) txt += ' | GNINA: ' + lig.gnina_score.toFixed(2);
+    if (lig.cnn_score !== null && lig.cnn_score !== undefined) txt += ' | CNN pose: ' + (lig.cnn_score * 100).toFixed(0) + '%';
     if (lig.consensus_score !== null && lig.consensus_score !== undefined) txt += ' | Consensus: ' + lig.consensus_score.toFixed(3);
+    if (lig.score_source === 'vina') txt += ' (ranked by Vina — no CNN for this candidate)';
     txt += ' | SMILES: ' + esc(lig.smiles || '').substring(0, 40);
     info.textContent = txt;
   }
@@ -2287,6 +3316,69 @@ function downloadLigandSDF(idx) {
   if (!_batchLigands[idx] || !_batchLigands[idx].ligand_sdf) return;
   downloadFile(_batchLigands[idx].ligand_sdf, 'ligand_rank' + _batchLigands[idx].rank + '.sdf', 'chemical/x-mdl-sdfile');
 }
+
+// ── Phase 4.3: structure repair (regenerative folding) → re-run ──────────
+function _repairSourcePDB(cb) {
+  if (_proteinPdb) { cb(_proteinPdb); return; }
+  if (_uploadedPDB) { cb(_uploadedPDB); return; }
+  if (_jobId) {
+    fetch(API + '/primer/docking/structure/batch/' + _jobId).then(function (r) {
+      return r.ok ? r.json() : null;
+    }).then(function (d) { cb(d && d.receptor_pdb ? d.receptor_pdb : ''); })
+      .catch(function () { cb(''); });
+  } else { cb(''); }
+}
+
+async function repairStructure() {
+  var btn = $('repair-btn'), out = $('repair-result');
+  if (!btn || !out) return;
+  btn.disabled = true;
+  btn.textContent = 'Repairing\u2026';
+  out.innerHTML = '<span style="font-size:11px;color:#4338ca">Running regenerative folding \u2014 modelling missing loops and resolving clashes\u2026</span>';
+  try {
+    var pdb = await new Promise(function (resolve) { _repairSourcePDB(resolve); });
+    if (!pdb) throw new Error('Protein structure not available \u2014 reload the page and try again.');
+    var headers = { 'Content-Type': 'application/json' };
+    var tk = window.authToken || '';
+    if (tk) headers['Authorization'] = 'Bearer ' + tk;
+    var rr = await fetch(API + '/primer/docking/regenerate', {
+      method: 'POST', headers: headers, body: JSON.stringify({ pdb_content: pdb })
+    });
+    var rep = {};
+    try { rep = await rr.json(); } catch (_jerr) { /* non-JSON error page */ }
+    if (!rr.ok) throw new Error(rep.error || ('Repair failed (HTTP ' + rr.status + ')'));
+    if (!rep.prepared_pdb) throw new Error('Repair produced no structure.');
+    _repairedPDB = rep.prepared_pdb;
+    var nAct = (rep.actions || []).length;
+    out.innerHTML = '<div style="font-weight:700;color:#166534">&#x2705; Structure repaired' + (nAct ? ' &mdash; ' + nAct + ' action(s)' : '') + '.</div>' +
+      (rep.summary ? '<div style="font-size:11px;color:#3730a3;margin-top:2px">' + esc(rep.summary) + '</div>' : '') +
+      '<div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">' +
+      '<button type="button" class="btn-secondary btn-sm" onclick="downloadRepairedPDB()">&#x2B07; Download repaired PDB</button>' +
+      '<button type="button" class="btn-secondary btn-sm" onclick="rerunRepaired()">Re-run docking with repaired structure</button></div>';
+  } catch (e) {
+    out.innerHTML = '<div class="error-card" style="font-size:12px">' + esc(String((e && e.message) || e)) + '</div>';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Repair structure';
+  }
+}
+
+function downloadRepairedPDB() {
+  if (!_repairedPDB) return;
+  downloadFile(_repairedPDB, 'protein_repaired.pdb', 'chemical/x-pdb');
+}
+
+function rerunRepaired() {
+  if (!_repairedPDB) { dockNote('Repair the structure first, then re-run.'); return; }
+  setInputMode('pdb');
+  _uploadedPDB = _repairedPDB;
+  var info = $('pdb-file-info');
+  if (info) {
+    info.style.display = 'block';
+    info.textContent = 'Repaired structure loaded (' + Math.round(_repairedPDB.length / 1024) + ' KB) \u2014 ready to dock.';
+  }
+  runDocking();
+}
 function downloadComplexPDB(idx) {
   var lig = _batchLigands[idx];
   if (!lig || !lig.ligand_sdf) return;
@@ -2302,7 +3394,14 @@ function downloadComplexPDB(idx) {
   if (lig.gnina_score !== null && lig.gnina_score !== undefined) {
     complexPdb += 'REMARK   1 GNINA: ' + lig.gnina_score.toFixed(2) + ' kcal/mol\n';
   }
-  complexPdb += 'REMARK   1 Consensus: ' + (lig.consensus_score ? lig.consensus_score.toFixed(3) : '—') + '\n';
+  if (lig.cnn_score !== null && lig.cnn_score !== undefined) {
+    complexPdb += 'REMARK   1 CNN pose score: ' + lig.cnn_score.toFixed(4) + '\n';
+  }
+  if (lig.cnn_affinity !== null && lig.cnn_affinity !== undefined) {
+    complexPdb += 'REMARK   1 CNN affinity: ' + lig.cnn_affinity.toFixed(3) + ' (log mol/L)\n';
+  }
+  complexPdb += 'REMARK   1 Consensus: ' + (lig.consensus_score ? lig.consensus_score.toFixed(3) : '—') +
+    (lig.score_source ? ' (source: ' + lig.score_source + ')' : '') + '\n';
   complexPdb += 'MODEL        1\n' + protPdb + '\nENDMDL\n';
   if (ligStr) {
     complexPdb += 'MODEL        2\n' + sdfToPdb(ligStr) + '\nENDMDL\n';
@@ -2355,10 +3454,32 @@ async function downloadResults(fmt) {
   var ranked = result.ranked_results || [];
   var content, mime, ext;
   if (fmt === 'csv') {
-    var hasG = result.stage3 && result.stage3.status !== 'skipped';
-    var header = 'Rank,SMILES,Vina_Score' + (hasG ? ',GNINA_Score' : '') + ',Consensus_Score,Has_3D_Structure';
+    // Data-driven columns: a status flag is not enough (gnina_failed runs
+    // have no CNN numbers) — look at what the candidates actually carry.
+    var hasG = ranked.some(function(m){ return m.gnina_score !== null && m.gnina_score !== undefined; });
+    var hasC = ranked.some(function(m){ return m.cnn_score !== null && m.cnn_score !== undefined; });
+    var hasEff = ranked.some(function(m){ return m.efficiency && m.efficiency.le !== undefined; });
+    var hasInter = ranked.some(function(m){ return m.interactions && m.interactions.counts; });
+    var s3 = result.stage3 || {};
+    var mode = s3.consensus_mode || ((result.stage3 && s3.status !== 'skipped') ? 'partial' : 'vina_only');
+    var header = 'Rank,SMILES,Vina_Score' +
+      (hasG ? ',GNINA_Score' : '') +
+      (hasC ? ',CNN_Pose_Score,CNN_Affinity_logM' : '') +
+      ',Consensus_Score,Score_Source,Consensus_Mode,Has_3D_Structure' +
+      (hasEff ? ',LE,LLE,BEI,Heavy_Atoms,MW,Confidence_Weighted,Pose_Cluster,Cluster_Representative' : '') +
+      (hasInter ? ',H_Bonds,Hydrophobic,Salt_Bridges,Pi_Stacking,Total_Interactions,Pocket_Residues' : '');
     var rows = ranked.map(function(m,i){
-      return (i+1) + ',"' + esc(m.smiles||'') + '",' + (m.vina_score!==null&&m.vina_score!==undefined?m.vina_score:'') + (hasG ? ',' + (m.gnina_score!==null&&m.gnina_score!==undefined?m.gnina_score:'') : '') + ',' + (m.consensus_score!==null&&m.consensus_score!==undefined?m.consensus_score:'') + ',' + (m._has_structure ? 'Yes' : 'No');
+      return (i+1) + ',"' + esc(m.smiles||'') + '",' + (m.vina_score!==null&&m.vina_score!==undefined?m.vina_score:'') +
+        (hasG ? ',' + (m.gnina_score!==null&&m.gnina_score!==undefined?m.gnina_score:'') : '') +
+        (hasC ? ',' + (m.cnn_score!==null&&m.cnn_score!==undefined?m.cnn_score:'') + ',' + (m.cnn_affinity!==null&&m.cnn_affinity!==undefined?m.cnn_affinity:'') : '') +
+        ',' + (m.consensus_score!==null&&m.consensus_score!==undefined?m.consensus_score:'') +
+        ',' + (m.score_source||'') + ',' + mode +
+        ',' + (m._has_structure ? 'Yes' : 'No') +
+        (hasEff ? ',' + (m.efficiency && m.efficiency.le !== undefined ? [m.efficiency.le, m.efficiency.lle, m.efficiency.bei, m.efficiency.heavy_atoms, m.efficiency.mw, m.efficiency.confidence_weighted, m.efficiency.cluster, m.efficiency.cluster_rep ? 'Yes':'No'].join(',') : ',,,,,,,,') : '') +
+        (hasInter ? ',' + (m.interactions && m.interactions.counts
+          ? [m.interactions.counts.hydrogen_bonds, m.interactions.counts.hydrophobic_contacts, m.interactions.counts.salt_bridges, m.interactions.counts.pi_stacking, m.interactions.counts.total_interactions,
+             '"' + ((m.interactions.residues||[]).map(function(r){ return (r.residue||'?') + ' ' + (r.chain||'') + ':' + (r.number||''); }).join('; ')) + '"'].join(',')
+          : ',,,,,""') : '');
     });
     content = header + '\n' + rows.join('\n');
     mime = 'text/csv';
@@ -2375,6 +3496,56 @@ async function downloadResults(fmt) {
   a.download = 'docking_results.' + ext;
   a.click();
   URL.revokeObjectURL(url);
+}
+// ── Task 5.3: quality report + interactions JSON downloads ──────────────
+async function downloadQualityReport() {
+  var result = window._lastDockingResult;
+  if (!result) return;
+  if (!(await requireFeature('export_pdf'))) return;
+  var s1 = result.stage1 || {};
+  var report = {
+    job_id: result.job_id || null,
+    generated_at: new Date().toISOString(),
+    source: 'VigyanLLM consensus docking — structure quality report',
+    structure: {
+      mode: s1.mode || null,
+      sequence_length: s1.sequence_length || null,
+      plddt_score: s1.plddt_score !== undefined ? s1.plddt_score : null,
+      computation_time: s1.computation_time || null,
+      preparation: s1.preparation || null
+    },
+    // Phase-4 verdict fields exactly as computed server-side (no client
+    // re-derivation — the honest wording ships verbatim).
+    quality: s1.quality || null
+  };
+  downloadFile(JSON.stringify(report, null, 2),
+    'docking_quality_report.json', 'application/json');
+}
+async function downloadInteractionsJSON() {
+  var result = window._lastDockingResult;
+  if (!result) return;
+  if (!(await requireFeature('export_pdf'))) return;
+  var ranked = result.ranked_results || [];
+  var payload = {
+    job_id: result.job_id || null,
+    generated_at: new Date().toISOString(),
+    receptor: 'prepared receptor used for docking (see quality report for its provenance)',
+    ligands: ranked.map(function (m, i) {
+      var inter = m.interactions || {};
+      return {
+        rank: i + 1,
+        smiles: m.smiles || '',
+        counts: inter.counts || null,
+        pocket_residues: inter.residues || [],
+        // detail is only attached server-side for the top ranks (bounded
+        // job JSON) — absent for deeper ranks by design.
+        detail: inter.detail || null,
+        recommendation: inter.recommendation || null
+      };
+    })
+  };
+  downloadFile(JSON.stringify(payload, null, 2),
+    'docking_interactions.json', 'application/json');
 }
 // ── Init ────────────────────────────────────────────────────────────────
 loadAuth();
