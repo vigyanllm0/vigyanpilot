@@ -292,11 +292,11 @@ def _generate_fallback_pdb(sequence: str) -> str:
         nx = HELIX_R * math.cos(nt)
         ny = HELIX_R * math.sin(nt)
         nz = z + 0.3
-        lines.append(f"ATOM  {atom_serial:>5d}  N   {res_name:<3s} A{1:>4d}    {nx:>8.3f}{ny:>8.3f}{nz:>8.3f}  1.00  0.00           N  ")
+        lines.append(f"ATOM  {atom_serial:>5d}  N   {res_name:<3s} A{i+1:>4d}    {nx:>8.3f}{ny:>8.3f}{nz:>8.3f}  1.00  0.00           N  ")
         atom_serial += 1
 
         # CA atom
-        lines.append(f"ATOM  {atom_serial:>5d}  CA  {res_name:<3s} A{1:>4d}    {x:>8.3f}{y:>8.3f}{z:>8.3f}  1.00  0.00           C  ")
+        lines.append(f"ATOM  {atom_serial:>5d}  CA  {res_name:<3s} A{i+1:>4d}    {x:>8.3f}{y:>8.3f}{z:>8.3f}  1.00  0.00           C  ")
         atom_serial += 1
 
         # C atom
@@ -304,7 +304,7 @@ def _generate_fallback_pdb(sequence: str) -> str:
         cx = HELIX_R * math.cos(ct)
         cy = HELIX_R * math.sin(ct)
         cz = z - 0.3
-        lines.append(f"ATOM  {atom_serial:>5d}  C   {res_name:<3s} A{1:>4d}    {cx:>8.3f}{cy:>8.3f}{cz:>8.3f}  1.00  0.00           C  ")
+        lines.append(f"ATOM  {atom_serial:>5d}  C   {res_name:<3s} A{i+1:>4d}    {cx:>8.3f}{cy:>8.3f}{cz:>8.3f}  1.00  0.00           C  ")
         atom_serial += 1
 
         # O atom
@@ -312,7 +312,7 @@ def _generate_fallback_pdb(sequence: str) -> str:
         ox = HELIX_R * math.cos(ot)
         oy = HELIX_R * math.sin(ot)
         oz = z + 0.8
-        lines.append(f"ATOM  {atom_serial:>5d}  O   {res_name:<3s} A{1:>4d}    {ox:>8.3f}{oy:>8.3f}{oz:>8.3f}  1.00  0.00           O  ")
+        lines.append(f"ATOM  {atom_serial:>5d}  O   {res_name:<3s} A{i+1:>4d}    {ox:>8.3f}{oy:>8.3f}{oz:>8.3f}  1.00  0.00           O  ")
         atom_serial += 1
 
     lines.append("TER")

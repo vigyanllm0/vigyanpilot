@@ -29,6 +29,13 @@ VDW_RADII = {
     'P': 1.8, 'F': 1.47, 'Cl': 1.75, 'Br': 1.85,
 }
 
+# Backbone atoms of the peptide link — a consecutive-residue pair where at
+# least one atom is in this set is covalent 1-2/1-3/1-4 geometry (every path
+# across the peptide bond runs through C(i) or N(i+1)), never a steric clash.
+# HETATM names (OXT/OT1/OT2, common H names) included for uploaded PDBs.
+_BACKBONE_ATOMS = {'N', 'CA', 'C', 'O', 'OXT', 'OT1', 'OT2',
+                   'H', 'HA', 'HA2', 'HA3', '1H', '2H', '3H', 'HN'}
+
 # Residue types
 POLAR_RESIDUES = {'SER', 'THR', 'ASN', 'GLN', 'TYR', 'CYS', 'HIS'}
 CHARGED_POS = {'LYS', 'ARG', 'HIS'}
@@ -76,12 +83,20 @@ class AnalysisReport:
 
 
 def _parse_pdb(pdb_string: str) -> tuple[dict, list]:
-    """Parse PDB string into atoms and residues."""
+    """Parse PDB string into atoms and residues.
+
+    Multi-model files (NMR ensembles): only the FIRST model is read —
+    otherwise atoms from later models would be merged into the same
+    residues and every inter-model contact would report as a spurious
+    steric clash.
+    """
     atoms = []
     residues = {}
     current_res = None
 
     for line in pdb_string.split('\n'):
+        if line.startswith('ENDMDL'):
+            break  # first model only
         if not line.startswith(('ATOM', 'HETATM')):
             continue
 
@@ -98,6 +113,14 @@ def _parse_pdb(pdb_string: str) -> tuple[dict, list]:
                 'element': line[76:78].strip() if len(line) > 76 else line[12:16].strip()[0],
                 'alt': line[16],  # Alternate location indicator
             }
+            # B-factor / temperature factor (PDB cols 61-66). Predicted
+            # models (AlphaFold/ESMFold) write pLDDT here; experimental
+            # structures write a displacement factor. 0.0 = "no data".
+            # Parsed in its own try so a malformed column never drops the atom.
+            try:
+                atom['b_factor'] = float(line[60:66])
+            except (ValueError, IndexError):
+                atom['b_factor'] = 0.0
         except (ValueError, IndexError):
             continue
 
@@ -128,6 +151,55 @@ def _calc_distance(a1: dict, a2: dict) -> float:
     )
 
 
+def extract_per_residue_plddt(pdb_string: str) -> Optional[list]:
+    """Per-residue mean B-factor read as pLDDT (predicted-model convention:
+    AlphaFold/ESMFold write confidence into the B-factor column).
+
+    Scale-aware: the ESMFold web API writes 0-1 fractions, local models
+    write 0-100 — detect the scale and always return 0-100 percentages.
+
+    Returns None when the file carries no B-factor data (column absent or
+    all zeros) so callers never present fabricated confidence numbers.
+    """
+    residues, _ = _parse_pdb(pdb_string)
+    sorted_res = sorted(residues.values(), key=lambda r: (r['chain'], r['num']))
+    if not sorted_res:
+        return None
+    scores = []
+    for res in sorted_res:
+        b_vals = [a['b_factor'] for a in res['atoms'] if 'b_factor' in a]
+        scores.append(sum(b_vals) / len(b_vals) if b_vals else 0.0)
+    if max(scores) <= 0.001:
+        return None                      # column present but all zeros = no data
+    if max(scores) <= 1.5:               # 0-1 fraction scale → percent
+        scores = [s * 100.0 for s in scores]
+    return [round(s, 1) for s in scores]
+
+
+def count_ca_residues(pdb_string: str) -> int:
+    """Number of distinct residues carrying a backbone CA atom.
+
+    Pre-validation gate for uploaded structures: a file without enough of
+    these is not a protein and must be rejected before a run is booked.
+    """
+    seen = set()
+    for line in pdb_string.splitlines():
+        if line.startswith(('ATOM', 'HETATM')) and line[12:16].strip() == 'CA':
+            seen.add((line[21:22] or 'A', line[22:26]))
+    return len(seen)
+
+
+def _confidence_tier(score: float) -> str:
+    """pLDDT confidence tier for one residue (or a segment mean)."""
+    if score >= 90:
+        return 'high'
+    if score >= 70:
+        return 'medium'
+    if score >= 50:
+        return 'low'
+    return 'very_low'
+
+
 def analyze_plddt(pdb_string: str, plddt_scores: Optional[list] = None) -> dict:
     """
     Analyze pLDDT confidence scores per residue.
@@ -141,17 +213,19 @@ def analyze_plddt(pdb_string: str, plddt_scores: Optional[list] = None) -> dict:
     if plddt_scores and len(plddt_scores) >= len(sorted_res):
         scores = plddt_scores[:len(sorted_res)]
     else:
-        # Estimate from B-factors if available
+        # Estimate from B-factors if the column carries data. The guard
+        # (any b > 0) matters: an all-zero B column means "no data" —
+        # without it every residue would estimate as a perfect 100.
         scores = []
         for res in sorted_res:
             b_factors = [a.get('b_factor', 0) for a in res['atoms'] if 'b_factor' in a]
-            if b_factors:
+            if b_factors and any(b > 0 for b in b_factors):
                 avg_b = sum(b_factors) / len(b_factors)
                 # Rough conversion: pLDDT ≈ 100 - (B-factor / 2)
                 est_plddt = max(0, min(100, 100 - avg_b / 2))
                 scores.append(est_plddt)
             else:
-                scores.append(70)  # Default medium confidence
+                scores.append(70)  # Default medium confidence (no data)
 
     # Classify residues by confidence
     high_conf = sum(1 for s in scores if s >= 90)
@@ -180,6 +254,38 @@ def analyze_plddt(pdb_string: str, plddt_scores: Optional[list] = None) -> dict:
         current_region['mean_plddt'] = sum(current_region['scores']) / len(current_region['scores'])
         low_regions.append(current_region)
 
+    # Full confidence-tier segmentation (which part of the protein is
+    # trustworthy): contiguous same-tier runs. Runs shorter than 3 residues
+    # merge into the previous run so a single noisy residue doesn't
+    # fragment the table; the merged run is re-tiered from its new mean.
+    segments = []
+    for res, score in zip(sorted_res, scores):
+        tier = _confidence_tier(score)
+        if segments and segments[-1]['chain'] == res['chain'] and segments[-1]['tier'] == tier:
+            segments[-1]['end'] = res['num']
+            segments[-1]['scores'].append(score)
+        else:
+            segments.append({'chain': res['chain'], 'start': res['num'],
+                             'end': res['num'], 'tier': tier, 'scores': [score]})
+    merged = []
+    for seg in segments:
+        if merged and len(seg['scores']) < 3 and merged[-1]['chain'] == seg['chain']:
+            merged[-1]['end'] = seg['end']
+            merged[-1]['scores'].extend(seg['scores'])
+        else:
+            merged.append(seg)
+    regions = []
+    for seg in merged:
+        mean = sum(seg['scores']) / len(seg['scores'])
+        regions.append({
+            'chain': seg['chain'],
+            'start': seg['start'],
+            'end': seg['end'],
+            'count': len(seg['scores']),
+            'tier': _confidence_tier(mean),
+            'mean': round(mean, 1),
+        })
+
     return {
         'mean_plddt': round(mean_plddt, 1),
         'high_confidence': high_conf,
@@ -188,6 +294,7 @@ def analyze_plddt(pdb_string: str, plddt_scores: Optional[list] = None) -> dict:
         'very_low_confidence': very_low,
         'total_residues': total,
         'scores': scores,
+        'regions': regions,
         'low_confidence_regions': low_regions,
         'defects': [
             Defect(
@@ -281,9 +388,34 @@ def detect_clashes(atoms: list, threshold: float = 0.5) -> list:
                         checked.add(pair_key)
 
                         dist = _calc_distance(atom, other)
-                        # Skip bonded atoms (same residue, expected to be close)
-                        if (atom['chain'] == other['chain'] and
-                            atom['res_num'] == other['res_num']):
+                        # Skip COVALENT geometry, not just same-residue pairs:
+                        #  1) same residue (all intra-residue bonded pairs)
+                        #  2) consecutive residues where at least one atom is
+                        #     backbone (N/CA/C/O) — every 1-2/1-3/1-4 pair
+                        #     across the peptide link runs through C(i) or
+                        #     N(i+1), so one partner is always backbone:
+                        #     peptide C-N 1.20-1.39 A, O(i)...N(i+1) 2.27 A,
+                        #     CA(i)...N(i+1) 2.42 A, C(i)...CA(i+1) 2.4-2.75 A,
+                        #     PRO CD 1-3 neighbours ~2.4-2.8 A.  Sidechain-
+                        #     sidechain contacts between consecutive residues
+                        #     (rotamer clashes) stay detectable.
+                        # Without (2) EVERY peptide bond trips the overlap
+                        # test (C-N vdW sum 3.25 - 1.33 = 1.92 A overlap) and
+                        # the top-50 cap turned a 159-aa model into a bogus
+                        # "50 critical clashes", wrecking the quality grade.
+                        # Real non-bonded anomalies (e.g. a 1.01 A side-chain
+                        # overlap from a bad prediction) stay flagged: those
+                        # pairs are > 1 residue apart.
+                        if atom['chain'] == other['chain']:
+                            if atom['res_num'] == other['res_num']:
+                                continue
+                            if (abs(atom['res_num'] - other['res_num']) == 1
+                                    and (atom['name'] in _BACKBONE_ATOMS
+                                         or other['name'] in _BACKBONE_ATOMS)):
+                                continue
+                        if (atom['name'] == 'SG' and other['name'] == 'SG'
+                                and atom['element'] == 'S'
+                                and other['element'] == 'S'):
                             continue
 
                         r1 = VDW_RADII.get(atom['element'], 1.5)
@@ -468,7 +600,8 @@ def compute_quality_score(
     missing_residues: list,
     clashes: list,
     ramachandran_outliers: list,
-    hbond_analysis: dict
+    hbond_analysis: dict,
+    n_atoms: Optional[int] = None,
 ) -> tuple[float, str]:
     """
     Compute composite quality score (0-100) and grade (A-F).
@@ -483,8 +616,20 @@ def compute_quality_score(
     # pLDDT score (0-100)
     plddt_score = plddt_analysis.get('mean_plddt', 70)
 
-    # Clash penalty (0-100, lower is better)
-    clash_penalty = min(100, len(clashes) * 5 + sum(c.get('overlap', 0) * 20 for c in clashes[:10]))
+    # Clash penalty (0-100): MolProbity-style severity-weighted clashscore —
+    # critical clashes (overlap > 1.0 A) weigh 3x warnings, normalised per
+    # 1000 atoms so small models aren't judged by raw counts. Rate 0-5/1000
+    # = high-resolution quality (small penalty), linear to a full penalty at
+    # 50/1000 (grossly broken model).
+    # The old formula (5*count + 20*sum_top10_overlaps) saturated to the
+    # full 20-point loss at ~6 moderate contacts — a cliff, not a curve:
+    # a 159-aa model with 11 mild short contacts scored clash 0/100.
+    if n_atoms is None:
+        n_atoms = plddt_analysis.get('total_residues', 1) * 8  # ~8 heavy atoms/residue
+    n_atoms = max(1, int(n_atoms) or 1)
+    weighted = sum(3 if c.get('overlap', 0) > 1.0 else 1 for c in clashes)
+    clash_rate = weighted / n_atoms * 1000.0  # weighted clashes per 1000 atoms
+    clash_penalty = min(100.0, max(0.0, clash_rate / 50.0 * 100.0))
 
     # Ramachandran score
     total_res = plddt_analysis.get('total_residues', 1)
@@ -514,6 +659,27 @@ def compute_quality_score(
     else: grade = 'F'
 
     return round(quality, 1), grade
+
+
+def _docking_recommendation(quality: float, critical: int) -> str:
+    """Human verdict for stage 1 — severity-aware at the top grade.
+
+    Saying "Minor issues" beside a "N critical" defect count (severe steric
+    overlaps, <50-pLDDT regions) reads dishonest to a careful scientist, so
+    the suitable-but-critical case names the defects and points at repair.
+    """
+    if quality >= 75:
+        if critical > 0:
+            return (
+                f"Structure is suitable for docking overall ({quality:g}/100), but "
+                f"{critical} severe defect{'s' if critical != 1 else ''} flagged — "
+                "review the defect list below (the Repair structure step fixes "
+                "steric clashes) before relying on exact ranks."
+            )
+        return "Structure appears suitable for docking. Minor issues noted but unlikely to significantly impact results."
+    if quality >= 50:
+        return "Structure has moderate quality issues. Consider using an experimental PDB structure if available, or proceed with caution on the flagged regions."
+    return "Structure has significant quality issues. Docking results on this structure should be treated with extreme caution. Consider using an experimental structure, a different prediction method, or selecting a shorter region around your binding site."
 
 
 def analyze_protein(pdb_string: str, plddt_scores: Optional[list] = None) -> AnalysisReport:
@@ -547,7 +713,8 @@ def analyze_protein(pdb_string: str, plddt_scores: Optional[list] = None) -> Ana
     hbond = analyze_hbonds(pdb_string)
 
     # 6. Quality score
-    quality, grade = compute_quality_score(plddt, missing, clashes, ram_outliers, hbond)
+    quality, grade = compute_quality_score(plddt, missing, clashes, ram_outliers, hbond,
+                                           n_atoms=len(atoms))
 
     # 7. Aggregate defects
     all_defects = []
@@ -579,12 +746,7 @@ def analyze_protein(pdb_string: str, plddt_scores: Optional[list] = None) -> Ana
     warnings = sum(1 for d in all_defects if d.severity == 'warning')
     total_res = plddt.get('total_residues', 0)
 
-    if quality >= 75:
-        recommendation = "Structure appears suitable for docking. Minor issues noted but unlikely to significantly impact results."
-    elif quality >= 50:
-        recommendation = "Structure has moderate quality issues. Consider using an experimental PDB structure if available, or proceed with caution on the flagged regions."
-    else:
-        recommendation = "Structure has significant quality issues. Docking results on this structure should be treated with extreme caution. Consider using an experimental structure, a different prediction method, or selecting a shorter region around your binding site."
+    recommendation = _docking_recommendation(quality, critical)
 
     summary = (
         f"Quality: {grade} ({quality}/100). "
@@ -625,6 +787,7 @@ def report_to_dict(report: AnalysisReport) -> dict:
             'low_confidence': report.plddt_analysis.get('low_confidence', 0),
             'very_low_confidence': report.plddt_analysis.get('very_low_confidence', 0),
             'total_residues': report.plddt_analysis.get('total_residues', 0),
+            'regions': report.plddt_analysis.get('regions', []),
         },
         'missing_residues': report.missing_residues,
         'clashes': [

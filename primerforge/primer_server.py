@@ -2822,6 +2822,47 @@ def create_app() -> Flask:
                 return err("'ligand_smiles_list' must be a non-empty list of SMILES strings.", "VALIDATION_ERROR", 400)
             ligand_smiles_list = _norm
 
+            # ── Search-box override (Phase 2, task 2.2 — advanced panel) ──
+            # Validated HERE so a malformed override is a 400 (nothing
+            # queued, no credit consumed) instead of a mid-run failure.
+            box = data.get("box")
+            if box is not None:
+                if not isinstance(box, dict):
+                    return err("'box' must be an object.", "VALIDATION_ERROR", 400)
+                has_manual = box.get("center") is not None or box.get("size") is not None
+                if has_manual:
+                    try:
+                        center = [float(v) for v in list(box.get("center") or [])]
+                        size = [float(v) for v in list(box.get("size") or [])]
+                    except (TypeError, ValueError):
+                        return err("'box.center' and 'box.size' must be numbers.", "VALIDATION_ERROR", 400)
+                    if len(center) != 3 or len(size) != 3:
+                        return err("'box.center' and 'box.size' must each be 3 numbers [x,y,z].", "VALIDATION_ERROR", 400)
+                    if not all(math.isfinite(v) for v in center + size):
+                        return err("'box.center' and 'box.size' must be finite numbers.", "VALIDATION_ERROR", 400)
+                    if any(v < 6 or v > 40 for v in size):
+                        return err("'box.size' per side must be 6–40 Å (the server clamps it to 12–30 Å, Vina's volume limit).",
+                                   "VALIDATION_ERROR", 400)
+                    # source is stamped by the pipeline ("manual")
+                    box = {"center": center, "size": size}
+                elif box.get("residues"):
+                    res = box.get("residues")
+                    if not isinstance(res, dict):
+                        return err("'box.residues' must be {chain, start, end}.", "VALIDATION_ERROR", 400)
+                    try:
+                        res_start, res_end = int(res.get("start")), int(res.get("end"))
+                    except (TypeError, ValueError):
+                        return err("'box.residues.start'/'end' must be integers.", "VALIDATION_ERROR", 400)
+                    if not (1 <= res_start <= res_end <= 100000):
+                        return err("'box.residues' range must satisfy 1 ≤ start ≤ end ≤ 100000.", "VALIDATION_ERROR", 400)
+                    box = {"residues": {"chain": str(res.get("chain") or "")[:4].strip(),
+                                        "start": res_start, "end": res_end}}
+                elif box.get("blind"):
+                    box = {"blind": True}
+                else:
+                    return err("'box' must contain center+size, residues {chain,start,end}, or blind:true.",
+                               "VALIDATION_ERROR", 400)
+
             if pdb_content:
                 # PDB-upload mode skips structure prediction — sequence
                 # length/charset limits do not apply; the file is the structure.
@@ -2830,6 +2871,18 @@ def create_app() -> Flask:
                                "VALIDATION_ERROR", 400)
                 if "ATOM" not in pdb_content:
                     return err("Uploaded PDB contains no ATOM records.", "VALIDATION_ERROR", 400)
+                # Phase-4 pre-validation: a file that can't yield ≥10 protein
+                # residues must fail HERE (400 — nothing queued, no credit
+                # consumed) instead of dying mid-run after the job is booked.
+                from .pipelines.broken_protein_analyzer import count_ca_residues
+                _ca = count_ca_residues(pdb_content)
+                if _ca < 10:
+                    return err(
+                        f"Could not read a protein structure from this file "
+                        f"({_ca} residue(s) with a backbone CA found; need at least 10). "
+                        "Check that it is a standard protein PDB with ATOM records "
+                        "in fixed-width columns.",
+                        "VALIDATION_ERROR", 400)
             else:
                 # Sequence mode: the free ESMFold web API hard-rejects bodies
                 # over ~400 aa with HTTP 413 (probed 2026-10-07: 400 OK, 403
@@ -2878,7 +2931,7 @@ def create_app() -> Flask:
                                    "code": "PAYMENT_REQUIRED", "action": "show_docking_payment",
                                    "usage": dock_usage}), 402
 
-            job_id = create_job(sequence, ligand_smiles_list, top_n, pdb_content=pdb_content)
+            job_id = create_job(sequence, ligand_smiles_list, top_n, pdb_content=pdb_content, box=box)
 
             # Consume token AFTER successful queuing (both SQLite and
             # PostgreSQL) — and never leave an invisible run behind if the
@@ -2976,6 +3029,9 @@ def create_app() -> Flask:
             "smiles": mol.get("smiles", ""),
             "vina_score": mol.get("vina_score"),
             "gnina_score": mol.get("gnina_score"),
+            "cnn_score": mol.get("cnn_score"),
+            "cnn_affinity": mol.get("cnn_affinity"),
+            "score_source": mol.get("score_source"),
         }), 200
 
     @app.route("/api/primer/docking/structure/batch/<job_id>", methods=["GET"])
@@ -2994,7 +3050,13 @@ def create_app() -> Flask:
                 "smiles": mol.get("smiles", ""),
                 "vina_score": mol.get("vina_score"),
                 "gnina_score": mol.get("gnina_score"),
+                # Honest score provenance (Phase 1): CNN fields exist only on
+                # candidates GNINA actually re-scored; score_source says
+                # whether the rank came from the consensus or Vina alone.
+                "cnn_score": mol.get("cnn_score"),
+                "cnn_affinity": mol.get("cnn_affinity"),
                 "consensus_score": mol.get("consensus_score"),
+                "score_source": mol.get("score_source"),
                 "ligand_sdf": structure.get("ligand", ""),
             })
         return jsonify({
@@ -3221,18 +3283,69 @@ def create_app() -> Flask:
     @app.route("/api/primer/docking/gridbox", methods=["POST"])
     def calculate_gridbox():
         """
-        Calculate AutoDock Vina grid box from binding pocket center + radius.
-        Accepts pocket center (x,y,z) and radius, returns grid box parameters.
+        Calculate AutoDock Vina grid box.
+
+        Two modes (advanced panel, task 2.2):
+          A) {"center": [x,y,z], "radius": r}          → center + size = 2r+4
+          B) {"pdb_content": "...", "residues": {"chain","start","end"}
+              or "A:45-60"}                            → center/size spanning
+              that residue range (computed against the structure)
         """
         data = request.get_json(silent=True) or {}
+
+        # Mode B: residue range against a structure (box override preview)
+        if data.get("pdb_content") and (data.get("residues") or data.get("range")):
+            from .pipelines.docking_engine import box_from_residues
+            spec = data.get("residues") or data.get("range")
+            if isinstance(spec, str):
+                # "A:45-60" / "45-60"
+                try:
+                    chain = ""
+                    if ":" in spec:
+                        chain, spec = spec.split(":", 1)
+                    start_s, end_s = spec.split("-")
+                    spec = {"chain": chain.strip(), "start": int(start_s), "end": int(end_s)}
+                except (ValueError, AttributeError):
+                    return err("Residue range must look like 'A:45-60'.", "VALIDATION_ERROR", 400)
+            if not isinstance(spec, dict):
+                return err("'residues' must be {chain, start, end} or 'A:45-60'.", "VALIDATION_ERROR", 400)
+            try:
+                rbox = box_from_residues(str(data["pdb_content"]),
+                                         str(spec.get("chain", "")),
+                                         int(spec.get("start")), int(spec.get("end")))
+            except (TypeError, ValueError) as exc:
+                return err(f"Invalid residue range: {exc}", "VALIDATION_ERROR", 400)
+            if not rbox:
+                return err("No atoms found for that residue range in this structure.",
+                           "VALIDATION_ERROR", 400)
+            cx, cy, cz = rbox["center"]
+            sx, sy, sz = rbox["size"]
+            return jsonify({
+                'center': {'x': cx, 'y': cy, 'z': cz},
+                'size': {'x': sx, 'y': sy, 'z': sz},
+                'source': 'residue_range',
+                'residues': rbox['residues'],
+                'spacing': 0.375,
+            }), 200
+
         center = data.get("center", [])
         radius = data.get("radius", 20.0)
 
         if len(center) != 3:
             return err("Center must be [x, y, z].", "VALIDATION_ERROR", 400)
+        try:
+            center = [float(v) for v in center]
+            radius = float(radius)
+        except (TypeError, ValueError):
+            return err("Center and radius must be numbers.", "VALIDATION_ERROR", 400)
+        if not all(math.isfinite(v) for v in center) or not math.isfinite(radius):
+            return err("Center and radius must be finite numbers.", "VALIDATION_ERROR", 400)
+        if radius <= 0 or radius > 30:
+            return err("Radius must be > 0 and ≤ 30 Å.", "VALIDATION_ERROR", 400)
 
-        # Vina grid box: center + size (radius * 2 + buffer)
-        size = radius * 2 + 4  # 2 Å buffer on each side
+        # Vina grid box: center + size (radius * 2 + buffer), clamped to
+        # Vina's ~27,000 Å³ volume limit (30 Å per side).
+        size = min(radius * 2 + 4, 30.0)  # 2 Å buffer on each side
         gridbox = {
             'center': {
                 'x': round(center[0], 2),
@@ -3244,6 +3357,7 @@ def create_app() -> Flask:
                 'y': round(size, 2),
                 'z': round(size, 2),
             },
+            'source': 'gridbox',
             'spacing': 0.375,  # Vina default
             'npoints': round(size / 0.375) ** 3,
         }

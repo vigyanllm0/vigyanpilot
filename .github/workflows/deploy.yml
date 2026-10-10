@@ -126,6 +126,39 @@ jobs:
             git fetch origin main
             git reset --hard origin/main
 
+            # ── GNINA (Docking Trust Phase 1): official CPU binary + gate ──
+            # v1.1 is the official CPU build — v1.3.x dynamically links
+            # libcudnn/libcudart (proven by ELF NEEDED probe 2026-10-08) and
+            # can never load on this GPU-less box; v1.1 has zero CUDA deps and
+            # its stdout table/--cnn_scoring=rescore format was verified live.
+            # Gitignored under pipelines/bin/ (survives git reset --hard;
+            # fetched only when missing or version-stamped differently).
+            GNINA_DIR="primerforge/pipelines/bin"
+            GNINA_TAG="v1.1"
+            mkdir -p "$GNINA_DIR"
+            if [ "$(cat "$GNINA_DIR/.gnina_ver" 2>/dev/null)" != "$GNINA_TAG" ] || [ ! -x "$GNINA_DIR/gnina" ]; then
+              FREE_MB=$(df -m / | tail -1 | awk '{print $4}')
+              if [ "$FREE_MB" -lt 4000 ]; then
+                echo "::error::Only ${FREE_MB}MB free on / — need >=4000MB for the 306MB gnina binary"
+                exit 1
+              fi
+              echo "Installing gnina $GNINA_TAG (official CPU build, ~306MB)..."
+              curl -fL --retry 3 --retry-delay 3 -o "$GNINA_DIR/gnina.part" \
+                "https://github.com/gnina/gnina/releases/download/$GNINA_TAG/gnina"
+              chmod +x "$GNINA_DIR/gnina.part"
+              mv "$GNINA_DIR/gnina.part" "$GNINA_DIR/gnina"
+            fi
+            # HARD GATE: the binary must actually EXECUTE on this host.
+            # Production once shipped a broken PATH 'gnina' (Exec format
+            # error) that silently degraded every job to Vina-only — a deploy
+            # must fail loudly instead of shipping that again.
+            if ! GNINA_VER=$("$GNINA_DIR/gnina" --version 2>&1); then
+              echo "::error::gnina will not execute on this host: $GNINA_VER"
+              exit 1
+            fi
+            echo "gnina gate OK: $GNINA_VER"
+            echo "$GNINA_TAG" > "$GNINA_DIR/.gnina_ver"
+
             # Create virtual env if missing
             if [ ! -d .venv ]; then
               python3 -m venv .venv

@@ -19,10 +19,23 @@ import time
 # Ensure project root is on path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-# Hard memory limit: 600MB. Above this, Python raises MemoryError (catchable)
-# instead of the OS sending SIGKILL (kills gunicorn).
+# Memory guard: SOFT 600MB for this Python process — a Python-level
+# allocation above it raises MemoryError (catchable here → friendly job
+# failure) instead of the OS SIGKILLing the worker mid-run.
+#
+# The HARD limit is deliberately left untouched. It used to be lowered to
+# 600MB as well, and children (vina/obabel/gnina) inherit both — a lowered
+# HARD cap cannot be raised back by an unprivileged child, so GNINA's CNN
+# (needs ~1-3GB for grids + net) could never run: guaranteed OOM by design.
+# Children therefore inherit soft=600MB / hard=unlimited, and docking_engine
+# lifts the soft limit across the gnina fork only (lift → spawn → restore)
+# so the CNN can start.
 try:
-    resource.setrlimit(resource.RLIMIT_AS, (600 * 1024 * 1024, 600 * 1024 * 1024))
+    _soft = 600 * 1024 * 1024
+    _cur_soft, _cur_hard = resource.getrlimit(resource.RLIMIT_AS)
+    if _cur_hard != resource.RLIM_INFINITY and _cur_hard < _soft:
+        _soft = _cur_hard  # never set soft above an externally-imposed hard cap
+    resource.setrlimit(resource.RLIMIT_AS, (_soft, _cur_hard))
 except Exception:
     pass
 
@@ -105,6 +118,7 @@ def main():
     smiles_list = (job.get("ligand_smiles_list") or [])
     top_n = job.get("top_n", 50)
     pdb_content = job.get("pdb_content", "")
+    box = job.get("box")  # optional search-box override (advanced panel)
 
     log(f"Job {job_id}: {len(sequence)}aa, {len(smiles_list)} ligands")
 
@@ -131,7 +145,7 @@ def main():
         # Run the pipeline
         try:
             log("Starting pipeline...")
-            result = asyncio.run(run_consensus_pipeline(sequence, smiles_list, top_n, pdb_content=pdb_content))
+            result = asyncio.run(run_consensus_pipeline(sequence, smiles_list, top_n, pdb_content=pdb_content, box=box))
             log(f"Pipeline finished: status={result.get('status', 'unknown')}")
             if result.get("status") == "success":
                 write_result(job_id, result=result)

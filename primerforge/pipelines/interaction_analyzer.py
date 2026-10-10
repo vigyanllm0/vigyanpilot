@@ -310,7 +310,8 @@ def detect_hydrogen_bonds(receptor_atoms: list, ligand_atoms: list) -> list:
                     distance=round(dist, 2),
                     strength=strength,
                     details={'donor': r_res if is_donor else f'ligand:{l_name}',
-                             'acceptor': f'ligand:{l_name}' if is_donor else r_res}
+                             'acceptor': f'ligand:{l_name}' if is_donor else r_res,
+                             'ligand_atom_index': l_atom.get('index')}
                 ))
 
     # Sort by distance (strongest first)
@@ -352,6 +353,7 @@ def detect_hydrophobic_contacts(receptor_atoms: list, ligand_atoms: list) -> lis
                     ligand_atom=l_name,
                     distance=round(dist, 2),
                     strength=strength,
+                    details={'ligand_atom_index': l_atom.get('index')},
                 ))
 
     # Deduplicate: keep closest contact per receptor residue
@@ -398,7 +400,8 @@ def detect_salt_bridges(receptor_atoms: list, ligand_atoms: list) -> list:
                     ligand_atom=l_name,
                     distance=round(dist, 2),
                     strength='strong' if dist < 3.0 else 'moderate',
-                    details={'receptor_charge': r_charge, 'ligand_charge': l_charge}
+                    details={'receptor_charge': r_charge, 'ligand_charge': l_charge,
+                             'ligand_atom_index': l_atom.get('index')}
                 ))
 
     return sorted(bridges, key=lambda b: b.distance)
@@ -438,7 +441,8 @@ def detect_pi_stacking(receptor_atoms: list, ligand_atoms: list) -> list:
                     ligand_atom=l_atom['name'],
                     distance=round(dist, 2),
                     strength='moderate',
-                    details={'geometry': 'parallel' if dist < 4.0 else 'edge-to-face'}
+                    details={'geometry': 'parallel' if dist < 4.0 else 'edge-to-face',
+                             'ligand_atom_index': l_atom.get('index')}
                 ))
 
     return stacking
@@ -515,6 +519,13 @@ def analyze_interactions(
         molecules = _parse_sdf_molecules(ligand_sdf)
         if molecules:
             ligand_atoms = molecules[0]  # Use first molecule
+        if not ligand_atoms and ligand_sdf.lstrip().startswith(('ATOM', 'HETATM')):
+            # vina-only runs persist the docked pose as PDB (no $$$$ block).
+            # Without this fallback the SDF parser yields nothing and the
+            # analysis silently runs on a DUMMY atom → zero contacts for
+            # every non-GNINA pose (both _attach_metrics and the client's
+            # on-demand POST).
+            ligand_atoms = _parse_pdb_atoms(ligand_sdf)
     if not ligand_atoms and ligand_xyz:
         molecules = _parse_xyz_molecules(ligand_xyz)
         if molecules:
@@ -524,6 +535,13 @@ def analyze_interactions(
         logger.warning("No ligand atoms found — running receptor-only analysis")
         # Still useful for binding site analysis with internal contacts
         ligand_atoms = [{'x': 0, 'y': 0, 'z': 0, 'name': 'DUMMY', 'element': 'X'}]
+
+    # Unique per-atom index: ligand atom names are frequently just the
+    # element ("N", "C"), so two H-bonds to DIFFERENT N atoms would render
+    # identically ("OD2 … N" twice) without it. Carried into every
+    # Interaction's details and hoisted top-level by report_to_dict.
+    for _li, _a in enumerate(ligand_atoms, 1):
+        _a['index'] = _li
 
     # Run analyses
     hbonds = detect_hydrogen_bonds(receptor_atoms, ligand_atoms)
@@ -582,6 +600,9 @@ def report_to_dict(report: InteractionReport) -> dict:
             'receptor_residue': i.receptor_residue,
             'receptor_atom': i.receptor_atom,
             'ligand_atom': i.ligand_atom,
+            # Distinguishes rows like "ASP OD2 … N" (2.8 Å) vs "… N" (3.2 Å)
+            # that hit DIFFERENT ligand N atoms — names alone are ambiguous.
+            'ligand_atom_index': (i.details or {}).get('ligand_atom_index'),
             'distance': i.distance,
             'strength': i.strength,
             'details': i.details,

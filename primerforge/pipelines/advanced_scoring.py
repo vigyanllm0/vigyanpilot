@@ -357,11 +357,17 @@ def analyze_poses(
 
     # Summary
     best_score = analyzed[0].score if analyzed else 0
+    # Machine token → words: "insufficient_poses" is a STATE, not a value;
+    # it must never render raw in the UI/export summary.
+    _mode = binding_modes.get('consistency', 'unknown')
+    _mode = ('n/a (single pose — no spread to assess)'
+             if _mode == 'insufficient_poses' else _mode)
+    _np, _nc = len(analyzed), len(clusters)
     summary = (
-        f"Analyzed {len(analyzed)} poses in {len(clusters)} cluster(s). "
+        f"Analyzed {_np} pose{'' if _np == 1 else 's'} in {_nc} cluster{'' if _nc == 1 else 's'}. "
         f"Best score: {best_score:.2f} kcal/mol. "
         f"LE: {analyzed[0].ligand_efficiency:.3f}. "
-        f"Binding mode: {binding_modes.get('consistency', 'unknown')}."
+        f"Binding mode: {_mode}."
     )
 
     logger.info("Advanced analysis complete: %s", summary)

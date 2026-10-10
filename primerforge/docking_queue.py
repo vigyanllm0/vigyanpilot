@@ -43,7 +43,7 @@ def _ensure_dirs():
     for d in (PENDING_DIR, RUNNING_DIR, COMPLETE_DIR, FAILED_DIR):
         os.makedirs(d, exist_ok=True)
 
-def create_job(sequence: str, ligand_smiles_list: list, top_n: int = 50, pdb_content: str = "") -> str:
+def create_job(sequence: str, ligand_smiles_list: list, top_n: int = 50, pdb_content: str = "", box: dict | None = None) -> str:
     _ensure_dirs()
     job_id = uuid.uuid4().hex[:12]
     job = {
@@ -54,6 +54,7 @@ def create_job(sequence: str, ligand_smiles_list: list, top_n: int = 50, pdb_con
         "ligand_smiles_list": ligand_smiles_list,
         "top_n": top_n,
         "pdb_content": pdb_content,  # Optional: uploaded PDB file (skips ESMFold)
+        "box": box,  # Optional: search-box override (manual/residue/blind)
         "created_at": time.time(),
         "updated_at": time.time(),
         "result": None,
@@ -305,19 +306,34 @@ def cancel_job(job_id: str) -> str:
 # for an external Azure worker. Spawned by start_local_worker().
 _LOCAL_WORKER_RUNNING = False
 
+# Stage-3 GNINA budget terms for _job_timeout_seconds. Mirrored from
+# consensus_pipeline (importing that module here would drag rdkit into every
+# queue import) — tests/test_gnina_phase1.py asserts the two stay in sync.
+GNINA_REFINE_TOP_K = 10
+GNINA_SECONDS_PER_LIGAND = 45
+
 def _job_timeout_seconds(sequence: str, n_ligands: int, has_pdb: bool) -> int:
     """Dynamic subprocess budget (was a flat 300s that killed long jobs).
 
     Base covers worker cold start + receptor prep + queue jitter; +8s per
     ligand covers obabel prep + Vina screening (two run concurrently);
     sequence mode adds 0.25s/residue for the web-API fold (≤400 aa → ≤100s;
-    a 400-aa fold measured ~27s). PDB-upload mode skips folding entirely.
+    a 400-aa fold measured ~27s); +45s per GNINA refine covers stage 3's CNN
+    re-score (top-K=10, single-model crossdock measured 37s/ligand under
+    x86_64 emulation on the official v1.1 binary → ~15-25s native expected;
+    45s is the conservative first estimate). GNINA_SECONDS_PER_LIGAND is
+    recorded per candidate as `gnina_time` in results for tuning against
+    real prod runs. PDB-upload mode skips folding entirely.
     Clamped to [300, 900] — the frontend polls ~1000s, so every job fits
-    inside the UI budget.
+    inside the UI budget. Small runs (≤10 ligands) screen at exhaustiveness
+    8 instead of 2 (see consensus_pipeline._stage2_exhaustiveness) — the
+    300s base + GNINA term absorb the deeper screening, and n≥10 is already
+    clamped at the 900s ceiling.
     """
     n = max(0, int(n_ligands))
     seq_cost = 0 if has_pdb else int(0.25 * len(sequence or ""))
-    return int(max(300, min(300 + 8 * n + seq_cost, 900)))
+    gnina_cost = GNINA_SECONDS_PER_LIGAND * min(GNINA_REFINE_TOP_K, n)
+    return int(max(300, min(300 + 8 * n + seq_cost + gnina_cost, 900)))
 
 
 # Cancel/timeout check cadence inside _process_job's wait loop.
@@ -361,6 +377,7 @@ def _process_job(job: dict):
     smiles_list = (job.get("ligand_smiles_list") or [])
     top_n = job.get("top_n", 50)
     pdb_content = job.get("pdb_content", "")
+    box = job.get("box")  # optional search-box override (advanced panel)
 
     budget = _job_timeout_seconds(sequence, len(smiles_list), bool(pdb_content))
     logger.info("Spawning subprocess for job %s (%d ligands, %d aa, budget %ds)",
@@ -381,6 +398,7 @@ def _process_job(job: dict):
         "ligand_smiles_list": smiles_list,
         "top_n": top_n,
         "pdb_content": pdb_content,
+        "box": box,
     })
 
     worker_script = os.path.join(os.path.dirname(os.path.abspath(__file__)), "docking_worker.py")
