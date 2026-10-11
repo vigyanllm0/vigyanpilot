@@ -230,9 +230,20 @@ def test_gnina_memory_lift_roundtrip_in_subprocess():
 
 def test_budget_constants_sync_with_pipeline():
     import primerforge.docking_queue as dq
-    from primerforge.pipelines.consensus_pipeline import GNINA_REFINE_TOP_K
+    from primerforge.pipelines.consensus_pipeline import (
+        GNINA_REFINE_TOP_K,
+        STAGE2_EXHAUSTIVENESS_SMALL,
+        _stage2_exhaustiveness,
+    )
     assert dq.GNINA_REFINE_TOP_K == GNINA_REFINE_TOP_K
     assert dq.GNINA_SECONDS_PER_LIGAND == 45
+    # The deep-screen budget tier must track the pipeline's exh-8 boundary:
+    # the last deep ligand and the first bulk ligand straddle it exactly.
+    assert dq.DEEP_SCREEN_MAX_LIGANDS == 10
+    assert dq.DEEP_SCREEN_SECONDS_PER_LIGAND == 35
+    assert dq.BULK_SCREEN_SECONDS_PER_LIGAND == 8
+    assert _stage2_exhaustiveness(dq.DEEP_SCREEN_MAX_LIGANDS) == STAGE2_EXHAUSTIVENESS_SMALL
+    assert _stage2_exhaustiveness(dq.DEEP_SCREEN_MAX_LIGANDS + 1) != STAGE2_EXHAUSTIVENESS_SMALL
 
 
 def test_budget_gnina_term_matches_reference_formula():
@@ -240,9 +251,12 @@ def test_budget_gnina_term_matches_reference_formula():
 
     def ref(n, seq_len, has_pdb):
         seq = 0 if has_pdb else int(0.25 * seq_len)
-        return int(max(300, min(300 + 8 * n + seq + 45 * min(10, n), 900)))
+        # tiered Vina term: deep tier (≤10, exh 8) at 35 s/ligand,
+        # bulk tier (>10, exh 2) at 8 s/ligand
+        vina = 35 * n if 0 < n <= 10 else 8 * n
+        return int(max(300, min(300 + vina + seq + 45 * min(10, n), 900)))
 
-    for n in (0, 1, 5, 10, 11, 30, 100):
+    for n in (0, 1, 5, 7, 10, 11, 30, 100):
         assert dq._job_timeout_seconds("A" * 100, n, False) == ref(n, 100, False)
         assert dq._job_timeout_seconds("", n, True) == ref(n, 0, True)
 

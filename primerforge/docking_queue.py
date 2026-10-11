@@ -412,34 +412,47 @@ def cancel_job(job_id: str) -> str:
 # for an external Azure worker. Spawned by start_local_worker().
 _LOCAL_WORKER_RUNNING = False
 
-# Stage-3 GNINA budget terms for _job_timeout_seconds. Mirrored from
+# Stage-2/3 budget terms for _job_timeout_seconds. Mirrored from
 # consensus_pipeline (importing that module here would drag rdkit into every
 # queue import) — tests/test_gnina_phase1.py asserts the two stay in sync.
 GNINA_REFINE_TOP_K = 10
 GNINA_SECONDS_PER_LIGAND = 45
+# Stage-2 Vina tiers — mirror consensus_pipeline._stage2_exhaustiveness:
+# libraries of DEEP_SCREEN_MAX_LIGANDS or fewer ligands screen deep at
+# exhaustiveness 8, larger libraries at 2. The deep tier needs its own
+# per-ligand rate: a live 5-ligand visitor job burned its whole budget
+# inside stage 2 at the old 8s/ligand rate (exh-8 screening measured
+# ~30s/ligand on prod) and honestly failed on the ceiling — 35s/ligand
+# covers the measured cost with margin while the ceiling stays 900s.
+DEEP_SCREEN_MAX_LIGANDS = 10
+DEEP_SCREEN_SECONDS_PER_LIGAND = 35
+BULK_SCREEN_SECONDS_PER_LIGAND = 8
 
 def _job_timeout_seconds(sequence: str, n_ligands: int, has_pdb: bool) -> int:
     """Dynamic subprocess budget (was a flat 300s that killed long jobs).
 
-    Base covers worker cold start + receptor prep + queue jitter; +8s per
-    ligand covers obabel prep + Vina screening (two run concurrently);
+    Base covers worker cold start + receptor prep + queue jitter; the Vina
+    term is tiered exactly like _stage2_exhaustiveness — ≤10 ligands screen
+    deep at exhaustiveness 8 (stage-2 measured ~30s/ligand on prod at exh 8,
+    so 35s/ligand with margin), larger libraries screen at exhaustiveness 2
+    (8s/ligand calibrated with two Vina lanes running concurrently);
     sequence mode adds 0.25s/residue for the web-API fold (≤400 aa → ≤100s;
     a 400-aa fold measured ~27s); +45s per GNINA refine covers stage 3's CNN
-    re-score (top-K=10, single-model crossdock measured 37s/ligand under
-    x86_64 emulation on the official v1.1 binary → ~15-25s native expected;
-    45s is the conservative first estimate). GNINA_SECONDS_PER_LIGAND is
-    recorded per candidate as `gnina_time` in results for tuning against
+    re-score (top-K=10; measured 23.0s/ligand native on the AMD prod box
+    vs 37s/ligand emulated, so 45s stays conservative). GNINA_SECONDS_PER_LIGAND
+    is recorded per candidate as `gnina_time` in results for tuning against
     real prod runs. PDB-upload mode skips folding entirely.
     Clamped to [300, 900] — the frontend polls ~1000s, so every job fits
-    inside the UI budget. Small runs (≤10 ligands) screen at exhaustiveness
-    8 instead of 2 (see consensus_pipeline._stage2_exhaustiveness) — the
-    300s base + GNINA term absorb the deeper screening, and n≥10 is already
-    clamped at the 900s ceiling.
+    inside the UI budget (runs whose terms sum past 900s are clamped at the
+    ceiling; the deep tier gets there around n=8–10 depending on mode).
     """
     n = max(0, int(n_ligands))
     seq_cost = 0 if has_pdb else int(0.25 * len(sequence or ""))
     gnina_cost = GNINA_SECONDS_PER_LIGAND * min(GNINA_REFINE_TOP_K, n)
-    return int(max(300, min(300 + 8 * n + seq_cost + gnina_cost, 900)))
+    vina_cost = (DEEP_SCREEN_SECONDS_PER_LIGAND * n
+                 if 0 < n <= DEEP_SCREEN_MAX_LIGANDS
+                 else BULK_SCREEN_SECONDS_PER_LIGAND * n)
+    return int(max(300, min(300 + vina_cost + seq_cost + gnina_cost, 900)))
 
 
 # Cancel/timeout check cadence inside _process_job's wait loop.

@@ -74,18 +74,27 @@ def _score(smiles: str) -> float:
 def test_job_timeout_scales_and_clamps():
     from primerforge.docking_queue import _job_timeout_seconds
 
-    # base 300 + 8/ligand + 0.25/residue (sequence mode) + 45/GNINA refine
-    # (top-K=10; n=1 → 1 refine) — mirrors consensus_pipeline's stage-3 cost
-    assert _job_timeout_seconds(_seq(100), 1, has_pdb=False) == 300 + 8 + 25 + 45
+    # base 300 + TIERED Vina term + 0.25/residue (sequence mode) + 45/GNINA
+    # refine (top-K=10; n=1 → 1 refine) — mirrors consensus_pipeline's costs
+    # deep tier (≤10 ligands, exhaustiveness 8): 35/ligand (stage-2 measured
+    # ~30 s/ligand on prod at exh 8)
+    assert _job_timeout_seconds(_seq(100), 1, has_pdb=False) == 300 + 35 + 25 + 45
     # PDB-upload mode skips folding → no per-residue cost (GNINA term remains)
-    assert _job_timeout_seconds(_seq(400), 1, has_pdb=True) == 300 + 8 + 45
+    assert _job_timeout_seconds(_seq(400), 1, has_pdb=True) == 300 + 35 + 45
+    # the 5-ligand budget that the live exh-8 timeout bug died against
+    # (was 300+40+225=565+seq at the old 8/ligand rate → real stage-2
+    # overran and the job failed; now ~700+seq fits the measured cost)
+    assert _job_timeout_seconds("", 5, True) == 300 + 35 * 5 + 45 * 5
+    assert _job_timeout_seconds("", 5, True) > 600
+    # bulk tier (>10 ligands, exhaustiveness 2): 8/ligand unchanged;
     # GNINA term saturates at top-K=10 — ligand 11 costs only the Vina term
-    # (838 vs 830, both under the 900 clamp; +53 if GNINA were uncapped)
-    assert _job_timeout_seconds("", 11, True) == _job_timeout_seconds("", 10, True) + 8
-    # grows with ligand count
-    assert _job_timeout_seconds("", 50, True) > _job_timeout_seconds("", 10, True)
-    # clamps: floor 300, ceiling 900 (frontend polls ~1000s)
+    assert _job_timeout_seconds("", 11, True) == 300 + 8 * 11 + 45 * 10
+    assert _job_timeout_seconds("", 12, True) == _job_timeout_seconds("", 11, True) + 8
+    # clamps: floor 300, ceiling 900 (frontend polls ~1000s); the deep tier
+    # reaches the ceiling at n=10, large bulk runs clamp too
     assert _job_timeout_seconds("", 0, True) == 300
+    assert _job_timeout_seconds("", 10, True) == 900
+    assert _job_timeout_seconds("", 50, True) == 900
     assert _job_timeout_seconds(_seq(400), 500, False) == 900
 
 
