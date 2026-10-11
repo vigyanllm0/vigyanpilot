@@ -805,10 +805,21 @@ async def run_campaign(
                                 pdb_content, hit["smiles"],
                                 exhaustiveness=REFINE_EXHAUSTIVENESS, box=box,
                             )
-                            hit["gnina_score"] = gres.get("gnina_score")
-                            hit["cnn_affinity"] = gres.get("cnn_affinity")
-                            hit["cnn_score"] = gres.get("cnn_score")
-                            refined += 1
+                            # run_gnina_docking reports the refined pose's
+                            # Vina energy under `binding_affinity` (same key
+                            # consensus_pipeline reads) — it has no
+                            # `gnina_score` key. Reading that key here returned
+                            # None every time, which silently collapsed the
+                            # 2-method consensus into a plain Vina score while
+                            # still claiming GNINA had refined the pose.
+                            g_score = gres.get("binding_affinity")
+                            if g_score is None:
+                                g_score = gres.get("gnina_score")  # test fakes
+                            if g_score is not None:
+                                hit["gnina_score"] = round(float(g_score), 3)
+                                hit["cnn_affinity"] = gres.get("cnn_affinity")
+                                hit["cnn_score"] = gres.get("cnn_score")
+                                refined += 1
                         except Exception as exc:
                             logger.debug("GNINA refine failed for %s: %s", hit.get("smiles", "")[:30], exc)
                         await _report(
@@ -819,14 +830,24 @@ async def run_campaign(
                         )
 
             # Compute consensus score (0.4×vina + 0.6×gnina when available;
-            # falls back to vina-only when GNINA didn't run)
+            # falls back to vina-only when GNINA didn't run). Each hit is
+            # tagged with score_source so a 1-method score is never presented
+            # as a 2-method consensus — the same honesty rule the interactive
+            # consensus pipeline follows.
             for hit in top_hits:
                 v = hit.get("vina_score")
                 g = hit.get("gnina_score")
                 if v is not None and g is not None:
                     hit["consensus_score"] = round(0.4 * v + 0.6 * g, 3)
+                    hit["score_source"] = "consensus"
                 elif v is not None:
                     hit["consensus_score"] = round(v, 3)
+                    hit["score_source"] = "vina"
+
+            # Re-rank by the score we are about to display/export: GNINA
+            # refinement can move a candidate, and a list sorted by Vina but
+            # labelled with consensus numbers is incoherent.
+            top_hits = rank_hits(top_hits)
 
             # 6. Write final results
             final_path = os.path.join(cdir, "results", pid, "final.json")
@@ -914,6 +935,40 @@ def _merge_chunk_results(results_dir: str, total_chunks: int) -> list[dict]:
     return merged
 
 
+# ── Ranking ─────────────────────────────────────────────────────────────────
+
+def rank_hits(hits: list[dict]) -> list[dict]:
+    """Sort hits by the score they are labelled with, then assign ``rank``.
+
+    Every consumer of ``top_hits`` (results API, CSV, SDF) must agree on both
+    order and rank. Ranking by Vina while displaying a consensus column — or
+    enumerating stored file order, which is Vina order for campaigns written
+    before 2026-10-11 — produces a rank badge that contradicts the numbers
+    next to it.
+
+    Ties keep their relative order (stable sort); hits with no usable score
+    sink to the bottom rather than being dropped.
+
+    Campaigns written before 2026-10-11 carry no ``score_source``; derive it
+    here (once) so every consumer — API, CSV, SDF — agrees, and a hit GNINA
+    never refined is never labelled a 2-method consensus.
+    """
+    def _key(h):
+        for score_field in ("consensus_score", "vina_score"):
+            v = h.get(score_field)
+            if v is not None:
+                return v
+        return 999.0
+
+    ordered = sorted(hits, key=_key)
+    for i, hit in enumerate(ordered, 1):
+        hit["rank"] = i
+        if not hit.get("score_source"):
+            hit["score_source"] = (
+                "consensus" if hit.get("gnina_score") is not None else "vina")
+    return ordered
+
+
 # ── Export ───────────────────────────────────────────────────────────────────
 
 def export_campaign_csv(campaign_id: str) -> str | None:
@@ -926,21 +981,22 @@ def export_campaign_csv(campaign_id: str) -> str | None:
     writer = csv.writer(buf)
     writer.writerow([
         "protein_id", "protein_name", "rank", "smiles", "vina_score",
-        "gnina_score", "cnn_affinity", "consensus_score",
+        "gnina_score", "cnn_affinity", "consensus_score", "score_source",
     ])
     for protein in campaign.get("proteins", []):
         pid = protein["id"]
         final = _read_json(os.path.join(cdir, "results", pid, "final.json"))
         if final is None:
             continue
-        for rank, hit in enumerate(final.get("top_hits", [])[:100], 1):
+        for hit in rank_hits(list(final.get("top_hits", [])))[:100]:
             writer.writerow([
-                pid, final.get("protein_name", pid), rank,
+                pid, final.get("protein_name", pid), hit.get("rank", ""),
                 hit.get("smiles", ""),
                 hit.get("vina_score", ""),
                 hit.get("gnina_score", ""),
                 hit.get("cnn_affinity", ""),
                 hit.get("consensus_score", ""),
+                hit.get("score_source", ""),
             ])
     return buf.getvalue()
 
@@ -966,7 +1022,7 @@ def export_campaign_sdf(campaign_id: str, top_n: int = 100) -> str | None:
         final = _read_json(os.path.join(cdir, "results", pid, "final.json"))
         if final is None:
             continue
-        for hit in final.get("top_hits", [])[:top_n]:
+        for hit in rank_hits(list(final.get("top_hits", [])))[:top_n]:
             smiles = hit.get("smiles", "")
             mol = Chem.MolFromSmiles(smiles)
             if mol is None:
@@ -982,6 +1038,7 @@ def export_campaign_sdf(campaign_id: str, top_n: int = 100) -> str | None:
             mol.SetProp("vina_score", str(hit.get("vina_score", "")))
             mol.SetProp("gnina_score", str(hit.get("gnina_score", "")))
             mol.SetProp("consensus_score", str(hit.get("consensus_score", "")))
+            mol.SetProp("score_source", str(hit.get("score_source", "")))
             blocks.append(Chem.MolToMolBlock(mol) + "$$$$\n")
     return "".join(blocks) if blocks else None
 

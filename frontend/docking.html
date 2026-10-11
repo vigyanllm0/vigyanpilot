@@ -3986,15 +3986,21 @@ async function _loadScreenResults(campaign) {
       var v = h.vina_score != null ? h.vina_score.toFixed(2) : '—';
       var g = h.gnina_score != null ? h.gnina_score.toFixed(2) : '—';
       var c = h.consensus_score != null ? h.consensus_score.toFixed(3) : '—';
+      // Never present a 1-method score as a 2-method consensus: when GNINA
+      // never saw this candidate, the consensus number IS the Vina number.
+      var cCell = h.score_source === 'vina'
+        ? '<span title="GNINA did not refine this candidate — the number shown is the plain Vina score">Vina only</span>'
+        : c;
+      var rank = h.rank != null ? h.rank : (i + 1);
       var smi = h.smiles || '';
       var smiDisplay = smi.length > 40 ? smi.substring(0, 40) + '…' : smi;
       return '<tr style="border-bottom:1px solid #f1f5f9">' +
-        '<td style="padding:6px;font-weight:600;color:var(--text2)">' + (i + 1) + '</td>' +
+        '<td style="padding:6px;font-weight:600;color:var(--text2)">' + rank + '</td>' +
         '<td style="padding:6px;color:var(--text2)">' + (h.protein_name || h.protein_id || '') + '</td>' +
         '<td style="padding:6px;font-family:monospace;font-size:11px;color:var(--text2)" title="' + smi.replace(/"/g, '&quot;') + '">' + smiDisplay + '</td>' +
         '<td style="padding:6px;text-align:right;font-weight:600;color:' + (h.vina_score < -7 ? '#059669' : h.vina_score < -5 ? '#d97706' : '#64748b') + '">' + v + '</td>' +
         '<td style="padding:6px;text-align:right;font-weight:600;color:' + (h.gnina_score < -7 ? '#059669' : h.gnina_score < -5 ? '#d97706' : '#64748b') + '">' + g + '</td>' +
-        '<td style="padding:6px;text-align:right;font-weight:700">' + c + '</td>' +
+        '<td style="padding:6px;text-align:right;font-weight:700">' + cCell + '</td>' +
         '</tr>';
     }).join('');
     $('screen-dl-csv').href = API + '/primer/docking/screen/' + _screenCampaignId + '/export/csv';

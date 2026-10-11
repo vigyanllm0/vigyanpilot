@@ -3741,7 +3741,7 @@ def create_app() -> Flask:
     @app.route("/api/primer/docking/screen/<campaign_id>/results", methods=["GET"])
     def get_screening_results(campaign_id):
         """Get paginated results for a specific protein in the campaign."""
-        from .pipelines.virtual_screening import get_campaign, _campaign_dir, _read_json
+        from .pipelines.virtual_screening import get_campaign, _campaign_dir, _read_json, rank_hits
         import math as _math
 
         campaign = get_campaign(campaign_id)
@@ -3769,7 +3769,15 @@ def create_app() -> Flask:
             final = _read_json(os.path.join(cdir, "results", protein_id, "final.json"))
             if final is None:
                 return err(f"No results for protein '{protein_id}'.", "NOT_FOUND", 404)
-            hits = final.get("top_hits", [])
+            # Annotate the same way as the merged branch — otherwise the
+            # protein column renders empty when a client filters by protein.
+            name = final.get("protein_name") or protein_id
+            hits = []
+            for h in final.get("top_hits", []):
+                h.setdefault("protein_id", final.get("protein_id", protein_id))
+                h.setdefault("protein_name", name)
+                hits.append(h)
+            hits = rank_hits(hits)
         else:
             # Merge across all proteins
             hits = []
@@ -3780,7 +3788,9 @@ def create_app() -> Flask:
                         h["protein_id"] = p["id"]
                         h["protein_name"] = p.get("name", p["id"])
                         hits.append(h)
-            hits.sort(key=lambda h: h.get("consensus_score") or h.get("vina_score") or 999)
+            # Rank by the score being displayed. rank_hits() treats a 0.0
+            # score as real data (the old `or`-chain read it as missing).
+            hits = rank_hits(hits)
 
         total = len(hits)
         pages = max(1, _math.ceil(total / per_page))

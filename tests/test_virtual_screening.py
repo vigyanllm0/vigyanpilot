@@ -592,3 +592,297 @@ class TestWorkerBootstrap:
         with patch.object(_sp, "Popen", _boom):
             err = _spawn_screening_worker("abc123def456")
         assert isinstance(err, str) and "cannot fork" in err
+
+
+# ── GNINA refine → consensus mapping ───────────────────────────────────────
+
+class TestGninaRefineMapping:
+    """The refine path must surface GNINA's score under `gnina_score`.
+
+    Regression (prod 2026-10-11): run_gnina_docking reports the refined
+    pose's Vina energy as `binding_affinity` and has no `gnina_score` key.
+    The engine read `gres.get("gnina_score")` → always None → every
+    "consensus" score silently collapsed to the plain Vina score while the
+    campaign still claimed GNINA had refined the pose (cnn_affinity was
+    populated, so GNINA demonstrably ran).
+    """
+
+    PDB = "\n".join(
+        "ATOM  %5d  CA  ALA A%4d    %8.3f%8.3f%8.3f  1.00 50.00           C"
+        % (i + 1, i + 1, float(i) * 1.5, float(i) * 1.5, 0.0)
+        for i in range(12)
+    ) + "\nEND\n"
+
+    VINA = [-5.0, -6.0, -7.0]          # worst → best after Vina
+    GNINA_BEST = -8.0                   # refined score for the top-Vina hit
+
+    def _run(self, tmp_path, gnina_result, gnina_ok=True):
+        """Run one full campaign with every external binary stubbed."""
+        import asyncio
+
+        import primerforge.pipelines.docking_engine as de
+        import primerforge.pipelines.virtual_screening as vs
+
+        ligands = [{"smiles": s} for s in VALID_SMILES[:3]]
+        cid = vs.create_campaign(
+            proteins=[{"sequence": "MKTAYIAKQRQISFVKSHFSRQ", "name": "RefineProt",
+                       "pdb_content": self.PDB}],
+            ligands=ligands,
+            config={"exhaustiveness": 1, "top_k_refine": 2, "chunk_size": 50},
+        )
+
+        async def _fake_dock(receptor_pdbqt, prepared, smiles_by_index, box,
+                             exh, lanes, progress_cb=None):
+            return [
+                {"index": i, "smiles": smiles_by_index[i],
+                 "vina_score": self.VINA[k], "status": "ok"}
+                for k, (i, _) in enumerate(sorted(smiles_by_index.items()))
+            ]
+
+        async def _fake_gnina(*a, **k):
+            return gnina_result
+
+        with patch.object(vs, "_prep_receptor",
+                          lambda *a, **k: ("fake.pdbqt",
+                                           {"center": [0, 0, 0], "size": [22, 22, 22]})), \
+             patch.object(vs, "prep_ligand_batch",
+                          lambda ligands, out_dir, idx: [(l["_index"], "/tmp/fake.pdbqt")
+                                                         for l in ligands]), \
+             patch.object(vs, "_dock_chunk", _fake_dock), \
+             patch.object(de, "run_gnina_docking", _fake_gnina), \
+             patch.object(de, "gnina_available",
+                          lambda *a, **k: {"ok": gnina_ok, "reason": ""}):
+            asyncio.run(vs.run_campaign(cid))
+        return cid
+
+    def _final(self, cid):
+        path = os.path.join(_campaign_dir(cid), "results", "p1", "final.json")
+        return _read_json(path)
+
+    def test_gnina_score_lands_from_binding_affinity(self, tmp_path):
+        """binding_affinity (the only key GNINA returns) → gnina_score."""
+        cid = self._run(tmp_path, {
+            "binding_affinity": self.GNINA_BEST,
+            "cnn_affinity": 3.1, "cnn_score": 0.91, "status": "success",
+        })
+        final = self._final(cid)
+        assert final is not None, "final.json missing"
+        assert final["gnina_refined"] == 2, "top_k=2 must both be refined"
+        refined = [h for h in final["top_hits"] if h.get("gnina_score") is not None]
+        assert len(refined) == 2, (
+            "gnina_score must be populated for refined hits — reading the "
+            "nonexistent `gnina_score` key from run_gnina_docking silently "
+            "returned None and collapsed consensus to Vina-only")
+        hit = refined[0]
+        assert hit["gnina_score"] == self.GNINA_BEST
+        assert hit["cnn_affinity"] == 3.1
+        assert hit["cnn_score"] == 0.91
+
+    def test_consensus_is_weighted_not_vina_echo(self, tmp_path):
+        cid = self._run(tmp_path, {
+            "binding_affinity": self.GNINA_BEST,
+            "cnn_affinity": 3.1, "cnn_score": 0.91, "status": "success",
+        })
+        final = self._final(cid)
+        top = final["top_hits"][0]
+        # Vina ranks the 3rd ligand best (-7.0); it is the one refined.
+        assert top["vina_score"] == -7.0
+        expected = round(0.4 * -7.0 + 0.6 * self.GNINA_BEST, 3)
+        assert top["consensus_score"] == expected, (
+            "consensus must be 0.4*vina + 0.6*gnina")
+        assert top["score_source"] == "consensus"
+
+    def test_unrefined_hits_tagged_vina_source(self, tmp_path):
+        """A 1-method score must never be sold as a 2-method consensus."""
+        cid = self._run(tmp_path, {
+            "binding_affinity": self.GNINA_BEST,
+            "cnn_affinity": 3.1, "cnn_score": 0.91, "status": "success",
+        })
+        final = self._final(cid)
+        sources = {h["smiles"]: h.get("score_source") for h in final["top_hits"]}
+        assert set(sources.values()) == {"consensus", "vina"}, sources
+        unrefined = [h for h in final["top_hits"]
+                     if h.get("gnina_score") is None]
+        assert unrefined, "top_k=2 of 3 → at least one unrefined hit"
+        for h in unrefined:
+            assert h["score_source"] == "vina"
+            assert h["consensus_score"] == h["vina_score"]
+
+    def test_results_re_ranked_by_consensus(self, tmp_path):
+        """final.json order must match the score it is labelled with."""
+        cid = self._run(tmp_path, {
+            "binding_affinity": self.GNINA_BEST,
+            "cnn_affinity": 3.1, "cnn_score": 0.91, "status": "success",
+        })
+        final = self._final(cid)
+        scores = [h["consensus_score"] for h in final["top_hits"]]
+        assert scores == sorted(scores), (
+            "hits were left in Vina order while displaying consensus scores")
+        assert [h["rank"] for h in final["top_hits"]] == list(
+            range(1, len(final["top_hits"]) + 1))
+
+    def test_gnina_not_available_falls_back_honestly(self, tmp_path):
+        """No GNINA → vina-only scores, tagged as such, rank still set."""
+        cid = self._run(tmp_path, {"binding_affinity": -8.0}, gnina_ok=False)
+        final = self._final(cid)
+        assert final["gnina_refined"] == 0
+        for h in final["top_hits"]:
+            assert h.get("gnina_score") is None
+            assert h["score_source"] == "vina"
+            assert h["consensus_score"] == h["vina_score"]
+        assert [h["rank"] for h in final["top_hits"]] == list(
+            range(1, len(final["top_hits"]) + 1))
+
+    def test_failed_refine_not_counted_as_refined(self, tmp_path):
+        """A refine that throws must not inflate gnina_refined."""
+        import asyncio
+
+        import primerforge.pipelines.docking_engine as de
+        import primerforge.pipelines.virtual_screening as vs
+
+        cid = vs.create_campaign(
+            proteins=[{"sequence": "MKTAYIAKQRQISFVKSHFSRQ", "name": "FailProt",
+                       "pdb_content": self.PDB}],
+            ligands=[{"smiles": s} for s in VALID_SMILES[:3]],
+            config={"exhaustiveness": 1, "top_k_refine": 3, "chunk_size": 50},
+        )
+
+        async def _fake_dock(receptor_pdbqt, prepared, smiles_by_index, box,
+                             exh, lanes, progress_cb=None):
+            return [{"index": i, "smiles": smiles_by_index[i],
+                     "vina_score": -6.0, "status": "ok"}
+                    for i in smiles_by_index]
+
+        async def _boom(*a, **k):
+            raise RuntimeError("gnina exploded")
+
+        with patch.object(vs, "_prep_receptor",
+                          lambda *a, **k: ("fake.pdbqt",
+                                           {"center": [0, 0, 0], "size": [22, 22, 22]})), \
+             patch.object(vs, "prep_ligand_batch",
+                          lambda ligands, out_dir, idx: [(l["_index"], "/tmp/fake.pdbqt")
+                                                         for l in ligands]), \
+             patch.object(vs, "_dock_chunk", _fake_dock), \
+             patch.object(de, "run_gnina_docking", _boom), \
+             patch.object(de, "gnina_available",
+                          lambda *a, **k: {"ok": True, "reason": ""}):
+            asyncio.run(vs.run_campaign(cid))
+
+        final = self._final(cid)
+        assert final["gnina_refined"] == 0, (
+            "refine failures must not be counted as successful refinements")
+        for h in final["top_hits"]:
+            assert h.get("gnina_score") is None
+            assert h["score_source"] == "vina"
+
+
+class TestResultsRouteAnnotation:
+    """Both result branches must return protein identity + rank.
+
+    Regression (prod 2026-10-11): the per-protein branch returned raw
+    top_hits with no protein_id/protein_name (the protein column rendered
+    empty when filtering), neither branch guaranteed `rank`, and the merged
+    sort used `or`, which treats a legitimate 0.0 score as missing.
+    """
+
+    def _campaign_with_hits(self, n_hits=3):
+        cid = create_campaign(
+            proteins=[{"sequence": "MKTAYIAKQRQISFVKSHFSRQ", "name": "ProtA",
+                       "pdb_content": "ATOM      1  CA  ALA A   1       0.000   0.000   0.000  1.00 50.00           C\nEND\n"},
+                      {"sequence": "MKTAYIAKQRQISFVKSHFSRQ", "name": "ProtB",
+                       "pdb_content": "ATOM      1  CA  ALA A   1       0.000   0.000   0.000  1.00 50.00           C\nEND\n"}],
+            ligands=VALID_SMILES[:n_hits],
+        )
+        for pid, pname, offset in (("p1", "ProtA", 0.0), ("p2", "ProtB", -3.0)):
+            rdir = os.path.join(_campaign_dir(cid), "results", pid)
+            os.makedirs(rdir, exist_ok=True)
+            # final.json stores hits best-first, as the engine writes them
+            n = n_hits
+            hits = [{"smiles": VALID_SMILES[i], "vina_score": -(n - i) + offset,
+                     "consensus_score": -(n - i) + offset,
+                     "gnina_score": None, "score_source": "vina"}
+                    for i in range(n)]
+            with open(os.path.join(rdir, "final.json"), "w") as f:
+                json.dump({"protein_id": pid, "protein_name": pname,
+                           "top_hits": hits}, f)
+        return cid
+
+    def test_merged_rows_carry_protein_and_rank(self, client):
+        cid = self._campaign_with_hits()
+        r = client.get(f"/api/primer/docking/screen/{cid}/results")
+        assert r.status_code == 200
+        d = r.get_json()
+        assert d["total"] == 6
+        for h in d["results"]:
+            assert h["protein_name"] in ("ProtA", "ProtB"), h
+            assert h["protein_id"] in ("p1", "p2"), h
+            assert isinstance(h.get("rank"), int) and h["rank"] >= 1, h
+        assert [h["rank"] for h in d["results"]] == [1, 2, 3, 4, 5, 6], (
+            "merged view is one combined ranking → ranks must be global")
+
+    def test_merged_sort_prefers_consensus_score(self, client):
+        """ProtB scores 3 kcal better — it must lead the merged list."""
+        cid = self._campaign_with_hits()
+        r = client.get(f"/api/primer/docking/screen/{cid}/results")
+        d = r.get_json()
+        assert d["results"][0]["protein_name"] == "ProtB"
+        assert d["results"][-1]["protein_name"] == "ProtA"
+
+    def test_per_protein_rows_carry_protein_and_rank(self, client):
+        cid = self._campaign_with_hits()
+        r = client.get(f"/api/primer/docking/screen/{cid}/results?protein_id=p2")
+        assert r.status_code == 200
+        d = r.get_json()
+        assert d["total"] == 3
+        for h in d["results"]:
+            assert h["protein_id"] == "p2", h
+            assert h["protein_name"] == "ProtB", h
+        assert [h["rank"] for h in d["results"]] == [1, 2, 3]
+
+    def test_unknown_protein_id_returns_404(self, client):
+        cid = self._campaign_with_hits()
+        r = client.get(f"/api/primer/docking/screen/{cid}/results?protein_id=nosuch")
+        assert r.status_code == 404
+
+    def test_zero_score_not_treated_as_missing(self, client):
+        """A 0.0 score is real data — the `or`-chain used to skip it."""
+        cid = self._campaign_with_hits()
+        rdir = os.path.join(_campaign_dir(cid), "results", "p1")
+        with open(os.path.join(rdir, "final.json"), "w") as f:
+            json.dump({"protein_id": "p1", "protein_name": "ProtA",
+                       "top_hits": [
+                           {"smiles": VALID_SMILES[0], "vina_score": 0.0,
+                            "consensus_score": 0.0, "gnina_score": None},
+                           {"smiles": VALID_SMILES[1], "vina_score": -9.0,
+                            "consensus_score": -9.0, "gnina_score": None},
+                       ]}, f)
+        r = client.get(f"/api/primer/docking/screen/{cid}/results?protein_id=p1")
+        d = r.get_json()
+        scores = [h["consensus_score"] for h in d["results"]]
+        assert scores == [-9.0, 0.0], "0.0 must sort last, not be dropped"
+
+    def test_score_source_backfilled_for_legacy_campaigns(self, client):
+        """Pre-2026-10-11 campaigns have no score_source — derive it."""
+        cid = self._campaign_with_hits()
+        # Rewrite p1's final.json as a legacy record: one hit GNINA refined
+        # (cnn fields present), one it never saw, and NO score_source.
+        rdir = os.path.join(_campaign_dir(cid), "results", "p1")
+        with open(os.path.join(rdir, "final.json"), "w") as f:
+            json.dump({"protein_id": "p1", "protein_name": "ProtA",
+                       "top_hits": [
+                           {"smiles": VALID_SMILES[0], "vina_score": -8.0,
+                            "gnina_score": -7.5, "cnn_affinity": 3.0,
+                            "consensus_score": -7.7},
+                           {"smiles": VALID_SMILES[1], "vina_score": -6.0,
+                            "gnina_score": None, "consensus_score": -6.0},
+                       ]}, f)
+        d = client.get(f"/api/primer/docking/screen/{cid}/results?protein_id=p1").get_json()
+        by_smiles = {h["smiles"]: h for h in d["results"]}
+        assert by_smiles[VALID_SMILES[0]]["score_source"] == "consensus"
+        assert by_smiles[VALID_SMILES[1]]["score_source"] == "vina"
+        # CSV must agree with the API
+        csv_data = export_campaign_csv(cid)
+        assert "score_source" in csv_data
+        tail = [ln.rsplit(",", 1)[-1] for ln in csv_data.strip().splitlines()[1:]]
+        assert tail.count("consensus") == 1, tail
+        assert tail.count("vina") == len(tail) - 1, tail
