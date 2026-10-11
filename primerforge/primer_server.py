@@ -599,6 +599,41 @@ def _cancel_orphan_job(job_id: str):
         logger.error("Failed to cancel orphaned docking job %s: %s", job_id, e)
 
 
+def _spawn_screening_worker(campaign_id: str) -> str | None:
+    """Spawn the detached virtual-screening worker. Returns an error string or None.
+
+    The child gets PYTHONPATH=<repo root> and cwd=<repo root> so that
+    `import primerforge` resolves even when the venv has no install of the
+    package. Prod's venv does NOT (only wsgi.py bootstraps sys.path for the
+    parent gunicorn process) — without this the worker died at import time,
+    and because its own failure handler needed the same import the campaign
+    was stranded at status=pending forever, spinning with no results.
+    Observed on prod 2026-10-11 (campaign 51f38dcc73b6483e).
+    """
+    import subprocess
+    import sys as _sys
+
+    pkg_dir = os.path.dirname(os.path.abspath(__file__))
+    repo_root = os.path.dirname(pkg_dir)
+    worker_script = os.path.join(pkg_dir, "screening_worker.py")
+    env = {**os.environ, "PYTHONUNBUFFERED": "1"}
+    prior = env.get("PYTHONPATH", "")
+    env["PYTHONPATH"] = repo_root + (os.pathsep + prior if prior else "")
+    try:
+        subprocess.Popen(
+            [_sys.executable, worker_script, "--campaign", campaign_id],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            env=env,
+            cwd=repo_root,
+            start_new_session=True,
+        )
+        return None
+    except Exception as exc:
+        logger.error("Failed to spawn screening worker for %s: %s", campaign_id, exc)
+        return str(exc)
+
+
 def _settle_docking_job(job_id, user, use_postgres, consume_fn, increment_fn):
     """Consume the run's credit AFTER queuing — without ever stranding an orphan.
 
@@ -3631,26 +3666,14 @@ def create_app() -> Flask:
                 return settled
 
             # Spawn detached screening worker (fire-and-forget)
-            import subprocess
-            import sys as _sys
-            worker_script = os.path.join(
-                os.path.dirname(os.path.abspath(__file__)), "screening_worker.py")
-            try:
-                subprocess.Popen(
-                    [_sys.executable, worker_script, "--campaign", campaign_id],
-                    stdout=subprocess.DEVNULL,
-                    stderr=subprocess.DEVNULL,
-                    env={**os.environ, "PYTHONUNBUFFERED": "1"},
-                    start_new_session=True,
-                )
-            except Exception as exc:
-                logger.error("Failed to spawn screening worker for %s: %s", campaign_id, exc)
+            spawn_err = _spawn_screening_worker(campaign_id)
+            if spawn_err:
                 from .pipelines.virtual_screening import update_campaign
                 update_campaign(campaign_id, {
                     "status": "failed",
-                    "progress": {"stage": "failed", "message": f"Failed to start worker: {exc}"},
+                    "progress": {"stage": "failed", "message": f"Failed to start worker: {spawn_err}"},
                 })
-                return err(f"Failed to start screening worker: {exc}", "SCREENING_FAILED", 500)
+                return err(f"Failed to start screening worker: {spawn_err}", "SCREENING_FAILED", 500)
 
             from .pipelines.virtual_screening import get_campaign
             campaign = get_campaign(campaign_id) or {}
@@ -3819,8 +3842,6 @@ def create_app() -> Flask:
                        "ALREADY_RUNNING", 409)
 
         # Clear cancel marker, reset status, respawn worker
-        import subprocess
-        import sys as _sys
         from .pipelines.virtual_screening import _campaign_dir
         cdir = _campaign_dir(campaign_id)
         cancel_path = os.path.join(cdir, "cancel")
@@ -3832,18 +3853,9 @@ def create_app() -> Flask:
             "progress": {"stage": "pending", "message": "Resuming…"},
         })
 
-        worker_script = os.path.join(
-            os.path.dirname(os.path.abspath(__file__)), "screening_worker.py")
-        try:
-            subprocess.Popen(
-                [_sys.executable, worker_script, "--campaign", campaign_id],
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
-                env={**os.environ, "PYTHONUNBUFFERED": "1"},
-                start_new_session=True,
-            )
-        except Exception as exc:
-            return err(f"Failed to resume: {exc}", "SCREENING_FAILED", 500)
+        spawn_err = _spawn_screening_worker(campaign_id)
+        if spawn_err:
+            return err(f"Failed to resume: {spawn_err}", "SCREENING_FAILED", 500)
 
         return jsonify({"campaign_id": campaign_id, "status": "pending"}), 202
 

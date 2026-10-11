@@ -287,6 +287,44 @@ class TestStaleness:
         open(running_path, "a").close()
         assert is_stale(cid) is False
 
+    def test_aged_pending_campaign_is_stale(self):
+        """A 'pending' campaign whose worker never started must be detected.
+
+        Regression: prod campaign 51f38dcc73b6483e sat at 'pending' forever
+        (worker died on `import primerforge`) and the UI never offered Resume
+        because is_stale() only looked at STATUS_RUNNING.
+        """
+        from primerforge.pipelines.virtual_screening import PENDING_STALE_S
+        cid = create_campaign(
+            proteins=[{"sequence": "MKTAYIAKQRQISFVKSHFSRQ" * 3}],
+            ligands=VALID_SMILES,
+        )
+        update_campaign(cid, {"status": STATUS_PENDING})
+        # Fresh pending → not stale (worker may still be queueing for a slot)
+        assert is_stale(cid) is False
+        # Backdate past the slot-wait grace window → stale
+        path = os.path.join(_campaign_dir(cid), "campaign.json")
+        data = _read_json(path)
+        data["updated_at"] = time.time() - (PENDING_STALE_S + 1)
+        data["created_at"] = data["updated_at"]
+        from primerforge.pipelines.virtual_screening import _atomic_json
+        _atomic_json(path, data)
+        assert is_stale(cid) is True
+
+    def test_pending_grace_window_not_stale(self):
+        """Pending inside the acquire_slots(120s) grace window is NOT stale."""
+        from primerforge.pipelines.virtual_screening import PENDING_STALE_S
+        cid = create_campaign(
+            proteins=[{"sequence": "MKTAYIAKQRQISFVKSHFSRQ" * 3}],
+            ligands=VALID_SMILES,
+        )
+        path = os.path.join(_campaign_dir(cid), "campaign.json")
+        data = _read_json(path)
+        data["updated_at"] = time.time() - (PENDING_STALE_S - 60)
+        from primerforge.pipelines.virtual_screening import _atomic_json
+        _atomic_json(path, data)
+        assert is_stale(cid) is False
+
 
 # ── Listing ────────────────────────────────────────────────────────────────
 
@@ -433,3 +471,124 @@ class TestChunkResume:
             f.write(json.dumps({"index": 0, "smiles": "CCO", "vina_score": -5.0}) + "\n")
         # The engine should skip this chunk
         assert os.path.exists(chunk_path)
+
+
+# ── Worker subprocess bootstrap (prod spawn path) ──────────────────────────
+
+class TestWorkerBootstrap:
+    """screening_worker.py must import without any pre-seeded sys.path.
+
+    Regression (prod 2026-10-11): the worker is spawned as
+    `python primerforge/screening_worker.py --campaign <id>` with the parent
+    env. Prod's venv has NO editable install of primerforge (only wsgi.py
+    bootstraps sys.path for the parent), so the child died on import — and
+    because its own error handler needed the same import, the campaign was
+    stranded at status=pending forever, spinning with no results.
+    """
+
+    WORKER = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+        "primerforge", "screening_worker.py")
+
+    def _clean_env(self):
+        env = {k: v for k, v in os.environ.items() if k != "PYTHONPATH"}
+        env["PYTHONUNBUFFERED"] = "1"
+        return env
+
+    def test_worker_source_bootstraps_sys_path(self):
+        src = open(self.WORKER).read()
+        assert "sys.path.insert" in src, (
+            "screening_worker must put the repo root on sys.path before any "
+            "primerforge import — prod's venv does not install the package.")
+
+    def test_worker_boots_without_pythonpath(self, tmp_path):
+        """Run the worker cold: it must reach campaign lookup, not ImportError."""
+        import subprocess
+        import sys
+        r = subprocess.run(
+            [sys.executable, self.WORKER, "--campaign", "nonexistent12345"],
+            capture_output=True, text=True, env=self._clean_env(),
+            cwd=str(tmp_path), timeout=120,
+        )
+        combined = r.stdout + r.stderr
+        assert "No module named 'primerforge'" not in combined, combined[:800]
+        # It got far enough to look the campaign up (expected: not found)
+        assert "not found" in combined, combined[:800]
+
+    def test_worker_marks_failed_without_engine_import(self, tmp_path):
+        """_mark_failed_raw must reach status=failed using stdlib only."""
+        import importlib.util
+        spec = importlib.util.spec_from_file_location("_sw_under_test", self.WORKER)
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+
+        # Point the worker at a queue dir holding a 'pending' campaign
+        cdir = tmp_path / "screen" / "campaignraw01"
+        cdir.mkdir(parents=True)
+        (cdir / "campaign.json").write_text(json.dumps({
+            "campaign_id": "campaignraw01", "status": "pending",
+            "progress": {"stage": "pending", "message": "Campaign queued"},
+        }))
+        os.environ["DOCKING_QUEUE_DIR"] = str(tmp_path)
+        try:
+            assert mod._mark_failed_raw("campaignraw01", "import blew up") is True
+            data = json.loads((cdir / "campaign.json").read_text())
+            assert data["status"] == "failed"
+            assert "import blew up" in data["progress"]["message"]
+            # A terminal campaign must never be clobbered by the fallback
+            data["status"] = "completed"
+            (cdir / "campaign.json").write_text(json.dumps(data))
+            assert mod._mark_failed_raw("campaignraw01", "late crash") is True
+            data = json.loads((cdir / "campaign.json").read_text())
+            assert data["status"] == "completed"
+            # Bogus / traversing ids must be refused
+            assert mod._mark_failed_raw("../etc/passwd", "x") is False
+            assert mod._mark_failed_raw("", "x") is False
+        finally:
+            os.environ.pop("DOCKING_QUEUE_DIR", None)
+
+    def test_spawn_helper_sets_pythonpath_and_cwd(self):
+        """_spawn_screening_worker must hand the child a resolvable import."""
+        import subprocess as _sp
+        import sys as _sys
+        from primerforge.primer_server import _spawn_screening_worker
+
+        captured = {}
+
+        def _fake_popen(*args, **kwargs):
+            captured["args"] = args
+            captured["kwargs"] = kwargs
+            return object()
+
+        pkg_dir = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+            "primerforge")
+        repo_root = os.path.dirname(pkg_dir)
+
+        with patch.object(_sp, "Popen", _fake_popen):
+            err = _spawn_screening_worker("abc123def456")
+
+        assert err is None, err
+        kwargs = captured["kwargs"]
+        # cwd + PYTHONPATH both point at the repo root → `import primerforge` works
+        assert kwargs["cwd"] == repo_root, kwargs["cwd"]
+        assert repo_root in kwargs["env"]["PYTHONPATH"], kwargs["env"]["PYTHONPATH"]
+        # and the child really is the screening worker with our campaign id
+        argv = captured["args"][0]
+        assert argv[1].endswith("screening_worker.py"), argv
+        assert argv[2:] == ["--campaign", "abc123def456"], argv
+        assert "start_new_session" in kwargs and kwargs["start_new_session"] is True
+        # no PYTHONPATH leakage of the parent's value ahead of the repo root
+        assert kwargs["env"]["PYTHONPATH"].split(os.pathsep)[0] == repo_root
+
+    def test_spawn_helper_reports_popen_failure(self):
+        """A failed spawn returns an error string (route turns it into a 500)."""
+        import subprocess as _sp
+        from primerforge.primer_server import _spawn_screening_worker
+
+        def _boom(*a, **k):
+            raise OSError("cannot fork")
+
+        with patch.object(_sp, "Popen", _boom):
+            err = _spawn_screening_worker("abc123def456")
+        assert isinstance(err, str) and "cannot fork" in err

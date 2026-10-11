@@ -18,6 +18,15 @@ import os
 import sys
 import time
 
+# Ensure project root is on sys.path BEFORE any primerforge import.
+# gunicorn runs wsgi:app, which bootstraps its own sys.path, but this script
+# is spawned as `python primerforge/screening_worker.py --campaign <id>` with
+# the parent's env — and prod's venv does NOT have primerforge pip-installed.
+# Without this line the worker dies on `import primerforge` and, because the
+# error handler below needs the very same import, the campaign would be
+# stranded at status=pending forever (observed on prod 2026-10-11).
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
@@ -30,6 +39,37 @@ def _queue_base() -> str:
         "DOCKING_QUEUE_DIR",
         os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "docking_queue"),
     )
+
+
+def _mark_failed_raw(campaign_id: str, message: str) -> bool:
+    """Record status=failed with stdlib only (no primerforge import).
+
+    Returns True when the write landed. Used when the import chain itself is
+    what broke, so the campaign still reaches a terminal state the UI can
+    render (and the user can resume) instead of sitting at 'pending' forever.
+    """
+    if not campaign_id or not campaign_id.replace("-", "").isalnum() or len(campaign_id) > 64:
+        return False
+    path = os.path.join(_queue_base(), "screen", campaign_id, "campaign.json")
+    try:
+        with open(path) as f:
+            data = json.load(f)
+    except (OSError, ValueError):
+        return False
+    if data.get("status") in ("completed", "cancelled", "failed"):
+        return True  # already terminal — nothing to write, don't touch it
+    data["status"] = "failed"
+    data.setdefault("progress", {}).update(
+        {"stage": "failed", "message": message[:300]})
+    data["updated_at"] = time.time()
+    try:
+        tmp = f"{path}.tmp{os.getpid()}"
+        with open(tmp, "w") as f:
+            json.dump(data, f, indent=None, separators=(",", ":"))
+        os.replace(tmp, path)
+        return True
+    except OSError:
+        return False
 
 
 def main():
@@ -88,15 +128,19 @@ def main():
         logger.info("Campaign %s finished: status=%s", campaign_id, status)
     except Exception as exc:
         logger.error("Campaign %s crashed: %s", campaign_id, exc, exc_info=True)
-        # Mark as failed if the engine didn't already
-        try:
-            from primerforge.pipelines.virtual_screening import update_campaign
-            update_campaign(campaign_id, {
-                "status": "failed",
-                "progress": {"stage": "failed", "message": str(exc)[:300]},
-            })
-        except Exception:
-            pass
+        # Mark as failed if the engine didn't already. The import may be the
+        # very thing that failed, so fall back to a raw file write — the
+        # campaign must never be left stranded at status=pending (that is what
+        # made prod campaign 51f38dcc73b6483e spin forever on 2026-10-11).
+        if not _mark_failed_raw(campaign_id, str(exc)):
+            try:
+                from primerforge.pipelines.virtual_screening import update_campaign
+                update_campaign(campaign_id, {
+                    "status": "failed",
+                    "progress": {"stage": "failed", "message": str(exc)[:300]},
+                })
+            except Exception:
+                logger.error("Could not record failure for %s", campaign_id)
     finally:
         if lease:
             lease.release()

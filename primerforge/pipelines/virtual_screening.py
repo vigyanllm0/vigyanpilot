@@ -70,6 +70,10 @@ DEFAULT_TOP_K_REFINE = 10
 MAX_TOP_K_REFINE = 50
 VINA_TIMEOUT_S = 120.0
 HEARTBEAT_TIMEOUT_S = 300.0  # 5 min — campaign considered dead if no heartbeat
+# A 'pending' campaign is stale after this long. Must clear the worker's
+# acquire_slots(wait_s=120) queue wait + interpreter/rdkit import (~10-30 s)
+# with margin, since run_campaign flips status to 'running' immediately after.
+PENDING_STALE_S = 240.0
 
 # Campaign status values
 STATUS_PENDING = "pending"
@@ -561,9 +565,29 @@ def _heartbeat(campaign_id: str) -> None:
 
 
 def is_stale(campaign_id: str) -> bool:
-    """True if campaign is 'running' but the worker heartbeat is >5 min old."""
+    """True when a campaign's worker is gone and nobody is coming back for it.
+
+    Covers two dead states:
+      * ``running`` with no heartbeat for >5 min (worker crashed mid-run).
+      * ``pending`` untouched for >PENDING_STALE_S — the worker was spawned
+        but never reached ``run_campaign`` (observed on prod 2026-10-11 when
+        the child died on ``import primerforge``). Without this branch such a
+        campaign sat at 'pending' forever and the UI never offered Resume.
+
+    Grace for ``pending``: the worker calls ``acquire_slots(..., wait_s=120)``
+    BEFORE ``run_campaign`` flips the status to ``running``, so a legitimate
+    queue wait must not be misread as a dead worker.
+    """
     c = get_campaign(campaign_id)
-    if c is None or c.get("status") != STATUS_RUNNING:
+    if c is None:
+        return False
+    status = c.get("status")
+
+    if status == STATUS_PENDING:
+        ref = c.get("updated_at") or c.get("created_at") or 0.0
+        return (time.time() - ref) > PENDING_STALE_S
+
+    if status != STATUS_RUNNING:
         return False
     path = os.path.join(_campaign_dir(campaign_id), "running")
     try:
