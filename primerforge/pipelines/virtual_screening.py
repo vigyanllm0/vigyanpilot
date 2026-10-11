@@ -865,13 +865,20 @@ async def run_campaign(
             _atomic_json(final_path, final_data)
 
             best = top_hits[0] if top_hits else None
+            # best_gnina must be the best CNN score that ACTUALLY exists, not
+            # rank-1's: hits are ranked by consensus, and a refined hit blends
+            # in the (weaker) CNN term, so rank 1 is usually a Vina-only
+            # molecule — reading it alone reported best_gnina=null even when
+            # 10 ligands had been refined.
+            _gnina_scores = [h.get("gnina_score") for h in top_hits
+                             if h.get("gnina_score") is not None]
             results_summary[pid] = {
                 "name": pname,
                 "total_screened": total_ligands,
                 "total_docked": len(all_results),
                 "gnina_refined": refined,
                 "best_vina": best.get("vina_score") if best else None,
-                "best_gnina": best.get("gnina_score") if best else None,
+                "best_gnina": min(_gnina_scores) if _gnina_scores else None,
                 "best_consensus": best.get("consensus_score") if best else None,
                 "best_smiles": best.get("smiles", "") if best else "",
             }

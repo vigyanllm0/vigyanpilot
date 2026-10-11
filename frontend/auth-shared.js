@@ -36,6 +36,10 @@ function updateAuthUI(){
     if(btns)btns.style.display='flex';
     if(profile)profile.style.display='none';
   }
+  // Pages may register window.onAuthStateChanged to react to any auth-state
+  // change (login, logout, cookie rehydration) — e.g. /docking's Quick Start
+  // login CTA. Guarded: absent hook = no-op on every other page.
+  if(typeof window.onAuthStateChanged==='function'){try{window.onAuthStateChanged()}catch(e){}}
 }
 
 function toggleUserMenu(){
@@ -157,6 +161,11 @@ function ensureAuthOverlay(){
   wrap.innerHTML='<div class="auth-modal"><button type="button" class="close-btn" aria-label="Close">&times;</button><div id="auth-content"></div></div>';
   wrap.addEventListener('click',function(e){if(e.target===wrap)closeAuth()});
   wrap.querySelector('.close-btn').addEventListener('click',function(){closeAuth()});
+  document.addEventListener('keydown',function(e){
+    if(e.key!=='Escape')return;
+    var ov=document.getElementById('auth-overlay');
+    if(ov&&ov.classList.contains('open'))closeAuth();
+  });
   document.body.appendChild(wrap);
   return wrap;
 }

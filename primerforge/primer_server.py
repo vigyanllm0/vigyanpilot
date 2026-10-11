@@ -690,6 +690,10 @@ def _settle_docking_job(job_id, user, use_postgres, consume_fn, increment_fn,
                     "error": "Not enough docking credits for this run. Top up or upgrade to continue.",
                     "code": "PAYMENT_REQUIRED",
                     "action": "show_docking_payment",
+                    # The top-up modal pre-fills enough packs to cover this
+                    # (pack = 80 credits client-side); the formula itself
+                    # stays server-side — this is the quoted shortfall only.
+                    "credits_required": credit_cost,
                 }, 402)
         elif increment_fn:
             increment_fn(user["email"])

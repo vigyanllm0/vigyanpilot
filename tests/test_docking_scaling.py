@@ -736,7 +736,8 @@ def test_corrupt_pending_record_is_dropped_not_retried_forever(qdirs):
 def test_settle_no_tokens_cancels_orphan_job(qdirs):
     """PG consume → False (402) must also stop the just-queued job — before
     this fix the job ran to completion invisibly while the user only saw a
-    payment prompt."""
+    payment prompt. The 402 must also carry the quote the top-up modal
+    pre-fills from (credits_required/action), mirroring the screening route."""
     from primerforge.primer_server import _settle_docking_job
     dq = qdirs
     _write_job(dq, dq.PENDING_DIR, "orphan402a", "pending")
@@ -746,9 +747,28 @@ def test_settle_no_tokens_cancels_orphan_job(qdirs):
     body, status = out
     assert status == 402
     assert body["code"] == "PAYMENT_REQUIRED"
+    assert body["action"] == "show_docking_payment"
+    # legacy 1-credit caller → the quote is that cost
+    assert body["credits_required"] == 1
     job = dq.get_job("orphan402a")
     assert job["status"] == "failed"
     assert job["error"] == "Stopped by user."
+
+
+def test_settle_402_quote_reports_consensus_credit_cost(qdirs):
+    """The modal pre-fills packs from credits_required — it must be the
+    actual size-aware cost passed in (consensus = flat 100), not the legacy
+    default of 1, or a user short on credits is shown a $0.01 shortfall."""
+    from primerforge.primer_server import _settle_docking_job
+    dq = qdirs
+    _write_job(dq, dq.PENDING_DIR, "orphan402b", "pending")
+    user = {"email": "u2@example.com", "role": "user", "user_id": 8}
+    out = _settle_docking_job("orphan402b", user, True, lambda uid, email: False,
+                              None, credit_cost=100)
+    body, status = out
+    assert status == 402
+    assert body["credits_required"] == 100
+    assert dq.get_job("orphan402b")["status"] == "failed"
 
 
 def test_settle_credit_exception_cancels_orphan_job(qdirs):

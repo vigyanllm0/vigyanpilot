@@ -270,11 +270,9 @@ footer{padding:32px 0;border-top:1px solid var(--slate-border)}
   .nav-links{display:flex;gap:8px;align-items:center;margin-left:24px}
 }
 @media(max-width:500px){.pricing-grid{grid-template-columns:1fr}}
-/* AUTH MODAL */
-.auth-overlay.show{display:flex}
-.auth-toggle{font-size:12px;color:var(--primary);cursor:pointer;text-align:center;margin-top:16px;font-weight:600}
-.auth-error{font-size:12px;color:var(--red);text-align:center;margin-top:10px;display:none}
-.auth-error.show{display:block}
+/* AUTH MODAL — page-local auth UI removed 2026-10-12: /docking now opens the
+   SAME shared sign-in modal as the nav "Sign in" button on every other page
+   (auth-shared.js builds + styles it; renderAuth fills it). */
 .form-input{width:100%;border:1px solid var(--slate-border);border-radius:8px;padding:10px 14px;font-size:13px;font-family:var(--font-b);background:transparent;color:var(--text);transition:border-color .15s,box-shadow .15s;margin-bottom:10px}
 .form-input:focus{border-color:var(--primary);outline:none;box-shadow:0 0 0 3px rgba(37,99,235,0.1)}
 /* PAYMENT MODAL */
@@ -1199,27 +1197,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </div>
   </div>
 </div>
-<!-- AUTH MODAL -->
-<div class="auth-overlay" id="auth-overlay">
-  <div class="auth-card">
-    <div id="auth-form">
-      <div class="auth-title" id="auth-title">Login</div>
-      <div class="auth-sub" id="auth-sub">Access your docking pipeline</div>
-      <input type="email" id="auth-email" class="form-input" placeholder="Email address" autocomplete="email">
-      <input type="password" id="auth-pass" class="form-input" placeholder="Password" autocomplete="current-password">
-      <div id="auth-name-group" style="display:none">
-        <input type="text" id="auth-name" class="form-input" placeholder="Full name" autocomplete="name">
-      </div>
-      <div class="auth-error" id="auth-error"></div>
-      <label class="tc-checkbox" style="display:flex;align-items:flex-start;gap:8px;margin:10px 0 4px;font-size:12px;color:var(--text2);line-height:1.5"><input type="checkbox" id="auth-tc" style="margin-top:2px"> I agree to the <a href="/terms" target="_blank" rel="noopener">Terms &amp; Conditions</a> and <a href="/privacy" target="_blank" rel="noopener">Privacy Policy</a></label>
-      <button type="button" class="btn-primary" id="auth-btn" onclick="handleAuth()" style="margin-top:4px">Login</button>
-      <div class="auth-toggle" onclick="toggleAuthMode()" id="auth-toggle">Don't have an account? Register</div>
-      <div style="margin-top:16px;text-align:center;font-size:12px;color:var(--muted)">
-        By continuing, you agree to our <a href="terms" style="color:var(--primary)">Terms</a> and <a href="privacy" style="color:var(--primary)">Privacy Policy</a>
-      </div>
-    </div>
-  </div>
-</div>
+<!-- AUTH MODAL: removed — auth-shared.js's ensureAuthOverlay() builds the
+     shared sign-in modal (same as every page's nav "Sign in") on first open. -->
 <!-- PAYMENT MODAL -->
 <div class="pay-overlay" id="pay-overlay">
   <div class="pay-card">
@@ -1272,7 +1251,10 @@ window.loadDockCreditBalance = loadDockCreditBalance;
 
 function showDockingPayment(usage) {
   var qty = $('dock-pay-qty');
-  qty.value = 1;
+  // Pre-fill packs so the reported shortfall is actually covered (pack = 80
+  // credits — same constant as updateDockPayCredits below).
+  var need = (usage && usage.credits_required != null) ? Number(usage.credits_required) : 0;
+  qty.value = need > 0 ? Math.min(100, Math.ceil(need / 80)) : 1;
   updateDockPayCredits();
   qty.oninput = function() {
     var v = Math.min(100, Math.max(1, parseInt(qty.value) || 1));
@@ -1420,7 +1402,6 @@ async function openRazorpayCheckout(order, context) {
 </script>
 <script>
 var API = window.VIGYAN_BACKEND_URL || '/api';
-var authMode = 'login';
 var authUser = null;
 var authToken = '';
 function $(id) { return document.getElementById(id); }
@@ -1436,7 +1417,13 @@ async function rehydrateSession() {
       var d = await r.json();
       if (d.user && d.user.email) {
         authUser = d.user;
+        // Persist the non-sensitive marker so every auth consumer on this
+        // page (shared nav UI, feature gates, the Quick Start gate) sees the
+        // SAME logged-in state — the HttpOnly cookie alone never reaches
+        // sessionStorage, so a fresh tab used to look logged-out everywhere.
+        try { sessionStorage.setItem('pf_user', JSON.stringify(d.user)); } catch (e) {}
         updateAuthUI();
+        syncDockGate();
       }
     }
   } catch(e) {}
@@ -1459,78 +1446,60 @@ function updateAuthUI() {
     btn.style.color = '#fff';
   }
 }
-function toggleUserMenu() {
-  if (authUser && authUser.email) {
-    var existing = document.querySelector('.user-menu');
-    if (existing) { existing.remove(); return; }
-    var m = document.createElement('div');
-    m.className = 'user-menu show';
-    m.style.cssText = 'position:absolute;top:calc(100%+8px);right:0;background:#fff;border:1px solid #E2E8F0;border-radius:10px;padding:8px 0;box-shadow:0 8px 30px rgba(0,0,0,0.12);min-width:180px;z-index:100';
-    m.innerHTML = '<div class="user-menu-item" style="padding:8px 14px;font-size:12px;color:#475569;cursor:pointer"><strong>'+esc(authUser.email)+'</strong></div><div class="user-menu-item danger" style="padding:8px 14px;font-size:12px;color:#ef4444;cursor:pointer" onclick="logout()">Logout</div>';
-    var navRight = document.querySelector('.nav-right');
-    navRight.style.position = 'relative';
-    navRight.appendChild(m);
-    document.addEventListener('click', function handler(e) {
-      if (!navRight.contains(e.target)) { m.remove(); document.removeEventListener('click', handler); }
-    }, { once: true });
+// ── Quick Start gate + shared auth-state hook ──────────────────────────────
+// The "Log in to run docking screens" CTA must only show when nobody is
+// signed in (owner report 2026-10-12: it stayed visible for a logged-in
+// account — nothing on this page ever hid it). auth-shared.js's
+// updateAuthUI() invokes window.onAuthStateChanged on every auth-state
+// change (page load, login, logout, rehydration) — this function is it.
+function syncDockGate() {
+  var wrap = document.getElementById('usage-info');
+  if (!wrap) return;
+  var btn = wrap.querySelector('button');
+  var line = document.getElementById('usage-remaining');
+  var u = null;
+  try { var s = sessionStorage.getItem('pf_user'); if (s) u = JSON.parse(s); } catch (e) {}
+  // pf_user is the single source of truth for UI login state (same as
+  // feature-gate.js and auth-shared.js). Deliberately NOT falling back to the
+  // page-local authUser mirror: auth-shared's logout() clears pf_user but
+  // never touches this page's authUser, so a fallback would leave the gate
+  // hidden after a real logout.
+  if (u && u.email) {
+    if (btn) btn.style.display = 'none';
+    if (line) {
+      line.innerHTML = '';
+      var who = document.createElement('div');
+      who.style.cssText = 'font-size:11px;color:#059669;font-weight:600';
+      who.textContent = '\u2713 Signed in as ' + esc(u.email);
+      var bal = document.createElement('div');
+      bal.id = 'usage-credits';
+      bal.style.cssText = 'font-size:11px;color:#94a3b8;margin-top:2px';
+      line.appendChild(who);
+      line.appendChild(bal);
+      loadGateBalance();
+    }
   } else {
-    showAuth();
+    if (btn) btn.style.display = '';
+    if (line) line.innerHTML = '';
   }
 }
-function showAuth() { $('auth-overlay').classList.add('show'); }
-function hideAuth() { $('auth-overlay').classList.remove('show'); }
-function toggleAuthMode() {
-  authMode = authMode === 'login' ? 'register' : 'login';
-  $('auth-title').textContent = authMode === 'login' ? 'Login' : 'Register';
-  $('auth-sub').textContent = authMode === 'login' ? 'Access your docking pipeline' : 'Create your docking pipeline account';
-  $('auth-btn').textContent = authMode === 'login' ? 'Login' : 'Register';
-  $('auth-toggle').textContent = authMode === 'login' ? "Don't have an account? Register" : 'Already have an account? Login';
-  $('auth-name-group').style.display = authMode === 'register' ? 'block' : 'none';
-  $('auth-error').classList.remove('show');
-}
-async function handleAuth() {
-  var email = $('auth-email').value.trim();
-  var pass = $('auth-pass').value;
-  var name = $('auth-name') ? $('auth-name').value.trim() : '';
-  var errEl = $('auth-error');
-  errEl.classList.remove('show');
-  if (!email || !pass) { errEl.textContent = 'Email and password are required.'; errEl.classList.add('show'); return; }
-  var tc = $('auth-tc');
-  if (tc && !tc.checked) { errEl.textContent = 'Please accept the Terms & Conditions to continue.'; errEl.classList.add('show'); return; }
-  var endpoint = authMode === 'login' ? '/auth/login' : '/auth/register';
-  var body = { email, password: pass };
-  if (authMode === 'register') { body.name = name || email.split('@')[0]; body.consent_accepted = true; }
+window.syncDockGate = syncDockGate;
+window.onAuthStateChanged = syncDockGate;
+
+async function loadGateBalance() {
+  var bal = document.getElementById('usage-credits');
+  if (!bal) return;
   try {
-    var r = await fetch(API + endpoint, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });
+    var h = {};
+    var tk = window.authToken || '';
+    if (tk) h['Authorization'] = 'Bearer ' + tk;
+    var r = await fetch(API + '/payments/token-balance', { headers: h, credentials: 'include' });
+    if (!r.ok) return;
     var d = await r.json();
-    if (!r.ok) { errEl.textContent = d.error || 'Authentication failed'; errEl.classList.add('show'); return; }
-    if (d.requires_verification) {
-      errEl.textContent = d.message || 'Account created! Check your email to verify before logging in.';
-      errEl.style.color = 'var(--bio)';
-      errEl.classList.add('show');
-      return;
-    }
-    if (authMode === 'register') {
-      authMode = 'login';
-      toggleAuthMode();
-      errEl.textContent = 'Registration successful! Please login.';
-      errEl.style.color = 'var(--bio)';
-      errEl.classList.add('show');
-      return;
-    }
-    authToken = d.token || '';
-    sessionStorage.setItem('pf_user', JSON.stringify({email:d.email||email, name:d.name||name, role:d.role||'user'}));
-    authUser = JSON.parse(sessionStorage.getItem('pf_user'));
-    updateAuthUI();
-    hideAuth();
-  } catch(e) { errEl.textContent = 'Network error: '+e.message; errEl.classList.add('show'); }
-}
-function logout() {
-  sessionStorage.removeItem('pf_user');
-  authToken = ''; authUser = null; updateAuthUI();
-  document.querySelectorAll('.user-menu').forEach(function(el){el.remove();});
-  fetch(API+'/auth/logout', {method:'POST',credentials:'include'}).catch(()=>{});
-  location.reload();
+    var cr = (d && d.docking && d.docking.docking_credits != null) ? d.docking.docking_credits : null;
+    if (cr == null || !bal.isConnected) return;
+    bal.textContent = Number(cr).toLocaleString() + ' docking credits';
+  } catch (e) { /* balance is a nicety — never block on it */ }
 }
 // ── Payment ─────────────────────────────────────────────────────────────
 function openPayModal(plan, name, amount) {
@@ -1899,7 +1868,7 @@ function resetRunUI() {
   showStopBtn(false);
 }
 
-function startDockPolling(jobId) {
+function startDockPolling(jobId, freshSubmit) {
   stopDockPolling();
   $('run-btn').disabled = true;
   $('run-spinner').classList.add('show');
@@ -1908,14 +1877,31 @@ function startDockPolling(jobId) {
   // Poll for results (max 500 attempts × 2s ≈ 17 minutes — must exceed
   // the server's 900s worst-case job budget for 100-ligand runs)
   var pollAttempts = 0;
+  var missTries = 0;
   _dockPoll = setInterval(async function() {
     try {
-      var pr = await fetch(API + '/primer/docking/status/' + jobId);
+      // Cache-bust on fresh submits: CloudFront's error mapping (403/404 →
+      // custom page) caches a miss for up to 5 min per URL — without this a
+      // one-poll blip during a server restart poisoned the job's status URL.
+      var pr = await fetch(API + '/primer/docking/status/' + jobId +
+        (freshSubmit ? ('?_=' + Date.now()) : ''));
       if (!pr.ok) {
-        if ((pr.status === 502 || pr.status === 503) && pollAttempts < 10) { pollAttempts++; return; }
+        // 5xx: origin blip (restart/reload) — retry briefly.
+        // 404 on a FRESH submit: we hold a job id the server just accepted,
+        // so a miss means a restart blip or an edge-cached error page, NOT
+        // an expired job — retry ~40s (past any edge error-cache window).
+        // Re-attach polls keep instant-404 = expired (resumeDockRun clears).
+        if ((pr.status === 502 || pr.status === 503 || pr.status === 504) && pollAttempts < 10) { pollAttempts++; return; }
+        if (freshSubmit && pr.status === 404 && missTries < 20) { missTries++; return; }
         stopDockPolling();
-        setStage(1, 'fail', 'API error: ' + pr.status);
-        showError('Server returned ' + pr.status + ' — the EC2 instance may be overloaded. Try again with fewer ligands.');
+        if (pr.status === 404) {
+          setStage(1, 'fail', 'Run not found');
+          showError('We lost track of this run — the server may have just restarted. If it was still queued it may finish on the server: refresh this page in a minute to check. Otherwise, please run it again.');
+          dockStoreClear();
+        } else {
+          setStage(1, 'fail', 'API error: ' + pr.status);
+          showError('Server returned ' + pr.status + ' — the EC2 instance may be overloaded. Try again with fewer ligands.');
+        }
         resetRunUI();
         return;
       }
@@ -2015,12 +2001,17 @@ async function resumeDockRun() {
   var rec = dockStoreRead();
   if (!rec) return;
   try {
-    var pr = await fetch(API + '/primer/docking/status/' + rec.job_id);
-    if (!pr.ok) {
-      if (pr.status === 404) dockStoreClear();  // expired (2h retention) — forget silently
-      return;
+    // One-shot re-attach probe: retry the transient statuses a restart
+    // window produces (404 = edge-cached miss, 5xx = origin blipping).
+    // Only a persistent 404 means the run is truly gone (2h retention).
+    var st = null;
+    for (var ai = 0; ai < 3 && !st; ai++) {
+      var pr = await fetch(API + '/primer/docking/status/' + rec.job_id + '?_=' + Date.now());
+      if (pr.ok) { st = await pr.json(); break; }
+      if (pr.status !== 404 && pr.status !== 502 && pr.status !== 503 && pr.status !== 504) return;
+      await new Promise(function(res) { setTimeout(res, 3000); });
     }
-    var st = await pr.json();
+    if (!st) { dockStoreClear(); return; }  // expired (2h retention) — forget silently
     if (st.status === 'completed' && st.result) {
       dockStoreSet(rec.job_id, 'done');
       _jobId = st.job_id || rec.job_id;
@@ -2204,7 +2195,7 @@ async function runDocking() {
     if (r.status === 402) {
       setStage(1, 'fail', 'Docking limit reached');
       resetRunUI();
-      showDockingPayment(submitResult.usage);
+      showDockingPayment(submitResult);
       return;
     }
     if (!r.ok) {
@@ -2239,7 +2230,7 @@ async function runDocking() {
     // instead of losing the job, and blocks a duplicate submit.
     dockStoreSet(jobId, 'running');
     dockNoteHide();
-    startDockPolling(jobId);
+    startDockPolling(jobId, true);
   } catch(e) {
     setStage(1, 'fail', 'Network error');
     resetRunUI();
@@ -3746,6 +3737,9 @@ loadAuth();
 rehydrateSession();
 // Re-attach to a docking run persisted before a refresh (no-op without one)
 resumeDockRun();
+// Sync the Quick Start login CTA with the current auth state (shared hook
+// keeps it correct on later logins/logouts too)
+syncDockGate();
 // Drag-and-drop support for file uploads
 function setupDragDrop(zoneId, inputId, handler) {
   var zone = $(zoneId);
@@ -3769,15 +3763,13 @@ function setupDragDrop(zoneId, inputId, handler) {
 }
 setupDragDrop('seq-file-input', 'pdb-file-input', handlePDBUpload);
 setupDragDrop('ligand-file-input', 'sdf-file-input', handleSDFUpload);
-// Close modals on overlay click
-document.getElementById('auth-overlay').addEventListener('click', function(e) {
-  if (e.target === this) hideAuth();
-});
+// Close modals on overlay click (the auth overlay is auth-shared.js's — it
+// binds its own backdrop/close/Escape handlers when it builds the modal)
 document.getElementById('pay-overlay').addEventListener('click', function(e) {
   if (e.target === this) { document.getElementById('pay-overlay').classList.remove('show'); }
 });
 document.addEventListener('keydown', function(e) {
-  if (e.key === 'Escape') { hideAuth(); document.getElementById('pay-overlay').classList.remove('show'); }
+  if (e.key === 'Escape') { document.getElementById('pay-overlay').classList.remove('show'); }
 });
 var hamburger = document.getElementById('hamburger');
 var mobileMenu = document.getElementById('mobile-menu');

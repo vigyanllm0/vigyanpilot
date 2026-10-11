@@ -708,6 +708,30 @@ class TestGninaRefineMapping:
             assert h["score_source"] == "vina"
             assert h["consensus_score"] == h["vina_score"]
 
+    def test_best_gnina_summary_is_best_actual_score(self, tmp_path):
+        """results_summary.best_gnina must be the best CNN score that exists,
+        not rank-1's — hits are ranked by consensus and refinement blends in
+        the CNN term, so a weak GNINA score sinks the refined hits BELOW an
+        unrefined Vina-only molecule. Reading rank-1 alone reported
+        best_gnina=null while the same dict said gnina_refined=10 (prod
+        campaign 3046eb6741b94fcf, 2026-10-12)."""
+        import primerforge.pipelines.virtual_screening as vs
+        # GNINA weak enough (-2.0) that both refined hits fall below the
+        # unrefined Vina -5.0 molecule → rank 1 is Vina-only.
+        cid = self._run(tmp_path, {
+            "binding_affinity": -2.0,
+            "cnn_affinity": 0.4, "cnn_score": 0.2, "status": "success",
+        })
+        final = self._final(cid)
+        assert final["top_hits"][0].get("gnina_score") is None, (
+            "fixture must put a Vina-only molecule at rank 1")
+        summ = (vs.get_campaign(cid) or {}).get("results_summary") or {}
+        p1 = summ.get("p1") or {}
+        assert p1["gnina_refined"] == 2
+        assert p1["best_gnina"] == -2.0, (
+            "best_gnina must report the best refined score across the "
+            "campaign, not null because rank 1 happens to be unrefined")
+
     def test_results_re_ranked_by_consensus(self, tmp_path):
         """final.json order must match the score it is labelled with."""
         cid = self._run(tmp_path, {
