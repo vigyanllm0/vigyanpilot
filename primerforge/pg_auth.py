@@ -680,6 +680,33 @@ def verify_email_with_token(token: str) -> bool:
         return False
 
 
+def _activate_unverifiable(user_id: int, email: str, reason: str) -> bool:
+    """Activate a pending account whose verification mail cannot be delivered.
+
+    When no transport can reach the user (no BREVO_API_KEY/SMTP_* configured,
+    or the provider is down) requiring verification would strand the account
+    forever: the user can never prove ownership, so they could never log in —
+    a password-signup funnel with a permanent black hole at the end. Activate
+    directly — the same outcome Google sign-in already produces for pending
+    accounts — mark the verification row satisfied, and record why in the
+    audit log. Real email verification resumes automatically the moment mail
+    sending works again. Returns True when the account is active.
+    """
+    try:
+        execute("UPDATE users SET status = 'active' WHERE id = %s AND status = 'pending'",
+                (user_id,))
+        execute("UPDATE email_verifications SET verified_at = NOW() WHERE user_id = %s AND verified_at IS NULL",
+                (user_id,))
+        log_action(email, "registration_auto_verified",
+                   f"Verification email undeliverable ({reason}) — account auto-activated")
+        logger.warning("VigyanLLM: auto-activated user_id=%s (%s) — verification mail undeliverable",
+                       user_id, reason)
+        return True
+    except Exception as e:
+        logger.error("Auto-activation failed for user_id=%s (%s): %s", user_id, reason, e)
+        return False
+
+
 def register_user(email: str, password: str, name: str = "", ip_address: str = "") -> dict:
     """Register a new user. Returns user dict or error.
 
@@ -707,15 +734,26 @@ def register_user(email: str, password: str, name: str = "", ip_address: str = "
 
     name = sanitize_string(name, max_length=256)
 
-    existing = fetch_one("SELECT id, status FROM users WHERE email = %s", (email,))
+    existing = fetch_one("SELECT id, status, role FROM users WHERE email = %s", (email,))
     if existing:
         if existing["status"] == "pending":
-            # Resend verification email with new token
+            # Re-registration doubles as a verification resend — and, when no
+            # mail can reach the user, applies the same graceful-degradation
+            # rule as first registration: never strand an account in `pending`.
             verify_token = create_verification_token(existing["id"])
+            resent = False
             if verify_token:
-                send_verification_email(email, verify_token)
-                logger.info("Resent verification email for existing pending user %s", email)
-            return {"user": {"email": email}, "requires_verification": True}
+                resent = send_verification_email(email, verify_token)
+                logger.info("Resent verification email for existing pending user %s (sent=%s)", email, resent)
+            if resent:
+                return {"user": {"email": email}, "requires_verification": True, "email_sent": True}
+            if _activate_unverifiable(existing["id"], email, "re-registration"):
+                token = create_token(email, existing["role"], existing["id"])
+                return {"user": {"id": existing["id"], "email": email, "role": existing["role"]},
+                        "token": token, "requires_verification": False, "email_sent": False,
+                        "auto_verified": True}
+            # Activation itself failed — report the honest pending state.
+            return {"user": {"email": email}, "requires_verification": True, "email_sent": False}
         return {"error": "Email already registered."}
 
     password_hash = bcrypt.hashpw(password.encode(), bcrypt.gensalt(rounds=12)).decode()
@@ -752,8 +790,22 @@ def register_user(email: str, password: str, name: str = "", ip_address: str = "
     else:
         logger.error("Registration: create_verification_token returned empty for user_id=%s", user["id"])
 
+    if not email_sent:
+        # Graceful degradation: verification mail undeliverable → the `pending`
+        # account would be a black hole (user can never verify, so can never
+        # log in). Activate directly — same rule Google sign-in applies — and
+        # hand back a session so signup completes in one step.
+        if _activate_unverifiable(user["id"], email, "registration"):
+            token = create_token(email, user["role"], user["id"])
+            return {"user": {"id": user["id"], "email": user["email"], "role": user["role"]},
+                    "token": token, "requires_verification": False, "email_sent": False,
+                    "auto_verified": True}
+        # Activation itself failed — report the honest pending state.
+        log_action(email, "registration", "User registered (status: pending, verification send failed)")
+        return {"user": {"email": user["email"]}, "requires_verification": True, "email_sent": False}
+
     log_action(email, "registration", "User registered (status: pending, verification sent)")
-    return {"user": {"email": user["email"]}, "requires_verification": True, "email_sent": email_sent}
+    return {"user": {"email": user["email"]}, "requires_verification": True, "email_sent": True}
 
 
 def login_user(email: str, password: str, ip_address: str = "0.0.0.0", user_agent: str = "") -> dict:

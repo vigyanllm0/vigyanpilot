@@ -137,12 +137,31 @@ def register():
             "message": message,
         }), 201
 
-    return jsonify({
+    # Reached only when registration returned a session directly — i.e. the
+    # account was auto-activated because verification mail was undeliverable
+    # (see pg_auth.register_user / _activate_unverifiable). Set the same
+    # cookies login does so the HttpOnly-session frontend rehydrates.
+    auto = bool(result.get("auto_verified"))
+    resp = jsonify({
         "success": True,
         "token": result["token"],
         "user": result["user"],
-        "message": "Account created successfully. 2 free design tokens included.",
-    }), 201
+        "auto_verified": auto,
+        "message": ("Your account was created and activated — we couldn't send a "
+                    "verification email right now, so no confirmation is needed."
+                    if auto else "Account created successfully."),
+    })
+    resp.set_cookie(
+        'pf_token', result["token"],
+        httponly=True, secure=True, samesite='Lax',
+        max_age=86400 * 7, path='/'
+    )
+    resp.set_cookie(
+        'pf_refresh', create_refresh_token(result["user"]["id"]),
+        httponly=True, secure=True, samesite='Lax',
+        max_age=86400 * 30, path='/api/auth'
+    )
+    return resp, 201
 
 
 @auth_bp.route("/api/auth/verify-email", methods=["GET", "POST"])
