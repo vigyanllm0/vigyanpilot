@@ -3335,10 +3335,18 @@ function _build2DSvg(geo) {
   s += '</svg>';
   return s;
 }
-function initViewer() {
+function initViewer(retry) {
   var container = $('mol-viewer-container');
   container.style.display = 'block';
   var el = $('mol-3d-viewer');
+  // A 0-size canvas makes WebGL log "GL_INVALID_FRAMEBUFFER_OPERATION:
+  // Framebuffer is incomplete: Attachment has zero size" and draw nothing —
+  // e.g. when a stored run resumes while an ancestor panel is still hidden.
+  // Retry briefly, then proceed anyway so init is never worse than instant.
+  if ((el.clientWidth === 0 || el.clientHeight === 0) && (retry || 0) < 20) {
+    setTimeout(function() { initViewer((retry || 0) + 1); }, 300);
+    return;
+  }
   if (typeof $3Dmol === 'undefined') {
     el.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:12px;color:var(--muted)"><div style="font-size:32px">&#x1F52D;</div><div style="font-size:13px;font-weight:600;color:var(--text2)">3D Structure Viewer</div><div style="font-size:12px;max-width:300px;text-align:center;line-height:1.6">The 3D molecular viewer library is loading. If it does not appear, try refreshing the page or using a modern browser.</div><button type="button" class="btn-secondary btn-sm" onclick="initViewer()" style="margin-top:4px">Retry Loading Viewer</button></div>';
     // Retry after a delay in case script is still loading

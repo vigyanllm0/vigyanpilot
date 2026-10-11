@@ -183,16 +183,23 @@ function closeAuth(){
 function renderAuth(){
   var c=document.getElementById('auth-content');
   if(!c)return;
-  c.innerHTML='<h2>'+(isRegister?'Create account':'Welcome back')+'</h2>'+
+  // Wrap the fields in a real <form> (mirrors the static overlays on the tool
+  // pages): without it Chrome logs "[DOM] Password field is not contained in a
+  // form", Enter does not submit, and password managers do not associate the
+  // field. The submit button stays type="button" so the click listener is the
+  // only path (form onsubmit handles Enter; no double submit).
+  c.innerHTML='<form id="auth-form" onsubmit="event.preventDefault();submitAuth()">'+
+    '<h2>'+(isRegister?'Create account':'Welcome back')+'</h2>'+
     '<div class="sub">'+(isRegister?'Join VigyanLLM to access all tools.':'Sign in to your VigyanLLM account.')+'</div>'+
     '<div id="gbtn-wrap" style="margin-bottom:16px"></div>'+
     '<div style="display:flex;align-items:center;gap:12px;margin-bottom:16px"><span style="flex:1;height:1px;background:var(--outline)"></span><span style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em">or</span><span style="flex:1;height:1px;background:var(--outline)"></span></div>'+
-    (isRegister?'<div class="field"><label>Full name</label><input type="text" id="auth-name" class="auth-input" placeholder="Dr. Anjali Sharma"></div>':'')+
-    '<div class="field"><label>Email</label><input type="email" id="auth-email" class="auth-input" placeholder="researcher@lab.edu"></div>'+
-    '<div class="field"><label>Password</label><input type="password" id="auth-pass" class="auth-input" placeholder="Min 12: upper, lower, digit, special"></div>'+
+    (isRegister?'<div class="field"><label>Full name</label><input type="text" id="auth-name" class="auth-input" placeholder="Dr. Anjali Sharma" autocomplete="name"></div>':'')+
+    '<div class="field"><label>Email</label><input type="email" id="auth-email" class="auth-input" placeholder="researcher@lab.edu" autocomplete="email"></div>'+
+    '<div class="field"><label>Password</label><input type="password" id="auth-pass" class="auth-input" placeholder="Min 12: upper, lower, digit, special" autocomplete="'+(isRegister?'new-password':'current-password')+'"></div>'+
     '<div class="field tc-field"><label class="tc-label"><input type="checkbox" id="auth-tc" class="auth-tc-input"> I agree to the <a href="/terms" target="_blank" rel="noopener">Terms &amp; Conditions</a> and <a href="/privacy" target="_blank" rel="noopener">Privacy Policy</a></label></div>'+
-    '<button class="auth-btn" id="auth-submit">'+(isRegister?'Create account':'Sign in')+'</button>'+
+    '<button type="button" class="auth-btn" id="auth-submit">'+(isRegister?'Create account':'Sign in')+'</button>'+
     '<div class="auth-err" id="auth-err"></div>'+
+    '</form>'+
     '<div class="toggle-link">'+(isRegister?'Already have an account? <a onclick="openAuthMode()">Sign in</a>':"Don't have an account? <a onclick='openRegMode()'>Create one</a>")+'</div>'+
     vlStaffRowHTML();
   document.getElementById('auth-submit').addEventListener('click',submitAuth);
