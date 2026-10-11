@@ -1,5 +1,6 @@
 """File-based job queue for docking dispatch to local worker."""
 
+import fcntl
 import json
 import logging
 import os
@@ -42,6 +43,106 @@ _lock = threading.Lock()
 def _ensure_dirs():
     for d in (PENDING_DIR, RUNNING_DIR, COMPLETE_DIR, FAILED_DIR):
         os.makedirs(d, exist_ok=True)
+
+
+# ── Cross-process CPU slot allocator ─────────────────────────────────────────
+# Every gunicorn worker runs its own queue loop, so without coordination two
+# or more docking jobs execute CONCURRENTLY on the same few cores: each job's
+# Vina lanes + GNINA children oversubscribe the box, every job crawls, and
+# multi-ligand runs blow the 900s budget. Reproduced live 2026-10-11: the
+# /docking page's own "Kinase Library" button (5 ligands) failed with
+# "Docking timed out after 10 minutes" whenever a second job was in flight,
+# while the identical solo run completed fine.
+#
+# flock() on per-slot files gives every process an honest, crash-safe share of
+# the CPUs: a lease is released by closing the fd, so a dead holder (worker
+# restart, SIGKILL) frees its slots automatically.
+CPU_SLOTS = max(1, os.cpu_count() or 2)
+SLOTS_DIR = os.path.join(QUEUE_DIR, "slots")
+
+
+class SlotLease:
+    """A set of held CPU slots (flock'd file descriptors)."""
+
+    def __init__(self, fds):
+        self._fds = list(fds)
+
+    @property
+    def slots(self) -> int:
+        return len(self._fds)
+
+    def release(self):
+        for fd in self._fds:
+            try:
+                os.close(fd)  # closing the fd releases the flock
+            except OSError:
+                pass
+        self._fds = []
+
+
+def acquire_slots(want: int, wait_s: float = 0.0, allow: int = 1) -> SlotLease | None:
+    """Try to hold up to `want` CPU slots; retry until `wait_s` elapses.
+
+    Returns a lease with at least `allow` slots, or None when nothing freed
+    up in time. Interactive jobs call acquire_slots(2, wait_s=60, allow=1)
+    (2 lanes preferred, 1 lane acceptable); virtual-screening chunks call
+    acquire_slots(1, wait_s=120, allow=1) and are patient by design.
+    """
+    os.makedirs(SLOTS_DIR, exist_ok=True)
+    want = max(1, min(int(want), CPU_SLOTS))
+    allow = max(1, min(int(allow), want))
+    deadline = time.time() + max(0.0, wait_s)
+    while True:
+        fds = []
+        for i in range(want):
+            path = os.path.join(SLOTS_DIR, f"slot{i}")
+            try:
+                fd = os.open(path, os.O_CREAT | os.O_RDWR)
+            except OSError:
+                break
+            try:
+                fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                fds.append(fd)
+            except OSError:
+                try:
+                    os.close(fd)
+                except OSError:
+                    pass
+                break
+        if len(fds) >= allow:
+            return SlotLease(fds)
+        for fd in fds:
+            try:
+                os.close(fd)
+            except OSError:
+                pass
+        if time.time() >= deadline:
+            return None
+        time.sleep(0.25)
+
+
+def interactive_waiting() -> bool:
+    """True when an interactive docking job is queued and not yet claimed.
+
+    Used by long-running virtual-screening runners to yield the cores between
+    chunks so interactive runs stay fast during a big screen.
+    """
+    try:
+        return any(j.get("type", "docking") == "docking" for j in list_pending_jobs())
+    except Exception:
+        return False
+
+
+def get_job_progress(job_id: str) -> dict | None:
+    """Live stage progress written by docking_worker (running/<id>.progress)."""
+    if not valid_job_id(job_id):
+        return None
+    path = os.path.join(RUNNING_DIR, f"{job_id}.progress")
+    try:
+        with open(path) as f:
+            return json.load(f)
+    except (OSError, ValueError):
+        return None
 
 def create_job(sequence: str, ligand_smiles_list: list, top_n: int = 50, pdb_content: str = "", box: dict | None = None) -> str:
     _ensure_dirs()
@@ -150,6 +251,7 @@ def complete_job(job_id: str, result: dict, error: str = None) -> bool:
         job["error"] = error
         _atomic_dump(job, dst)
         os.remove(src)
+    _remove_quiet(os.path.join(RUNNING_DIR, f"{job_id}.progress"))
     try:
         from primerforge.docking_db import complete_job as db_complete
         db_complete(job_id, result, error)
@@ -409,6 +511,13 @@ def _process_job(job: dict):
     with open(input_path, "w") as f:
         f.write(job_input)
 
+    # Claim CPU slots BEFORE spawning: up to 2 lanes preferred, 1 lane
+    # acceptable. This is what stops N gunicorn workers from running N jobs
+    # concurrently on 2 cores (every job crawled → multi-ligand runs timed
+    # out). The lease lives until this job's process tree is dead.
+    lease = acquire_slots(min(2, CPU_SLOTS), wait_s=60.0, allow=1)
+    lanes = max(1, lease.slots) if lease else 1
+
     start = time.time()
     try:
         proc = subprocess.Popen(
@@ -416,11 +525,13 @@ def _process_job(job: dict):
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
-            env={**os.environ, "PYTHONUNBUFFERED": "1"},
+            env={**os.environ, "PYTHONUNBUFFERED": "1", "DOCKING_LANES": str(lanes)},
             start_new_session=True,  # own process group → killpg can't hit ours
         )
     except Exception as e:
         logger.error("Failed to spawn worker for job %s: %s", job_id, e)
+        if lease:
+            lease.release()
         _remove_quiet(input_path)
         complete_job(job_id, None, f"Failed to start docking worker: {e}")
         return
@@ -443,6 +554,12 @@ def _process_job(job: dict):
                 _, err = proc.communicate()
                 break
 
+    # The worker (and its Vina/GNINA children) is dead here in every path —
+    # give the CPU slots back so the next job (any gunicorn worker) starts
+    # at full speed instead of crawling alongside this one.
+    if lease:
+        lease.release()
+
     # Marker read AFTER the loop: a stop that raced a normal completion still
     # resolves to the stop outcome if the worker died non-zero.
     marker_present = os.path.exists(cancel_path)
@@ -458,10 +575,14 @@ def _process_job(job: dict):
 
     if timed_out:
         # The job never wrote a result — fail it with actionable guidance
-        # instead of "Internal worker error".
+        # instead of "Internal worker error". The last recorded stage tells
+        # the user WHERE it stalled (fold vs screen vs CNN refinement).
         logger.error("Job %s exceeded the %ds budget — failed", job_id, budget)
+        _pg = get_job_progress(job_id) or {}
+        _where = f" It was last at: {_pg.get('stage')}." if _pg.get("stage") else ""
+        _remove_quiet(os.path.join(RUNNING_DIR, f"{job_id}.progress"))
         complete_job(job_id, None,
-                     f"Docking timed out after {budget // 60} minutes. "
+                     f"Docking timed out after {budget // 60} minutes.{_where} "
                      "Try fewer ligands (≤100) or a shorter sequence (≤400 aa).")
         return
 

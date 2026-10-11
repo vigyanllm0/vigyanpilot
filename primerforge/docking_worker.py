@@ -72,6 +72,42 @@ def _start_heartbeat(job_id: str, interval: float = 20.0):
     return stop
 
 
+def _progress_writer(job_id: str):
+    """Async progress_callback → running/<job>.progress (atomic, ~1s throttled).
+
+    The consensus pipeline already emits rich stage events (fold start, "ligand
+    34/100", "refining 2/10"…); this persists them so the status route can show
+    REAL progress instead of a frozen spinner for a multi-minute run.
+    """
+
+    path = os.path.join(_queue_base(), "running", f"{job_id}.progress")
+    state = {"last": 0.0, "stage": ""}
+
+    async def cb(stage, message, metadata=None):
+        now = time.time()
+        md = metadata or {}
+        stage_changed = stage != state["stage"]
+        if not stage_changed and (now - state["last"]) < 1.0:
+            return  # throttle same-stage updates to ~1/s
+        state["last"] = now
+        state["stage"] = stage
+        payload = {
+            "stage": stage,
+            "message": str(message)[:300],
+            "processed": md.get("current"),
+            "total": md.get("total"),
+            "t": now,
+        }
+        try:
+            tmp = f"{path}.tmp{os.getpid()}"
+            with open(tmp, "w") as f:
+                json.dump(payload, f)
+            os.replace(tmp, path)
+        except OSError:
+            pass  # job finished/moved — nothing to update
+    return cb
+
+
 def write_result(job_id, result=None, error=None):
     """Write result directly to disk — NO primerforge imports."""
     base = _queue_base()
@@ -103,6 +139,10 @@ def write_result(job_id, result=None, error=None):
         json.dump(job, f)
     os.replace(tmp, dst)
     os.remove(running)
+    try:
+        os.remove(os.path.join(base, "running", f"{job_id}.progress"))
+    except OSError:
+        pass
     log(f"Job {job_id} → {'failed' if error else 'complete'}")
 
 
@@ -142,10 +182,15 @@ def main():
             write_result(job_id, error=f"Failed to load docking engine: {str(e)[:300]}")
             return
 
-        # Run the pipeline
+        # Run the pipeline. progress_callback persists every stage event to
+        # running/<job>.progress so the status route (and the page's poll
+        # loop) can show REAL progress — fold / ligand N/M / refine N/K —
+        # instead of a frozen spinner for a multi-minute run.
         try:
             log("Starting pipeline...")
-            result = asyncio.run(run_consensus_pipeline(sequence, smiles_list, top_n, pdb_content=pdb_content, box=box))
+            result = asyncio.run(run_consensus_pipeline(
+                sequence, smiles_list, top_n, pdb_content=pdb_content, box=box,
+                progress_callback=_progress_writer(job_id)))
             log(f"Pipeline finished: status={result.get('status', 'unknown')}")
             if result.get("status") == "success":
                 write_result(job_id, result=result)

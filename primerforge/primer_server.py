@@ -2772,7 +2772,7 @@ def create_app() -> Flask:
 
     # ── Route-level caps (must match frontend + pipeline validation) ─────
     # Consensus runs dock every ligand individually — 100 is the ceiling;
-    # larger libraries belong on /docking/screen (up to 500).
+    # larger libraries belong on /docking/screen (up to 100,000).
     MAX_LIGANDS_PER_RUN = 100
     MAX_PDB_CONTENT_BYTES = 5 * 1024 * 1024  # matches the frontend PDB upload cap
     try:
@@ -2806,7 +2806,7 @@ def create_app() -> Flask:
                 return err(
                     f"Maximum {MAX_LIGANDS_PER_RUN} ligands per consensus run (you sent "
                     f"{len(ligand_smiles_list)}). For larger libraries use virtual screening: "
-                    "POST /api/primer/docking/screen (up to 500 ligands).",
+                    "POST /api/primer/docking/screen (up to 100,000 ligands).",
                     "VALIDATION_ERROR", 400)
             if any(not isinstance(s, str) for s in ligand_smiles_list):
                 return err("'ligand_smiles_list' must contain only SMILES strings.", "VALIDATION_ERROR", 400)
@@ -2958,6 +2958,14 @@ def create_app() -> Flask:
                 "status": job["status"],
                 "created_at": job.get("created_at", 0),
             }
+            # Live stage progress (fold / ligand N-M / refine N-K) written by
+            # the worker — lets the UI show real stages during long runs
+            # instead of a frozen spinner.
+            if job["status"] in ("pending", "running"):
+                from primerforge.docking_queue import get_job_progress
+                pg = get_job_progress(job_id)
+                if pg:
+                    resp["progress"] = pg
             if job["status"] == "completed" and job.get("result"):
                 result = job["result"]
                 if isinstance(result, dict):
@@ -3565,96 +3573,320 @@ def create_app() -> Flask:
     # Virtual Screening & Monitoring
     # ════════════════════════════════════════════════════════════════════
 
-    # In-memory campaign tracking (production would use Redis/DB)
-    _screening_campaigns = {}
-
     @app.route("/api/primer/docking/screen", methods=["POST"])
     @(_docking_limiter.limit("3 per minute") if _docking_limiter else lambda f: f)
     def start_screening():
+        """Start a virtual screening campaign (file-based, chunked, resumable).
+
+        Accepts up to 10 proteins (sequence or PDB) × up to 100k ligands.
+        The campaign runs in a detached subprocess with its own CPU slot;
+        interactive docking jobs always get priority for remaining cores.
         """
-        Start a virtual screening campaign.
-        Accepts receptor PDB + list of ligand SMILES.
-        Runs up to 4 parallel Vina instances.
-        """
-        from .pipelines.virtual_screening import VirtualScreeningCampaign, campaign_to_dict
-
-        data = request.get_json(silent=True) or {}
-        receptor_pdb = data.get("receptor_pdb", "").strip()
-        ligands = data.get("ligands", [])
-
-        if not receptor_pdb:
-            return err("No receptor PDB provided.", "VALIDATION_ERROR", 400)
-        if not ligands or len(ligands) < 2:
-            return err("At least 2 ligands required for screening.", "VALIDATION_ERROR", 400)
-        if len(ligands) > 500:
-            return err("Maximum 500 ligands per campaign.", "VALIDATION_ERROR", 400)
-
         try:
-            campaign = VirtualScreeningCampaign(receptor_pdb, ligands)
-            _screening_campaigns[campaign.campaign_id] = campaign
+            if not READY:
+                return err("Docking engine failed to load on the server.", "CORE_NOT_READY", 503)
 
-            # Run synchronously (for small batches) or return campaign ID
-            if len(ligands) <= 10:
-                campaign = campaign.run()
-                result = campaign_to_dict(campaign)
-                result['mode'] = 'synchronous'
-                return jsonify(result), 200
-            else:
-                # For larger batches, return campaign ID for polling
-                import threading
-                thread = threading.Thread(target=campaign.run, daemon=True)
-                thread.start()
+            user = get_current_user()
+            if not user:
+                return err("Virtual screening requires an account. Sign in to start a campaign.",
+                           "AUTH_REQUIRED", 401)
+
+            # Daily docking usage check (screening consumes docking credits)
+            from .auth import check_daily_usage
+            dock_usage = check_daily_usage(user["email"], "docking")
+            if not dock_usage["can_analyze"] and user.get("role") != "admin":
                 return jsonify({
-                    'campaign_id': campaign.campaign_id,
-                    'status': 'running',
-                    'total_ligands': len(ligands),
-                    'mode': 'async',
-                    'progress_url': f'/api/primer/docking/screen/{campaign.campaign_id}',
-                }), 202
+                    "error": "Daily docking analysis limit reached. Upgrade for more or wait until midnight IST.",
+                    "code": "PAYMENT_REQUIRED", "action": "show_docking_payment",
+                    "usage": dock_usage,
+                }), 402
+
+            data = request.get_json(silent=True) or {}
+            proteins = data.get("proteins", [])
+            ligands = data.get("ligands") or data.get("library") or []
+            config = data.get("config") or {}
+
+            if not proteins:
+                return err("'proteins' is required — a list of {sequence | pdb_content} objects.",
+                           "VALIDATION_ERROR", 400)
+            if not ligands or not isinstance(ligands, list):
+                return err("'ligands' must be a non-empty list of SMILES strings or {smiles,name} objects.",
+                           "VALIDATION_ERROR", 400)
+
+            from .pipelines.virtual_screening import create_campaign, MAX_PROTEINS, MAX_LIGANDS
+            if len(proteins) > MAX_PROTEINS:
+                return err(f"Maximum {MAX_PROTEINS} proteins per campaign.", "VALIDATION_ERROR", 400)
+            if len(ligands) > MAX_LIGANDS:
+                return err(f"Maximum {MAX_LIGANDS:,} ligands per campaign.", "VALIDATION_ERROR", 400)
+
+            try:
+                campaign_id = create_campaign(proteins, ligands, config, user_email=user["email"])
+            except ValueError as ve:
+                return err(str(ve), "VALIDATION_ERROR", 400)
+
+            # Consume docking token (same accounting as consensus runs)
+            settled = _settle_docking_job(campaign_id, user, USE_POSTGRES,
+                                           consume_docking_token, increment_docking_usage)
+            if settled is not None:
+                return settled
+
+            # Spawn detached screening worker (fire-and-forget)
+            import subprocess
+            import sys as _sys
+            worker_script = os.path.join(
+                os.path.dirname(os.path.abspath(__file__)), "screening_worker.py")
+            try:
+                subprocess.Popen(
+                    [_sys.executable, worker_script, "--campaign", campaign_id],
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                    env={**os.environ, "PYTHONUNBUFFERED": "1"},
+                    start_new_session=True,
+                )
+            except Exception as exc:
+                logger.error("Failed to spawn screening worker for %s: %s", campaign_id, exc)
+                from .pipelines.virtual_screening import update_campaign
+                update_campaign(campaign_id, {
+                    "status": "failed",
+                    "progress": {"stage": "failed", "message": f"Failed to start worker: {exc}"},
+                })
+                return err(f"Failed to start screening worker: {exc}", "SCREENING_FAILED", 500)
+
+            from .pipelines.virtual_screening import get_campaign
+            campaign = get_campaign(campaign_id) or {}
+            return jsonify({
+                "campaign_id": campaign_id,
+                "status": campaign.get("status", "pending"),
+                "total_ligands": campaign.get("library", {}).get("total", len(ligands)),
+                "total_proteins": len(proteins),
+                "progress_url": f"/api/primer/docking/screen/{campaign_id}",
+            }), 202
+
         except Exception as exc:
-            logger.error("Screening error: %s", exc, exc_info=True)
+            logger.error("start_screening error: %s", exc, exc_info=True)
             return err(f"Screening failed: {str(exc)}", "SCREENING_FAILED", 500)
+
+    @app.route("/api/primer/docking/screen", methods=["GET"])
+    def list_screening_campaigns():
+        """List the current user's screening campaigns."""
+        user = get_current_user()
+        if not user:
+            return err("Sign in to view campaigns.", "AUTH_REQUIRED", 401)
+        from .pipelines.virtual_screening import list_campaigns, is_stale
+        campaigns = list_campaigns(user["email"], limit=20)
+        # Mark stale running campaigns as interrupted
+        for c in campaigns:
+            if is_stale(c.get("campaign_id", "")):
+                c["status"] = "interrupted"
+        return jsonify({"campaigns": campaigns, "count": len(campaigns)}), 200
 
     @app.route("/api/primer/docking/screen/<campaign_id>", methods=["GET"])
     def get_screening_progress(campaign_id):
-        """Get screening campaign progress."""
-        campaign = _screening_campaigns.get(campaign_id)
+        """Get screening campaign progress + results summary."""
+        from .pipelines.virtual_screening import get_campaign, is_stale
+        campaign = get_campaign(campaign_id)
         if not campaign:
             return err("Campaign not found.", "NOT_FOUND", 404)
 
-        from .pipelines.virtual_screening import campaign_to_dict
-        progress = campaign.get_progress()
+        # Ownership check (admins can view any)
+        user = get_current_user()
+        if user and user.get("role") != "admin" and campaign.get("user_email") != user.get("email"):
+            return err("Campaign not found.", "NOT_FOUND", 404)
+        if not user and campaign.get("user_email"):
+            return err("Campaign not found.", "NOT_FOUND", 404)
 
-        if campaign.status in ('complete', 'failed', 'partial'):
-            result = campaign_to_dict(campaign)
-            return jsonify(result), 200
+        # Detect stale running campaigns (worker died)
+        if is_stale(campaign_id):
+            from .pipelines.virtual_screening import update_campaign
+            update_campaign(campaign_id, {
+                "status": "interrupted",
+                "progress": {"stage": "interrupted", "message": "Worker stopped unexpectedly. Resume to continue."},
+            })
+            campaign = get_campaign(campaign_id) or campaign
 
-        return jsonify(progress), 200
+        # Strip heavy fields from response
+        resp = {k: v for k, v in campaign.items() if k != "proteins"}
+        # Keep protein metadata (id, name, sequence length) but not full sequences/PDBs
+        resp["proteins"] = [
+            {"id": p.get("id"), "name": p.get("name"),
+             "sequence_length": len(p.get("sequence", "")),
+             "has_pdb": bool(p.get("pdb_content"))}
+            for p in campaign.get("proteins", [])
+        ]
+        return jsonify(resp), 200
+
+    @app.route("/api/primer/docking/screen/<campaign_id>/results", methods=["GET"])
+    def get_screening_results(campaign_id):
+        """Get paginated results for a specific protein in the campaign."""
+        from .pipelines.virtual_screening import get_campaign, _campaign_dir, _read_json
+        import math as _math
+
+        campaign = get_campaign(campaign_id)
+        if not campaign:
+            return err("Campaign not found.", "NOT_FOUND", 404)
+
+        user = get_current_user()
+        if user and user.get("role") != "admin" and campaign.get("user_email") != user.get("email"):
+            return err("Campaign not found.", "NOT_FOUND", 404)
+        if not user and campaign.get("user_email"):
+            return err("Campaign not found.", "NOT_FOUND", 404)
+
+        protein_id = request.args.get("protein_id", "").strip()
+        try:
+            page = max(1, int(request.args.get("page", 1)))
+        except ValueError:
+            page = 1
+        try:
+            per_page = max(1, min(int(request.args.get("per_page", 50)), 200))
+        except ValueError:
+            per_page = 50
+
+        cdir = _campaign_dir(campaign_id)
+        if protein_id:
+            final = _read_json(os.path.join(cdir, "results", protein_id, "final.json"))
+            if final is None:
+                return err(f"No results for protein '{protein_id}'.", "NOT_FOUND", 404)
+            hits = final.get("top_hits", [])
+        else:
+            # Merge across all proteins
+            hits = []
+            for p in campaign.get("proteins", []):
+                final = _read_json(os.path.join(cdir, "results", p["id"], "final.json"))
+                if final:
+                    for h in final.get("top_hits", []):
+                        h["protein_id"] = p["id"]
+                        h["protein_name"] = p.get("name", p["id"])
+                        hits.append(h)
+            hits.sort(key=lambda h: h.get("consensus_score") or h.get("vina_score") or 999)
+
+        total = len(hits)
+        pages = max(1, _math.ceil(total / per_page))
+        start = (page - 1) * per_page
+        paginated = hits[start:start + per_page]
+
+        return jsonify({
+            "campaign_id": campaign_id,
+            "protein_id": protein_id or None,
+            "total": total,
+            "page": page,
+            "per_page": per_page,
+            "pages": pages,
+            "results": paginated,
+        }), 200
+
+    @app.route("/api/primer/docking/screen/<campaign_id>/cancel", methods=["POST"])
+    def cancel_screening(campaign_id):
+        """Request cancellation of a running campaign."""
+        from .pipelines.virtual_screening import get_campaign, cancel_campaign, update_campaign
+        campaign = get_campaign(campaign_id)
+        if not campaign:
+            return err("Campaign not found.", "NOT_FOUND", 404)
+
+        user = get_current_user()
+        if user and user.get("role") != "admin" and campaign.get("user_email") != user.get("email"):
+            return err("Campaign not found.", "NOT_FOUND", 404)
+        if not user and campaign.get("user_email"):
+            return err("Campaign not found.", "NOT_FOUND", 404)
+
+        if campaign.get("status") in ("completed", "failed", "cancelled"):
+            return err(f"Campaign is already {campaign['status']}.", "ALREADY_FINISHED", 409)
+
+        cancel_campaign(campaign_id)
+        # If still pending (worker hasn't started), mark cancelled immediately
+        if campaign.get("status") == "pending":
+            update_campaign(campaign_id, {
+                "status": "cancelled",
+                "progress": {"stage": "cancelled", "message": "Cancelled before start."},
+            })
+        return jsonify({"campaign_id": campaign_id, "status": "cancelling"}), 200
+
+    @app.route("/api/primer/docking/screen/<campaign_id>/resume", methods=["POST"])
+    def resume_screening(campaign_id):
+        """Resume an interrupted campaign from where it left off."""
+        from .pipelines.virtual_screening import get_campaign, update_campaign
+        campaign = get_campaign(campaign_id)
+        if not campaign:
+            return err("Campaign not found.", "NOT_FOUND", 404)
+
+        user = get_current_user()
+        if not user:
+            return err("Sign in to resume campaigns.", "AUTH_REQUIRED", 401)
+        if user.get("role") != "admin" and campaign.get("user_email") != user.get("email"):
+            return err("Campaign not found.", "NOT_FOUND", 404)
+
+        if campaign.get("status") not in ("interrupted", "failed", "cancelled"):
+            return err(f"Campaign is {campaign.get('status', 'unknown')} — cannot resume.",
+                       "ALREADY_RUNNING", 409)
+
+        # Clear cancel marker, reset status, respawn worker
+        import subprocess
+        import sys as _sys
+        from .pipelines.virtual_screening import _campaign_dir
+        cdir = _campaign_dir(campaign_id)
+        cancel_path = os.path.join(cdir, "cancel")
+        if os.path.exists(cancel_path):
+            os.remove(cancel_path)
+
+        update_campaign(campaign_id, {
+            "status": "pending",
+            "progress": {"stage": "pending", "message": "Resuming…"},
+        })
+
+        worker_script = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), "screening_worker.py")
+        try:
+            subprocess.Popen(
+                [_sys.executable, worker_script, "--campaign", campaign_id],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                env={**os.environ, "PYTHONUNBUFFERED": "1"},
+                start_new_session=True,
+            )
+        except Exception as exc:
+            return err(f"Failed to resume: {exc}", "SCREENING_FAILED", 500)
+
+        return jsonify({"campaign_id": campaign_id, "status": "pending"}), 202
 
     @app.route("/api/primer/docking/screen/<campaign_id>/export/csv", methods=["GET"])
     def export_screening_csv(campaign_id):
         """Export screening results as CSV."""
-        campaign = _screening_campaigns.get(campaign_id)
+        from .pipelines.virtual_screening import get_campaign, export_campaign_csv
+        campaign = get_campaign(campaign_id)
         if not campaign:
             return err("Campaign not found.", "NOT_FOUND", 404)
+        user = get_current_user()
+        if user and user.get("role") != "admin" and campaign.get("user_email") != user.get("email"):
+            return err("Campaign not found.", "NOT_FOUND", 404)
+        if not user and campaign.get("user_email"):
+            return err("Campaign not found.", "NOT_FOUND", 404)
 
-        csv_data = campaign.export_csv()
+        csv_data = export_campaign_csv(campaign_id)
+        if csv_data is None:
+            return err("Export failed.", "EXPORT_FAILED", 500)
         return csv_data, 200, {
-            'Content-Type': 'text/csv',
-            'Content-Disposition': f'attachment; filename="screening_{campaign_id}.csv"',
+            "Content-Type": "text/csv",
+            "Content-Disposition": f'attachment; filename="screening_{campaign_id}.csv"',
         }
 
     @app.route("/api/primer/docking/screen/<campaign_id>/export/sdf", methods=["GET"])
     def export_screening_sdf(campaign_id):
         """Export top screening results as SDF."""
-        campaign = _screening_campaigns.get(campaign_id)
+        from .pipelines.virtual_screening import get_campaign, export_campaign_sdf
+        campaign = get_campaign(campaign_id)
         if not campaign:
             return err("Campaign not found.", "NOT_FOUND", 404)
+        user = get_current_user()
+        if user and user.get("role") != "admin" and campaign.get("user_email") != user.get("email"):
+            return err("Campaign not found.", "NOT_FOUND", 404)
+        if not user and campaign.get("user_email"):
+            return err("Campaign not found.", "NOT_FOUND", 404)
 
-        sdf_data = campaign.export_sdf()
+        sdf_data = export_campaign_sdf(campaign_id)
+        if sdf_data is None:
+            return err("Export failed (no results or RDKit unavailable).", "EXPORT_FAILED", 500)
         return sdf_data, 200, {
-            'Content-Type': 'chemical/x-mdl-sdfile',
-            'Content-Disposition': f'attachment; filename="screening_{campaign_id}_top100.sdf"',
+            "Content-Type": "chemical/x-mdl-sdfile",
+            "Content-Disposition": f'attachment; filename="screening_{campaign_id}_top100.sdf"',
         }
 
     @app.route("/api/primer/docking/health", methods=["GET"])

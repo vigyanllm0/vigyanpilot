@@ -376,7 +376,7 @@ footer{padding:32px 0;border-top:1px solid var(--slate-border)}
 <script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.vigyanllm.in"}, {"@type": "ListItem", "position": 2, "name": "Molecular Docking Consensus Pipeline", "item": "https://www.vigyanllm.in/docking"}]}</script>
 <script type="application/ld+json">{"@context":"https://schema.org","@type":["SoftwareApplication","WebApplication"],"name":"VigyanLLM Molecular Docking","url":"https://www.vigyanllm.in/docking","description":"Molecular docking tool with ESMFold structure prediction, AutoDock Vina, and GNINA consensus scoring. No software installation required.","applicationCategory":"BioinformaticsApplication","operatingSystem":"Web Browser","featureList":["No software installation needed","AutoDock Vina scoring","GNINA deep-learning rescoring","ESMFold structure prediction","Consensus scoring across engines","Runs at $1.00 each"],"offers":{"@type":"Offer","price":"1.00","priceCurrency":"USD"},"author":{"@type":"Organization","name":"VigyanLLM Private Limited"}}</script>
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"HowTo","name":"Run Molecular Docking Online","step":[{"@type":"HowToStep","position":1,"name":"Enter protein sequence","text":"Paste your protein amino acid sequence (at least 10 residues) or upload a PDB file."},{"@type":"HowToStep","position":2,"name":"Add ligands","text":"Enter one or more ligand SMILES strings, one per line."},{"@type":"HowToStep","position":3,"name":"Run docking","text":"Click Run Docking Screen. The pipeline runs ESMFold structure prediction, AutoDock Vina docking, and GNINA CNN re-scoring."},{"@type":"HowToStep","position":4,"name":"Review results","text":"Examine the ranked poses, binding affinity (kcal/mol), GNINA confidence scores, and 3D visualizations."},{"@type":"HowToStep","position":5,"name":"Export","text":"Download results as PDB, CSV, or JSON for downstream analysis."}]}</script>
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What's the difference between this and running AutoDock Vina directly?","acceptedAnswer":{"@type":"Answer","text":"Running Vina directly gives you a pose and an affinity estimate from one physics-based engine. This pipeline adds two steps: ESMFold predicts a structure when you only have a sequence, and GNINA re-scores the top Vina poses with a deep-learning network. The extra scoring layer is what turns a single engine's guess into a more confident call."}},{"@type":"Question","name":"Why use three methods instead of one?","acceptedAnswer":{"@type":"Answer","text":"Consensus. Any single docking algorithm can miss the correct binding pose, so the pipeline runs ESMFold, Vina, and GNINA together. When all three agree on a pose and score, the answer is far more trustworthy than any one engine alone; when they disagree, the GNINA confidence score is usually the better predictor."}},{"@type":"Question","name":"What PDB format do you accept?","acceptedAnswer":{"@type":"Answer","text":"For proteins, standard PDB files and raw amino-acid sequences both work. For ligands, the tool accepts SDF or MOL2 format. If you only have a sequence, ESMFold builds the structure for you in stage one."}},{"@type":"Question","name":"How accurate is ESMFold compared to AlphaFold?","acceptedAnswer":{"@type":"Answer","text":"ESMFold is faster than AlphaFold but generally less accurate on long, multi-domain proteins. For well-studied proteins, starting from an experimental PDB structure is the best choice; use ESMFold when you have only a sequence and speed matters."}},{"@type":"Question","name":"Can I dock protein-protein interactions?","acceptedAnswer":{"@type":"Answer","text":"Not yet. This tool is protein-ligand docking only. If you need to study how two proteins interact, that is a separate workflow — see the protein-protein docking guidance for what to use instead."}},{"@type":"Question","name":"How do I validate a docking result?","acceptedAnswer":{"@type":"Answer","text":"Compare your top pose to a co-crystallized structure (RMSD under 2.0 Å is a good sign), check that the affinity and GNINA score agree, and sanity-check against known binders for your target. Consensus across engines plus agreement with experimental structures is the strongest evidence you will get from computation alone."}},{"@type":"Question","name":"Can I run molecular docking without installing AutoDock Vina?","acceptedAnswer":{"@type":"Answer","text":"Yes. The docking engine runs AutoDock Vina and GNINA on the server — there is no Python, compilation, or command line on your side. Upload your PDB files and get consensus docking scores."}},{"@type":"Question","name":"What is consensus scoring in molecular docking?","acceptedAnswer":{"@type":"Answer","text":"Consensus scoring runs the same ligand-receptor pair through multiple engines (Vina and GNINA) and combines the results. This reduces false positives compared to relying on a single engine. This tool provides consensus scoring without any local installation."}},{"@type":"Question","name":"Is there a free alternative to SwissDock for molecular docking?","acceptedAnswer":{"@type":"Answer","text":"This tool provides molecular docking with Vina and GNINA engines plus ESMFold structure prediction. It supports consensus scoring and needs no installation. Runs cost $1.00 each."}}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What's the difference between this and running AutoDock Vina directly?","acceptedAnswer":{"@type":"Answer","text":"Running Vina directly gives you a pose and an affinity estimate from one physics-based engine. This pipeline adds two steps: ESMFold predicts a structure when you only have a sequence, and GNINA re-scores the top Vina poses with a deep-learning network. The extra scoring layer is what turns a single engine's guess into a more confident call."}},{"@type":"Question","name":"Why use three methods instead of one?","acceptedAnswer":{"@type":"Answer","text":"Consensus. Any single docking algorithm can miss the correct binding pose, so the pipeline runs ESMFold, Vina, and GNINA together. When all three agree on a pose and score, the answer is far more trustworthy than any one engine alone; when they disagree, the GNINA confidence score is usually the better predictor."}},{"@type":"Question","name":"What PDB format do you accept?","acceptedAnswer":{"@type":"Answer","text":"For proteins, standard PDB files and raw amino-acid sequences both work. For ligands, the tool accepts SDF or MOL2 format. If you only have a sequence, ESMFold builds the structure for you in stage one."}},{"@type":"Question","name":"How accurate is ESMFold compared to AlphaFold?","acceptedAnswer":{"@type":"Answer","text":"ESMFold is faster than AlphaFold but generally less accurate on long, multi-domain proteins. For well-studied proteins, starting from an experimental PDB structure is the best choice; use ESMFold when you have only a sequence and speed matters."}},{"@type":"Question","name":"Can I dock protein-protein interactions?","acceptedAnswer":{"@type":"Answer","text":"Not yet. This tool is protein-ligand docking only. If you need to study how two proteins interact, that is a separate workflow — see the protein-protein docking guidance for what to use instead."}},{"@type":"Question","name":"How do I validate a docking result?","acceptedAnswer":{"@type":"Answer","text":"Compare your top pose to a co-crystallized structure (RMSD under 2.0 Å is a good sign), check that the affinity and GNINA score agree, and sanity-check against known binders for your target. Consensus across engines plus agreement with experimental structures is the strongest evidence you will get from computation alone."}},{"@type":"Question","name":"Can I run molecular docking without installing AutoDock Vina?","acceptedAnswer":{"@type":"Answer","text":"Yes. The docking engine runs AutoDock Vina and GNINA on the server — there is no Python, compilation, or command line on your side. Upload your PDB files and get consensus docking scores."}},{"@type":"Question","name":"What is consensus scoring in molecular docking?","acceptedAnswer":{"@type":"Answer","text":"Consensus scoring runs the same ligand-receptor pair through multiple engines (Vina and GNINA) and combines the results. This reduces false positives compared to relying on a single engine. This tool provides consensus scoring without any local installation."}},{"@type":"Question","name":"Is there a free alternative to SwissDock for molecular docking?","acceptedAnswer":{"@type":"Answer","text":"This tool provides molecular docking with Vina and GNINA engines plus ESMFold structure prediction. It supports consensus scoring and needs no installation. Runs cost $1.00 each."}},{"@type":"Question","name":"Can I screen a large ligand library against multiple proteins?","acceptedAnswer":{"@type":"Answer","text":"Yes. The virtual screening mode screens up to 100,000 compounds against up to 10 protein targets in one campaign. It uses a fast Vina prefilter at exhaustiveness 1, then GNINA CNN refine on the top hits. Throughput scales with CPU cores — about 0.3 ligands/sec on 2 cores, up to 5 ligands/sec on 32 cores."}}]}</script>
 
 <script type="application/ld+json">
 {
@@ -690,6 +690,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           <div id="seq-input-mode" style="display:flex;gap:6px;margin-bottom:8px">
             <button type="button" class="quick-btn active" id="mode-seq" onclick="setInputMode('seq')">Sequence</button>
             <button type="button" class="quick-btn" id="mode-pdb" onclick="setInputMode('pdb')">PDB File</button>
+            <button type="button" class="quick-btn" id="mode-screen" onclick="setInputMode('screen')" title="Virtual screening: screen large ligand libraries against multiple proteins">Screen &#x1F50D;</button>
           </div>
           <div id="seq-text-input">
             <textarea id="protein-seq" class="form-textarea" placeholder="Paste amino acid sequence or FASTA here&#10;&#10;MKTAYIAKQRQISFVKSHFSRQLEERLGLIEVQAP..." rows="6"></textarea>
@@ -781,7 +782,110 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             <div style="font-size:11px;color:var(--muted);margin-top:8px;line-height:1.5">The same box is used for Vina screening <em>and</em> GNINA re-scoring. Server clamps each side to 12&ndash;30&nbsp;&Aring; (Vina volume limit).</div>
           </div>
         </div>
-        <div class="quick-load">
+
+        <!-- ══ Virtual Screening Panel (hidden unless Screen tab active) ══ -->
+        <div id="screen-panel" style="display:none;margin-top:16px;padding:20px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px">
+          <h3 style="margin:0 0 4px;font-size:16px;font-weight:800;color:var(--text)">Virtual Screening</h3>
+          <p style="margin:0 0 16px;font-size:12px;color:var(--muted);line-height:1.6">Screen large ligand libraries (up to 100,000 compounds) against multiple protein targets. Uses a fast Vina prefilter at exhaustiveness 1, then GNINA CNN refine on top hits. Requires a Pro or Lab subscription.</p>
+
+          <!-- Proteins -->
+          <div class="form-group">
+            <label class="form-label">Proteins <span style="font-size:11px;color:var(--muted);font-weight:400">(up to 10 targets)</span></label>
+            <div id="screen-proteins"></div>
+            <button type="button" class="quick-btn" onclick="addScreenProtein()" style="margin-top:6px">+ Add protein</button>
+            <div class="error-msg" id="screen-protein-error"></div>
+          </div>
+
+          <!-- Ligand library -->
+          <div class="form-group">
+            <label class="form-label">Ligand Library <span style="font-size:11px;color:var(--muted);font-weight:400">(SMILES, one per line — up to 100,000)</span></label>
+            <textarea id="screen-library-input" class="form-textarea" placeholder="CN1C=NC2=C1C(=O)N(C(=O)N2C)C&#10;CC(=O)Oc1ccccc1C(=O)O&#10;CC(=O)Nc1ccc(O)cc1&#10;..." rows="6" style="font-family:monospace;font-size:12px"></textarea>
+            <div style="margin-top:6px;display:flex;gap:8px;align-items:center">
+              <label for="screen-library-file" class="quick-btn" style="cursor:pointer">Upload .smi/.txt file</label>
+              <input type="file" id="screen-library-file" accept=".smi,.txt,.smiles,.csv" style="display:none" onchange="handleScreenLibraryFile(this)">
+              <span id="screen-library-info" style="font-size:12px;color:var(--muted)"></span>
+            </div>
+            <div class="error-msg" id="screen-library-error"></div>
+          </div>
+
+          <!-- Config -->
+          <div style="display:flex;gap:16px;margin-bottom:16px;flex-wrap:wrap">
+            <div>
+              <label class="form-label" style="margin-bottom:4px">Exhaustiveness</label>
+              <select id="screen-exh" class="form-select" style="font-size:12px;padding:6px 10px">
+                <option value="1" selected>1 (fastest — ~100k ligands)</option>
+                <option value="2">2 (balanced)</option>
+                <option value="4">4 (thorough)</option>
+              </select>
+            </div>
+            <div>
+              <label class="form-label" style="margin-bottom:4px">GNINA refine top</label>
+              <select id="screen-topk" class="form-select" style="font-size:12px;padding:6px 10px">
+                <option value="0">0 (skip GNINA)</option>
+                <option value="5">5</option>
+                <option value="10" selected>10</option>
+                <option value="25">25</option>
+                <option value="50">50</option>
+              </select>
+            </div>
+          </div>
+
+          <button type="button" class="btn-primary" id="screen-run-btn" onclick="startScreening()" style="padding:12px 24px;font-size:14px;font-weight:800;border-radius:10px;background:linear-gradient(135deg,#0d9488,#0f766e);width:100%">
+            <span id="screen-run-text">Start Virtual Screening</span>
+          </button>
+
+          <!-- Progress -->
+          <div id="screen-progress" style="display:none;margin-top:16px;padding:16px;background:#fff;border:1px solid #e2e8f0;border-radius:10px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+              <span id="screen-status-badge" style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:#dbeafe;color:#1d4ed8">RUNNING</span>
+              <div style="display:flex;gap:6px">
+                <button type="button" class="quick-btn" id="screen-resume-btn" onclick="resumeScreening()" style="display:none;border-color:#0d9488;color:#0d9488">&#x21bb; Resume</button>
+                <button type="button" class="quick-btn" id="screen-cancel-btn" onclick="cancelScreening()" style="border-color:#ef4444;color:#ef4444">Cancel</button>
+              </div>
+            </div>
+            <div id="screen-stage" style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px">Starting…</div>
+            <div id="screen-message" style="font-size:12px;color:var(--muted);margin-bottom:10px"></div>
+            <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--text2)">
+              <span>Ligands: <strong id="screen-lig-done">0</strong>/<strong id="screen-lig-total">0</strong></span>
+              <span>Rate: <strong id="screen-rate">—</strong> lig/s</span>
+              <span>ETA: <strong id="screen-eta">—</strong></span>
+            </div>
+            <div style="margin-top:10px;height:6px;background:#e2e8f0;border-radius:3px;overflow:hidden">
+              <div id="screen-bar" style="height:100%;width:0%;background:linear-gradient(90deg,#0d9488,#0f766e);border-radius:3px;transition:width .5s"></div>
+            </div>
+          </div>
+
+          <!-- Results -->
+          <div id="screen-results" style="display:none;margin-top:16px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+              <h4 style="margin:0;font-size:14px;font-weight:700;color:var(--text)">Top Hits</h4>
+              <div style="display:flex;gap:8px">
+                <a id="screen-dl-csv" href="#" download style="font-size:12px;font-weight:600;color:var(--primary);text-decoration:none">Download CSV</a>
+                <a id="screen-dl-sdf" href="#" download style="font-size:12px;font-weight:600;color:var(--primary);text-decoration:none">Download SDF</a>
+              </div>
+            </div>
+            <div style="overflow-x:auto">
+              <table style="width:100%;border-collapse:collapse;font-size:12px">
+                <thead>
+                  <tr style="border-bottom:2px solid #e2e8f0">
+                    <th style="text-align:left;padding:8px 6px;font-weight:700;color:var(--text2)">#</th>
+                    <th style="text-align:left;padding:8px 6px;font-weight:700;color:var(--text2)">Protein</th>
+                    <th style="text-align:left;padding:8px 6px;font-weight:700;color:var(--text2)">SMILES</th>
+                    <th style="text-align:right;padding:8px 6px;font-weight:700;color:var(--text2)">Vina</th>
+                    <th style="text-align:right;padding:8px 6px;font-weight:700;color:var(--text2)">GNINA</th>
+                    <th style="text-align:right;padding:8px 6px;font-weight:700;color:var(--text2)">Consensus</th>
+                  </tr>
+                </thead>
+                <tbody id="screen-results-body"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Error -->
+          <div id="screen-error" class="error-msg" style="margin-top:12px"></div>
+        </div>
+
+        <div class="quick-load" id="consensus-quick-load">
           <button type="button" class="quick-btn" onclick="loadExample()">&#x1F4E6; Load Example (E. coli DHFR + trimethoprim)</button>
           <button type="button" class="quick-btn" onclick="loadKinaseExample()">&#x1F4E6; Kinase Library</button><span style="font-size:12px;color:var(--muted);margin-left:6px">Pre-loaded kinase panel for drug discovery screens.</span>
         </div>
@@ -1045,6 +1149,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <div class="faq-item" style="margin-bottom:24px">
   <h3 style="font-family:var(--font-h);font-size:13px;font-weight:700;margin-bottom:8px">Is there a free alternative to SwissDock for molecular docking?</h3>
   <p style="font-size:14px;color:var(--text2);line-height:1.7">This tool provides molecular docking with Vina and GNINA engines plus ESMFold structure prediction. It supports consensus scoring and needs no installation. Runs cost $1.00 each.</p>
+</div>
+<div class="faq-item" style="margin-bottom:24px">
+  <h3 style="font-family:var(--font-h);font-size:13px;font-weight:700;margin-bottom:8px">Can I screen a large ligand library against multiple proteins?</h3>
+  <p style="font-size:14px;color:var(--text2);line-height:1.7">Yes. The virtual screening mode (Screen tab) screens up to 100,000 compounds against up to 10 protein targets in one campaign. It uses a fast Vina prefilter at exhaustiveness 1, then GNINA CNN refine on the top hits. Throughput scales with CPU cores &mdash; about 0.3 ligands/sec on 2 cores, up to 5 ligands/sec on 32 cores. Requires a Pro or Lab subscription.</p>
 </div>
 </div>
 <!-- PROOF SECTION -->
@@ -1467,8 +1575,19 @@ function setInputMode(mode) {
   _inputMode = mode;
   $('mode-seq').classList.toggle('active', mode === 'seq');
   $('mode-pdb').classList.toggle('active', mode === 'pdb');
-  $('seq-text-input').style.display = mode === 'seq' ? 'block' : 'none';
-  $('seq-file-input').style.display = mode === 'pdb' ? 'block' : 'none';
+  $('mode-screen').classList.toggle('active', mode === 'screen');
+  var isScreen = mode === 'screen';
+  $('seq-text-input').style.display = (mode === 'seq') ? 'block' : 'none';
+  $('seq-file-input').style.display = (mode === 'pdb') ? 'block' : 'none';
+  $('screen-panel').style.display = isScreen ? 'block' : 'none';
+  // Auto-add first protein row on first open
+  if (isScreen && _screenProteins.length === 0) { addScreenProtein(); }
+  // Hide consensus-only elements when in screen mode
+  $('consensus-quick-load').style.display = isScreen ? 'none' : '';
+  $('run-btn').style.display = isScreen ? 'none' : '';
+  $('stop-btn').style.display = 'none';
+  $('dock-note').style.display = 'none';
+  $('slow-warn').style.display = 'none';
   if (mode === 'seq') { _uploadedPDB = null; $('pdb-file-info').style.display = 'none'; }
 }
 
@@ -1811,6 +1930,18 @@ function startDockPolling(jobId) {
           resetRunUI();
           // keep the stored run: refresh resumes it, Stop cancels it
           dockNote('Polling timed out — refresh to resume, or press Stop run to cancel.');
+          return;
+        }
+        // Live stage feed from the worker (fold / ligand N-M / refine N-K):
+        // the stage cards track the REAL pipeline instead of a frozen spinner.
+        var pg = statusResult.progress;
+        if (pg && pg.stage) {
+          var sn = pg.stage.indexOf('STAGE 3') === 0 ? 3
+                 : (pg.stage.indexOf('STAGE 2') === 0 ? 2 : 1);
+          for (var si = 1; si < sn; si++) setStage(si, 'done');
+          var pm = pg.message || pg.stage;
+          if (pg.processed && pg.total) pm += ' (' + pg.processed + '/' + pg.total + ')';
+          setStage(sn, 'running', pm.slice(0, 160));
         }
       }
     } catch (e) {
@@ -3644,6 +3775,263 @@ if (hamburger && mobileMenu) {
       mobileMenu.classList.remove('open');
     }
   });
+}
+
+// ══ Virtual Screening ═════════════════════════════════════════════════════
+var _screenProteins = [];
+var _screenPollTimer = null;
+var _screenCampaignId = null;
+
+function addScreenProtein() {
+  if (_screenProteins.length >= 10) return;
+  var idx = _screenProteins.length;
+  _screenProteins.push({ id: 'p' + (idx + 1), name: '', sequence: '', pdb_content: '' });
+  renderScreenProteins();
+}
+
+function removeScreenProtein(idx) {
+  _screenProteins.splice(idx, 1);
+  _screenProteins.forEach(function(p, i) { p.id = 'p' + (i + 1); });
+  renderScreenProteins();
+}
+
+function renderScreenProteins() {
+  var el = $('screen-proteins');
+  if (!el) return;
+  el.innerHTML = _screenProteins.map(function(p, i) {
+    return '<div style="display:flex;gap:8px;align-items:flex-start;margin-bottom:8px;padding:10px;background:#fff;border:1px solid #e2e8f0;border-radius:8px">' +
+      '<div style="flex:1">' +
+      '<input type="text" placeholder="Name (e.g. Kinase A)" value="' + (p.name || '').replace(/"/g, '&quot;') + '" ' +
+      'oninput="_screenProteins[' + i + '].name=this.value" ' +
+      'style="width:100%;padding:4px 8px;font-size:12px;border:1px solid #e2e8f0;border-radius:4px;margin-bottom:6px">' +
+      '<textarea placeholder="Amino acid sequence or FASTA" rows="3" ' +
+      'oninput="_screenProteins[' + i + '].sequence=this.value;_screenProteins[' + i + '].pdb_content=\'\'" ' +
+      'style="width:100%;padding:6px 8px;font-size:11px;font-family:monospace;border:1px solid #e2e8f0;border-radius:4px;resize:vertical">' + (p.sequence || '') + '</textarea>' +
+      '</div>' +
+      '<button type="button" onclick="removeScreenProtein(' + i + ')" ' +
+      'style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:16px;padding:4px" title="Remove">&times;</button>' +
+      '</div>';
+  }).join('');
+}
+
+function handleScreenLibraryFile(input) {
+  var file = input.files[0];
+  if (!file) return;
+  if (file.size > 50 * 1024 * 1024) {
+    $('screen-library-error').textContent = 'File too large (max 50 MB).';
+    $('screen-library-error').classList.add('show');
+    return;
+  }
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var text = e.target.result;
+    var lines = text.split(/\r?\n/).map(function(l) { return l.trim(); }).filter(function(l) { return l && !l.startsWith('#'); });
+    // Support .smi format (SMILES<TAB>name) and .csv (smiles,name)
+    var smiles = lines.map(function(l) {
+      var parts = l.split(/[\t,;]/);
+      return parts[0].trim();
+    }).filter(function(s) { return s && s.length > 3; });
+    $('screen-library-input').value = smiles.join('\n');
+    $('screen-library-info').textContent = smiles.length + ' ligands loaded from ' + file.name;
+  };
+  reader.readAsText(file);
+}
+
+function _screenError(msg) {
+  var el = $('screen-error');
+  if (msg) { el.textContent = msg; el.classList.add('show'); }
+  else { el.textContent = ''; el.classList.remove('show'); }
+}
+
+async function startScreening() {
+  _screenError('');
+  // Gate: requires Pro subscription
+  if (typeof requireFeature === 'function') {
+    if (!requireFeature('screen')) return;
+  }
+  // Validate proteins
+  var proteins = _screenProteins.filter(function(p) {
+    return (p.sequence || '').trim() || (p.pdb_content || '').trim();
+  }).map(function(p) {
+    return { name: p.name || '', sequence: (p.sequence || '').trim(), pdb_content: (p.pdb_content || '').trim() };
+  });
+  if (proteins.length === 0) {
+    $('screen-protein-error').textContent = 'Add at least one protein (sequence or PDB).';
+    $('screen-protein-error').classList.add('show');
+    return;
+  }
+  $('screen-protein-error').classList.remove('show');
+
+  // Validate library
+  var libText = ($('screen-library-input').value || '').trim();
+  var ligands = libText.split(/\r?\n/).map(function(l) { return l.trim(); }).filter(function(l) { return l; });
+  if (ligands.length < 2) {
+    $('screen-library-error').textContent = 'Enter at least 2 SMILES (one per line).';
+    $('screen-library-error').classList.add('show');
+    return;
+  }
+  $('screen-library-error').classList.remove('show');
+
+  var config = {
+    exhaustiveness: parseInt($('screen-exh').value, 10) || 1,
+    top_k_refine: parseInt($('screen-topk').value, 10) || 10,
+  };
+
+  var btn = $('screen-run-btn');
+  btn.disabled = true;
+  $('screen-run-text').textContent = 'Starting…';
+
+  try {
+    var r = await fetch(API + '/primer/docking/screen', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      body: JSON.stringify({ proteins: proteins, ligands: ligands, config: config }),
+    });
+    var d = await r.json();
+    if (!r.ok) {
+      _screenError(d.error || 'Failed to start screening.');
+      btn.disabled = false;
+      $('screen-run-text').textContent = 'Start Virtual Screening';
+      return;
+    }
+    _screenCampaignId = d.campaign_id;
+    $('screen-progress').style.display = 'block';
+    $('screen-results').style.display = 'none';
+    $('screen-status-badge').textContent = 'RUNNING';
+    $('screen-lig-total').textContent = (d.total_ligands || ligands.length).toLocaleString();
+    btn.disabled = false;
+    $('screen-run-text').textContent = 'Start Virtual Screening';
+    _pollScreening();
+  } catch (e) {
+    _screenError('Network error: ' + e.message);
+    btn.disabled = false;
+    $('screen-run-text').textContent = 'Start Virtual Screening';
+  }
+}
+
+function _pollScreening() {
+  if (_screenPollTimer) clearInterval(_screenPollTimer);
+  _screenPollTimer = setInterval(async function() {
+    if (!_screenCampaignId) return;
+    try {
+      var r = await fetch(API + '/primer/docking/screen/' + _screenCampaignId, { credentials: 'same-origin' });
+      if (!r.ok) { clearInterval(_screenPollTimer); return; }
+      var d = await r.json();
+      var pg = d.progress || {};
+      var status = d.status || 'running';
+
+      $('screen-stage').textContent = pg.stage || status;
+      $('screen-message').textContent = pg.message || '';
+      $('screen-lig-done').textContent = (pg.ligands_done || 0).toLocaleString();
+      $('screen-lig-total').textContent = (pg.ligands_total || 0).toLocaleString();
+      $('screen-rate').textContent = pg.rate != null ? pg.rate.toFixed(2) : '—';
+      $('screen-eta').textContent = pg.eta_seconds != null ? _fmtEta(pg.eta_seconds) : '—';
+      var pct = pg.ligands_total > 0 ? Math.min(100, (pg.ligands_done / pg.ligands_total * 100)) : 0;
+      $('screen-bar').style.width = pct.toFixed(1) + '%';
+
+      var badge = $('screen-status-badge');
+      if (status === 'completed') {
+        clearInterval(_screenPollTimer);
+        badge.textContent = 'COMPLETED';
+        badge.style.background = '#dcfce7'; badge.style.color = '#166534';
+        $('screen-cancel-btn').style.display = 'none';
+        $('screen-resume-btn').style.display = 'none';
+        _loadScreenResults(d);
+      } else if (status === 'failed') {
+        clearInterval(_screenPollTimer);
+        badge.textContent = 'FAILED';
+        badge.style.background = '#fef2f2'; badge.style.color = '#991b1b';
+        $('screen-cancel-btn').style.display = 'none';
+        $('screen-resume-btn').style.display = 'none';
+        _screenError(pg.message || 'Screening failed.');
+      } else if (status === 'cancelled') {
+        clearInterval(_screenPollTimer);
+        badge.textContent = 'CANCELLED';
+        badge.style.background = '#fef3c7'; badge.style.color = '#92400e';
+        $('screen-cancel-btn').style.display = 'none';
+        $('screen-resume-btn').style.display = 'none';
+      } else if (status === 'interrupted') {
+        clearInterval(_screenPollTimer);
+        badge.textContent = 'INTERRUPTED';
+        badge.style.background = '#fef3c7'; badge.style.color = '#92400e';
+        $('screen-cancel-btn').style.display = 'none';
+        $('screen-resume-btn').style.display = '';
+        _screenError('Worker stopped unexpectedly. Click Resume to continue from where it left off.');
+      } else {
+        badge.textContent = 'RUNNING';
+        badge.style.background = '#dbeafe'; badge.style.color = '#1d4ed8';
+        $('screen-cancel-btn').style.display = '';
+        $('screen-resume-btn').style.display = 'none';
+      }
+    } catch (e) { /* transient network error — keep polling */ }
+  }, 3000);
+}
+
+function _fmtEta(seconds) {
+  if (seconds < 60) return seconds + 's';
+  if (seconds < 3600) return Math.round(seconds / 60) + 'm';
+  if (seconds < 86400) return (seconds / 3600).toFixed(1) + 'h';
+  return (seconds / 86400).toFixed(1) + 'd';
+}
+
+async function _loadScreenResults(campaign) {
+  try {
+    var r = await fetch(API + '/primer/docking/screen/' + _screenCampaignId + '/results?per_page=50', { credentials: 'same-origin' });
+    if (!r.ok) return;
+    var d = await r.json();
+    var hits = d.results || [];
+    var body = $('screen-results-body');
+    body.innerHTML = hits.map(function(h, i) {
+      var v = h.vina_score != null ? h.vina_score.toFixed(2) : '—';
+      var g = h.gnina_score != null ? h.gnina_score.toFixed(2) : '—';
+      var c = h.consensus_score != null ? h.consensus_score.toFixed(3) : '—';
+      var smi = h.smiles || '';
+      var smiDisplay = smi.length > 40 ? smi.substring(0, 40) + '…' : smi;
+      return '<tr style="border-bottom:1px solid #f1f5f9">' +
+        '<td style="padding:6px;font-weight:600;color:var(--text2)">' + (i + 1) + '</td>' +
+        '<td style="padding:6px;color:var(--text2)">' + (h.protein_name || h.protein_id || '') + '</td>' +
+        '<td style="padding:6px;font-family:monospace;font-size:11px;color:var(--text2)" title="' + smi.replace(/"/g, '&quot;') + '">' + smiDisplay + '</td>' +
+        '<td style="padding:6px;text-align:right;font-weight:600;color:' + (h.vina_score < -7 ? '#059669' : h.vina_score < -5 ? '#d97706' : '#64748b') + '">' + v + '</td>' +
+        '<td style="padding:6px;text-align:right;font-weight:600;color:' + (h.gnina_score < -7 ? '#059669' : h.gnina_score < -5 ? '#d97706' : '#64748b') + '">' + g + '</td>' +
+        '<td style="padding:6px;text-align:right;font-weight:700">' + c + '</td>' +
+        '</tr>';
+    }).join('');
+    $('screen-dl-csv').href = API + '/primer/docking/screen/' + _screenCampaignId + '/export/csv';
+    $('screen-dl-sdf').href = API + '/primer/docking/screen/' + _screenCampaignId + '/export/sdf';
+    $('screen-results').style.display = 'block';
+  } catch (e) { /* ignore */ }
+}
+
+async function cancelScreening() {
+  if (!_screenCampaignId) return;
+  $('screen-cancel-btn').disabled = true;
+  $('screen-cancel-btn').textContent = 'Cancelling…';
+  try {
+    await fetch(API + '/primer/docking/screen/' + _screenCampaignId + '/cancel', { method: 'POST', credentials: 'same-origin' });
+  } catch (e) { /* ignore */ }
+}
+
+async function resumeScreening() {
+  if (!_screenCampaignId) return;
+  $('screen-resume-btn').disabled = true;
+  $('screen-resume-btn').textContent = 'Resuming…';
+  try {
+    var r = await fetch(API + '/primer/docking/screen/' + _screenCampaignId + '/resume', { method: 'POST', credentials: 'same-origin' });
+    if (r.ok) {
+      $('screen-resume-btn').style.display = 'none';
+      $('screen-cancel-btn').style.display = '';
+      _screenError('');
+      _pollScreening();
+    } else {
+      var d = await r.json();
+      _screenError(d.error || 'Resume failed.');
+    }
+  } catch (e) {
+    _screenError('Network error: ' + e.message);
+  }
+  $('screen-resume-btn').disabled = false;
+  $('screen-resume-btn').textContent = '↻ Resume';
 }
 </script>
 <!-- AI Widget -->

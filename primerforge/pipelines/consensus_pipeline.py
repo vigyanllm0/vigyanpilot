@@ -810,13 +810,20 @@ async def _run_pipeline_inner(
     failed = 0
     total_ligands = len(ligand_smiles_list)
 
-    # Parallelism sized for the production box (2 vCPU): two concurrent Vina
-    # processes × (--cpu = cores/2 threads each) saturates the CPUs without
-    # oversubscription. Each Vina/obabel child is its own OS process (own
-    # RLIMIT_AS), so memory stays bounded; on a 1-core host this degrades to
-    # the old serial behavior automatically.
+    # Parallelism: DOCKING_LANES is set by the queue when it leases CPU
+    # slots (see docking_queue.acquire_slots) — the job runs exactly as many
+    # concurrent Vina processes as it holds cores, so two jobs can never
+    # oversubscribe the box. Unset (local/tests/direct calls) = old behavior:
+    # two lanes × cores/2 threads each. On a 1-core host this degrades to
+    # serial automatically. Each Vina/obabel child is its own OS process (own
+    # RLIMIT_AS), so memory stays bounded.
     _cores = os.cpu_count() or 1
-    vina_parallelism = min(2, _cores)
+    try:
+        vina_parallelism = max(1, int(os.environ.get("DOCKING_LANES", "")))
+    except ValueError:
+        vina_parallelism = 0
+    if not vina_parallelism:
+        vina_parallelism = min(2, _cores)
     cpu_per_vina = max(1, _cores // vina_parallelism)
     semaphore = asyncio.Semaphore(vina_parallelism)
 
