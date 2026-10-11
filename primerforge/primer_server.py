@@ -28,6 +28,7 @@ Amplicon Tm (Marmur-Schildkraut-Doty formula):
   Tm = 81.5 + 16.6*log10([Na+]) + 0.41*(%GC) - 675/length
 """
 
+import inspect
 import logging
 import math
 import os
@@ -634,7 +635,8 @@ def _spawn_screening_worker(campaign_id: str) -> str | None:
         return str(exc)
 
 
-def _settle_docking_job(job_id, user, use_postgres, consume_fn, increment_fn):
+def _settle_docking_job(job_id, user, use_postgres, consume_fn, increment_fn,
+                         credit_cost: int = 1, on_unsettled=None):
     """Consume the run's credit AFTER queuing — without ever stranding an orphan.
 
     The job is already on disk when this runs (queuing first means a failed
@@ -642,23 +644,50 @@ def _settle_docking_job(job_id, user, use_postgres, consume_fn, increment_fn):
     client-visible error must not race an invisible run that completes with
     nobody watching:
 
-      * no docking tokens left (consume → False)  → cancel + 402
-      * credit layer threw (PostgreSQL)           → cancel + 500 (money path:
-                                                    never let an unsettled run
-                                                    execute)
-      * SQLite bookkeeping threw (run counter)    → logged, run proceeds: the
+      * no docking credits left (consume → False)  → cancel + 402
+      * credit layer threw (PostgreSQL)            → cancel + 500 (money path:
+                                                     never let an unsettled run
+                                                     execute)
+      * SQLite bookkeeping threw (run counter)     → logged, run proceeds: the
         client already has its 202, and dock_run_count is non-authoritative
+
+    `credit_cost` is the size-aware price (1 for a legacy caller, 100 for a
+    consensus run, screening_credit_cost() for a campaign) and is passed to
+    consume_fn as its `cost` kwarg. `on_unsettled` is an optional hook run
+    when the run is cancelled by this function — screening needs it because a
+    campaign file, not a queue job, is what must be marked dead.
 
     Returns (body, status) for the route to send, or None to report success.
     """
     if not user or user.get("role") == "admin":
         return None
+
+    def _kill():
+        if on_unsettled is not None:
+            try:
+                on_unsettled()
+            except Exception as hook_exc:
+                logger.error("on_unsettled hook failed for %s: %s", job_id, hook_exc)
+        else:
+            _cancel_orphan_job(job_id)
+
     try:
         if use_postgres and consume_fn:
-            if not consume_fn(user.get("user_id"), user["email"]):
-                _cancel_orphan_job(job_id)
+            # Older consume fakes (and the SQLite shim) take (user_id, email)
+            # only — inspect instead of guessing from a TypeError, which a
+            # real internal failure would also raise.
+            try:
+                params = inspect.signature(consume_fn).parameters.values()
+            except (TypeError, ValueError):
+                params = ()
+            accepts_cost = any(p.kind == inspect.Parameter.VAR_KEYWORD for p in params) or \
+                any(p.name == "cost" for p in params)
+            charged = (consume_fn(user.get("user_id"), user["email"], cost=credit_cost)
+                       if accepts_cost else consume_fn(user.get("user_id"), user["email"]))
+            if not charged:
+                _kill()
                 return ({
-                    "error": "No docking tokens remaining. Purchase more to continue.",
+                    "error": "Not enough docking credits for this run. Top up or upgrade to continue.",
                     "code": "PAYMENT_REQUIRED",
                     "action": "show_docking_payment",
                 }, 402)
@@ -667,7 +696,7 @@ def _settle_docking_job(job_id, user, use_postgres, consume_fn, increment_fn):
     except Exception as e:
         if use_postgres:
             logger.error("Docking credit consumption failed for job %s: %s", job_id, e)
-            _cancel_orphan_job(job_id)
+            _kill()
             return ({
                 "error": "Could not verify your docking credits for this run. Please try again.",
                 "code": "SERVER_ERROR",
@@ -677,6 +706,68 @@ def _settle_docking_job(job_id, user, use_postgres, consume_fn, increment_fn):
         # actually happen.
         logger.error("Docking usage bookkeeping failed for job %s: %s", job_id, e)
     return None
+
+
+def _screening_refund(campaign: dict, user_id, refund_fn, mode: str = "cancel") -> int:
+    """Give back the credits paid for docking that never happened.
+
+    A screening campaign is charged up front (size-aware). When it is
+    cancelled the work already done is kept — so only the unperformed share
+    comes back, pro-rata on ligands docked. When it dies for an
+    infrastructure reason (worker spawn failure, settle failure) nothing ran,
+    so the whole outstanding amount is returned. Resuming a refunded campaign
+    re-charges exactly the outstanding amount, so cancel → resume → cancel
+    can never net a free campaign.
+
+    Returns the number of credits refunded (0 for admins/SQLite/refunded).
+    """
+    charged = int(campaign.get("credits_charged") or 0)
+    if charged < 1:
+        return 0
+    # `credits_paid` is the outstanding balance: 0 is a legitimate value
+    # (free/admin/SQLite runs record the price but never debit) and must not
+    # fall back to the full charge — only an absent/unreadable key does.
+    if "credits_paid" in campaign:
+        try:
+            outstanding = int(campaign.get("credits_paid"))
+        except (TypeError, ValueError):
+            outstanding = charged
+    else:
+        outstanding = charged
+    if outstanding < 1:
+        return 0
+
+    if mode == "full":
+        amount = outstanding
+    else:
+        prog = campaign.get("progress") or {}
+        try:
+            done = max(0, int(prog.get("ligands_done") or 0))
+            total = max(1, int(prog.get("ligands_total") or 0))
+        except (TypeError, ValueError):
+            done, total = 0, 1
+        # ceil(outstanding × undocked fraction) — rounded up in the user's
+        # favour; the worker may dock a chunk after the request lands, which
+        # is the only direction this approximation can be wrong in.
+        amount = (outstanding * (total - min(done, total)) + total - 1) // total
+
+    if amount < 1:
+        return 0
+    if refund_fn is None:
+        return 0
+    if not refund_fn(user_id, amount):
+        logger.error("Screening refund of %s credits failed for user %s", amount, user_id)
+        return 0
+    try:
+        from .pipelines.virtual_screening import update_campaign
+        update_campaign(campaign.get("campaign_id", ""), {
+            "credits_paid": outstanding - amount,
+            "credits_refunded": int(campaign.get("credits_refunded") or 0) + amount,
+        })
+    except Exception as exc:
+        logger.error("Screening refund bookkeeping failed for %s: %s",
+                     campaign.get("campaign_id", ""), exc)
+    return amount
 
 
 def create_app() -> Flask:
@@ -716,7 +807,12 @@ def create_app() -> Flask:
     # ── Security Hardening ────────────────────────────────────────────────
     from primerforge.debugger import init_debugger
     from primerforge.file_scanner import init_file_scanner
-    from primerforge.security import init_security, register_cors_headers
+    from primerforge.security import (
+        client_rate_key,
+        admin_rate_exempt,
+        init_security,
+        register_cors_headers,
+    )
     from primerforge.threat_detection import init_threat_detection
 
     # CORS handled exclusively by security.py register_cors_headers() — called below after init_security()
@@ -757,6 +853,7 @@ def create_app() -> Flask:
             get_current_user,
             log_action,
             record_operation_cost,
+            refund_docking_credits,
             require_auth,
         )
         from primerforge.pg_auth_routes import auth_bp
@@ -845,8 +942,17 @@ def create_app() -> Flask:
             logger.warning("API management disabled: %s", exc)
         consume_token = None
         consume_docking_token = None
+        refund_docking_credits = None
         record_operation_cost = None
         logger.info("Database: SQLite (development mode)")
+
+    # One consensus docking run costs a flat credit grant, not the legacy
+    # flat 1-token price. Bound once here so the consensus route and any
+    # future caller agree; None in SQLite mode where there is no ledger.
+    consensus_credit_cost = None
+    if consume_docking_token is not None:
+        from primerforge.price_registry import CONSENSUS_RUN_CREDITS
+        consensus_credit_cost = CONSENSUS_RUN_CREDITS
 
     # Apply endpoint-specific rate limits (must be after blueprint registration)
     from primerforge.security import apply_rate_limits
@@ -875,6 +981,10 @@ def create_app() -> Flask:
 
     def err(msg, code, status):
         return jsonify({"error": msg, "code": code}), status
+
+    # Route-level rate limiter (flask-limiter instance or None in dev).
+    # Admins bypass every limit via security.admin_rate_exempt().
+    _route_limiter = app.extensions.get("limiter")
 
     @app.route("/health", methods=["GET"])
     def health():
@@ -994,6 +1104,7 @@ def create_app() -> Flask:
             return user, None
 
         @app.route("/api/pipeline/submit", methods=["POST"])
+        @(_route_limiter.limit("5 per minute", exempt_when=admin_rate_exempt) if _route_limiter else lambda f: f)
         def dev_submit_pipeline():
             import uuid as _uuid
 
@@ -1388,6 +1499,7 @@ def create_app() -> Flask:
         return jsonify({"error": "Not found"}), 404
 
     @app.route("/api/primer/auto-design", methods=["POST"])
+    @(_route_limiter.limit("5 per minute", exempt_when=admin_rate_exempt) if _route_limiter else lambda f: f)
     def auto_design():
         if not READY:
             return err("Core not available.", "DESIGN_FAILED", 503)
@@ -1694,6 +1806,7 @@ def create_app() -> Flask:
         }), 200
 
     @app.route("/api/primer/manual-analysis", methods=["POST"])
+    @(_route_limiter.limit("20 per minute", exempt_when=admin_rate_exempt) if _route_limiter else lambda f: f)
     def manual_analysis():
         if not READY:
             return err("Core not available.", "DESIGN_FAILED", 503)
@@ -1812,6 +1925,7 @@ def create_app() -> Flask:
             logger.debug("Suppressed exception: %s", e)
 
     @app.route("/api/primer/fetch-sequence", methods=["POST"])
+    @(_route_limiter.limit("20 per minute", exempt_when=admin_rate_exempt) if _route_limiter else lambda f: f)
     def fetch_sequence_route():
         if not READY:
             return err("Core not available.", "DESIGN_FAILED", 503)
@@ -1922,6 +2036,7 @@ def create_app() -> Flask:
             return err(msg, "FETCH_FAILED", 400)
 
     @app.route("/api/primer/thermodynamics", methods=["POST"])
+    @(_route_limiter.limit("30 per minute", exempt_when=admin_rate_exempt) if _route_limiter else lambda f: f)
     def thermodynamics():
         if not READY:
             return err("Core not available.", "DESIGN_FAILED", 503)
@@ -1954,6 +2069,7 @@ def create_app() -> Flask:
     # ════════════════════════════════════════════════════════════════════
 
     @app.route("/api/primer/search-sequences", methods=["POST"])
+    @(_route_limiter.limit("20 per minute", exempt_when=admin_rate_exempt) if _route_limiter else lambda f: f)
     def search_sequences_route():
         if not READY:
             return err("Core not available.", "DESIGN_FAILED", 503)
@@ -1974,6 +2090,7 @@ def create_app() -> Flask:
             return err("Search failed.", "SEARCH_FAILED", 500)
 
     @app.route("/api/primer/blast", methods=["POST"])
+    @(_route_limiter.limit("10 per minute", exempt_when=admin_rate_exempt) if _route_limiter else lambda f: f)
     def blast_route():
         if not READY:
             return err("Core not available.", "DESIGN_FAILED", 503)
@@ -2135,6 +2252,7 @@ def create_app() -> Flask:
             return err("BLAST failed.", "BLAST_FAILED", 500)
 
     @app.route("/api/primer/fetch-sequences", methods=["POST"])
+    @(_route_limiter.limit("20 per minute", exempt_when=admin_rate_exempt) if _route_limiter else lambda f: f)
     def fetch_sequences_route():
         """Fetch full sequences from NCBI in parallel for BLAST hits."""
         if not READY:
@@ -2383,6 +2501,7 @@ def create_app() -> Flask:
         return entries
 
     @app.route("/api/primer/batch-analysis", methods=["POST"])
+    @(_route_limiter.limit("10 per minute", exempt_when=admin_rate_exempt) if _route_limiter else lambda f: f)
     def batch_oligo_analysis():
         if not READY:
             return err("Core not available.", "DESIGN_FAILED", 503)
@@ -2451,6 +2570,7 @@ def create_app() -> Flask:
         return jsonify(resp), 200
 
     @app.route("/api/primer/check-primers", methods=["POST"])
+    @(_route_limiter.limit("30 per minute", exempt_when=admin_rate_exempt) if _route_limiter else lambda f: f)
     def check_primers_route():
         if not READY:
             return err("Core not available.", "DESIGN_FAILED", 503)
@@ -2548,6 +2668,7 @@ def create_app() -> Flask:
         return jsonify(resp), 200
 
     @app.route("/api/primer/msa", methods=["POST"])
+    @(_route_limiter.limit("10 per minute", exempt_when=admin_rate_exempt) if _route_limiter else lambda f: f)
     def msa_route():
         if not READY:
             return err("Core not available.", "DESIGN_FAILED", 503)
@@ -2640,6 +2761,7 @@ def create_app() -> Flask:
             return err("MSA failed.", "MSA_FAILED", 500)
 
     @app.route("/api/primer/msa/submit", methods=["POST"])
+    @(_route_limiter.limit("10 per minute", exempt_when=admin_rate_exempt) if _route_limiter else lambda f: f)
     def msa_submit_route():
         if not READY:
             return err("Core not available.", "DESIGN_FAILED", 503)
@@ -2742,6 +2864,7 @@ def create_app() -> Flask:
         return Response(content, mimetype=mime, headers={"Content-Disposition": f'attachment; filename="{fn}"'})
 
     @app.route("/api/primer/msa/upload", methods=["POST"])
+    @(_route_limiter.limit("10 per minute", exempt_when=admin_rate_exempt) if _route_limiter else lambda f: f)
     def msa_upload_route():
         if not READY:
             return err("Core not available.", "DESIGN_FAILED", 503)
@@ -2810,13 +2933,19 @@ def create_app() -> Flask:
     # larger libraries belong on /docking/screen (up to 100,000).
     MAX_LIGANDS_PER_RUN = 100
     MAX_PDB_CONTENT_BYTES = 5 * 1024 * 1024  # matches the frontend PDB upload cap
+    # Queue-depth cap per identity (email, or client IP for guests): the
+    # docking worker is serial, so unbounded enqueues from one identity
+    # would starve everyone else's runs for hours.
+    MAX_RUNS_PER_IDENTITY = 5
+    # Concurrent virtual-screening campaigns per user (pending/running).
+    MAX_ACTIVE_CAMPAIGNS_PER_USER = 2
     try:
         from .pipelines.esmfold_engine import MAX_SEQUENCE_LENGTH
     except ImportError:
         MAX_SEQUENCE_LENGTH = 400
 
     @app.route("/api/primer/docking/consensus", methods=["POST"])
-    @(_docking_limiter.limit("5 per minute") if _docking_limiter else lambda f: f)
+    @(_docking_limiter.limit("5 per minute", exempt_when=admin_rate_exempt) if _docking_limiter else lambda f: f)
     def docking_consensus():
         try:
             if not READY:
@@ -2966,13 +3095,46 @@ def create_app() -> Flask:
                                    "code": "PAYMENT_REQUIRED", "action": "show_docking_payment",
                                    "usage": dock_usage}), 402
 
-            job_id = create_job(sequence, ligand_smiles_list, top_n, pdb_content=pdb_content, box=box)
+            # ── Queue-depth guard: one identity can't monopolise the serial
+            # worker.5 live (pending/running) runs is far beyond any real
+            # workflow — batch libraries belong on /screen — and admins are
+            # never throttled. Signed-in users are keyed by email; guests by
+            # client IP (their jobs carry no email).
+            if user is None or user.get("role") != "admin":
+                _ident_email = (user or {}).get("email") or ""
+                _ident_ip = "" if user else client_rate_key()
+                try:
+                    from primerforge.docking_queue import list_pending_jobs, list_running_jobs
+                    _live_jobs = list_pending_jobs() + list_running_jobs()
+                except Exception:
+                    _live_jobs = []
+                _depth = 0
+                for _j in _live_jobs:
+                    if _ident_email and _j.get("user_email") == _ident_email:
+                        _depth += 1
+                    elif _ident_ip and not _j.get("user_email") and _j.get("client_ip") == _ident_ip:
+                        _depth += 1
+                if _depth >= MAX_RUNS_PER_IDENTITY:
+                    return jsonify({
+                        "error": (f"You already have {_depth} docking runs waiting or in progress "
+                                  f"(limit {MAX_RUNS_PER_IDENTITY}). Wait for one to finish or stop "
+                                  "it with Stop Run. For libraries larger than 100 ligands, use "
+                                  "virtual screening instead."),
+                        "code": "RATE_LIMITED", "scope": "run_queue_depth",
+                    }), 429
 
-            # Consume token AFTER successful queuing (both SQLite and
+            job_id = create_job(sequence, ligand_smiles_list, top_n, pdb_content=pdb_content, box=box,
+                                user_email=(user or {}).get("email") or "",
+                                client_ip=client_rate_key())
+
+            # Consume credits AFTER successful queuing (both SQLite and
             # PostgreSQL) — and never leave an invisible run behind if the
-            # credit accounting fails: see _settle_docking_job.
+            # credit accounting fails: see _settle_docking_job. A consensus
+            # run is a flat CONSENSUS_RUN_CREDITS charge regardless of ligand
+            # count (≤100), matching the historical $1-per-run economics.
             settled = _settle_docking_job(job_id, user, USE_POSTGRES,
-                                           consume_docking_token, increment_docking_usage)
+                                           consume_docking_token, increment_docking_usage,
+                                           credit_cost=consensus_credit_cost or 1)
             if settled is not None:
                 return settled
 
@@ -3030,7 +3192,7 @@ def create_app() -> Flask:
             return jsonify({"job_id": job_id, "status": "unknown", "error": str(e)}), 200
 
     @app.route("/api/primer/docking/cancel/<job_id>", methods=["POST"])
-    @(_docking_limiter.limit("10 per minute") if _docking_limiter else lambda f: f)
+    @(_docking_limiter.limit("10 per minute", exempt_when=admin_rate_exempt) if _docking_limiter else lambda f: f)
     def docking_cancel(job_id):
         """User-initiated "Stop run".
 
@@ -3108,6 +3270,7 @@ def create_app() -> Flask:
         }), 200
 
     @app.route("/api/primer/docking/structure/upload/<job_id>/<int:rank>", methods=["POST"])
+    @(_route_limiter.limit("10 per minute", exempt_when=admin_rate_exempt) if _route_limiter else lambda f: f)
     def docking_structure_upload(job_id, rank):
         import json as jmod
         import os
@@ -3142,6 +3305,7 @@ def create_app() -> Flask:
     # ════════════════════════════════════════════════════════════════════
 
     @app.route("/api/primer/docking/analyze", methods=["POST"])
+    @(_route_limiter.limit("60 per minute", exempt_when=admin_rate_exempt) if _route_limiter else lambda f: f)
     def analyze_protein_structure():
         """
         Run Broken Protein Analysis Engine on a PDB structure.
@@ -3170,6 +3334,7 @@ def create_app() -> Flask:
             return err(f"Analysis failed: {str(exc)}", "ANALYSIS_FAILED", 500)
 
     @app.route("/api/primer/docking/analyze/file", methods=["POST"])
+    @(_route_limiter.limit("60 per minute", exempt_when=admin_rate_exempt) if _route_limiter else lambda f: f)
     def analyze_protein_file():
         """
         Accept uploaded PDB file and run Broken Protein Analysis.
@@ -3199,6 +3364,7 @@ def create_app() -> Flask:
     # ════════════════════════════════════════════════════════════════════
 
     @app.route("/api/primer/docking/interactions", methods=["POST"])
+    @(_route_limiter.limit("60 per minute", exempt_when=admin_rate_exempt) if _route_limiter else lambda f: f)
     def analyze_docking_interactions():
         """
         Analyze protein-ligand interactions from docked structures.
@@ -3273,6 +3439,7 @@ def create_app() -> Flask:
     # ════════════════════════════════════════════════════════════════════
 
     @app.route("/api/primer/docking/pockets", methods=["POST"])
+    @(_route_limiter.limit("60 per minute", exempt_when=admin_rate_exempt) if _route_limiter else lambda f: f)
     def detect_binding_pockets():
         """
         Detect binding pockets in a protein structure.
@@ -3301,6 +3468,7 @@ def create_app() -> Flask:
             return err(f"Pocket detection failed: {str(exc)}", "ANALYSIS_FAILED", 500)
 
     @app.route("/api/primer/docking/prepare", methods=["POST"])
+    @(_route_limiter.limit("60 per minute", exempt_when=admin_rate_exempt) if _route_limiter else lambda f: f)
     def prepare_protein_structure():
         """
         Prepare a protein structure for docking.
@@ -3324,6 +3492,7 @@ def create_app() -> Flask:
             return err(f"Preparation failed: {str(exc)}", "ANALYSIS_FAILED", 500)
 
     @app.route("/api/primer/docking/gridbox", methods=["POST"])
+    @(_route_limiter.limit("60 per minute", exempt_when=admin_rate_exempt) if _route_limiter else lambda f: f)
     def calculate_gridbox():
         """
         Calculate AutoDock Vina grid box.
@@ -3411,7 +3580,7 @@ def create_app() -> Flask:
     # ════════════════════════════════════════════════════════════════════
 
     @app.route("/api/primer/docking/regenerate", methods=["POST"])
-    @(_docking_limiter.limit("10 per minute") if _docking_limiter else lambda f: f)
+    @(_docking_limiter.limit("10 per minute", exempt_when=admin_rate_exempt) if _docking_limiter else lambda f: f)
     def regenerate_protein():
         """
         Run regenerative folding on a protein structure.
@@ -3437,7 +3606,7 @@ def create_app() -> Flask:
             return err(f"Regeneration failed: {str(exc)}", "ANALYSIS_FAILED", 500)
 
     @app.route("/api/primer/docking/full-prep", methods=["POST"])
-    @(_docking_limiter.limit("10 per minute") if _docking_limiter else lambda f: f)
+    @(_docking_limiter.limit("10 per minute", exempt_when=admin_rate_exempt) if _docking_limiter else lambda f: f)
     def full_docking_prep():
         """
         Full docking preparation pipeline:
@@ -3497,7 +3666,7 @@ def create_app() -> Flask:
     # ════════════════════════════════════════════════════════════════════
 
     @app.route("/api/primer/docking/analyze-poses", methods=["POST"])
-    @(_docking_limiter.limit("10 per minute") if _docking_limiter else lambda f: f)
+    @(_docking_limiter.limit("10 per minute", exempt_when=admin_rate_exempt) if _docking_limiter else lambda f: f)
     def analyze_docking_poses():
         """
         Run advanced pose analysis: clustering, ligand efficiency, binding modes.
@@ -3565,6 +3734,7 @@ def create_app() -> Flask:
         return jsonify(cache_stats()), 200
 
     @app.route("/api/primer/docking/cache/clear", methods=["POST"])
+    @(_route_limiter.limit("5 per minute", exempt_when=admin_rate_exempt) if _route_limiter else lambda f: f)
     def esm_cache_clear():
         """Clear ESMFold cache."""
         from .pipelines.esm_cache import clear_cache
@@ -3572,6 +3742,7 @@ def create_app() -> Flask:
         return jsonify({'cleared': n}), 200
 
     @app.route("/api/primer/docking/cache/store", methods=["POST"])
+    @(_route_limiter.limit("30 per minute", exempt_when=admin_rate_exempt) if _route_limiter else lambda f: f)
     def esm_cache_store():
         """Store an ESMFold result in cache."""
         from .pipelines.esm_cache import cache_structure
@@ -3589,6 +3760,7 @@ def create_app() -> Flask:
         return jsonify({'stored': ok, 'sequence_length': len(sequence)}), 200
 
     @app.route("/api/primer/docking/cache/lookup", methods=["POST"])
+    @(_route_limiter.limit("60 per minute", exempt_when=admin_rate_exempt) if _route_limiter else lambda f: f)
     def esm_cache_lookup():
         """Check if a sequence has a cached ESMFold result."""
         from .pipelines.esm_cache import get_cached_structure
@@ -3609,7 +3781,7 @@ def create_app() -> Flask:
     # ════════════════════════════════════════════════════════════════════
 
     @app.route("/api/primer/docking/screen", methods=["POST"])
-    @(_docking_limiter.limit("3 per minute") if _docking_limiter else lambda f: f)
+    @(_docking_limiter.limit("3 per minute", exempt_when=admin_rate_exempt) if _docking_limiter else lambda f: f)
     def start_screening():
         """Start a virtual screening campaign (file-based, chunked, resumable).
 
@@ -3654,25 +3826,94 @@ def create_app() -> Flask:
             if len(ligands) > MAX_LIGANDS:
                 return err(f"Maximum {MAX_LIGANDS:,} ligands per campaign.", "VALIDATION_ERROR", 400)
 
+            # ── Concurrent-campaign cap: the screening worker is effectively
+            # serial on this box (≤2 CPU cores), so a handful of simultaneous
+            # campaigns from one user would starve everyone else's runs for
+            # hours. Admins are exempt.
+            if user.get("role") != "admin":
+                from .pipelines.virtual_screening import list_campaigns as _list_campaigns
+                _active = [c for c in _list_campaigns(user["email"], limit=50)
+                           if c.get("status") in ("pending", "running")]
+                if len(_active) >= MAX_ACTIVE_CAMPAIGNS_PER_USER:
+                    return err(
+                        f"You already have {len(_active)} screening campaigns active "
+                        f"(limit {MAX_ACTIVE_CAMPAIGNS_PER_USER}). Cancel one or wait for "
+                        "it to finish before starting another.",
+                        "RATE_LIMITED", 429)
+
+            # Size-aware price: charged up front, refunded pro-rata if the
+            # campaign is cancelled before it finishes. The formula lives
+            # server-side; the client only ever sees this number.
+            from .price_registry import screening_credit_cost
+            n_ligands = len(ligands)
+            n_proteins = len(proteins)
+            credits_required = screening_credit_cost(n_ligands, n_proteins)
+
+            # Cheap pre-check so the user gets the exact numbers instead of a
+            # generic 402 — the authoritative debit is still the settle below.
+            if USE_POSTGRES and user.get("role") != "admin":
+                from .pg_auth import check_docking_usage
+                try:
+                    dock_credits = check_docking_usage(user["email"]).get("docking_credits") or 0
+                except Exception as exc:
+                    logger.warning("Docking credit pre-check failed for %s: %s", user["email"], exc)
+                    dock_credits = 0
+                if dock_credits < credits_required:
+                    return jsonify({
+                        "error": (f"This campaign costs {credits_required:,} docking credits "
+                                  f"and you have {dock_credits:,}. Top up or upgrade to start it."),
+                        "code": "PAYMENT_REQUIRED",
+                        "action": "show_docking_payment",
+                        "credits_required": credits_required,
+                        "credits_available": dock_credits,
+                    }), 402
+
             try:
                 campaign_id = create_campaign(proteins, ligands, config, user_email=user["email"])
             except ValueError as ve:
                 return err(str(ve), "VALIDATION_ERROR", 400)
 
-            # Consume docking token (same accounting as consensus runs)
+            def _fail_campaign():
+                """A campaign that never got its credits must not sit at pending."""
+                from .pipelines.virtual_screening import update_campaign as _uc
+                _uc(campaign_id, {
+                    "status": "failed",
+                    "progress": {"stage": "failed",
+                                 "message": "Cancelled — docking credits could not be charged."},
+                })
+
+            # Consume docking credits (size-aware; same settle contract as
+            # consensus runs — a 402/500 kills the campaign, never strands it)
             settled = _settle_docking_job(campaign_id, user, USE_POSTGRES,
-                                           consume_docking_token, increment_docking_usage)
+                                           consume_docking_token, increment_docking_usage,
+                                           credit_cost=credits_required,
+                                           on_unsettled=_fail_campaign)
             if settled is not None:
                 return settled
+
+            from .pipelines.virtual_screening import update_campaign
+            # Only a real debit counts as paid: SQLite has no ledger and admin
+            # runs are free. `credits_paid` is what a cancel refunds against,
+            # so an un-charged campaign must carry 0 (otherwise a dev-mode
+            # cancel would hand out credits nobody paid for).
+            actually_charged = bool(USE_POSTGRES) and user.get("role") != "admin"
+            update_campaign(campaign_id, {
+                "credits_charged": credits_required,
+                "credits_paid": credits_required if actually_charged else 0,
+                "credits_refunded": 0,
+            })
 
             # Spawn detached screening worker (fire-and-forget)
             spawn_err = _spawn_screening_worker(campaign_id)
             if spawn_err:
-                from .pipelines.virtual_screening import update_campaign
                 update_campaign(campaign_id, {
                     "status": "failed",
                     "progress": {"stage": "failed", "message": f"Failed to start worker: {spawn_err}"},
                 })
+                # Nothing ran — hand the whole charge back (admin/SQLite: no-op)
+                from .pipelines.virtual_screening import get_campaign as _gc
+                _screening_refund(_gc(campaign_id) or {}, user.get("user_id"),
+                                  refund_docking_credits, mode="full")
                 return err(f"Failed to start screening worker: {spawn_err}", "SCREENING_FAILED", 500)
 
             from .pipelines.virtual_screening import get_campaign
@@ -3681,7 +3922,8 @@ def create_app() -> Flask:
                 "campaign_id": campaign_id,
                 "status": campaign.get("status", "pending"),
                 "total_ligands": campaign.get("library", {}).get("total", len(ligands)),
-                "total_proteins": len(proteins),
+                "total_proteins": n_proteins,
+                "credits_charged": credits_required,
                 "progress_url": f"/api/primer/docking/screen/{campaign_id}",
             }), 202
 
@@ -3808,9 +4050,12 @@ def create_app() -> Flask:
         }), 200
 
     @app.route("/api/primer/docking/screen/<campaign_id>/cancel", methods=["POST"])
+    @(_route_limiter.limit("10 per minute", exempt_when=admin_rate_exempt) if _route_limiter else lambda f: f)
     def cancel_screening(campaign_id):
         """Request cancellation of a running campaign."""
-        from .pipelines.virtual_screening import get_campaign, cancel_campaign, update_campaign
+        from .pipelines.virtual_screening import (
+            get_campaign, cancel_campaign, update_campaign, _campaign_dir,
+        )
         campaign = get_campaign(campaign_id)
         if not campaign:
             return err("Campaign not found.", "NOT_FOUND", 404)
@@ -3824,6 +4069,7 @@ def create_app() -> Flask:
         if campaign.get("status") in ("completed", "failed", "cancelled"):
             return err(f"Campaign is already {campaign['status']}.", "ALREADY_FINISHED", 409)
 
+        already_cancelling = os.path.exists(os.path.join(_campaign_dir(campaign_id), "cancel"))
         cancel_campaign(campaign_id)
         # If still pending (worker hasn't started), mark cancelled immediately
         if campaign.get("status") == "pending":
@@ -3831,9 +4077,24 @@ def create_app() -> Flask:
                 "status": "cancelled",
                 "progress": {"stage": "cancelled", "message": "Cancelled before start."},
             })
-        return jsonify({"campaign_id": campaign_id, "status": "cancelling"}), 200
+
+        # Hand back the credits paid for docking that will now never run
+        # (pro-rata on ligands already docked). Guarded twice: the cancel
+        # marker doubles as an idempotency flag, so a second click on an
+        # already-cancelling campaign cannot refund twice.
+        refunded = 0
+        if not already_cancelling and user.get("role") != "admin":
+            refunded = _screening_refund(campaign, user.get("user_id"),
+                                         refund_docking_credits, mode="cancel")
+
+        return jsonify({
+            "campaign_id": campaign_id,
+            "status": "cancelling",
+            "credits_refunded": refunded,
+        }), 200
 
     @app.route("/api/primer/docking/screen/<campaign_id>/resume", methods=["POST"])
+    @(_route_limiter.limit("10 per minute", exempt_when=admin_rate_exempt) if _route_limiter else lambda f: f)
     def resume_screening(campaign_id):
         """Resume an interrupted campaign from where it left off."""
         from .pipelines.virtual_screening import get_campaign, update_campaign
@@ -3850,6 +4111,28 @@ def create_app() -> Flask:
         if campaign.get("status") not in ("interrupted", "failed", "cancelled"):
             return err(f"Campaign is {campaign.get('status', 'unknown')} — cannot resume.",
                        "ALREADY_RUNNING", 409)
+
+        # Re-charge exactly what a cancel gave back (the share of the campaign
+        # that was paid for but never docked). An interrupted campaign that was
+        # never refunded costs nothing to resume — the user already paid for it.
+        try:
+            owed = int(campaign.get("credits_refunded") or 0)
+        except (TypeError, ValueError):
+            owed = 0
+        if owed > 0 and user.get("role") != "admin" and USE_POSTGRES:
+            if not consume_docking_token(user.get("user_id"), user["email"], cost=owed):
+                return jsonify({
+                    "error": (f"Resuming needs {owed:,} docking credits (the part of this campaign "
+                              "that was never docked). Top up to continue."),
+                    "code": "PAYMENT_REQUIRED",
+                    "action": "show_docking_payment",
+                    "credits_required": owed,
+                }), 402
+            from .pipelines.virtual_screening import update_campaign as _uc2
+            _uc2(campaign_id, {
+                "credits_paid": int(campaign.get("credits_paid") or 0) + owed,
+                "credits_refunded": 0,
+            })
 
         # Clear cancel marker, reset status, respawn worker
         from .pipelines.virtual_screening import _campaign_dir
@@ -4224,6 +4507,7 @@ def create_app() -> Flask:
     # ══════════════════════════════════════════════════════════════════════
 
     @app.route("/api/results/save", methods=["POST"])
+    @(_route_limiter.limit("20 per minute", exempt_when=admin_rate_exempt) if _route_limiter else lambda f: f)
     @require_auth
     def save_result():
         import json as _json
@@ -4261,6 +4545,7 @@ def create_app() -> Flask:
         return jsonify({"results": [dict(r) for r in rows], "total": total}), 200
 
     @app.route("/api/results/delete", methods=["POST"])
+    @(_route_limiter.limit("20 per minute", exempt_when=admin_rate_exempt) if _route_limiter else lambda f: f)
     @require_auth
     def delete_result():
         data = request.get_json(silent=True) or {}
@@ -4279,6 +4564,7 @@ def create_app() -> Flask:
         return jsonify({"success": True}), 200
 
     @app.route("/api/export/pdf", methods=["POST"])
+    @(_route_limiter.limit("10 per minute", exempt_when=admin_rate_exempt) if _route_limiter else lambda f: f)
     @require_auth
     def export_pdf():
         import json as _json
@@ -4321,6 +4607,7 @@ def create_app() -> Flask:
         return Response(bytes(pdf.output()), mimetype="application/pdf", headers={"Content-Disposition": f"attachment; filename={tool}_report.pdf"}), 200
 
     @app.route("/api/export/pptx", methods=["POST"])
+    @(_route_limiter.limit("10 per minute", exempt_when=admin_rate_exempt) if _route_limiter else lambda f: f)
     @require_auth
     def export_pptx():
         data = request.get_json(silent=True) or {}

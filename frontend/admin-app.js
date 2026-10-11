@@ -162,6 +162,7 @@ async function loadPromos(){
   $('promo-value').textContent=pvTxt||'₹0';
 
   const codes=d.codes||[];
+  window.PROMO_ROWS=codes;
   const tbody=$('tbl-promos');
   if(!codes.length){tbody.innerHTML='<tr><td colspan="11" style="text-align:center;color:var(--green);padding:1.5rem">No promo codes yet. Generate some above.</td></tr>';return}
   tbody.innerHTML=codes.map(c=>{
@@ -171,7 +172,7 @@ async function loadPromos(){
     const statusClass=expired?'pill-red':fully_used?'pill-orange':'pill-green';
     const typeClass=c.promo_type==='academic'?'pill-purple':'pill-blue';
     const canRevoke=!expired&&!fully_used&&c.used_count<c.max_uses;
-    return`<tr style="${expired||fully_used?'opacity:.6':''}"><td class="mono" style="font-size:.75rem;font-weight:600">${c.code}</td><td><span class="pill ${typeClass}">${c.promo_type||'trial'}</span></td><td><span class="pill pill-blue">${c.tier}</span></td><td>${c.trial_days}d</td><td>${c.daily_analyses}</td><td>${c.batch_max}</td><td>${c.currency==='USD'?'$'+(c.price_inr/100).toFixed(2):'₹'+c.price_inr}</td><td><span class="pill ${statusClass}">${c.used_count}/${c.max_uses}</span></td><td>${c.has_export?'✓':'✗'}</td><td style="font-size:.7rem">${created}</td><td>${canRevoke?`<button class="btn btn-sm" onclick="revokePromo('${c.code}')" style="background:var(--red);color:#fff;font-size:.65rem;padding:.2rem .5rem">Revoke</button>`:''}</td></tr>`;
+    return`<tr style="${expired||fully_used?'opacity:.6':''}"><td class="mono" style="font-size:.75rem;font-weight:600">${c.code}</td><td><span class="pill ${typeClass}">${c.promo_type||'trial'}</span></td><td><span class="pill pill-blue">${c.tier}</span></td><td>${c.trial_days}d</td><td>${c.daily_analyses}</td><td>${c.batch_max}</td><td>${c.currency==='USD'?'$'+(c.price_inr/100).toFixed(2):'₹'+c.price_inr}</td><td><span class="pill ${statusClass}">${c.used_count}/${c.max_uses}</span></td><td>${c.has_export?'✓':'✗'}</td><td style="font-size:.7rem">${created}</td><td style="white-space:nowrap">${c.currency==='USD'?`<button class="btn btn-sm" onclick="editPromo('${c.code}')" style="background:var(--primary);color:#fff;font-size:.65rem;padding:.2rem .5rem;margin-right:.3rem">Edit</button>`:''}${canRevoke?`<button class="btn btn-sm" onclick="revokePromo('${c.code}')" style="background:var(--red);color:#fff;font-size:.65rem;padding:.2rem .5rem">Revoke</button>`:''}</td></tr>`;
   }).join('');
 }
 
@@ -219,6 +220,48 @@ async function revokePromo(code){
   const d=await api('/api/admin/promo/revoke','POST',{code});
   if(d&&d.success){loadPromos()}else{alert(d?.error||'Failed to revoke')}
 }
+
+// ── EDIT PROMO ──
+window.editPromo=function(code){
+  const c=(window.PROMO_ROWS||[]).find(x=>x.code===code);
+  if(!c)return;
+  window._promoEditRow=c;
+  $('pe-code').textContent=c.code;
+  $('pe-tier').value=c.tier==='lab'?'lab':'pro';
+  $('pe-days').value=c.trial_days??30;
+  $('pe-daily').value=c.daily_analyses??50;
+  $('pe-batch').value=c.batch_max??20;
+  $('pe-export').value=c.has_export?'1':'0';
+  $('pe-maxuses').value=c.max_uses??1;
+  const isUSD=c.currency==='USD',isAcad=c.promo_type==='academic';
+  $('pe-price').value=isUSD?(c.price_inr??999):'';
+  $('pe-price').disabled=!isUSD||isAcad;
+  $('pe-discount').value=c.discount_pct??0;
+  $('pe-discount').disabled=c.promo_type!=='discount';
+  const exp=c.expires_at>0?new Date(Number(c.expires_at)*1000):null;
+  $('pe-expires').value=exp&&!isNaN(exp)?exp.toISOString().slice(0,10):'';
+  $('pe-err').style.display='none';
+  $('promo-edit-overlay').style.display='flex';
+};
+window.closePromoEdit=function(){$('promo-edit-overlay').style.display='none'};
+window.savePromoEdit=async function(){
+  const c=window._promoEditRow;if(!c)return;
+  const body={code:c.code,
+    tier:$('pe-tier').value,
+    trial_days:parseInt($('pe-days').value)||0,
+    daily_analyses:parseInt($('pe-daily').value)||0,
+    batch_max:parseInt($('pe-batch').value)||0,
+    has_export:$('pe-export').value==='1'?1:0,
+    max_uses:parseInt($('pe-maxuses').value)||1,
+    expires_at:$('pe-expires').value?Math.floor(new Date($('pe-expires').value+'T23:59:59').getTime()/1000):0};
+  if(c.currency==='USD'&&c.promo_type!=='academic'){body.price_inr=Math.max(0,parseInt($('pe-price').value)||0)}
+  if(c.promo_type==='discount'){body.discount_pct=parseInt($('pe-discount').value)||0}
+  $('pe-save').disabled=true;
+  const d=await api('/api/admin/promo/update','POST',body);
+  $('pe-save').disabled=false;
+  if(d&&d.success){closePromoEdit();loadPromos()}
+  else{const e=$('pe-err');e.textContent=(d&&d.error)||'Failed to update';e.style.display='block'}
+};
 
 // ── PROMO TYPE TOGGLE ──
 window.togglePromoType = function(){

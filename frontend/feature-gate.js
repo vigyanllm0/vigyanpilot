@@ -11,7 +11,8 @@ var FEATURE_TIER = {
   large_msa: { tier: 'trial', label: 'Trial', desc: 'Large MSA requires an active trial or Pro subscription.' },
   crispr_offtarget: { tier: 'pro', label: 'Pro', desc: 'CRISPR off-target analysis requires a Pro subscription or higher.' },
   api_access: { tier: 'pro', label: 'Pro', desc: 'API access requires a Pro subscription or higher. Generate API keys from your dashboard.' },
-  screen: { tier: 'pro', label: 'Pro', desc: 'Virtual screening requires a Pro subscription or higher. Screen up to 100,000 ligands against multiple protein targets.' },
+  // (no 'screen' entry: virtual screening is metered in docking credits, not
+  //  gated by tier — the server prices each campaign and gates on balance)
   collaboration: { tier: 'lab', label: 'Lab', desc: 'Team collaboration requires a Lab subscription or higher. Invite your research team.' },
   admin_panel: { tier: 'lab', label: 'Lab', desc: 'Admin panel requires a Lab subscription or higher.' },
 };

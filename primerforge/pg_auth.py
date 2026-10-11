@@ -1011,12 +1011,18 @@ def consume_token(user_id: int, email: str) -> bool:
 
 
 def check_docking_usage(email: str) -> dict:
-    """Check if user can run docking. Checks subscription dock quota OR top-up balance."""
+    """Check if user can run docking. Checks subscription dock quota OR top-up balance.
+
+    `balance` here is the legacy analysis-token balance (kept for old clients);
+    docking credits are `subscription_dock_remaining` (monthly grant) plus
+    `dock_topup_credits` (purchased, non-expiring). `docking_credits` is the
+    total spendable on docking — the only number the UI should render.
+    """
     if not isinstance(email, str):
         return {"can_run": False, "error": "Invalid input"}
     try:
         row = fetch_one(
-            """SELECT u.id, u.role, tb.balance, tb.total_consumed,
+            """SELECT u.id, u.role, tb.balance, tb.total_consumed, tb.dock_credit_balance,
                       s.is_active AS has_subscription, s.plan_id,
                       s.dock_monthly_quota, s.dock_quota_used, s.expires_at
                FROM users u
@@ -1029,7 +1035,7 @@ def check_docking_usage(email: str) -> dict:
         row = None
     if not row:
         row = fetch_one(
-            """SELECT u.id, u.role, tb.balance, tb.total_consumed
+            """SELECT u.id, u.role, tb.balance, tb.total_consumed, tb.dock_credit_balance
                FROM users u
                LEFT JOIN token_balances tb ON tb.user_id = u.id
                WHERE u.email = %s""",
@@ -1039,12 +1045,15 @@ def check_docking_usage(email: str) -> dict:
             return {"can_run": False, "error": "User not found"}
         balance = row.get("balance") or 0
         is_admin = row.get("role") == "admin"
-        return {"can_run": is_admin or balance > 0, "balance": balance, "plan": "none",
-                "needs_payment": not (is_admin or balance > 0), "is_admin": is_admin,
+        topup_credits = row.get("dock_credit_balance") or 0
+        return {"can_run": is_admin or topup_credits > 0, "balance": balance, "plan": "none",
+                "docking_credits": topup_credits, "dock_topup_credits": topup_credits,
+                "needs_payment": not (is_admin or topup_credits > 0), "is_admin": is_admin,
                 "price_per_run": 99}
 
     balance = row.get("balance") or 0
     is_admin = row.get("role") == "admin"
+    topup_credits = row.get("dock_credit_balance") or 0
 
     has_subscription = False
     dock_remaining = 0
@@ -1063,7 +1072,8 @@ def check_docking_usage(email: str) -> dict:
         if has_subscription:
             dock_remaining = max(0, dock_monthly_quota - dock_quota_used)
 
-    can_run = is_admin or dock_remaining > 0 or balance > 0
+    total_credits = dock_remaining + topup_credits
+    can_run = is_admin or total_credits > 0
 
     return {
         "can_run": can_run,
@@ -1071,6 +1081,8 @@ def check_docking_usage(email: str) -> dict:
         "subscription_dock_remaining": dock_remaining,
         "dock_monthly_quota": dock_monthly_quota,
         "dock_quota_used": dock_quota_used,
+        "dock_topup_credits": topup_credits,
+        "docking_credits": total_credits,
         "plan": plan_id if has_subscription else "none",
         "has_subscription": has_subscription,
         "is_admin": is_admin,
@@ -1079,38 +1091,84 @@ def check_docking_usage(email: str) -> dict:
     }
 
 
-def consume_docking_token(user_id: int, email: str) -> bool:
-    """Consume 1 docking credit. Priority: subscription dock quota, then top-up balance."""
+def consume_docking_token(user_id: int, email: str, cost: int = 1) -> bool:
+    """Consume `cost` docking credits. Priority: subscription grant, then top-up credits.
+
+    `cost` is the size-aware credit price (CONSENSUS_RUN_CREDITS for an
+    interactive run, screening_credit_cost() for a campaign). Both debits are
+    single conditional UPDATEs, so the balance can never go negative under
+    concurrent submits. Returns True when the full amount was taken.
+    """
+    try:
+        cost = int(cost)
+    except (TypeError, ValueError):
+        return False
+    if cost < 1:
+        cost = 1
+
     user = fetch_one("SELECT role FROM users WHERE id = %s", (user_id,))
     if user and user["role"] == "admin":
         return True
 
-    # Try subscription dock quota first
+    # Try subscription grant first (all-or-nothing — never split across sources)
     try:
         rowcount = execute(
             """UPDATE subscriptions
-               SET dock_quota_used = dock_quota_used + 1
-               WHERE user_id = %s AND is_active = TRUE AND dock_quota_used < dock_monthly_quota""",
-            (user_id,)
+               SET dock_quota_used = dock_quota_used + %s
+               WHERE user_id = %s AND is_active = TRUE AND dock_quota_used + %s <= dock_monthly_quota""",
+            (cost, user_id, cost)
         )
     except Exception:
         rowcount = 0
     if rowcount > 0:
         execute(
-            "UPDATE token_balances SET total_consumed = total_consumed + 1, last_consumed_at = NOW() WHERE user_id = %s",
-            (user_id,)
+            "UPDATE token_balances SET total_consumed = total_consumed + %s, last_consumed_at = NOW() WHERE user_id = %s",
+            (cost, user_id)
         )
         return True
 
-    # Fall back to top-up balance
-    rowcount = execute(
-        """UPDATE token_balances
-           SET balance = balance - 1,
-               total_consumed = total_consumed + 1,
-               last_consumed_at = NOW()
-           WHERE user_id = %s AND balance > 0""",
-        (user_id,)
-    )
+    # Fall back to purchased credits (dock_credit_balance — never the
+    # analysis-token `balance`, which pays for the other nine tools)
+    try:
+        rowcount = execute(
+            """UPDATE token_balances
+               SET dock_credit_balance = dock_credit_balance - %s,
+                   total_consumed = total_consumed + %s,
+                   last_consumed_at = NOW()
+               WHERE user_id = %s AND dock_credit_balance >= %s""",
+            (cost, cost, user_id, cost)
+        )
+    except Exception:
+        rowcount = 0
+    return rowcount > 0
+
+
+def refund_docking_credits(user_id: int, amount: int) -> bool:
+    """Return unused docking credits after a cancelled/failed campaign.
+
+    Refunds land in the purchased-credit pool (non-expiring) rather than
+    re-opening a monthly subscription grant: it is the user-favourable side
+    of an already-conservative pro-rata calculation, and it keeps the
+    monthly quota counter monotonic for billing audits. The token_balances
+    row is created on demand so a refund is never silently dropped.
+    """
+    try:
+        amount = int(amount)
+    except (TypeError, ValueError):
+        return False
+    if amount < 1:
+        return False
+    try:
+        rowcount = execute(
+            """INSERT INTO token_balances (user_id, dock_credit_balance, total_purchased)
+               VALUES (%s, %s, 0)
+               ON CONFLICT (user_id) DO UPDATE
+               SET dock_credit_balance = COALESCE(token_balances.dock_credit_balance, 0) + EXCLUDED.dock_credit_balance""",
+            (user_id, amount)
+        )
+    except Exception as e:
+        logger.error("refund_docking_credits insert failed for user %s: %s", user_id, e)
+        rowcount = 0
     return rowcount > 0
 
 

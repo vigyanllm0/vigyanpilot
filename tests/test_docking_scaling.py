@@ -109,7 +109,7 @@ def env(monkeypatch, tmp_path):
 
     captured: dict = {}
 
-    def fake_create(sequence, ligand_smiles_list, top_n=50, pdb_content="", box=None):
+    def fake_create(sequence, ligand_smiles_list, top_n=50, pdb_content="", box=None, **kwargs):
         captured.update(sequence=sequence, ligands=list(ligand_smiles_list),
                         top_n=top_n, pdb_content=pdb_content)
         return "fakejobid1234"

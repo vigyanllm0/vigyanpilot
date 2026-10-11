@@ -144,7 +144,7 @@ def get_job_progress(job_id: str) -> dict | None:
     except (OSError, ValueError):
         return None
 
-def create_job(sequence: str, ligand_smiles_list: list, top_n: int = 50, pdb_content: str = "", box: dict | None = None) -> str:
+def create_job(sequence: str, ligand_smiles_list: list, top_n: int = 50, pdb_content: str = "", box: dict | None = None, user_email: str = "", client_ip: str = "") -> str:
     _ensure_dirs()
     job_id = uuid.uuid4().hex[:12]
     job = {
@@ -156,6 +156,10 @@ def create_job(sequence: str, ligand_smiles_list: list, top_n: int = 50, pdb_con
         "top_n": top_n,
         "pdb_content": pdb_content,  # Optional: uploaded PDB file (skips ESMFold)
         "box": box,  # Optional: search-box override (manual/residue/blind)
+        # Identity for the queue-depth guard (one identity can't monopolise
+        # the serial worker): email for signed-in users, client IP for guests.
+        "user_email": user_email or "",
+        "client_ip": client_ip or "",
         "created_at": time.time(),
         "updated_at": time.time(),
         "result": None,

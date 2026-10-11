@@ -21,10 +21,15 @@ Input validation utilities:
 Security contacts: security@vigyanllm.in
 """
 
+import base64
+import hashlib
+import hmac
+import json
 import logging
 import math
 import os
 import re
+import time as _time
 
 import bleach
 from flask import jsonify, request
@@ -65,6 +70,96 @@ _PRODUCTION_REQUIRED_ENV = (
     "RAZORPAY_KEY_SECRET",
     "RAZORPAY_WEBHOOK_SECRET",
 )
+
+
+# ── Rate-limit identity ───────────────────────────────────────────────────
+# Production traffic flows CloudFront → nginx (on-box) → gunicorn, so
+# `request.remote_addr` is 127.0.0.1 for EVERY request. Keying limits on it
+# (the old `get_remote_address`) collapsed every client into ONE shared
+# bucket: five consensus submits per minute from ANYONE 429'd every user,
+# and five bad logins locked the login endpoint site-wide. nginx appends the
+# true TCP peer to X-Forwarded-For ($proxy_add_x_forwarded_for), so the LAST
+# entry is trustworthy at the app layer; direct clients (no header) fall
+# back to the socket address. NOTE: a client that connects to the origin
+# directly and forges X-Forwarded-For can rotate its own bucket — limits
+# are a fairness/abuse brake, not an anti-botnet control.
+
+def client_rate_key() -> str:
+    """Per-client rate-limit identity (real client IP behind the proxy chain)."""
+    xff = request.headers.get("X-Forwarded-For", "")
+    if xff:
+        last = xff.split(",")[-1].strip()
+        if last:
+            return last
+    return get_remote_address()
+
+
+def _session_secrets() -> tuple:
+    """Candidate signing secrets of the auth modules that mint session tokens.
+
+    Both auth modules read PRIMERFORGE_SECRET; the SQLite module falls back
+    to a per-process random key when the env var is unset (dev/tests).  We
+    return BOTH module constants (de-duplicated, non-empty) rather than
+    picking one: a token is minted by whichever module served the request,
+    and in tests the import order can make the two constants differ.  A
+    valid HMAC under EITHER of our own secrets is accepted here — this runs
+    only for rate-limit keying, and the real get_current_user →
+    verify_token path still enforces the correct per-mode secret and the
+    blacklist.
+    """
+    secrets_list = []
+    try:
+        from . import pg_auth
+        s = getattr(pg_auth, "SECRET_KEY", "")
+        if s:
+            secrets_list.append(s)
+    except Exception:
+        pass
+    try:
+        from . import auth
+        s = getattr(auth, "SECRET_KEY", "")
+        if s and s not in secrets_list:
+            secrets_list.append(s)
+    except Exception:
+        pass
+    return tuple(secrets_list)
+
+
+def _rate_limit_identity() -> dict | None:
+    """Cheap signature+expiry decode of the session token — no DB access.
+
+    The token blacklist is deliberately NOT consulted: this runs on every
+    request for rate-limit keying, and a revoked token gains nothing here —
+    every protected view still runs get_current_user → verify_token (which
+    DOES check the blacklist) and 401s it.
+    """
+    auth_hdr = request.headers.get("Authorization", "")
+    token = auth_hdr[7:] if auth_hdr.startswith("Bearer ") else request.cookies.get("pf_token", "")
+    if not token or token.count(".") != 1:
+        return None
+    try:
+        payload_b64, sig = token.split(".", 1)
+        payload = base64.urlsafe_b64decode(payload_b64 + "==").decode()
+        secrets_list = _session_secrets()
+        if not secrets_list:
+            return None
+        data = json.loads(payload)
+        if float(data.get("exp", 0)) < _time.time():
+            return None
+        # Accept a signature minted by either auth module's secret.
+        for secret in secrets_list:
+            expected = hmac.new(secret.encode(), payload.encode(), hashlib.sha256).hexdigest()
+            if hmac.compare_digest(sig, expected):
+                return data
+        return None
+    except Exception:
+        return None
+
+
+def admin_rate_exempt() -> bool:
+    """Admins bypass every rate limit (ops, probes, and batch backfills)."""
+    data = _rate_limit_identity()
+    return bool(data and data.get("role") == "admin")
 
 
 def validate_production_environment():
@@ -249,10 +344,17 @@ def init_security(app):
         limiter = _NoopLimiter()
     else:
         limiter = Limiter(
-            key_func=get_remote_address,
+            key_func=client_rate_key,
             app=app,
             default_limits=["200 per minute", "5000 per hour"],
             storage_uri=storage_uri,
+            # Admins are never throttled — signed-token role check (see
+            # admin_rate_exempt); a revoked admin token still 401s at views.
+            # flask-limiter 3.x carries the exemption per-limit scope:
+            # default limits here, route/endpoint limits via the exempt_when
+            # kwarg on each .limit() call (apply_rate_limits + the route
+            # decorators in primer_server).
+            default_limits_exempt_when=admin_rate_exempt,
         )
 
     app.extensions["limiter"] = limiter
@@ -289,20 +391,61 @@ def apply_rate_limits(app):
     """Apply endpoint-specific rate limits AFTER blueprint registration."""
     limiter = app.extensions.get("limiter")
     if limiter and not isinstance(limiter, _NoopLimiter):
+        # Endpoint-specific limits for every route that costs real work
+        # (compute seconds, outbound API quota, DB writes, or money).
+        # Polling GETs (pipeline/docking status, structure fetch) are
+        # deliberately unmapped so the UI's 1–2 s polls never 429.
         endpoint_map = {
+            # ── Auth ──
             "auth.login": "5 per minute",
             "auth.register": "3 per minute",
             "auth.forgot_password": "3 per hour",
             "auth.resend_verification": "5 per hour",
             "auth.verify_email": "10 per minute",
+            "auth.refresh": "30 per minute",
+            "auth.logout": "30 per minute",
+            "auth.change_password_route": "5 per minute",
+            "auth.reset_password": "5 per minute",
+            "auth.google_auth": "5 per minute",
+            "auth.delete_account": "2 per minute",
+            "auth.update_profile": "10 per minute",
+            "auth.verify_academic": "5 per minute",
+            # ── Payments & promo ──
             "payments.verify_payment": "10 per minute",
             "payments.create_order": "10 per minute",
+            "payments.validate_promo": "20 per minute",
+            "payments.apply_promo": "20 per minute",
+            "payments.cancel_subscription": "5 per minute",
+            "payments.save_result": "20 per minute",
+            "payments.delete_result": "20 per minute",
+            "payments.export_pdf": "10 per minute",
+            "payments.export_pptx": "10 per minute",
+            "payments.admin_create_promo": "10 per minute",
+            "payments.admin_update_promo": "10 per minute",
+            "payments.admin_revoke_promo": "10 per minute",
+            "payments.admin_record_expense": "10 per minute",
+            # ── 24-step primer pipeline (minutes of CPU per submit) ──
+            "pipeline.submit_pipeline": "5 per minute",
+            # ── Developer API (API-key authenticated) ──
+            "api_management.api_v1_primer_design": "10 per minute",
+            "api_management.api_v1_blast_search": "10 per minute",
+            "api_management.api_v1_msa_align": "10 per minute",
+            "api_management.create_key": "5 per minute",
             "api_management.test_webhook": "5 per minute",
+            # ── Reports / academic / referral / social proof ──
+            "reports.save_report": "10 per minute",
+            "reports.submit_feedback": "5 per minute",
+            "reports.submit_review": "5 per minute",
+            "reports.upload_academic_document": "5 per minute",
+            "reports.apply_referral": "10 per minute",
+            # ── Visitor tracking (one call per page view) ──
+            "visitor_bp.track_visit": "60 per minute",
         }
         for endpoint, limit_str in endpoint_map.items():
             fn = app.view_functions.get(endpoint)
             if fn:
-                app.view_functions[endpoint] = limiter.limit(limit_str)(fn)
+                app.view_functions[endpoint] = limiter.limit(
+                    limit_str, exempt_when=admin_rate_exempt)(fn)
                 logger.debug("Rate limit %s applied to %s", limit_str, endpoint)
 
         logger.info("Rate limits applied to sensitive endpoints.")

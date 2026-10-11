@@ -39,7 +39,7 @@ from .database import (
     get_db_standalone,
     put_db_standalone,
 )
-from .pg_auth import check_usage, log_action, require_admin, require_auth
+from .pg_auth import check_docking_usage, check_usage, log_action, require_admin, require_auth
 from .price_registry import (
     ACADEMIC_DISCOUNT_PCT,
     CURRENCY,
@@ -279,18 +279,32 @@ def _credit_tokens_atomic(user_id: int, order_id: str, product_id: str,
         except Exception:
             pass
     else:
-        # Top-up — credit purchased quantity to balance directly.
-        # get_designs_for_product() returns 0 for top-up ids; the ordered
-        # quantity is what the customer actually bought.
-        credited = designs or quantity
-        cur.execute(
-            """UPDATE token_balances
-               SET balance = balance + %s,
-                   total_purchased = total_purchased + %s,
-                   last_credited_at = NOW()
-               WHERE user_id = %s""",
-            (credited, credited, user_id)
-        )
+        # Top-up — credit to the matching ledger:
+        #   dock_top_up → docking credits (dock_credit_balance, 80 per $1)
+        #   top_up      → analysis tokens (balance, 1 per $1)
+        # get_designs_for_product() returns 0 for top-up ids, so the docking
+        # grant (or the ordered quantity for analysis runs) is what the
+        # customer actually bought. Docking purchases are not added to
+        # total_purchased: that counter is analysis tokens, and mixing units
+        # would corrupt the "runs sold" reporting.
+        credited = designs or dock_runs or quantity
+        if dock_runs:
+            cur.execute(
+                """UPDATE token_balances
+                   SET dock_credit_balance = dock_credit_balance + %s,
+                       last_credited_at = NOW()
+                   WHERE user_id = %s""",
+                (credited, user_id)
+            )
+        else:
+            cur.execute(
+                """UPDATE token_balances
+                   SET balance = balance + %s,
+                       total_purchased = total_purchased + %s,
+                       last_credited_at = NOW()
+                   WHERE user_id = %s""",
+                (credited, credited, user_id)
+            )
 
     db.commit()
     cur.close()
@@ -320,6 +334,7 @@ def get_pricing():
             "academic_price_minor": get_academic_price(cfg.price_minor) if cfg.price_minor > 0 else 0,
             "academic_price_inr": get_academic_price(cfg.price_minor) if cfg.price_minor > 0 else 0,
             "daily_analyses": cfg.daily_analyses,
+            "docking_credits": cfg.docking_credits,
             "batch_max_seq": cfg.batch_max_seq,
             "api_calls_per_month": cfg.api_calls_per_month,
             "max_seats": cfg.max_seats,
@@ -335,6 +350,10 @@ def get_pricing():
                 "label": meta["label"],
                 "unit_price_minor": meta["unit_price_minor"],
                 "currency": CURRENCY,
+                # Pack contents only — how a price is *computed* for a
+                # campaign never leaves the server.
+                **({"credits_per_unit": meta["credits_per_unit"]}
+                   if "credits_per_unit" in meta else {}),
             }
             for pid, meta in TOPUP_PRODUCTS.items()
         ],
@@ -346,8 +365,18 @@ def get_pricing():
 @payment_bp.route("/api/payments/token-balance", methods=["GET"])
 @require_auth
 def get_token_balance():
-    """Get current user's token balance and subscription status."""
+    """Get current user's token balance and subscription status.
+
+    `usage` is the analysis-token side (the other nine tools); `docking` is
+    the docking-credit side — remaining monthly grant plus purchased credits.
+    Clients render these totals only; the credit formula never leaves the
+    server.
+    """
     usage = check_usage(g.user["email"])
+    try:
+        usage["docking"] = check_docking_usage(g.user["email"])
+    except Exception as e:
+        logger.warning("token-balance: docking credits unavailable: %s", e)
     return jsonify(usage), 200
 
 
@@ -462,6 +491,12 @@ def create_order():
                f"Order {rz_order['id']} for {product_id} (x{quantity}), US${amount_minor / 100:.2f}")
 
     unit_label = "design(s)" if is_plan else "run(s)"
+    # Docking top-ups buy credits, not runs — the checkout label must say so
+    # (the accounting uses get_dock_runs_for_product(), untouched here).
+    if product_id == "dock_top_up":
+        order_description = f"VigyanLLM: {get_dock_runs_for_product(product_id, quantity)} docking credits"
+    else:
+        order_description = f"VigyanLLM: {units} {unit_label}"
     return jsonify({
         "order_id": rz_order["id"],
         "amount": amount_minor,
@@ -470,7 +505,7 @@ def create_order():
         "product_id": product_id,
         "quantity": quantity,
         "tokens": units,
-        "description": f"VigyanLLM: {units} {unit_label}",
+        "description": order_description,
         "original_amount": round(amount_minor / (1 - promo_discount_pct / 100)) if promo_discount_pct > 0 else amount_minor,
         "discount_pct": promo_discount_pct,
         "promo_code": promo_code or None,
@@ -689,15 +724,31 @@ def razorpay_webhook():
                     )
 
                     if cur.rowcount > 0:
-                        # Credit tokens
-                        cur.execute(
-                            """UPDATE token_balances
-                               SET balance = balance + %s,
-                                   total_purchased = total_purchased + %s,
-                                   last_credited_at = NOW()
-                               WHERE user_id = %s""",
-                            (tokens, tokens, user_id)
-                        )
+                        # Credit tokens to the matching ledger. Docking
+                        # top-ups buy credits (80 per $1) that only docking
+                        # can spend; analysis top-ups keep crediting `balance`.
+                        dock_credits = get_dock_runs_for_product(product_id, quantity)
+                        if dock_credits:
+                            cur.execute(
+                                """UPDATE token_balances
+                                   SET dock_credit_balance = dock_credit_balance + %s,
+                                       last_credited_at = NOW()
+                                   WHERE user_id = %s""",
+                                (dock_credits, user_id)
+                            )
+                            logger.info(
+                                "Webhook: credited %s docking credits to user_id=%s for order %s",
+                                dock_credits, user_id, order_id)
+                        else:
+                            cur.execute(
+                                """UPDATE token_balances
+                                   SET balance = balance + %s,
+                                       total_purchased = total_purchased + %s,
+                                       last_credited_at = NOW()
+                                   WHERE user_id = %s""",
+                                (tokens, tokens, user_id)
+                            )
+                            logger.info("Webhook: credited %s tokens to user_id=%s for order %s", tokens, user_id, order_id)
 
                         # Handle subscription
                         if product_id == "base_subscription":
@@ -710,7 +761,6 @@ def razorpay_webhook():
                             )
 
                         conn.commit()
-                        logger.info("Webhook: credited %s tokens to user_id=%s for order %s", tokens, user_id, order_id)
 
         elif event_type == "payment.failed":
             payload = event.get("payload", {}).get("payment", {}).get("entity", {})
@@ -1761,6 +1811,80 @@ def admin_revoke_promo():
 
     log_action(user["email"], "promo_revoked", f"Revoked promo code {code}")
     return jsonify({"success": True, "message": f"Promo code {code} has been revoked."}), 200
+
+
+# ══════════════════════════════════════════════════════════════════════════
+# ADMIN: EDIT PROMO CODE
+# ══════════════════════════════════════════════════════════════════════════
+
+@payment_bp.route('/api/admin/promo/update', methods=['POST'])
+def admin_update_promo():
+    """Edit an existing promo code (admin only).
+
+    Immutable by design: `code` (identity), `promo_type` and `currency`
+    (the platform charges exclusively in USD — legacy INR codes were
+    retired at startup and are rejected here rather than resurrected) and
+    `used_count` (redemption history). `max_uses` may not drop below the
+    uses already redeemed — use revoke to retire a code. Price edits must
+    respect Razorpay's USD payment-time minimum of $1.00 (100 cents).
+    """
+    from .pg_auth import get_current_user
+    user = get_current_user()
+    if not user or user.get("role") != "admin":
+        return jsonify({"error": "Admin access required"}), 403
+
+    data = request.get_json(silent=True) or {}
+    code = (data.get("code") or "").strip().upper()
+    if not code:
+        return jsonify({"error": "Missing promo code."}), 400
+
+    row = fetch_one("SELECT * FROM promo_codes WHERE code=%s", (code,))
+    if not row:
+        return jsonify({"error": "Code not found."}), 404
+    if (row.get("currency") or "USD") != "USD":
+        return jsonify({"error": "Legacy INR promo codes are retired and cannot be edited."}), 409
+
+    updates: dict = {}
+    try:
+        if "tier" in data:
+            updates["tier"] = str(data["tier"])[:20]
+        if "trial_days" in data:
+            updates["trial_days"] = max(0, int(data["trial_days"]))
+        if "daily_analyses" in data:
+            updates["daily_analyses"] = max(0, int(data["daily_analyses"]))
+        if "batch_max" in data:
+            updates["batch_max"] = max(0, int(data["batch_max"]))
+        if "has_export" in data:
+            updates["has_export"] = 1 if bool(data["has_export"]) else 0
+        if "max_uses" in data:
+            mu = int(data["max_uses"])
+            if mu < int(row.get("used_count") or 0):
+                return jsonify({"error":
+                    "max_uses cannot be below uses already redeemed — revoke the code instead."}), 400
+            updates["max_uses"] = mu
+        if "expires_at" in data:
+            updates["expires_at"] = float(data["expires_at"] or 0)
+        if "discount_pct" in data:
+            if (row.get("promo_type") or "") != "discount":
+                return jsonify({"error": "discount_pct only applies to 'discount' promo codes."}), 400
+            updates["discount_pct"] = max(0, min(int(data["discount_pct"]), 50))
+        if "price_inr" in data:  # legacy field name; USD cents for USD rows
+            if (row.get("promo_type") or "") == "academic":
+                return jsonify({"error": "Academic codes are free (price 0) and cannot be repriced."}), 400
+            p = int(data["price_inr"])
+            if p < 100:
+                return jsonify({"error": "Price cannot go below the $1.00 card-payment minimum."}), 400
+            updates["price_inr"] = p
+    except (TypeError, ValueError):
+        return jsonify({"error": "Invalid field value — all editable fields must be numbers or strings as before."}), 400
+
+    if not updates:
+        return jsonify({"error": "Nothing to update."}), 400
+
+    sets = ", ".join(f"{k} = %s" for k in updates)
+    execute(f"UPDATE promo_codes SET {sets} WHERE code = %s", (*updates.values(), code))
+    log_action(user["email"], "promo_updated", f"Updated promo code {code}: {sorted(updates)}")
+    return jsonify({"success": True, "code": code, "updated": sorted(updates)}), 200
 
 
 # ══════════════════════════════════════════════════════════════════════════

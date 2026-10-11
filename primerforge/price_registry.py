@@ -68,6 +68,10 @@ class PlanConfig:
     period: str
     description: str
     is_active: bool = True
+    # Docking credits granted per billing period (0 = docking not included).
+    # Credits are the ONLY currency docking is priced in — see the credit
+    # engine at the bottom of this file (never exposed to clients).
+    docking_credits: int = 0
 
     @property
     def price_inr(self) -> int:
@@ -136,7 +140,8 @@ PLAN_REGISTRY: dict[str, PlanConfig] = {
         has_sla=False,
         has_custom_tool_dev=False,
         period="monthly",
-        description="100 analyses/day, batch processing, API access, PDF/PPT export"
+        description="100 analyses/day, batch processing, API access, PDF/PPT export",
+        docking_credits=1000
     ),
     # ── Pro Yearly ─────────────────────────────────────────────────────────
     "pro-yearly": PlanConfig(
@@ -165,7 +170,8 @@ PLAN_REGISTRY: dict[str, PlanConfig] = {
         has_sla=False,
         has_custom_tool_dev=False,
         period="yearly",
-        description="Same as Pro monthly — save 26% with annual billing"
+        description="Same as Pro monthly — save 26% with annual billing",
+        docking_credits=1000
     ),
     # ── Lab Monthly ────────────────────────────────────────────────────────
     "lab-monthly": PlanConfig(
@@ -194,7 +200,8 @@ PLAN_REGISTRY: dict[str, PlanConfig] = {
         has_sla=False,
         has_custom_tool_dev=False,
         period="monthly",
-        description="Team collaboration, admin panel, LIMS webhooks, 5 seats"
+        description="Team collaboration, admin panel, LIMS webhooks, 5 seats",
+        docking_credits=5000
     ),
     # ── Lab Yearly ─────────────────────────────────────────────────────────
     "lab-yearly": PlanConfig(
@@ -223,7 +230,8 @@ PLAN_REGISTRY: dict[str, PlanConfig] = {
         has_sla=False,
         has_custom_tool_dev=False,
         period="yearly",
-        description="Same as Lab monthly — save 32% with annual billing"
+        description="Same as Lab monthly — save 32% with annual billing",
+        docking_credits=5000
     ),
     # ── Enterprise ─────────────────────────────────────────────────────────
     "enterprise": PlanConfig(
@@ -283,7 +291,8 @@ PLAN_REGISTRY: dict[str, PlanConfig] = {
         has_sla=False,
         has_custom_tool_dev=False,
         period="trial",
-        description="30-day Pro trial with autopay — verify with $1, cancel anytime"
+        description="30-day Pro trial with autopay — verify with $1, cancel anytime",
+        docking_credits=1000
     ),
 }
 
@@ -409,13 +418,19 @@ def get_tier_from_plan(plan_id: str) -> str:
 FREE_TRIAL_RUNS = 5
 TOPUP_PRICE_MINOR = 100  # USD cents per analysis run (legacy constant name kept)
 
+# Docking credits bought per $1.00 top-up. Subscriptions buy credits at
+# $1 = 100 credits; the top-up rate is deliberately worse (80) so that
+# committed plans, not impulse packs, are the cheap path. Server-side only.
+DOCK_TOPUP_CREDITS_PER_UNIT = 80
+
 # One-off pay-as-you-go products (sold via create-order, not subscriptions).
 # Prices are minor units of CURRENCY — server-authoritative, never trust client amounts.
 # NOTE: Razorpay USD orders have a hard $1.00 (100¢) payment-time minimum — any
 # lower amount gets clamped at checkout and then rejected as an amount mismatch.
 TOPUP_PRODUCTS: dict[str, dict] = {
-    "top_up": {"unit_price_minor": 100, "label": "Analysis run"},    # $1.00 / run
-    "dock_top_up": {"unit_price_minor": 100, "label": "Docking run"}, # $1.00 / run
+    "top_up": {"unit_price_minor": 100, "label": "Analysis run"},          # $1.00 / run
+    "dock_top_up": {"unit_price_minor": 100, "label": "Docking credits",   # $1.00 → 80 credits
+                    "credits_per_unit": DOCK_TOPUP_CREDITS_PER_UNIT},
 }
 
 
@@ -426,6 +441,10 @@ class _LegacyPlanWrap:
         self.display_name = plan.display_name
         self.product_type = plan.tier
         self.designs_included = plan.daily_analyses
+        # Docking credits granted per billing period. The subscription webhook
+        # reads this attribute directly (pg_payment_routes.py) — it must exist
+        # on every wrapped product or plan activation throws AttributeError.
+        self.dock_runs_included = plan.docking_credits
         self.price_minor = plan.price_minor
         self.price_inr = plan.price_minor  # legacy name — minor units of CURRENCY
         self.period = plan.period
@@ -444,7 +463,22 @@ def get_designs_for_product(product_id: str, quantity: int = 1) -> int:
 
 
 def get_dock_runs_for_product(product_id: str, quantity: int = 1) -> int:
-    """Backward compatibility: docking not gated by token packs in new model."""
+    """Docking credits granted for a purchase (legacy name kept).
+
+    * Subscription plan → the plan's monthly credit grant (Pro 1,000 /
+      Lab 5,000 — quantity is always 1 for plans).
+    * `dock_top_up`     → DOCK_TOPUP_CREDITS_PER_UNIT credits per $1 unit.
+    * anything else     → 0 (no docking value in the product).
+    """
+    plan = PLAN_REGISTRY.get(product_id)
+    if plan is not None:
+        return plan.docking_credits
+    if product_id == "dock_top_up":
+        try:
+            qty = max(0, int(quantity))
+        except (TypeError, ValueError):
+            return 0
+        return DOCK_TOPUP_CREDITS_PER_UNIT * qty
     return 0
 
 
@@ -458,3 +492,42 @@ def validate_order_request(product_id: str, quantity: int) -> str | None:
     if not plan.is_active:
         return f"Product {product_id} is no longer available."
     return None
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# DOCKING CREDIT ENGINE — server-side ONLY
+# ═══════════════════════════════════════════════════════════════════════════
+# Docking is the one metered product; the other nine tools stay free.
+# Clients are shown only a computed price quote and the remaining balance —
+# this module's arithmetic never leaves the server (no /pricing field, no
+# quote-echo of the formula).
+
+#: Credits for one consensus docking run (≤100 ligands, 1 protein, full
+#: ESMFold/Vina/GNINA pipeline + report). Keeps the historical "$1 per run"
+#: economics at the $1 = 100-credits subscription rate.
+CONSENSUS_RUN_CREDITS = 100
+
+
+def screening_credit_cost(n_ligands: int, n_proteins: int) -> int:
+    """Credit price of a virtual screening campaign. Integer-only, no floats.
+
+      base  = 100 + 50·(min(N,100) − 1) + 25·max(0, N − 100)
+      total = ceil(base × (1 + 0.5·(P − 1)) × 1.02)
+
+    The first ligand carries the whole setup cost (receptor prep, pocket
+    detection, first chunk); ligands 2–100 are bulk; beyond 100 the marginal
+    rate halves. Extra proteins share the library prep, so each additional
+    target adds 50% of the per-protein base. The 2% covers queue/heartbeat
+    overhead. Reference points: 1×1 = 102 · 18×1 = 969 · 10k×1 = 257,601
+    · 100k×1 = 2,552,601 credits.
+    """
+    try:
+        n = max(0, int(n_ligands))
+        p = max(1, int(n_proteins))
+    except (TypeError, ValueError):
+        return CONSENSUS_RUN_CREDITS
+    if n < 1:
+        return CONSENSUS_RUN_CREDITS
+    base = 100 + 50 * (min(n, 100) - 1) + 25 * max(0, n - 100)
+    # base × (p + 1)/2 × 1.02 == base × (p + 1) × 51 / 100, rounded up.
+    return (base * (p + 1) * 51 + 99) // 100

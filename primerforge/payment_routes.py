@@ -1341,6 +1341,77 @@ def admin_revoke_promo():
     return jsonify({"success": True, "message": f"Promo code {code} has been revoked."}), 200
 
 
+@payment_bp.route('/api/admin/promo/update', methods=['POST'])
+def admin_update_promo():
+    """Edit an existing promo code (admin only) — SQLite/dev mirror.
+
+    Same contract as the PostgreSQL route in pg_payment_routes: code,
+    promo_type, currency and used_count are immutable; max_uses may not
+    drop below used_count; USD prices respect Razorpay's $1.00 minimum;
+    legacy INR codes are rejected (retired).
+    """
+    from .auth import get_current_user
+    user = get_current_user()
+    if not user or user.get("role") != "admin":
+        return jsonify({"error": "Admin access required"}), 403
+
+    data = request.get_json(silent=True) or {}
+    code = (data.get("code") or "").strip().upper()
+    if not code:
+        return jsonify({"error": "Missing promo code."}), 400
+
+    db = get_db()
+    row_r = db.execute("SELECT * FROM promo_codes WHERE code=?", (code,)).fetchone()
+    if not row_r:
+        return jsonify({"error": "Code not found."}), 404
+    row = dict(row_r)
+    if (row.get("currency") or "USD") != "USD":
+        return jsonify({"error": "Legacy INR promo codes are retired and cannot be edited."}), 409
+
+    updates: dict = {}
+    try:
+        if "tier" in data:
+            updates["tier"] = str(data["tier"])[:20]
+        if "trial_days" in data:
+            updates["trial_days"] = max(0, int(data["trial_days"]))
+        if "daily_analyses" in data:
+            updates["daily_analyses"] = max(0, int(data["daily_analyses"]))
+        if "batch_max" in data:
+            updates["batch_max"] = max(0, int(data["batch_max"]))
+        if "has_export" in data:
+            updates["has_export"] = 1 if bool(data["has_export"]) else 0
+        if "max_uses" in data:
+            mu = int(data["max_uses"])
+            if mu < int(row.get("used_count") or 0):
+                return jsonify({"error":
+                    "max_uses cannot be below uses already redeemed — revoke the code instead."}), 400
+            updates["max_uses"] = mu
+        if "expires_at" in data:
+            updates["expires_at"] = float(data["expires_at"] or 0)
+        if "discount_pct" in data:
+            if (row.get("promo_type") or "") != "discount":
+                return jsonify({"error": "discount_pct only applies to 'discount' promo codes."}), 400
+            updates["discount_pct"] = max(0, min(int(data["discount_pct"]), 50))
+        if "price_inr" in data:  # legacy field name; USD cents for USD rows
+            if (row.get("promo_type") or "") == "academic":
+                return jsonify({"error": "Academic codes are free (price 0) and cannot be repriced."}), 400
+            p = int(data["price_inr"])
+            if p < 100:
+                return jsonify({"error": "Price cannot go below the $1.00 card-payment minimum."}), 400
+            updates["price_inr"] = p
+    except (TypeError, ValueError):
+        return jsonify({"error": "Invalid field value."}), 400
+
+    if not updates:
+        return jsonify({"error": "Nothing to update."}), 400
+
+    sets = ", ".join(f"{k} = ?" for k in updates)
+    db.execute(f"UPDATE promo_codes SET {sets} WHERE code = ?", (*updates.values(), code))
+    db.commit()
+    log_action(user["email"], "promo_updated", f"Updated promo code {code}: {sorted(updates)}")
+    return jsonify({"success": True, "code": code, "updated": sorted(updates)}), 200
+
+
 # ══════════════════════════════════════════════════════════════════════════
 # ADMIN: EXPENSE LOG
 # ══════════════════════════════════════════════════════════════════════════

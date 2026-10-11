@@ -543,6 +543,42 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <div class="section-hdr"><div class="section-title">All Promo Codes</div></div>
     <div class="tbl-wrap"><table><thead><tr><th>Code</th><th>Type</th><th>Tier</th><th>Days</th><th>Daily</th><th>Batch</th><th>Price</th><th>Uses</th><th>Export</th><th>Created</th><th>Action</th></tr></thead><tbody id="tbl-promos"><tr><td colspan="11" style="text-align:center;color:var(--muted);padding:2rem">Loading...</td></tr></tbody></table></div>
 
+    <!-- Promo edit modal (server-enforced rules: USD-only, price ≥ $1.00,
+         max_uses ≥ redeemed, legacy INR codes not editable) -->
+    <div id="promo-edit-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1000;align-items:center;justify-content:center">
+      <div style="background:var(--surface);border:1px solid var(--outline);border-radius:14px;padding:1.5rem;width:min(460px,92vw);max-height:90vh;overflow-y:auto">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+          <div style="font-weight:800;font-size:.95rem">Edit Promo — <span id="pe-code" class="mono"></span></div>
+          <button type="button" class="btn btn-sm" onclick="closePromoEdit()" style="background:none;border:none;cursor:pointer;font-size:1rem">✕</button>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.8rem">
+          <label style="font-size:.72rem;font-weight:700">Tier
+            <select class="input" id="pe-tier" style="width:100%;margin-top:4px;padding:.5rem .6rem"><option value="pro">pro</option><option value="lab">lab</option></select></label>
+          <label style="font-size:.72rem;font-weight:700">Trial days
+            <input class="input" id="pe-days" type="number" min="0" style="width:100%;margin-top:4px;padding:.5rem .6rem"></label>
+          <label style="font-size:.72rem;font-weight:700">Daily analyses
+            <input class="input" id="pe-daily" type="number" min="0" style="width:100%;margin-top:4px;padding:.5rem .6rem"></label>
+          <label style="font-size:.72rem;font-weight:700">Batch max
+            <input class="input" id="pe-batch" type="number" min="0" style="width:100%;margin-top:4px;padding:.5rem .6rem"></label>
+          <label style="font-size:.72rem;font-weight:700">Export allowed
+            <select class="input" id="pe-export" style="width:100%;margin-top:4px;padding:.5rem .6rem"><option value="1">Yes</option><option value="0">No</option></select></label>
+          <label style="font-size:.72rem;font-weight:700">Max uses
+            <input class="input" id="pe-maxuses" type="number" min="1" style="width:100%;margin-top:4px;padding:.5rem .6rem"></label>
+          <label style="font-size:.72rem;font-weight:700">Price (USD cents, min 100)
+            <input class="input" id="pe-price" type="number" min="0" style="width:100%;margin-top:4px;padding:.5rem .6rem"></label>
+          <label style="font-size:.72rem;font-weight:700">Discount % (discount codes)
+            <input class="input" id="pe-discount" type="number" min="0" max="50" style="width:100%;margin-top:4px;padding:.5rem .6rem"></label>
+          <label style="font-size:.72rem;font-weight:700">Expires (empty = never)
+            <input class="input" id="pe-expires" type="date" style="width:100%;margin-top:4px;padding:.5rem .6rem"></label>
+        </div>
+        <div id="pe-err" style="display:none;color:var(--red);font-size:.78rem;margin-top:.8rem"></div>
+        <div style="display:flex;gap:.6rem;margin-top:1.1rem">
+          <button type="button" class="btn" id="pe-save" onclick="savePromoEdit()" style="flex:1;background:var(--primary);color:#fff;font-weight:700">Save Changes</button>
+          <button type="button" class="btn" onclick="closePromoEdit()" style="background:var(--surface2);color:var(--text);border:1px solid var(--outline)">Cancel</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Tools Coverage Matrix -->
     <div style="background:var(--surface-alt);border:1px solid var(--outline);border-radius:12px;padding:1.5rem;margin-top:1.5rem">
       <div style="font-family:var(--font-h);font-weight:700;font-size:1rem;margin-bottom:1rem">Tools Coverage by Plan</div>
@@ -552,7 +588,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <tr><td>Batch Processing</td><td>1 seq</td><td>50 seq</td><td>200 seq</td></tr>
         <tr><td>PDF/PPT Export</td><td>❌</td><td>✅</td><td>✅</td></tr>
         <tr><td>Saved Results</td><td>❌</td><td>✅</td><td>✅</td></tr>
-        <tr><td>Advanced Docking</td><td>❌</td><td>✅</td><td>✅</td></tr>
+        <tr><td>Docking Runs (consensus + screening)</td><td>Pay-as-you-go credits</td><td>✅ 1,000 credits/mo</td><td>✅ 5,000 credits/mo</td></tr>
         <tr><td>Large MSA (10+ seqs)</td><td>❌</td><td>✅</td><td>✅</td></tr>
         <tr><td>CRISPR Off-target</td><td>❌</td><td>✅</td><td>✅</td></tr>
         <tr><td>API Access</td><td>❌</td><td>1,000/mo</td><td>10,000/mo</td></tr>
