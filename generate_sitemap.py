@@ -54,6 +54,11 @@ PRIORITY_MAP = {
     "validated-primer-design.html": 0.90,
     "validated-primer-design-report.html": 0.70,
     "validation.html": 0.60,
+    # /solutions/* — the four domain hubs linked from the homepage pillar cards
+    "solutions/primer-pcr-design.html": 0.90,
+    "solutions/sequence-analysis.html": 0.90,
+    "solutions/genome-engineering.html": 0.90,
+    "solutions/structural-biology.html": 0.90,
     "security.html": 0.80,
     "privacy.html": 0.70,
     "terms.html": 0.70,

@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en-IN">
+<head>
+<!-- Consent Mode default (dataLayer) -->
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('consent', 'default', {
+    'ad_storage': 'denied',
+    'ad_user_data': 'denied',
+    'ad_personalization': 'denied',
+    'analytics_storage': 'denied',
+    'region': ['AT','BE','BG','HR','CY','CZ','DK','EE','FI','FR','DE','GR','HU','IE','IT','LV','LT','LU','MT','NL','PL','PT','RO','SK','SI','ES','SE','IS','LI','NO','GB','CH']
+  });
+  try {
+    var vlcs = JSON.parse(localStorage.getItem('vigyanllm_cookie_consent') || 'null');
+    if (vlcs && vlcs.consent === 'accepted') {
+      gtag('consent', 'update', { 'ad_storage': 'granted', 'ad_user_data': 'granted', 'ad_personalization': 'granted', 'analytics_storage': 'granted' });
+    } else if (vlcs && vlcs.consent === 'declined') {
+      gtag('consent', 'update', { 'ad_storage': 'denied', 'ad_user_data': 'denied', 'ad_personalization': 'denied', 'analytics_storage': 'denied' });
+    }
+  } catch (e) {}
+
+</script>
+
+
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-KRP5LLPR');</script>
+<!-- End Google Tag Manager -->
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Primer & PCR Design — Primers, Tm, GC & Validation | VigyanLLM</title>
+  <link rel="stylesheet" href="/design-tokens.css">
+<link rel="manifest" href="/manifest.json" />
+<link rel="sitemap" type="application/xml" href="/sitemap.xml" />
+<link rel="alternate" type="application/rss+xml" title="VigyanLLM Blog RSS" href="/blog/rss.xml" />
+<meta name="theme-color" content="#0F172A" />
+<meta name="twitter:image" content="https://www.vigyanllm.in/assets/tool-hero/primer-network.png">
+<meta name="twitter:description" content="Eight primer and PCR tools in one place: the 24-step design pipeline, in silico PCR, nearest-neighbour Tm and GC calculators and published-primer validation.">
+<meta name="twitter:title" content="Primer &amp; PCR Design — Primers, Tm, GC &amp; Validation | VigyanLLM">
+<meta name="twitter:card" content="summary_large_image">
+<meta property="og:site_name" content="VigyanLLM">
+<meta property="og:image" content="https://www.vigyanllm.in/assets/tool-hero/primer-network.png">
+  <meta property="og:image:width" content="1100">
+  <meta property="og:image:height" content="611">
+  <meta name="robots" content="index, follow" />
+<meta name="author" content="VigyanLLM Private Limited" />
+<meta name="description" content="Eight primer and PCR tools in one place: the 24-step design pipeline, in silico PCR, nearest-neighbour Tm and GC calculators and published-primer validation.">
+  <meta name="keywords" content="bioinformatics tools, primer design, sequence analysis, genome engineering, molecular docking, free bioinformatics software, browser-based tools">
+  <link rel="canonical" href="https://www.vigyanllm.in/solutions/primer-pcr-design">
+<link rel="alternate" hreflang="en" href="https://www.vigyanllm.in/solutions/primer-pcr-design">
+<link rel="alternate" hreflang="x-default" href="https://www.vigyanllm.in/solutions/primer-pcr-design">
+  <meta property="og:title" content="Primer &amp; PCR Design — Primers, Tm, GC &amp; Validation | VigyanLLM">
+  <meta property="og:description" content="Eight primer and PCR tools in one place: the 24-step design pipeline, in silico PCR, nearest-neighbour Tm and GC calculators and published-primer validation.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://www.vigyanllm.in/solutions/primer-pcr-design">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Open+Sans:wght@400;500;600;700&family=Source+Serif+4:wght@400;500&display=swap" rel="stylesheet">
+
+  <link rel="icon" type="image/png" href="/logo.png">
+<link rel="apple-touch-icon" href="/logo.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://www.vigyanllm.in"},{"@type":"ListItem","position":2,"name":"Primer & PCR Design","item":"https://www.vigyanllm.in/solutions/primer-pcr-design"}]}</script>
+<style>
+    body{background:#FFFFFF;color:#0A0A0F}
+    main{background:#FFFFFF}
+    .sol-tools{background:#FFFFFF}
+  </style>
+<script src="/cookie-banner.js" defer></script>
+</head>
+<body>
+<div id="vl-header"><!--vl-header-bake-start--><a href="#main-content" class="skip-link">Skip to content</a><header>
+<nav aria-label="Main navigation">
+<div class="nav-inner">
+  <a href="/" class="nav-brand">
+    <img src="/logo.png" alt="VigyanLLM Logo" class="site-logo" width="150" height="36" style="height:36px;width:auto;object-fit:contain" loading="lazy">
+    <span>VigyanLLM</span>
+  </a>
+  <div class="nav-links">
+    <div class="drop-wrap">
+      <span class="drop-trigger" role="button" tabindex="0" aria-haspopup="true" aria-expanded="false">Products ▾</span>
+      <div class="drop-menu">
+        <a href="/primer">Primer Design</a>
+        <a href="/search">Sequence Search</a>
+        <a href="/blast">BLAST</a>
+        <a href="/msa">MSA</a>
+        <a href="/pcr-analysis">PCR Analysis</a>
+        <a href="/crispr-analysis">CRISPR Analysis <span style="font-size:var(--font-xs);font-weight:700;color:#1a1a1a;background:#FEF3C7;padding:2px 6px;border-radius:var(--radius-pill);line-height:1.3">Coming Soon</span></a>
+        <a href="/tm-calculator">Tm Calculator</a>
+        <a href="/gc-calculator">GC Calculator</a>
+        <a href="/protein-docking">Protein Docking</a>
+        <a href="/docking">Molecular Docking</a>
+        <a href="/protein-quality">Protein Quality</a>
+        <a href="/interactions">Interactions</a>
+        <a href="/binding-site">Binding Site</a>
+        <a href="/regenerate">Regenerate</a>
+        <a href="/dna-3d">3D DNA Viewer</a>
+        <a href="/dna-to-rna" style="display:flex;align-items:center;gap:6px">DNA → RNA Converter</a>
+        <a href="/reverse-complement" style="display:flex;align-items:center;gap:6px">Reverse Complement <span style="font-size:9px;font-weight:700;color:#fff;background:#16A34A;padding:2px 7px;border-radius:var(--radius-pill);line-height:1.4">Free</span></a>
+        <a href="/dna-to-protein" style="display:flex;align-items:center;gap:6px">DNA → Protein <span style="font-size:9px;font-weight:700;color:#fff;background:#16A34A;padding:2px 7px;border-radius:var(--radius-pill);line-height:1.4">Free</span></a>
+        <a href="/pcr-product-calculator" style="display:flex;align-items:center;gap:6px">PCR Product Calc <span style="font-size:9px;font-weight:700;color:#fff;background:#16A34A;padding:2px 7px;border-radius:var(--radius-pill);line-height:1.4">Free</span></a>
+        <a href="/restriction-enzyme-finder" style="display:flex;align-items:center;gap:6px">Restriction Enzyme Finder <span style="font-size:9px;font-weight:700;color:#fff;background:#16A34A;padding:2px 7px;border-radius:var(--radius-pill);line-height:1.4">Free</span></a>
+        <a href="/cloning-simulator" style="display:flex;align-items:center;gap:6px">Cloning Simulator <span style="font-size:9px;font-weight:700;color:#fff;background:#16A34A;padding:2px 7px;border-radius:var(--radius-pill);line-height:1.4">Free</span></a>
+        <a href="/biostatistics-calculator" style="display:flex;align-items:center;gap:6px">Biostatistics Calculator <span style="font-size:9px;font-weight:700;color:#fff;background:#16A34A;padding:2px 7px;border-radius:var(--radius-pill);line-height:1.4">Free</span></a>
+      </div>
+    </div>
+    <div class="drop-wrap">
+      <span class="drop-trigger" role="button" tabindex="0" aria-haspopup="true" aria-expanded="false">Services ▾</span>
+      <div class="drop-menu">
+        <a href="/custom-pipeline-development">Customised Pipeline</a>
+      </div>
+    </div>
+    <a href="/learning-vigyanllm">Learning</a>
+    <a href="https://forms.gle/63vdQQ1Ka6WF3ZJg7" target="_blank" rel="noopener noreferrer">Partnership</a>
+    <a href="/pricing">Pricing</a>
+    <a href="/developer">Developer</a>
+  </div>
+  <div class="nav-right">
+    <div class="nav-search-wrap">
+      <input type="text" id="navSearchInput" placeholder="Search tools &amp; resources" autocomplete="off">
+      <span class="ns-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
+      <div class="nav-search-results" id="navSearchResults"></div>
+    </div>
+    <div class="nav-btns" id="navBtns">
+      <button type="button" class="btn-nav-outline" onclick="openAuthModal()">Sign in</button>
+      <button type="button" class="btn-nav-fill" onclick="openAuthModal()">Get started</button>
+    </div>
+    <div class="nav-profile" id="navProfile" style="display:none">
+      <div class="nav-avatar" id="navAvatar" role="button" tabindex="0" aria-expanded="false" onclick="toggleUserMenu()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span class="nav-avatar-letter" id="navAvatarLetter"></span>
+      </div>
+      <div class="user-dropdown" id="userDropdown">
+        <div class="user-dropdown-header">
+          <div class="ud-name" id="udName"></div>
+          <div class="ud-email" id="udEmail"></div>
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:2px">
+            <span class="ud-plan" id="udPlan"></span>
+            <span class="ud-expiry" id="udExpiry" style="font-size:11px;color:var(--muted)"></span>
+          </div>
+          <div class="ud-usage" id="udUsage" style="margin-top:6px;display:none">
+            <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:2px">
+              <span id="udUsageLabel">Today's analyses</span>
+              <span id="udUsageCount"></span>
+            </div>
+            <div style="height:4px;background:var(--outline);border-radius:2px;overflow:hidden">
+              <div id="udUsageBar" style="height:100%;border-radius:2px;transition:width .3s"></div>
+            </div>
+          </div>
+        </div>
+        <a class="ud-item" href="/dashboard">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+          Dashboard
+        </a>
+        <a class="ud-item" href="/usage-billing">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+          Usage &amp; Billing
+        </a>
+
+        <a class="ud-item ud-manage" href="/pricing" style="display:none">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+          Manage Subscription
+        </a>
+        <a class="ud-item ud-upgrade" href="/pricing" style="display:none">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          Upgrade to Pro
+        </a>
+        <div class="ud-item logout" role="button" tabindex="0" onclick="logout()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          Logout
+        </div>
+      </div>
+    </div>
+  </div>
+    </div>
+  <button type="button" class="hamburger" id="hamburger" aria-label="Menu" aria-expanded="false" aria-controls="mobile-menu">
+    <span></span><span></span><span></span>
+  </button>
+<div class="mobile-menu" id="mobile-menu">
+  <div class="mm-user" id="mmUser" style="display:none;padding:12px 16px;background:rgba(255,255,255,.05);border-radius:12px;margin-bottom:12px">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div id="mmAvatar" style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#3B82F6,#1D4ED8);display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:13px"></div>
+      <div>
+        <div id="mmName" style="font-weight:600;color:#fff;font-size:14px"></div>
+        <div id="mmPlan" style="font-size:11px;color:rgba(255,255,255,.5)"></div>
+      </div>
+    </div>
+  </div>
+  <div class="mm-group"><div class="mm-hdr">Products</div>
+    <a href="/primer" aria-label="Primer Design (menu)">Primer Design</a>
+    <a href="/search" aria-label="Sequence Search (menu)">Sequence Search</a>
+    <a href="/blast" aria-label="BLAST (menu)">BLAST</a>
+    <a href="/msa" aria-label="MSA (menu)">MSA</a>
+    <a href="/pcr-analysis" aria-label="PCR Analysis (menu)">PCR Analysis</a>
+    <a href="/crispr-analysis" aria-label="CRISPR Analysis (menu)">CRISPR Analysis <span style="font-size:var(--font-xs);font-weight:700;color:#1a1a1a;background:#FEF3C7;padding:2px 6px;border-radius:var(--radius-pill);line-height:1.3">Coming Soon</span></a>
+    <a href="/tm-calculator" aria-label="Tm Calculator (menu)">Tm Calculator</a>
+    <a href="/gc-calculator" aria-label="GC Calculator (menu)">GC Calculator</a>
+    <a href="/protein-docking" aria-label="Protein Docking (menu)">Protein Docking</a>
+    <a href="/docking" aria-label="Molecular Docking (menu)">Molecular Docking</a>
+    <a href="/protein-quality" aria-label="Protein Quality (menu)">Protein Quality</a>
+    <a href="/interactions" aria-label="Interactions (menu)">Interactions</a>
+    <a href="/binding-site" aria-label="Binding Site (menu)">Binding Site</a>
+    <a href="/regenerate" aria-label="Regenerate (menu)">Regenerate</a>
+        <a href="/dna-3d" aria-label="3D DNA Viewer (menu)">3D DNA Viewer</a>
+        <a href="/dna-to-rna" style="display:flex;align-items:center;gap:6px" aria-label="DNA to RNA Converter (menu)">DNA → RNA Converter</a>
+        <a href="/reverse-complement" aria-label="Reverse Complement (menu)">Reverse Complement</a>
+        <a href="/dna-to-protein" aria-label="DNA to Protein (menu)">DNA → Protein</a>
+        <a href="/pcr-product-calculator" aria-label="PCR Product Calculator (menu)">PCR Product Calculator</a>
+        <a href="/restriction-enzyme-finder" aria-label="Restriction Enzyme Finder (menu)">Restriction Enzyme Finder</a>
+        <a href="/cloning-simulator" aria-label="Cloning Simulator (menu)">Cloning Simulator</a>
+        <a href="/biostatistics-calculator" aria-label="Biostatistics Calculator (menu)">Biostatistics Calculator</a>
+  </div>
+  <div class="mm-group"><div class="mm-hdr">Services</div>
+    <a href="/custom-pipeline-development" aria-label="Customised Pipeline (menu)">Customised Pipeline</a>
+  </div>
+  <div class="mm-group">
+    <a href="/learning-vigyanllm" aria-label="Learning (menu)">Learning</a>
+    <a href="https://forms.gle/63vdQQ1Ka6WF3ZJg7" target="_blank" rel="noopener noreferrer" aria-label="Academic Partnership (menu)">Academic Partnership</a>
+    <a href="/pricing" aria-label="Pricing (menu)">Pricing</a>
+    <a href="/developer" aria-label="Developer API (menu)">Developer</a>
+    <a href="mailto:contact@vigyanllm.in">Enterprise Inquiry</a>
+  </div>
+  <a href="#" onclick="closeMobileMenu();var e=document.getElementById('navSearchInput');if(e){e.focus();e.scrollIntoView({behavior:'smooth',block:'center'})};return false" class="mm-cta" style="background:transparent;border:1px solid rgba(255,255,255,.25);color:rgba(255,255,255,.8);margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:8px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Search</a>
+  <a href="#" class="mm-cta" onclick="openAuthModal();return false">Sign in</a>
+</div>
+</nav>
+</header><!--vl-header-bake-end--></div>
+
+<a href="#main-content" class="skip-link">Skip to content</a>
+
+<section class="homecard">
+  <div class="hc-text">
+    <nav class="hc-crumb" aria-label="Breadcrumb"><a href="/">Home</a><span class="hc-sep" aria-hidden="true">›</span><span aria-current="page">Primer &amp; PCR Design</span></nav>
+    <h1 class="hc-title">Primer &amp; PCR Design</h1>
+    <p class="hc-lead">Design, check and benchmark primers end to end — the 24-step pipeline, in silico PCR, nearest-neighbour Tm and GC calculators, all in one browser tab.</p>
+    <div class="hc-tags"><span>8 tools</span><span class="hc-dot" aria-hidden="true">·</span><span>Primer &amp; probe design</span><span class="hc-dot" aria-hidden="true">·</span><span>Tm · GC · Amplicon</span></div>
+    <a class="hc-cta" href="#tools">Browse the tools<span aria-hidden="true">→</span></a>
+  </div>
+  <div class="hc-media hc-media-slides" id="hcSlides">
+    <figure class="hc-slide is-active" data-caption="Primer &amp; Probe Design"><img src="/assets/tool-hero/sm/primer-network.jpg" alt="DNA strands connected by a network of data points" width="1000" height="555" decoding="async"></figure>
+    <figure class="hc-slide" aria-hidden="true" data-caption="PCR Analysis"><img src="/assets/tool-hero/sm/pcr-analysis-lab.jpg" alt="PCR tube in a laboratory rack with a DNA helix behind it" width="1000" height="1000" loading="lazy" decoding="async"></figure>
+    <figure class="hc-slide" aria-hidden="true" data-caption="PCR Product Calculator"><img src="/assets/tool-hero/sm/pcr-product-gel.jpg" alt="Agarose gel under UV light showing PCR product bands" width="1000" height="318" loading="lazy" decoding="async"></figure>
+    <figure class="hc-slide" aria-hidden="true" data-caption="Tm Calculator"><img src="/assets/tool-hero/sm/tm-duplex.jpg" alt="DNA double helix strands" width="949" height="801" loading="lazy" decoding="async"></figure>
+    <figure class="hc-slide" aria-hidden="true" data-caption="GC Calculator"><img src="/assets/tool-hero/sm/gc-molecule.jpg" alt="Ball-and-stick model of a nucleotide base" width="1000" height="562" loading="lazy" decoding="async"></figure>
+    <figure class="hc-slide" aria-hidden="true" data-caption="Biostatistics Calculator"><img src="/assets/tool-hero/sm/biostatistics-charts.jpg" alt="Magnifying glass over statistical charts and data" width="950" height="536" loading="lazy" decoding="async"></figure>
+    <figure class="hc-slide" aria-hidden="true" data-caption="Primer Design Guide"><img src="/assets/tool-hero/sm/primer-design-diagram.jpg" alt="Forward and reverse primers annealed to a DNA template strand" width="1000" height="522" loading="lazy" decoding="async"></figure>
+    <figure class="hc-slide" aria-hidden="true" data-caption="Thermodynamic Validation"><img src="/assets/tool-hero/sm/validation-lab.jpg" alt="Laboratory pipetting into a multiwell plate" width="1000" height="666" loading="lazy" decoding="async"></figure>
+    <div class="hc-slide-cap" id="hcSlideCap">Primer &amp; Probe Design</div>
+  </div>
+</section>
+<main id="main-content">
+
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-KRP5LLPR"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript><noscript><div style="background:#FEF3C7;border-bottom:1px solid #FDE68A;padding:12px 24px;text-align:center;font-size:13px;color:#92400E;font-weight:600;font-family:var(--font-b,Open Sans),sans-serif">This tool requires JavaScript to run analyses. Please enable JavaScript in your browser to use VigyanLLM.</div></noscript>
+<!-- End Google Tag Manager (noscript) -->
+  <section class="sol-tools" id="tools">
+    <div class="sol-head">
+      <span class="sol-tag">8 tools</span>
+      <h2>Everything for primer and PCR work</h2>
+      <p>From a template sequence to ordered oligos: design the pair, check it in silico, then confirm the thermodynamics against published assays.</p>
+    </div>
+    <div class="sol-grid">
+      <a class="sol-card" href="/primer"><div class="sol-thumb"><img src="/assets/tool-hero/sm/primer-network.jpg" alt="DNA strands connected by a network of data points" width="1000" height="555" loading="lazy" decoding="async"></div><div class="sol-body"><h3>Primer &amp; Probe Design</h3><p>24-step pipeline: thermodynamics, BLAST specificity, SNP filter, repeat masking and a multiplex check.</p><span class="sol-link">Open tool <span aria-hidden="true">→</span></span></div></a>
+      <a class="sol-card" href="/pcr-analysis"><div class="sol-thumb"><img src="/assets/tool-hero/sm/pcr-analysis-lab.jpg" alt="PCR tube in a laboratory rack with a DNA helix behind it" width="1000" height="1000" loading="lazy" decoding="async"></div><div class="sol-body"><h3>PCR Analysis</h3><p>Run both primers against your template for amplicon size, product sequence and match positions.</p><span class="sol-link">Open tool <span aria-hidden="true">→</span></span></div></a>
+      <a class="sol-card" href="/pcr-product-calculator"><div class="sol-thumb"><img src="/assets/tool-hero/sm/pcr-product-gel.jpg" alt="Agarose gel under UV light showing PCR product bands" width="1000" height="318" loading="lazy" decoding="async"></div><div class="sol-body"><h3>PCR Product Calculator<span class="sol-badge free">Free</span></h3><p>Expected amplicon size and product sequence straight from your two primer sequences.</p><span class="sol-link">Open tool <span aria-hidden="true">→</span></span></div></a>
+      <a class="sol-card" href="/tm-calculator"><div class="sol-thumb"><img src="/assets/tool-hero/sm/tm-duplex.jpg" alt="DNA double helix strands" width="949" height="801" loading="lazy" decoding="async"></div><div class="sol-body"><h3>Tm Calculator</h3><p>Nearest-neighbour melting temperature with salt, magnesium and oligo-concentration corrections.</p><span class="sol-link">Open tool <span aria-hidden="true">→</span></span></div></a>
+      <a class="sol-card" href="/gc-calculator"><div class="sol-thumb"><img src="/assets/tool-hero/sm/gc-molecule.jpg" alt="Ball-and-stick model of a nucleotide base" width="1000" height="562" loading="lazy" decoding="async"></div><div class="sol-body"><h3>GC Calculator</h3><p>GC%, base counts and molecular weight for any DNA or RNA sequence.</p><span class="sol-link">Open tool <span aria-hidden="true">→</span></span></div></a>
+      <a class="sol-card" href="/biostatistics-calculator"><div class="sol-thumb"><img src="/assets/tool-hero/sm/biostatistics-charts.jpg" alt="Magnifying glass over statistical charts and data" width="950" height="536" loading="lazy" decoding="async"></div><div class="sol-body"><h3>Biostatistics Calculator<span class="sol-badge free">Free</span></h3><p>t-tests, ANOVA, chi-square, regression, power analysis, EC50/IC50 — 20+ calculators.</p><span class="sol-link">Open tool <span aria-hidden="true">→</span></span></div></a>
+      <a class="sol-card" href="/primer-design"><div class="sol-thumb"><img src="/assets/tool-hero/sm/primer-design-diagram.jpg" alt="Forward and reverse primers annealed to a DNA template strand" width="1000" height="522" loading="lazy" decoding="async"></div><div class="sol-body"><h3>Primer Design Guide</h3><p>The workflow from template sequence to ordered oligos: parameters, thermodynamics and specificity.</p><span class="sol-link">Open tool <span aria-hidden="true">→</span></span></div></a>
+      <a class="sol-card" href="/validation"><div class="sol-thumb"><img src="/assets/tool-hero/sm/validation-lab.jpg" alt="Laboratory pipetting into a multiwell plate" width="1000" height="666" loading="lazy" decoding="async"></div><div class="sol-body"><h3>Thermodynamic Validation</h3><p>Published primer pairs — N1, GAPDH and ACTB — run through the same engine so you can reproduce the numbers.</p><span class="sol-link">Open tool <span aria-hidden="true">→</span></span></div></a>
+    </div>
+    <p class="sol-foot">Open any tool above directly — no installation, no desktop software.
+    <a href="/hub">Browse all hubs</a> or <a href="/pricing">see what each plan unlocks</a>.</p>
+  </section>
+<div class="auth-overlay" id="auth-overlay"><div class="auth-card"><div class="auth-title" id="auth-modal-title">Log in to VigyanLLM</div><div class="auth-sub" id="auth-modal-sub">Sign in to save &amp; export your results</div><div id="auth-content"></div></div></div></main>
+
+<script defer src="/search-index.js"></script>
+<script defer src="/auth-shared.js"></script>
+
+<div id="vl-footer"><!--vl-footer-bake-start--><footer>
+
+<div class="footer-grid">
+  <div class="footer-col">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+      <img src="/logo.png" alt="VigyanLLM Logo" class="site-logo" style="height:36px;width:auto;object-fit:contain" loading="lazy">
+      <span style="font-family:var(--font-h);font-size:var(--font-sm);font-weight:800;color:#fff">VigyanLLM</span>
+    </div>
+    <p style="font-size:var(--font-sm);color:rgba(255,255,255,.60);line-height:1.6">Sovereign Healthcare &amp; Life Sciences AI.<br>Built in India. For the world.</p>
+    <a href="mailto:contact@vigyanllm.in" style="color:var(--saffron-light,#ff8a7a);font-size:var(--font-sm);display:block;margin-top:12px">contact@vigyanllm.in</a>
+    <div class="footer-social">
+      <a href="https://github.com/vigyanllm" rel="me" aria-label="GitHub"><svg aria-hidden="true" fill="#fff" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg></a>
+      <a href="https://www.linkedin.com/company/vigyanllm/" rel="me" aria-label="LinkedIn"><svg aria-hidden="true" fill="#0077B5" viewBox="0 0 24 24"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg></a>
+      <a href="https://www.facebook.com/vigyanllm" rel="me" aria-label="Facebook"><svg aria-hidden="true" fill="#1877F2" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></a>
+      <a href="https://www.youtube.com/@VigyanLLM" rel="me" aria-label="YouTube"><svg aria-hidden="true" fill="#FF0000" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+    </div>
+  </div>
+  <div class="footer-col">
+    <p class="footer-col-title">Products</p>
+    <a href="/primer">Primer Design</a>
+    <a href="/search">Sequence Search</a>
+    <a href="/blast">BLAST</a>
+    <a href="/msa">MSA</a>
+    <a href="/pcr-analysis">PCR Analysis</a>
+    <a href="/crispr-analysis">CRISPR <span style="font-size:var(--font-xs);font-weight:700;color:#1a1a1a;background:#FEF3C7;padding:2px 6px;border-radius:var(--radius-pill);line-height:1.3">Coming Soon</span></a>
+    <a href="/protein-docking">Docking</a>
+    <a href="/biostatistics-calculator">Biostatistics</a>
+  </div>
+  <div class="footer-col">
+    <p class="footer-col-title">Platform</p>
+    <a href="/platform">Overview</a>
+    <a href="/architecture">Architecture</a>
+    <a href="/problem">Problem</a>
+    <a href="/solution">Solution</a>
+    <a href="/compare">Compare</a>
+    <a href="/roadmap">Roadmap</a>
+    <a href="/about/sovereign-ai">Sovereign AI</a>
+    <a href="/features/on-premises">On-Premises</a>
+  </div>
+  <div class="footer-col">
+    <p class="footer-col-title">Resources</p>
+    <a href="/blog">Blog</a>
+    <a href="/faq">FAQ</a>
+    <a href="/about">About</a>
+    <a href="/demo">Demo</a>
+    <a href="/learning-vigyanllm">Learning</a>
+    <a href="https://forms.gle/63vdQQ1Ka6WF3ZJg7" target="_blank" rel="noopener noreferrer">Academic Partnership</a>
+    <a href="/pricing">Pricing</a>
+  </div>
+  <div class="footer-col">
+    <p class="footer-col-title">Contact</p>
+    <a href="/custom-pipeline-development">Custom Pipeline Development</a>
+    <a href="mailto:contact@vigyanllm.in">contact@vigyanllm.in</a>
+    <a href="/privacy">Privacy</a>
+    <a href="/terms">Terms</a>
+    <a href="/cookies">Cookies</a>
+    <a href="/refund">Refund</a>
+    <a href="/security">Security</a>
+    <a href="/cite-vigyanllm">Cite Us</a>
+    <a href="/support">Support</a>
+  </div>
+</div>
+<div class="footer-bottom"> <span>&copy; 2026 VigyanLLM Private Limited · Sovereign Research AI</span>
+  <div style="display:flex;align-items:center;gap:16px">
+    <span>www.vigyanllm.in</span>
+  </div>
+</div>
+
+</footer><!--vl-footer-bake-end--></div>
+<div class="mobile-sticky-cta">
+  <a href="/" class="cta-primary">Get Started</a>
+  <a href="/pricing" class="cta-secondary">View Pricing</a>
+</div>
+<script src="/includes.js"></script>
+<script>
+(function(){
+var h=document.getElementById('hamburger'),m=document.getElementById('mobile-menu');
+if(!h||!m)return;
+h.addEventListener('click',function(){h.classList.toggle('active');m.classList.toggle('open')});
+document.addEventListener('click',function(e){if(!h.contains(e.target)&&!m.contains(e.target)){h.classList.remove('active');m.classList.remove('open')}});
+})();
+</script>
+<script>
+(function(){
+  var media=document.getElementById('hcSlides');
+  if(!media)return;
+  var slides=media.querySelectorAll('.hc-slide');
+  if(slides.length<2)return;
+  if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  var cap=document.getElementById('hcSlideCap'),i=0;
+  setInterval(function(){
+    slides[i].classList.remove('is-active');
+    slides[i].setAttribute('aria-hidden','true');
+    i=(i+1)%slides.length;
+    slides[i].classList.add('is-active');
+    slides[i].removeAttribute('aria-hidden');
+    if(cap)cap.textContent=slides[i].getAttribute('data-caption')||'';
+  },3600);
+})();
+</script>
+</body>
+</html>
