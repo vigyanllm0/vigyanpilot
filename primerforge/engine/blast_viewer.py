@@ -43,11 +43,20 @@ def run_remote_blast(
     database: str = "nt",
     organism: str = "",
     max_hits: int = 50,
+    max_wait: float = 90.0,
+    protein_database: str = "nr",
 ) -> dict:
     """
     Run BLAST via NCBI Remote API.
     database: nt, nr, refseq_rna, refseq_protein
     organism: optional organism filter (e.g., "Homo sapiens")
+    max_wait: wall-clock ceiling (seconds) on submitting + polling. The search
+              tool passes a much tighter value so it returns inside its own
+              request budget instead of the 90s default.
+    protein_database: index used when the query is protein. Defaults to nr to
+              preserve the /blast page's behaviour; the search tool passes
+              swissprot, because nr is large enough that a blastp run regularly
+              outlives the search's whole request budget and returns nothing.
     Returns: {results: [...], total: N, params: {...}}
     """
     import requests
@@ -56,13 +65,13 @@ def run_remote_blast(
     # Determine program based on sequence content
     is_protein = len(re.findall(r"[^ACGTN]", query_sequence)) > len(query_sequence) * 0.2
     program = "blastp" if is_protein else "blastn"
-    db = database if not is_protein else "nr"
+    db = database if not is_protein else protein_database
 
     results = []
     error_detail = None
     import time as _time
     _start = _time.time()
-    _MAX_TOTAL = 90  # NCBI can be slow; allow up to 90s
+    _MAX_TOTAL = max_wait
     try:
         # Step 1: Submit BLAST job
         submit_url = "https://blast.ncbi.nlm.nih.gov/Blast.cgi"

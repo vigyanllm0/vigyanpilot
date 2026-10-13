@@ -2002,7 +2002,7 @@ def create_app() -> Flask:
                                 "unit": "aa", "usable_for_auto_design": False,
                                 "auto_design_reason": "UniProt returns protein sequence; Auto Design requires DNA."}), 200
             else:
-                genes = search_ncbi_gene(accession)
+                genes = search_ncbi_gene(accession, include_refseq=True)
                 if not genes:
                     _log_fetch(accession, "gene_search_failed")
                     return err(f"Gene '{accession}' not found.", "FETCH_FAILED", 400)
@@ -2081,17 +2081,37 @@ def create_app() -> Flask:
         query = (data.get("query") or "").strip()
         database = (data.get("database") or "auto").strip()
         organism = (data.get("organism") or "human").strip()
+        # The browser already knows which box the user chose and sends it — pass
+        # it through instead of re-guessing server-side, so an explicit choice is
+        # never silently overridden by detection heuristics.
+        input_type = (data.get("input_type") or "").strip().lower()
+        allowed_types = {"name", "accession", "sequence"}
+        if input_type and input_type not in allowed_types:
+            return err(f"input_type must be one of: {', '.join(sorted(allowed_types))}.",
+                       "VALIDATION_ERROR", 400)
         if not query:
             return err("Query is required.", "VALIDATION_ERROR", 400)
         try:
             from primerforge.core.sequence_fetcher import search_databases
-            result = search_databases(query, database=database, organism=organism)
+            result = search_databases(query, database=database, organism=organism,
+                                      input_type=input_type or None)
             if not result.get("results") and result.get("warnings"):
-                result["error_detail"] = "NCBI services may be temporarily unavailable. Try a more specific query or different organism."
+                # Keep the real cause. The old text blamed NCBI for every empty
+                # result, which made genuine failures undiagnosable.
+                result["error_detail"] = (
+                    "No records matched this query. "
+                    + " · ".join(result["warnings"][:3])
+                )[:400]
             return jsonify(result), 200
         except Exception as exc:
             logger.error("Search error: %s", exc, exc_info=True)
-            return err("Search failed.", "SEARCH_FAILED", 500)
+            # requests exceptions are this route's expected failure mode and
+            # carry upstream-facing text (NCBI/Ensembl/ENA) worth surfacing;
+            # anything else keeps its type only, so internals never leak out.
+            if type(exc).__module__.startswith("requests"):
+                return err(f"Search failed: {type(exc).__name__}: {str(exc)[:160]}",
+                           "SEARCH_FAILED", 500)
+            return err(f"Search failed: {type(exc).__name__}", "SEARCH_FAILED", 500)
 
     @app.route("/api/primer/blast", methods=["POST"])
     @(_route_limiter.limit("10 per minute", exempt_when=admin_rate_exempt) if _route_limiter else lambda f: f)

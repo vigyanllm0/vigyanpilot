@@ -377,7 +377,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <option value="ncbi_nucleotide">NCBI Nucleotide</option>
         <option value="ensembl">Ensembl</option>
         <option value="uniprot">UniProt</option>
-        <option value="ddbj">DDBJ</option>
         <option value="ena">ENA</option>
       </select>
     </div>
@@ -478,9 +477,15 @@ function loading(on){
 }
 _on('input-type','change',function(){
   var v=this.value;
-  $('search-query').placeholder=v==='name'?'e.g. BRCA1, TP53, ACTB':v==='accession'?'e.g. NM_007294, ENST00000357654':'Paste DNA sequence…';
+  $('search-query').placeholder=v==='name'?'e.g. BRCA1, TP53, ACTB':v==='accession'?'e.g. NM_007294, ENST00000357654':'Paste DNA, RNA or protein sequence…';
 });
-_on('search-query','input',function(){var t=this.value;var inputType=$('input-type').value;var c=inputType==='sequence'?t.replace(/[^ACGTNacgtn]/g,'').length:t.length;$('sq-len').textContent=c});
+_on('search-query','input',function(){
+  var t=this.value;
+  // Count residues when a sequence is entered. The old ACGT-only filter dropped
+  // every U and all amino-acid letters, so an RNA or protein query read "0".
+  var c=$('input-type').value==='sequence'?t.replace(/\s/g,'').length:t.length;
+  $('sq-len').textContent=c;
+});
 _on('org-select','change',function(){$('custom-org-group').style.display=this.value==='custom'?'block':'none'});
 async function doSearch(){
   var q=$('search-query').value.trim();
@@ -490,7 +495,11 @@ async function doSearch(){
   if(org==='custom')org=$('custom-org').value.trim();
   try{
     var ctrl=new AbortController();
-    var tid=setTimeout(function(){ctrl.abort()},30000);
+    // Sequence mode runs a remote BLAST that NCBI queues asynchronously, so it
+    // needs more headroom than a metadata lookup — but stays under CloudFront's
+    // ~60s origin-response timeout, which is what a slow search used to trip.
+    var timeoutMs=$('input-type').value==='sequence'?45000:30000;
+    var tid=setTimeout(function(){ctrl.abort()},timeoutMs);
     var r;
     try{r=await fetch(API+'/primer/search-sequences',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
       query:q,input_type:$('input-type').value,database:$('search-db').value,organism:org
@@ -508,7 +517,14 @@ function renderResults(data){
   var area=$('results-area'),count=$('result-count');
   var results=data.results||[];
   searchData=results;
-  count.textContent='('+results.length+' found)';
+  count.textContent=(function(){
+    var total=data.total||results.length;
+    // The payload is capped at 50 rows, so a query that matched 61 must not
+    // report itself as "50 found" — say what was shown out of what matched.
+    return total>results.length
+      ? '('+results.length+' of '+total+' found)'
+      : '('+results.length+' found)';
+  })();
   var warns=data.warnings||[];
   var warnHtml=warns.length?'<div style="padding:8px 12px;margin-bottom:8px;background:#fffbeb;border:1px solid #fde68a;border-radius:6px;font-size:12px;color:#92400e">'+warns.map(function(w){return esc(w)}).join('<br>')+'</div>':'';
   if(!results.length){area.innerHTML=warnHtml+'<div style="padding:40px;text-align:center;color:var(--muted);font-size:13px">No results found.</div>';return}
@@ -540,27 +556,39 @@ function getSelected(){
   var cbs=document.querySelectorAll('.scb:checked');
   return Array.from(cbs).map(function(cb){return searchData[parseInt(cb.dataset.idx)]});
 }
+// Rows whose sequence could not be back-filled must not be exported as
+// header-only FASTA records — downstream tools would silently receive nothing.
+function buildFasta(sel,minCount){
+  var withSeq=sel.filter(function(r){return r&&r.sequence});
+  if(withSeq.length<minCount){
+    alert(withSeq.length
+      ? 'Only '+withSeq.length+' of the selected records include a sequence. Select '+(minCount-withSeq.length)+' more that do, or deselect the rest.'
+      : 'None of the selected records include a sequence. Open one via its Source link first.');
+    return null;
+  }
+  return withSeq.map(function(r){return'>'+(r.accession||r.id||'seq')+'\n'+r.sequence}).join('\n');
+}
 _on('btn-search','click',doSearch);
 _on('btn-send-design','click',function(){
   var s=getSelected();
   if(!s.length){alert('Select at least one sequence.');return}
-  var seq=s.map(function(r){return'>'+(r.accession||r.id||'seq')+'\n'+(r.sequence||'')}).join('\n');
-  localStorage.setItem('vp_design_seq',seq||'');
-  window.location.href='primer';
+  var seq=buildFasta(s,1); if(!seq)return;
+  localStorage.setItem('vp_design_seq',seq);
+  window.location.href='/primer';
 });
 _on('btn-send-blast','click',function(){
   var s=getSelected();
   if(!s.length){alert('Select at least one sequence.');return}
-  var seq=s.map(function(r){return'>'+(r.accession||r.id||'seq')+'\n'+(r.sequence||'')}).join('\n');
-  localStorage.setItem('vp_blast_seq',seq||'');
-  window.location.href='blast';
+  var seq=buildFasta(s,1); if(!seq)return;
+  localStorage.setItem('vp_blast_seq',seq);
+  window.location.href='/blast';
 });
 _on('btn-send-msa','click',function(){
   var s=getSelected();
   if(s.length<2){alert('Select at least 2 sequences for MSA.');return}
-  var seq=s.map(function(r){return'>'+(r.accession||r.id||'seq')+'\n'+(r.sequence||'')}).join('\n');
-  localStorage.setItem('vp_msa_seq',seq||'');
-  window.location.href='msa';
+  var seq=buildFasta(s,2); if(!seq)return;
+  localStorage.setItem('vp_msa_seq',seq);
+  window.location.href='/msa';
 });
 </script>
 

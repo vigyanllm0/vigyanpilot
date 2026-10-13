@@ -699,5 +699,27 @@ if(mu)mu.addEventListener('change',function(){
 <script defer src="/review-modal.js"></script>
 <script src="/includes.js"></script>
 <script defer src="/analytics.js"></script>
+<script>
+/* ── Handoff from Sequence Search ──────────────────────────────────────────
+   The search page's "Send to MSA" button stores a FASTA under this key.
+   Alignment needs at least two sequences, which the search page already
+   enforces before writing the key; this only has to land them and say so. */
+(function(){
+  var raw=null;
+  try{raw=localStorage.getItem('vp_msa_seq');localStorage.removeItem('vp_msa_seq');}catch(e){return}
+  if(!raw)return;
+  var ta=document.getElementById('msa-input');if(!ta)return;
+  var n=(raw.match(/^>/gm)||[]).length;
+  if(!n)return;
+  ta.value=raw;
+  ta.dispatchEvent(new Event('input',{bubbles:true}));
+  if(!document.getElementById('vp-handoff')){
+    var d=document.createElement('div');d.id='vp-handoff';
+    d.textContent='Loaded '+n+' sequences from Sequence Search.';
+    d.style.cssText='padding:8px 12px;margin:0 0 8px;border-radius:6px;font-size:12px;line-height:1.6;background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af;';
+    ta.parentElement.insertBefore(d,ta);
+  }
+})();
+</script>
 </body>
 </html>

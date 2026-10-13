@@ -822,5 +822,38 @@ if(bbb)bbb.addEventListener('click',async function(){
 <script defer src="/review-modal.js"></script>
 <script src="/includes.js"></script>
 <script defer src="/analytics.js"></script>
+<script>
+/* ── Handoff from Sequence Search ──────────────────────────────────────────
+   The search page's "Send to BLAST" button stores a FASTA under this key.
+   One sequence lands in the single-query box; more than one lands in the
+   batch box. Read once and cleared, so a later visit never re-fills it. */
+(function(){
+  var raw=null;
+  try{raw=localStorage.getItem('vp_blast_seq');localStorage.removeItem('vp_blast_seq');}catch(e){return}
+  if(!raw)return;
+  var single=document.getElementById('bseq'),batch=document.getElementById('blast-batch-seqs');
+  if(!single&&!batch)return;
+  var recs=[],id=null,buf=[];
+  raw.split(/\r?\n/).forEach(function(l){
+    if(l.charAt(0)==='>'){if(id)recs.push({id:id,seq:buf.join('')});id=l.slice(1).trim();buf=[];}
+    else if(l.trim())buf.push(l.trim());
+  });
+  if(id)recs.push({id:id,seq:buf.join('')});
+  recs=recs.filter(function(r){return r.seq;});
+  if(!recs.length)return;
+  var target,count;
+  if(recs.length===1&&single){target=single;target.value=recs[0].seq;count=1;}
+  else if(batch){target=batch;batch.value=raw;count=recs.length;}
+  else if(single){target=single;single.value=recs[0].seq;count=1;}
+  else return;
+  target.dispatchEvent(new Event('input',{bubbles:true}));
+  if(!document.getElementById('vp-handoff')){
+    var d=document.createElement('div');d.id='vp-handoff';
+    d.textContent='Loaded '+count+' sequence'+(count===1?'':'s')+' from Sequence Search.';
+    d.style.cssText='padding:8px 12px;margin:0 0 8px;border-radius:6px;font-size:12px;line-height:1.6;background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af;';
+    target.parentElement.insertBefore(d,target);
+  }
+})();
+</script>
 </body>
 </html>
