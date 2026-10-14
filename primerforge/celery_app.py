@@ -9,8 +9,15 @@ import os
 
 from celery import Celery
 
-# Redis connection URL from environment, defaulting to localhost
-REDIS_URL = os.environ.get("REDIS_URL", "redis://localhost:6379/0")
+# Broker URL: CELERY_BROKER_URL when set (explicit opt-in — the dispatch gate
+# pipeline_routes._celery_broker_available reads the same variable, so app and
+# gate can never disagree), else legacy REDIS_URL, else localhost. Dispatch only
+# happens when the gate passes; REDIS_URL alone (rate limiter / MSA viewer)
+# never makes the gate pass.
+REDIS_URL = (
+    os.environ.get("CELERY_BROKER_URL")
+    or os.environ.get("REDIS_URL", "redis://localhost:6379/0")
+)
 
 # Create Celery application
 celery_app = Celery(

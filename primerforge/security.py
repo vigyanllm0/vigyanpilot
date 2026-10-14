@@ -210,19 +210,47 @@ def _get_rate_limit_storage() -> str:
 
     Uses Redis when REDIS_URL is configured (required for multi-worker production
     deployments so all Gunicorn workers share the same counter). Falls back to
-    in-memory storage for single-worker development.
+    in-memory storage for single-worker development — and ALSO when REDIS_URL is
+    set but the endpoint doesn't accept connections at startup: flask-limiter
+    only discovers a dead Redis on the first request, which would 500 every
+    route. One TCP probe at boot, degrade loudly to per-worker memory instead.
 
     BUG-16 FIX: Redis URL is logged with the password masked, regardless of
     whether the URL contains an '@' character.
     """
     if REDIS_URL:
         # Safely mask password from redis://[:password@]host:port/db
+        parsed = None
         try:
             from urllib.parse import urlparse
             parsed = urlparse(REDIS_URL)
             display = f"{parsed.hostname}:{parsed.port}/{parsed.path.lstrip('/')}"
         except Exception:
             display = "<redis-url-masked>"
+
+        # Startup TCP probe (redis/rediss over TCP only — can't probe what we
+        # can't parse, so malformed URLs keep the old trust-the-URL behaviour).
+        host = port = None
+        try:
+            if parsed is not None and parsed.scheme in {"redis", "rediss"}:
+                host = parsed.hostname or "localhost"
+                port = parsed.port or 6379
+        except Exception:
+            host = port = None
+        if host:
+            try:
+                import socket
+
+                with socket.create_connection((host, port), timeout=0.5):
+                    pass
+            except OSError as exc:
+                logger.warning(
+                    "Rate limiter: REDIS_URL set but %s:%s unreachable (%s) — "
+                    "degrading to per-worker in-memory storage",
+                    host, port, exc,
+                )
+                return "memory://"
+
         logger.info("Rate limiter: Redis (%s)", display)
         return REDIS_URL
     logger.info("Rate limiter: in-memory (single-worker only)")

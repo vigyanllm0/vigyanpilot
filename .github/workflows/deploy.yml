@@ -221,6 +221,13 @@ jobs:
             printf '%s\n' "S3_BUCKET_REGION=ap-south-1" >> .env
             printf '%s\n' "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> .env
             printf '%s\n' "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> .env
+            # Shared rate-limiter counters across gunicorn workers + MSA-viewer
+            # job state. Localhost only (Ubuntu redis binds 127.0.0.1, no auth).
+            # If Redis is down the limiter degrades to per-worker memory via the
+            # security.py startup TCP probe — never a request-time 500.
+            # CELERY_BROKER_URL is deliberately NOT set: no Celery worker runs
+            # here, so pipeline dispatch must stay on the fallback thread.
+            printf '%s\n' "REDIS_URL=redis://127.0.0.1:6379/0" >> .env
 
             # Start PostgreSQL
             if command -v pg_isready &>/dev/null && pg_isready -q 2>/dev/null; then
@@ -235,6 +242,21 @@ jobs:
               echo "WARNING: No PostgreSQL found — ensure DATABASE_URL points to a running instance"
             fi
             sleep 2
+
+            # Start Redis (never gate the deploy on it — the security.py TCP
+            # probe degrades the limiter to per-worker memory if missing, and
+            # apt's redis-server auto-starts on install).
+            if command -v redis-cli &>/dev/null && redis-cli ping 2>/dev/null | grep -q PONG; then
+              echo "Redis is running"
+            else
+              sudo apt-get install -y redis-server 2>/dev/null || \
+                echo "WARNING: redis-server install failed — limiter stays per-worker"
+              sudo systemctl enable --now redis-server 2>/dev/null || \
+                sudo systemctl enable --now redis 2>/dev/null || true
+              sleep 1
+              redis-cli ping 2>/dev/null || \
+                echo "WARNING: Redis not answering — limiter degrades to per-worker memory"
+            fi
 
             # Ensure log directory exists
             sudo mkdir -p /var/log/vigyan
