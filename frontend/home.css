@@ -1,13 +1,54 @@
 html { overflow-x: hidden; }
-:root{--blue:#1565C0;--blue-light:#42A5F5;--blue-bg:#E3F2FD;--navy:#0F172A;--black:#0A0A0F;--surface:#FFFFFF;--surface-alt:#F5F7FA;--outline:#E2E5EA;--text:#0A0A0F;--text2:#374151;--muted:#4B5563;--font-h:'Montserrat',sans-serif;--font-b:'Open Sans',sans-serif;--space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-5:20px;--space-6:24px;--space-8:32px;--space-10:40px;--space-12:48px;--space-16:64px;--space-20:80px;--space-24:96px;--max-w:1400px;--font-xs:12px;--font-sm:13px;--font-base:14px;--font-lg:16px;--font-xl:20px;--font-2xl:26px;--font-3xl:32px;--radius-sm:6px;--radius-md:8px;--radius-lg:12px;--radius-xl:16px;--radius-pill:99px;--radius-full:50%}
+:root{--blue:#1565C0;--blue-light:#42A5F5;--blue-bg:#E3F2FD;--navy:#0F172A;--black:#0A0A0F;--surface:#FFFFFF;--surface-alt:#F5F7FA;--outline:#E2E5EA;--text:#0A0A0F;--text2:#374151;--muted:#4B5563;--font-h:'Montserrat',sans-serif;--font-b:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;--space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-5:20px;--space-6:24px;--space-8:32px;--space-10:40px;--space-12:48px;--space-16:64px;--space-20:80px;--space-24:96px;--max-w:1400px;--font-xs:12px;--font-sm:13px;--font-base:14px;--font-lg:16px;--font-xl:20px;--font-2xl:26px;--font-3xl:32px;--radius-sm:6px;--radius-md:8px;--radius-lg:12px;--radius-xl:16px;--radius-pill:99px;--radius-full:50%}
+
+/* ══ VigyanLLM Design System · semantic layer ══════════════════════════
+   docs/WEBSITE_MNC_SPEC.md §4 — marketing mode (homepage pilot, Phase 1).
+   Maps the saffron/sage/warm-paper brand to named semantic tokens so no
+   component ever picks a raw hex value. Product (navy) mode tokens are
+   declared here for forward-compat and applied on tool pages in Phase 2. */
+:root{
+  /* Marketing (warm) — official brand */
+  --action-primary:var(--saffron,#e85d4c);
+  --action-primary-strong:var(--saffron-dark,#d44a3a);
+  --action-primary-soft:var(--saffron-glow,rgba(232,93,76,.12));
+  --sci:var(--sage,#7c9a6b);
+  --sci-strong:var(--sage-dark,#6b8a5b);
+  --surface-page:#FFFFFF;
+  --surface-section:var(--warm-paper,#f5f3ef);
+  --surface-section-border:var(--warm-paper-border,#e5e2dc);
+  --text-primary:var(--body-text,#17212B);
+  --text-secondary:#526171;
+  --border-default:#DCE3E8;
+  --state-error:#B42318;
+  --state-warning:#8A4B08;
+  /* Product (navy) — declared now, wired up on tool pages in Phase 2 */
+  --product-primary:#123B68;
+  --product-primary-strong:#0D2E52;
+  --product-accent:#087F65;
+  --product-accent-strong:#066A55;
+  --product-mint:#EAF5F1;
+  /* Focus + motion (spec §4.5, §4.6) */
+  --focus-ring:0 0 0 3px rgba(232,93,76,.30);
+  --motion-fast:140ms;
+  --motion-standard:200ms;
+  --motion-emphasis:280ms;
+  --ease-out:cubic-bezier(.2,0,0,1);
+}
 *{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
-body{background:var(--surface);color:var(--text);font-family:var(--font-b);line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+/* Body text = Inter (spec §4.3). `--font-b` is rebound to Inter on this page so
+   every token-based UI element (nav search, auth modal inputs, FAQ search) also
+   resolves to Inter — Open Sans is dropped from the homepage font link entirely
+   (font diet: 4 families → 3). 16px = spec minimum for body copy.
+   `!important` is required only because design-tokens.css still carries a
+   legacy `body{font-family:...!important}` override — that override is
+   retired in Phase 2 (spec §16), at which point this flag goes too. */
+body{background:var(--surface);color:var(--text);font-family:var(--font-b),-apple-system,BlinkMacSystemFont,sans-serif!important;font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
 a{text-decoration:none;color:inherit}
 img{max-width:100%}
 
 /* ── AI Widget ── */
-#ai-widget{position:fixed;bottom:24px;right:24px;z-index:9999;font-family:'Open Sans',sans-serif}
+#ai-widget{position:fixed;bottom:24px;right:24px;z-index:9999;font-family:var(--font-b)}
 #ai-widget-toggle{width:52px;height:52px;border-radius:50%;background:var(--navy,#0F172A);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;box-shadow:0 4px 20px rgba(15,23,42,.3);transition:transform .2s,box-shadow .2s}
 #ai-widget-toggle:hover{transform:scale(1.05);box-shadow:0 6px 28px rgba(15,23,42,.4)}
 #ai-widget-toggle svg{width:22px;height:22px}
@@ -21,7 +62,7 @@ img{max-width:100%}
 .ai-widget-body{padding:12px 16px}
 .ai-widget-body p{margin:0 0 10px;font-size:var(--font-xs);color:var(--text2);font-weight:500}
 .ai-widget-options{display:flex;flex-direction:column;gap:6px}
-.btn-ghost{width:100%;text-align:left;padding:10px 12px;border:1px solid #E2E8F0;border-radius:var(--radius-md);background:transparent;font-family:'Open Sans',sans-serif;font-size:var(--font-xs);font-weight:500;color:var(--text);cursor:pointer;transition:background .15s,border-color .15s}
+.btn-ghost{width:100%;text-align:left;padding:10px 12px;border:1px solid #E2E8F0;border-radius:var(--radius-md);background:transparent;font-family:var(--font-b);font-size:var(--font-xs);font-weight:500;color:var(--text);cursor:pointer;transition:background .15s,border-color .15s}
 .btn-ghost:hover{background:#EFF6FF;border-color:var(--primary)}
 
 @media(max-width:768px){#ai-widget{bottom:16px;right:16px}#ai-widget-panel{width:calc(100vw-48px);max-width:300px}}
@@ -32,9 +73,9 @@ img{max-width:100%}
 .hero-badge .dot{width:6px;height:6px;border-radius:50%;background:var(--saffron);animation:pulse 2s infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 .hero-left h1{font-family:var(--font-h-serif);font-size:clamp(2rem,4.5vw,3rem);font-weight:500;line-height:1.15;color:var(--text);margin-bottom:16px;letter-spacing:-.01em}
-.hero-left p{font-size:var(--font-base);color:var(--text2);line-height:1.8;margin-bottom:28px;max-width:580px}
+.hero-left p{font-size:17px;color:var(--text2);line-height:1.7;margin-bottom:28px;max-width:580px}
 .hero-actions{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-start}
-.btn-primary{position:relative;padding:14px 36px;background:var(--saffron);color:#fff;border:none;border-radius:4px;font-family:var(--font-h);font-size:var(--font-sm);font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:.06em;transition:all .2s;overflow:hidden}
+.btn-primary{display:inline-block;position:relative;padding:14px 36px;background:var(--saffron);color:#fff;border:none;border-radius:4px;font-family:var(--font-h);font-size:var(--font-sm);font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:.06em;transition:all .2s;overflow:hidden;text-decoration:none}
 .btn-primary:hover{background:var(--saffron-dark);box-shadow:0 4px 20px var(--saffron-glow);transform:translateY(-1px)}
 .btn-primary:active{transform:translateY(0)}
 .btn-secondary{padding:14px 36px;background:transparent;color:var(--saffron);border:2px solid var(--saffron);border-radius:4px;font-family:var(--font-h);font-size:var(--font-sm);font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:.06em;transition:all .2s}
@@ -46,7 +87,7 @@ img{max-width:100%}
 .section-header{text-align:center;margin-bottom:40px}
 .section-tag{display:inline-block;background:var(--saffron-glow);color:var(--saffron);font-size:var(--font-xs);font-weight:700;text-transform:uppercase;letter-spacing:.12em;padding:5px 14px;border-radius:var(--radius-sm);margin-bottom:12px}
 .section-header h2{font-family:var(--font-h);font-size:var(--font-2xl);font-weight:500;color:var(--text);margin-bottom:8px}
-.section-header p{font-size:var(--font-base);color:var(--text2);max-width:560px;margin:0 auto;line-height:1.7}
+.section-header p{font-size:16px;color:var(--text2);max-width:560px;margin:0 auto;line-height:1.7}
 .reveal{opacity:0;transform:translateY(24px);transition:all .6s ease}
 .reveal.visible{opacity:1;transform:translateY(0)}
 .pillars{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
@@ -158,4 +199,33 @@ img{max-width:100%}
   .hero-right{animation:none;opacity:1;transform:none}
   .fig-frame img{transform:none;transition:none}
   .hero-chip{animation:none}
+  .hero-badge .dot{animation:none}
+}
+
+/* ══ VigyanLLM Design System · homepage components ════════════════════
+   Phase-1 pilot (docs/WEBSITE_MNC_SPEC.md §15 Wave 0): inline style=""
+   attributes on the hero trust row and the technology strip migrated to
+   named classes so they can be tokenised, audited and restyled centrally. */
+
+/* Hero trust row (was ~6 inline-styled <span> elements) */
+.hero-trust{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px;font-size:var(--font-xs);color:var(--text2)}
+.hero-trust-item{display:flex;align-items:center;gap:6px}
+.hero-trust-item svg{width:16px;height:16px;flex-shrink:0;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+/* Technology strip (was ~5 inline-styled <span> elements) */
+.tech-strip{display:flex;flex-wrap:wrap;justify-content:center;gap:24px;padding:24px 32px;max-width:var(--max-w);margin:0 auto}
+.tech-item{display:flex;align-items:center;gap:6px;font-size:var(--font-xs);color:var(--muted);font-weight:600}
+.tech-item svg{width:16px;height:16px;flex-shrink:0;fill:currentColor}
+
+/* Tooltip abbreviations: the UA default renders `underline dotted` with
+   text-underline-offset:auto, which at 17px Inter lands through the x-height
+   and reads as a strikethrough. Push it below the baseline and soften it so
+   it reads as the "hover for definition" affordance it actually is. */
+abbr[title]{text-decoration:underline dotted;text-underline-offset:3px;text-decoration-thickness:1px;text-decoration-color:rgba(82,97,113,.55);cursor:help}
+
+/* Focus ring on interactive cards (spec §4.2: 3:1 UI boundary + visible focus) */
+.pillar-card:focus-visible,.prod-card:focus-visible,.collab-card:focus-visible,.insight-card:focus-visible{outline:3px solid var(--action-primary);outline-offset:3px}
+
+@media(max-width:768px){
+  .tech-strip{gap:14px;padding:20px}
 }
