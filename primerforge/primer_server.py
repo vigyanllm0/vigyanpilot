@@ -28,6 +28,7 @@ Amplicon Tm (Marmur-Schildkraut-Doty formula):
   Tm = 81.5 + 16.6*log10([Na+]) + 0.41*(%GC) - 675/length
 """
 
+import hmac
 import inspect
 import logging
 import math
@@ -772,6 +773,26 @@ def _screening_refund(campaign: dict, user_id, refund_fn, mode: str = "cancel") 
         logger.error("Screening refund bookkeeping failed for %s: %s",
                      campaign.get("campaign_id", ""), exc)
     return amount
+
+
+def _queue_worker_token_ok() -> bool:
+    """Shared-secret gate for the persistent-queue HTTP API.
+
+    /api/primer/docking/queue/* is worker-only plumbing (enqueue/claim/
+    complete/fail/stats/recover/cleanup). No browser or public client ever
+    calls it — production workers use the local file queue, not
+    persistent_queue — yet the routes were fully unauthenticated, letting
+    anyone write/claim jobs or trigger a mass re-queue via recover.
+
+    Deny by default: requires X-Queue-Token matching QUEUE_WORKER_TOKEN, and
+    the whole API 403s when the env var is unset (nothing legitimate breaks —
+    there are zero callers in the repo or tests).
+    """
+    expected = os.environ.get("QUEUE_WORKER_TOKEN", "")
+    if not expected:
+        return False
+    provided = request.headers.get("X-Queue-Token", "")
+    return hmac.compare_digest(provided, expected)
 
 
 def create_app() -> Flask:
@@ -4259,6 +4280,8 @@ def create_app() -> Flask:
     @app.route("/api/primer/docking/queue/enqueue", methods=["POST"])
     def queue_enqueue():
         """Add a job to the persistent queue."""
+        if not _queue_worker_token_ok():
+            return err("Queue API is unavailable.", "FORBIDDEN", 403)
         from .pipelines.persistent_queue import PRIORITY_BATCH, PRIORITY_NORMAL, PRIORITY_URGENT, get_queue
 
         data = request.get_json(silent=True) or {}
@@ -4276,6 +4299,8 @@ def create_app() -> Flask:
     @app.route("/api/primer/docking/queue/claim", methods=["POST"])
     def queue_claim():
         """Claim the next pending job."""
+        if not _queue_worker_token_ok():
+            return err("Queue API is unavailable.", "FORBIDDEN", 403)
         from .pipelines.persistent_queue import get_queue
 
         data = request.get_json(silent=True) or {}
@@ -4298,6 +4323,8 @@ def create_app() -> Flask:
     @app.route("/api/primer/docking/queue/complete", methods=["POST"])
     def queue_complete():
         """Mark a job as complete."""
+        if not _queue_worker_token_ok():
+            return err("Queue API is unavailable.", "FORBIDDEN", 403)
         from .pipelines.persistent_queue import get_queue
 
         data = request.get_json(silent=True) or {}
@@ -4315,6 +4342,8 @@ def create_app() -> Flask:
     @app.route("/api/primer/docking/queue/fail", methods=["POST"])
     def queue_fail():
         """Mark a job as failed."""
+        if not _queue_worker_token_ok():
+            return err("Queue API is unavailable.", "FORBIDDEN", 403)
         from .pipelines.persistent_queue import get_queue
 
         data = request.get_json(silent=True) or {}
@@ -4333,6 +4362,8 @@ def create_app() -> Flask:
     @app.route("/api/primer/docking/queue/stats", methods=["GET"])
     def queue_stats():
         """Get queue statistics."""
+        if not _queue_worker_token_ok():
+            return err("Queue API is unavailable.", "FORBIDDEN", 403)
         from .pipelines.persistent_queue import get_queue
 
         q = get_queue()
@@ -4343,6 +4374,8 @@ def create_app() -> Flask:
     @app.route("/api/primer/docking/queue/recover", methods=["POST"])
     def queue_recover():
         """Recover stale claimed/running jobs."""
+        if not _queue_worker_token_ok():
+            return err("Queue API is unavailable.", "FORBIDDEN", 403)
         from .pipelines.persistent_queue import get_queue
 
         q = get_queue()
@@ -4353,6 +4386,8 @@ def create_app() -> Flask:
     @app.route("/api/primer/docking/queue/cleanup", methods=["POST"])
     def queue_cleanup():
         """Remove old completed/failed jobs."""
+        if not _queue_worker_token_ok():
+            return err("Queue API is unavailable.", "FORBIDDEN", 403)
         from .pipelines.persistent_queue import get_queue
 
         data = request.get_json(silent=True) or {}
