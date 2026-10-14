@@ -796,7 +796,7 @@ def get_referral_code():
 
     return jsonify({
         "referral_code": code,
-        "referral_url": f"https://vigyanllm.in/r/{code}",
+        "referral_url": f"https://www.vigyanllm.in/r/{code}",
         "tokens_per_referral": 5,
         "stats": {
             "successful_referrals": stats["successful"] if stats else 0,
@@ -821,16 +821,20 @@ def apply_referral():
     if not code or not new_user_email:
         return jsonify({"error": "code and email are required"}), 400
 
-    # Find the referral record
+    # Find the referrer's code row — ANY status: legacy rows were consumed
+    # by the old single-referral UPDATE (status flipped off 'active' and
+    # referred_id set), which made those codes dead for every later referral.
+    # All rows sharing a code belong to the same referrer (the PG generator
+    # embeds user_id), so LIMIT 1 is unambiguous.
     ref = fetch_one(
-        """SELECT r.id, r.referrer_id, r.status
-           FROM referrals r
-           WHERE r.referral_code = %s AND r.referred_id IS NULL AND r.status = 'active'
+        """SELECT id, referrer_id
+           FROM referrals
+           WHERE referral_code = %s
            LIMIT 1""",
         (code,)
     )
     if not ref:
-        return jsonify({"valid": False, "message": "Referral code not found or already used"}), 200
+        return jsonify({"valid": False, "message": "Referral code not found"}), 200
 
     # Find the new user
     new_user = fetch_one("SELECT id FROM users WHERE email = %s", (new_user_email,))
@@ -844,13 +848,21 @@ def apply_referral():
     if new_user_id == referrer_id:
         return jsonify({"valid": False, "message": "Cannot refer yourself"}), 200
 
-    # Link referred user to the referral record
+    already = fetch_one(
+        "SELECT id FROM referrals WHERE referral_code = %s AND referred_email = %s LIMIT 1",
+        (code, new_user_email),
+    )
+    if already:
+        return jsonify({"valid": True, "message": "Referral already applied."}), 200
+
+    # One row per referred person; the referrer's code row stays reusable.
+    # (Before 2026-10 apply() UPDATEd the single code row, so a referrer's
+    # 2nd referral got "code not found or already used" — a lifetime cap of 1.)
     execute(
-        """UPDATE referrals
-           SET referred_id = %s, referred_email = %s, status = 'pending_design',
-               completed_at = NULL
-           WHERE id = %s""",
-        (new_user_id, new_user_email, ref["id"])
+        """INSERT INTO referrals
+               (referrer_id, referral_code, referred_id, referred_email, status)
+           VALUES (%s, %s, %s, %s, 'pending_design')""",
+        (referrer_id, code, new_user_id, new_user_email),
     )
 
     return jsonify({

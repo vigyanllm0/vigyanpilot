@@ -61,8 +61,11 @@ def _is_academic_email(email: str) -> bool:
 
 
 def _generate_referral_code(user_email: str) -> str:
-    raw = f"VL{user_email}{secrets.token_hex(4)}"
-    return raw.upper()[:12]
+    # 12 chars of ~48-bit randomness: UNIQUE(referral_code) was dropped for
+    # the multi-referral model, so entropy is now the only collision defence.
+    # (The old f"VL{email}..."[:12] could collide for emails sharing a prefix.)
+    del user_email
+    return ("VL" + secrets.token_hex(5))[:12].upper()
 
 
 # ── Public Stats ──────────────────────────────────────────────────────────
@@ -494,7 +497,8 @@ def get_referral_code():
     stats = db.execute(
         """SELECT
              SUM(CASE WHEN status='completed' THEN 1 ELSE 0 END) as successful,
-             COUNT(*) as total,
+             COUNT(CASE WHEN referred_email IS NOT NULL AND referred_email != ''
+                        THEN 1 END) as total,
              COALESCE(SUM(tokens_awarded), 0) as tokens_earned
            FROM referrals WHERE referrer_email=?""",
         (email,)
@@ -502,7 +506,7 @@ def get_referral_code():
 
     return jsonify({
         "referral_code": code,
-        "referral_url": f"https://vigyanllm.in/primer.html?ref={code}",
+        "referral_url": f"https://www.vigyanllm.in/primer?ref={code}",
         "tokens_per_referral": REFERRAL_TOKENS,
         "successful_referrals": stats["successful"] or 0,
         "total_referred": stats["total"] or 0,
@@ -519,13 +523,17 @@ def apply_referral():
         return jsonify({"error": "Referral code and email are required."}), 400
 
     db = get_db()
+    # Find the referrer by code, any status: legacy rows were consumed by the
+    # old single-referral UPDATE (status flipped off 'active'), and filtering
+    # on 'active' made those codes dead for everyone after their first use.
     ref = db.execute(
-        "SELECT * FROM referrals WHERE referral_code=? AND status='active'",
+        "SELECT referrer_email FROM referrals WHERE referral_code=? LIMIT 1",
         (code,)
     ).fetchone()
     if not ref:
         return jsonify({"error": "Invalid or expired referral code."}), 404
-    if ref["referrer_email"] == referred_email:
+    referrer_email = ref["referrer_email"]
+    if referrer_email == referred_email:
         return jsonify({"error": "You cannot refer yourself."}), 400
 
     existing = db.execute(
@@ -535,9 +543,13 @@ def apply_referral():
     if existing:
         return jsonify({"message": "Referral already applied."}), 200
 
+    # One row per referred person; the referrer's code row stays reusable.
+    # (Before 2026-10 apply() UPDATEd the single code row, so a referrer's
+    # 2nd referral 404'd "invalid code" — a hard lifetime cap of 1.)
     db.execute(
-        "UPDATE referrals SET referred_email=?, status='pending_design' WHERE referral_code=?",
-        (referred_email, code)
+        "INSERT INTO referrals (referrer_email, referral_code, referred_email, status) "
+        "VALUES (?, ?, ?, 'pending_design')",
+        (referrer_email, code, referred_email)
     )
     db.commit()
     return jsonify({

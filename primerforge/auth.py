@@ -216,12 +216,13 @@ def init_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             referrer_email TEXT NOT NULL,
             referred_email TEXT DEFAULT '',
-            referral_code TEXT UNIQUE NOT NULL,
+            referral_code TEXT NOT NULL,
             status TEXT DEFAULT 'active',
             tokens_awarded INTEGER DEFAULT 0,
             created_at REAL DEFAULT (strftime('%s','now')),
             completed_at REAL DEFAULT 0
         );
+        CREATE INDEX IF NOT EXISTS idx_referrals_code ON referrals(referral_code);
 
         CREATE TABLE IF NOT EXISTS feedback_submissions (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -314,6 +315,65 @@ def init_db():
             created_at REAL DEFAULT (strftime('%s','now'))
         );
     """)
+
+    # Multi-referral model (2026-10): the referrer's code row must stay
+    # reusable, so referral_code is NOT unique — each referred person gets
+    # their own row sharing the code (apply_referral INSERTs; before, it
+    # UPDATEd the single code row, capping every referrer at ONE lifetime
+    # referral). SQLite cannot ALTER a UNIQUE constraint away, so rebuild
+    # any legacy table that still carries one; idempotent (no-op after).
+    try:
+        _cur = db.execute("PRAGMA index_list('referrals')")
+        _idx_cols = [d[0] for d in _cur.description]
+        for _row in _cur.fetchall():
+            _idx = dict(zip(_idx_cols, _row))
+            if not _idx["unique"]:
+                continue
+            _icur = db.execute(
+                "PRAGMA index_info(%r)" % _idx["name"]
+            )
+            _icols = [d[0] for d in _icur.description]
+            _cols = [dict(zip(_icols, r)).get("name") for r in _icur.fetchall()]
+            if _cols != ["referral_code"]:
+                continue
+            # Explicit transaction: DDL outside executescript joins it, so a
+            # failure anywhere (incl. the RENAME) rolls back to the original
+            # table instead of leaving a half-rebuilt schema.
+            db.execute("BEGIN")
+            db.execute("ALTER TABLE referrals RENAME TO referrals_legacy")
+            db.execute(
+                "CREATE TABLE referrals ("
+                " id INTEGER PRIMARY KEY AUTOINCREMENT,"
+                " referrer_email TEXT NOT NULL,"
+                " referred_email TEXT DEFAULT '',"
+                " referral_code TEXT NOT NULL,"
+                " status TEXT DEFAULT 'active',"
+                " tokens_awarded INTEGER DEFAULT 0,"
+                " created_at REAL DEFAULT (strftime('%s','now')),"
+                " completed_at REAL DEFAULT 0)"
+            )
+            db.execute(
+                "INSERT INTO referrals"
+                " (id, referrer_email, referred_email, referral_code, status,"
+                "  tokens_awarded, created_at, completed_at)"
+                " SELECT id, referrer_email, referred_email, referral_code, status,"
+                "        tokens_awarded, created_at, completed_at"
+                " FROM referrals_legacy"
+            )
+            db.execute("DROP TABLE referrals_legacy")
+            db.execute(
+                "CREATE INDEX IF NOT EXISTS idx_referrals_code"
+                " ON referrals(referral_code)"
+            )
+            db.commit()
+            logger.info("referrals table rebuilt: referral_code UNIQUE constraint dropped (multi-referral model)")
+            break
+    except Exception as exc:  # never let cosmetic schema polish break boot
+        try:
+            db.rollback()
+        except Exception:
+            pass
+        logger.warning("referrals UNIQUE rebuild skipped: %s", exc)
 
     # Backfill plan columns for existing users (if missing in older schema)
     try:
