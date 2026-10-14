@@ -206,6 +206,10 @@ jobs:
             printf '%s\n' "RAZORPAY_KEY_SECRET=${{ secrets.RAZORPAY_KEY_SECRET }}" >> .env
             printf '%s\n' "RAZORPAY_WEBHOOK_SECRET=${{ secrets.RAZORPAY_WEBHOOK_SECRET }}" >> .env
             printf '%s\n' "GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}" >> .env
+            # Transactional email (verification + password reset) via Brevo's
+            # SMTP API. pg_auth.py/pg_auth_routes.py prefer this over raw SMTP
+            # and fall back to SMTP_HOST/USER/PASSWORD if unset.
+            printf '%s\n' "BREVO_API_KEY=${{ secrets.BREVO_API_KEY }}" >> .env
             # CMS (FastAPI :8001) — JWT_SECRET is required by backend/config.py
             # at import time; admin credential is seeded/rotated from env by
             # backend/main.py _seed_admin() (no credentials in code).
