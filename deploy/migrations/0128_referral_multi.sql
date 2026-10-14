@@ -10,7 +10,7 @@
 -- (Also reconciles a legacy 0100-shape referrals table if one ever existed:
 -- 0100 created the table first and 0105's CREATE IF NOT EXISTS skipped on
 -- top of it, leaving no referrer_id column. Production is verified on the
--- 0105 shape; a fresh sequential 0100→0105 run would hit this branch with
+-- 0105 shape -- a fresh sequential 0100->0105 run would hit this branch with
 -- an empty table. The legacy shape is unusable by current code either way.)
 
 DO $$
@@ -36,6 +36,6 @@ BEGIN
     END IF;
 END $$;
 
--- Shared code must be reusable across referral events; lookups stay fast on
+-- Shared code must be reusable across referral events -- lookups stay fast on
 -- the existing non-unique idx_referrals_referral_code index.
 ALTER TABLE referrals DROP CONSTRAINT IF EXISTS referrals_referral_code_key;

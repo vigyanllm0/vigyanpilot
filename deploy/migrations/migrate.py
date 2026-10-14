@@ -58,8 +58,40 @@ def detect_existing_schema():
     return cur.fetchone()[0]
 
 
+def _strip_line_comments_outside_dollar(sql: str) -> str:
+    """Remove `-- ...` line comments, but only outside $$ dollar-quoted blocks.
+
+    Inside a $$ block the text is a function/procedure body where `--` is real
+    SQL comment syntax the database parses itself, so we leave it intact.
+    """
+    out, in_dollar = [], 0
+    i = 0
+    n = len(sql)
+    while i < n:
+        if sql[i:i+2] == "$$":
+            in_dollar ^= 1
+            out.append("$$")
+            i += 2
+            continue
+        if not in_dollar and sql[i:i+2] == "--":
+            # consume to end of line, drop it
+            while i < n and sql[i] != "\n":
+                i += 1
+            continue
+        out.append(sql[i])
+        i += 1
+    return "".join(out)
+
+
 def split_sql(sql: str):
-    """Split SQL on semicolons, respecting $$ dollar-quoting blocks."""
+    """Split SQL on semicolons, respecting $$ dollar-quoting blocks.
+
+    Line comments are stripped BEFORE splitting: a `--` comment may legally
+    contain a semicolon, and splitting first would orphan the comment tail
+    into a bare statement (production incident, 0128). Dollar-quoted bodies
+    are left untouched so function/procedure DO blocks keep their inner text.
+    """
+    sql = _strip_line_comments_outside_dollar(sql)
     stmts, buf = [], []
     in_dollar = 0
     i = 0
