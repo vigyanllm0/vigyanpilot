@@ -1,6 +1,10 @@
-// CloudFront Function — Viewer Request v6
+// CloudFront Function — Viewer Request v16
+// (numbering follows the AWS function Config Comment, not this header;
+//  the header had drifted to "v6" while AWS was at v14 — kept in sync since v15)
 // Bot blocking, domain canonicalization, .html strip,
 // redirects, trailing-slash normalization, clean URL rewrites.
+// v16: /r/:code referral short link now a real client 301 (was FunctionValidationError 503).
+// v15: +11 redirects for URLs Google still holds that 404 (see map below).
 function handler(event) {
   var r = event.request;
   var u = r.uri;
@@ -102,7 +106,29 @@ function handler(event) {
     '/glossary/haplotype': '/glossary/genetic-variant',
     '/glossary/proteasome': '/glossary/protein',
     '/glossary/retrotransposon': '/glossary/transposon',
-    '/glossary/penalty-matrix': '/glossary/alignment'
+    '/glossary/penalty-matrix': '/glossary/alignment',
+    // --- URLs Google still holds that 404 (GSC 404 cleanup) ------------------
+    // Derived without GSC access: crawled all 537 live pages' internal links,
+    // all 58 historical sitemap.xml revisions (622 unique URLs), and every
+    // frontend/*.html path ever committed (15 since deleted). Each source
+    // below resolves to a canonical live page rather than a 404.
+    // Contact surface was removed; /support is the live equivalent.
+    '/contact': '/support',
+    // Glossary hub is /glossary (linked from 9 pages); the old index page is gone.
+    '/glossary-index': '/glossary',
+    // "-for-beginners" URLs appeared in historical sitemaps but were never
+    // built. Consolidate onto each tool's canonical page (one URL per tool).
+    '/blast-for-beginners': '/blast',
+    '/docking-for-beginners': '/docking',
+    '/msa-for-beginners': '/msa',
+    '/pcr-for-beginners': '/pcr-analysis',
+    '/primer-design-for-beginners': '/primer',
+    // Unbaked partial fragments (same treatment as /header and /footer above).
+    '/header_template': '/',
+    '/footer_template': '/',
+    '/nav': '/',
+    // Deleted test page — no content value, send crawlers home.
+    '/tools/test': '/'
   };
   if (redirects[u]) return redir(redirects[u]);
 
@@ -125,12 +151,14 @@ function handler(event) {
   };
   if (rewrites[u]) { r.uri = rewrites[u]; return r; }
 
-  // /r/:code → /primer.html?ref=:code
+  // /r/:code → 301 /primer?ref=:code   (referral short link)
+  // MUST be a client 301, not an internal rewrite: primer-app.js reads ?ref=
+  // from location.search, which only the browser sees. Assigning a bare string
+  // to r.querystring also violates CloudFront's schema (querystring values must
+  // be {value:...} objects) -> FunctionValidationError -> 503 on every share link.
   var ref = u.match(/^\/r\/([A-Za-z0-9_-]+)$/);
   if (ref) {
-    r.uri = '/primer.html';
-    r.querystring.ref = ref[1];
-    return r;
+    return redir('/primer?ref=' + encodeURIComponent(ref[1]));
   }
 
   // 9. FALLBACK — try .html for clean URLs (/primer → /primer.html)
