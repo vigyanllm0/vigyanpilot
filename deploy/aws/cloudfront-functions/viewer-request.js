@@ -1,8 +1,10 @@
-// CloudFront Function — Viewer Request v16
+// CloudFront Function — Viewer Request v17
 // (numbering follows the AWS function Config Comment, not this header;
 //  the header had drifted to "v6" while AWS was at v14 — kept in sync since v15)
 // Bot blocking, domain canonicalization, .html strip,
 // redirects, trailing-slash normalization, clean URL rewrites.
+// v17: kill schema-template junk URLs (?q={search_term...} 301 to bare path);
+//      .html strip now preserves the query string (was silently dropping ?ref= etc).
 // v16: /r/:code referral short link now a real client 301 (was FunctionValidationError 503).
 // v15: +11 redirects for URLs Google still holds that 404 (see map below).
 function handler(event) {
@@ -10,10 +12,26 @@ function handler(event) {
   var u = r.uri;
   var h = r.headers;
 
-  // 0. .HTML STRIP FIRST — /primer.html → /primer (before file ext check)
+  // 0a. SCHEMA-TEMPLATE JUNK URLs — 301 to the bare path.
+  // A Jun-2026 SearchAction schema shipped "target": ".../primer.html?q={search_term_string}"
+  // (commit 43194385); Google still re-crawls those literal-template URLs from its
+  // discovery table and they returned 200 forever = "Crawled – not indexed" squatting.
+  // Any query containing the literal marker "search_term" (encoded %7B or raw {)
+  // is template junk no human can type — terminate re-crawls with a redirect.
+  var qsIn = r.querystring;
+  for (var qk in qsIn) {
+    if ((qk + qv(qsIn[qk])).indexOf('search_term') !== -1) {
+      var tp = u;
+      if (tp.length > 5 && tp.substring(tp.length - 5) === '.html') tp = tp.substring(0, tp.length - 5);
+      return redir(tp === '/index' ? '/' : tp);
+    }
+  }
+
+  // 0. .HTML STRIP — /primer.html → /primer (before file ext check).
+  // Query string is preserved (was dropped: /primer.html?ref=CODE lost ?ref=).
   if (u.length > 5 && u.substring(u.length - 5) === '.html') {
     var s = u.substring(0, u.length - 5);
-    if (s.length > 1) return redir(s);
+    if (s.length > 1) return redir(s + qsSuffix(qsIn));
   }
 
   // 1. NON-HTML FILE EXTENSION — serve as-is (css, js, xml, txt, png, etc.)
@@ -169,4 +187,17 @@ function handler(event) {
 function redir(loc) {
   return { statusCode: 301, statusDescription: 'Moved Permanently',
     headers: { location: { value: loc }, 'cache-control': { value: 'public, max-age=86400' } }, body: '' };
+}
+
+// Query-param value accessor: the CloudFront input event carries plain strings,
+// while this harness (and the *output* request schema) uses {value:...} objects.
+function qv(x) {
+  return (x !== null && typeof x === 'object' && 'value' in x) ? String(x.value) : String(x);
+}
+
+// Rebuild "?k=v&..." from the input querystring for client redirects.
+function qsSuffix(qs) {
+  var parts = [];
+  for (var k in qs) parts.push(encodeURIComponent(k) + '=' + encodeURIComponent(qv(qs[k])));
+  return parts.length ? '?' + parts.join('&') : '';
 }
