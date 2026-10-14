@@ -39,6 +39,34 @@ def _closed_addr():
     return f"redis://127.0.0.1:{addr[1]}/0"
 
 
+def _fake_redis(monkeypatch, security_mod, ping_exc=None):
+    """Install a stub redis client factory so the probe path is deterministic.
+
+    The probe now calls `redis.Redis.from_url(url, ...).ping()` so it catches
+    the exact production failure (reachable-but-rejects-commands, e.g. NOAUTH)
+    that a bare TCP connect cannot. Stubbing the client lets us assert both
+    outcomes without a live server.
+    """
+    import redis as _redis
+
+    class _FakeClient:
+        def ping(self):
+            if ping_exc is not None:
+                raise ping_exc
+            return True
+
+        def close(self):
+            return None
+
+    class _FakeRedis:
+        @staticmethod
+        def from_url(*_a, **_kw):
+            return _FakeClient()
+
+    monkeypatch.setattr(_redis, "Redis", _FakeRedis)
+    return _FakeRedis
+
+
 @pytest.fixture
 def security_mod():
     import primerforge.security as security
@@ -52,17 +80,39 @@ def test_limiter_stays_memory_when_unset(security_mod, monkeypatch):
 
 
 def test_limiter_uses_redis_when_reachable(security_mod, monkeypatch):
-    srv, url = _listening_addr()
-    try:
-        monkeypatch.setattr(security_mod, "REDIS_URL", url)
-        assert security_mod._get_rate_limit_storage() == url
-    finally:
-        srv.close()
+    _fake_redis(monkeypatch, security_mod)
+    monkeypatch.setattr(security_mod, "REDIS_URL", "redis://127.0.0.1:6379/0")
+    assert security_mod._get_rate_limit_storage() == "redis://127.0.0.1:6379/0"
 
 
 def test_limiter_degrades_to_memory_when_dead(security_mod, monkeypatch):
     """The request-time-500 hazard: configured but unreachable."""
-    monkeypatch.setattr(security_mod, "REDIS_URL", _closed_addr())
+    import redis as _redis
+
+    monkeypatch.setattr(
+        security_mod, "REDIS_URL", _closed_addr(),
+    )
+    _fake_redis(
+        monkeypatch, security_mod,
+        ping_exc=_redis.exceptions.ConnectionError("Connection refused"),
+    )
+    assert security_mod._get_rate_limit_storage() == "memory://"
+
+
+def test_limiter_degrades_to_memory_on_noauth(security_mod, monkeypatch):
+    """THE production outage: Redis reachable but rejects commands (NOAUTH).
+
+    A bare TCP probe passes (the port answers) but the limiter's client cannot
+    AUTH, so flask-limiter 500s every request. The probe must use the real
+    client and degrade to memory:// on AuthenticationError too.
+    """
+    import redis as _redis
+
+    monkeypatch.setattr(security_mod, "REDIS_URL", "redis://127.0.0.1:6379/0")
+    _fake_redis(
+        monkeypatch, security_mod,
+        ping_exc=_redis.exceptions.AuthenticationError("NOAUTH Authentication required."),
+    )
     assert security_mod._get_rate_limit_storage() == "memory://"
 
 

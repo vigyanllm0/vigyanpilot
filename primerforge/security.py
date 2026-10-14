@@ -221,33 +221,45 @@ def _get_rate_limit_storage() -> str:
     if REDIS_URL:
         # Safely mask password from redis://[:password@]host:port/db
         parsed = None
+        display = "<redis-url-masked>"
         try:
             from urllib.parse import urlparse
             parsed = urlparse(REDIS_URL)
             display = f"{parsed.hostname}:{parsed.port}/{parsed.path.lstrip('/')}"
         except Exception:
-            display = "<redis-url-masked>"
+            parsed = None
 
-        # Startup TCP probe (redis/rediss over TCP only — can't probe what we
-        # can't parse, so malformed URLs keep the old trust-the-URL behaviour).
-        host = port = None
-        try:
-            if parsed is not None and parsed.scheme in {"redis", "rediss"}:
-                host = parsed.hostname or "localhost"
-                port = parsed.port or 6379
-        except Exception:
-            host = port = None
-        if host:
+        # Startup readiness probe: must use the SAME redis-py client the
+        # limiter will use, not a bare TCP connect. A TCP connect only proves
+        # the port is open — an instance that requires AUTH answers the TCP
+        # handshake but rejects every command with NOAUTH. flask-limiter turns
+        # that into a request-time exception that 500s EVERY route (redis-py
+        # raises AuthenticationError, which subclasses ConnectionError, so a
+        # bare socket probe cannot distinguish it from a healthy server).
+        # Reaching PING proves the client can actually use this instance.
+        if parsed is not None and parsed.scheme in {"redis", "rediss"}:
+            host = parsed.hostname or "localhost"
+            port = parsed.port or 6379
             try:
-                import socket
+                import redis as _redis
 
-                with socket.create_connection((host, port), timeout=0.5):
-                    pass
-            except OSError as exc:
+                client = _redis.Redis.from_url(
+                    REDIS_URL,
+                    socket_connect_timeout=0.5,
+                    socket_timeout=0.5,
+                )
+                try:
+                    client.ping()
+                finally:
+                    try:
+                        client.close()
+                    except Exception:
+                        pass
+            except Exception as exc:
                 logger.warning(
-                    "Rate limiter: REDIS_URL set but %s:%s unreachable (%s) — "
+                    "Rate limiter: REDIS_URL set but %s:%s not usable (%s: %s) — "
                     "degrading to per-worker in-memory storage",
-                    host, port, exc,
+                    host, port, type(exc).__name__, exc,
                 )
                 return "memory://"
 
@@ -364,6 +376,12 @@ def init_security(app):
         return response
 
     # ── 3. Rate Limiting (Redis-backed in production) ─────────────────────
+    # Never let limiter setup take the site down. The storage probe above
+    # catches the known failure (Redis reachable-but-unusable), but any other
+    # construction error — bad storage_uri, a flask-limiter/config mismatch —
+    # must degrade to a no-op limiter rather than 500 every route. Rate
+    # limiting is an abuse control; failing open costs little, failing closed
+    # costs the whole site.
     storage_uri = _get_rate_limit_storage()
     if Limiter is None:
         if IS_PRODUCTION:
@@ -371,19 +389,26 @@ def init_security(app):
         logger.warning("flask-limiter not installed — rate limiting disabled for development.")
         limiter = _NoopLimiter()
     else:
-        limiter = Limiter(
-            key_func=client_rate_key,
-            app=app,
-            default_limits=["200 per minute", "5000 per hour"],
-            storage_uri=storage_uri,
-            # Admins are never throttled — signed-token role check (see
-            # admin_rate_exempt); a revoked admin token still 401s at views.
-            # flask-limiter 3.x carries the exemption per-limit scope:
-            # default limits here, route/endpoint limits via the exempt_when
-            # kwarg on each .limit() call (apply_rate_limits + the route
-            # decorators in primer_server).
-            default_limits_exempt_when=admin_rate_exempt,
-        )
+        try:
+            limiter = Limiter(
+                key_func=client_rate_key,
+                app=app,
+                default_limits=["200 per minute", "5000 per hour"],
+                storage_uri=storage_uri,
+                # Admins are never throttled — signed-token role check (see
+                # admin_rate_exempt); a revoked admin token still 401s at views.
+                # flask-limiter 3.x carries the exemption per-limit scope:
+                # default limits here, route/endpoint limits via the exempt_when
+                # kwarg on each .limit() call (apply_rate_limits + the route
+                # decorators in primer_server).
+                default_limits_exempt_when=admin_rate_exempt,
+            )
+        except Exception:
+            logger.exception(
+                "Rate limiter init failed (storage=%s) — continuing WITHOUT rate "
+                "limiting rather than failing every request", storage_uri,
+            )
+            limiter = _NoopLimiter()
 
     app.extensions["limiter"] = limiter
 
