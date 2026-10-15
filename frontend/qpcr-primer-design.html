@@ -107,6 +107,8 @@ img{max-width:100%}
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.vigyanllm.in"}, {"@type": "ListItem", "position": 2, "name": "qPCR Primer Design", "item": "https://www.vigyanllm.in/qpcr-primer-design"}]}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": ["SoftwareApplication", "WebApplication"], "name": "VigyanLLM qPCR Primer Design", "url": "https://www.vigyanllm.in/qpcr-primer-design", "description": "Free qPCR primer and TaqMan probe design tool. Automated 24-step validation with qPCR amplicon targeting (70-150 bp), Tm, GC content, hairpins, self-dimers, BLAST specificity, and hydrolysis probe design with reporter and quencher selection.", "applicationCategory": "BioinformaticsApplication", "operatingSystem": "Web Browser", "featureList": ["No login required", "qPCR amplicon targeting (70-150 bp)", "TaqMan hydrolysis probe design with reporter and quencher", "Automated 24-step validation", "Tm, GC, hairpin, and self-dimer analysis", "BLAST specificity check", "SNP screening", "Multiplex primer support"], "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "author": {"@type": "Organization", "name": "VigyanLLM Private Limited"}}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "What makes qPCR primer design different from standard PCR?", "acceptedAnswer": {"@type": "Answer", "text": "qPCR primers require stricter design criteria: amplicon length of 70-150 bp, Tm of 58-60\u00b0C, GC content of 50-60%, and avoidance of secondary structures that could interfere with fluorescent probe binding."}}, {"@type": "Question", "name": "What is the ideal amplicon size for qPCR?", "acceptedAnswer": {"@type": "Answer", "text": "The ideal amplicon size for qPCR is 70-150 base pairs. Short amplicons amplify more efficiently and produce more consistent Ct values across replicates."}}, {"@type": "Question", "name": "Can I design TaqMan probes with VigyanLLM?", "acceptedAnswer": {"@type": "Answer", "text": "Yes, VigyanLLM supports TaqMan probe design with optimized Tm 5-7\u00b0C above primer Tm, minimal guanine content, and no runs of identical nucleotides longer than 4 bases."}}]}</script>
 <script src="/cookie-banner.js" defer></script>
 </head>
 <body>
@@ -315,6 +317,44 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <p>Every primer and probe design produced by VigyanLLM includes a comprehensive HTML validation report suitable for lab notebooks, regulatory submissions, and collaborative review. The report documents each step of the validation pipeline, providing pass/fail status for every check, detailed thermodynamic data including Tm, delta-G values for secondary structures, and alignment visualisations for BLAST specificity results.</p>
 <p>Reports are structured to be self-contained and printable. They include a summary table showing the final primer pair and probe sequences with their key metrics, followed by detailed sections for each validation step. Researchers can export or share reports directly from the platform without needing additional tools.</p>
 <p>For multiplex assays, the report includes cross-compatibility matrices showing pairwise interaction scores between all primer and probe combinations in the panel. This allows researchers to verify that each set operates independently without interference, which is critical for high-plex qPCR experiments.</p>
+
+<h2>Worked Example: qPCR Primers and Probe for Human <em>GAPDH</em></h2>
+<p>To show exactly what the pipeline returns, we designed a qPCR primer pair and TaqMan probe for human <em>GAPDH</em> &mdash; the standard reference gene for normalising qPCR data &mdash; using the first 350&nbsp;bp of NCBI <a href="https://www.ncbi.nlm.nih.gov/nuccore/NM_002046" target="_blank" rel="noopener">NM_002046.7</a>. The run was submitted anonymously (no login) and finished in about 9&nbsp;seconds, passing all 24 validation steps.</p>
+<table style="width:100%;border-collapse:collapse;margin-top:16px;font-size:14px">
+  <thead>
+    <tr>
+      <th style="padding:10px 12px;border-bottom:2px solid var(--border);color:var(--text);text-align:left">Oligo</th>
+      <th style="padding:10px 12px;border-bottom:2px solid var(--border);color:var(--text);text-align:left">Sequence (5&prime; &rarr; 3&prime;)</th>
+      <th style="padding:10px 12px;border-bottom:2px solid var(--border);color:var(--text);text-align:left">Length</th>
+      <th style="padding:10px 12px;border-bottom:2px solid var(--border);color:var(--text);text-align:left">Tm (&deg;C)</th>
+      <th style="padding:10px 12px;border-bottom:2px solid var(--border);color:var(--text);text-align:left">GC%</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="padding:10px 12px;border-bottom:1px solid var(--border);color:var(--text2)">Forward primer</td>
+      <td style="padding:10px 12px;border-bottom:1px solid var(--border);font-family:var(--font-mono,monospace);color:var(--text)">ATGACCCCTTCATTGACCTC</td>
+      <td style="padding:10px 12px;border-bottom:1px solid var(--border);color:var(--text2)">20 nt</td>
+      <td style="padding:10px 12px;border-bottom:1px solid var(--border);color:var(--text2)">59.9</td>
+      <td style="padding:10px 12px;border-bottom:1px solid var(--border);color:var(--text2)">50</td>
+    </tr>
+    <tr>
+      <td style="padding:10px 12px;border-bottom:1px solid var(--border);color:var(--text2)">Reverse primer</td>
+      <td style="padding:10px 12px;border-bottom:1px solid var(--border);font-family:var(--font-mono,monospace);color:var(--text)">TCCATTGATGACAAGCTTCC</td>
+      <td style="padding:10px 12px;border-bottom:1px solid var(--border);color:var(--text2)">20 nt</td>
+      <td style="padding:10px 12px;border-bottom:1px solid var(--border);color:var(--text2)">58.7</td>
+      <td style="padding:10px 12px;border-bottom:1px solid var(--border);color:var(--text2)">45</td>
+    </tr>
+    <tr>
+      <td style="padding:10px 12px;border-bottom:1px solid var(--border);color:var(--text2)">TaqMan probe <span style="color:var(--primary);font-size:12px">(FAM / BHQ-1)</span></td>
+      <td style="padding:10px 12px;border-bottom:1px solid var(--border);font-family:var(--font-mono,monospace);color:var(--text)">TCCATGGCACCGTCAAGGCTGA</td>
+      <td style="padding:10px 12px;border-bottom:1px solid var(--border);color:var(--text2)">22 nt</td>
+      <td style="padding:10px 12px;border-bottom:1px solid var(--border);color:var(--text2)">62.5</td>
+      <td style="padding:10px 12px;border-bottom:1px solid var(--border);color:var(--text2)">59</td>
+    </tr>
+  </tbody>
+</table>
+<p style="margin-top:16px">Amplicon: <strong>113&nbsp;bp</strong> (GC 46%) &mdash; inside the 70&ndash;150&nbsp;bp qPCR target. Primer pair &Delta;Tm <strong>1.2&nbsp;&deg;C</strong> (both melt together), annealing temperature <strong>54.3&nbsp;&deg;C</strong>, and the specificity step returned <strong>0 off-target hits</strong>. The probe Tm of 62.5&nbsp;&deg;C sits above both primer Tms, so the probe hybridises preferentially during anneal/extend and releases the FAM signal only on correct amplification.</p>
 
 <h2>Getting Started with qPCR Primer Design</h2>
 <p>Using VigyanLLM for qPCR primer design requires no specialised training. Enter the target gene symbol, accession number, or paste a sequence directly. The platform automatically selects the best primer-probe combination based on the comprehensive validation pipeline. Results are typically available within seconds, depending on the target length and the number of candidate primers evaluated.</p>
