@@ -2,7 +2,9 @@
 
 > Created 2026-09-30 (GSC Tier-1 session). Items completed in past sessions are in `AGENTS.md`; plans older than that are in `PENDING_PLANS.md`.
 >
-> **Latest (2026-10-15, session 2): P0 BATCH LIVE + POST-DEPLOY E2Es + INC-001 REDIS-FIX SHIPPED & VERIFIED — 🟢 ALL GATES GREEN (commits `060ec5b5`→`e875f7a4` pushed `b56bb415..e875f7a4`; CI `38760438479` FULLY GREEN; full suite **856 passed / 0 failed / 5 xfailed / 6 xpassed**):** ① **P0 #5 limiter re-check CLOSED — PASS**: live burst `14× POST /api/referral/apply` (10/min) → **10×200 + 4×429**, second burst → **12×429** `{"code":"RATE_LIMITED"}` = **shared Redis counter live** (was 0×429 before fix). ② **INC-001 Redis AUTH fixed via CI deploy path** (`e875f7a4`): NOAUTH detected → `bind=127.0.0.1:6379` loopback → no candidate password matched → sed `requirepass` + restart → **`Redis now answers PONG (passwordless, loopback-only)`** → boot PING probe succeeds → gate **`OK: no RATE_LIMITER_OFF since restart (shared limiter active)`** (the `::error::` strings in the raw GH log = runner script-source echo, NOT runtime output — actual execution shows only the OK line). ③ **Loud-degrade + quarantine + registry committed**: `RATE_LIMITER_OFF` ERROR marker on both fallback branches + 2 new tests (`060ec5b5`) · 5 pre-existing failures xfail'd (`376e2002`, 4×`#SEC-LOC` + 1×`#ENV-ORDER`) · §9 INC-001 registry (`2f5b47cb`). ④ **E2Es**: S3 sync `primer-app.js` byte-identical + `IDB719DFCUJI42BDVS3MB7S04M` ✓ · 2nd-referral **16/16** (0128 landed) ✓ · queue smoke: docking demo 56 s real scores + `/queue/stats` 403 at origin ✓ · BLAST env-limited (no binary/`NCBI_API_KEY`, pre-existing). ⑤ **forgot-password triggered** (uid125 register → `auto_verified` "couldn't send" + forgot-password 200×2, 3/hr OK) → **Brevo STILL failing post-deploy — user action: Brevo dashboard → Sender `noreply@vigyanllm.in` domain verified? + Transactional log failure reason**. Local proof of the deploy block: 5-scenario fake-redis harness + sed-regex scrub + IPv6 classification + hostile-password URL-encode. — §9 / §0.
+> **Latest (2026-10-16, overnight): TASKS 1–5 SHIPPED + LIVE-VERIFIED — 🟢 ALL GATES GREEN (5 commits pushed; Tasks 1,3,4 frontend-only = no CI, Task 2 CI `38794029905` FULLY GREEN, Task 5 = draft only):** ① **Task 1 qPCR** (`84cce804`): `/qpcr-primer-design` already existed + live (the "deleted ~July" assumption was wrong — investigated, not rebuilt); additive only → FAQPage + SoftwareApplication/WebApplication JSON-LD + new GAPDH worked-example H2 + inbound anchor from `blog/rt-pcr-vs-qpcr`. Guardrail held: NO title/meta rewrite (CTR title "Free qPCR Primer Design Tool — SYBR & TaqMan Online" **deferred to owner**). Live anon E2E 202→completed 24 steps/9.4 s; rules_lint 0 err · FAQ mirror Q0/A0 · JSON-LD 3 valid · headless 9/9 · sync + invalidation `I2A602LYWOJ7ATELXXTOBHGUFG` + IndexNow 200. **Rollback**: `git revert 84cce804` → re-sync → re-invalidate. ② **Task 2 Brevo mail-status instrumentation** (`2605ed44`, 5 files, +323/−0, CI FULLY GREEN): file-based mail ring buffer (`primerforge/mail_log.py`, max-10 atomic, domain-only, never-raises) + `GET /api/admin/mail-status` (`@require_admin`, both SQLite+PG blueprints) recording every forgot-password/verification send outcome. **Path deviation**: literal `/admin/mail-status` = CF edge-403 → implemented `/api/admin/mail-status` (anon live → **401 AUTH_REQUIRED** = correct). Full pytest **863 passed/0 failed**. A failure row for probe user already recorded (real Brevo non-2xx) — **user's morning read via admin auth (Bearer or `pf_token` cookie)**. **Rollback**: `git revert 2605ed44` → CI redeploys (additive, no migration/secrets). ③ **Task 3 homepage CLS** (`175df36d`, frontend-only): root cause = Google Fonts `display=swap` (Inter/Montserrat/Source Serif 4) reflowing the hero H1 2→3 lines (+57.6px) + hero paragraph after first paint = nondeterministic 0.04–0.16 CLS. Method pivot (each rejected in turn): min-height infeasible (h1 line-count flips 6× across widths) → `font-display:optional` on Google Fonts **loses** optional's ~100 ms block (async preload→onload CSS requests the woff2 too late) = Georgia-all-page-view design regression → **self-host + optional + preload**: 3 latin variable woff2 (`frontend/assets/fonts/*`, one file per family) `@font-face`d in home.css with `font-display:optional` + preloaded in index.html `<head>` before the blocking home.css (same-origin → in cache before first paint → optional renders the real brand fonts, never swaps mid-load → CLS≈0) + metric-matched H1 fallback `"SS4 FB"`=Georgia `size-adjust:106%` (beats design-tokens:280 global h1 !important). **Gates**: local natural CLS ≤0.0037 + slow-font/optional-fallback ≤0.0041 ×12 widths · **live CLS @1440=0.0026 / @375=0**, all 3 fonts load (design preserved) · 20/20 phase-1 probe · rules_lint 0 err. Deploy: sync 912 files (0 del, +3 fonts) + invalidation over `/` `/index.html` `/home.css` `/assets/fonts/*` → live↔local **byte-identical**. **Rollback**: `git revert 175df36d` → re-sync → re-invalidate (fonts unreferenced/harmless). ④ **Task 4 keep-expand content** (`eae4466d`, frontend-only, **68 insertions / 0 deletions** = purely additive, no title/meta/h1/URL changes — overnight guardrail held): `blog/pcr-protocol-beginners.html` + new **"Worked Example: A Complete 25 µL Human GAPDH PCR"** section right after the generic master-mix/cycler tables (real validated pair OriGene qSTAR HP205798 = the same pair benchmarked on `/validation`; engine Tm F 61.6°C / R 65.1°C, Δ 3.5°C → suggested anneal 58°C; complete cycling program; expected 131 bp band on a 2% gel; inbound links `/validation` `/tm-calculator` `/glossary/{gene-expression,qpcr}` `/blog/primer-dimer-fix` — **every link existence-checked first**, `/glossary/gapdh` does NOT exist so it was left unlinked); `glossary/santalucia-1998.html` + new **"Nearest-Neighbor Parameters"** section (the page described the paper but showed **none** of its actual parameters — the keep-expand gap) = the 10 Watson–Crick NN doublets with ΔH°/ΔS° (values **match the engine's `NN_DNA_DNA` table** in `primerforge/core/thermodynamics.py`, SantaLucia 1998 Table 2) + initiation terms + a fully-worked Tm of `5′-ACGTTGCT-3′` (NN doublet walk, Gibbs–Helmholtz formula, Tm **45.5 °C @ 1 M salt → 39.9 °C salt-corrected**) computed **with the engine itself** (not memory-recited) + `.nn-table`/`.calc-eq` CSS added to the page's existing style block (design-tokens.css has **no** table styles; `--border` is **undefined** there → used `--outline`). **Gates**: rules_lint **0 err/533** · JSON-LD 4+2 blocks valid · HTML tag balance (2 stray-end `div` **proven pre-existing on HEAD** via `git show`, my parser's auth-modal quirk) · headless render **10/10 + 11/11, 0 JS errors**. Deploy: sync 912 files (0 del) + invalidation `I2I4U192LARIGAVN76S94RTQFQ` **Completed** + IndexNow **HTTP 200** → live↔local **byte-identical** ×2 + content markers present live. **Rollback**: `git revert eae4466d` → re-sync → re-invalidate the 4 paths (`/blog/pcr-protocol-beginners(.html)` `/glossary/santalucia-1998(.html)`). ⑤ **Task 5 referral-program announcement email — DRAFT ONLY** (in `pending work.md` §8b; **not sent, not wired, no Brevo changes** per guardrail — the multi-referral fix from 2026-10-15 is live and E2E-proven, so the announcement is now safe to send once the owner approves copy). **Still owed (not overnight)**: **forgot-password delivery = user's Brevo dashboard** (read the already-recorded real failure row via `GET https://www.vigyanllm.in/api/admin/mail-status` with admin Bearer or `pf_token` cookie) · **GSC Monday glance + Request Indexing `/qpcr-primer-design` = user's morning list** · **CTR title rewrite for `/qpcr-primer-design` ("Free qPCR Primer Design Tool — SYBR & TaqMan Online") deferred to owner** (overnight additive-only guardrail blocked it). §0/§8b/§9.
+>
+> **Prior (2026-10-15, session 2): P0 BATCH LIVE + POST-DEPLOY E2Es + INC-001 REDIS-FIX SHIPPED & VERIFIED — 🟢 ALL GATES GREEN (commits `060ec5b5`→`e875f7a4` pushed `b56bb415..e875f7a4`; CI `38760438479` FULLY GREEN; full suite **856 passed / 0 failed / 5 xfailed / 6 xpassed**):** ① **P0 #5 limiter re-check CLOSED — PASS**: live burst `14× POST /api/referral/apply` (10/min) → **10×200 + 4×429**, second burst → **12×429** `{"code":"RATE_LIMITED"}` = **shared Redis counter live** (was 0×429 before fix). ② **INC-001 Redis AUTH fixed via CI deploy path** (`e875f7a4`): NOAUTH detected → `bind=127.0.0.1:6379` loopback → no candidate password matched → sed `requirepass` + restart → **`Redis now answers PONG (passwordless, loopback-only)`** → boot PING probe succeeds → gate **`OK: no RATE_LIMITER_OFF since restart (shared limiter active)`** (the `::error::` strings in the raw GH log = runner script-source echo, NOT runtime output — actual execution shows only the OK line). ③ **Loud-degrade + quarantine + registry committed**: `RATE_LIMITER_OFF` ERROR marker on both fallback branches + 2 new tests (`060ec5b5`) · 5 pre-existing failures xfail'd (`376e2002`, 4×`#SEC-LOC` + 1×`#ENV-ORDER`) · §9 INC-001 registry (`2f5b47cb`). ④ **E2Es**: S3 sync `primer-app.js` byte-identical + `IDB719DFCUJI42BDVS3MB7S04M` ✓ · 2nd-referral **16/16** (0128 landed) ✓ · queue smoke: docking demo 56 s real scores + `/queue/stats` 403 at origin ✓ · BLAST env-limited (no binary/`NCBI_API_KEY`, pre-existing). ⑤ **forgot-password triggered** (uid125 register → `auto_verified` "couldn't send" + forgot-password 200×2, 3/hr OK) → **Brevo STILL failing post-deploy — user action: Brevo dashboard → Sender `noreply@vigyanllm.in` domain verified? + Transactional log failure reason**. Local proof of the deploy block: 5-scenario fake-redis harness + sed-regex scrub + IPv6 classification + hostile-password URL-encode. — §9 / §0.
 > >
 > Prior (2026-10-14, second round): GSC 404→301 MAP — DERIVED, PUBLISHED & LIVE-VERIFIED + referral-shortlink 503 fix + 7 OG cards (CloudFront Function **v16** LIVE; 7 PNGs S3-uploaded):** derived the redirect map **from repo + live data only (no GSC export needed)**: 884-path crawl (792 OK / 55 404 — 48 = API-route false positives from inline JS / 7 = missing OG images) + historical mining (15 deleted HTML + 58 sitemap revisions, 622 URLs) → **18 genuinely broken = 11 redirectable pages + 7 missing OG assets**. All 11 redirects published in `viewer-request.js` (**v15→v16**): `/contact`→`/support`, `/glossary-index`→`/glossary`, 5× `*-for-beginners`→their tool page, `/header_template`/`/footer_template`/`/nav`/`/tools/test`→`/`. **Bonus finding — `/r/:code` referral shortlink was 503 (`FunctionValidationError`)**: bare-string `querystring` mutation violates CloudFront schema *and* the internal rewrite never lets the browser see `?ref=` (primer-app.js reads `location.search`) → fixed to a real client **301 `/primer?ref=CODE`** (503→301→200 live). **7 missing OG images generated** cloning the measured recipe of `og-autodock-swissdock.png` (1200×630 slate/cyan, Arial Italic 52 / Bold 28 / 21, exact baselines) + S3-uploaded with matching `max-age=86400` → live 200 `image/png`, **md5==ETag 7/7 byte-identical**. **Verification**: local harness **45/45** · live regression baseline A **884 paths 0 changed** / baseline B **exactly the 11 intended 404→301, 0 unintended** / critical 12/12 · LIVE function code byte-identical to repo · rules_lint 0 err/533. Detail in `AGENTS.md`.
 >
@@ -387,6 +389,83 @@ User feedback: side margins too high → fix + rearrange body; make it look hand
 - **New scale** (page-local CSS only, 18 rules): body paragraphs/cards/steps/deliver rows/checklist **13→15px**, table td 14→**15**, th 13→**14**, hero lead 14→**16**, contact lead 14→**16**, callout 14→**15**, callout-title 13→**14**, captions + tools lines 12→**13**, contact footnote 12→**13**, CTA buttons 14→**15** (both buttons bumped equally — heights stay matched); lightness nudges on dark-body text (.75→.78, .8→.82). FAQ left untouched (inline 15.2 now sits naturally beside 15). Nav/footer/site chrome unchanged; H1/H2/H3 come from site-wide design-tokens (48/32/20) — untouched.
 - **Reading measure**: added `.container section p{max-width:80ch}` — with bigger type on the wide grid, full-width paragraphs would run ~150 chars/line; cap verified live (FAQ answers 695px, contact lead 732px, intro column no-op at 642px). Hero `.page-header p` is a `div` header → keeps its own 560px rule, not caught.
 - **Gates re-run, all green**: static battery (tags, CSS braces, FAQ mirror **8/8 Q0A0**, banned 0) · bake **0 stale/225** · rules_lint **0 err** · HTTP 200 · computed-style audit 1440: hero 16 / body 15 / cap-h3 20 / th 14 / captions 13 / FAQ 15.2 / contact 16, no overflow · Chrome desktop + mobile: reveals **23/23** both, **0 bad images, 0 JS exceptions, 0 error logs** · screenshots `cp_shot/r3_*.png`.
+
+## 8b. Referral-program announcement email — 📝 DRAFT ONLY (Task 5, overnight 2026-10-16)
+
+> **Status**: Draft written for the owner's review. **Not sent, not wired, no Brevo config changes** (overnight guardrail). The multi-referral fix (2026-10-15, `d41687bf` batch) is live and E2E-proven (A→B→C all credited, code stable forever), so the announcement is safe to send once copy is approved and Brevo sending works.
+
+**Program facts (all live & verified — use only these, no invented numbers):**
+- Share your personal referral link (e.g. `https://www.vigyanllm.in/r/VLXXXXXXXXXX`) or code.
+- When **someone you refer completes their first design**, you earn **5 free design runs**.
+- Your referral code is **permanent** — it never expires or changes, and it works for unlimited referred people (the 2026-10-15 multi-referral fix; previously a 2nd referral was rejected).
+- The referred person signs up normally (guest mode means they can try the tool first — no login wall).
+- Earnings land as design runs on your account; check them on `/dashboard` or `/usage-billing`.
+
+---
+
+### Subject line options (pick one)
+1. `You and your lab mates get free primer designs`  ← recommended (concrete + "lab" audience)
+2. `Share VigyanLLM, earn 5 free designs each time`
+3. `Your referral code is ready (5 free runs per friend)`
+
+### Preview text
+`Permanent code, unlimited referrals — credits land when they finish their first design.`
+
+### HTML body
+
+```html
+<p>Hi {{first_name | default('there')}},</p>
+
+<p>Thanks for using VigyanLLM. You now have a <strong>personal referral link</strong> — share it with a colleague or lab mate and you both get value from it:</p>
+
+<ul>
+  <li>When someone you refer <strong>completes their first design</strong>, <strong>you earn 5 free design runs</strong>.</li>
+  <li>Your code is <strong>permanent</strong> — it never expires, and it works for as many people as you refer.</li>
+  <li>They can try the tool first without an account (guest mode), so there's nothing to talk them into before they see results.</li>
+</ul>
+
+<p style="text-align:center;margin:28px 0">
+  <a href="https://www.vigyanllm.in/dashboard"
+     style="background:#0d9488;color:#fff;padding:13px 26px;border-radius:8px;font-weight:700;text-decoration:none;display:inline-block">
+    Get my referral link
+  </a>
+</p>
+
+<p>Your link looks like <code>https://www.vigyanllm.in/r/…</code> — find it on your dashboard, or copy your code from the referral card on the primer page. Credits show up automatically; you can track them under Usage &amp; Billing.</p>
+
+<p>If a lab mate has ever said "which primer tool should I use?", this is the easy answer — point them at the link and you both benefit.</p>
+
+<p>— The VigyanLLM team</p>
+
+<p style="font-size:12px;color:#667">
+  You're receiving this because you have a VigyanLLM account.
+  <a href="https://www.vigyanllm.in/unsubscribe">Unsubscribe</a> ·
+  <a href="https://www.vigyanllm.in/privacy">Privacy</a>
+</p>
+```
+
+### Plain-text alternative
+
+```
+Hi {{first_name}},
+
+You have a personal referral link on VigyanLLM. Share it with a colleague:
+when they complete their first design, you earn 5 free design runs.
+
+- Your code is permanent — never expires, works for unlimited people.
+- They can try the tool first with no account (guest mode).
+- Find your link on https://www.vigyanllm.in/dashboard
+
+— The VigyanLLM team
+```
+
+---
+
+### Send notes (for the owner / whoever wires it)
+- **Trigger suggestion**: send to active users (signed in within 30 days), not the whole list — avoids emailing the 10 pending / dormant accounts.
+- **Guardrails held**: no Brevo API key/config touched, nothing wired, copy references only verified program facts (5 runs, permanent code, unlimited referrals, guest mode). No invented "X people have joined" social proof (we have no referral-count metric yet).
+- **Prereq**: Brevo transactional sending must work first (P0 #1 — forgot-password delivery is currently failing at the API call; the failure is recorded in the mail-status ring buffer for the morning read). An announcement that can't send (or lands in spam) is worse than none.
+- **CTA destination**: `/dashboard` (referral card) is the safest CTA — it's where the link lives. Do **not** deep-link `/r/CODE` in the email (that's the recipient's code, not the sender's share link).
 
 ## 9. Incident registry — pattern "config changes detonate latent code bugs"
 
