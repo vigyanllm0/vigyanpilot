@@ -14,6 +14,7 @@ var SITE_INDEX = [
   { t:'DNA to Protein', d:'Free DNA to protein translation tool — convert nucleotide sequence to amino acids', u:'dna-to-protein.html', c:'Tools' },
   { t:'PCR Product Calculator', d:'Free PCR product size calculator — amplicon length, melting temp and GC content', u:'pcr-product-calculator.html', c:'Tools' },
   { t:'Restriction Enzyme Finder', d:'Free restriction enzyme finder — maps cut sites, sticky/blunt ends and fragment sizes', u:'restriction-enzyme-finder.html', c:'Tools' },
+  { t:'Docking', d:'Run consensus molecular docking (Vina + GNINA)', u:'docking.html', c:'Tools' },
 
   { t:'Platform Overview', d:'Sovereign biomedical AI platform', u:'platform.html', c:'Platform' },
   { t:'Architecture', d:'Multi-agent AI architecture', u:'architecture.html', c:'Platform' },
@@ -50,6 +51,7 @@ var SITE_INDEX = [
   { t:'Refund Policy', d:'Refund and cancellation policy', u:'refund.html', c:'Company' },
   { t:'Security', d:'Security practices and compliance', u:'security.html', c:'Company' },
   { t:'Biomedical AI Platform', d:'Healthcare and life sciences AI', u:'biomedical-ai-platform.html', c:'Company' },
+  { t:'Custom Pipeline Development', d:'Tailored bioinformatics pipelines built to your protocol', u:'custom-pipeline-development.html', c:'Company' },
 
   { t:'Blog Home', d:'VigyanLLM blog — articles and updates', u:'blog/index.html', c:'Blog' },
   { t:'Primer Design Complete Guide', d:'Comprehensive guide to primer design', u:'blog/primer-design-complete-guide.html', c:'Blog' },
@@ -70,8 +72,11 @@ var SITE_INDEX = [
   { t:'RT-PCR Complete Guide', d:'Complete guide to RT-PCR principles, protocol, and applications', u:'blog/rt-pcr-complete-guide.html', c:'Blog' },
 
   { t:'Validated Primer Design Report', d:'View validated primer design results', u:'validated-primer-design-report.html', c:'Reports' },
+  { t:'Validation Benchmark', d:'Published primer sets reproduced by the engine', u:'validation.html', c:'Reports' },
   { t:'Validated Primer Design', d:'Validated primer design output', u:'validated-primer-design.html', c:'Reports' },
   { t:'Sitemap', d:'Complete site directory', u:'sitemap.html', c:'Company' },
+  { t:'Pricing & Plans', d:'Free, Pro and Lab plans — design runs and docking credits', u:'pricing.html', c:'Company' },
+  { t:'Support', d:'Help center and contact support', u:'support.html', c:'Company' },
 ];
 
 // ── Nav Search Handler ──

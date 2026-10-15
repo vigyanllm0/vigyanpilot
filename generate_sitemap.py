@@ -257,6 +257,7 @@ Allow: /
 Disallow: /api/
 # Account/admin surfaces — exact routes (previous /admin/ + /dashboard/ rules
 # matched nothing; robots is crawl guidance, not authorization)
+Disallow: /admin
 Disallow: /dashboard
 Disallow: /usage-billing
 Disallow: /cms-login
