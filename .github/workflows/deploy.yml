@@ -226,9 +226,10 @@ jobs:
             printf '%s\n' "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> .env
             printf '%s\n' "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> .env
             # Shared rate-limiter counters across gunicorn workers + MSA-viewer
-            # job state. Localhost only (Ubuntu redis binds 127.0.0.1, no auth).
-            # If Redis is down the limiter degrades to per-worker memory via the
-            # security.py startup TCP probe — never a request-time 500.
+            # job state. Localhost only. If Redis is unusable the limiter
+            # degrades to per-worker memory via the security.py startup
+            # real-client PING probe — never a request-time 500 (and the
+            # fallback logs RATE_LIMITER_OFF; see the INC-001 check below).
             # CELERY_BROKER_URL is deliberately NOT set: no Celery worker runs
             # here, so pipeline dispatch must stay on the fallback thread.
             printf '%s\n' "REDIS_URL=redis://127.0.0.1:6379/0" >> .env
@@ -247,19 +248,76 @@ jobs:
             fi
             sleep 2
 
-            # Start Redis (never gate the deploy on it — the security.py TCP
+            # Start Redis (never gate the deploy on it — the security.py PING
             # probe degrades the limiter to per-worker memory if missing, and
             # apt's redis-server auto-starts on install).
-            if command -v redis-cli &>/dev/null && redis-cli ping 2>/dev/null | grep -q PONG; then
-              echo "Redis is running"
-            else
+            if ! command -v redis-cli &>/dev/null; then
               sudo apt-get install -y redis-server 2>/dev/null || \
                 echo "WARNING: redis-server install failed — limiter stays per-worker"
               sudo systemctl enable --now redis-server 2>/dev/null || \
                 sudo systemctl enable --now redis 2>/dev/null || true
               sleep 1
-              redis-cli ping 2>/dev/null || \
-                echo "WARNING: Redis not answering — limiter degrades to per-worker memory"
+            fi
+
+            # ── INC-001 auth alignment (pending work.md §9) ──────────────
+            # The REDIS_URL written above is passwordless. A Redis that
+            # requires AUTH answers PING with NOAUTH; security.py's real-client
+            # PING probe detects that (RATE_LIMITER_OFF) and the shared limiter
+            # stays OFF in production — limits silently become per-worker.
+            # Align the two: try known credentials first (keep auth, carry it
+            # in REDIS_URL — no restart); otherwise drop requirepass at the
+            # source and restart. NEVER weaken an instance reachable beyond
+            # loopback — that branch only warns.
+            if command -v redis-cli &>/dev/null && redis-cli ping 2>&1 | grep -q NOAUTH; then
+              echo "INC-001: Redis on 6379 requires AUTH — aligning with passwordless REDIS_URL"
+              sudo ss -ltnp 2>/dev/null | awk '$4 ~ /:6379$/' || true
+              BIND6379=$(ss -ltn 2>/dev/null | awk '$4 ~ /:6379$/ {print $4; exit}' || true)
+              echo "  bind=${BIND6379:-unknown}"
+              case "$BIND6379" in
+                127.0.0.1:*|::1:*|\[::1\]:*)
+                  CFGPW=$(grep -hsE '^[[:space:]]*requirepass[[:space:]]+' /etc/redis/redis.conf /etc/redis/*.conf /etc/redis.conf 2>/dev/null | head -1 | sed -E 's/^[[:space:]]*requirepass[[:space:]]+//' || true)
+                  ENVPW=$(grep -hsE '^REDIS_PASSWORD=' .env 2>/dev/null | head -1 | cut -d= -f2- || true)
+                  AUTHED=""
+                  for PW in "$CFGPW" "$ENVPW" "${REDIS_PASSWORD:-}" "changeme"; do
+                    [ -n "$PW" ] || continue
+                    if REDISCLI_AUTH="$PW" redis-cli ping 2>/dev/null | grep -q PONG; then
+                      AUTHED="$PW"
+                      break
+                    fi
+                  done
+                  if [ -n "$AUTHED" ]; then
+                    ENC=$(REDIS_PW="$AUTHED" python3 -c 'import os,urllib.parse; print(urllib.parse.quote(os.environ["REDIS_PW"], safe=""))' 2>/dev/null || true)
+                    if [ -n "$ENC" ] && PWENC="$ENC" awk 'BEGIN{u="REDIS_URL=redis://:" ENVIRON["PWENC"] "@127.0.0.1:6379/0"} /^REDIS_URL=/{if(!done){print u; done=1}; next} {print} END{if(!done) print u}' .env > .env.inc001 && mv .env.inc001 .env; then
+                      echo "INC-001: REDIS_URL now carries Redis credentials (value never logged)"
+                    else
+                      rm -f .env.inc001
+                      echo " ::warning::INC-001 authenticated but failed to rewrite REDIS_URL in .env — limiter may stay per-worker"
+                    fi
+                  else
+                    # No candidate credential works (unknown/runtime-set auth):
+                    # a password on a loopback-only Redis buys nothing — remove
+                    # requirepass at the source and restart. Runs BEFORE the
+                    # app restart below, so no request ever sees the blip.
+                    sudo sed -ri 's/^[[:space:]]*requirepass[[:space:]].*$/# INC-001 requirepass removed: loopback-only Redis needs no password/' \
+                      /etc/redis/redis.conf /etc/redis/*.conf /etc/redis.conf 2>/dev/null || true
+                    sudo systemctl restart redis-server 2>/dev/null || \
+                      sudo systemctl restart redis 2>/dev/null || true
+                    sleep 1
+                    if redis-cli ping 2>/dev/null | grep -q PONG; then
+                      echo "INC-001: Redis now answers PONG (passwordless, loopback-only)"
+                    else
+                      echo " ::warning::INC-001 Redis STILL requires auth after alignment attempt — limiter stays per-worker (RATE_LIMITER_OFF expected below)"
+                    fi
+                  fi
+                  ;;
+                *)
+                  echo " ::warning::INC-001 Redis bound to ${BIND6379:-unknown} (NOT loopback) — auth kept for safety. Put credentials in REDIS_URL to enable the shared limiter."
+                  ;;
+              esac
+            elif command -v redis-cli &>/dev/null && redis-cli ping 2>/dev/null | grep -q PONG; then
+              echo "Redis is running"
+            else
+              echo "WARNING: Redis not answering — limiter degrades to per-worker memory"
             fi
 
             # Ensure log directory exists
@@ -294,6 +352,11 @@ jobs:
             # the orphaned process keeps serving pre-deploy code. Health checks
             # still passed because they hit the orphan. Take the port over
             # deliberately, then gate on the payload we just deployed.
+            # INC-001: mark this deploy's restart time so the RATE_LIMITER_OFF
+            # gate below only reads logs from THIS restart (not prior deploys),
+            # and start the fallback log fresh so any content = this deploy.
+            DEPLOY_T0=$(date +%s)
+            sudo rm -f /var/log/vigyan/fallback.log
             sudo systemctl stop vigyan 2>/dev/null || true
             sudo pkill -f 'gunicorn.*11436' 2>/dev/null || true
             sleep 3
@@ -328,6 +391,18 @@ jobs:
             fi
             echo " OK: :11436 serving deployed code (USD pricing)"
             curl -sf http://localhost:11436/health && echo " health OK" || { echo " health FAIL"; exit 1; }
+
+            # INC-001 loud-degrade gate (pending work.md §9): if the boot
+            # probe fell back, say so LOUDLY in the run summary — a silently
+            # disabled shared limiter must never ship again. Non-fatal (the
+            # site is up and per-worker limits still apply) but impossible to
+            # miss: REDIS_URL/Redis-auth misalignment surfaces right here.
+            if sudo journalctl -u vigyan --since "@${DEPLOY_T0:-0}" --no-pager 2>/dev/null | grep -q RATE_LIMITER_OFF \
+               || grep -s RATE_LIMITER_OFF /var/log/vigyan/fallback.log 2>/dev/null; then
+              echo " ::error::INC-001: RATE_LIMITER_OFF since restart — shared rate limiter is NOT active (per-worker fallback: limits are per-worker, not global). Check the INC-001 Redis alignment output above."
+            else
+              echo " OK: no RATE_LIMITER_OFF since restart (shared limiter active)"
+            fi
 
             # ── CMS (FastAPI :8001) — same deliberate port-takeover pattern ──
             # Startup seeds/rotates the admin from CMS_ADMIN_* env (backend/
