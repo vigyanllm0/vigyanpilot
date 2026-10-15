@@ -453,6 +453,29 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <tr><td>Hold</td><td>4°C</td><td>∞</td><td>—</td></tr>
       </table>
 
+      <h2>Worked Example: A Complete 25 µL Human GAPDH PCR</h2>
+      <p>The tables above give you the generic recipe. This example plugs real numbers into it so you can see how the pieces fit together. We will amplify a <strong>131 bp</strong> fragment of human <a href="/glossary/gene-expression">GAPDH</a> (NM_002046) — a housekeeping gene widely used as a <a href="/glossary/qpcr">qPCR</a> loading control — using a published <a href="/validation">validated primer pair</a> (OriGene qSTAR HP205798, the same pair we benchmark our <a href="/tm-calculator">Tm calculator</a> against).</p>
+
+      <table>
+        <tr><th>Primer</th><th>Sequence (5′→3′)</th><th>Length</th><th>Tm (NN)</th><th>GC%</th></tr>
+        <tr><td>Forward</td><td>GTCTCCTCTGACTTCAACAGCG</td><td>22 nt</td><td>61.6°C</td><td>54.5%</td></tr>
+        <tr><td>Reverse</td><td>ACCACCCTGTTGCTGTAGCCAA</td><td>22 nt</td><td>65.1°C</td><td>54.5%</td></tr>
+      </table>
+
+      <p>The two primers differ by 3.5°C in Tm, so start near the lower end: the engine suggests an annealing temperature of <strong>58°C</strong>. Assemble the master mix from Step 2 (25 µL total, 10–100 ng template) and run this program:</p>
+
+      <table>
+        <tr><th>Step</th><th>Temperature</th><th>Time</th><th>Cycles</th></tr>
+        <tr><td>Initial denaturation</td><td>95°C</td><td>3 min</td><td>1</td></tr>
+        <tr><td>Denaturation</td><td>95°C</td><td>20 s</td><td rowspan="3">35</td></tr>
+        <tr><td>Annealing</td><td>58°C</td><td>30 s</td></tr>
+        <tr><td>Extension</td><td>72°C</td><td>30 s</td></tr>
+        <tr><td>Final extension</td><td>72°C</td><td>5 min</td><td>1</td></tr>
+        <tr><td>Hold</td><td>4°C</td><td>∞</td><td>—</td></tr>
+      </table>
+
+      <p>Load <strong>10 µL</strong> of the reaction on a <strong>2% agarose gel</strong> with a low-molecular-weight ladder. A clean reaction gives a single band at <strong>131 bp</strong>. Because the amplicon is short, the 30 s extension at 72°C is ample (Taq fills roughly 1 kb per minute). If you see a primer-dimer smear (~50 bp at the gel front) instead of the 131 bp band, drop the annealing temperature 2–3°C or lengthen the annealing step — see <a href="/blog/primer-dimer-fix">primer-dimer troubleshooting</a>.</p>
+
       <h2>Step 4: Run the PCR</h2>
       <ol>
         <li>Place tubes in the thermal cycler and close the lid</li>

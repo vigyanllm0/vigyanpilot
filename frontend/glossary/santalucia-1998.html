@@ -477,6 +477,14 @@ footer{background:var(--navy);color:rgba(255,255,255,.8);padding:56px 0 24px}
 .auth-modal .auth-err{color:#DC2626;font-size:12px;text-align:center;margin-top:8px;display:none}
 
 
+.nn-table{width:100%;border-collapse:collapse;margin:20px 0;font-size:14px}
+.nn-table th{background:var(--navy);color:#fff;padding:10px 14px;text-align:left;font-family:var(--font-h);font-weight:600}
+.nn-table td{padding:9px 14px;border-bottom:1px solid var(--outline)}
+.nn-table tr:nth-child(even) td{background:var(--slate)}
+.nn-table td:first-child{font-weight:600}
+.nn-table .num{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;text-align:right}
+.calc-eq{background:var(--slate);border-left:3px solid var(--blue);padding:12px 16px;margin:12px 0;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px;line-height:1.9;overflow-x:auto}
+
 @media(max-width:768px){.nav-links{display:none}.nav-inner{padding:0 12px}.hamburger{display:flex}}
 
 .skip-link{position:absolute;top:-100%;left:50%;transform:translateX(-50%);padding:8px 14px;background:var(--saffron);color:#fff;z-index:10000;border-radius:0 0 8px 8px;font-weight:600;text-decoration:none;font-size:14px}.skip-link:focus{top:0;outline:none}
@@ -638,6 +646,43 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <section class="section" id="definition">
       <h2>Definition</h2>
       <p>The seminal paper by John SantaLucia Jr. published in Proceedings of the National Academy of Sciences (1998) that established the unified nearest-neighbor thermodynamic parameters for DNA duplex formation. These parameters remain the gold standard for calculating melting temperatures, primer stability, and <a href="/glossary/secondary-structure">secondary structure</a> free energies in <a href="/glossary/molecular-biology">molecular biology</a> applications.</p>
+    </section>
+
+    <section class="section" id="parameters">
+      <h2>The Nearest-Neighbor Parameters</h2>
+      <p>SantaLucia's key contribution was a single, unified set of thermodynamic parameters for DNA duplex formation. Instead of treating a sequence as a sum of independent bases, the <a href="/glossary/nearest-neighbor-model">nearest-neighbor</a> (NN) model attributes a duplex's stability to each overlapping <em>pair of adjacent bases</em> (a doublet) and its base-paired complement. A sequence of <em>n</em> bases therefore contains <em>n&nbsp;−&nbsp;1</em> NN steps, each contributing an enthalpy (ΔH°) and an entropy (ΔS°). The ten Watson–Crick doublets and their parameters (Table 2 of the paper) are:</p>
+
+      <table class="nn-table">
+        <tr><th>NN Step (5′→3′ / 3′→5′)</th><th>ΔH° (kcal/mol)</th><th>ΔS° (cal/mol·K)</th></tr>
+        <tr><td>AA / TT</td><td class="num">−7.9</td><td class="num">−22.2</td></tr>
+        <tr><td>AT / TA</td><td class="num">−7.2</td><td class="num">−20.4</td></tr>
+        <tr><td>TA / AT</td><td class="num">−7.2</td><td class="num">−21.3</td></tr>
+        <tr><td>CA / GT</td><td class="num">−8.5</td><td class="num">−22.7</td></tr>
+        <tr><td>GT / CA</td><td class="num">−8.4</td><td class="num">−22.4</td></tr>
+        <tr><td>CT / GA</td><td class="num">−7.8</td><td class="num">−21.0</td></tr>
+        <tr><td>GA / CT</td><td class="num">−8.2</td><td class="num">−22.2</td></tr>
+        <tr><td>CG / GC</td><td class="num">−10.6</td><td class="num">−27.2</td></tr>
+        <tr><td>GC / CG</td><td class="num">−9.8</td><td class="num">−24.4</td></tr>
+        <tr><td>GG / CC</td><td class="num">−8.0</td><td class="num">−19.9</td></tr>
+      </table>
+
+      <p>Two <em>initiation</em> terms account for the terminal base pairs: a terminal A–T pair contributes ΔH° = −2.3 kcal/mol and ΔS° = −4.1 cal/(mol·K), while a terminal G–C pair contributes ΔH° = 0.1 kcal/mol and ΔS° = −2.8 cal/(mol·K). Both the first and the last base pair are counted.</p>
+
+      <h3>Worked example: the Tm of an 8-base sequence</h3>
+      <p>Take the short sequence <strong>5′-ACGTTGCT-3′</strong>. It has 7 NN steps. Summing ΔH° and ΔS° over the doublets, then adding the initiation terms for the terminal A and T:</p>
+      <div class="calc-eq">Doublets:   AC    CG    GT    TT    TG    GC    CT
+ΔH°:      −7.8  −10.6  −8.4  −7.9  −8.5  −9.8  −7.8   = −60.8 kcal/mol
+ΔS°:      −21.0 −27.2 −22.4 −22.2 −22.7 −24.4 −21.0  = −160.9 cal/(mol·K)
+Initiation (A···T, both termini):  2 × (−2.3, −4.1) = (−4.6, −8.2)
+TOTAL:    ΔH° = −65.4 kcal/mol      ΔS° = −169.1 cal/(mol·K)</div>
+      <p>For a non-self-complementary oligo the <a href="/glossary/melting-temperature">melting temperature</a> follows from the Gibbs–Helmholtz relation, with <em>C<sub>T</sub></em> the total strand concentration and <em>R</em> = 1.987 cal/(mol·K):</p>
+      <div class="calc-eq">Tm = (ΔH° × 1000) / ( ΔS° + R·ln(C_T / 4) ) − 273.15
+
+With C_T = 50 nM:   ln(C_T/4) = ln(1.25 × 10⁻⁸) = −18.20
+                    R·ln(C_T/4) = 1.987 × (−18.20) = −36.16
+Tm = (−65.4 × 1000) / (−169.1 − 36.16) − 273.15
+   = 318.6 − 273.15  =  45.5 °C</div>
+      <p>This is the Tm at 1&nbsp;M monovalent salt. Real PCR buffers contain Mg²⁺ and roughly 50&nbsp;mM Na⁺, so the raw value is then adjusted with a salt-correction model (our implementation applies the Owczarzy 2004 magnesium correction); for those conditions the corrected Tm is 39.9&nbsp;°C. Real primers are 18–25 bases long and simply sum more doublets — the arithmetic is identical, just longer. Run any sequence through the <a href="/tm-calculator">Tm calculator</a> to get the NN Tm (plus salt correction, hairpin and dimer penalties) without doing the sum by hand.</p>
     </section>
 
     <section class="section" id="in-practice">
