@@ -74,12 +74,15 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <link rel="me" href="https://github.com/vigyanllm">
 <link rel="me" href="https://linkedin.com/company/vigyanllm">
 <link rel="me" href="https://x.com/vigyanllm">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://cdnjs.cloudflare.com">
 <link rel="preconnect" href="https://www.googletagmanager.com">
-<link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@400;500;600;700;800;900&family=Source+Serif+4:wght@400;500&display=swap" as="style" onload="this.rel='stylesheet'">
-<noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@400;500;600;700;800;900&family=Source+Serif+4:wght@400;500&display=swap" rel="stylesheet"></noscript>
+<!-- Self-hosted brand fonts (Inter / Montserrat / Source Serif 4) — @font-face in
+     home.css with font-display:optional. Preloading here (before the blocking home.css)
+     puts the woff2 in cache before first paint, so `optional` renders the real brand
+     fonts (design preserved) and never swaps in mid-load → no font-swap CLS. -->
+<link rel="preload" href="/assets/fonts/inter-var-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/montserrat-var-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/sourceserif4-var-latin.woff2" as="font" type="font/woff2" crossorigin>
 <!-- amCharts (1.4MB) injected on demand by the map loader below —
      not on the critical path (Growth Playbook 2.2) -->
 <link rel="stylesheet" href="/home.css">
