@@ -4,9 +4,10 @@ The P0 audit found two coupled hazards:
 
 1. `security._get_rate_limit_storage()` returned REDIS_URL unprobed — a
    configured-but-dead Redis only failed on flask-limiter's first request,
-   500-ing every route. It now TCP-probes at startup and degrades to
-   per-worker `memory://` with a warning (never crash, never request-time
-   failure).
+   500-ing every route. It now PING-probes at startup with the same client
+   flask-limiter uses and degrades to per-worker `memory://` (never crash,
+   never request-time failure) — loudly, with a RATE_LIMITER_OFF error marker
+   in production so the fallback can never ship silently.
 
 2. `pipeline_routes._celery_broker_available()` gated run_pipeline.delay()
    on REDIS_URL — so wiring REDIS_URL for the limiter would have handed every
@@ -121,6 +122,56 @@ def test_limiter_probe_never_raises_on_garbage(security_mod, monkeypatch):
         monkeypatch.setattr(security_mod, "REDIS_URL", bad)
         result = security_mod._get_rate_limit_storage()
         assert result in {"memory://", bad}
+
+
+def test_rate_limiter_off_logs_loudly_in_production(security_mod, monkeypatch, caplog):
+    """CATCH-1 loud-degradation marker: production fallback must be greppable.
+
+    INC-001 (Redis AUTH outage 2026-10-14) shipped silently because the
+    degradation only logged at WARNING. In production a dead/unusable Redis is
+    a real security regression (limits become per-worker, not global), so the
+    fallback must emit an ERROR-level line carrying the RATE_LIMITER_OFF marker
+    — grep "RATE_LIMITER_OFF" in the boot log and this state can never ship
+    silently again.
+    """
+    import logging
+
+    import redis as _redis
+
+    monkeypatch.setattr(security_mod, "IS_PRODUCTION", True)
+    monkeypatch.setattr(security_mod, "REDIS_URL", "redis://127.0.0.1:6379/0")
+    _fake_redis(
+        monkeypatch, security_mod,
+        ping_exc=_redis.exceptions.AuthenticationError("NOAUTH Authentication required."),
+    )
+    with caplog.at_level(logging.ERROR, logger="primerforge.security"):
+        assert security_mod._get_rate_limit_storage() == "memory://"
+
+    rate_off = [r for r in caplog.records if "RATE_LIMITER_OFF" in r.getMessage()]
+    assert rate_off, "production fallback must log the RATE_LIMITER_OFF marker"
+    assert any(r.levelno >= logging.ERROR for r in rate_off), (
+        "production fallback must log at ERROR level, not WARNING"
+    )
+
+
+def test_rate_limiter_off_stays_warning_in_dev(security_mod, monkeypatch, caplog):
+    """Dev fallback stays a WARNING (no alarm fatigue from local Redis absence)."""
+    import logging
+
+    import redis as _redis
+
+    monkeypatch.setattr(security_mod, "IS_PRODUCTION", False)
+    monkeypatch.setattr(security_mod, "REDIS_URL", "redis://127.0.0.1:6379/0")
+    _fake_redis(
+        monkeypatch, security_mod,
+        ping_exc=_redis.exceptions.AuthenticationError("NOAUTH Authentication required."),
+    )
+    with caplog.at_level(logging.DEBUG, logger="primerforge.security"):
+        assert security_mod._get_rate_limit_storage() == "memory://"
+
+    errors = [r for r in caplog.records
+              if r.levelno >= logging.ERROR and "RATE_LIMITER_OFF" in r.getMessage()]
+    assert not errors, "non-production fallback must not emit the ERROR-level marker"
 
 
 def test_celery_gate_ignores_redis_url(monkeypatch):

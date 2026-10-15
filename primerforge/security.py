@@ -211,9 +211,10 @@ def _get_rate_limit_storage() -> str:
     Uses Redis when REDIS_URL is configured (required for multi-worker production
     deployments so all Gunicorn workers share the same counter). Falls back to
     in-memory storage for single-worker development — and ALSO when REDIS_URL is
-    set but the endpoint doesn't accept connections at startup: flask-limiter
+    set but the endpoint doesn't accept commands at startup: flask-limiter
     only discovers a dead Redis on the first request, which would 500 every
-    route. One TCP probe at boot, degrade loudly to per-worker memory instead.
+    route. One real-client PING probe at boot, degrade loudly to per-worker
+    memory instead.
 
     BUG-16 FIX: Redis URL is logged with the password masked, regardless of
     whether the URL contains an '@' character.
@@ -256,11 +257,25 @@ def _get_rate_limit_storage() -> str:
                     except Exception:
                         pass
             except Exception as exc:
-                logger.warning(
-                    "Rate limiter: REDIS_URL set but %s:%s not usable (%s: %s) — "
-                    "degrading to per-worker in-memory storage",
-                    host, port, type(exc).__name__, exc,
-                )
+                if IS_PRODUCTION:
+                    # LOUD: in production a dead/unusable Redis means the shared
+                    # counter is gone — every gunicorn worker now rate-limits
+                    # independently, so a "200/min" global limit is really
+                    # (200 × workers)/min. That is a real security regression,
+                    # not a cosmetic one, so it must be impossible to miss in
+                    # the logs. CATCH-1 marker: grep "RATE_LIMITER_OFF".
+                    logger.error(
+                        "RATE_LIMITER_OFF: production REDIS_URL %s:%s unusable "
+                        "(%s: %s) — limiter degraded to per-worker in-memory "
+                        "storage; limits are now PER-WORKER, not global",
+                        host, port, type(exc).__name__, exc,
+                    )
+                else:
+                    logger.warning(
+                        "Rate limiter: REDIS_URL set but %s:%s not usable (%s: %s) — "
+                        "degrading to per-worker in-memory storage",
+                        host, port, type(exc).__name__, exc,
+                    )
                 return "memory://"
 
         logger.info("Rate limiter: Redis (%s)", display)
@@ -405,8 +420,9 @@ def init_security(app):
             )
         except Exception:
             logger.exception(
-                "Rate limiter init failed (storage=%s) — continuing WITHOUT rate "
-                "limiting rather than failing every request", storage_uri,
+                "RATE_LIMITER_OFF: Rate limiter init failed (storage=%s) — "
+                "continuing WITHOUT rate limiting rather than failing every "
+                "request; limits are OFF (grep RATE_LIMITER_OFF)", storage_uri,
             )
             limiter = _NoopLimiter()
 
