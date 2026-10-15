@@ -462,6 +462,8 @@ def _send_reset_email(email: str, reset_token: str) -> bool:
 </div>
 </body></html>"""
 
+    from . import mail_log as _mail
+
     # ── Method 1: Brevo API (preferred) ──
     brevo_key = os.environ.get("BREVO_API_KEY", "")
     if brevo_key:
@@ -484,10 +486,15 @@ def _send_reset_email(email: str, reset_token: str) -> bool:
             )
             if resp.status_code in (200, 201):
                 logger.info("Password reset email sent to %s via Brevo API", email)
+                _mail.record("reset_email", email, resp.status_code, ok=True, attempts=1)
                 return True
             logger.error("Brevo API returned %d: %s", resp.status_code, resp.text[:200])
+            _mail.record("reset_email", email, resp.status_code, ok=False, error=resp.text, attempts=1)
         except Exception as e:
             logger.error("Brevo API failed for reset email to %s: %s", email, e)
+            _mail.record("reset_email", email, None, ok=False, error="exception: %s" % e, attempts=1)
+    else:
+        _mail.record("reset_email", email, None, ok=False, error="BREVO_API_KEY not set — Brevo skipped")
 
     # ── Method 2: SMTP fallback ──
     smtp_host = os.environ.get("SMTP_HOST")
@@ -900,6 +907,14 @@ def list_users():
            ORDER BY u.created_at DESC"""
     )
     return jsonify({"users": users, "count": len(users)}), 200
+
+@auth_bp.route("/api/admin/mail-status", methods=["GET"])
+@require_admin
+def mail_status():
+    """Admin: recent outbound-mail (Brevo) send attempts — real provider status + body."""
+    from . import mail_log
+    rows = mail_log.recent()
+    return jsonify({"attempts": rows, "count": len(rows)}), 200
 
 @auth_bp.route("/api/admin/users/<int:user_id>/block", methods=["POST"])
 @require_admin

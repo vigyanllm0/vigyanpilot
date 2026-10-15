@@ -385,6 +385,15 @@ def admin_users():
     return jsonify({"users": users, "count": len(users)}), 200
 
 
+@auth_bp.route('/api/admin/mail-status', methods=['GET'])
+@require_admin
+def mail_status():
+    """Admin: recent outbound-mail (Brevo) send attempts — real provider status + body."""
+    from . import mail_log
+    rows = mail_log.recent()
+    return jsonify({"attempts": rows, "count": len(rows)}), 200
+
+
 @auth_bp.route('/api/admin/logs', methods=['GET'])
 @require_admin
 def admin_logs():

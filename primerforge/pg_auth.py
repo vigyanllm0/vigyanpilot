@@ -454,9 +454,12 @@ def send_verification_email(email: str, verification_token: str) -> bool:
 </body></html>"""
 
     import time as _time
+    from . import mail_log as _mail
 
     # ── Method 1: Brevo API (preferred) ──
     brevo_key = os.environ.get("BREVO_API_KEY", "")
+    last_status = None
+    last_body = ""
     if brevo_key:
         for attempt in range(3):
             try:
@@ -479,7 +482,10 @@ def send_verification_email(email: str, verification_token: str) -> bool:
                 )
                 if resp.status_code in (200, 201):
                     logger.info("Brevo: verification email SENT to %s (status=%d)", email, resp.status_code)
+                    _mail.record("verify_email", email, resp.status_code, ok=True, attempts=attempt + 1)
                     return True
+                last_status = resp.status_code
+                last_body = resp.text
                 logger.warning("Brevo: attempt %d failed — status=%d: %s", attempt + 1, resp.status_code, resp.text[:300])
                 if resp.status_code == 401:
                     logger.error("Brevo: API key is invalid or expired — check BREVO_API_KEY")
@@ -491,11 +497,15 @@ def send_verification_email(email: str, verification_token: str) -> bool:
                     _time.sleep(2 ** attempt)  # Exponential backoff: 1s, 2s
             except Exception as e:
                 logger.warning("Brevo: attempt %d exception for %s: %s", attempt + 1, email, e)
+                last_status = None
+                last_body = "exception: %s" % e
                 if attempt < 2:
                     _time.sleep(2 ** attempt)
         logger.error("Brevo: all 3 attempts failed for %s", email)
+        _mail.record("verify_email", email, last_status, ok=False, error=last_body, attempts=3)
     else:
         logger.warning("Brevo: BREVO_API_KEY not set — skipping Brevo")
+        _mail.record("verify_email", email, None, ok=False, error="BREVO_API_KEY not set — Brevo skipped")
 
     # ── Method 2: SMTP fallback ──
     smtp_host = os.environ.get("SMTP_HOST")
