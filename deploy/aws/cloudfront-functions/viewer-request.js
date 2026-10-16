@@ -1,19 +1,15 @@
 // CloudFront Function — Viewer Request v19
 // (numbering follows the AWS function Config Comment, not this header;
-//  the header had drifted to "v6" while AWS was at v14 — kept in sync since v15)
+//  drifted to "v6" while AWS was at v14 — kept in sync since v15. SIZE CAP 10 KB.)
 // Bot blocking, domain canonicalization, .html strip,
 // redirects, trailing-slash normalization, clean URL rewrites.
-// v19: /blog-post → /blog 301 (SPA-era blog template: JS-rendered scaffold, already
-//      noindex + canonical=/blog and linked from nothing, but served 200 at
-//      /blog-post = soft-404 squatting a URL crawlers still hold).
-// v18: RESTORE /hub/primer-design (stale Vercel-migration 301 removed): the page
-//      has real content (48KB), is in the sitemap, and 11/12 hub siblings serve
-//      200 — the redirect contradicted all of that. Note: the rule's cache-control
-//      was max-age=86400, so the edge 301 must be invalidated after publish.
-// v17: kill schema-template junk URLs (?q={search_term...} 301 to bare path);
-//      .html strip now preserves the query string (was silently dropping ?ref= etc).
-// v16: /r/:code referral short link now a real client 301 (was FunctionValidationError 503).
-// v15: +11 redirects for URLs Google still holds that 404 (see map below).
+// v19: /blog-post → /blog 301 (SPA blog scaffold: noindex + canonical=/blog,
+//      unlinked — a soft-404 at a URL crawlers still hold).
+// v18: /hub/primer-design redirect removed (page restored: real content + sitemap).
+// v17: schema-junk ?q={search_term...} 301s; .html strip preserves query string.
+// v16: /r/:code real 301 (bare-string querystring caused 503 FunctionValidationError).
+// v15: +11 redirects for GSC-404 URLs (map below; invalidate after publish —
+//      redirect rules ship cache-control max-age=86400).
 function handler(event) {
   var r = event.request;
   var u = r.uri;
@@ -85,9 +81,8 @@ function handler(event) {
     // consolidate duplicate clusters — one canonical URL per page).
     '/index': '/',
     '/blog/index': '/blog',
-    // v19: SPA-era blog template (frontend/blog-post.html) — JS-rendered scaffold
-    // ('<h1>' + page.title + '</h1>'), already noindex + canonical=/blog, linked
-    // from nothing: a soft-404 squat at /blog-post. Edge-redirect to /blog.
+    // v19: SPA blog scaffold blog-post.html (noindex + canonical=/blog, unlinked)
+    //      = soft-404 at /blog-post → redirect to the live hub.
     '/blog-post': '/blog',
     // Root-level header.html/footer.html are unbaked partial fragments,
     // not pages — send crawlers to the home page instead of a raw fragment.
@@ -135,12 +130,9 @@ function handler(event) {
     '/glossary/proteasome': '/glossary/protein',
     '/glossary/retrotransposon': '/glossary/transposon',
     '/glossary/penalty-matrix': '/glossary/alignment',
-    // --- URLs Google still holds that 404 (GSC 404 cleanup) ------------------
-    // Derived without GSC access: crawled all 537 live pages' internal links,
-    // all 58 historical sitemap.xml revisions (622 unique URLs), and every
-    // frontend/*.html path ever committed (15 since deleted). Each source
-    // below resolves to a canonical live page rather than a 404.
-    // Contact surface was removed; /support is the live equivalent.
+    // --- URLs Google still holds that 404 (GSC 404 cleanup; derived without a
+    // GSC export: internal links + 58 sitemap revisions + deleted files) →
+    // each target below is a canonical live page, never a 404. ---
     '/contact': '/support',
     // Glossary hub is /glossary (linked from 9 pages); the old index page is gone.
     '/glossary-index': '/glossary',
