@@ -63,22 +63,26 @@ class TestVerificationCodeChanges:
         assert LOCKOUT_MINUTES == 15
 
 
-@pytest.mark.xfail(
-    reason=(
-        "These 4 tests grep security-header strings inside inspect.getsource(create_app). "
-        "The headers were refactored out of create_app into security.py "
-        "(init_security/after_request at _register_security_header_fallback, lines ~539-544 + "
-        "HSTS ~388) so create_app's source no longer contains them. Runtime behavior is NOT "
-        "broken: a live prod GET response carries x-frame-options: DENY, x-content-type-options: "
-        "nosniff, referrer-policy, and strict-transport-security. The assertion checks a stale "
-        "implementation location, not a regression. Quarantine pending a rewrite to assert on the "
-        "live response (or security.py) instead. See issue #SEC-LOC."
-    ),
-    strict=False,
-)
+# NOTE (2026-10-16, xpassed housekeeping): the class-level xfail that used to blanket
+# this ENTIRE class was split. Only the 4 tests that grep security-header strings inside
+# inspect.getsource(create_app) remain quarantined (#SEC-LOC): those headers were refactored
+# out of create_app into security.py (init_security / _register_security_header_fallback ~535
+# + HSTS), so create_app's source no longer contains them. Runtime behavior is NOT broken — a
+# live prod GET response carries x-frame-options: DENY, x-content-type-options: nosniff,
+# referrer-policy, and strict-transport-security. The other tests here (checking
+# pg_auth_routes.login/register/forgot_password/resend_verification and security.apply_rate_limits)
+# still contain their expected strings and PASS — they were previously swept under the class-level
+# marker and reported as false XPASS signals. They now run unmarked as real regression tests.
 class TestSecurityCodeChanges:
     """Verify security hardening exists in code."""
 
+    @pytest.mark.xfail(
+        reason="#SEC-LOC: greps header strings in inspect.getsource(create_app); refactored "
+               "into security.py (_register_security_header_fallback ~535 + HSTS). Runtime "
+               "intact (live response carries the headers). Quarantine pending rewrite to "
+               "assert on security.py / the live response.",
+        strict=False,
+    )
     def test_security_headers_in_server(self):
         import inspect
         from primerforge.primer_server import create_app
@@ -88,12 +92,24 @@ class TestSecurityCodeChanges:
                    "Content-Security-Policy"]:
             assert h in src, f"Missing: {h}"
 
+    @pytest.mark.xfail(
+        reason="#SEC-LOC: greps 'X-Powered-By' in inspect.getsource(create_app); the "
+               "server-header removal now lives in security.py. Runtime intact. Quarantine "
+               "pending rewrite to assert on security.py / the live response.",
+        strict=False,
+    )
     def test_server_header_removal(self):
         import inspect
         from primerforge.primer_server import create_app
         src = inspect.getsource(create_app)
         assert "X-Powered-By" in src
 
+    @pytest.mark.xfail(
+        reason="#SEC-LOC: greps CSP strings in inspect.getsource(create_app); CSP is now "
+               "configured in security.py. Runtime intact. Quarantine pending rewrite to "
+               "assert on security.py / the live response.",
+        strict=False,
+    )
     def test_csp_configuration(self):
         import inspect
         from primerforge.primer_server import create_app
@@ -141,6 +157,12 @@ class TestSecurityCodeChanges:
         assert "forgot_password" in src
         assert "resend_verification" in src
 
+    @pytest.mark.xfail(
+        reason="#SEC-LOC: greps 'preload' in inspect.getsource(create_app); HSTS preload "
+               "config now lives in security.py. Runtime intact. Quarantine pending rewrite "
+               "to assert on security.py / the live response.",
+        strict=False,
+    )
     def test_hsts_preload(self):
         import inspect
         from primerforge.primer_server import create_app
