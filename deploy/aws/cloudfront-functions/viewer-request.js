@@ -1,8 +1,12 @@
-// CloudFront Function — Viewer Request v17
+// CloudFront Function — Viewer Request v18
 // (numbering follows the AWS function Config Comment, not this header;
 //  the header had drifted to "v6" while AWS was at v14 — kept in sync since v15)
 // Bot blocking, domain canonicalization, .html strip,
 // redirects, trailing-slash normalization, clean URL rewrites.
+// v18: RESTORE /hub/primer-design (stale Vercel-migration 301 removed): the page
+//      has real content (48KB), is in the sitemap, and 11/12 hub siblings serve
+//      200 — the redirect contradicted all of that. Note: the rule's cache-control
+//      was max-age=86400, so the edge 301 must be invalidated after publish.
 // v17: kill schema-template junk URLs (?q={search_term...} 301 to bare path);
 //      .html strip now preserves the query string (was silently dropping ?ref= etc).
 // v16: /r/:code referral short link now a real client 301 (was FunctionValidationError 503).
@@ -88,7 +92,6 @@ function handler(event) {
     '/crispr': '/crispr-analysis',
     '/cloning': '/cloning-simulator',
     '/sequence-search': '/primer',
-    '/hub/primer-design': '/primer',
     '/blog/pcr-cycling-conditions': '/blog/pcr-steps',
     '/blog/taq-polymerase-vs-high-fidelity': '/blog/hot-start-pcr-technology',
     '/blog/allele-specific-pcr-primer-design': '/blog/colony-pcr-primer-design',
