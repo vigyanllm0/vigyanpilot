@@ -103,20 +103,16 @@ def test_auto_design_does_not_mark_unrun_specificity_as_pass(client):
     assert stage4["pass"] is None
 
 
-@pytest.mark.xfail(
-    reason=(
-        "create_app() imports primerforge.pg_auth, which raises RuntimeError "
-        "'PRIMERFORGE_SECRET environment variable is required' at import time "
-        "(pg_auth.py:78) unless the secret was set by an earlier-importing test "
-        "module. This test carries no env stub, so it passes only when full-suite "
-        "import order happens to set the secret first and fails standalone/isolated. "
-        "The assertion logic (an INCONCLUSIVE specificity result must not read as "
-        "pass) is sound — this is an env-ordering flake, not a regression. "
-        "Fix by pinning PRIMERFORGE_SECRET + DATABASE_URL in a conftest, not by "
-        "asserting less. See issue #ENV-ORDER."
-    ),
-    strict=False,
-)
+# #ENV-ORDER — RESOLVED 2026-10-17. This test failed two ways:
+#   (1) standalone/isolated runs: importing primerforge.auth/pg_auth raises
+#       RuntimeError unless PRIMERFORGE_SECRET / PRIMERFORGE_ADMIN_EMAIL /
+#       PRIMERFORGE_ADMIN_PASSWORD are set, and this file carried no env stub;
+#   (2) full-suite order: tests/test_verification_fix.py's collection import
+#       hard-sets a DUMMY DATABASE_URL (postgresql://localhost:5432/test_unused),
+#       so create_app() picked PG mode and the route 500'd on the missing DB.
+# Fix: tests/conftest.py now pins the three env vars at collection time, and the
+# test forces SQLite mode via monkeypatch (auto-restored after the test), matching
+# the file's own integration `client` fixture pattern. Nothing was asserted less.
 def test_inconclusive_specificity_is_not_specific(monkeypatch):
     from primerforge.core import auto_designer
     from primerforge.primer_server import create_app
@@ -133,6 +129,17 @@ def test_inconclusive_specificity_is_not_specific(monkeypatch):
         "design",
         lambda self, *args, **kwargs: [_fake_pair(inconclusive)],
     )
+    monkeypatch.delenv("DATABASE_URL", raising=False)
+    # Neutralize the anon 1/day counter so this test is order- and
+    # pollution-proof. The route imports check_anon_usage/record_anon_usage
+    # from primerforge.auth per request, so patching the module works: the
+    # check still runs (real code path, reads the patched module global), and
+    # the success-path record becomes a no-op so this test leaves the shared
+    # anon counter untouched for the other anon-route tests in the run
+    # (test_auto_design_does_not_mark... runs first and needs it clean).
+    import primerforge.auth as _auth
+    monkeypatch.setattr(_auth, "_ANON_DAILY_LIMIT", 9999)
+    monkeypatch.setattr(_auth, "record_anon_usage", lambda seq_count=1: None)
     _app = create_app()
     client = (_app.wsgi_app if hasattr(_app, "wsgi_app") else _app).test_client()
     response = client.post(
