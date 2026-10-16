@@ -26,7 +26,6 @@ PRIORITY_MAP = {
     # Tier 2: Important tools
     "pcr-analysis.html": 0.90,
     "crispr-analysis.html": 0.90,
-    "protein-docking.html": 0.90,
     "tm-calculator.html": 0.85,
     "gc-calculator.html": 0.85,
     "dna-to-rna.html": 0.85,
@@ -404,7 +403,7 @@ const BASE_URL = "https://www.vigyanllm.in";
 
 const CORE = [
   "/","/primer","/blast","/msa","/search","/primer-design","/primer-design-pipeline",
-  "/pcr-analysis","/crispr-analysis","/protein-docking","/tm-calculator","/gc-calculator",
+  "/pcr-analysis","/crispr-analysis","/tm-calculator","/gc-calculator",
   "/dna-to-rna",
   "/platform","/solution","/architecture","/problem","/compare","/roadmap",
   "/about/sovereign-ai","/features/on-premises",
