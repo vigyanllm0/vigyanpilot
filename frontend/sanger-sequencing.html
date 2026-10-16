@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Consent Mode default (dataLayer) -->
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('consent', 'default', {
+    'ad_storage': 'denied',
+    'ad_user_data': 'denied',
+    'ad_personalization': 'denied',
+    'analytics_storage': 'denied',
+    'region': ['AT','BE','BG','HR','CY','CZ','DK','EE','FI','FR','DE','GR','HU','IE','IT','LV','LT','LU','MT','NL','PL','PT','RO','SK','SI','ES','SE','IS','LI','NO','GB','CH']
+  });
+  try {
+    var vlcs = JSON.parse(localStorage.getItem('vigyanllm_cookie_consent') || 'null');
+    if (vlcs && vlcs.consent === 'accepted') {
+      gtag('consent', 'update', { 'ad_storage': 'granted', 'ad_user_data': 'granted', 'ad_personalization': 'granted', 'analytics_storage': 'granted' });
+    } else if (vlcs && vlcs.consent === 'declined') {
+      gtag('consent', 'update', { 'ad_storage': 'denied', 'ad_user_data': 'denied', 'ad_personalization': 'denied', 'analytics_storage': 'denied' });
+    }
+  } catch (e) {}
+
+</script>
+
+
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-KRP5LLPR');</script>
+<!-- End Google Tag Manager -->
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sanger Sequencing: Method, Reads &amp; Primer Design</title>
+  <link rel="stylesheet" href="/design-tokens.css">
+<link rel="manifest" href="/manifest.json" />
+<link rel="sitemap" type="application/xml" href="/sitemap.xml" />
+<link rel="alternate" type="application/rss+xml" title="VigyanLLM Blog RSS" href="/blog/rss.xml" />
+<meta name="theme-color" content="#0F172A" />
+  <meta name="keywords" content="sanger sequencing, sanger method, sanger dna sequencing, how does sanger sequencing work, chain termination sequencing, sequencing primer design, M13 universal primer, Sanger vs NGS" />
+<meta name="robots" content="index, follow" />
+<meta name="author" content="VigyanLLM Private Limited" />
+<meta name="description" content="Sanger sequencing explained — chain-termination method, read quality, and a worked M13 primer analysis with free Tm and GC tools.">
+  <link rel="canonical" href="https://www.vigyanllm.in/sanger-sequencing">
+<link rel="alternate" hreflang="en" href="https://www.vigyanllm.in/sanger-sequencing" />
+<link rel="alternate" hreflang="x-default" href="https://www.vigyanllm.in/sanger-sequencing" />
+
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Sanger Sequencing: Method, Reads & Primer Design | VigyanLLM">
+  <meta property="og:description" content="Sanger sequencing explained — chain-termination method, read quality, and a worked M13 primer analysis with free Tm and GC tools.">
+  <meta property="og:url" content="https://www.vigyanllm.in/sanger-sequencing">
+  <meta property="og:image" content="https://www.vigyanllm.in/poster.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:site_name" content="VigyanLLM">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Sanger Sequencing: Method, Reads & Primer Design | VigyanLLM">
+  <meta name="twitter:description" content="Sanger sequencing explained — chain-termination method, read quality, and a worked M13 primer analysis with free Tm and GC tools.">
+  <meta name="twitter:image" content="https://www.vigyanllm.in/poster.png">
+
+  <style>
+
+    html { overflow-x: hidden; }
+
+:root{--blue:#1565C0;--blue-light:#42A5F5;--blue-bg:#E3F2FD;--navy:#0F172A;--black:#0A0A0F;--surface:#FFFFFF;--surface-alt:#F5F7FA;--outline:#E2E5EA;--text:#0A0A0F;--text2:#4A4A6A;--muted:#7A7A9A;--font-h:'Montserrat',sans-serif;--font-b:'Open Sans',sans-serif;--space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-5:20px;--space-6:24px;--space-8:32px;--space-10:40px;--space-12:48px;--space-16:64px;--space-20:80px;--space-24:96px;--max-w:1400px}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--surface);color:var(--text);font-family:var(--font-b);line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{text-decoration:none;color:inherit}
+img{max-width:100%}
+
+@media(max-width:768px){}
+
+@media(max-width:900px){}
+@media(max-width:768px){}
+
+@media(max-width:480px){}
+
+.auth-modal{background:#fff;border-radius:16px;padding:36px;width:100%;max-width:400px;box-shadow:0 24px 64px rgba(0,0,0,.25);position:relative;max-height:90vh;overflow-y:auto}
+.auth-modal .close-btn{position:absolute;top:14px;right:16px;background:none;border:none;font-size:13px;cursor:pointer;color:var(--muted);line-height:1}
+.auth-modal h2{font-family:var(--font-h);font-size:13px;font-weight:800;color:var(--text);margin-bottom:2px}
+.auth-modal .sub{font-size:13px;color:var(--muted);margin-bottom:24px}
+.auth-modal .field{margin-bottom:14px}
+.auth-modal .field label{display:block;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text2);margin-bottom:5px}
+.auth-modal .field input{width:100%;padding:11px 13px;border:1px solid var(--outline);border-radius:8px;font-family:var(--font-b);font-size:14px;color:var(--text);transition:border-color .15s}
+.auth-modal .field input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(21,101,192,.1)}
+.auth-modal .auth-btn{width:100%;padding:12px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-family:var(--font-b);font-size:13px;font-weight:700;cursor:pointer;transition:opacity .15s}
+.auth-modal .auth-btn:hover{opacity:.9}
+.auth-modal .toggle-link{text-align:center;font-size:12px;color:var(--muted);margin-top:14px}
+.auth-modal .toggle-link a{color:var(--blue);font-weight:600;cursor:pointer}
+.auth-modal .auth-err{color:#DC2626;font-size:12px;text-align:center;margin-top:8px;display:none}
+
+@media(max-width:768px){}
+
+.skip-link:focus{top:0;outline:none}
+
+
+/* sanger-sequencing page-local */
+.tbl-wrap{overflow-x:auto;margin-top:14px}
+.ex-table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:640px}
+.ex-table th,.ex-table td{border:1px solid var(--outline);padding:9px 11px;text-align:left;vertical-align:top}
+.ex-table th{background:var(--surface-alt);font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--text2)}
+.seq{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;letter-spacing:.03em;white-space:nowrap}
+.pill-warn{display:inline-block;background:#FEF3C7;color:#92400E;border-radius:999px;padding:2px 8px;font-size:11.5px;font-weight:600;margin:1px 4px 1px 0;white-space:nowrap}
+.pill-ok{display:inline-block;background:#DCFCE7;color:#166534;border-radius:999px;padding:2px 8px;font-size:11.5px;font-weight:600;margin:1px 4px 1px 0}
+.callout{background:var(--surface-alt);border:1px solid var(--outline);border-left:3px solid var(--blue);border-radius:10px;padding:16px 18px;margin-top:16px}
+.callout p{margin:0 0 8px}.callout p:last-child{margin-bottom:0}
+.faq-item{margin-top:10px}
+.faq-question{cursor:pointer;font-weight:700;color:var(--text)}
+.faq-answer{margin-top:6px}
+.fig-note{font-size:12.5px;color:var(--muted);margin-top:8px}
+.tools-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+.tools-row a{border:1px solid var(--outline);border-radius:999px;padding:8px 16px;font-size:13px;font-weight:600;color:var(--blue);background:var(--surface);transition:background .15s}
+.tools-row a:hover{background:var(--blue-bg)}
+@media(max-width:640px){.ex-table{min-width:560px}}
+</style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Open+Sans:wght@400;500;600;700&family=Source+Serif+4:wght@400;500&display=swap" rel="stylesheet">
+
+<link rel="icon" type="image/png" href="/logo.png">
+<link rel="apple-touch-icon" href="/logo.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.vigyanllm.in"}, {"@type": "ListItem", "position": 2, "name": "Sanger Sequencing", "item": "https://www.vigyanllm.in/sanger-sequencing"}]}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "What is Sanger sequencing?", "acceptedAnswer": {"@type": "Answer", "text": "Sanger sequencing, also called the chain-termination method, is a DNA sequencing technique invented by Frederick Sanger and colleagues in 1977. A DNA polymerase copies the template in the presence of normal deoxynucleotides (dNTPs) and fluorescently labelled dideoxynucleotides (ddNTPs) that stop extension when incorporated. The resulting fragments are separated by capillary electrophoresis, and the terminating dye at each position reveals the base there. It remains the reference method for reading single amplicons with better than 99.9% per-base accuracy."}}, {"@type": "Question", "name": "How does Sanger sequencing work?", "acceptedAnswer": {"@type": "Answer", "text": "The reaction mixes a single sequencing primer, template DNA, DNA polymerase, dNTPs, and four fluorescently labelled ddNTPs. Extension proceeds normally until a ddNTP is incorporated, terminating that chain because ddNTPs lack the 3' hydroxyl group needed for the next bond. The reaction produces millions of fragments ending at every sequence position; they are separated by capillary electrophoresis, and the dye signal at each position is called as a base. The colour-to-base mapping depends on the dye set used by the chemistry."}}, {"@type": "Question", "name": "What is the read length and accuracy of Sanger sequencing?", "acceptedAnswer": {"@type": "Answer", "text": "A typical Sanger read covers about 700-900 bases, with modern instruments reaching up to roughly 1,000 bases per run. High-quality bases carry better than 99.9% per-base accuracy; the first few tens of bases are often noisy from primer and dye artefacts, and quality then gradually declines toward the end of the capillary read."}}, {"@type": "Question", "name": "What is the difference between Sanger sequencing and NGS?", "acceptedAnswer": {"@type": "Answer", "text": "Sanger sequencing reads one amplicon at a time to high per-base accuracy with no bioinformatics pipeline required, which suits clone verification, plasmid QC, small amplicons, and confirmatory runs. Next-generation sequencing processes millions of fragments in parallel, giving much higher throughput for genomes, transcriptomes, and variant discovery at a lower cost per base, but with run-level infrastructure and analysis overhead. Choose Sanger for targeted, low-volume questions and NGS for discovery at scale."}}, {"@type": "Question", "name": "What rules should a Sanger sequencing primer follow?", "acceptedAnswer": {"@type": "Answer", "text": "Design sequencing primers 18-25 nucleotides long with a melting temperature of 55-65°C and 40-60% GC content, positioned 50-150 bases upstream of the region you need to read. Check specificity against the reference sequence so the primer binds a single locus, avoid strong hairpins and 3' self-dimers, and skip runs of more than four identical bases. For plasmids, universal primers such as M13, T7, or SP6 are the standard first choice."}}, {"@type": "Question", "name": "What are M13, T7, and SP6 universal sequencing primers?", "acceptedAnswer": {"@type": "Answer", "text": "Universal sequencing primers bind vector-derived sequences that flank the multiple cloning site in common cloning vectors, so one primer pair sequences any insert without gene-specific design. The classic M13 forward (-21) primer is 5'-TGTAAAACGACGGCCAGT-3' and the M13 reverse (-27) primer is 5'-CAGGAAACAGCTATGAC-3'. T7 and SP6 primers target promoter sequences in transcription vectors. The worked example on this page analyses both M13 primers with the VigyanLLM calculator."}}, {"@type": "Question", "name": "Does VigyanLLM run Sanger sequencing reactions?", "acceptedAnswer": {"@type": "Answer", "text": "No. VigyanLLM designs and analyses the primers you use for sequencing: nearest-neighbor melting temperature, GC content, hairpin and self-dimer energies, and specificity checks in the browser or through the automated design pipeline. The sequencing reaction itself — cycle sequencing, capillary electrophoresis, and base calling — is performed in your lab or by your sequencing provider."}}]}</script>
+<script src="/cookie-banner.js" defer></script>
+</head>
+<body>
+<div id="vl-header"><!--vl-header-bake-start--><a href="#main-content" class="skip-link">Skip to content</a><header>
+<nav aria-label="Main navigation">
+<div class="nav-inner">
+  <a href="/" class="nav-brand">
+    <img src="/logo.png" alt="VigyanLLM Logo" class="site-logo" width="150" height="36" style="height:36px;width:auto;object-fit:contain" loading="lazy">
+    <span>VigyanLLM</span>
+  </a>
+  <div class="nav-links">
+    <div class="drop-wrap">
+      <span class="drop-trigger" role="button" tabindex="0" aria-haspopup="true" aria-expanded="false">Products ▾</span>
+      <div class="drop-menu">
+        <a href="/primer">Primer Design</a>
+        <a href="/search">Sequence Search</a>
+        <a href="/blast">BLAST</a>
+        <a href="/msa">MSA</a>
+        <a href="/pcr-analysis">PCR Analysis</a>
+        <a href="/crispr-analysis">CRISPR Analysis <span style="font-size:var(--font-xs);font-weight:700;color:#1a1a1a;background:#FEF3C7;padding:2px 6px;border-radius:var(--radius-pill);line-height:1.3">Coming Soon</span></a>
+        <a href="/tm-calculator">Tm Calculator</a>
+        <a href="/gc-calculator">GC Calculator</a>
+        <a href="/docking">Molecular Docking</a>
+        <a href="/protein-quality">Protein Quality</a>
+        <a href="/interactions">Interactions</a>
+        <a href="/binding-site">Binding Site</a>
+        <a href="/regenerate">Regenerate</a>
+        <a href="/dna-3d">3D DNA Viewer</a>
+        <a href="/dna-to-rna" style="display:flex;align-items:center;gap:6px">DNA → RNA Converter</a>
+        <a href="/reverse-complement" style="display:flex;align-items:center;gap:6px">Reverse Complement <span style="font-size:9px;font-weight:700;color:#fff;background:#16A34A;padding:2px 7px;border-radius:var(--radius-pill);line-height:1.4">Free</span></a>
+        <a href="/dna-to-protein" style="display:flex;align-items:center;gap:6px">DNA → Protein <span style="font-size:9px;font-weight:700;color:#fff;background:#16A34A;padding:2px 7px;border-radius:var(--radius-pill);line-height:1.4">Free</span></a>
+        <a href="/pcr-product-calculator" style="display:flex;align-items:center;gap:6px">PCR Product Calc <span style="font-size:9px;font-weight:700;color:#fff;background:#16A34A;padding:2px 7px;border-radius:var(--radius-pill);line-height:1.4">Free</span></a>
+        <a href="/restriction-enzyme-finder" style="display:flex;align-items:center;gap:6px">Restriction Enzyme Finder <span style="font-size:9px;font-weight:700;color:#fff;background:#16A34A;padding:2px 7px;border-radius:var(--radius-pill);line-height:1.4">Free</span></a>
+        <a href="/cloning-simulator" style="display:flex;align-items:center;gap:6px">Cloning Simulator <span style="font-size:9px;font-weight:700;color:#fff;background:#16A34A;padding:2px 7px;border-radius:var(--radius-pill);line-height:1.4">Free</span></a>
+        <a href="/biostatistics-calculator" style="display:flex;align-items:center;gap:6px">Biostatistics Calculator <span style="font-size:9px;font-weight:700;color:#fff;background:#16A34A;padding:2px 7px;border-radius:var(--radius-pill);line-height:1.4">Free</span></a>
+      </div>
+    </div>
+    <div class="drop-wrap">
+      <span class="drop-trigger" role="button" tabindex="0" aria-haspopup="true" aria-expanded="false">Services ▾</span>
+      <div class="drop-menu">
+        <a href="/custom-pipeline-development">Customised Pipeline</a>
+      </div>
+    </div>
+    <a href="/learning-vigyanllm">Learning</a>
+    <a href="https://forms.gle/63vdQQ1Ka6WF3ZJg7" target="_blank" rel="noopener noreferrer">Partnership</a>
+    <a href="/pricing">Pricing</a>
+    <a href="/developer">Developer</a>
+  </div>
+  <div class="nav-right">
+    <div class="nav-search-wrap">
+      <input type="text" id="navSearchInput" placeholder="Search tools &amp; resources" autocomplete="off">
+      <span class="ns-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
+      <div class="nav-search-results" id="navSearchResults"></div>
+    </div>
+    <div class="nav-btns" id="navBtns">
+      <button type="button" class="btn-nav-outline" onclick="openAuthModal()">Sign in</button>
+      <button type="button" class="btn-nav-fill" onclick="openAuthModal()">Get started</button>
+    </div>
+    <div class="nav-profile" id="navProfile" style="display:none">
+      <div class="nav-avatar" id="navAvatar" role="button" tabindex="0" aria-expanded="false" onclick="toggleUserMenu()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span class="nav-avatar-letter" id="navAvatarLetter"></span>
+      </div>
+      <div class="user-dropdown" id="userDropdown">
+        <div class="user-dropdown-header">
+          <div class="ud-name" id="udName"></div>
+          <div class="ud-email" id="udEmail"></div>
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:2px">
+            <span class="ud-plan" id="udPlan"></span>
+            <span class="ud-expiry" id="udExpiry" style="font-size:11px;color:var(--muted)"></span>
+          </div>
+          <div class="ud-usage" id="udUsage" style="margin-top:6px;display:none">
+            <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:2px">
+              <span id="udUsageLabel">Today's analyses</span>
+              <span id="udUsageCount"></span>
+            </div>
+            <div style="height:4px;background:var(--outline);border-radius:2px;overflow:hidden">
+              <div id="udUsageBar" style="height:100%;border-radius:2px;transition:width .3s"></div>
+            </div>
+          </div>
+        </div>
+        <a class="ud-item" href="/dashboard">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+          Dashboard
+        </a>
+        <a class="ud-item" href="/usage-billing">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+          Usage &amp; Billing
+        </a>
+
+        <a class="ud-item ud-manage" href="/pricing" style="display:none">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+          Manage Subscription
+        </a>
+        <a class="ud-item ud-upgrade" href="/pricing" style="display:none">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          Upgrade to Pro
+        </a>
+        <div class="ud-item logout" role="button" tabindex="0" onclick="logout()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          Logout
+        </div>
+      </div>
+    </div>
+  </div>
+    </div>
+  <button type="button" class="hamburger" id="hamburger" aria-label="Menu" aria-expanded="false" aria-controls="mobile-menu">
+    <span></span><span></span><span></span>
+  </button>
+<div class="mobile-menu" id="mobile-menu">
+  <div class="mm-user" id="mmUser" style="display:none;padding:12px 16px;background:rgba(255,255,255,.05);border-radius:12px;margin-bottom:12px">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div id="mmAvatar" style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#3B82F6,#1D4ED8);display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:13px"></div>
+      <div>
+        <div id="mmName" style="font-weight:600;color:#fff;font-size:14px"></div>
+        <div id="mmPlan" style="font-size:11px;color:rgba(255,255,255,.5)"></div>
+      </div>
+    </div>
+  </div>
+  <div class="mm-group"><div class="mm-hdr">Products</div>
+    <a href="/primer" aria-label="Primer Design (menu)">Primer Design</a>
+    <a href="/search" aria-label="Sequence Search (menu)">Sequence Search</a>
+    <a href="/blast" aria-label="BLAST (menu)">BLAST</a>
+    <a href="/msa" aria-label="MSA (menu)">MSA</a>
+    <a href="/pcr-analysis" aria-label="PCR Analysis (menu)">PCR Analysis</a>
+    <a href="/crispr-analysis" aria-label="CRISPR Analysis (menu)">CRISPR Analysis <span style="font-size:var(--font-xs);font-weight:700;color:#1a1a1a;background:#FEF3C7;padding:2px 6px;border-radius:var(--radius-pill);line-height:1.3">Coming Soon</span></a>
+    <a href="/tm-calculator" aria-label="Tm Calculator (menu)">Tm Calculator</a>
+    <a href="/gc-calculator" aria-label="GC Calculator (menu)">GC Calculator</a>
+    <a href="/docking" aria-label="Molecular Docking (menu)">Molecular Docking</a>
+    <a href="/protein-quality" aria-label="Protein Quality (menu)">Protein Quality</a>
+    <a href="/interactions" aria-label="Interactions (menu)">Interactions</a>
+    <a href="/binding-site" aria-label="Binding Site (menu)">Binding Site</a>
+    <a href="/regenerate" aria-label="Regenerate (menu)">Regenerate</a>
+        <a href="/dna-3d" aria-label="3D DNA Viewer (menu)">3D DNA Viewer</a>
+        <a href="/dna-to-rna" style="display:flex;align-items:center;gap:6px" aria-label="DNA to RNA Converter (menu)">DNA → RNA Converter</a>
+        <a href="/reverse-complement" aria-label="Reverse Complement (menu)">Reverse Complement</a>
+        <a href="/dna-to-protein" aria-label="DNA to Protein (menu)">DNA → Protein</a>
+        <a href="/pcr-product-calculator" aria-label="PCR Product Calculator (menu)">PCR Product Calculator</a>
+        <a href="/restriction-enzyme-finder" aria-label="Restriction Enzyme Finder (menu)">Restriction Enzyme Finder</a>
+        <a href="/cloning-simulator" aria-label="Cloning Simulator (menu)">Cloning Simulator</a>
+        <a href="/biostatistics-calculator" aria-label="Biostatistics Calculator (menu)">Biostatistics Calculator</a>
+  </div>
+  <div class="mm-group"><div class="mm-hdr">Services</div>
+    <a href="/custom-pipeline-development" aria-label="Customised Pipeline (menu)">Customised Pipeline</a>
+  </div>
+  <div class="mm-group">
+    <a href="/learning-vigyanllm" aria-label="Learning (menu)">Learning</a>
+    <a href="https://forms.gle/63vdQQ1Ka6WF3ZJg7" target="_blank" rel="noopener noreferrer" aria-label="Academic Partnership (menu)">Academic Partnership</a>
+    <a href="/pricing" aria-label="Pricing (menu)">Pricing</a>
+    <a href="/developer" aria-label="Developer API (menu)">Developer</a>
+    <a href="mailto:contact@vigyanllm.in">Enterprise Inquiry</a>
+  </div>
+  <a href="#" onclick="closeMobileMenu();var e=document.getElementById('navSearchInput');if(e){e.focus();e.scrollIntoView({behavior:'smooth',block:'center'})};return false" class="mm-cta" style="background:transparent;border:1px solid rgba(255,255,255,.25);color:rgba(255,255,255,.8);margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:8px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Search</a>
+  <a href="#" class="mm-cta" onclick="openAuthModal();return false">Sign in</a>
+</div>
+</nav>
+</header><!--vl-header-bake-end--></div>
+
+<a href="#main-content" class="skip-link">Skip to content</a>
+<main id="main-content">
+
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-KRP5LLPR"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+
+  <div class="breadcrumb">
+    <a href="https://www.vigyanllm.in">Home</a> <span class="sep">&rsaquo;</span>
+    <a href="https://www.vigyanllm.in/index">Learn</a> <span class="sep">&rsaquo;</span>
+    <span>Sanger Sequencing</span>
+  </div>
+
+    <header class="article-header">
+      <h1>Sanger Sequencing: Method, Reads and Primer Design</h1>
+      <p class="subtitle">The chain-termination method from first principles — how the reaction produces a read, what read length and accuracy to expect, how it compares with next-generation sequencing, and the design rules for sequencing primers, with a worked analysis of the universal M13 primers.</p>
+      <div class="article-meta">
+        <span class="badge accent">Sanger Sequencing</span>
+        <span class="badge">Chain Termination</span>
+        <span class="badge">Primer Design</span>
+        <span class="badge">Read Quality</span>
+      </div>
+
+    <div class="glossary-links">
+      <a href="https://www.vigyanllm.in/glossary/sanger-sequencing" class="glossary-link">Sanger Sequencing</a>
+      <a href="https://www.vigyanllm.in/glossary/dna-polymerase" class="glossary-link">DNA Polymerase</a>
+      <a href="https://www.vigyanllm.in/glossary/pcr" class="glossary-link">PCR</a>
+      <a href="https://www.vigyanllm.in/glossary/primer" class="glossary-link">Primer</a>
+      <a href="https://www.vigyanllm.in/glossary/melting-temperature" class="glossary-link">Melting Temperature</a>
+      <a href="https://www.vigyanllm.in/glossary/gc-content" class="glossary-link">GC Content</a>
+      <a href="https://www.vigyanllm.in/glossary/amplicon" class="glossary-link">Amplicon</a>
+    </div>
+
+    </header>
+    <section class="section">
+      <h2>What Is Sanger Sequencing?</h2>
+      <p>Sanger sequencing — properly, the chain-termination method after Frederick Sanger's 1977 paper — reads a DNA sequence by letting a polymerase copy it and marking where the copy stops. More than four decades after it was introduced it is still the method labs reach for when the question is small and the answer has to be right: is the insert in the plasmid, does the clone carry the intended mutation, what does this single amplicon read as.</p>
+      <p>This page walks the method end to end — the termination chemistry, the shape of a good read, how Sanger and next-generation sequencing actually differ — and then the half where <a href="/primer">VigyanLLM's free primer tools</a> fit: the rules a sequencing primer must meet, and a worked analysis of the most-used sequencing primers in molecular biology, computed with the same SantaLucia nearest-neighbor and Primer3 calculations behind every VigyanLLM calculator. Design and analyse sequencing primers free, no sign-up — <a href="/primer">open the primer designer</a>.</p>
+    </section>
+
+    <section class="section">
+      <h2>How Chain Termination Works</h2>
+      <p>Normal DNA replication needs two things from every incoming nucleotide: the base to pair with the template, and a 3' hydroxyl group to form the next phosphodiester bond. dNTPs carry that hydroxyl, so the chain keeps growing. The sequencing reaction adds a small proportion of <strong>dideoxynucleotides (ddNTPs)</strong> that lack the 3' hydroxyl entirely. When a ddNTP is incorporated, there is no handle for the next nucleotide — the chain terminates at that exact position.</p>
+      <p>Because termination happens stochastically across millions of template copies, the reaction produces a population of fragments ending at every position of the read, each carrying the ddNTP that stopped it. In modern fluorescent Sanger sequencing each of the four ddNTPs is labelled with a different fluorescent dye, so the terminating colour identifies the base (the dye-to-base mapping depends on the dye set of the chemistry you run).</p>
+      <p>The sequencing itself is run as <strong>cycle sequencing</strong>: repeated rounds of denaturation, primer annealing, and extension around a thermal cycler, accumulating labelled fragments. Those fragments are then pulled through a fine capillary by electrophoresis — the original slab gels are long gone from routine labs — where a laser excites each dye as it passes, and the instrument converts the fluorescent trace into a base call.</p>
+      <p class="fig-note">Reference: Sanger F, Nicklen S, Coulson AR (1977). DNA sequencing with chain-terminating inhibitors. PNAS 74(12):5463–5467.</p>
+    </section>
+
+    <section class="section">
+      <h2>Read Length, Accuracy, and What a Good Trace Looks Like</h2>
+      <p>A single Sanger read typically covers <strong>700–900 bases</strong>, with modern instruments reaching up to roughly 1,000 bases per run. Within the high-quality portion of the read, per-base accuracy is <strong>better than 99.9%</strong> — the reason Sanger remains the reference method for confirming a specific sequence.</p>
+      <p>Quality is not uniform along the trace. The first 20–50 bases are often noisy: primer-derived signal, unincorporated dye, and compression artefacts crowd the front of the run. After that initial region quality typically holds steady for 500–700 bases before capillary resolution gradually degrades toward the end. Three practical consequences follow:</p>
+      <ul>
+        <li><strong>Place the primer so the region of interest is not at the very front of the read.</strong> Position your sequencing primer 50–150 bases upstream of the bases you care about, and trim the first 20–50 bases when you analyse the trace.</li>
+        <li><strong>Read bidirectionally when the answer matters.</strong> Forward and reverse reads of the same amplicon cross-validate each base and cover each other's weak ends.</li>
+        <li><strong>Plan primer walking for anything longer than a read.</strong> Each new primer starts a fresh ~700–900 base window; a second primer 400–500 bases from the first picks up where the first read degrades.</li>
+      </ul>
+    </section>
+
+    <section class="section">
+      <h2>Sanger Sequencing vs Next-Generation Sequencing</h2>
+      <p>The two technologies are not competitors at the same scale — they answer different questions. The honest comparison:</p>
+      <div class="tbl-wrap"><table class="ex-table"><thead><tr><th>Dimension</th><th>Sanger sequencing</th><th>Next-generation sequencing</th></tr></thead><tbody><tr><td>Scale per run</td><td>One amplicon (or a few) read individually</td><td>Millions of fragments processed in parallel</td></tr><tr><td>Read length</td><td>~700–900 bases, up to ~1,000</td><td>Short-read platforms tens to hundreds of bases; long-read platforms extend to kilobases</td></tr><tr><td>Per-base accuracy</td><td>&gt;99.9% on high-quality bases</td><td>Platform-dependent per read, typically addressed with depth and consensus</td></tr><tr><td>Cost structure</td><td>Higher per base; low setup</td><td>Lower per base at scale; run-level setup</td></tr><tr><td>Pipeline overhead</td><td>Minimal — a read comes back ready to inspect</td><td>Substantial — assembly/variant pipelines required</td></tr><tr><td>Fits</td><td>Clone QC, plasmid verification, confirming single amplicons or intended variants</td><td>Genomes, transcriptomes, metagenomics, variant discovery at scale</td></tr></tbody></table></div>
+      <p>If your question is "what is this one sequence, exactly" — clone QC, plasmid verification, confirming an amplicon or a single intended mutation — Sanger is still the direct route: one sample in, one interpretable read out, no pipeline. If your question is "what is everywhere in this sample", NGS is the only scale that works. Many labs run both: NGS for discovery, Sanger for confirmation.</p>
+    </section>
+
+    <section class="section">
+      <h2>Worked Example: Analysing the Universal M13 Sequencing Primers</h2>
+      <p>The two most-used sequencing primers in molecular biology need no gene-specific design at all: they bind vector-derived sequences flanking the multiple cloning site, so the same pair sequences any insert in a pUC/M13-style plasmid. Both were run through VigyanLLM's manual analyser under standard conditions (50 mM Na<sup>+</sup>, 1.5 mM Mg<sup>2+</sup>, 50 nM primer) — the SantaLucia 1998 nearest-neighbor melting temperature and Primer3 hairpin/self-dimer calculations that power every VigyanLLM tool.</p>
+      <div class="tbl-wrap"><table class="ex-table"><thead><tr><th>Primer</th><th>Sequence (5&#8242; &#8594; 3&#8242;)</th><th>Length</th><th>GC%</th><th>Tm (NN, °C)</th><th>Hairpin ΔG</th><th>Self-dimer ΔG</th><th>Engine advisories</th><th>Quality</th></tr></thead><tbody><tr><td>M13 forward (&#8722;21)</td><td><span class="seq">TGTAAAACGACGGCCAGT</span></td><td>18 nt</td><td>50.0</td><td>57.5</td><td>none (0.0)</td><td>&#8722;5.5 kcal/mol</td><td>3&#8242; end not G/C; internal AAAA run</td><td>76.3</td></tr><tr><td>M13 reverse (&#8722;27)</td><td><span class="seq">CAGGAAACAGCTATGAC</span></td><td>17 nt</td><td>47.1</td><td>49.7</td><td>none (0.0)</td><td>&#8722;3.1 kcal/mol</td><td>17 nt &lt; 18–30 nt band; Tm &lt; 55°C</td><td>68.1</td></tr></tbody></table></div>
+      <div class="callout">
+        <p><strong>How to read these numbers.</strong> M13 forward sits comfortably inside the sequencing design rules: 18 nt, 50% GC, Tm 57.5°C, no hairpin, and a self-dimer too weak to matter at reaction temperatures (Tm 2.5°C). The engine still raises two advisories — the 3' end is a thymidine rather than a G/C clamp, and an internal AAAA run sits below the ideal — neither of which has kept this primer out of use for forty years.</p>
+        <p>M13 reverse is the more instructive case: at 17 nt with a nearest-neighbor Tm of 49.7°C it falls below both the length and Tm design bands, and the engine flags exactly that. It remains a workhorse primer because its specificity is guaranteed by the vector it binds and decades of protocols have been validated around its measured thermodynamics.</p>
+        <p><strong>The lesson:</strong> VigyanLLM's validity flag is a zero-warning bar for <em>new</em> designs, not a verdict on established ones — the general engine bounds (18–30 nt, 55–72°C) are wider than the sequencing practice bands above (18–25 nt, 55–65°C), and advisory warnings describe trade-offs, not failures. For a brand-new gene-specific sequencing primer, meet the rules; for a universal primer that has worked for decades, read the numbers and decide. Paste either sequence into the <a href="/tm-calculator">Tm calculator</a> or check its GC profile in the <a href="/gc-calculator">GC calculator</a> to reproduce this analysis yourself.</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Designing Your Own Sequencing Primers</h2>
+      <p>When the primer cannot come off the vector — a gene-specific read, a region internal to a long amplicon, a confirmation run on a known locus — the design rules are close to PCR primer rules with sequencing-specific placement. Every parameter below can be checked in the browser before the tube reaches a sequencer:</p>
+      <div class="tbl-wrap"><table class="ex-table"><thead><tr><th>Parameter</th><th>Target for sequencing primers</th><th>Why it matters</th></tr></thead><tbody><tr><td>Length</td><td>18–25 nt</td><td>Shorter risks mispriming; longer adds no value to a sequencing reaction</td></tr><tr><td>Melting temperature</td><td>55–65°C</td><td>Stable annealing across cycle-sequencing conditions</td></tr><tr><td>GC content</td><td>40–60%</td><td>Avoids overly stable or weak duplexes and GC-driven mispriming</td></tr><tr><td>Placement</td><td>50–150 bases upstream of the region of interest</td><td>Keeps the target out of the noisy front of the read (general guides allow up to ~300 bp)</td></tr><tr><td>Specificity</td><td>Single locus match, verified by search</td><td>One off-target site is enough to produce mixed reads</td></tr><tr><td>Secondary structure</td><td>No strong hairpin, no 3&#8242; self-dimer, no &gt;4-base homopolymer</td><td>Keeps extension clean through the read</td></tr><tr><td>Plasmid inserts</td><td>M13, T7, or SP6 universal primers first</td><td>No gene-specific design needed for vector-flanked inserts</td></tr></tbody></table></div>
+      <p>One standard trick connects the two worlds: add a <strong>5' universal tail</strong> (M13, T7, or SP6) to a gene-specific forward primer, and the first sequencing run can use the cheap universal chemistry while later runs use the gene-specific site. VigyanLLM's design form accepts 5' tails on both primers directly, so the tailed sequence enters the pipeline with the rest of its checks.</p>
+      <div class="tools-row">
+        <a href="/primer">Design primers</a>
+        <a href="/tm-calculator">Tm calculator</a>
+        <a href="/gc-calculator">GC calculator</a>
+        <a href="/blast">Specificity check (BLAST)</a>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Sanger Sequencing Primer Design with VigyanLLM</h2>
+      <p>Here is exactly where this platform fits into a Sanger workflow — and where it does not. VigyanLLM <strong>designs and analyses primers</strong>; it does not run sequencing reactions, call bases, or process trace files. What the tools do cover:</p>
+      <ul>
+        <li><strong>Manual analysis</strong> — paste a candidate sequencing primer and get nearest-neighbor Tm, GC content, hairpin and self-dimer energies, end stability, and the same advisory warnings shown in the worked example above.</li>
+        <li><strong>Automated design</strong> — for an amplicon you intend to sequence, the 24-step pipeline designs the flanking pair with Tm, GC, secondary-structure, and specificity checks applied to every candidate.</li>
+        <li><strong>Free calculators</strong> — the <a href="/tm-calculator">Tm</a> and <a href="/gc-calculator">GC calculators</a> answer single-parameter questions without opening the full designer.</li>
+        <li><strong>Specificity screening</strong> — <a href="/blast">BLAST</a> against reference sequences to confirm the primer binds one locus, because a single mismatch site is enough to produce mixed reads.</li>
+      </ul>
+      <p>All of it runs with no sign-in and no queue: <a href="/primer">design a sequencing primer now</a>.</p>
+    </section>
+
+    <section class="section">
+      <h2>Frequently Asked Questions</h2>
+
+      <details class="faq-item">
+        <summary class="faq-question">What is Sanger sequencing?</summary>
+        <div class="faq-answer">
+          <p>Sanger sequencing, also called the chain-termination method, is a DNA sequencing technique invented by Frederick Sanger and colleagues in 1977. A DNA polymerase copies the template in the presence of normal deoxynucleotides (dNTPs) and fluorescently labelled dideoxynucleotides (ddNTPs) that stop extension when incorporated. The resulting fragments are separated by capillary electrophoresis, and the terminating dye at each position reveals the base there. It remains the reference method for reading single amplicons with better than 99.9% per-base accuracy.</p>
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary class="faq-question">How does Sanger sequencing work?</summary>
+        <div class="faq-answer">
+          <p>The reaction mixes a single sequencing primer, template DNA, DNA polymerase, dNTPs, and four fluorescently labelled ddNTPs. Extension proceeds normally until a ddNTP is incorporated, terminating that chain because ddNTPs lack the 3' hydroxyl group needed for the next bond. The reaction produces millions of fragments ending at every sequence position; they are separated by capillary electrophoresis, and the dye signal at each position is called as a base. The colour-to-base mapping depends on the dye set used by the chemistry.</p>
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary class="faq-question">What is the read length and accuracy of Sanger sequencing?</summary>
+        <div class="faq-answer">
+          <p>A typical Sanger read covers about 700-900 bases, with modern instruments reaching up to roughly 1,000 bases per run. High-quality bases carry better than 99.9% per-base accuracy; the first few tens of bases are often noisy from primer and dye artefacts, and quality then gradually declines toward the end of the capillary read.</p>
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary class="faq-question">What is the difference between Sanger sequencing and NGS?</summary>
+        <div class="faq-answer">
+          <p>Sanger sequencing reads one amplicon at a time to high per-base accuracy with no bioinformatics pipeline required, which suits clone verification, plasmid QC, small amplicons, and confirmatory runs. Next-generation sequencing processes millions of fragments in parallel, giving much higher throughput for genomes, transcriptomes, and variant discovery at a lower cost per base, but with run-level infrastructure and analysis overhead. Choose Sanger for targeted, low-volume questions and NGS for discovery at scale.</p>
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary class="faq-question">What rules should a Sanger sequencing primer follow?</summary>
+        <div class="faq-answer">
+          <p>Design sequencing primers 18-25 nucleotides long with a melting temperature of 55-65°C and 40-60% GC content, positioned 50-150 bases upstream of the region you need to read. Check specificity against the reference sequence so the primer binds a single locus, avoid strong hairpins and 3' self-dimers, and skip runs of more than four identical bases. For plasmids, universal primers such as M13, T7, or SP6 are the standard first choice.</p>
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary class="faq-question">What are M13, T7, and SP6 universal sequencing primers?</summary>
+        <div class="faq-answer">
+          <p>Universal sequencing primers bind vector-derived sequences that flank the multiple cloning site in common cloning vectors, so one primer pair sequences any insert without gene-specific design. The classic M13 forward (-21) primer is 5'-TGTAAAACGACGGCCAGT-3' and the M13 reverse (-27) primer is 5'-CAGGAAACAGCTATGAC-3'. T7 and SP6 primers target promoter sequences in transcription vectors. The worked example on this page analyses both M13 primers with the VigyanLLM calculator.</p>
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary class="faq-question">Does VigyanLLM run Sanger sequencing reactions?</summary>
+        <div class="faq-answer">
+          <p>No. VigyanLLM designs and analyses the primers you use for sequencing: nearest-neighbor melting temperature, GC content, hairpin and self-dimer energies, and specificity checks in the browser or through the automated design pipeline. The sequencing reaction itself — cycle sequencing, capillary electrophoresis, and base calling — is performed in your lab or by your sequencing provider.</p>
+        </div>
+      </details>
+
+    </section>
+
+    <section class="section">
+      <h2>Continue Learning with VigyanLLM</h2>
+      <p>Deeper reads on this page's topics, all free:</p>
+      <div class="tools-row">
+        <a href="/blog/sanger-sequencing-guide">Sanger sequencing guide (blog)</a>
+        <a href="/blog/sequencing-primer-design">Sequencing primer design (blog)</a>
+        <a href="/glossary/sanger-sequencing">Sanger sequencing (glossary)</a>
+        <a href="/pcr-analysis">In-silico PCR</a>
+        <a href="/primer">Primer designer</a>
+      </div>
+    </section>
+
+  <!-- Auth Modal -->
+<div class="auth-overlay" id="auth-overlay" onclick="if(event.target===this)closeAuthModal()">
+  <div class="auth-modal" id="authModal">
+    <button type="button" class="close-btn" onclick="closeAuthModal()">&times;</button>
+    <h2 id="authTitle">Sign in</h2>
+    <p class="sub" id="authSub">Access your VigyanLLM account</p>
+    <div id="authError" class="auth-err"></div>
+    <form id="authForm" onsubmit="return handleAuth(event)">
+      <div class="field" id="nameField" style="display:none">
+        <label for="authName">Full name</label>
+        <input type="text" id="authName" placeholder="Dr. A.P.J. Abdul Kalam" autocomplete="name">
+      </div>
+      <div class="field">
+        <label for="authEmail">Email</label>
+        <input type="email" id="authEmail" placeholder="researcher@institution.edu" autocomplete="email" required>
+      </div>
+      <div class="field">
+        <label for="authPass">Password</label>
+        <input type="password" id="authPass" placeholder="Min 12 characters" autocomplete="current-password" required minlength="12">
+      </div>
+      <button type="submit" class="auth-btn" id="authSubmit">Sign in</button>
+    </form>
+    <p class="toggle-link" id="authToggle">Don't have an account? <a onclick="toggleAuthMode()">Register</a></p>
+  </div>
+</div>
+<script>
+var AUTH_MODE='login';
+function openAuthModal(){document.getElementById('auth-overlay').classList.add('open');document.body.style.overflow='hidden'}
+function closeAuthModal(){document.getElementById('auth-overlay').classList.remove('open');document.body.style.overflow=''}
+function toggleAuthMode(){AUTH_MODE=AUTH_MODE==='login'?'register':'login';var t=document.getElementById('authTitle'),s=document.getElementById('authSub'),b=document.getElementById('authSubmit'),n=document.getElementById('nameField'),tg=document.getElementById('authToggle');if(AUTH_MODE==='register'){t.textContent='Create account';s.textContent='Join VigyanLLM — free for Indian academic institutions';b.textContent='Create account';n.style.display='block';tg.innerHTML="Already have an account? <a onclick=\"toggleAuthMode()\">Sign in</a>"}else{t.textContent='Sign in';s.textContent='Access your VigyanLLM account';b.textContent='Sign in';n.style.display='none';tg.innerHTML="Don't have an account? <a onclick=\"toggleAuthMode()\">Register</a>"}document.getElementById('authError').style.display='none'}
+async function handleAuth(e){e.preventDefault();var err=document.getElementById('authError');err.style.display='none';var email=document.getElementById('authEmail').value;var pass=document.getElementById('authPass').value;if(pass.length<12||!/[A-Z]/.test(pass)||!/[a-z]/.test(pass)||!/[0-9]/.test(pass)||!/[^A-Za-z0-9]/.test(pass)){err.textContent='Password must be 12+ chars with an uppercase letter, a lowercase letter, a digit & a special character.';err.style.display='block';return false}try{var api=window.VIGYAN_BACKEND_URL||'/api';var ep=AUTH_MODE==='login'?'/auth/login':'/auth/register';var body={email:email,password:pass};if(AUTH_MODE==='register'){body.name=document.getElementById('authName').value||'User';body.consent_accepted=true}var r=await fetch(api+ep,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});var d=await r.json();if(!r.ok){err.textContent=d.error||'Authentication failed';err.style.display='block';return false}if(d.requires_verification){err.textContent=d.message||'Account created! Check your email to verify.';err.style.display='block';return false}closeAuthModal();window.location.reload()}catch(a){err.textContent='Network error. Please try again.';err.style.display='block'}return false}
+</script>
+
+<script defer src="/search-index.js"></script>
+<script defer src="/auth-shared.js"></script>
+
+<div id="vl-footer"><!--vl-footer-bake-start--><footer>
+
+<div class="footer-grid">
+  <div class="footer-col">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+      <img src="/logo.png" alt="VigyanLLM Logo" class="site-logo" style="height:36px;width:auto;object-fit:contain" loading="lazy">
+      <span style="font-family:var(--font-h);font-size:var(--font-sm);font-weight:800;color:#fff">VigyanLLM</span>
+    </div>
+    <p style="font-size:var(--font-sm);color:rgba(255,255,255,.60);line-height:1.6">Sovereign Healthcare &amp; Life Sciences AI.<br>Built in India. For the world.</p>
+    <a href="mailto:contact@vigyanllm.in" style="color:var(--saffron-light,#ff8a7a);font-size:var(--font-sm);display:block;margin-top:12px">contact@vigyanllm.in</a>
+    <div class="footer-social">
+      <a href="https://github.com/vigyanllm" rel="me" aria-label="GitHub"><svg aria-hidden="true" fill="#fff" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg></a>
+      <a href="https://www.linkedin.com/company/vigyanllm/" rel="me" aria-label="LinkedIn"><svg aria-hidden="true" fill="#0077B5" viewBox="0 0 24 24"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg></a>
+      <a href="https://www.facebook.com/vigyanllm" rel="me" aria-label="Facebook"><svg aria-hidden="true" fill="#1877F2" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></a>
+      <a href="https://www.youtube.com/@VigyanLLM" rel="me" aria-label="YouTube"><svg aria-hidden="true" fill="#FF0000" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+    </div>
+  </div>
+  <div class="footer-col">
+    <p class="footer-col-title">Products</p>
+    <a href="/primer">Primer Design</a>
+    <a href="/search">Sequence Search</a>
+    <a href="/blast">BLAST</a>
+    <a href="/msa">MSA</a>
+    <a href="/pcr-analysis">PCR Analysis</a>
+    <a href="/crispr-analysis">CRISPR <span style="font-size:var(--font-xs);font-weight:700;color:#1a1a1a;background:#FEF3C7;padding:2px 6px;border-radius:var(--radius-pill);line-height:1.3">Coming Soon</span></a>
+    <a href="/docking">Docking</a>
+    <a href="/biostatistics-calculator">Biostatistics</a>
+  </div>
+  <div class="footer-col">
+    <p class="footer-col-title">Platform</p>
+    <a href="/platform">Overview</a>
+    <a href="/architecture">Architecture</a>
+    <a href="/problem">Problem</a>
+    <a href="/solution">Solution</a>
+    <a href="/compare">Compare</a>
+    <a href="/roadmap">Roadmap</a>
+    <a href="/about/sovereign-ai">Sovereign AI</a>
+    <a href="/features/on-premises">On-Premises</a>
+  </div>
+  <div class="footer-col">
+    <p class="footer-col-title">Resources</p>
+    <a href="/blog">Blog</a>
+    <a href="/faq">FAQ</a>
+    <a href="/about">About</a>
+    <a href="/demo">Demo</a>
+    <a href="/learning-vigyanllm">Learning</a>
+    <a href="https://forms.gle/63vdQQ1Ka6WF3ZJg7" target="_blank" rel="noopener noreferrer">Academic Partnership</a>
+    <a href="/pricing">Pricing</a>
+  </div>
+  <div class="footer-col">
+    <p class="footer-col-title">Contact</p>
+    <a href="/custom-pipeline-development">Custom Pipeline Development</a>
+    <a href="mailto:contact@vigyanllm.in">contact@vigyanllm.in</a>
+    <a href="/privacy">Privacy</a>
+    <a href="/terms">Terms</a>
+    <a href="/cookies">Cookies</a>
+    <a href="/refund">Refund</a>
+    <a href="/security">Security</a>
+    <a href="/cite-vigyanllm">Cite Us</a>
+    <a href="/support">Support</a>
+  </div>
+</div>
+<div class="footer-bottom"> <span>&copy; 2026 VigyanLLM Private Limited · Sovereign Research AI</span>
+  <div style="display:flex;align-items:center;gap:16px">
+    <span>www.vigyanllm.in</span>
+  </div>
+</div>
+
+</footer><!--vl-footer-bake-end--></div>
+<div class="mobile-sticky-cta">
+  <a href="/" class="cta-primary">Get Started</a>
+  <a href="/pricing" class="cta-secondary">View Pricing</a>
+</div>
+<script src="/includes.js"></script>
+<script>
+(function(){
+var h=document.getElementById('hamburger'),m=document.getElementById('mobile-menu');
+if(!h||!m)return;
+h.addEventListener('click',function(){h.classList.toggle('active');m.classList.toggle('open')});
+document.addEventListener('click',function(e){if(!h.contains(e.target)&&!m.contains(e.target)){h.classList.remove('active');m.classList.remove('open')}});
+})();
+</script>
+</body>
+</html>
+
+</main>
+

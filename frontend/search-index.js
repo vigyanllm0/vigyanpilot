@@ -41,6 +41,7 @@ var SITE_INDEX = [
   { t:'qPCR Primer Design', d:'Primer design for quantitative PCR', u:'qpcr-primer-design.html', c:'Learning' },
   { t:'Primer3 Alternative', d:'Alternative to Primer3 software', u:'primer3-alternative.html', c:'Learning' },
   { t:'Molecular Docking Guide', d:'Guide to molecular docking workflows', u:'molecular-docking-guide.html', c:'Learning' },
+  { t:'Sanger Sequencing: Method, Reads & Primer Design', d:'Chain-termination method, read quality, and M13 primer analysis', u:'sanger-sequencing.html', c:'Learning' },
 
   { t:'Academic Partnership', d:'Academic access and collaboration program', u:'https://forms.gle/63vdQQ1Ka6WF3ZJg7', c:'Company' },
   { t:'FAQ', d:'Frequently asked questions', u:'faq.html', c:'Company' },

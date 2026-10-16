@@ -70,6 +70,7 @@ PRIORITY_MAP = {
     "cite.html": 0.85,
     "academic-partnership.html": 0.85,
     "custom-pipeline-development.html": 0.70,
+    "sanger-sequencing.html": 0.80,
     "Learning-vigyanllm.html": 0.85,
     "sitemap.html": 0.70,
     "demo.html": 0.75,

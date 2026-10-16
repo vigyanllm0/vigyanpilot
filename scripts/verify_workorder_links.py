@@ -56,7 +56,16 @@ def check_pair(frontend: Path, pair: dict) -> tuple[bool, str]:
         return False, f"donor file not found: {donor}.html"
     src = f.read_text(encoding="utf-8", errors="ignore")
     want = {f"/{target}", f"/{target}.html"}
-    hits = [(h, frag) for h, frag in ANCHOR_RE.findall(src) if h.split("?")[0] in want]
+
+    def _norm(href: str) -> str:
+        """Relative or absolute-origin href -> path (hub/breadcrumbs use absolute URLs)."""
+        p = href.split("?")[0].split("#")[0]
+        for origin in ("https://www.vigyanllm.in", "https://vigyanllm.in"):
+            if p.startswith(origin):
+                p = p[len(origin):] or "/"
+        return p
+
+    hits = [(h, frag) for h, frag in ANCHOR_RE.findall(src) if _norm(h) in want]
     if not hits:
         return False, f"no <a href> to /{target} in {donor}.html"
     if not phrase:
