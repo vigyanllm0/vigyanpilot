@@ -16,6 +16,14 @@ html { overflow-x: hidden; }
    still show. Only the latin subset is self-hosted (matches the previous
    Google Fonts latin range).
 
+   ⚠ INTENDED TRADEOFF — do not "fix": a first-visit user on a slow
+   connection may see the fallback font for that ONE pageview. That is
+   `optional` working as designed — no swap-flash, and the woff2 caches for
+   all subsequent visits. Reaching 100% brand-font coverage would mean
+   `font-display:swap`/`block`, which reintroduces the mid-load swap and the
+   CLS this whole block exists to kill. A tool site trades a rare one-off
+   fallback render for a rock-solid CLS ≈ 0; that is the correct call.
+
    The H1 additionally keeps a metric-matched Georgia fallback: Source Serif
    4 is ~6% wider than Georgia, so Georgia wrapped to FEWER lines pre-swap.
    `size-adjust:106%` scales Georgia's advance widths to match Source Serif
