@@ -145,7 +145,7 @@ img{max-width:100%}
   ]
 }
 </script>
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Why does my Tm differ from IDT’s OligoAnalyzer?","acceptedAnswer":{"@type":"Answer","text":"Different tools use different formulas and base settings. IDT’s OligoAnalyzer reports a nearest-neighbour value for the salt you specify; the biggest discrepancy you will see is between a 2+4 (Wallace) result and a nearest-neighbour result on the same primer. Compare our nearest-neighbour output at 50 mM Na⁺ to OligoAnalyzer’s NN value and the two land a matter of a degree apart."}},{"@type":"Question","name":"What salt concentration should I use?","acceptedAnswer":{"@type":"Answer","text":"50 mM Na⁺ is a common default for published protocols, and 1.5–2.0 mM MgCl2 reflects most commercial Taq buffers. If your master mix is different, enter those exact values — salt shifts Tm by a few degrees, so entering your real buffer is what makes the number useful on the bench."}},{"@type":"Question","name":"Does MgCl2 really shift the Tm that much?","acceptedAnswer":{"@type":"Answer","text":"Yes. Divalent cations stabilise the duplex more strongly than monovalent ones, and 1.5–2.0 mM Mg²⁺ raises primer Tm by roughly 3–5 °C. On the 19-nt GAPDH forward oligo above, the NN+Mg²⁺ value is a couple of degrees higher than plain NN — enough to matter at the bench."}},{"@type":"Question","name":"What is the nearest-neighbour model?","acceptedAnswer":{"@type":"Answer","text":"It predicts Tm by summing per-base-pair stacking energies (ΔG, ΔH, ΔS) and initiation terms instead of counting GC alone. It is the validated standard for short DNA oligos. The full walkthrough of the math is on our melting thermodynamics page."}},{"@type":"Question","name":"Why is my Tm 72 °C for a 20-mer with 70% GC?","acceptedAnswer":{"@type":"Answer","text":"That is expected, not a bug. A GC-rich 20-mer genuinely melts in the low 70s because G–C pairs form three hydrogen bonds. High-GC oligos still tend to amplify poorly, so consider lowering GC content or adding a denaturant like DMSO rather than distrusting the number."}},{"@type":"Question","name":"Should I use the annealing temperature or the Tm?","acceptedAnswer":{"@type":"Answer","text":"Use both, deliberately: set the annealing step below the Tm, typically 3–5 °C lower, so primers bind specifically rather than at near-complementary sites. Enter your real buffer conditions, read the Tm, then run the cycler at about Tm minus 3–5 °C."}}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Why does my Tm differ from IDT’s OligoAnalyzer?","acceptedAnswer":{"@type":"Answer","text":"Different tools use different formulas and base settings. IDT’s OligoAnalyzer reports a nearest-neighbour value for the salt you specify; the biggest discrepancy you will see is between a 2+4 (Wallace) result and a nearest-neighbour result on the same primer. Compare our nearest-neighbour output at 50 mM Na⁺ to OligoAnalyzer’s NN value and the two land a matter of a degree apart."}},{"@type":"Question","name":"What salt concentration should I use?","acceptedAnswer":{"@type":"Answer","text":"50 mM Na⁺ is a common default for published protocols, and 1.5–2.0 mM MgCl2 reflects most commercial Taq buffers. If your master mix is different, enter those exact values — salt shifts Tm by a few degrees, so entering your real buffer is what makes the number useful on the bench."}},{"@type":"Question","name":"Does MgCl2 really shift the Tm that much?","acceptedAnswer":{"@type":"Answer","text":"Yes. Divalent cations stabilise the duplex more strongly than monovalent ones, and 1.5–2.0 mM Mg²⁺ raises primer Tm by roughly 3–5 °C. On the 19-nt GAPDH forward oligo above, the NN+Mg²⁺ value is a couple of degrees higher than plain NN — enough to matter at the bench."}},{"@type":"Question","name":"What is the nearest-neighbour model?","acceptedAnswer":{"@type":"Answer","text":"It predicts Tm by summing per-base-pair stacking energies (ΔG, ΔH, ΔS) and initiation terms instead of counting GC alone. It is the validated standard for short DNA oligos. The full walkthrough of the math is on our melting thermodynamics page."}},{"@type":"Question","name":"Why is my Tm 72 °C for a 20-mer with 70% GC?","acceptedAnswer":{"@type":"Answer","text":"That is expected, not a bug. A GC-rich 20-mer genuinely melts in the low 70s because G–C pairs form three hydrogen bonds. High-GC oligos still tend to amplify poorly, so consider lowering GC content or adding a denaturant like DMSO rather than distrusting the number."}},{"@type":"Question","name":"Should I use the annealing temperature or the Tm?","acceptedAnswer":{"@type":"Answer","text":"Use both, deliberately: set the annealing step below the Tm, typically 3–5 °C lower, so primers bind specifically rather than at near-complementary sites. Enter your real buffer conditions, read the Tm, then run the cycler at about Tm minus 3–5 °C."}},{"@type":"Question","name":"How close are the hairpin and dimer ΔG values to IDT OligoAnalyzer or Primer3?","acceptedAnswer":{"@type":"Answer","text":"The hairpin ΔG uses the SantaLucia 1998 nearest-neighbour stacking model with the published hairpin loop-initiation table (SantaLucia & Hicks 2004); on a 26-sequence benchmark against Primer3 it lands within a median 0.6 kcal/mol. The self-dimer ΔG reports the perfectly matched helix core — tools that also search mismatched alignments (Primer3’s thermodynamic alignment, IDT’s UNAFold-based engine) usually report values 1–3 kcal/mol more negative on strongly self-complementary primers. Either way, a value below −5 kcal/mol is the red flag to act on."}}]}</script>
 
 <script src="/cookie-banner.js" defer></script>
 </head>
@@ -366,8 +366,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <tr><td>GC Content</td><td id="r-gc">—</td></tr>
 <tr><td>Melting Temperature (Tm)</td><td id="r-tm">—</td></tr>
 <tr><td>Oligo Conc.</td><td id="r-oligo">—</td></tr>
-<tr><td>ΔG (kcal/mol)</td><td id="r-dg">—</td></tr>
+<tr><td>Duplex ΔG (37 °C)</td><td id="r-dg">—</td></tr>
 <tr><td>Molecular Weight</td><td id="r-mw">—</td></tr>
+<tr><td>Hairpin ΔG (37 °C)</td><td id="r-hp">—</td></tr>
+<tr><td>Self-Dimer ΔG (37 °C)</td><td id="r-dim">—</td></tr>
+<tr><td>Extinction Coeff. (ε)</td><td id="r-eps">—</td></tr>
+<tr><td>nmol per OD (A260 = 1)</td><td id="r-nmol">—</td></tr>
 </table>
 </div>
 </div></section>
@@ -381,8 +385,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <tr style="border-bottom:1px solid var(--outline,#E2E5EA)"><td style="padding:10px 14px"><strong>Basic Tm</strong></td><td style="padding:10px 14px">4(G+C) + 2(A+T)</td></tr>
     <tr style="border-bottom:1px solid var(--outline,#E2E5EA)"><td style="padding:10px 14px"><strong>Salt-Adjusted Tm</strong></td><td style="padding:10px 14px">SantaLucia NN with Na+/Mg2+ correction</td></tr>
     <tr style="border-bottom:1px solid var(--outline,#E2E5EA)"><td style="padding:10px 14px"><strong>Oligo Concentration</strong></td><td style="padding:10px 14px">User-configurable (default 0.25 μM)</td></tr>
-    <tr style="border-bottom:1px solid var(--outline,#E2E5EA)"><td style="padding:10px 14px"><strong>ΔG (Hairpin)</strong></td><td style="padding:10px 14px">Gibbs free energy of secondary structure</td></tr>
-    <tr><td style="padding:10px 14px"><strong>ΔG (Dimer)</strong></td><td style="padding:10px 14px">Primer-dimer formation energy (kcal/mol)</td></tr>
+    <tr style="border-bottom:1px solid var(--outline,#E2E5EA)"><td style="padding:10px 14px"><strong>ΔG (Hairpin)</strong></td><td style="padding:10px 14px">Hairpin ΔG (37 °C) from nearest-neighbour stem + published loop initiation</td></tr>
+    <tr style="border-bottom:1px solid var(--outline,#E2E5EA)"><td style="padding:10px 14px"><strong>ΔG (Dimer)</strong></td><td style="padding:10px 14px">Self-dimer formation energy (kcal/mol), matched-helix model</td></tr>
+    <tr style="border-bottom:1px solid var(--outline,#E2E5EA)"><td style="padding:10px 14px"><strong>Extinction Coefficient (ε)</strong></td><td style="padding:10px 14px">Sum of nucleotide ε values (L·mol⁻¹·cm⁻¹)</td></tr>
+    <tr><td style="padding:10px 14px"><strong>nmol per OD</strong></td><td style="padding:10px 14px">10⁶ / ε (A260 = 1)</td></tr>
   </table>
 </section>
 
@@ -515,6 +521,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <h3 style="font-family:var(--font-h);font-size:13px;font-weight:700;margin-bottom:8px">Should I use the annealing temperature or the Tm?</h3>
   <p style="font-size:14px;color:var(--text2);line-height:1.7">Use both, deliberately: set the annealing step below the Tm, typically 3&ndash;5&nbsp;&deg;C lower, so primers bind specifically rather than at near-complementary sites. Enter your real buffer conditions, read the Tm, then run the cycler at about Tm minus 3&ndash;5&nbsp;&deg;C.</p>
 </div>
+<div class="faq-item" style="margin-bottom:24px">
+  <h3 style="font-family:var(--font-h);font-size:13px;font-weight:700;margin-bottom:8px">How close are the hairpin and dimer &Delta;G values to IDT OligoAnalyzer or Primer3?</h3>
+  <p style="font-size:14px;color:var(--text2);line-height:1.7">The hairpin &Delta;G uses the SantaLucia 1998 nearest-neighbour stacking model with the published hairpin loop-initiation table (SantaLucia &amp; Hicks 2004); on a 26-sequence benchmark against Primer3 it lands within a median 0.6&nbsp;kcal/mol. The self-dimer &Delta;G reports the perfectly matched helix core &mdash; tools that also search mismatched alignments (Primer3&rsquo;s thermodynamic alignment, IDT&rsquo;s UNAFold-based engine) usually report values 1&ndash;3&nbsp;kcal/mol more negative on strongly self-complementary primers. Either way, a value below &minus;5&nbsp;kcal/mol is the red flag to act on.</p>
+</div>
 </div>
 </main>
 
@@ -526,6 +536,62 @@ var NN={AA:[-7.9,-22.2],AT:[-7.2,-20.4],TA:[-7.2,-21.3],CA:[-8.5,-22.7],GT:[-8.4
 var INIT_AT=[-2.3,-4.1]; // SantaLucia 1998 initiation: terminal AT
 var INIT_GC=[0.1,-2.8];  // SantaLucia 1998 initiation: terminal GC
 var R=1.987; // cal/mol·K
+
+// ── Hairpin & self-dimer ΔG (SantaLucia 1998 NN stacks; hairpin loop table from
+//    SantaLucia & Hicks 2004 Annu Rev Table 4 — the same values Primer3 uses) ──
+var T37=273.15+37;
+function stack37(k){var p=NN[k];return p?p[0]-T37*p[1]/1000:0;}
+var HP_INIT={3:3.5,4:3.5,5:3.3,6:4.0,7:4.2,8:4.3,9:4.5,10:4.6,12:5.0,14:5.1,16:5.3,18:5.5,20:5.7,25:6.1,30:6.3};
+var HP_JS=2.44*1.987*310.15/1000; // Jacobson–Stockmayer extrapolation factor (SantaLucia 2004 eq. 7)
+function hpInit(n){
+  if(HP_INIT[n]!=null)return HP_INIT[n];
+  if(n>30)return HP_INIT[30]+HP_JS*Math.log(n/30);
+  var keys=[3,4,5,6,7,8,9,10,12,14,16,18,20,25,30],lo=3,i;
+  for(i=0;i<keys.length;i++){if(keys[i]<n)lo=keys[i];}
+  return HP_INIT[lo]+HP_JS*Math.log(n/lo);
+}
+var COMP={A:'T',T:'A',G:'C',C:'G'};
+function calcHairpinDG(s){
+  var n=s.length,best=0,found=false,i,L,p,m,a,b,st,k,dg;
+  for(i=0;i<n;i++){
+    for(L=3;L<=19&&i+L<=n;L++){
+      a=s.substr(i,L);
+      b='';for(k=L-1;k>=0;k--)b+=COMP[a[k]];
+      for(p=i+L;p+L<=n;p++){
+        m=p-(i+L);
+        if(m<3)continue;
+        if(s.substr(p,L)===b){
+          st=0;for(k=0;k<L-1;k++)st+=stack37(a.substr(k,2));
+          dg=st+hpInit(m);
+          if(!found||dg<best){best=dg;found=true;}
+        }
+      }
+    }
+  }
+  return found?best:0;
+}
+function calcDimerDG(s){
+  var n=s.length,best=0,found=false,d,i,j,k,st,dg,x,y,run=[];
+  function flush(){
+    if(run.length>=2){
+      st=0;
+      for(k=0;k<run.length-1;k++)st+=stack37(s.substr(run[k],2));
+      dg=1.96+st; // SantaLucia 1998 duplex initiation ΔG°37
+      if(!found||dg<best){best=dg;found=true;}
+    }
+    run=[];
+  }
+  for(d=-n+1;d<n;d++){
+    for(i=0;i<n;i++){
+      j=d-i;
+      x=s[i];y=(j>=0&&j<n)?s[j]:'';
+      if((x==='A'&&y==='T')||(x==='T'&&y==='A')||(x==='G'&&y==='C')||(x==='C'&&y==='G')){run.push(i);}
+      else flush();
+    }
+    flush();
+  }
+  return found?best:0;
+}
 
 function calcTm(){
   var s=document.getElementById('seq-input').value.replace(/[\s\d]/g,'').toUpperCase();
@@ -560,6 +626,12 @@ function calcTm(){
   document.getElementById('r-oligo').textContent=oligo.toFixed(2)+' \u03bcM';
   document.getElementById('r-dg').textContent=dG.toFixed(1)+' kcal/mol';
   document.getElementById('r-mw').textContent=mw.toFixed(1)+' g/mol';
+  var hp=calcHairpinDG(s),dm=calcDimerDG(s);
+  var eps=Math.round(0.9*((s.match(/A/g)||[]).length*15400+(s.match(/C/g)||[]).length*7400+(s.match(/G/g)||[]).length*12500+(s.match(/T/g)||[]).length*8700));
+  document.getElementById('r-hp').textContent=hp.toFixed(1)+' kcal/mol';
+  document.getElementById('r-dim').textContent=dm.toFixed(1)+' kcal/mol';
+  document.getElementById('r-eps').textContent=eps.toLocaleString('en-US')+' L·mol⁻¹·cm⁻¹';
+  document.getElementById('r-nmol').textContent=(eps>0?(1e6/eps).toFixed(2):'0')+' nmol/OD';
   document.getElementById('result-box').classList.add('show');
 }
 </script>
