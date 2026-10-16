@@ -108,11 +108,9 @@ Top-3 rankings on money keywords (existing pages)
   - Identify the pattern (likely: `.html` extension, `http://`, non-www, trailing slash, or partial URLs)
   - Update ALL internal links to point to the FINAL URL directly (no redirect hops)
   - Remove redirected URLs from sitemap
-- [x] **1.3 Fix "Alternative page with proper canonical" (116 pages)** ✅ 2026-09-22 audit: 531 files checked — only 4 indexable pages lacked canonicals (`binding-site`, `interactions`, `protein-quality`, `regenerate`) → self-referencing canonicals added. Remaining 11 no-canonical files are fragments/utility noindex pages (header/footer/cms/reset-password/verify-email) — correctly not needed.
-  - Add self-referencing canonical to every page:
-    `<link rel="canonical" href="https://www.vigyanllm.in/pagename">`
-  - Rule: one canonical per page, always https + www, consistent trailing slash
-- [ ] **1.4 Fix "Redirect error" (7 pages)** — find redirect loops, fix or remove
+- [x] **1.3 Fix "Alternative page with proper canonical" (116 pages)** — resolved 2026-10-16: repo-side healthy (526/535 pages self-canonical, 9 correctly none); **2 contradictions fixed** (`/protein-docking` removed from sitemap — its own canonical declares `/docking`; `/hub/primer-design` stale CF 301 removed — sitemap/page/links all said 200); **remainder deliberate** (29 glossary pruned pages + `blog/index` + `blog-post` = correct consolidations that will sit in GSC's "Alternative page with proper canonical" bucket **forever by design** — that bucket is only a defect when Google disagrees with declared intent). The earlier ✅ 2026-09-22 was premature: it verified tag presence, not GSC agreement.
+  - Rule (holds): one canonical per page, always https + www, consistent trailing slash
+- [ ] **1.4 Fix "Redirect error" (7 pages)** — audit 2026-10-16: **0 redirect loops exist live** (all 58 CF rules checked: no rule's target is itself a rule source, ≤2 hops, apex→www keeps path). The original 7 GSC errors were transient artifacts of since-fixed defects (`/r/` FunctionValidationError 503 → v16; schema-template junk 503 → v17; partials JS hop → clean-URL fetch; Oct-14 301 map). CF v18 (2026-10-16) also removed the last stale rule (`/hub/primer-design`). Check off when ~Nov 1 export shows 0.
 - [ ] **1.5 Fix 404s (21 pages)** — 301 redirect each to closest relevant tool page
 - [ ] **1.6 Fix 401 errors (2 pages)** and **Soft 404 (1 page)** — make the page real or remove
 - [x] **1.7 Update robots.txt** (see Appendix A) ✅ 2026-09-22 — added `Disallow: /partials/`, `Disallow: /header`, `Disallow: /footer` (fragments were indexable crawl waste). Template in `generate_sitemap.py` updated too so regeneration keeps it.
