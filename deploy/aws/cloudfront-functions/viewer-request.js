@@ -1,8 +1,11 @@
-// CloudFront Function — Viewer Request v18
+// CloudFront Function — Viewer Request v19
 // (numbering follows the AWS function Config Comment, not this header;
 //  the header had drifted to "v6" while AWS was at v14 — kept in sync since v15)
 // Bot blocking, domain canonicalization, .html strip,
 // redirects, trailing-slash normalization, clean URL rewrites.
+// v19: /blog-post → /blog 301 (SPA-era blog template: JS-rendered scaffold, already
+//      noindex + canonical=/blog and linked from nothing, but served 200 at
+//      /blog-post = soft-404 squatting a URL crawlers still hold).
 // v18: RESTORE /hub/primer-design (stale Vercel-migration 301 removed): the page
 //      has real content (48KB), is in the sitemap, and 11/12 hub siblings serve
 //      200 — the redirect contradicted all of that. Note: the rule's cache-control
@@ -82,6 +85,10 @@ function handler(event) {
     // consolidate duplicate clusters — one canonical URL per page).
     '/index': '/',
     '/blog/index': '/blog',
+    // v19: SPA-era blog template (frontend/blog-post.html) — JS-rendered scaffold
+    // ('<h1>' + page.title + '</h1>'), already noindex + canonical=/blog, linked
+    // from nothing: a soft-404 squat at /blog-post. Edge-redirect to /blog.
+    '/blog-post': '/blog',
     // Root-level header.html/footer.html are unbaked partial fragments,
     // not pages — send crawlers to the home page instead of a raw fragment.
     '/header': '/',
