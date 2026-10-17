@@ -1,6 +1,8 @@
 // CloudFront Function — Viewer Request v19
 // (numbering follows the AWS function Config Comment, not this header;
-//  drifted to "v6" while AWS was at v14 — kept in sync since v15. SIZE CAP 10 KB.)
+//  drifted to "v6" while AWS was at v14 — kept in sync since v15. SIZE CAP
+//  10,240 B: AWS receives the MINIFIED artifact — scripts/minify_cf_function.js,
+//  CI-gated at ≤9,800 B minified; verify LIVE byte-compares vs that artifact.)
 // Bot blocking, domain canonicalization, .html strip,
 // redirects, trailing-slash normalization, clean URL rewrites.
 // v19: /blog-post → /blog 301 (SPA blog scaffold: noindex + canonical=/blog,

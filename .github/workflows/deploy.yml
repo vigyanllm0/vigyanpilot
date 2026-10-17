@@ -40,6 +40,13 @@ jobs:
           python3 -m py_compile backend/main.py
           python3 -m py_compile backend/config.py
 
+      - name: CF function size gate (minified <= 9800 B, hard cap 10240)
+        # CloudFront Functions reject uploads over 10,240 B (hit on v19:
+        # FunctionSizeLimitExceeded). The publish pipeline uploads the MINIFIED
+        # artifact (scripts/minify_cf_function.js); this gate fails CI when the
+        # minified form creeps past the alarm threshold. Runner has Node.
+        run: node scripts/minify_cf_function.js --check
+
       - name: Security scan with bandit
         run: |
           bandit -r primerforge/ backend/ -f json -o bandit-report.json -q --exit-zero
