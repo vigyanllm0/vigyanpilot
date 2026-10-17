@@ -294,6 +294,14 @@ def init_security(app):
     # ── 2. Security Headers via Talisman ──────────────────────────────────
     csp = {
         "default-src": "'self'",
+        # Hardening (2026-10-17): default-src does NOT fall back for these two
+        # — base-uri has no fallback at all and form-action falls back to
+        # default-src only in CSP3-aware browsers; explicit 'self' closes the
+        # <base>-hijack and cross-origin form-post vectors on every response
+        # this app serves (Flask API + dev-served pages; prod HTML is S3/CF and
+        # carries no CSP by design).
+        "base-uri": "'self'",
+        "form-action": "'self'",
         "script-src": [
             "'self'",
             "'unsafe-inline'",

@@ -80,11 +80,13 @@ class TestVerificationCodeChanges:
 # fingerprint); Permissions-Policy: browsing-topics=() is emitted by flask-talisman 1.1.0's
 # default (pinned in requirements.txt), which is why no primerforge/ source grep could ever
 # find it. The config-string tests grep primerforge.security, where the policy dict, the
-# Server-strip mechanism, and the HSTS value now live. Three stale assertions were retired
-# with comments rather than rewritten to lie: object-src/base-uri/form-action (absent from the
-# current dict-built CSP — flagged as a hardening finding, default-src covers object-src but
-# base-uri/form-action have no fallback), "X-Powered-By" (a header Flask never emits — the
-# real mechanism strips "Server"), and HSTS "preload" (the shipped value has never carried it).
+# Server-strip mechanism, and the HSTS value now live. Stale assertions were retired with
+# comments rather than rewritten to lie: object-src (default-src covers it via fallback),
+# "X-Powered-By" (a header Flask never emits — the real mechanism strips "Server"), and
+# HSTS "preload" (the shipped value has never carried it). The base-uri/form-action finding
+# from the 2026-10-17 rewrite was SHIPPED the same day: both directives are now explicit
+# 'self' in the policy dict, asserted below (source) and inside the /health CSP value
+# (runtime).
 class TestSecurityCodeChanges:
     """Verify security hardening exists in code."""
 
@@ -104,6 +106,12 @@ class TestSecurityCodeChanges:
         # test_server_header_removal below).
         assert "Server" not in resp.headers
         assert "X-Powered-By" not in resp.headers
+        # CSP value carries the explicit hardening directives (runtime proof;
+        # source-side in test_csp_configuration). _format_csp/Talisman both
+        # render scalars as "directive value".
+        csp = resp.headers["Content-Security-Policy"]
+        assert "base-uri 'self'" in csp
+        assert "form-action 'self'" in csp
 
     def test_server_header_removal(self):
         import inspect
@@ -124,12 +132,12 @@ class TestSecurityCodeChanges:
         assert '"default-src": "\'self\'"' in src
         assert "Content-Security-Policy" in src
         assert "https://checkout.razorpay.com" in src
-        # NOTE: the pre-refactor assertions for object-src/base-uri/form-action were
-        # retired — those directives are absent from the current policy (live prod
-        # CSP re-verified2026-10-17 without them). default-src 'self' covers
-        # object-src via fallback; base-uri/form-action have NO default-src
-        # fallback, so their absence is flagged as a hardening finding rather than
-        # asserted here.
+        # Hardening shipped 2026-10-17 (finding from this test's rewrite): base-uri
+        # has no default-src fallback at all, and form-action falls back only in
+        # CSP3-aware browsers — both now explicit 'self'. object-src stays retired
+        # (default-src covers it via fallback).
+        assert '"base-uri": "\'self\'"' in src
+        assert '"form-action": "\'self\'"' in src
 
     def test_ip_brute_force_in_login(self):
         import inspect
