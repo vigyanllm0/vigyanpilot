@@ -217,6 +217,14 @@ jobs:
             # SMTP API. pg_auth.py/pg_auth_routes.py prefer this over raw SMTP
             # and fall back to SMTP_HOST/USER/PASSWORD if unset.
             printf '%s\n' "BREVO_API_KEY=${{ secrets.BREVO_API_KEY }}" >> .env
+            # Brevo SMTP fallback (belt-and-braces: if the Brevo REST API is
+            # down, sends fall back to the SMTP relay). Brevo's documented
+            # pairing: username = the API key (xkeysib), password = the SMTP
+            # key (xsmtpsib); both piped from GH secrets, never in code.
+            printf '%s\n' "SMTP_HOST=smtp-relay.brevo.com" >> .env
+            printf '%s\n' "SMTP_PORT=587" >> .env
+            printf '%s\n' "SMTP_USER=${{ secrets.SMTP_USER }}" >> .env
+            printf '%s\n' "SMTP_PASSWORD=${{ secrets.SMTP_PASSWORD }}" >> .env
             # CMS (FastAPI :8001) — JWT_SECRET is required by backend/config.py
             # at import time; admin credential is seeded/rotated from env by
             # backend/main.py _seed_admin() (no credentials in code).
