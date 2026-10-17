@@ -16,6 +16,17 @@ var SITE_INDEX = [
   { t:'Restriction Enzyme Finder', d:'Free restriction enzyme finder — maps cut sites, sticky/blunt ends and fragment sizes', u:'restriction-enzyme-finder.html', c:'Tools' },
   { t:'Docking', d:'Run consensus molecular docking (Vina + GNINA)', u:'docking.html', c:'Tools' },
 
+  { t:'Antibiotic Stock Calculator', d:'Dilution math for antibiotic working stocks — volume of stock and solvent needed', u:'antibiotic-stock-calculator.html', c:'Tools' },
+  { t:'Pharma Calculators', d:'Hub for pharma and lab calculators: stocks, PK/PD, dose response and assays', u:'pharma-calculators.html', c:'Tools' },
+  { t:'Antibiotic Synergy (FIC) Calculator', d:'Checkerboard FIC index — classify synergy, additivity, indifference or antagonism', u:'antibiotic-synergy-calculator.html', c:'Tools' },
+  { t:'Time-Kill Kinetics Calculator', d:'Log10 CFU/mL kill-kinetics rates and bactericidal activity from time-kill assays', u:'time-kill-kinetics-calculator.html', c:'Tools' },
+  { t:'Mutant Prevention Concentration', d:'MPC and mutant selection window from MIC and MPC measurements', u:'mutant-prevention-concentration-calculator.html', c:'Tools' },
+  { t:'PK/PD Index Calculator', d:'%T>MIC, AUC/MIC and Cmax/MIC indices with pathogen-based efficacy thresholds', u:'pk-pd-index-calculator.html', c:'Tools' },
+  { t:'Dose Response Calculator', d:'IC50/EC50 from dose-response data via four-parameter logistic regression', u:'dose-response-calculator.html', c:'Tools' },
+  { t:'Arrhenius Calculator', d:'Rate constants and Q10 temperature coefficients from activation energy', u:'arrhenius-calculator.html', c:'Tools' },
+  { t:'Plasma Protein Binding Calculator', d:'Free vs bound drug fraction from total concentration and binding constants', u:'plasma-protein-binding-calculator.html', c:'Tools' },
+  { t:'Osmolarity Calculator', d:'Solution osmolarity and tonicity contributions from solute concentrations', u:'osmolarity-calculator.html', c:'Tools' },
+
   { t:'Platform Overview', d:'Sovereign biomedical AI platform', u:'platform.html', c:'Platform' },
   { t:'Architecture', d:'Multi-agent AI architecture', u:'architecture.html', c:'Platform' },
   { t:'The Problem', d:'Six tools, six workflows, zero integration', u:'problem.html', c:'Platform' },
