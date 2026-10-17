@@ -33,6 +33,7 @@ from flask import Blueprint, Response, g, jsonify, request
 
 from .database import (
     execute,
+    execute_returning,
     fetch_all,
     fetch_one,
     get_db,
@@ -1198,14 +1199,18 @@ def save_result():
     outputs = _json.dumps(data.get("outputs", {}))
     seq_count = int(data.get("sequences_count", 0))
     try:
-        rid = execute(
+        # execute() returns the ROWCOUNT — always 1 for a single INSERT. The
+        # old code returned it as the result "id", so every save reported
+        # id=1 and a client could never delete the row it had just created
+        # (prod live-probe 2026-10-17: saves reported id 1 while the real
+        # rows were 116/117). RETURNING id via execute_returning gives the
+        # actual row.
+        row = execute_returning(
             """INSERT INTO user_reports (user_id, title, full_result)
                VALUES (%s, %s, %s) RETURNING id""",
             (user_id, title, _json.dumps({"tool": tool, "inputs": inputs, "outputs": outputs, "job_id": job_id, "seq_count": seq_count}))
         )
-        if isinstance(rid, (list, tuple)):
-            rid = rid[0]
-        return jsonify({"success": True, "id": rid}), 200
+        return jsonify({"success": True, "id": row["id"]}), 200
     except Exception as e:
         logger.error("Failed to save result: %s", e)
         return jsonify({"error": "Internal server error"}), 500
@@ -1225,15 +1230,22 @@ def list_results():
     user_id = uid_row["id"]
     try:
         if tool_filter:
+            # Tool lives inside the full_result JSON blob (written by both
+            # this handler and reports_routes) — the old if/else ran the
+            # IDENTICAL query on both branches, so ?tool= silently matched
+            # everything (prod live-probe 2026-10-17: ?tool=docking returned
+            # the user's primer row too). Filter on the JSON key; ::jsonb
+            # cast keeps TEXT-column legacy rows working.
             rows = fetch_all(
                 """SELECT id, title, full_result, created_at
                    FROM user_reports WHERE user_id = %s
+                     AND full_result::jsonb->>'tool' = %s
                    ORDER BY created_at DESC LIMIT %s OFFSET %s""",
-                (user_id, limit, offset)
+                (user_id, tool_filter, limit, offset)
             )
             total = fetch_one(
-                "SELECT COUNT(*) AS cnt FROM user_reports WHERE user_id = %s",
-                (user_id,)
+                "SELECT COUNT(*) AS cnt FROM user_reports WHERE user_id = %s AND full_result::jsonb->>'tool' = %s",
+                (user_id, tool_filter)
             )
         else:
             rows = fetch_all(
@@ -1283,6 +1295,10 @@ def delete_result():
     rid = data.get("id")
     if not rid:
         return jsonify({"error": "Result ID required"}), 400
+    try:
+        rid = int(rid)  # a non-numeric id used to reach PG as text →
+    except (TypeError, ValueError):  # integer-cast DataError → 500
+        return jsonify({"error": "Result not found"}), 404
     email = g.user["email"]
     uid_row = fetch_one("SELECT id FROM users WHERE email = %s", (email,))
     if not uid_row:
