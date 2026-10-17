@@ -63,6 +63,9 @@
   <div class="controls" style="margin:8px 0;">
     <button id="parseBtn">Parse Data</button>
     <button id="clearBtn" style="background:#64748b;">Clear</button>
+    <button id="saveViewBtn" style="background:#7c3aed;">Save View</button>
+    <button id="loadViewBtn" style="background:#7c3aed;">Load View</button>
+    <button id="shareViewBtn" style="background:#0891b2;">Share (URL)</button>
     <span id="formatInfo" style="color:#64748b;font-size:13px;"></span>
   </div>
 
@@ -128,6 +131,7 @@
         <label>Method:</label>
         <select id="exprMethod"><option value="pfaffl">Pfaffl (efficiency-corrected)</option><option value="livak">Livak (2^-ddCq)</option></select>
         <button id="exprCompute">Compute</button>
+        <button id="methodsBtn" style="background:#7c3aed;">Generate Methods</button>
       </div>
       <div class="chart-container">
         <canvas id="exprCanvas"></canvas>
@@ -151,7 +155,7 @@
     <div class="tab-content" id="tab-plate">
       <div class="controls">
         <label>Layout:</label>
-        <select id="plateLayout"><option value="96">96-well</option><option value="384">384-well</option></select>
+        <select id="plateLayout"><option value="96">96-well</option><option value="384">384-well</option><option value="strip8">8-strip</option><option value="strip12">12-strip</option><option value="rotor36">Rotor (36)</option></select>
         <label>Color by:</label>
         <select id="plateColorBy"><option value="cq">Cq</option><option value="sample">Sample</option><option value="target">Target</option><option value="status">Status</option></select>
       </div>
@@ -166,7 +170,7 @@
 </div>
 
 <script type="module">
-import { parseRun, detectFormat, analyzeRun, makeRun, canonicalChannel } from './qpcr/qpcr-engine.js';
+import { parseRun, detectFormat, analyzeRun, makeRun, canonicalChannel, savitzkyGolayDerivative, detectTmPeaks, saveView, loadView, listViews, serializeViewState, deserializeViewState, generateMethods } from './qpcr/qpcr-engine.js';
 import Chart from './qpcr/qpcr-charts.js';
 
 let run = null;
@@ -205,6 +209,7 @@ function parse() {
     showStatus(`Parsed ${run.wells.length} wells, ${run.samples.length} samples, ${run.targets.length} targets, ${run.channels.length} channels.`, 'success');
     mainContent.style.display = 'block';
     initViews();
+    hashCheck();
   } catch (err) {
     showStatus('Parse error: ' + err.message, 'error');
     mainContent.style.display = 'none';
@@ -221,6 +226,67 @@ function showStatus(msg, type) {
 
 parseBtn.addEventListener('click', parse);
 clearBtn.addEventListener('click', () => { pasteArea.value = ''; mainContent.style.display = 'none'; statusBar.style.display = 'none'; formatInfo.textContent = ''; });
+
+// View-state: Save
+document.getElementById('saveViewBtn').addEventListener('click', () => {
+  const name = prompt('View name:');
+  if (!name) return;
+  const vs = {
+    table: { search: document.getElementById('tableSearch').value, groupBy: document.getElementById('tableGroupBy').value },
+    charts: { amplification: { yMode: document.getElementById('ampYMode').value }, melt: { channel: parseInt(document.getElementById('meltChannelSelect').value) } },
+    plate: { layout: document.getElementById('plateLayout').value, colorBy: document.getElementById('plateColorBy').value },
+    analysis: { method: document.getElementById('exprMethod').value },
+  };
+  saveView(name, vs);
+  alert('View saved: ' + name);
+});
+
+// View-state: Load
+document.getElementById('loadViewBtn').addEventListener('click', () => {
+  const views = listViews();
+  if (views.length === 0) { alert('No saved views.'); return; }
+  const name = prompt('Load view: ' + views.join(', '));
+  if (!name || !views.includes(name)) return;
+  const vs = loadView(name);
+  if (!vs) return;
+  if (vs.table) { document.getElementById('tableSearch').value = vs.table.search || ''; document.getElementById('tableGroupBy').value = vs.table.groupBy || ''; }
+  if (vs.charts?.amplification) document.getElementById('ampYMode').value = vs.charts.amplification.yMode || 'linear';
+  if (vs.charts?.melt) document.getElementById('meltChannelSelect').value = vs.charts.melt.channel || 0;
+  if (vs.plate) { document.getElementById('plateLayout').value = vs.plate.layout || '96'; document.getElementById('plateColorBy').value = vs.plate.colorBy || 'cq'; }
+  if (vs.analysis?.method) document.getElementById('exprMethod').value = vs.analysis.method;
+  renderTable(); renderPlate(); updateAmpChart(); renderMeltChart();
+  alert('View loaded: ' + name);
+});
+
+// View-state: Share via URL hash
+document.getElementById('shareViewBtn').addEventListener('click', () => {
+  const vs = {
+    table: { search: document.getElementById('tableSearch').value, groupBy: document.getElementById('tableGroupBy').value },
+    charts: { amplification: { yMode: document.getElementById('ampYMode').value }, melt: { channel: parseInt(document.getElementById('meltChannelSelect').value) } },
+    plate: { layout: document.getElementById('plateLayout').value, colorBy: document.getElementById('plateColorBy').value },
+  };
+  const hash = serializeViewState(vs);
+  const url = window.location.origin + window.location.pathname + '#' + hash;
+  navigator.clipboard.writeText(url).then(() => alert('URL copied to clipboard. Settings travel, data never does.'));
+});
+
+// Restore from URL hash on parse
+const origParse = parse;
+// Hook into parse to check hash
+const hashCheck = () => {
+  if (window.location.hash.length > 1) {
+    const vs = deserializeViewState(window.location.hash.slice(1));
+    if (vs) {
+      setTimeout(() => {
+        if (vs.table) { document.getElementById('tableSearch').value = vs.table.search || ''; document.getElementById('tableGroupBy').value = vs.table.groupBy || ''; }
+        if (vs.charts?.amplification) document.getElementById('ampYMode').value = vs.charts.amplification.yMode || 'linear';
+        if (vs.charts?.melt) document.getElementById('meltChannelSelect').value = vs.charts.melt.channel || 0;
+        if (vs.plate) { document.getElementById('plateLayout').value = vs.plate.layout || '96'; document.getElementById('plateColorBy').value = vs.plate.colorBy || 'cq'; }
+        renderTable(); renderPlate(); updateAmpChart(); renderMeltChart();
+      }, 100);
+    }
+  }
+};
 
 // Tabs
 document.querySelectorAll('.tab').forEach(tab => {
@@ -256,6 +322,99 @@ function initViews() {
     const opt = document.createElement('option'); opt.value = i; opt.textContent = ch.canonical;
     meltSel.appendChild(opt);
   });
+  meltSel.addEventListener('change', renderMeltChart);
+  renderMeltChart();
+
+function renderMeltChart() {
+  const chIdx = parseInt(document.getElementById('meltChannelSelect').value);
+  const ch = run.channels[chIdx];
+  if (!ch) return;
+  const canvas = document.getElementById('meltCanvas');
+  canvas.width = canvas.parentElement.clientWidth;
+  canvas.height = 400;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Collect melt data per well for this channel
+  const wells = run.wells.filter(w => w.channelId === chIdx && w.melt);
+  if (wells.length === 0) {
+    ctx.fillStyle = '#64748b';
+    ctx.font = '14px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('No melt data in file for this channel.', canvas.width/2, canvas.height/2);
+    return;
+  }
+
+  // Render -dF/dT for each well
+  const padding = 40;
+  const w = canvas.width - 2*padding;
+  const h = canvas.height - 2*padding;
+  let allTemps = [];
+  let allDerivs = [];
+  const seriesData = [];
+  for (const well of wells) {
+    const { temps, derivative } = savitzkyGolayDerivative(well.melt.temps, well.melt.fluores, 7);
+    const peaks = detectTmPeaks(temps, derivative, 0.1);
+    well.tmPeaks = peaks.map(p => p.temp);
+    seriesData.push({ well, temps, derivative, peaks });
+    allTemps = allTemps.concat(temps);
+    allDerivs = allDerivs.concat(derivative);
+  }
+  const tMin = Math.min(...allTemps), tMax = Math.max(...allTemps);
+  const dMin = Math.min(...allDerivs), dMax = Math.max(...allDerivs);
+  const tRange = tMax - tMin || 1;
+  const dRange = dMax - dMin || 1;
+
+  // Grid
+  ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 0.5;
+  for (let i = 0; i <= 5; i++) {
+    const x = padding + w*i/5;
+    const y = padding + h*i/5;
+    ctx.beginPath(); ctx.moveTo(x, padding); ctx.lineTo(x, canvas.height-padding); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(padding, y); ctx.lineTo(canvas.width-padding, y); ctx.stroke();
+  }
+
+  // Axes
+  ctx.fillStyle = '#475569'; ctx.font = '11px sans-serif'; ctx.textAlign = 'center';
+  ctx.fillText('Temperature (°C)', canvas.width/2, canvas.height-8);
+  ctx.save(); ctx.translate(12, canvas.height/2); ctx.rotate(-Math.PI/2); ctx.fillText('-dF/dT', 0, 0); ctx.restore();
+
+  // Series
+  const colors = ['#1f77b4','#ff7f0e','#2ca02c','#d62728','#9467bd'];
+  seriesData.forEach((sd, idx) => {
+    ctx.strokeStyle = colors[idx % colors.length];
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    sd.temps.forEach((t, i) => {
+      const px = padding + (t - tMin)/tRange * w;
+      const py = canvas.height - padding - (sd.derivative[i] - dMin)/dRange * h;
+      if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+    });
+    ctx.stroke();
+    // Tm peaks
+    ctx.fillStyle = colors[idx % colors.length];
+    for (const peak of sd.peaks) {
+      const px = padding + (peak.temp - tMin)/tRange * w;
+      const py = canvas.height - padding - (peak.height - dMin)/dRange * h;
+      ctx.beginPath(); ctx.arc(px, py, 4, 0, Math.PI*2); ctx.fill();
+      ctx.font = '10px sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText(peak.temp.toFixed(1) + '°C', px, py - 8);
+    }
+  });
+
+  // Legend
+  ctx.font = '11px sans-serif'; ctx.textAlign = 'left';
+  seriesData.forEach((sd, idx) => {
+    const well = sd.well;
+    const sample = run.samples[well.sampleId];
+    ctx.fillStyle = colors[idx % colors.length];
+    ctx.fillRect(canvas.width-120, padding + idx*16, 12, 12);
+    ctx.fillStyle = '#334155';
+    ctx.fillText((sample?.name || 'Well ' + well.id) + ' (' + (well.tmPeaks?.length || 0) + ' peaks)', canvas.width-104, padding + idx*16 + 10);
+  });
+}
 
   // Standard curve target select
   const stdSel = document.getElementById('stdTargetSelect');
@@ -358,27 +517,54 @@ function renderPlate() {
   const grid = document.getElementById('plateGrid');
   const layout = document.getElementById('plateLayout').value;
   const colorBy = document.getElementById('plateColorBy').value;
-  const cols = layout === '384' ? 24 : 12;
-  const rows = layout === '384' ? 16 : 8;
+  let cols, rows;
+  if (layout === '384') { cols = 24; rows = 16; }
+  else if (layout === 'strip8') { cols = 8; rows = 1; }
+  else if (layout === 'strip12') { cols = 12; rows = 1; }
+  else if (layout === 'rotor36') { cols = 12; rows = 3; } // 3 rows of 12 = 36
+  else { cols = 12; rows = 8; } // 96
   grid.style.gridTemplateColumns = `repeat(${cols}, 28px)`;
   let html = '';
   for (let r = 0; r < rows; r++) {
     for (let c = 0; c < cols; c++) {
-      const well = run.wells.find(w => w.row === r && w.col === c);
+      // For strip/rotor, map to well indices differently
+      let well;
+      if (layout === 'strip8' || layout === 'strip12') {
+        well = run.wells[c] || null;
+      } else if (layout === 'rotor36') {
+        well = run.wells[r*12 + c] || null;
+      } else {
+        well = run.wells.find(w => w.row === r && w.col === c);
+      }
       let bg = '#f1f5f9';
       let label = '';
       if (well) {
         const sample = run.samples[well.sampleId];
-        label = String.fromCharCode(65 + r) + (c + 1);
+        if (layout === 'strip8' || layout === 'strip12') {
+          label = 'T' + (c + 1);
+        } else if (layout === 'rotor36') {
+          label = 'R' + (r*12 + c + 1);
+        } else {
+          label = String.fromCharCode(65 + r) + (c + 1);
+        }
         if (colorBy === 'cq' && well.cq != null) {
           const intensity = Math.max(0, Math.min(1, (40 - well.cq) / 20));
           bg = `rgba(13, 148, 136, ${0.2 + intensity * 0.8})`;
         } else if (colorBy === 'sample') {
           const colors = ['#dbeafe', '#dcfce7', '#fef3c7', '#fce7f3', '#e0e7ff'];
           bg = colors[sample?.id % colors.length] || '#f1f5f9';
+        } else if (colorBy === 'target') {
+          const colors = ['#dbeafe', '#dcfce7', '#fef3c7', '#fce7f3', '#e0e7ff'];
+          bg = colors[well.targetId % colors.length] || '#f1f5f9';
+        } else if (colorBy === 'status') {
+          const qc = analysis.qc.wells[well.id] || [];
+          if (qc.length === 0) bg = '#dcfce7';
+          else if (qc.some(f => f.severity === 'strong')) bg = '#fee2e2';
+          else bg = '#fef3c7';
         }
       }
-      html += `<div class="plate-cell" style="background:${bg};" title="${label}">${label}</div>`;
+      const title = well ? `${label}: ${run.samples[well.sampleId]?.name || ''} Cq=${well.cq?.toFixed(2) || '-'}` : '';
+      html += `<div class="plate-cell" style="background:${bg};" title="${title}">${label}</div>`;
     }
   }
   grid.innerHTML = html;
@@ -414,6 +600,20 @@ function renderQc() {
   }
   summary.innerHTML = html;
 }
+
+// Methods generator
+document.getElementById('methodsBtn').addEventListener('click', () => {
+  const methods = generateMethods(run, analysis, analysis.settings);
+  const div = document.createElement('div');
+  div.className = 'info-bar';
+  div.style.marginTop = '12px';
+  div.innerHTML = '<b>MIQE-aligned Methods Sentence:</b><br><br>' + methods + '<br><br><button onclick="navigator.clipboard.writeText(this.parentElement.querySelector(\'p\').textContent)" style="background:#0d9488;color:white;border:none;padding:4px 8px;border-radius:4px;cursor:pointer;">Copy</button>';
+  const p = document.createElement('p');
+  p.textContent = methods;
+  p.style.display = 'none';
+  div.appendChild(p);
+  document.getElementById('tab-expression').appendChild(div);
+});
 
 // Expression compute
 document.getElementById('exprCompute').addEventListener('click', () => {

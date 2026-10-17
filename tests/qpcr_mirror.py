@@ -657,6 +657,37 @@ def detect_tm_peaks(temps, derivative, threshold=0.1):
     return peaks
 
 
+def generate_methods(run, analysis, settings=None):
+    settings = settings or (analysis.get("settings") if analysis else {}) or {}
+    parts = []
+    parts.append("Cq values were determined by " + (run["meta"].get("instrument") or "the instrument") + " software.")
+    curves = analysis.get("standardCurves", {}) if analysis else {}
+    effs = []
+    for tid, c in curves.items():
+        if not c:
+            continue
+        t = next((x for x in run["targets"] if x["id"] == int(tid)), None)
+        name = t["name"] if t else "target " + str(tid)
+        effs.append(f"{name}: E={c['efficiencyPct']:.1f}%, R²={c['r2']:.3f}")
+    if effs:
+        parts.append("Efficiency (" + "; ".join(effs) + ") was calculated from standard curve slope.")
+    method = settings.get("method") or (analysis.get("settings", {}).get("method") if analysis else None) or "livak"
+    method_name = "Pfaffl method (efficiency-corrected)" if method == "pfaffl" else "Livak method (2^-ddCq)"
+    ref_targets = settings.get("referenceTargets") or (analysis.get("settings", {}).get("referenceTargets") if analysis else []) or []
+    ref_names = []
+    for tid in ref_targets:
+        t = next((x for x in run["targets"] if x["id"] == tid), None)
+        ref_names.append(t["name"] if t else str(tid))
+    ctrl_sample = settings.get("controlSample")
+    if ctrl_sample is None and analysis:
+        ctrl_sample = analysis.get("settings", {}).get("controlSample")
+    ctrl_name = next((s["name"] for s in run["samples"] if s["id"] == ctrl_sample), "control")
+    if ref_names:
+        parts.append("Relative expression was quantified by the " + method_name + " using " + ", ".join(ref_names) + " as reference gene(s) and " + ctrl_name + " as calibrator.")
+    parts.append("Research use only. Not for clinical diagnostic decisions.")
+    return " ".join(parts)
+
+
 def analyze_run(run, settings=None):
     settings = settings or {}
     curves = compute_standard_curves(run)

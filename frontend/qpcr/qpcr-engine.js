@@ -785,6 +785,86 @@ export function analyzeRun(run, settings) {
    10. Exports
    ─────────────────────────────────────────────────────────────── */
 
+/* ───────────────────────────────────────────────────────────────
+   11. View-State (serializable UI preferences)
+   ─────────────────────────────────────────────────────────────── */
+
+export function makeViewState() {
+  return {
+    table: { columns: ['well','sample','target','channel','cq','cqSD','tm'], filters: {}, groupBy: '', sort: { col: 'well', dir: 'asc' }, search: '' },
+    charts: { amplification: { channels: [], yMode: 'linear', hiddenWells: [] }, melt: { channel: 0 } },
+    plate: { layout: '96', colorBy: 'cq' },
+    analysis: { referenceTargets: [], controlSample: null, method: 'pfaffl', thresholds: {} },
+  };
+}
+
+export function serializeViewState(vs) {
+  return btoa(JSON.stringify(vs));
+}
+
+export function deserializeViewState(b64) {
+  try {
+    return JSON.parse(atob(b64));
+  } catch (e) {
+    return null;
+  }
+}
+
+export function saveView(name, vs) {
+  const views = JSON.parse(localStorage.getItem('qpcr_views') || '{}');
+  views[name] = vs;
+  localStorage.setItem('qpcr_views', JSON.stringify(views));
+}
+
+export function loadView(name) {
+  const views = JSON.parse(localStorage.getItem('qpcr_views') || '{}');
+  return views[name] || null;
+}
+
+export function listViews() {
+  const views = JSON.parse(localStorage.getItem('qpcr_views') || '{}');
+  return Object.keys(views);
+}
+
+export function deleteView(name) {
+  const views = JSON.parse(localStorage.getItem('qpcr_views') || '{}');
+  delete views[name];
+  localStorage.setItem('qpcr_views', JSON.stringify(views));
+}
+
+/* ───────────────────────────────────────────────────────────────
+   12. Methods Generator (MIQE-aligned)
+   ─────────────────────────────────────────────────────────────── */
+
+export function generateMethods(run, analysis, settings) {
+  settings = settings || analysis?.settings || {};
+  const parts = [];
+  parts.push('Cq values were determined by ' + (run.meta.instrument || 'the instrument') + ' software.');
+  // Efficiency
+  const curves = analysis?.standardCurves || {};
+  const effs = Object.entries(curves).filter(([, c]) => c).map(([tid, c]) => {
+    const t = run.targets.find(x => x.id == tid);
+    return (t?.name || 'target ' + tid) + ': E=' + c.efficiencyPct.toFixed(1) + '%, R²=' + c.r2.toFixed(3);
+  });
+  if (effs.length > 0) {
+    parts.push('Efficiency (' + effs.join('; ') + ') was calculated from standard curve slope.');
+  }
+  // Method
+  const method = settings.method || analysis?.settings?.method || 'livak';
+  const methodName = method === 'pfaffl' ? 'Pfaffl method (efficiency-corrected)' : 'Livak method (2^-ddCq)';
+  const refTargets = (settings.referenceTargets || analysis?.settings?.referenceTargets || []).map(tid => {
+    const t = run.targets.find(x => x.id == tid);
+    return t?.name || tid;
+  });
+  const ctrlSample = settings.controlSample != null ? settings.controlSample : analysis?.settings?.controlSample;
+  const ctrlName = run.samples.find(s => s.id == ctrlSample)?.name || 'control';
+  if (refTargets.length > 0) {
+    parts.push('Relative expression was quantified by the ' + methodName + ' using ' + refTargets.join(', ') + ' as reference gene(s) and ' + ctrlName + ' as calibrator.');
+  }
+  parts.push('Research use only. Not for clinical diagnostic decisions.');
+  return parts.join(' ');
+}
+
 export const QPCR_ENGINE_VERSION = '1.0.0';
 
 if (typeof module !== 'undefined' && module.exports) {

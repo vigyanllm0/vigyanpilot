@@ -14,7 +14,7 @@ from qpcr_mirror import (
     parse_run, detect_format, canonical_channel,
     linear_regression, efficiency_from_slope, compute_standard_curves,
     compute_expression, compute_qc, analyze_run, QPCR_ENGINE_VERSION,
-    savitzky_golay_derivative, detect_tm_peaks,
+    savitzky_golay_derivative, detect_tm_peaks, generate_methods,
 )
 
 FIXTURES = os.path.join(os.path.dirname(__file__), "fixtures", "qpcr")
@@ -170,6 +170,29 @@ def test_analyze_run():
     assert "expression" in result
     assert "qc" in result
     assert "settings" in result
+
+
+def test_generate_methods():
+    text = load_fixture("rdml_minimal.xml")
+    run = parse_run(text, "rdml_minimal.xml")
+    for s in run["samples"]:
+        if s["name"] == "Std1":
+            s["type"] = "standard"
+            s["quantity"] = 1000
+        if s["name"] == "Std2":
+            s["type"] = "standard"
+            s["quantity"] = 100
+    # Mark ACTB as reference
+    for t in run["targets"]:
+        if t["name"] == "ACTB":
+            t["isReference"] = True
+    analysis = analyze_run(run)
+    methods = generate_methods(run, analysis)
+    assert "Cq values were determined by" in methods
+    assert "Research use only" in methods
+    # Methods should change with settings
+    methods2 = generate_methods(run, analysis, {"method": "livak"})
+    assert methods != methods2 or "Livak" in methods2
 
 
 def test_savitzky_golay():
