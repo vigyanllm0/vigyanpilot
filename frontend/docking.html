@@ -1370,6 +1370,9 @@ async function openRazorpayCheckout(order, context) {
         });
         var vd = await vr.json();
         if (vr.ok && vd.success) {
+          // Conversion instrumentation — server-verified top-up (VLAnalytics
+          // pushes dataLayer/gtag; inert without analytics consent).
+          if (window.VLAnalytics) VLAnalytics.trackPurchase(response.razorpay_payment_id, order.amount / 100, 'docking_runs');
           $('pay-overlay').classList.remove('show');
           var runsCredited = vd.runs_purchased || vd.tokens_credited || purchasedRuns;
           sessionStorage.setItem('pf_last_payment', JSON.stringify({

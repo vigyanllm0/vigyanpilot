@@ -392,6 +392,7 @@ a{text-decoration:none;color:inherit}
 <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-KRP5LLPR" height="0" width="0" style="display:none;visibility:hidden"></iframe>
 
 <script src="/auth-shared.js"></script>
+<script defer src="/analytics.js"></script>
 <script>
 var API = window.VIGYAN_BACKEND_URL || '/api';
 var promoData = null;
@@ -640,6 +641,11 @@ async function verifyAndActivate(rzResponse) {
 
     document.getElementById('success-msg').textContent =
       d.trial_days + ' days of Pro access (' + d.daily_analyses + ' analyses/day, batch ' + d.batch_max + '). Your card will be charged ' + usdAmt(d.price_inr || 999) + '/month after the trial ends.';
+    // Conversion instrumentation — only after /promo/apply accepted the
+    // Razorpay triple. The card-verification order is always $1 (100¢ =
+    // Razorpay payment-time minimum); the free-academic path never reaches
+    // verifyAndActivate. Consent-safe via VLAnalytics (dataLayer/gtag).
+    if (window.VLAnalytics) VLAnalytics.trackPurchase(rzResponse.razorpay_payment_id, 1.00, 'trial');
     showStep('step3');
   } catch (e) {
     showError('pay-error', 'Network error. Contact support.');

@@ -309,6 +309,7 @@ body{background:var(--surface-alt);color:var(--text);font-family:var(--font-b);-
 </style>
 <script defer src="/search-index.js"></script>
 <script defer src="/auth-shared.js"></script>
+<script defer src="/analytics.js"></script>
 <script>
 var API = window.VIGYAN_BACKEND_URL || '/api';
 var CHECKOUT_PLAN = null;
@@ -575,6 +576,11 @@ async function openRazorpayCheckout(order) {
         });
         var vd = await vr.json();
         if (vr.ok && vd.success) {
+          // Conversion instrumentation — fires only on server-verified payment
+          // (the verify route checks the Razorpay signature; a hand-crafted
+          // success URL never reaches this branch). Consent-safe: VLAnalytics
+          // pushes to dataLayer/gtag, both inert without analytics consent.
+          if (window.VLAnalytics) VLAnalytics.trackPurchase(response.razorpay_payment_id, order.amount / 100, vd.plan || order.plan_id);
           window.location.href = '/payment-success.html?order_id=' + response.razorpay_order_id + '&payment_id=' + response.razorpay_payment_id + '&plan=' + encodeURIComponent(vd.plan || order.plan_id) + '&amount=' + (order.amount / 100) + '&billing=' + encodeURIComponent(order.billing || 'monthly');
         } else {
           window.location.href = '/payment-failed.html?reason=' + encodeURIComponent(vd.error || 'Verification failed');
