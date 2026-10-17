@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>qPCR Engine Debug</title>
+<style>
+  body { font-family: monospace; background: #0f172a; color: #e2e8f0; margin: 20px; }
+  .drop { border: 2px dashed #475569; padding: 40px; text-align: center; margin: 20px 0; cursor: pointer; }
+  .drop:hover { border-color: #3b82f6; }
+  pre { background: #1e293b; padding: 16px; border-radius: 8px; overflow-x: auto; max-height: 60vh; }
+  .error { color: #f87171; }
+  .info { color: #60a5fa; }
+  button { background: #3b82f6; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; margin: 4px; }
+</style>
+</head>
+<body>
+<h1>qPCR Engine Debug — Canonical Model Viewer</h1>
+<p class="info">Drop a file or paste data. Nothing leaves your browser.</p>
+
+<div class="drop" id="dropzone">Drop file here or click to browse</div>
+<input type="file" id="fileInput" hidden>
+
+<textarea id="pasteArea" rows="6" style="width:100%;background:#1e293b;color:#e2e8f0;border:1px solid #475569;padding:8px;" placeholder="Or paste data here..."></textarea>
+<br>
+<button id="parseBtn">Parse</button>
+<button id="clearBtn">Clear</button>
+
+<div id="status"></div>
+<pre id="output">{}</pre>
+
+<script type="module">
+import { parseRun, detectFormat, analyzeRun } from './qpcr-engine.js';
+
+const dropzone = document.getElementById('dropzone');
+const fileInput = document.getElementById('fileInput');
+const pasteArea = document.getElementById('pasteArea');
+const parseBtn = document.getElementById('parseBtn');
+const clearBtn = document.getElementById('clearBtn');
+const status = document.getElementById('status');
+const output = document.getElementById('output');
+
+dropzone.addEventListener('click', () => fileInput.click());
+dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.style.borderColor = '#3b82f6'; });
+dropzone.addEventListener('dragleave', () => { dropzone.style.borderColor = '#475569'; });
+dropzone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropzone.style.borderColor = '#475569';
+  const file = e.dataTransfer.files[0];
+  if (file) readFile(file);
+});
+fileInput.addEventListener('change', e => {
+  if (e.target.files[0]) readFile(e.target.files[0]);
+});
+
+function readFile(file) {
+  const reader = new FileReader();
+  reader.onload = () => { pasteArea.value = reader.result; parse(); };
+  reader.readAsText(file);
+}
+
+function parse() {
+  const text = pasteArea.value.trim();
+  if (!text) { status.innerHTML = '<span class="error">No data</span>'; return; }
+  try {
+    const fmt = detectFormat(text);
+    status.innerHTML = `<span class="info">Detected format: ${fmt}</span>`;
+    const run = parseRun(text, 'debug');
+    const analysis = analyzeRun(run);
+    const display = { run, analysis };
+    // Convert Float32Array to regular arrays for JSON
+    display.run.wells = display.run.wells.map(w => ({
+      ...w,
+      amplification: Array.from(w.amplification),
+    }));
+    output.textContent = JSON.stringify(display, null, 2);
+  } catch (err) {
+    status.innerHTML = `<span class="error">${err.message}</span>`;
+    output.textContent = '';
+  }
+}
+
+parseBtn.addEventListener('click', parse);
+clearBtn.addEventListener('click', () => { pasteArea.value = ''; output.textContent = '{}'; status.innerHTML = ''; });
+</script>
+</body>
+</html>
