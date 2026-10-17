@@ -52,7 +52,7 @@ if _env_path.exists():
     load_dotenv(_env_path, override=True)
     logger.info("Loaded environment from %s", _env_path)
 
-from flask import Flask, Response, jsonify, request
+from flask import Flask, Response, g, jsonify, request
 
 # ── Configuration: .env loaded above, additional env vars override ──
 
@@ -711,6 +711,88 @@ def _settle_docking_job(job_id, user, use_postgres, consume_fn, increment_fn,
         # actually happen.
         logger.error("Docking usage bookkeeping failed for job %s: %s", job_id, e)
     return None
+
+
+# ══════════════════════════════════════════════════════════════════════════
+# SAVED-RESULTS — PostgreSQL mirror (routes /api/results/{save,list,delete})
+#
+# The Phase-3 routes were written SQLite-only: bare `get_db()` with `?`
+# placeholders and `last_insert_rowid()`. In PG mode create_app never binds
+# `get_db` at all, so every logged-in call NameError'd → 500 — the
+# dashboard's Saved Results table has been dead on production since it
+# shipped (route registered: anon 401; logged-in: 500). These helpers mirror
+# the dialect via the database.* cursor helpers (%s params, INSERT ...
+# RETURNING id) and the routes branch on USE_POSTGRES. Schema: migration
+# 0122 (saved_results, JSONB inputs/outputs, epoch created_at).
+# ══════════════════════════════════════════════════════════════════════════
+
+
+def _sr_json_text(value) -> str:
+    """Render inputs/outputs as a JSON string.
+
+    Params go into `%s::jsonb` columns (PG casts text → jsonb); response
+    rows stringify parsed jsonb so the API contract is identical to the
+    SQLite branch (TEXT columns → strings).
+    """
+    import json as _json
+    if isinstance(value, str):
+        return value
+    return _json.dumps(value or {})
+
+
+def _sr_pg_save(email: str, tool: str, title: str, inputs, outputs,
+                sequences_count: int, job_id: str) -> int:
+    """INSERT one saved result; return the new id (RETURNING id)."""
+    from primerforge.database import execute_returning
+    row = execute_returning(
+        "INSERT INTO saved_results (user_email, tool, title, inputs, outputs, sequences_count, job_id) "
+        "VALUES (%s, %s, %s, %s::jsonb, %s::jsonb, %s, %s) RETURNING id",
+        (email, tool, title, _sr_json_text(inputs), _sr_json_text(outputs),
+         sequences_count, job_id),
+    )
+    return int(row["id"])
+
+
+def _sr_pg_list(email: str, limit: int, offset: int, tool_filter: str) -> dict:
+    """List one user's saved results — same shape as the SQLite branch."""
+    from primerforge.database import fetch_all, fetch_one
+    if tool_filter:
+        rows = fetch_all(
+            "SELECT * FROM saved_results WHERE user_email=%s AND tool=%s "
+            "ORDER BY created_at DESC LIMIT %s OFFSET %s",
+            (email, tool_filter, limit, offset))
+        total = fetch_one(
+            "SELECT COUNT(*) AS total FROM saved_results WHERE user_email=%s AND tool=%s",
+            (email, tool_filter))["total"]
+    else:
+        rows = fetch_all(
+            "SELECT * FROM saved_results WHERE user_email=%s "
+            "ORDER BY created_at DESC LIMIT %s OFFSET %s",
+            (email, limit, offset))
+        total = fetch_one(
+            "SELECT COUNT(*) AS total FROM saved_results WHERE user_email=%s",
+            (email,))["total"]
+    for r in rows:  # psycopg2 typecasts jsonb → dict; keep TEXT-string parity
+        for key in ("inputs", "outputs"):
+            if key in r and not isinstance(r[key], str):
+                r[key] = _sr_json_text(r[key])
+    return {"results": rows, "total": total}
+
+
+def _sr_pg_delete(rid, email: str) -> str:
+    """Ownership-checked delete. Returns 'deleted' | 'not_found' | 'forbidden'."""
+    from primerforge.database import execute, fetch_one
+    try:
+        rid_int = int(rid)
+    except (TypeError, ValueError):
+        return "not_found"
+    row = fetch_one("SELECT user_email FROM saved_results WHERE id=%s", (rid_int,))
+    if not row:
+        return "not_found"
+    if row["user_email"] != email:
+        return "forbidden"
+    execute("DELETE FROM saved_results WHERE id=%s", (rid_int,))
+    return "deleted"
 
 
 def _screening_refund(campaign: dict, user_id, refund_fn, mode: str = "cancel") -> int:
@@ -4575,6 +4657,12 @@ def create_app() -> Flask:
         tool = (data.get("tool") or "").strip()
         if not tool:
             return jsonify({"error": "Tool name required"}), 400
+        if USE_POSTGRES:
+            rid = _sr_pg_save(user["email"], tool, (data.get("title") or ""),
+                              data.get("inputs", {}), data.get("outputs", {}),
+                              int(data.get("sequences_count", 0)),
+                              (data.get("job_id") or ""))
+            return jsonify({"success": True, "id": rid}), 200
         db = get_db()
         db.execute(
             "INSERT INTO saved_results (user_email, tool, title, inputs, outputs, sequences_count, job_id) VALUES (?, ?, ?, ?, ?, ?, ?)",
@@ -4591,6 +4679,8 @@ def create_app() -> Flask:
         limit = min(int(request.args.get("limit", 20)), 100)
         offset = int(request.args.get("offset", 0))
         tool_filter = (request.args.get("tool") or "").strip()
+        if USE_POSTGRES:
+            return jsonify(_sr_pg_list(user["email"], limit, offset, tool_filter)), 200
         db = get_db()
         if tool_filter:
             rows = db.execute("SELECT * FROM saved_results WHERE user_email=? AND tool=? ORDER BY created_at DESC LIMIT ? OFFSET ?",
@@ -4612,6 +4702,13 @@ def create_app() -> Flask:
         rid = data.get("id")
         if not rid:
             return jsonify({"error": "Result ID required"}), 400
+        if USE_POSTGRES:
+            outcome = _sr_pg_delete(rid, user["email"])
+            if outcome == "not_found":
+                return jsonify({"error": "Result not found"}), 404
+            if outcome == "forbidden":
+                return jsonify({"error": "Not authorized"}), 403
+            return jsonify({"success": True}), 200
         db = get_db()
         row = db.execute("SELECT user_email FROM saved_results WHERE id=?", (rid,)).fetchone()
         if not row:
