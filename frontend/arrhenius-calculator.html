@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en-IN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<title>Arrhenius Kinetics Calculator — Shelf-Life Prediction (2026) | VigyanLLM</title>
+<link rel="stylesheet" href="/design-tokens.css">
+<link rel="stylesheet" href="/tools.css">
+<link rel="stylesheet" href="/primer.css">
+<link rel="manifest" href="/manifest.json" />
+<link rel="sitemap" type="application/xml" href="/sitemap.xml" />
+<meta name="theme-color" content="#0F172A" />
+<meta name="description" content="Free Arrhenius degradation kinetics calculator. Shelf-life prediction (t90) from temperature-dependent degradation rates.">
+<meta name="keywords" content="Arrhenius calculator, shelf life, degradation kinetics, t90, activation energy, temperature, stability">
+<meta name="author" content="VigyanLLM Private Limited">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://www.vigyanllm.in/arrhenius-calculator">
+<link rel="icon" href="/logo.png" type="image/png">
+<meta property="og:site_name" content="VigyanLLM">
+<meta property="og:title" content="Arrhenius Kinetics Calculator — Shelf-Life Prediction (2026)">
+<meta property="og:description" content="Free Arrhenius degradation kinetics calculator. Shelf-life prediction (t90).">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://www.vigyanllm.in/arrhenius-calculator">
+<meta property="og:image" content="https://www.vigyanllm.in/assets/og-arrhenius-calculator.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Arrhenius Kinetics Calculator — Shelf-Life Prediction (2026)">
+<meta name="twitter:description" content="Free Arrhenius degradation kinetics calculator. Shelf-life prediction (t90).">
+<meta name="twitter:image" content="https://www.vigyanllm.in/assets/og-arrhenius-calculator.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Open+Sans:wght@400;500;600;700&family=Source+Serif+4:wght@400;500&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://www.vigyanllm.in/"},{"@type":"ListItem","position":2,"name":"Arrhenius Calculator","item":"https://www.vigyanllm.in/arrhenius-calculator"}]}
+</script>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":["SoftwareApplication","WebApplication"],"name":"Arrhenius Kinetics Calculator","applicationCategory":"BioinformaticsApplication","operatingSystem":"Web Browser","description":"Free Arrhenius degradation kinetics calculator. Shelf-life prediction (t90) from temperature-dependent degradation rates.","featureList":["Degradation rate k","Shelf-life t90","Pre-exponential factor A","Temperature-dependent kinetics","Copy/Print results"],"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"author":{"@type":"Organization","name":"VigyanLLM Private Limited"}}
+</script>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"HowTo","name":"Arrhenius Calculation","step":[{"@type":"HowToStep","position":1,"name":"Enter parameters","text":"Activation energy, reference temperature/rate, and target temperature."},{"@type":"HowToStep","position":2,"name":"Calculate","text":"Compute degradation rate k and shelf-life t90 at target temperature."},{"@type":"HowToStep","position":3,"name":"Review","text":"Review rate and shelf-life for stability planning."}]}
+</script>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What is t90?","acceptedAnswer":{"@type":"Answer","text":"Time required for 10% degradation (90% potency remaining). First-order: t90 = -ln(0.9)/k."}},{"@type":"Question","name":"What is activation energy?","acceptedAnswer":{"@type":"Answer","text":"Energy barrier for degradation (J/mol). Higher Ea = stronger temperature dependence."}}]}
+</script>
+<style>
+.arr-hero{background:linear-gradient(135deg,#0f172a 0%,#1e3a5f 50%,#0f172a 100%);padding:60px 24px 50px;text-align:center;position:relative;overflow:hidden}
+.arr-hero h1{font-family:'Source Serif 4',Georgia,serif;font-size:34px;font-weight:500;color:#fff;margin-bottom:12px}
+.arr-hero p{font-size:15px;color:rgba(255,255,255,.65);max-width:640px;margin:0 auto;line-height:1.7}
+</style>
+</head>
+<body>
+<div id="vl-header"><!--vl-header-bake-start-->
+<a href="#main-content" class="skip-link">Skip to content</a>
+<header>
+<nav aria-label="Main navigation">
+<div class="nav-inner">
+<a href="/" class="nav-brand"><img src="/logo.png" class="site-logo" width="150" height="36" alt="VigyanLLM Logo"><span>VigyanLLM</span></a>
+<div class="nav-links">
+<div class="drop-wrap"><span class="drop-trigger">Products ▾</span><div class="drop-menu">
+<a href="/primer">Primer Design</a><a href="/blast">BLAST</a><a href="/msa">MSA</a><a href="/tm-calculator">Tm Calculator</a><a href="/gc-calculator">GC Calculator</a><a href="/biostatistics-calculator">Biostatistics</a><a href="/antibiotic-stock-calculator">Antibiotic Stock</a><a href="/pharma-calculators">Pharma Calculators</a>
+</div></div>
+<a href="/learning-vigyanllm">Learning</a><a href="/pricing">Pricing</a>
+</div>
+<div class="nav-right">
+<div class="nav-btns" id="navBtns"><button type="button" class="btn-nav-outline" onclick="openAuthModal()">Sign in</button><button type="button" class="btn-nav-fill" onclick="openAuthModal()">Get started</button></div>
+<div class="nav-profile" id="navProfile" style="display:none">
+<div class="nav-avatar" id="navAvatar" role="button" tabindex="0" onclick="toggleUserMenu()"><span class="nav-avatar-letter" id="navAvatarLetter"></span></div>
+<div class="user-dropdown" id="userDropdown"><a class="ud-item" href="/dashboard">Dashboard</a><a class="ud-item" href="/usage-billing">Usage &amp; Billing</a><div class="ud-item logout" role="button" tabindex="0" onclick="logout()">Logout</div></div>
+</div>
+</div>
+</div>
+<button type="button" class="hamburger" id="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
+<div class="mobile-menu" id="mobile-menu">
+<div class="mm-group"><div class="mm-hdr">Products</div>
+<a href="/primer">Primer Design</a><a href="/blast">BLAST</a><a href="/arrhenius-calculator">Arrhenius</a><a href="/pharma-calculators">Pharma Calculators</a>
+</div>
+<a href="#" class="mm-cta" onclick="openAuthModal();return false">Sign in</a>
+</div>
+</nav>
+</header><!--vl-header-bake-end--></div>
+<a href="#main-content" class="skip-link">Skip to content</a>
+<main id="main-content">
+<div style="background:#FEF3C7;border-bottom:1px solid #FDE68A;padding:10px 24px;text-align:center;font-size:13px;color:#92400e;font-weight:500">&#x26A0;&#xFE0F; <strong>Research Use Only.</strong> Not validated for clinical diagnostic use.</div>
+<section class="arr-hero"><div class="container">
+<h1>Arrhenius Kinetics Calculator</h1>
+<p>Shelf-life prediction (t90) from temperature-dependent degradation rates using the Arrhenius equation.</p>
+</div></section>
+<div class="container" style="padding:40px 24px">
+<div class="tool-card">
+<h2 style="font-family:var(--font-h);font-size:20px;font-weight:600;margin-bottom:16px">Arrhenius Degradation Kinetics</h2>
+<p style="font-size:13px;color:var(--text2);margin-bottom:16px">k = A·exp(−Ea/RT). Shelf-life t90 = −ln(0.9)/k (time for 10% degradation).</p>
+<div class="tool-row">
+<div class="tool-col"><label class="tool-label">Activation Energy Ea (J/mol)</label><input type="number" class="tool-input" id="arr-ea" value="50000" min="0" step="100"></div>
+<div class="tool-col"><label class="tool-label">Reference Temperature (°C)</label><input type="number" class="tool-input" id="arr-tref" value="25" min="-50" max="100" step="1"></div>
+</div>
+<div class="tool-row">
+<div class="tool-col"><label class="tool-label">Reference Rate (per day)</label><input type="number" class="tool-input" id="arr-kref" value="0.01" min="0" step="0.0001"></div>
+<div class="tool-col"><label class="tool-label">Target Temperature (°C)</label><input type="number" class="tool-input" id="arr-t" value="40" min="-50" max="100" step="1"></div>
+</div>
+<div class="tool-row">
+<div class="tool-col"><label class="tool-label">Target Potency (fraction, e.g. 0.9)</label><input type="number" class="tool-input" id="arr-potency" value="0.9" min="0.01" max="1" step="0.01"></div>
+<div class="tool-col"></div>
+</div>
+<button class="tool-submit" onclick="calcArrhenius()" style="margin-top:16px">Calculate Shelf-Life</button>
+</div>
+<div class="tool-results" id="arr-results">
+<h3 style="font-family:var(--font-h);font-size:18px;font-weight:600">Results</h3>
+<div class="result-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:16px">
+<div class="tool-result-item" style="padding:12px;background:var(--slate);border-radius:var(--radius)"><div class="tool-result-label">Degradation Rate k</div><div class="tool-result-value" id="arr-k">—</div></div>
+<div class="tool-result-item" style="padding:12px;background:var(--slate);border-radius:var(--radius)"><div class="tool-result-label">Shelf-Life t90</div><div class="tool-result-value" id="arr-t90">—</div></div>
+<div class="tool-result-item" style="padding:12px;background:var(--slate);border-radius:var(--radius)"><div class="tool-result-label">Pre-exponential A</div><div class="tool-result-value" id="arr-a">—</div></div>
+</div>
+<button class="copy-btn" style="margin-top:12px" onclick="copyResults('arr-results')">Copy Results</button>
+<button class="print-btn" style="margin-top:12px" onclick="window.print()">Print</button>
+</div>
+</div>
+
+<section class="tool-section container" style="max-width:var(--max-w);margin:0 auto;padding:40px 24px">
+<h2 style="font-family:var(--font-h);font-size:22px;font-weight:500;margin-bottom:16px">Arrhenius Equation</h2>
+<table style="width:100%;border-collapse:collapse;font-size:13px">
+<thead><tr style="background:var(--slate)"><th style="text-align:left;padding:8px;border:1px solid var(--outline)">Symbol</th><th style="text-align:left;padding:8px;border:1px solid var(--outline)">Meaning</th></tr></thead>
+<tbody>
+<tr><td style="padding:8px;border:1px solid var(--outline);font-weight:600">k</td><td style="padding:8px;border:1px solid var(--outline)">Degradation rate constant at target temperature (per day)</td></tr>
+<tr><td style="padding:8px;border:1px solid var(--outline);font-weight:600">A</td><td style="padding:8px;border:1px solid var(--outline)">Pre-exponential factor (frequency factor)</td></tr>
+<tr><td style="padding:8px;border:1px solid var(--outline);font-weight:600">Ea</td><td style="padding:8px;border:1px solid var(--outline)">Activation energy (J/mol)</td></tr>
+<tr><td style="padding:8px;border:1px solid var(--outline);font-weight:600">t90</td><td style="padding:8px;border:1px solid var(--outline)">Time for 10% degradation = −ln(0.9)/k</td></tr>
+</tbody>
+</table>
+</section>
+
+<section class="container" style="max-width:var(--max-w);margin:0 auto;padding:0 24px 40px">
+<h2 style="font-family:var(--font-h);font-size:22px;font-weight:500;margin-bottom:16px">Frequently Asked Questions</h2>
+<details><summary>What is t90?</summary><div style="padding:0 18px 14px;font-size:14px;color:var(--text2);line-height:1.7">Time required for 10% degradation (90% potency remaining). First-order: t90 = −ln(0.9)/k.</div></details>
+<details><summary>What is activation energy?</summary><div style="padding:0 18px 14px;font-size:14px;color:var(--text2);line-height:1.7">Energy barrier for degradation (J/mol). Higher Ea = stronger temperature dependence of degradation rate.</div></details>
+<details><summary>Why does shelf-life drop with temperature?</summary><div style="padding:0 18px 14px;font-size:14px;color:var(--text2);line-height:1.7">Per Arrhenius, rate k increases exponentially with temperature. Higher temperature → faster degradation → shorter shelf-life.</div></details>
+</section>
+</main>
+
+<div class="auth-overlay" id="auth-overlay" onclick="if(event.target===this)closeAuthModal()">
+<div class="auth-modal">
+<button class="close-btn" onclick="closeAuthModal()">&times;</button>
+<h2 id="authTitle">Sign in</h2>
+<p class="sub" id="authSub">Access your VigyanLLM account</p>
+<form onsubmit="return handleAuth(event)">
+<div class="field" id="nameField" style="display:none"><label>Full Name</label><input type="text" id="authName" placeholder="Your name"></div>
+<div class="field"><label>Email</label><input type="email" id="authEmail" placeholder="you@example.edu" required></div>
+<div class="field"><label>Password</label><input type="password" id="authPass" placeholder="Min 12 characters" required></div>
+<div class="auth-err" id="authError"></div>
+<button type="submit" class="auth-btn" id="authSubmit">Sign in</button>
+</form>
+<div class="toggle-link" id="authToggle">Don't have an account? <a onclick="toggleAuthMode()">Register</a></div>
+</div>
+</div>
+<script>
+var AUTH_MODE='login';
+function openAuthModal(){document.getElementById('auth-overlay')?.classList.add('open');document.body.style.overflow='hidden'}
+function closeAuthModal(){document.getElementById('auth-overlay')?.classList.remove('open');document.body.style.overflow=''}
+function toggleAuthMode(){AUTH_MODE=AUTH_MODE==='login'?'register':'login';var t=document.getElementById('authTitle'),s=document.getElementById('authSub'),b=document.getElementById('authSubmit'),n=document.getElementById('nameField'),tg=document.getElementById('authToggle');if(AUTH_MODE==='register'){t.textContent='Create account';s.textContent='Join VigyanLLM';b.textContent='Create account';n.style.display='block';tg.innerHTML="Already have an account? <a onclick=\"toggleAuthMode()\">Sign in</a>"}else{t.textContent='Sign in';s.textContent='Access your VigyanLLM account';b.textContent='Sign in';n.style.display='none';tg.innerHTML="Don't have an account? <a onclick=\"toggleAuthMode()\">Register</a>"}document.getElementById('authError').style.display='none'}
+async function handleAuth(e){e.preventDefault();var err=document.getElementById('authError');err.style.display='none';var email=document.getElementById('authEmail').value;var pass=document.getElementById('authPass').value;if(pass.length<12||!/[A-Z]/.test(pass)||!/[a-z]/.test(pass)||!/[0-9]/.test(pass)||!/[^A-Za-z0-9]/.test(pass)){err.textContent='Password must be 12+ chars with uppercase, lowercase, digit & special character.';err.style.display='block';return false}try{var api=window.VIGYAN_BACKEND_URL||'/api';var ep=AUTH_MODE==='login'?'/auth/login':'/auth/register';var body={email:email,password:pass};if(AUTH_MODE==='register'){body.name=document.getElementById('authName').value||'User';body.consent_accepted=true}var r=await fetch(api+ep,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});var d=await r.json();if(!r.ok){err.textContent=d.error||'Authentication failed';err.style.display='block';return false}if(d.requires_verification){err.textContent=d.message||'Account created! Check your email to verify.';err.style.display='block';return false}closeAuthModal();window.location.reload()}catch(a){err.textContent='Network error. Please try again.';err.style.display='block'}return false}
+</script>
+<section style="max-width:var(--max-w);margin:0 auto;padding:40px 16px;border-top:1px solid var(--outline)">
+<h3 style="font-family:var(--font-h);font-size:13px;font-weight:700;margin-bottom:12px;color:var(--text)">Related Resources</h3>
+<div style="display:flex;flex-wrap:wrap;gap:8px">
+<a href="/pharma-calculators" style="display:inline-block;padding:8px 14px;background:var(--blue-bg);color:var(--blue);border-radius:6px;font-size:13px;font-weight:600;text-decoration:none">Pharma Calculators</a>
+<a href="/antibiotic-stock-calculator" style="display:inline-block;padding:8px 14px;background:var(--surface-alt);color:var(--text2);border-radius:6px;font-size:13px;font-weight:600;text-decoration:none;border:1px solid var(--outline)">Antibiotic Stock</a>
+<a href="/hub" style="display:inline-block;padding:8px 14px;background:var(--surface-alt);color:var(--text2);border-radius:6px;font-size:13px;font-weight:600;text-decoration:none;border:1px solid var(--outline)">All Topics</a>
+</div>
+</section>
+<div id="vl-footer"><!--vl-footer-bake-start--><footer>
+<div class="footer-grid">
+<div class="footer-col"><div style="display:flex;align-items:center;gap:10px;margin-bottom:12px"><img src="/logo.png" alt="VigyanLLM Logo" class="site-logo" style="height:36px;width:auto" loading="lazy"><span style="font-family:var(--font-h);font-size:var(--font-sm);font-weight:800;color:#fff">VigyanLLM</span></div><p style="font-size:var(--font-sm);color:rgba(255,255,255,.60);line-height:1.6">Sovereign Healthcare &amp; Life Sciences AI.<br>Built in India. For the world.</p></div>
+<div class="footer-col"><p class="footer-col-title">Products</p><a href="/primer">Primer Design</a><a href="/blast">BLAST</a><a href="/arrhenius-calculator">Arrhenius</a><a href="/pharma-calculators">Pharma Calculators</a></div>
+<div class="footer-col"><p class="footer-col-title">Platform</p><a href="/platform">Overview</a><a href="/pricing">Pricing</a><a href="/about">About</a></div>
+<div class="footer-col"><p class="footer-col-title">Resources</p><a href="/blog">Blog</a><a href="/faq">FAQ</a><a href="/glossary">Glossary</a></div>
+<div class="footer-col"><p class="footer-col-title">Contact</p><a href="mailto:contact@vigyanllm.in">contact@vigyanllm.in</a><a href="/privacy">Privacy</a><a href="/terms">Terms</a></div>
+</div>
+<div class="footer-bottom"><span>&copy; 2026 VigyanLLM Private Limited · Sovereign Research AI</span><span>www.vigyanllm.in</span></div>
+</footer><!--vl-footer-bake-end--></div>
+<script defer src="/search-index.js"></script>
+<script defer src="/auth-shared.js"></script>
+<script src="/pharma-calc.js"></script>
+<script defer src="/review-modal.js"></script>
+<script src="/includes.js"></script>
+<script defer src="/analytics.js"></script>
+<script>
+// ── Arrhenius calculator ──────────────────────────────────────
+function calcArrhenius(){
+  var ea = parseFloat(document.getElementById('arr-ea').value);
+  var tref = parseFloat(document.getElementById('arr-tref').value);
+  var kref = parseFloat(document.getElementById('arr-kref').value);
+  var t = parseFloat(document.getElementById('arr-t').value);
+  var potency = parseFloat(document.getElementById('arr-potency').value);
+  if(!ea||!tref||!kref||!t||!potency){ alert('All fields required.'); return; }
+  var result = PharmaCalc.calculateArrhenius(t, ea, tref, kref);
+  document.getElementById('arr-k').textContent = result.k.toExponential(4)+' /day';
+  document.getElementById('arr-t90').textContent = result.t90.toFixed(1)+' days';
+  document.getElementById('arr-a').textContent = result.A.toExponential(4);
+  document.getElementById('arr-results').classList.add('visible');
+}
+
+function copyResults(id){
+  var el = document.getElementById(id);
+  navigator.clipboard.writeText(el.innerText).then(function(){
+    var btn = document.querySelector('#'+id+' .copy-btn');
+    btn.textContent='Copied!'; setTimeout(function(){btn.textContent='Copy Results'},1500);
+  });
+}
+</script>
+</body>
+</html>
