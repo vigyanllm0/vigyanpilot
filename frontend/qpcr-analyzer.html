@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Free qPCR Analyzer — Amplification, Melt & Standard Curves Online</title>
+<meta name="description" content="Analyze qPCR runs in your browser. Upload CFX CSV, RDML, or template files. Amplification curves, melt peaks, standard curves, expression analysis. Free, no login, data never leaves your browser.">
+<link rel="stylesheet" href="/design-tokens.css">
+<style>
+  :root { --navy: #0f172a; --teal: #0d9488; }
+  body { font-family: 'Open Sans', sans-serif; margin: 0; background: #f8fafc; color: #1e293b; }
+  .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+  .hero { background: linear-gradient(135deg, #0f172a, #1e3a5f); color: white; padding: 40px 20px; text-align: center; }
+  .hero h1 { font-size: 2.2rem; margin: 0 0 8px; }
+  .hero p { opacity: 0.85; max-width: 700px; margin: 0 auto; }
+  .upload-zone { border: 2px dashed #94a3b8; border-radius: 12px; padding: 40px; text-align: center; margin: 20px 0; cursor: pointer; background: white; }
+  .upload-zone:hover { border-color: #0d9488; background: #f0fdfa; }
+  .upload-zone.dragover { border-color: #0d9488; background: #f0fdfa; }
+  .tabs { display: flex; gap: 4px; margin: 20px 0 0; border-bottom: 2px solid #e2e8f0; }
+  .tab { padding: 10px 20px; cursor: pointer; border: none; background: none; font-size: 14px; color: #64748b; border-bottom: 2px solid transparent; margin-bottom: -2px; }
+  .tab.active { color: #0d9488; border-bottom-color: #0d9488; font-weight: 600; }
+  .tab-content { display: none; padding: 20px 0; }
+  .tab-content.active { display: block; }
+  .chart-container { background: white; border-radius: 8px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin: 16px 0; }
+  canvas { width: 100%; height: 400px; }
+  .controls { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0; }
+  .controls button, .controls select, .controls input { padding: 6px 12px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 13px; }
+  .controls button { background: #0d9488; color: white; border: none; cursor: pointer; }
+  .controls button:hover { background: #0b7a6f; }
+  .data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .data-table th, .data-table td { padding: 8px; border: 1px solid #e2e8f0; text-align: left; }
+  .data-table th { background: #f1f5f9; font-weight: 600; }
+  .data-table tr:hover { background: #f8fafc; }
+  .plate-grid { display: grid; gap: 2px; margin: 16px 0; }
+  .plate-cell { width: 28px; height: 28px; border-radius: 3px; border: 1px solid #cbd5e1; cursor: pointer; font-size: 9px; display: flex; align-items: center; justify-content: center; }
+  .info-bar { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 12px 16px; margin: 16px 0; font-size: 14px; }
+  .qc-flag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px; margin: 2px; }
+  .qc-flag.warning { background: #fef3c7; color: #92400e; }
+  .qc-flag.strong { background: #fee2e2; color: #991b1b; }
+  .qc-flag.info { background: #dbeafe; color: #1e40af; }
+  .research-banner { background: #fef9c3; border: 1px solid #fde68a; padding: 8px 16px; text-align: center; font-size: 13px; color: #854d0e; }
+  @media (max-width: 768px) { .hero h1 { font-size: 1.5rem; } canvas { height: 300px; } }
+</style>
+</head>
+<body>
+
+<div class="research-banner">Research use only. Not for clinical diagnostic decisions.</div>
+
+<div class="hero">
+  <h1>qPCR Data Analyzer</h1>
+  <p>Upload your run file. Get amplification curves, melt peaks, standard curves, and expression analysis. Free. No login. Your data never leaves your browser.</p>
+</div>
+
+<div class="container">
+  <div class="upload-zone" id="uploadZone">
+    <p style="font-size:1.2rem;margin:0 0 8px;">Drop your qPCR file here</p>
+    <p style="color:#64748b;margin:0;">Supports: Bio-Rad CFX CSV · RDML 1.2 · Generic Template (TSV/CSV)</p>
+    <p style="color:#94a3b8;font-size:12px;margin:8px 0 0;">Or click to browse · Or paste data below</p>
+  </div>
+  <input type="file" id="fileInput" hidden>
+
+  <textarea id="pasteArea" rows="4" style="width:100%;background:#f8fafc;border:1px solid #cbd5e1;border-radius:8px;padding:8px;font-family:monospace;font-size:12px;" placeholder="Paste tabular data here (Well, Sample, Target, Channel, Cq, ...)"></textarea>
+  <div class="controls" style="margin:8px 0;">
+    <button id="parseBtn">Parse Data</button>
+    <button id="clearBtn" style="background:#64748b;">Clear</button>
+    <span id="formatInfo" style="color:#64748b;font-size:13px;"></span>
+  </div>
+
+  <div id="statusBar" class="info-bar" style="display:none;"></div>
+
+  <div id="mainContent" style="display:none;">
+    <div class="tabs">
+      <button class="tab active" data-tab="amplification">Amplification</button>
+      <button class="tab" data-tab="melt">Melt</button>
+      <button class="tab" data-tab="standard">Standard Curve</button>
+      <button class="tab" data-tab="expression">Expression</button>
+      <button class="tab" data-tab="table">Data Table</button>
+      <button class="tab" data-tab="plate">Plate View</button>
+      <button class="tab" data-tab="qc">QC Flags</button>
+    </div>
+
+    <!-- Amplification -->
+    <div class="tab-content active" id="tab-amplification">
+      <div class="controls">
+        <label>Channels:</label>
+        <select id="ampChannelSelect" multiple size="4" style="min-width:120px;"></select>
+        <label>Y-axis:</label>
+        <select id="ampYMode"><option value="linear">Linear</option><option value="log">Log</option></select>
+        <button id="ampToggleBaseline">Toggle Baseline</button>
+        <button id="ampExport">Export PNG</button>
+      </div>
+      <div class="chart-container">
+        <canvas id="ampCanvas"></canvas>
+      </div>
+    </div>
+
+    <!-- Melt -->
+    <div class="tab-content" id="tab-melt">
+      <div class="controls">
+        <label>Channel:</label>
+        <select id="meltChannelSelect"></select>
+        <button id="meltExport">Export PNG</button>
+      </div>
+      <div class="chart-container">
+        <canvas id="meltCanvas"></canvas>
+      </div>
+    </div>
+
+    <!-- Standard Curve -->
+    <div class="tab-content" id="tab-standard">
+      <div class="controls">
+        <label>Target:</label>
+        <select id="stdTargetSelect"></select>
+      </div>
+      <div class="chart-container">
+        <canvas id="stdCanvas"></canvas>
+      </div>
+      <div id="stdStats" class="info-bar"></div>
+    </div>
+
+    <!-- Expression -->
+    <div class="tab-content" id="tab-expression">
+      <div class="controls">
+        <label>Reference targets:</label>
+        <select id="exprRefSelect" multiple size="3" style="min-width:120px;"></select>
+        <label>Control sample:</label>
+        <select id="exprCtrlSelect"></select>
+        <label>Method:</label>
+        <select id="exprMethod"><option value="pfaffl">Pfaffl (efficiency-corrected)</option><option value="livak">Livak (2^-ddCq)</option></select>
+        <button id="exprCompute">Compute</button>
+      </div>
+      <div class="chart-container">
+        <canvas id="exprCanvas"></canvas>
+      </div>
+      <div id="exprTable"></div>
+    </div>
+
+    <!-- Data Table -->
+    <div class="tab-content" id="tab-table">
+      <div class="controls">
+        <input type="text" id="tableSearch" placeholder="Search..." style="flex:1;min-width:200px;">
+        <select id="tableGroupBy"><option value="">No grouping</option><option value="sample">Group by Sample</option><option value="target">Group by Target</option><option value="channel">Group by Channel</option></select>
+        <button id="tableExportCsv">Export CSV</button>
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="data-table" id="dataTable"></table>
+      </div>
+    </div>
+
+    <!-- Plate View -->
+    <div class="tab-content" id="tab-plate">
+      <div class="controls">
+        <label>Layout:</label>
+        <select id="plateLayout"><option value="96">96-well</option><option value="384">384-well</option></select>
+        <label>Color by:</label>
+        <select id="plateColorBy"><option value="cq">Cq</option><option value="sample">Sample</option><option value="target">Target</option><option value="status">Status</option></select>
+      </div>
+      <div id="plateGrid" class="plate-grid"></div>
+    </div>
+
+    <!-- QC Flags -->
+    <div class="tab-content" id="tab-qc">
+      <div id="qcSummary"></div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { parseRun, detectFormat, analyzeRun, makeRun, canonicalChannel } from './qpcr/qpcr-engine.js';
+import Chart from './qpcr/qpcr-charts.js';
+
+let run = null;
+let analysis = null;
+let ampChart = null;
+
+const uploadZone = document.getElementById('uploadZone');
+const fileInput = document.getElementById('fileInput');
+const pasteArea = document.getElementById('pasteArea');
+const parseBtn = document.getElementById('parseBtn');
+const clearBtn = document.getElementById('clearBtn');
+const formatInfo = document.getElementById('formatInfo');
+const statusBar = document.getElementById('statusBar');
+const mainContent = document.getElementById('mainContent');
+
+uploadZone.addEventListener('click', () => fileInput.click());
+uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('dragover'); });
+uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
+uploadZone.addEventListener('drop', e => { e.preventDefault(); uploadZone.classList.remove('dragover'); const f = e.dataTransfer.files[0]; if (f) readFile(f); });
+fileInput.addEventListener('change', e => { if (e.target.files[0]) readFile(e.target.files[0]); });
+
+function readFile(file) {
+  const reader = new FileReader();
+  reader.onload = () => { pasteArea.value = reader.result; parse(); };
+  reader.readAsText(file);
+}
+
+function parse() {
+  const text = pasteArea.value.trim();
+  if (!text) { showStatus('No data to parse.', 'error'); return; }
+  try {
+    const fmt = detectFormat(text);
+    formatInfo.textContent = `Format: ${fmt}`;
+    run = parseRun(text, 'upload');
+    analysis = analyzeRun(run, {});
+    showStatus(`Parsed ${run.wells.length} wells, ${run.samples.length} samples, ${run.targets.length} targets, ${run.channels.length} channels.`, 'success');
+    mainContent.style.display = 'block';
+    initViews();
+  } catch (err) {
+    showStatus('Parse error: ' + err.message, 'error');
+    mainContent.style.display = 'none';
+  }
+}
+
+function showStatus(msg, type) {
+  statusBar.style.display = 'block';
+  statusBar.textContent = msg;
+  statusBar.style.background = type === 'error' ? '#fee2e2' : '#dcfce7';
+  statusBar.style.borderColor = type === 'error' ? '#fecaca' : '#bbf7d0';
+  statusBar.style.color = type === 'error' ? '#991b1b' : '#166534';
+}
+
+parseBtn.addEventListener('click', parse);
+clearBtn.addEventListener('click', () => { pasteArea.value = ''; mainContent.style.display = 'none'; statusBar.style.display = 'none'; formatInfo.textContent = ''; });
+
+// Tabs
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
+  });
+});
+
+function initViews() {
+  // Amplification chart
+  const ampCanvas = document.getElementById('ampCanvas');
+  ampCanvas.width = ampCanvas.parentElement.clientWidth;
+  ampCanvas.height = 400;
+  ampChart = new Chart(ampCanvas, { xLabel: 'Cycle', yLabel: 'Fluorescence' });
+  const chSel = document.getElementById('ampChannelSelect');
+  chSel.innerHTML = '';
+  run.channels.forEach((ch, i) => {
+    const opt = document.createElement('option');
+    opt.value = i; opt.textContent = ch.canonical; opt.selected = true;
+    chSel.appendChild(opt);
+  });
+  updateAmpChart();
+  chSel.addEventListener('change', updateAmpChart);
+  document.getElementById('ampYMode').addEventListener('change', updateAmpChart);
+
+  // Melt channel select
+  const meltSel = document.getElementById('meltChannelSelect');
+  meltSel.innerHTML = '';
+  run.channels.forEach((ch, i) => {
+    const opt = document.createElement('option'); opt.value = i; opt.textContent = ch.canonical;
+    meltSel.appendChild(opt);
+  });
+
+  // Standard curve target select
+  const stdSel = document.getElementById('stdTargetSelect');
+  stdSel.innerHTML = '';
+  run.targets.forEach((t, i) => {
+    const opt = document.createElement('option'); opt.value = t.id; opt.textContent = t.name;
+    stdSel.appendChild(opt);
+  });
+
+  // Expression selects
+  const refSel = document.getElementById('exprRefSelect');
+  refSel.innerHTML = '';
+  run.targets.forEach(t => {
+    const opt = document.createElement('option'); opt.value = t.id; opt.textContent = t.name;
+    if (t.isReference) opt.selected = true;
+    refSel.appendChild(opt);
+  });
+  const ctrlSel = document.getElementById('exprCtrlSelect');
+  ctrlSel.innerHTML = '';
+  run.samples.forEach(s => {
+    const opt = document.createElement('option'); opt.value = s.id; opt.textContent = s.name;
+    ctrlSel.appendChild(opt);
+  });
+
+  // Data table
+  renderTable();
+
+  // Plate view
+  renderPlate();
+
+  // QC
+  renderQc();
+}
+
+function updateAmpChart() {
+  if (!ampChart || !run) return;
+  ampChart.series = [];
+  const selectedChannels = Array.from(document.getElementById('ampChannelSelect').selectedOptions).map(o => parseInt(o.value));
+  const yMode = document.getElementById('ampYMode').value;
+  for (const chIdx of selectedChannels) {
+    const ch = run.channels[chIdx];
+    if (!ch) continue;
+    // group wells by sample for this channel
+    const bySample = {};
+    for (const w of run.wells) {
+      if (w.channelId !== chIdx) continue;
+      const s = run.samples[w.sampleId];
+      if (!bySample[s.name]) bySample[s.name] = [];
+      bySample[s.name].push(w);
+    }
+    for (const [sampleName, wells] of Object.entries(bySample)) {
+      const w = wells[0];
+      const data = Array.from(w.amplification).map((v, i) => ({ x: i + 1, y: yMode === 'log' ? Math.log10(Math.max(v, 1e-6)) : v }));
+      ampChart.addSeries(`${sampleName} (${ch.canonical})`, data);
+    }
+  }
+  ampChart.render();
+}
+
+document.getElementById('ampExport').addEventListener('click', () => {
+  if (ampChart) ampChart.exportPNG('amplification.png');
+});
+
+function renderTable() {
+  const table = document.getElementById('dataTable');
+  const search = document.getElementById('tableSearch').value.toLowerCase();
+  const groupBy = document.getElementById('tableGroupBy').value;
+  let html = '<thead><tr><th>Well</th><th>Sample</th><th>Target</th><th>Channel</th><th>Cq</th><th>Cq SD</th><th>Tm</th></tr></thead><tbody>';
+  for (const w of run.wells) {
+    const sample = run.samples[w.sampleId];
+    const target = run.targets[w.targetId];
+    const channel = run.channels[w.channelId];
+    const wellName = String.fromCharCode(65 + w.row) + (w.col + 1);
+    if (search && !wellName.toLowerCase().includes(search) && !(sample?.name || '').toLowerCase().includes(search) && !(target?.name || '').toLowerCase().includes(search)) continue;
+    html += `<tr><td>${wellName}</td><td>${sample?.name || ''}</td><td>${target?.name || ''}</td><td>${channel?.canonical || ''}</td><td>${w.cq != null ? w.cq.toFixed(2) : '-'}</td><td>${w.cqSD != null ? w.cqSD.toFixed(2) : '-'}</td><td>${w.tm != null ? w.tm.toFixed(1) : '-'}</td></tr>`;
+  }
+  html += '</tbody>';
+  table.innerHTML = html;
+}
+
+document.getElementById('tableSearch').addEventListener('input', renderTable);
+document.getElementById('tableGroupBy').addEventListener('change', renderTable);
+
+document.getElementById('tableExportCsv').addEventListener('click', () => {
+  let csv = 'Well,Sample,Target,Channel,Cq,CqSD,Tm\n';
+  for (const w of run.wells) {
+    const sample = run.samples[w.sampleId];
+    const target = run.targets[w.targetId];
+    const channel = run.channels[w.channelId];
+    const wellName = String.fromCharCode(65 + w.row) + (w.col + 1);
+    csv += `${wellName},${sample?.name || ''},${target?.name || ''},${channel?.canonical || ''},${w.cq != null ? w.cq : ''},${w.cqSD != null ? w.cqSD : ''},${w.tm != null ? w.tm : ''}\n`;
+  }
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = 'qpcr_data.csv'; a.click();
+  URL.revokeObjectURL(url);
+});
+
+function renderPlate() {
+  const grid = document.getElementById('plateGrid');
+  const layout = document.getElementById('plateLayout').value;
+  const colorBy = document.getElementById('plateColorBy').value;
+  const cols = layout === '384' ? 24 : 12;
+  const rows = layout === '384' ? 16 : 8;
+  grid.style.gridTemplateColumns = `repeat(${cols}, 28px)`;
+  let html = '';
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const well = run.wells.find(w => w.row === r && w.col === c);
+      let bg = '#f1f5f9';
+      let label = '';
+      if (well) {
+        const sample = run.samples[well.sampleId];
+        label = String.fromCharCode(65 + r) + (c + 1);
+        if (colorBy === 'cq' && well.cq != null) {
+          const intensity = Math.max(0, Math.min(1, (40 - well.cq) / 20));
+          bg = `rgba(13, 148, 136, ${0.2 + intensity * 0.8})`;
+        } else if (colorBy === 'sample') {
+          const colors = ['#dbeafe', '#dcfce7', '#fef3c7', '#fce7f3', '#e0e7ff'];
+          bg = colors[sample?.id % colors.length] || '#f1f5f9';
+        }
+      }
+      html += `<div class="plate-cell" style="background:${bg};" title="${label}">${label}</div>`;
+    }
+  }
+  grid.innerHTML = html;
+}
+
+document.getElementById('plateLayout').addEventListener('change', renderPlate);
+document.getElementById('plateColorBy').addEventListener('change', renderPlate);
+
+function renderQc() {
+  const summary = document.getElementById('qcSummary');
+  const qc = analysis.qc;
+  let html = '<h3>QC Flags</h3>';
+  if (qc.run.length === 0 && Object.values(qc.wells).every(f => f.length === 0)) {
+    html += '<p style="color:#16a34a;">No QC flags — all clear.</p>';
+  } else {
+    for (const f of qc.run) {
+      html += `<span class="qc-flag ${f.severity}">${f.code}: ${f.detail}</span><br>`;
+    }
+    for (const [wid, flags] of Object.entries(qc.wells)) {
+      for (const f of flags) {
+        html += `<span class="qc-flag ${f.severity}">Well ${wid}: ${f.code} — ${f.detail}</span><br>`;
+      }
+    }
+  }
+  // Standard curve stats
+  if (analysis.standardCurves) {
+    html += '<h3 style="margin-top:16px;">Standard Curves</h3>';
+    for (const [tid, curve] of Object.entries(analysis.standardCurves)) {
+      if (!curve) { html += `<p>Target ${tid}: insufficient standards</p>`; continue; }
+      const target = run.targets.find(t => t.id == tid);
+      html += `<p><b>${target?.name || tid}</b>: slope=${curve.slope.toFixed(3)}, intercept=${curve.intercept.toFixed(3)}, R²=${curve.r2.toFixed(4)}, E=${curve.efficiencyPct.toFixed(1)}%</p>`;
+    }
+  }
+  summary.innerHTML = html;
+}
+
+// Expression compute
+document.getElementById('exprCompute').addEventListener('click', () => {
+  const refTargets = Array.from(document.getElementById('exprRefSelect').selectedOptions).map(o => parseInt(o.value));
+  const ctrlSample = parseInt(document.getElementById('exprCtrlSelect').value);
+  const method = document.getElementById('exprMethod').value;
+  analysis = analyzeRun(run, { referenceTargets: refTargets, controlSample: ctrlSample, method });
+  // Render expression table
+  const table = document.getElementById('exprTable');
+  let html = '<table class="data-table"><thead><tr><th>Sample</th><th>Target</th><th>ΔCq</th><th>ΔΔCq</th><th>Fold Change</th><th>Method</th></tr></thead><tbody>';
+  for (const [key, e] of Object.entries(analysis.expression)) {
+    const sample = run.samples[e.sampleId];
+    const target = run.targets[e.targetId];
+    html += `<tr><td>${sample?.name || e.sampleId}</td><td>${target?.name || e.targetId}</td><td>${e.dCq.toFixed(2)}</td><td>${e.ddCq.toFixed(2)}</td><td>${e.fold.toFixed(3)} ± ${e.foldSD.toFixed(3)}</td><td>${e.method}</td></tr>`;
+  }
+  html += '</tbody></table>';
+  table.innerHTML = html;
+  renderQc();
+});
+</script>
+</body>
+</html>
