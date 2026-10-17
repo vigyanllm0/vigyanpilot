@@ -13,6 +13,23 @@ FRONTEND = os.path.join(os.path.dirname(__file__), "frontend")
 BRAND_URL = "https://www.vigyanllm.in"
 TODAY = datetime.date.today().isoformat()
 
+# ── Stage-1 release switch (founder sign-off gate) ────────────────────────
+# When non-empty, these pharma URLs are HELD from the sitemap.
+# Flip to [] to release Stage 1 (one-command: regenerate sitemap → sync → invalidate → IndexNow).
+HELD_FOR_SIGNOFF = [
+    "/antibiotic-stock-calculator",
+    "/antibiotic-synergy-calculator",
+    "/arrhenius-calculator",
+    "/dose-response-calculator",
+    "/mpc-calculator",
+    "/osmolarity-calculator",
+    "/pk-pd-calculator",
+    "/protein-binding-calculator",
+    "/time-kill-calculator",
+    "/pharma-calculators",
+    "/cloning-simulator",
+]
+
 # ── Page classification for prioritization ──────────────────────────────────
 PRIORITY_MAP = {
     # Tier 1: Core product pages (1.0)
@@ -231,6 +248,10 @@ def generate_sitemap_xml():
             continue
         
         clean_url = get_clean_url(fp)
+        # Stage-1 release switch: hold pharma URLs until founder sign-off
+        clean_path = clean_url.replace(BRAND_URL, "")
+        if clean_path in HELD_FOR_SIGNOFF:
+            continue
         priority = get_priority(fp, rel)
         changefreq = get_changefreq(fp, rel)
         # Per-file lastmod from source mtime (was: stamping TODAY on every URL,
