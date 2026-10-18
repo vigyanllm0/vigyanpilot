@@ -112,7 +112,16 @@ export function makeAnalysis() {
  * Auto-detect format from file content.
  * Returns one of: 'rdml', 'cfx_csv', 'template', 'unknown'
  */
-export function detectFormat(text) {
+export function detectFormat(text, fileName) {
+  // Check file extension first
+  if (fileName) {
+    const ext = fileName.toLowerCase().split('.').pop();
+    if (ext === 'pcrd') return 'pcrd';
+    if (ext === 'rdml') return 'rdml';
+    if (ext === 'csv') {
+      // Could be CFX or generic; fall through to content detection
+    }
+  }
   const t = (text || '').trim();
   if (!t) return 'unknown';
   // RDML is XML
@@ -424,11 +433,12 @@ export function parseTemplate(text, fileName) {
  * Main parse entry point — auto-detect + dispatch.
  */
 export function parseRun(text, fileName) {
-  const fmt = detectFormat(text);
+  const fmt = detectFormat(text, fileName);
   switch (fmt) {
     case 'rdml': return parseRdml(text, fileName);
     case 'cfx_csv': return parseCfxCsv(text, fileName);
     case 'template': return parseTemplate(text, fileName);
+    case 'pcrd': throw new Error('Bio-Rad .pcrd is a proprietary binary format. Please export from CFX Maestro: File → Export → RDML or CSV. See the export guide below.');
     default: throw new Error('Unknown format. Try the generic template or check your export.');
   }
 }

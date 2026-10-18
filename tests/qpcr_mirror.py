@@ -110,7 +110,13 @@ def guess_reference(name):
     return any(k in n for k in ["gapdh", "actb", "beta", "18s", "rpl", "tbp"])
 
 
-def detect_format(text):
+def detect_format(text, file_name=None):
+    if file_name:
+        ext = file_name.lower().split(".")[-1]
+        if ext == "pcrd":
+            return "pcrd"
+        if ext == "rdml":
+            return "rdml"
     t = (text or "").strip()
     if not t:
         return "unknown"
@@ -418,13 +424,15 @@ def parse_template(text, file_name=None):
 
 
 def parse_run(text, file_name=None):
-    fmt = detect_format(text)
+    fmt = detect_format(text, file_name)
     if fmt == "rdml":
         return parse_rdml(text, file_name)
     elif fmt == "cfx_csv":
         return parse_cfx_csv(text, file_name)
     elif fmt == "template":
         return parse_template(text, file_name)
+    elif fmt == "pcrd":
+        raise ValueError("Bio-Rad .pcrd is a proprietary binary format. Please export from CFX Maestro: File → Export → RDML or CSV.")
     else:
         raise ValueError("Unknown format. Try the generic template or check your export.")
 

@@ -10,11 +10,12 @@
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://www.vigyanllm.in/assets/og-qpcr-analyzer.png">
-<link rel="stylesheet" href="/design-tokens.css">
+<link rel="stylesheet" href="/frontend/design-tokens.css">
 <style>
   :root { --navy: #0f172a; --teal: #0d9488; }
   body { font-family: 'Open Sans', sans-serif; margin: 0; background: #f8fafc; color: #1e293b; }
-  .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+  .container { max-width: 1400px; margin: 0 auto; padding: 20px; overflow-x: hidden; }
+  @media (max-width: 768px) { .container { padding: 12px; } .plate-grid { overflow-x: auto; } }
   .hero { background: linear-gradient(135deg, #0f172a, #1e3a5f); color: white; padding: 40px 20px; text-align: center; }
   .hero h1 { font-size: 2.2rem; margin: 0 0 8px; }
   .hero p { opacity: 0.85; max-width: 700px; margin: 0 auto; }
@@ -71,7 +72,7 @@
     <p style="color:#64748b;margin:0;">Supports: Bio-Rad CFX CSV · RDML 1.2 · Generic Template (TSV/CSV)</p>
     <p style="color:#94a3b8;font-size:12px;margin:8px 0 0;">Or click to browse · Or paste data below</p>
   </div>
-  <input type="file" id="fileInput" hidden>
+  <input type="file" id="fileInput" style="position:absolute;width:1px;height:1px;overflow:hidden;opacity:0;pointer-events:none;" accept="*/*">
 
   <textarea id="pasteArea" rows="4" style="width:100%;background:#f8fafc;border:1px solid #cbd5e1;border-radius:8px;padding:8px;font-family:monospace;font-size:12px;" placeholder="Paste tabular data here (Well, Sample, Target, Channel, Cq, ...)"></textarea>
   <div class="controls" style="margin:8px 0;">
@@ -95,7 +96,7 @@
 </div>
 <div id="exportGuides" style="margin:20px 0;padding:16px;background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;">
     <h3 style="margin:0 0 8px;font-size:15px;">How to Export from Your Instrument</h3>
-    <details style="margin:4px 0;"><summary style="cursor:pointer;font-weight:600;">Bio-Rad CFX Maestro</summary><p style="font-size:13px;margin:8px 0;">1. Open your run in CFX Maestro → 2. Click "Export" → "Export to CSV" → 3. Select "Well, Fluor, Target, Content, Cq" + amplification cycles → 4. Save and upload here. Or export as RDML 1.2 for full data.</p></details>
+    <details style="margin:4px 0;"><summary style="cursor:pointer;font-weight:600;">Bio-Rad CFX Maestro (.pcrd files)</summary><p style="font-size:13px;margin:8px 0;"><b>Option A (recommended):</b> Export as RDML 1.2 → File → Export → "Export as RDML" → upload the .rdml file here (full data, all wells, melt curves).<br><b>Option B:</b> Export as CSV → File → Export → "Export to CSV" → select "Well, Fluor, Target, Content, Cq" + amplification cycles → upload here.<br><b>Why not .pcrd directly?</b> .pcrd is Bio-Rad's proprietary binary format. We detect .pcrd uploads and guide you to export. <em>(v1.1 will add experimental .pcrd support — research spike in progress.)</em></p></details>
     <details style="margin:4px 0;"><summary style="cursor:pointer;font-weight:600;">Applied Biosystems QuantStudio</summary><p style="font-size:13px;margin:8px 0;">1. Open results in QuantStudio Design &amp; Analysis → 2. File → Export → "Results" (CSV) → 3. Include amplification data → 4. Upload the CSV here. For melt data, export "Melt Curve" separately.</p></details>
     <details style="margin:4px 0;"><summary style="cursor:pointer;font-weight:600;">Generic Template</summary><p style="font-size:13px;margin:8px 0;">Download the <a href="qpcr/template.tsv" download>template TSV</a>. Fill in Well, Sample, Target, Channel, Cq, and optional Amplification (semicolon-separated). Upload here. Works with any instrument.</p></details>
   </div>
@@ -230,6 +231,7 @@
 
 <script type="module">
 import { parseRun, detectFormat, analyzeRun, makeRun, canonicalChannel, savitzkyGolayDerivative, detectTmPeaks, saveView, loadView, listViews, serializeViewState, deserializeViewState, generateMethods } from './qpcr/qpcr-engine.js';
+window.__engineLoaded = true;
 
 // Funnel analytics (consent-gated, privacy-safe: format + counts only, never data)
 function track(event, params) {
@@ -262,30 +264,31 @@ fileInput.addEventListener('change', e => { if (e.target.files[0]) readFile(e.ta
 
 function readFile(file) {
   const reader = new FileReader();
-  reader.onload = () => { pasteArea.value = reader.result; parse(); };
+  reader.onload = () => { pasteArea.value = reader.result; parse(file.name); };
   reader.readAsText(file);
 }
 
-function parse() {
+function parse(fileName) {
   const text = pasteArea.value.trim();
   if (!text) { showStatus('No data to parse.', 'error'); return; }
+  const fName = fileName || 'upload';
   try {
-    const fmt = detectFormat(text);
+    const fmt = detectFormat(text, fName);
     formatInfo.textContent = `Format: ${fmt}`;
-    run = parseRun(text, 'upload');
+    run = parseRun(text, fName);
     analysis = analyzeRun(run, {});
     showStatus(`Parsed ${run.wells.length} wells, ${run.samples.length} samples, ${run.targets.length} targets, ${run.channels.length} channels.`, 'success');
     mainContent.style.display = 'block';
     initViews();
     hashCheck();
-    track('qpcr_file_uploaded', { format: detectFormat(pasteArea.value.trim()), well_count: run.wells.length });
+    track('qpcr_file_uploaded', { format: detectFormat(pasteArea.value.trim(), fName), well_count: run.wells.length });
   } catch (err) {
     showStatus('Parse error: ' + err.message, 'error');
     mainContent.style.display = 'none';
     // File feedback loop
     const feedback = document.createElement('div');
     feedback.style.cssText = 'margin:12px 0;padding:12px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;font-size:13px;';
-    feedback.innerHTML = 'Couldn\\'t parse this file. <a href="mailto:feedback@vigyanllm.in?subject=qPCR+Parse+Error&body=Format+info:+ ' + encodeURIComponent(err.message) + '" style="color:#dc2626;font-weight:600;">Report this file</a> (metadata only — no data sent). Or try the <a href="qpcr/template.tsv" download>generic template</a>.';
+    feedback.innerHTML = "Couldn't parse this file. <a href='mailto:feedback@vigyanllm.in?subject=qPCR+Parse+Error' style='color:#dc2626;font-weight:600;'>Report this file</a> (metadata only - no data sent). Or try the <a href='qpcr/template.tsv' download>generic template</a>.";
     statusBar.parentElement.insertBefore(feedback, statusBar.nextSibling);
   }
 }
@@ -298,7 +301,7 @@ function showStatus(msg, type) {
   statusBar.style.color = type === 'error' ? '#991b1b' : '#166534';
 }
 
-parseBtn.addEventListener('click', parse);
+parseBtn.addEventListener('click', () => parse());
 clearBtn.addEventListener('click', () => { pasteArea.value = ''; mainContent.style.display = 'none'; statusBar.style.display = 'none'; formatInfo.textContent = ''; });
 
 // View-state: Save
