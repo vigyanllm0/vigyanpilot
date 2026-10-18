@@ -119,6 +119,12 @@ def detect_format(text, file_name=None):
             return "rdml"
         if ext == "xlsx":
             return "xlsx"
+        if ext == "xls":
+            return "xls"
+        if ext == "qbg":
+            return "qbg"
+        if ext == "zip":
+            return "zip"
     t = (text or "").strip()
     if not t:
         return "unknown"
@@ -542,10 +548,16 @@ def parse_run(text, file_name=None):
         return parse_cfx_csv(text, file_name)
     elif fmt == "template":
         return parse_template(text, file_name)
-    elif fmt == "pcrd":
-        raise ValueError("Bio-Rad .pcrd is a proprietary binary format. Please export from CFX Maestro: File → Export → RDML or CSV.")
     elif fmt == "xlsx":
         return parse_xlsx_file(file_name) if file_name else None
+    elif fmt == "xls":
+        raise ValueError("Legacy Excel .xls detected. Please re-save as .xlsx or export as CSV.")
+    elif fmt == "qbg":
+        raise ValueError("Qiagen Rotor-Gene .qbg is a proprietary binary format. Please export from Rotor-Gene Q: File → Export → Excel/CSV.")
+    elif fmt == "pcrd":
+        raise ValueError("Bio-Rad .pcrd is a proprietary binary format. Please export from CFX Maestro: File → Export → RDML or CSV.")
+    elif fmt == "zip":
+        raise ValueError("ZIP archive detected. Please extract the file and upload individually.")
     else:
         raise ValueError("Unknown format. Try the generic template or check your export.")
 

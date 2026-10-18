@@ -112,17 +112,54 @@ export function makeAnalysis() {
  * Auto-detect format from file content.
  * Returns one of: 'rdml', 'cfx_csv', 'template', 'unknown'
  */
-export function detectFormat(text, fileName) {
-  // Check file extension first
+export function detectFormat(text, fileName, buffer) {
+  // Magic-byte sniffing (content-based, not extension-based)
+  if (buffer && buffer.byteLength >= 4) {
+    const view = new DataView(buffer);
+    // ZIP container (PK\\x03\\x04)
+    if (view.getUint8(0) === 0x50 && view.getUint8(1) === 0x4B && view.getUint8(2) === 0x03 && view.getUint8(3) === 0x04) {
+      // Check inner contents
+      try {
+        // Quick check: does it contain xl/workbook.xml?
+        const files = extractZipSync(buffer);
+        if (files['xl/workbook.xml']) return 'xlsx';
+        // Check for RDML in zip
+        if (Object.keys(files).some(f => f.endsWith('.rdml') || f.endsWith('.xml'))) return 'zip-rdml';
+        // Multiple data files → zip-batch
+        const dataFiles = Object.keys(files).filter(f => /\\.(csv|tsv|rdml|xlsx|txt)$/i.test(f));
+        if (dataFiles.length > 1) return 'zip-batch';
+        if (dataFiles.length === 1) return detectFormat('', dataFiles[0]);
+      } catch (e) {}
+      return 'zip';
+    }
+    // OLE compound document (D0 CF 11 E0)
+    if (view.getUint8(0) === 0xD0 && view.getUint8(1) === 0xCF && view.getUint8(2) === 0x11 && view.getUint8(3) === 0xE0) {
+      return 'xls'; // legacy Excel (or possibly .qbg — spike needed)
+    }
+  }
+  // Check file extension
   if (fileName) {
     const ext = fileName.toLowerCase().split('.').pop();
     if (ext === 'pcrd') return 'pcrd';
     if (ext === 'rdml') return 'rdml';
     if (ext === 'xlsx') return 'xlsx';
+    if (ext === 'xls') return 'xls';
+    if (ext === 'qbg') return 'qbg';
+    if (ext === 'zip') return 'zip';
     if (ext === 'csv') {
       // Could be CFX or generic; fall through to content detection
     }
   }
+  // Text-based detection
+  const t = (text || '').trim();
+  if (!t) return 'unknown';
+  if (t.startsWith('<?xml') || t.startsWith('<rdml') || t.includes('<rdml')) return 'rdml';
+  if (t.includes('Well,Fluor,Target,Content') || t.includes('Well\\tFluor\\tTarget')) return 'cfx_csv';
+  if (t.includes('Amplification Data') && t.includes('Well')) return 'cfx_csv';
+  if (t.includes('Cq,Well') || t.includes('Well,Cq')) return 'cfx_csv';
+  if (t.includes('well\\tsample\\ttarget\\tchannel') || t.includes('Well\\tSample\\tTarget\\tChannel')) return 'template';
+  return 'unknown';
+}
   const t = (text || '').trim();
   if (!t) return 'unknown';
   // RDML is XML
@@ -457,7 +494,12 @@ export function parseRun(text, fileName) {
     case 'cfx_csv': return parseCfxCsv(text, fileName);
     case 'template': return parseTemplate(text, fileName);
     case 'xlsx': throw new Error('Excel .xlsx requires binary parsing. Use parseXlsxAsync() with an ArrayBuffer, or save as CSV (File → Save As → CSV).');
+    case 'xls': throw new Error('Legacy Excel .xls detected. Please re-save as .xlsx (File → Save As → .xlsx) or export as CSV. Most instruments that produce .xls can re-save in 10 seconds.');
+    case 'qbg': throw new Error('Qiagen Rotor-Gene .qbg is a proprietary binary format. Please export from Rotor-Gene Q software: File → Export → Excel/CSV. See the export guide below.');
     case 'pcrd': throw new Error('Bio-Rad .pcrd is a proprietary binary format. Please export from CFX Maestro: File → Export → RDML or CSV. See the export guide below.');
+    case 'zip': throw new Error('ZIP archive detected. Please extract the file and upload individually, or use the ZIP upload feature.');
+    case 'zip-batch': throw new Error('ZIP archive with multiple files. Use the ZIP upload feature to select which file to analyze.');
+    case 'zip-rdml': throw new Error('ZIP archive containing RDML. Please extract and upload the .rdml file directly.');
     default: throw new Error('Unknown format. Try the generic template or check your export.');
   }
 }
@@ -561,6 +603,26 @@ export async function parseXlsxAsync(buffer, fileName) {
 }
 
 // ── ZIP / XLSX helpers ──
+
+function extractZipSync(buffer) {
+  const files = {};
+  const view = new DataView(buffer);
+  const cdOffset = findCentralDirectory(view);
+  if (cdOffset < 0) return files;
+  let offset = cdOffset;
+  while (offset < buffer.byteLength - 4) {
+    const sig = view.getUint32(offset, true);
+    if (sig !== 0x02014b50) break;
+    const nameLen = view.getUint16(offset + 28, true);
+    const extraLen = view.getUint16(offset + 30, true);
+    const commentLen = view.getUint16(offset + 32, true);
+    const nameBytes = new Uint8Array(buffer, offset + 46, nameLen);
+    const name = new TextDecoder().decode(nameBytes);
+    files[name] = true; // just store name, not content
+    offset += 46 + nameLen + extraLen + commentLen;
+  }
+  return files;
+}
 
 async function extractZip(buffer) {
   const files = {};
