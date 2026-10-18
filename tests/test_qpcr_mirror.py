@@ -315,6 +315,11 @@ def test_demo_problem_run_flags():
 
 def test_xlsx_parse():
     """XLSX file parses correctly via openpyxl mirror."""
+    try:
+        import openpyxl
+    except ImportError:
+        import pytest
+        pytest.skip("openpyxl not installed")
     run = parse_xlsx_file("tests/fixtures/qpcr/test_xlsx.xlsx")
     assert len(run["wells"]) == 5
     assert len(run["samples"]) == 4
