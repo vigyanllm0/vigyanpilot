@@ -117,6 +117,8 @@ def detect_format(text, file_name=None):
             return "pcrd"
         if ext == "rdml":
             return "rdml"
+        if ext == "xlsx":
+            return "xlsx"
     t = (text or "").strip()
     if not t:
         return "unknown"

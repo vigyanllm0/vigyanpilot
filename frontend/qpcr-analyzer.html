@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Free qPCR Analyzer — Amplification, Melt & Standard Curves Online</title>
-<meta name="description" content="Analyze qPCR runs in your browser. Upload CFX CSV, RDML, or template files. Amplification curves, melt peaks, standard curves, expression analysis. Free, no login, data never leaves your browser.">
+<meta name="description" content="Analyze qPCR runs in your browser. Upload CFX CSV, RDML, XLSX, or template files. Amplification curves, melt peaks, standard curves, expression analysis. Free, no login, data never leaves your browser.">
 <meta property="og:image" content="https://www.vigyanllm.in/assets/og-qpcr-analyzer.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -99,6 +99,7 @@
     <details style="margin:4px 0;"><summary style="cursor:pointer;font-weight:600;">Bio-Rad CFX Maestro (.pcrd files)</summary><p style="font-size:13px;margin:8px 0;"><b>Option A (recommended):</b> Export as RDML 1.2 → File → Export → "Export as RDML" → upload the .rdml file here (full data, all wells, melt curves).<br><b>Option B:</b> Export as CSV → File → Export → "Export to CSV" → select "Well, Fluor, Target, Content, Cq" + amplification cycles → upload here.<br><b>Why not .pcrd directly?</b> .pcrd is Bio-Rad's proprietary binary format. We detect .pcrd uploads and guide you to export. <em>(v1.1 will add experimental .pcrd support — research spike in progress.)</em></p></details>
     <details style="margin:4px 0;"><summary style="cursor:pointer;font-weight:600;">Applied Biosystems QuantStudio</summary><p style="font-size:13px;margin:8px 0;">1. Open results in QuantStudio Design &amp; Analysis → 2. File → Export → "Results" (CSV) → 3. Include amplification data → 4. Upload the CSV here. For melt data, export "Melt Curve" separately.</p></details>
     <details style="margin:4px 0;"><summary style="cursor:pointer;font-weight:600;">Generic Template</summary><p style="font-size:13px;margin:8px 0;">Download the <a href="qpcr/template.tsv" download>template TSV</a>. Fill in Well, Sample, Target, Channel, Cq, and optional Amplification (semicolon-separated). Upload here. Works with any instrument.</p></details>
+    <details style="margin:4px 0;"><summary style="cursor:pointer;font-weight:600;">Excel (.xlsx)</summary><p style="font-size:13px;margin:8px 0;">Upload any .xlsx file with columns: Well, Sample, Target, Channel, Content, Cq, CqSD, Tm, Amplification. First row must be headers. Amplification data can be semicolon-separated in one cell. The tool auto-detects columns by name.</p></details>
   </div>
   <div id="mainContent" style="display:none;">
     <div class="tabs">
@@ -230,7 +231,7 @@
 </script>
 
 <script type="module">
-import { parseRun, detectFormat, analyzeRun, makeRun, canonicalChannel, savitzkyGolayDerivative, detectTmPeaks, saveView, loadView, listViews, serializeViewState, deserializeViewState, generateMethods } from './qpcr/qpcr-engine.js';
+import { parseRun, detectFormat, analyzeRun, makeRun, canonicalChannel, savitzkyGolayDerivative, detectTmPeaks, saveView, loadView, listViews, serializeViewState, deserializeViewState, generateMethods, parseXlsxAsync } from './qpcr/qpcr-engine.js';
 window.__engineLoaded = true;
 
 // Funnel analytics (consent-gated, privacy-safe: format + counts only, never data)
@@ -262,7 +263,28 @@ uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag
 uploadZone.addEventListener('drop', e => { e.preventDefault(); uploadZone.classList.remove('dragover'); const f = e.dataTransfer.files[0]; if (f) readFile(f); });
 fileInput.addEventListener('change', e => { if (e.target.files[0]) readFile(e.target.files[0]); });
 
-function readFile(file) {
+async function readFile(file) {
+  const ext = file.name.toLowerCase().split('.').pop();
+  if (ext === 'xlsx') {
+    // Binary format - read as ArrayBuffer and parse async
+    const reader = new FileReader();
+    reader.onload = async () => {
+      try {
+        run = await parseXlsxAsync(reader.result, file.name);
+        analysis = analyzeRun(run, {});
+        showStatus(`Parsed ${run.wells.length} wells, ${run.samples.length} samples, ${run.targets.length} targets, ${run.channels.length} channels.`, 'success');
+        mainContent.style.display = 'block';
+        initViews();
+        hashCheck();
+        track('qpcr_file_uploaded', { format: 'xlsx', well_count: run.wells.length });
+      } catch (err) {
+        showStatus('Parse error: ' + err.message, 'error');
+        mainContent.style.display = 'none';
+      }
+    };
+    reader.readAsArrayBuffer(file);
+    return;
+  }
   const reader = new FileReader();
   reader.onload = () => { pasteArea.value = reader.result; parse(file.name); };
   reader.readAsText(file);

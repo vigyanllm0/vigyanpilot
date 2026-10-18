@@ -118,6 +118,7 @@ export function detectFormat(text, fileName) {
     const ext = fileName.toLowerCase().split('.').pop();
     if (ext === 'pcrd') return 'pcrd';
     if (ext === 'rdml') return 'rdml';
+    if (ext === 'xlsx') return 'xlsx';
     if (ext === 'csv') {
       // Could be CFX or generic; fall through to content detection
     }
@@ -438,9 +439,238 @@ export function parseRun(text, fileName) {
     case 'rdml': return parseRdml(text, fileName);
     case 'cfx_csv': return parseCfxCsv(text, fileName);
     case 'template': return parseTemplate(text, fileName);
+    case 'xlsx': throw new Error('Excel .xlsx requires binary parsing. Use parseXlsxAsync() with an ArrayBuffer, or save as CSV (File → Save As → CSV).');
     case 'pcrd': throw new Error('Bio-Rad .pcrd is a proprietary binary format. Please export from CFX Maestro: File → Export → RDML or CSV. See the export guide below.');
     default: throw new Error('Unknown format. Try the generic template or check your export.');
   }
+}
+
+/**
+ * Parse XLSX from an ArrayBuffer. Async (uses DecompressionStream).
+ * Returns a canonical Run.
+ */
+export async function parseXlsxAsync(buffer, fileName) {
+  const run = makeRun({ fileName: fileName || 'xlsx', sourceFormat: 'xlsx' });
+  try {
+    // 1. Parse ZIP to extract XML files
+    const files = await extractZip(buffer);
+    const sharedStringsXml = files['xl/sharedStrings.xml'] || '';
+    const strings = sharedStringsXml ? parseSharedStrings(sharedStringsXml) : [];
+    const sheetXml = files['xl/worksheets/sheet1.xml'] || files['xl/worksheets/sheet2.xml'] || '';
+
+    // 3. Parse sheet data
+    const rows = parseSheetXml(sheetXml, strings);
+
+    if (rows.length === 0) throw new Error('No data found in spreadsheet');
+
+    // 4. Detect header row
+    const headers = rows[0].map(h => String(h || '').trim());
+    const colIndex = (name) => headers.findIndex(h => new RegExp(name, 'i').test(h));
+
+    const wellCol = colIndex('well');
+    const sampleCol = colIndex('sample');
+    const targetCol = colIndex('target');
+    const channelCol = colIndex('channel|fluor|dye');
+    const contentCol = colIndex('content');
+    const cqCol = colIndex('cq|ct');
+    const cqSdCol = colIndex('cqsd|cq.*sd|std');
+    const tmCol = colIndex('tm|melt');
+    const ampCol = colIndex('amplif|data|curve');
+
+    const targetsSeen = new Set();
+    const samplesSeen = new Set();
+    const channelsSeen = new Set();
+
+    for (let i = 1; i < rows.length; i++) {
+      const cols = rows[i];
+      if (!cols || cols.length === 0) continue;
+      const wellName = wellCol >= 0 ? String(cols[wellCol] || '') : String(cols[0] || '');
+      if (!wellName) continue;
+
+      const { row, col } = parsePosition(wellName, 96);
+      const sampleName = sampleCol >= 0 ? String(cols[sampleCol] || wellName) : wellName;
+      const targetName = targetCol >= 0 ? String(cols[targetCol] || 'Unknown') : 'Unknown';
+      const rawChannel = channelCol >= 0 ? String(cols[channelCol] || 'FAM') : 'FAM';
+      const content = contentCol >= 0 ? String(cols[contentCol] || '') : '';
+      const cqRaw = cqCol >= 0 ? cols[cqCol] : '';
+      const cq = cqRaw !== '' && cqRaw != null ? parseFloat(cqRaw) : null;
+      const cqSdRaw = cqSdCol >= 0 ? cols[cqSdCol] : '';
+      const cqSd = cqSdRaw !== '' && cqSdRaw != null ? parseFloat(cqSdRaw) : null;
+      const tmRaw = tmCol >= 0 ? cols[tmCol] : '';
+      const tm = tmRaw !== '' && tmRaw != null ? parseFloat(tmRaw) : null;
+
+      if (!samplesSeen.has(sampleName)) {
+        samplesSeen.add(sampleName);
+        run.samples.push(makeSample(run.samples.length, sampleName, guessSampleType(sampleName)));
+      }
+      if (!targetsSeen.has(targetName)) {
+        targetsSeen.add(targetName);
+        run.targets.push(makeTarget(run.targets.length, targetName, null, guessReference(targetName)));
+      }
+      const canon = canonicalChannel(rawChannel) || 'FAM';
+      if (!channelsSeen.has(canon)) {
+        channelsSeen.add(canon);
+        run.channels.push(makeChannel(run.channels.length, rawChannel, canon));
+      }
+
+      const sampleId = run.samples.findIndex(s => s.name === sampleName);
+      const targetId = run.targets.findIndex(t => t.name === targetName);
+      const channelId = run.channels.findIndex(c => c.canonical === canon);
+
+      let amp = new Float32Array(0);
+      if (ampCol >= 0 && cols[ampCol]) {
+        const val = String(cols[ampCol]);
+        const vals = val.split(/[;,|]/).map(Number).filter(v => !isNaN(v));
+        amp = new Float32Array(vals);
+      }
+
+      const well = makeWell(run.wells.length, row, col, '96');
+      well.sampleId = sampleId;
+      well.targetId = targetId;
+      well.channelId = channelId;
+      well.cq = isFinite(cq) ? cq : null;
+      well.cqSD = isFinite(cqSd) ? cqSd : null;
+      well.tm = isFinite(tm) ? tm : null;
+      well.amplification = amp;
+      run.wells.push(well);
+    }
+
+    if (run.channels.length === 0) run.channels.push(makeChannel(0, 'FAM', 'FAM'));
+    for (const t of run.targets) if (t.channelId == null) t.channelId = 0;
+  } catch (e) {
+    throw new Error('XLSX parse failed: ' + e.message);
+  }
+  return run;
+}
+
+// ── ZIP / XLSX helpers ──
+
+async function extractZip(buffer) {
+  const files = {};
+  const view = new DataView(buffer);
+  // Find central directory
+  const cdOffset = findCentralDirectory(view);
+  if (cdOffset < 0) throw new Error('Not a valid ZIP file');
+
+  let offset = cdOffset;
+  while (offset < buffer.byteLength - 4) {
+    const sig = view.getUint32(offset, true);
+    if (sig !== 0x02014b50) break; // central directory file header
+    const nameLen = view.getUint16(offset + 28, true);
+    const extraLen = view.getUint16(offset + 30, true);
+    const commentLen = view.getUint16(offset + 32, true);
+    const localHeaderOffset = view.getUint32(offset + 42, true);
+    const compressedSize = view.getUint32(offset + 20, true);
+    const method = view.getUint16(offset + 10, true);
+    const nameBytes = new Uint8Array(buffer, offset + 46, nameLen);
+    const name = new TextDecoder().decode(nameBytes);
+
+    // Read local file
+    const localSig = view.getUint32(localHeaderOffset, true);
+    if (localSig !== 0x04034b50) { offset += 46 + nameLen + extraLen + commentLen; continue; }
+    const localNameLen = view.getUint16(localHeaderOffset + 26, true);
+    const localExtraLen = view.getUint16(localHeaderOffset + 28, true);
+    const dataOffset = localHeaderOffset + 30 + localNameLen + localExtraLen;
+
+    if (method === 0) {
+      // Stored
+      files[name] = new TextDecoder().decode(new Uint8Array(buffer, dataOffset, compressedSize));
+    } else if (method === 8) {
+      // Deflated
+      const compressed = new Uint8Array(buffer, dataOffset, compressedSize);
+      const decompressed = await inflate(compressed);
+      files[name] = new TextDecoder().decode(decompressed);
+    }
+    offset += 46 + nameLen + extraLen + commentLen;
+  }
+  return files;
+}
+
+function findCentralDirectory(view) {
+  // Search from end for EOCD signature
+  for (let i = view.byteLength - 22; i >= 0; i--) {
+    if (view.getUint32(i, true) === 0x06054b50) {
+      return view.getUint32(i + 16, true);
+    }
+  }
+  return -1;
+}
+
+async function inflate(data) {
+  const ds = new DecompressionStream('deflate-raw');
+  const writer = ds.writable.getWriter();
+  writer.write(data);
+  writer.close();
+  const reader = ds.readable.getReader();
+  const chunks = [];
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    chunks.push(value);
+  }
+  const total = chunks.reduce((a, c) => a + c.length, 0);
+  const result = new Uint8Array(total);
+  let off = 0;
+  for (const c of chunks) { result.set(c, off); off += c.length; }
+  return result;
+}
+
+function parseSharedStrings(xml) {
+  const strings = [];
+  const siRegex = /<si>([\s\S]*?)<\/si>/gi;
+  let m;
+  while ((m = siRegex.exec(xml)) !== null) {
+    const tMatch = m[1].match(/<t[^>]*>([\s\S]*?)<\/t>/);
+    strings.push(tMatch ? tMatch[1] : '');
+  }
+  return strings;
+}
+
+function parseSheetXml(xml, strings) {
+  const rows = [];
+  const rowRegex = /<row[^>]*>([\s\S]*?)<\/row>/gi;
+  let rowMatch;
+  while ((rowMatch = rowRegex.exec(xml)) !== null) {
+    const cells = [];
+    const cellRegex = /<c\s+r="([A-Z]+)(\d+)"(?:\s+t="(\w+)")?[^>]*>(?:<v>([\s\S]*?)<\/v>)?/gi;
+    let cellMatch;
+    // Parse all cells in this row
+    const cellMap = {};
+    // Handle inlineStr: <c r="A1" t="inlineStr"><is><t>value</t></is></c>
+    const inlineRe = /<c\s+r="([A-Z]+)(\d+)"\s+t="inlineStr"[^>]*><is><t[^>]*>([\s\S]*?)<\/t><\/is><\/c>/gi;
+    let im;
+    while ((im = inlineRe.exec(rowMatch[1])) !== null) {
+      cellMap[im[1]] = im[3];
+    }
+    // Handle shared strings and numbers
+    const re = /<c\s+r="([A-Z]+)(\d+)"(?:\s+t="(\w+)")?[^>]*>(?:<v>([\s\S]*?)<\/v>)?/gi;
+    let cm;
+    while ((cm = re.exec(rowMatch[1])) !== null) {
+      const col = cm[1];
+      if (cellMap[col] !== undefined) continue;
+      const type = cm[3] || 'n';
+      const val = cm[4] || '';
+      let cellValue;
+      if (type === 's') {
+        cellValue = strings[parseInt(val)] || '';
+      } else if (type === 'str') {
+        cellValue = val;
+      } else {
+        cellValue = val !== '' ? (isNaN(parseFloat(val)) ? val : parseFloat(val)) : '';
+      }
+      cellMap[col] = cellValue;
+    }
+    // Convert cell map to array by column letter
+    const cols = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const maxCol = Math.max(...Object.keys(cellMap).map(c => cols.indexOf(c[0]) + 1), 0);
+    const rowArr = [];
+    for (let ci = 0; ci < maxCol; ci++) {
+      const colLetter = cols[ci];
+      rowArr.push(cellMap[colLetter] !== undefined ? cellMap[colLetter] : '');
+    }
+    rows.push(rowArr);
+  }
+  return rows;
 }
 
 /* ───────────────────────────────────────────────────────────────
