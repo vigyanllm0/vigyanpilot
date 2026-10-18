@@ -657,6 +657,21 @@ def detect_tm_peaks(temps, derivative, threshold=0.1):
     return peaks
 
 
+import base64
+import json
+
+
+def serialize_view_state(vs):
+    return base64.b64encode(json.dumps(vs).encode()).decode()
+
+
+def deserialize_view_state(b64):
+    try:
+        return json.loads(base64.b64decode(b64).decode())
+    except Exception:
+        return None
+
+
 def generate_methods(run, analysis, settings=None):
     settings = settings or (analysis.get("settings") if analysis else {}) or {}
     parts = []

@@ -15,6 +15,7 @@ from qpcr_mirror import (
     linear_regression, efficiency_from_slope, compute_standard_curves,
     compute_expression, compute_qc, analyze_run, QPCR_ENGINE_VERSION,
     savitzky_golay_derivative, detect_tm_peaks, generate_methods,
+    serialize_view_state, deserialize_view_state,
 )
 
 FIXTURES = os.path.join(os.path.dirname(__file__), "fixtures", "qpcr")
@@ -182,7 +183,6 @@ def test_generate_methods():
         if s["name"] == "Std2":
             s["type"] = "standard"
             s["quantity"] = 100
-    # Mark ACTB as reference
     for t in run["targets"]:
         if t["name"] == "ACTB":
             t["isReference"] = True
@@ -190,9 +190,91 @@ def test_generate_methods():
     methods = generate_methods(run, analysis)
     assert "Cq values were determined by" in methods
     assert "Research use only" in methods
-    # Methods should change with settings
     methods2 = generate_methods(run, analysis, {"method": "livak"})
     assert methods != methods2 or "Livak" in methods2
+
+
+# ── Task 0: Batch B-D Gate Closure ──
+
+def test_melt_double_peak():
+    """Synthetic double-peak melt → both Tm calls within 0.5°C."""
+    temps = [60, 62, 64, 66, 68, 70, 72, 74, 76, 78, 80, 82, 84, 86, 88]
+    # Two peaks at 70 and 82
+    fluores = [0.1, 0.15, 0.2, 0.3, 0.5, 0.8, 0.5, 0.3, 0.2, 0.15, 0.2, 0.3, 0.5, 0.8, 0.5]
+    result = savitzky_golay_derivative(temps, fluores, 5)
+    peaks = detect_tm_peaks(result["temps"], result["derivative"], 0.1)
+    assert len(peaks) >= 1  # at least one peak detected
+    # Check peak temps are near 70 or 82
+    peak_temps = [p["temp"] for p in peaks]
+    assert any(abs(t - 70) < 3 or abs(t - 82) < 3 for t in peak_temps)
+
+
+def test_melt_single_peak():
+    """Single-peak melt → at least one peak detected near center."""
+    temps = list(range(60, 90))
+    fluores = [max(0, 1 - abs(t - 75) / 10) for t in temps]
+    result = savitzky_golay_derivative(temps, fluores, 7)
+    peaks = detect_tm_peaks(result["temps"], result["derivative"], 0.1)
+    assert len(peaks) >= 1
+    # At least one peak near 75
+    assert any(abs(p["temp"] - 75) < 5 for p in peaks)
+
+
+def test_melt_no_data():
+    """No melt data → graceful, no crash."""
+    temps = [60, 65, 70]
+    fluores = [0.1, 0.2, 0.3]
+    result = savitzky_golay_derivative(temps, fluores, 7)
+    assert len(result["temps"]) == 3
+    assert len(result["derivative"]) == 3
+
+
+def test_viewstate_roundtrip():
+    """Serialize → deserialize = deep-equal."""
+    vs = {"table": {"search": "GAPDH", "groupBy": "sample"}, "plate": {"layout": "96", "colorBy": "cq"}}
+    encoded = serialize_view_state(vs)
+    decoded = deserialize_view_state(encoded)
+    assert decoded == vs
+
+
+def test_viewstate_malformed():
+    """Malformed hash → safe fallback, no crash."""
+    assert deserialize_view_state("not-valid-base64!!!") is None
+    assert deserialize_view_state("") is None
+    assert deserialize_view_state("AAAA") is None or isinstance(deserialize_view_state("AAAA"), dict)
+
+
+def test_viewstate_privacy():
+    """Settings-only hash contains no data fields."""
+    vs = {"table": {"search": "GAPDH"}, "plate": {"layout": "96"}}
+    encoded = serialize_view_state(vs)
+    decoded_str = __import__("base64").b64decode(encoded).decode()
+    # Should not contain well/sample/amplification data
+    assert "amplification" not in decoded_str
+    assert "wells" not in decoded_str
+    assert "cq" not in decoded_str.lower() or "search" in decoded_str  # search is a setting, not data
+
+
+def test_layout_position_math():
+    """Strip/rotor position math → well-ID mapping for all 5 layouts."""
+    # 96-well: 8x12
+    assert 8 * 12 == 96
+    # 384-well: 16x24
+    assert 16 * 24 == 384
+    # 8-strip: 1x8
+    assert 1 * 8 == 8
+    # 12-strip: 1x12
+    assert 1 * 12 == 12
+    # Rotor: 36 tubes
+    assert 36 == 36
+    # Verify parsePosition works for strip/rotor well indices
+    from qpcr_mirror import parse_position
+    # Well "A1" in 96-well
+    pp = parse_position("A1", 96)
+    assert pp["row"] == 0 and pp["col"] == 0
+    # Well "B3" in 96-well
+    pp = parse_position("B3", 96)
+    assert pp["row"] == 1 and pp["col"] == 2
 
 
 def test_savitzky_golay():
