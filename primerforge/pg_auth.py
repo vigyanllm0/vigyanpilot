@@ -690,17 +690,36 @@ def verify_email_with_token(token: str) -> bool:
         return False
 
 
+def _auto_verify_on_send_failure() -> bool:
+    """DEC-001 gate: may we auto-activate an account when its verification mail fails?
+
+    Historically this was unconditional — during the 12-day Brevo outage it kept
+    the password-signup funnel from becoming a permanent black hole. Now that mail
+    reliably delivers (Phase-1 closure, 2026-10-18), auto-verify means email
+    ownership is never proven at signup, so the founder's DEC-001 ruling
+    (pending work.md) flips it OFF: strict verify-by-email is the default, and
+    auto-verify becomes an explicit opt-in escape hatch for a future transport
+    outage. Set AUTO_VERIFY_ON_SEND_FAILURE=1 to re-enable the lenient path
+    during an outage; unset (default) = strict.
+    """
+    return os.environ.get("AUTO_VERIFY_ON_SEND_FAILURE", "").strip().lower() in ("1", "true", "yes", "on")
+
+
 def _activate_unverifiable(user_id: int, email: str, reason: str) -> bool:
     """Activate a pending account whose verification mail cannot be delivered.
 
-    When no transport can reach the user (no BREVO_API_KEY/SMTP_* configured,
-    or the provider is down) requiring verification would strand the account
-    forever: the user can never prove ownership, so they could never log in —
-    a password-signup funnel with a permanent black hole at the end. Activate
-    directly — the same outcome Google sign-in already produces for pending
-    accounts — mark the verification row satisfied, and record why in the
-    audit log. Real email verification resumes automatically the moment mail
-    sending works again. Returns True when the account is active.
+    DEC-001 escape hatch — called only when ``_auto_verify_on_send_failure()``
+    is true (``AUTO_VERIFY_ON_SEND_FAILURE=1``), which the founder's ruling
+    turned OFF as the default once mail reliably delivered (Phase-1 closure,
+    2026-10-18). Strict is now the norm: a failed send leaves the account
+    `pending` so verify-by-email still proves ownership.
+
+    When invoked (outage mode), the reasoning that justified the original
+    lenient path applies: with no transport able to reach the user, requiring
+    verification would strand the account forever (the user can never prove
+    ownership, so could never log in) — a password-signup funnel with a dead
+    end. Activate directly, mark the verification row satisfied, and record why
+    in the audit log. Returns True when the account is active.
     """
     try:
         execute("UPDATE users SET status = 'active' WHERE id = %s AND status = 'pending'",
@@ -757,12 +776,17 @@ def register_user(email: str, password: str, name: str = "", ip_address: str = "
                 logger.info("Resent verification email for existing pending user %s (sent=%s)", email, resent)
             if resent:
                 return {"user": {"email": email}, "requires_verification": True, "email_sent": True}
-            if _activate_unverifiable(existing["id"], email, "re-registration"):
+            # DEC-001: auto-activate a stuck pending account ONLY when the
+            # lenient path is explicitly enabled (outage mode). Strict default
+            # leaves it pending — re-registering again resends the mail.
+            if _auto_verify_on_send_failure() and _activate_unverifiable(existing["id"], email, "re-registration"):
                 token = create_token(email, existing["role"], existing["id"])
                 return {"user": {"id": existing["id"], "email": email, "role": existing["role"]},
                         "token": token, "requires_verification": False, "email_sent": False,
                         "auto_verified": True}
-            # Activation itself failed — report the honest pending state.
+            # Send failed and we're strict (or activation is disabled): report
+            # the honest pending state. The user can re-register (which resends)
+            # or wait for the transport to recover.
             return {"user": {"email": email}, "requires_verification": True, "email_sent": False}
         return {"error": "Email already registered."}
 
@@ -801,16 +825,20 @@ def register_user(email: str, password: str, name: str = "", ip_address: str = "
         logger.error("Registration: create_verification_token returned empty for user_id=%s", user["id"])
 
     if not email_sent:
-        # Graceful degradation: verification mail undeliverable → the `pending`
-        # account would be a black hole (user can never verify, so can never
-        # log in). Activate directly — same rule Google sign-in applies — and
-        # hand back a session so signup completes in one step.
-        if _activate_unverifiable(user["id"], email, "registration"):
+        # DEC-001 (strict default): when the verification mail cannot be
+        # delivered, the founder's ruling is that verification should still mean
+        # something — so we leave the account `pending` rather than silently
+        # auto-activating it. The user is NOT stranded: they can re-register
+        # (which resends the mail), wait for the transport to recover and use
+        # resend-verification, or an operator can re-enable the lenient path
+        # (AUTO_VERIFY_ON_SEND_FAILURE=1) during a genuine outage. The account
+        # row + verification token are already written, so nothing is lost.
+        if _auto_verify_on_send_failure() and _activate_unverifiable(user["id"], email, "registration"):
             token = create_token(email, user["role"], user["id"])
             return {"user": {"id": user["id"], "email": user["email"], "role": user["role"]},
                     "token": token, "requires_verification": False, "email_sent": False,
                     "auto_verified": True}
-        # Activation itself failed — report the honest pending state.
+        # Strict path (or activation disabled/failed): report the honest pending state.
         log_action(email, "registration", "User registered (status: pending, verification send failed)")
         return {"user": {"email": user["email"]}, "requires_verification": True, "email_sent": False}
 

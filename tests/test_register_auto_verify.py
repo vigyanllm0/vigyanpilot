@@ -1,13 +1,19 @@
 #!/usr/bin/env python3
-"""Auto-verify-on-send-failure registration (PG path).
+"""Verification-on-registration with the DEC-001 strict default (PG path).
 
-Prod cannot deliver verification mail today (no BREVO_API_KEY/SMTP_* wired
-anywhere), and a `pending` account would be a permanent black hole: the user
-can never prove ownership, so they could never log in — a password-signup
-funnel with a dead end. `register_user` must therefore activate the account
-directly and hand back a session (`auto_verified`) whenever BOTH transports
-fail, while the normal verify-by-email flow is unchanged when mail does go
-out. Re-registration of a stuck pending account follows the same rule.
+DEC-001 ruling (pending work.md, founder): once mail reliably delivered
+(Phase-1 closure, 2026-10-18), a verification send failure must leave the
+account `pending` — verification still proves email ownership. The historical
+auto-verify-on-send-failure behaviour is retained only as an explicit escape
+hatch (``AUTO_VERIFY_ON_SEND_FAILURE=1``) for a future transport outage, so the
+password-signup funnel cannot become a permanent black hole during one.
+
+Contract under test:
+  * strict (default): failed send -> account stays `pending`, no session, no
+    silent activation;
+  * opt-in (env=1): failed send -> auto-activate + hand back a session
+    (`auto_verified`) — the outage escape hatch;
+  * send success: normal verify-by-email flow, regardless of the flag.
 
 Pure unit tests — every DB touchpoint (fetch_one/execute/get_db) and all
 token/mail/session plumbing is monkeypatched; no database is required.
@@ -98,7 +104,24 @@ def _queries(h):
     return [q for q, _ in h["executed"]]
 
 
-def test_new_user_auto_verifies_when_mail_undeliverable(harness):
+def test_new_user_stays_pending_when_mail_undeliverable(harness, monkeypatch):
+    # DEC-001 strict default: a failed verification send must NOT silently
+    # activate the account. It stays `pending` — verification still proves
+    # email ownership — and no session is handed out.
+    monkeypatch.delenv("AUTO_VERIFY_ON_SEND_FAILURE", raising=False)
+    harness["mail_sent"] = False
+    res = pg_auth.register_user(EMAIL, PASSWORD, "Probe", ip_address="1.2.3.4")
+    assert res["requires_verification"] is True
+    assert res["email_sent"] is False
+    assert "auto_verified" not in res
+    assert "token" not in res
+    assert not any("SET status = 'active'" in q for q in _queries(harness))
+
+
+def test_new_user_auto_verifies_when_opted_in_and_mail_undeliverable(harness, monkeypatch):
+    # Outage escape hatch (DEC-001 opt-in): with the flag set, a failed send
+    # auto-activates and hands back a session so the funnel has no dead end.
+    monkeypatch.setenv("AUTO_VERIFY_ON_SEND_FAILURE", "1")
     harness["mail_sent"] = False
     res = pg_auth.register_user(EMAIL, PASSWORD, "Probe", ip_address="1.2.3.4")
     assert res.get("auto_verified") is True
@@ -125,7 +148,23 @@ def test_new_user_stays_pending_when_mail_sent(harness):
     assert not any("SET status = 'active'" in q for q in _queries(harness))
 
 
-def test_reregistration_pending_auto_verifies_when_mail_undeliverable(harness):
+def test_reregistration_pending_stays_pending_when_mail_undeliverable(harness, monkeypatch):
+    # Re-registering a stuck pending account is a verification resend, not a
+    # backdoor activation: under the strict default a failed send leaves it
+    # pending so ownership is still proven before login.
+    monkeypatch.delenv("AUTO_VERIFY_ON_SEND_FAILURE", raising=False)
+    harness["existing"] = {"id": 42, "status": "pending", "role": "user"}
+    harness["mail_sent"] = False
+    res = pg_auth.register_user(EMAIL, PASSWORD, "Probe", ip_address="1.2.3.4")
+    assert res["requires_verification"] is True
+    assert res["email_sent"] is False
+    assert "auto_verified" not in res
+    assert "token" not in res
+    assert not any("SET status = 'active'" in q for q in _queries(harness))
+
+
+def test_reregistration_pending_auto_verifies_when_opted_in(harness, monkeypatch):
+    monkeypatch.setenv("AUTO_VERIFY_ON_SEND_FAILURE", "1")
     harness["existing"] = {"id": 42, "status": "pending", "role": "user"}
     harness["mail_sent"] = False
     res = pg_auth.register_user(EMAIL, PASSWORD, "Probe", ip_address="1.2.3.4")
@@ -144,9 +183,11 @@ def test_reregistration_pending_resends_when_mail_sent(harness):
     assert "token" not in res
 
 
-def test_activation_failure_falls_back_to_pending(harness):
-    # If even the activation UPDATE fails, report the honest pending state
-    # (no session for a still-pending account) instead of a broken login.
+def test_activation_failure_falls_back_to_pending(harness, monkeypatch):
+    # Even in opt-in (outage) mode, if the activation UPDATE itself fails we
+    # report the honest pending state (no session for a still-pending account)
+    # instead of a broken login.
+    monkeypatch.setenv("AUTO_VERIFY_ON_SEND_FAILURE", "1")
     harness["fail_activate"] = True
     res = pg_auth.register_user(EMAIL, PASSWORD, "Probe", ip_address="1.2.3.4")
     assert res["requires_verification"] is True
