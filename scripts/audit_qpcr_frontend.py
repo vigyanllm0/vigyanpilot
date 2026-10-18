@@ -302,6 +302,32 @@ def run_audit(url):
               and evaluate("document.getElementById('mainContent').style.display") == "none")
         checks.append(("Universal: .qbd guided doctor card", bool(ok), f"result={r}"))
 
+        # 24. ABI EDS bundle → native per-well read (was the phantom-0-wells bug).
+        r = upload_probe("eds_demo.eds", "parse")
+        c = card_probe() if r == "parse" else {}
+        fmt = (c.get("fmt") or "").lower()
+        ok = (r == "parse" and c.get("dc") == "block"
+              and "eds" in fmt and "quantstudio" in fmt)
+        checks.append(("Universal: EDS bundle native read", bool(ok),
+                       f"result={r} card={c}"))
+
+        # 25. Vendor header + gzip of a template CSV — content beats the extension.
+        r = upload_probe("wrapped_run.qbd", "parse")
+        c = card_probe() if r == "parse" else {}
+        fmt = (c.get("fmt") or "").lower()
+        ok = (r == "parse" and c.get("dc") == "block"
+              and "template" in fmt and c.get("cq") == "block")
+        checks.append(("Universal: gzip-wrapped table unwraps", bool(ok),
+                       f"result={r} card={c}"))
+
+        # 26. Vendor run database (.qbg) → rich doctor card, no fabricated Cq.
+        r = upload_probe("wrapped_qbg.qbg", "doctor")
+        d = evaluate("document.getElementById('doctorCard').innerText || ''") if r == "doctor" else ""
+        ok = (r == "doctor" and "vendor run database" in (d or "").lower()
+              and "next step" in (d or "").lower()
+              and evaluate("document.getElementById('mainContent').style.display") == "none")
+        checks.append(("Universal: .qbg vendor-DB card", bool(ok), f"result={r}"))
+
         # Print emulation
         ws.send(json.dumps({"id": 98, "method": "Emulation.setEmulatedMedia", "params": {"media": "print"}}))
         time.sleep(1)

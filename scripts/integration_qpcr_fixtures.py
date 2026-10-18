@@ -52,11 +52,14 @@ FIXTURES = [
     ("utf16.tsv", 2, 0),               # UTF-16 encoding, no curves
     ("unknown_wide.xlsx", 4, 1),       # wide 'Cycle N' XLSX (ZIP+XML, reasoner)
     ("demo.xls", 4, 1),                # legacy OLE2/BIFF8 native read
+    # Vendor-container set (EDS bundle + gzip-wrapped tables)
+    ("eds_demo.eds", 6, 1),            # ABI EDS bundle — native per-well read + Delta Rn curves
+    ("wrapped_run.qbd", 3, 0),         # vendor header + gzip of a template CSV (content beats ext)
 ]
 
 # Doctor fixtures: must produce the guided format card (findings + next step),
 # never a phantom chart and never a bare "unsupported format" dead end.
-DOCTOR_FIXTURES = ["stub.qbd", "junk.csv"]
+DOCTOR_FIXTURES = ["stub.qbd", "junk.csv", "wrapped_qbg.qbg"]
 
 # Cq-only export (no per-cycle fluorescence): the exact shape behind the user report.
 # Expectation: parses, plots ZERO series, and says so honestly instead of a blank plot.

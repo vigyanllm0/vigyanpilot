@@ -22,6 +22,11 @@ Fixtures produced (all into tests/fixtures/qpcr/):
                      RK, MULRK, LABELSST, NUMBER, FORMULA cache, miniFAT)
   stub.qbd           Rotor-Gene-family binary stub (no data) → guided card
   junk.csv           random binary bytes renamed .csv → format doctor
+  eds_demo.eds       Applied Biosystems EDS bundle (ZIP + apldbio/sds/) —
+                     native per-well read (Delta Rn curves, ABI column-major)
+  wrapped_qbg.qbg    printable vendor banner + gzip → rich vendor-DB card
+  wrapped_run.qbd    printable vendor banner + gzip of a template CSV —
+                     content beats the ROTOR-family extension
 
 Run:  python3 scripts/make_fixtures.py          (write/refresh)
       python3 scripts/make_fixtures.py --check  (verify byte-identical)
@@ -33,6 +38,7 @@ import random
 import struct
 import sys
 import zipfile
+import zlib
 
 FIXTURE_DIR = os.path.join(os.path.dirname(__file__), "..", "tests", "fixtures", "qpcr")
 ZIP_DATE = (2026, 1, 1, 0, 0, 0)  # fixed DOS timestamp → byte-stable zips
@@ -391,6 +397,111 @@ def junk_csv():
 # ─────────────────────────────────────────────────────────────────
 # Build / check
 # ─────────────────────────────────────────────────────────────────
+# ─────────────────────────────────────────────────────────────────
+# Vendor-container fixtures (EDS bundle + gzip-wrapped tables) — T8/T9
+# ─────────────────────────────────────────────────────────────────
+def gzip_stored(data):
+    """Hand-built gzip of DEFLATE "stored" blocks (no compressor version
+    drift → byte-stable across Python releases; valid CRC32 + ISIZE trailer
+    so both the native and manual inflate paths accept it)."""
+    out = bytearray(b"\x1f\x8b\x08\x00")          # magic, CM=8, FLG=0
+    out += struct.pack("<IBB", 0, 0, 0xFF)        # MTIME=0, XFL=0, OS=255
+    i = 0
+    while True:
+        chunk = data[i:i + 65535]
+        i += len(chunk)
+        out.append(1 if i >= len(data) else 0)    # BFINAL, BTYPE=00 (stored)
+        out += struct.pack("<HH", len(chunk), len(chunk) ^ 0xFFFF)
+        out += chunk
+        if i >= len(data):
+            break
+    out += struct.pack("<II", zlib.crc32(data) & 0xFFFFFFFF,
+                       len(data) & 0xFFFFFFFF)
+    return bytes(out)
+
+
+def make_eds_demo():
+    """Applied Biosystems EDS bundle: ZIP + apldbio/sds/ analysis_result.txt
+    (13-column SDS header, Delta Rn follow rows) + plate_setup.xml
+    (detector→reporter) + experiment.xml (instrument model + run state)."""
+    header = ["Well", "Sample Name", "Detector", "Task", "Ct", "Avg Ct",
+              "Ct SD", "Delta Ct", "Qty", "Avg Qty", "Qty SD", "Amp Status",
+              "Cq Conf"]
+    recs = [
+        (1, "NTC", "Target 1", "NTC", "", "", ""),          # blank Ct → null
+        (1, "NTC", "Target 2", "NTC", "", "", ""),
+        (12, "Std 1000", "Target 1", "STANDARD", "18.25", "0.12", "1000"),
+        (12, "Std 1000", "Target 2", "STANDARD", "19.5", "0.18", "1000"),
+        (26, "Sample A", "Target 1", "UNKNOWN", "22.75", "0.25", ""),
+        (26, "Sample A", "Target 2", "UNKNOWN", "24.125", "0.31", ""),
+    ]
+    lines = ["Session Name\t", "\t".join(header)]
+    for i, (well, sample, det, task, ct, sd, qty) in enumerate(recs):
+        lines.append("\t".join([str(well), sample, det, task, ct, "", sd, "",
+                                qty, "", "", "0", "0.95"]))
+        lines.append("\t".join(
+            ["Rn values"] + ["%.4f" % (100 + 1.5 * c + 7.0 * i)
+                             for c in range(1, 6)]))
+        lines.append("\t".join(
+            ["Delta Rn values"] + ["%.4f" % (0.5 * c + 0.25 * i)
+                                   for c in range(1, 6)]))
+    ar_text = "\r\n".join(lines) + "\r\n"
+    plate = ('<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n'
+             '<Plate><Name></Name><Rows>8</Rows><Columns>12</Columns>\n'
+             '<AssayList>\n'
+             '<Assay><Name>Target 1</Name><Reporter>FAM</Reporter></Assay>\n'
+             '<Assay><Name>Target 2</Name><Reporter>VIC</Reporter></Assay>\n'
+             '</AssayList>\n</Plate>\n')
+    exp = ('<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n'
+           '<Experiment><Name>eds demo protocol</Name>'
+           '<RunState>COMPLETE</RunState>\n'
+           '<ExperimentProperty type="InstrumentInfo"><Properties>\n'
+           '<PropertyValue key="instrumentType"><String>QuantStudio 5 - '
+           '96-Well 0.2-mL Block</String></PropertyValue>\n'
+           '</Properties></ExperimentProperty>\n'
+           '<InstrumentTypeId>appletini</InstrumentTypeId>\n</Experiment>\n')
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w", zipfile.ZIP_STORED) as z:  # STORED → stable
+        for name, data in [("apldbio/sds/analysis_result.txt", ar_text),
+                           ("apldbio/sds/plate_setup.xml", plate),
+                           ("apldbio/sds/experiment.xml", exp)]:
+            zi = zipfile.ZipInfo(name, date_time=ZIP_DATE)
+            zi.compress_type = zipfile.ZIP_STORED
+            zi.external_attr = 0o644 << 16
+            z.writestr(zi, data.encode("utf-8"))
+    return buf.getvalue()
+
+
+def _bh1600_blob():
+    """Deterministic vendor-binary payload: schema keys, two run timestamps,
+    and assay/well labels in the printable-run shape the label scanner reads
+    (NULs act as separators; no data table — decoding it would be guessing)."""
+    parts = [
+        b"dm.a0\x00schema\x0bItems.Count\x00bh1600\x00",
+        b"Samples\x00Cycles\x00MeltCycles\x00AnalyzedResult\x00CtSetting\x00",
+        b"2026-01-02 03:04:05\x002026-01-02 03:05:06\x00",
+        b"FAM\x00A10\x00SYNTH ASSAY A\x00SYNTH ASSAY B\x00",
+    ]
+    filler = (b"\x00" + b"\x07\x01\x02\x03") * 64
+    return b"".join(parts) + filler
+
+
+def make_wrapped_qbg():
+    """15-byte printable vendor banner + gzip stream (the real .qbg shape:
+    sniff → binary, embedded gzip at offset 15 → rich doctor card)."""
+    return b"BHKJ20190118798" + gzip_stored(_bh1600_blob())
+
+
+def make_wrapped_qbd():
+    """Printable vendor header + gzip of a template CSV — a ROTOR-extension
+    name whose CONTENT is a readable table (content beats extension)."""
+    csv = ("Well,Sample,Target,Channel,Cq\n"
+           "A1,S1,GAPDH,FAM,20.5\n"
+           "A2,S2,GAPDH,FAM,24.1\n"
+           "B1,NTC,GAPDH,FAM,\n")
+    return b"OnePCR-DEMO-EXPORT-2.0" + gzip_stored(csv.encode("utf-8"))
+
+
 def build_all():
     return {
         "unknown_long.csv": unknown_long_csv().encode("utf-8"),
@@ -401,6 +512,9 @@ def build_all():
         "demo.xls": make_xls(),
         "stub.qbd": stub_qbd(),
         "junk.csv": junk_csv(),
+        "eds_demo.eds": make_eds_demo(),
+        "wrapped_qbg.qbg": make_wrapped_qbg(),
+        "wrapped_run.qbd": make_wrapped_qbd(),
     }
 
 

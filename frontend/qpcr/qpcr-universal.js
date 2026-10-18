@@ -43,6 +43,8 @@ export const SUPPORTED_FORMATS = [
   'Excel .xlsx — native (ZIP + XML)',
   'Legacy Excel .xls — native OLE2/BIFF8 reader',
   'ZIP — deep-probes inner .csv/.tsv/.txt/.rdml/.xlsx',
+  'Applied Biosystems EDS (.eds) — SDS bundle, native per-well read',
+  'Vendor-wrapped gzip tables (.qbg and friends) — unwraps + re-sniffs inner payload',
 ];
 
 /** Thrown when the format doctor rejects a file. `.doctor` carries the card. */
@@ -1561,6 +1563,13 @@ function strictTemplateHeader(text) {
 export function parseUniversalText(text, fileName) {
   const t = String(text || '').trim();
   if (!t) throw formatError(diagnose(null, text, fileName), 'Empty file — nothing to read');
+  // EDS analysis table first — its "Well … Cq Conf" header trips the engine's
+  // cq-first CFX fingerprint, which would return a 0-well run without error.
+  const edsRun = parseEdsText(text, fileName);
+  if (edsRun) {
+    markCqOnly(edsRun);
+    return ensureWells(edsRun, text, fileName);
+  }
   const fmt = detectFormat(text, fileName);
   if (fmt === 'rdml') {
     let run;
@@ -1580,19 +1589,19 @@ export function parseUniversalText(text, fileName) {
     }
     markCqOnly(run);
     attachDetection(run, 'rdml', 0.98, ['RDML XML document (<rdml> root)']);
-    return run;
+    return ensureWells(run, text, fileName);
   }
   if (fmt === 'cfx_csv') {
     const run = parseCfxCsv(text, fileName);
     markCqOnly(run);
     attachDetection(run, 'cfx_csv', 0.9, ['CFX-style table (header fingerprints matched)']);
-    return run;
+    return ensureWells(run, text, fileName);
   }
   if (fmt === 'template') {
     const run = parseTemplate(text, fileName);
     markCqOnly(run);
     attachDetection(run, 'template', 0.95, ['Template header: Well + Sample + Target + Channel']);
-    return run;
+    return ensureWells(run, text, fileName);
   }
   const delim = detectDelimiter(text);
   const rows = splitRows(text, delim);
@@ -1600,7 +1609,7 @@ export function parseUniversalText(text, fileName) {
   if (run) {
     if (delim === ';') run.detection.evidence.push("Detected ';' delimiter");
     else if (delim === '\t') run.detection.evidence.push('Detected tab delimiter');
-    return run;
+    return ensureWells(run, text, fileName);
   }
   throw formatError(diagnose(textToBytes(text), text, fileName));
 }
@@ -1663,6 +1672,13 @@ async function parseZip(fileName, u8) {
   const names = Object.keys(entries);
   const sheetSuffix = n => `${n} sheet${n === 1 ? '' : 's'}`;
 
+  // 0) Applied Biosystems EDS bundle (ZIP + apldbio/sds/) — native per-well read
+  if (names.some(n => /apldbio\/sds\/analysis_result\.txt$/i.test(n))) {
+    const run = await parseEdsBundle(fileName, u8, names);
+    markCqOnly(run);
+    return ensureWells(run, null, fileName);
+  }
+
   // 1) XLSX
   if (entries['xl/workbook.xml'] !== undefined) {
     try {
@@ -1680,7 +1696,7 @@ async function parseZip(fileName, u8) {
         markCqOnly(run);
         attachDetection(run, 'xlsx', 0.95,
           [`ZIP container → XLSX workbook (${sheetSuffix(grids.length)}, strict template header)`]);
-        return run;
+        return ensureWells(run, text, fileName);
       }
       const run = reasonGrids(grids, fileName, 'xlsx');
       if (run) {
@@ -1688,7 +1704,7 @@ async function parseZip(fileName, u8) {
         run.detection.format = 'xlsx';
         run.detection.evidence.unshift(
           `ZIP container → XLSX workbook (${sheetSuffix(grids.length)}, layout reasoner)`);
-        return run;
+        return ensureWells(run, text, fileName);
       }
     } catch (e) {
       if (e instanceof FormatError) throw e;
@@ -1710,6 +1726,7 @@ async function parseZip(fileName, u8) {
     if (!inner.includes('<rdml')) continue;
     let run;
     try { run = parseRdml(inner, n); } catch (e) { continue; }
+    if (!run.wells.length) continue;  // header-only RDML — keep probing
     run.meta.sourceFormat = 'rdml';
     markCqOnly(run);
     attachDetection(run, 'rdml', 0.96, [`ZIP container → RDML entry ${n}`]);
@@ -1761,7 +1778,7 @@ export async function parseFileUniversal(fileName, buffer) {
       run.detection.evidence.unshift(
         `OLE2 compound document → BIFF8 worksheet read (${sheetSuffixCount(sheets.length)})`);
       run.detection.confidence = Math.max(run.detection.confidence, 0.9);
-      return run;
+      return ensureWells(run, null, fileName);
     } catch (e) {
       if (e instanceof FormatError) throw e;
       throw formatError(doctorOleError(e));
@@ -1770,9 +1787,31 @@ export async function parseFileUniversal(fileName, buffer) {
 
   if (kind === 'zip') return parseZip(fileName, u8);
 
-  if (kind === 'gzip') throw formatError(diagnose(u8, null, fileName));
+  if (kind === 'gzip') {
+    try {
+      return await dispatchUnwrapped(fileName, await gunzipFrom(u8, 0), 'gzip container');
+    } catch (e) {
+      if (e instanceof FormatError) throw e;  // inner payload's own card
+    }
+    throw formatError(diagnose(u8, null, fileName));
+  }
 
   if (kind === 'binary') {
+    // Vendor header + embedded gzip stream (e.g. .qbg: printable banner, gzip at
+    // offset 15) — unwrap and re-sniff the payload by content, not by name.
+    const gzOff = findEmbeddedGzip(u8, 64);
+    if (gzOff > 0) {
+      try {
+        return await dispatchUnwrapped(fileName, await gunzipFrom(u8, gzOff),
+          `vendor header + gzip stream at offset ${gzOff}`);
+      } catch (e) {
+        if (e instanceof FormatError) throw e;  // inner payload's own card
+        if (ROTOR_EXTS.includes(ext)) {
+          throw formatError(rotorGuided(fileName,
+            `vendor header + gzip stream at offset ${gzOff} (decompression failed)`));
+        }
+      }
+    }
     if (ROTOR_EXTS.includes(ext)) {
       throw formatError(rotorGuided(fileName, 'proprietary binary payload (not ZIP/OLE2/gzip/text)'));
     }
@@ -1797,4 +1836,342 @@ export async function parseFileUniversal(fileName, buffer) {
 
 function sheetSuffixCount(n) {
   return `${n} sheet${n === 1 ? '' : 's'}`;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   16. Vendor containers: EDS bundle (Applied Biosystems) + gzip-unwrap
+   ───────────────────────────────────────────────────────────────── */
+
+const EDS_MODEL_RE = /QuantStudio|StepOne|ViiA|7500|7900|Applied Biosystems|ABI/i;
+
+/** ensureWells — a matched header with zero well rows is never a phantom
+   success. Throws the format doctor card (open the export / re-export). */
+function ensureWells(run, text, fileName) {
+  if (run && run.wells && run.wells.length > 0) return run;
+  const findings = ['The file matched a known qPCR data format, but it contains no well rows'];
+  const t = String(text || '').trim();
+  if (t) findings.push(`First line: ${t.split('\n')[0].replace(/\r/g, '').slice(0, 72)}`);
+  throw formatError({
+    title: 'Header matched, but no well rows found',
+    findings,
+    guidance: [
+      'Open the export and check it actually contains result rows — a header row alone is not a run.',
+      'Re-export from your instrument software with results/data included, then drop that file here.',
+    ],
+    supported: SUPPORTED_FORMATS.slice(),
+  }, `No well rows in ${fileName || 'the file'}`);
+}
+
+/** EDS analysis_result.txt → records + curves, or null when no EDS header. */
+function edsRecordsFromText(text) {
+  const lines = String(text || '').split('\n').map(l => l.replace(/\r$/, ''));
+  let headerIdx = -1;
+  for (let i = 0; i < Math.min(lines.length, 10); i++) {
+    const c = lines[i].split('\t');
+    if (c.length >= 13 && (c[0] || '').trim() === 'Well' && (c[2] || '').trim() === 'Detector'
+      && c.some(x => (x || '').trim() === 'Cq Conf')) { headerIdx = i; break; }
+  }
+  if (headerIdx < 0) return null;
+  const recs = [];
+  for (let i = headerIdx + 1; i < lines.length; i++) {
+    const c = lines[i].split('\t');
+    if (!(c.length >= 13 && /^\d+$/.test((c[0] || '').trim()))) continue;
+    const rec = {
+      well: parseInt((c[0] || '').trim(), 10),
+      sample: (c[1] || '').trim(),
+      detector: (c[2] || '').trim(),
+      task: (c[3] || '').trim(),
+      ct: num((c[4] || '').trim()),
+      cqSd: num((c[6] || '').trim()),
+      qty: num((c[8] || '').trim()),
+      rn: [],
+      drn: [],
+    };
+    for (let j = i + 1; j < lines.length; j++) {  // curve follow rows
+      const lc = lines[j].split('\t');
+      const tag = (lc[0] || '').trim();
+      if (tag !== 'Rn values' && tag !== 'Delta Rn values') break;
+      const vals = [];
+      for (let k = 1; k < lc.length; k++) {
+        const v = (lc[k] || '').replace(/\0+$/, '').trim();
+        if (v === '') continue;
+        const f = Number(v);
+        if (!Number.isNaN(f)) vals.push(f);
+      }
+      if (tag === 'Rn values') rec.rn = vals; else rec.drn = vals;
+    }
+    recs.push(rec);
+  }
+  return { recs };
+}
+
+/** Records → canonical Run (ABI column-major wells, CFX-style registries). */
+function edsAssemble(recs, fileName, firstEvidence, opts) {
+  opts = opts || {};
+  const reporters = opts.reporters || {};
+  const run = makeRun({ fileName: fileName || 'eds', sourceFormat: 'eds' });
+  let maxWell = 0;
+  for (const r of recs) if (r.well > maxWell) maxWell = r.well;
+  const layout = maxWell > 96 ? '384' : '96';
+  const nRows = layout === '384' ? 16 : 8;
+  const nCols = layout === '384' ? 24 : 12;
+  const samplesSeen = new Set();
+  const targetsSeen = new Set();
+  const channelsSeen = new Set();
+  let maxCycles = 0;
+  for (const rec of recs) {
+    const curve = rec.drn.length ? rec.drn : rec.rn;
+    if (curve.length > maxCycles) maxCycles = curve.length;
+    const sampleName = rec.sample || 'Unknown';
+    if (!samplesSeen.has(sampleName)) {
+      samplesSeen.add(sampleName);
+      run.samples.push(makeSample(run.samples.length, sampleName, typeFrom(rec.task, sampleName), rec.qty));
+    }
+    const targetName = rec.detector || 'Unknown';
+    if (!targetsSeen.has(targetName)) {
+      targetsSeen.add(targetName);
+      run.targets.push(makeTarget(run.targets.length, targetName, null, guessReference(targetName)));
+    }
+    const rawDye = reporters[targetName] || targetName;
+    const canon = canonicalChannel(rawDye) || rawDye;
+    if (!channelsSeen.has(canon)) {
+      channelsSeen.add(canon);
+      run.channels.push(makeChannel(run.channels.length, rawDye, canon));
+    }
+    const sampleId = run.samples.findIndex(x => x.name === sampleName);
+    const targetId = run.targets.findIndex(x => x.name === targetName);
+    const channelId = run.channels.findIndex(x => x.canonical === canon);
+    const n = rec.well;
+    const row = (n - 1) % nRows;
+    const col = Math.floor((n - 1) / nRows);
+    const well = makeWell(run.wells.length, row, col, layout);
+    well.sampleId = sampleId;
+    well.targetId = targetId;
+    well.channelId = channelId;
+    well.cq = rec.ct;
+    well.cqSD = rec.cqSd;
+    well.tm = null;
+    well.amplification = new Float32Array(curve);
+    run.wells.push(well);
+  }
+  if (!run.channels.length) run.channels.push(makeChannel(0, 'FAM', 'FAM'));
+  for (const t of run.targets) if (t.channelId == null) t.channelId = 0;
+  const evidence = [firstEvidence];
+  evidence.push(`${recs.length} result records → ${run.wells.length} wells, ${run.samples.length} samples, ${run.targets.length} targets, ${run.channels.length} channels`);
+  const anyDrn = recs.some(r => r.drn.length > 0);
+  const anyRn = recs.some(r => r.rn.length > 0);
+  if (anyDrn) evidence.push(`Curves: Delta Rn per cycle × ${maxCycles} cycles (baseline-corrected, instrument-reported)`);
+  else if (anyRn) evidence.push(`Curves: Rn per cycle × ${maxCycles} cycles (baseline-corrected, instrument-reported)`);
+  else evidence.push('No amplification curves in the file (Cq values only)');
+  const detPairs = [];
+  for (const tgt of run.targets) {
+    if (reporters[tgt.name]) detPairs.push(`${tgt.name} → ${reporters[tgt.name]}`);
+  }
+  if (detPairs.length) evidence.push(`Detectors: ${detPairs.join(', ')}`);
+  if (opts.instrument) evidence.push(`Instrument: ${opts.instrument}`);
+  else if (opts.instrumentId) evidence.push(`Instrument id: ${opts.instrumentId}`);
+  if (opts.runState) evidence.push(`Run state: ${opts.runState}`);
+  evidence.push(`Well numbering: ABI column-major (well 1 = A1, ${nRows}×${nCols})`);
+  run.meta.instrument = opts.instrument || opts.instrumentId || null;
+  attachDetection(run, 'eds', opts.confidence || 0.97, evidence);
+  return run;
+}
+
+/** Standalone EDS analysis_result.txt → Run, or null when it is not EDS text. */
+function parseEdsText(text, fileName) {
+  const parsed = edsRecordsFromText(text);
+  if (!parsed) return null;
+  return edsAssemble(parsed.recs, fileName,
+    'EDS analysis table (analysis_result.txt layout) → per-well read',
+    { confidence: 0.93 });
+}
+
+/** EDS bundle (ZIP + apldbio/sds/) → Run with plate/instrument metadata. */
+async function parseEdsBundle(fileName, u8, names) {
+  const find = re => names.find(n => re.test(n));
+  const arName = find(/apldbio\/sds\/analysis_result\.txt$/i);
+  const plateName = find(/apldbio\/sds\/plate_setup\.xml$/i);
+  const expName = find(/apldbio\/sds\/experiment\.xml$/i);
+  const reporters = {};
+  if (plateName) {
+    try {
+      const plateXml = await readZipEntry(u8, plateName);
+      const re = /<Name>([^<]*)<\/Name>\s*<Reporter>([^<]*)<\/Reporter>/g;
+      let m;
+      let n = 0;
+      while (n < 8 && (m = re.exec(plateXml)) !== null) {
+        const k = (m[1] || '').trim();
+        if (k && reporters[k] === undefined) { reporters[k] = (m[2] || '').trim(); n++; }
+      }
+    } catch (e) { /* plate_setup.xml is optional metadata */ }
+  }
+  let instrument = null;
+  let instrumentId = null;
+  let runState = null;
+  if (expName) {
+    try {
+      const expXml = await readZipEntry(u8, expName);
+      const strRe = /<String>([^<]*)<\/String>/g;
+      let m2;
+      while ((m2 = strRe.exec(expXml)) !== null) {
+        const v = (m2[1] || '').trim();
+        if (v && EDS_MODEL_RE.test(v)) { instrument = v; break; }
+      }
+      if (!instrument) {
+        const im = expXml.match(/<InstrumentTypeId>([^<]*)<\/InstrumentTypeId>/);
+        if (im) instrumentId = (im[1] || '').trim();
+      }
+      const rm = expXml.match(/<RunState>([^<]*)<\/RunState>/);
+      if (rm) runState = (rm[1] || '').trim();
+    } catch (e) { /* experiment.xml is optional metadata */ }
+  }
+  const arText = await readZipEntry(u8, arName);
+  const parsed = edsRecordsFromText(arText) || { recs: [] };
+  return edsAssemble(parsed.recs, fileName,
+    'Applied Biosystems EDS bundle → apldbio/sds/analysis_result.txt read natively',
+    { reporters, instrument, instrumentId, runState, confidence: 0.97 });
+}
+
+/** Printable-prefix scan → embedded gzip offset, or -1. */
+export function findEmbeddedGzip(u8, limit) {
+  const len = (u8 && u8.length) || 0;
+  const lim = Math.min(limit === undefined ? 64 : limit, len - 10);
+  for (let off = 4; off < lim; off++) {
+    if (u8[off] !== 0x1F || u8[off + 1] !== 0x8B || u8[off + 2] !== 0x08) continue;
+    let printable = true;
+    for (let i = 0; i < off; i++) {
+      if (u8[i] < 32 || u8[i] > 126) { printable = false; break; }
+    }
+    if (printable) return off;
+  }
+  return -1;
+}
+
+/** gzip header (FEXTRA/FNAME/FCOMMENT/FHCRC) → deflate-stream start offset. */
+function gunzipHeaderEnd(u8, offset) {
+  if (u8.length < offset + 10) throw new Error('gzip: truncated header');
+  const flg = u8[offset + 3];
+  let p = offset + 10;
+  if (flg & 0x04) {  // FEXTRA
+    if (p + 2 > u8.length) throw new Error('gzip: truncated extra field');
+    p += 2 + (u8[p] | (u8[p + 1] << 8));
+  }
+  if (flg & 0x08) {  // FNAME
+    while (p < u8.length && u8[p] !== 0) p++;
+    p++;
+  }
+  if (flg & 0x10) {  // FCOMMENT
+    while (p < u8.length && u8[p] !== 0) p++;
+    p++;
+  }
+  if (flg & 0x02) p += 2;  // FHCRC
+  if (p > u8.length) throw new Error('gzip: truncated header');
+  return p;
+}
+
+/** Decompress gzip at offset → payload bytes (native, else manual inflate). */
+export async function gunzipFrom(u8, offset) {
+  try {
+    if (typeof DecompressionStream !== 'undefined' && typeof Response !== 'undefined'
+      && typeof Blob !== 'undefined') {
+      const buf = await new Response(new Blob([u8.subarray(offset)]).stream()
+        .pipeThrough(new DecompressionStream('gzip'))).arrayBuffer();
+      return new Uint8Array(buf);
+    }
+  } catch (e) { /* corrupt trailer/stream → manual path below */ }
+  return inflateRawJS(u8.subarray(gunzipHeaderEnd(u8, offset)));
+}
+
+/** Latin-1 bytes → string (byte↔char 1:1, like Python's latin-1 decode). */
+function latin1(u8) {
+  let out = '';
+  for (let i = 0; i < u8.length; i += 8192) {
+    out += String.fromCharCode.apply(null, u8.subarray(i, Math.min(i + 8192, u8.length)));
+  }
+  return out;
+}
+
+/** Assay/sample labels inside a vendor binary (first-seen, capped). */
+function extractVendorLabels(text, cap) {
+  const DENY = new Set(['schema', '_items', '_size', '_version', 'flag', 'name', 'value',
+    'state', 'knownColor', 'channel', 'Dyes', 'Dye', 'Name', 'Names', 'Value', 'Values',
+    'State', 'Type', 'Flag', 'Items']);
+  const out = [];
+  const runs = String(text || '').match(/[\x20-\x7e]{3,40}/g) || [];
+  for (const t of runs) {
+    if (DENY.has(t)) continue;
+    if (t.startsWith('dm.') || t.startsWith('Items[')) continue;
+    if (/^[A-Za-z]+\.Count$/.test(t)) continue;
+    if (/(.)\1{3,}/.test(t)) continue;
+    if (!/[A-Za-z]/.test(t)) continue;
+    if (!/^[A-Za-z0-9]/.test(t) || !/[A-Za-z0-9)]$/.test(t)) continue;
+    if (/^\d{4}-\d{2}-\d{2}/.test(t)) continue;
+    if (!t.includes(' ') && !/[.(\-']/.test(t) && t.length > 5) continue;
+    if (!out.includes(t)) out.push(t);
+  }
+  return { kept: out.slice(0, cap), total: out.length };
+}
+
+/** Vendor binary payload → honest doctor card (schema read, no fabricated Cq). */
+function doctorVendorBinary(u8, note) {
+  const findings = [`${note} → decompressed to ${u8.length} bytes`,
+    'Binary payload — not text, not ZIP, not OLE2'];
+  const text = latin1(u8);
+  const markers = ['bh1600', 'Samples', 'Cycles', 'MeltCycles', 'AnalyzedResult', 'CtSetting', 'dm.'];
+  const found = markers.filter(m => text.includes(m));
+  const timestamps = [];
+  const tsRe = /\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/g;
+  let m;
+  while (timestamps.length < 4 && (m = tsRe.exec(text)) !== null) {
+    if (!timestamps.includes(m[0])) timestamps.push(m[0]);
+  }
+  const labels = extractVendorLabels(text, 12);
+  if (found.length >= 3) findings.push(`Schema keys found: ${found.join(', ')}`);
+  if (timestamps.length) findings.push(`Run timestamps: ${timestamps.join(' · ')}`);
+  if (labels.kept.length) {
+    findings.push(`Embedded labels (${labels.kept.length} of ${labels.total}): ${labels.kept.join(', ')}`);
+  }
+  const title = found.length >= 3
+    ? 'Vendor run database — schema read, Cq values not in a table'
+    : 'Vendor-wrapped binary payload — decompressed, no data table inside';
+  const guidance = found.length >= 3
+    ? [
+      'This is a vendor run database: the schema keys are readable, but the Cq values are not stored as a table — decoding them would mean guessing, so no numbers are shown.',
+      'Export a data table from your instrument software: File → Export (or Save As) → CSV/Excel, or RDML if offered.',
+      'Drop that export here — CSV/TSV/XLS/XLSX is read directly by the layout reasoner.',
+    ]
+    : [
+      'The decompressed payload is proprietary binary — no data table can be read from these bytes, so nothing is shown rather than guessed.',
+      'Export a data table from your instrument software: File → Export (or Save As) → CSV/Excel, or RDML if offered.',
+      'Drop that export here — CSV/TSV/XLS/XLSX is read directly by the layout reasoner.',
+    ];
+  return { title, findings, guidance, supported: SUPPORTED_FORMATS.slice() };
+}
+
+/** Unwrapped payload → re-sniff by content (text/ZIP/OLE2) or honest card. */
+async function dispatchUnwrapped(fileName, payload, note) {
+  const u8 = toBytes(payload);
+  const kind = sniff(u8);
+  if (kind === 'text') {
+    let run;
+    try {
+      run = parseUniversalText(decodeText(u8), fileName);
+    } catch (e) {
+      if (e instanceof FormatError && e.doctor && e.doctor.findings) e.doctor.findings.unshift(note);
+      throw e;
+    }
+    run.detection.evidence.unshift(`${note} → inner text table`);
+    return run;
+  }
+  if (kind === 'zip') {
+    const run = await parseZip(fileName, u8);
+    run.detection.evidence.unshift(`${note} → inner ZIP archive`);
+    return run;
+  }
+  if (kind === 'ole') {
+    const run = await parseFileUniversal(fileName, u8);
+    run.detection.evidence.unshift(`${note} → inner OLE2 document`);
+    return run;
+  }
+  throw formatError(doctorVendorBinary(u8, note));
 }

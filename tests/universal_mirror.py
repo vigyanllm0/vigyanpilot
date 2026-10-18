@@ -15,6 +15,7 @@ import os
 import re
 import struct
 import zipfile
+import zlib
 
 from qpcr_mirror import (
     canonical_channel,
@@ -43,6 +44,8 @@ SUPPORTED_FORMATS = [
     "Excel .xlsx — native (ZIP + XML)",
     "Legacy Excel .xls — native OLE2/BIFF8 reader",
     "ZIP — deep-probes inner .csv/.tsv/.txt/.rdml/.xlsx",
+    "Applied Biosystems EDS (.eds) — SDS bundle, native per-well read",
+    "Vendor-wrapped gzip tables (.qbg and friends) — unwraps + re-sniffs inner payload",
 ]
 
 
@@ -1268,6 +1271,12 @@ def parse_universal_text(text, file_name=None):
     t = (text or "").strip()
     if not t:
         raise _format_error(diagnose(None, text, file_name), "Empty file — nothing to read")
+    # EDS analysis table first — its "Well … Cq Conf" header trips the engine's
+    # cq-first CFX fingerprint, which would return a 0-well run without error.
+    eds_run = _parse_eds_text(text, file_name)
+    if eds_run is not None:
+        mark_cq_only(eds_run)
+        return _ensure_wells(eds_run, text, file_name)
     fmt = detect_format(text, file_name)
     if fmt == "rdml":
         try:
@@ -1284,20 +1293,20 @@ def parse_universal_text(text, file_name=None):
                  "supported": list(SUPPORTED_FORMATS)})
         mark_cq_only(run)
         attach_detection(run, "rdml", 0.98, ["RDML XML document (<rdml> root)"])
-        return run
+        return _ensure_wells(run, text, file_name)
     fmt = detect_format(text, file_name)
     if fmt == "cfx_csv":
         run = parse_cfx_csv(text, file_name)
         mark_cq_only(run)
         attach_detection(run, "cfx_csv", 0.9,
                          ["CFX-style table (header fingerprints matched)"])
-        return run
+        return _ensure_wells(run, text, file_name)
     if fmt == "template":
         run = parse_template(text, file_name)
         mark_cq_only(run)
         attach_detection(run, "template", 0.95,
                          ["Template header: Well + Sample + Target + Channel"])
-        return run
+        return _ensure_wells(run, text, file_name)
     delim = detect_delimiter(text)
     rows = split_rows(text, delim)
     run = reason_rows(rows, file_name, source_format="universal")
@@ -1306,7 +1315,7 @@ def parse_universal_text(text, file_name=None):
             run["detection"]["evidence"].append("Detected ';' delimiter")
         elif delim == "\t":
             run["detection"]["evidence"].append("Detected tab delimiter")
-        return run
+        return _ensure_wells(run, text, file_name)
     raise _format_error(diagnose(_encode(text), text, file_name))
 
 
@@ -1363,7 +1372,7 @@ def parse_file_universal(file_name, buffer_bytes):
                 0, "OLE2 compound document → BIFF8 worksheet read (%d sheet%s)"
                 % (len(sheets), "" if len(sheets) == 1 else "s"))
             run["detection"]["confidence"] = max(run["detection"]["confidence"], 0.9)
-            return run
+            return _ensure_wells(run, None, file_name)
         except FormatError:
             raise
         except Exception as e:
@@ -1373,9 +1382,31 @@ def parse_file_universal(file_name, buffer_bytes):
         return _parse_zip(file_name, u8)
 
     if kind == "gzip":
+        try:
+            return _dispatch_unwrapped(file_name, gunzip_from(u8, 0), "gzip container")
+        except FormatError:
+            raise  # inner payload's own card
+        except Exception:
+            pass
         raise _format_error(diagnose(u8, None, file_name))
 
     if kind == "binary":
+        # Vendor header + embedded gzip stream (e.g. .qbg: printable banner,
+        # gzip at offset 15) — unwrap and re-sniff the payload by content.
+        gz_off = find_embedded_gzip(u8, 64)
+        if gz_off > 0:
+            try:
+                return _dispatch_unwrapped(
+                    file_name, gunzip_from(u8, gz_off),
+                    "vendor header + gzip stream at offset %d" % gz_off)
+            except FormatError:
+                raise  # inner payload's own card
+            except Exception:
+                if ext in ROTOR_EXTS:
+                    raise _format_error(rotor_guided(
+                        file_name,
+                        "vendor header + gzip stream at offset %d (decompression failed)"
+                        % gz_off))
         if ext in ROTOR_EXTS:
             raise _format_error(rotor_guided(
                 file_name, "proprietary binary payload (not ZIP/OLE2/gzip/text)"))
@@ -1405,6 +1436,11 @@ def _parse_zip(file_name, u8):
                                           "central directory cannot be read — it may be "
                                           "truncated. Re-download or re-export it."],
                              "supported": list(SUPPORTED_FORMATS)})
+    # 0) Applied Biosystems EDS bundle (ZIP + apldbio/sds/) — native per-well read
+    if any(re.search(r"apldbio/sds/analysis_result\.txt$", n, re.I) for n in names):
+        run = _parse_eds_bundle(file_name, u8, names)
+        mark_cq_only(run)
+        return _ensure_wells(run, None, file_name)
     # 1) XLSX
     if "xl/workbook.xml" in names:
         try:
@@ -1418,7 +1454,7 @@ def _parse_zip(file_name, u8):
                                  ["ZIP container → XLSX workbook (%d sheet%s, strict "
                                   "template header)"
                                   % (len(grids), "" if len(grids) == 1 else "s")])
-                return run
+                return _ensure_wells(run, text, file_name)
             run = reason_grids(grids, file_name, source_format="xlsx")
             if run:
                 run["meta"]["sourceFormat"] = "xlsx"
@@ -1426,7 +1462,7 @@ def _parse_zip(file_name, u8):
                 run["detection"]["evidence"].insert(
                     0, "ZIP container → XLSX workbook (%d sheet%s, layout reasoner)"
                     % (len(grids), "" if len(grids) == 1 else "s"))
-                return run
+                return _ensure_wells(run, text, file_name)
         except FormatError:
             raise
         except Exception as e:
@@ -1448,6 +1484,8 @@ def _parse_zip(file_name, u8):
                     run = parse_rdml(inner, n)
                 except Exception:
                     continue
+                if not run["wells"]:
+                    continue  # header-only RDML — keep probing
                 run["meta"]["sourceFormat"] = "rdml"
                 mark_cq_only(run)
                 attach_detection(run, "rdml", 0.96,
@@ -1501,3 +1539,402 @@ def doctor_ole_error(file_name, err):
                      "portable; only this container's record mix was not."],
         "supported": list(SUPPORTED_FORMATS),
     }
+
+
+# ─────────────────────────────────────────────────────────────────
+# 16. Vendor containers: EDS bundle (Applied Biosystems) + gzip-unwrap
+# ─────────────────────────────────────────────────────────────────
+_EDS_MODEL_RE = re.compile(
+    r"QuantStudio|StepOne|ViiA|7500|7900|Applied Biosystems|ABI", re.I)
+
+
+def _ensure_wells(run, text, file_name):
+    """A matched header with zero well rows is never a phantom success."""
+    if run and run.get("wells"):
+        return run
+    findings = ["The file matched a known qPCR data format, but it contains no "
+                "well rows"]
+    t = (text or "").strip()
+    if t:
+        findings.append("First line: %s" % t.split("\n")[0].replace("\r", "")[:72])
+    raise _format_error(
+        {"title": "Header matched, but no well rows found",
+         "findings": findings,
+         "guidance": [
+             "Open the export and check it actually contains result rows — a "
+             "header row alone is not a run.",
+             "Re-export from your instrument software with results/data "
+             "included, then drop that file here."],
+         "supported": list(SUPPORTED_FORMATS)},
+        "No well rows in %s" % (file_name or "the file"))
+
+
+def _eds_records_from_text(text):
+    """EDS analysis_result.txt → records + curves, or None (no EDS header)."""
+    lines = [(l[:-1] if l.endswith("\r") else l)
+             for l in str(text or "").split("\n")]
+    header_idx = -1
+    for i in range(min(len(lines), 10)):
+        c = lines[i].split("\t")
+        if (len(c) >= 13 and (c[0] or "").strip() == "Well"
+                and (c[2] or "").strip() == "Detector"
+                and any((x or "").strip() == "Cq Conf" for x in c)):
+            header_idx = i
+            break
+    if header_idx < 0:
+        return None
+    recs = []
+    for i in range(header_idx + 1, len(lines)):
+        c = lines[i].split("\t")
+        if not (len(c) >= 13 and re.fullmatch(r"\d+", (c[0] or "").strip())):
+            continue
+        rec = {"well": int((c[0] or "").strip()),
+               "sample": (c[1] or "").strip(),
+               "detector": (c[2] or "").strip(),
+               "task": (c[3] or "").strip(),
+               "ct": _num((c[4] or "").strip()),
+               "cqSd": _num((c[6] or "").strip()),
+               "qty": _num((c[8] or "").strip()),
+               "rn": [], "drn": []}
+        j = i + 1
+        while j < len(lines):  # curve follow rows
+            lc = lines[j].split("\t")
+            tag = (lc[0] or "").strip()
+            if tag not in ("Rn values", "Delta Rn values"):
+                break
+            vals = []
+            for k in range(1, len(lc)):
+                v = (lc[k] or "").rstrip("\x00").strip()
+                if v == "":
+                    continue
+                try:
+                    f = float(v)
+                except (TypeError, ValueError):
+                    continue
+                if f == f:
+                    vals.append(f)
+            if tag == "Rn values":
+                rec["rn"] = vals
+            else:
+                rec["drn"] = vals
+            j += 1
+        recs.append(rec)
+    return {"recs": recs}
+
+
+def _eds_assemble(recs, file_name, first_evidence, opts):
+    """Records → canonical Run (ABI column-major wells, CFX-style registries)."""
+    opts = opts or {}
+    reporters = opts.get("reporters") or {}
+    run = make_run({"fileName": file_name or "eds", "sourceFormat": "eds"})
+    max_well = 0
+    for r in recs:
+        if r["well"] > max_well:
+            max_well = r["well"]
+    layout = "384" if max_well > 96 else "96"
+    n_rows = 16 if layout == "384" else 8
+    n_cols = 24 if layout == "384" else 12
+    samples_seen, targets_seen, channels_seen = set(), set(), set()
+    max_cycles = 0
+    for rec in recs:
+        curve = rec["drn"] if rec["drn"] else rec["rn"]
+        if len(curve) > max_cycles:
+            max_cycles = len(curve)
+        sample_name = rec["sample"] or "Unknown"
+        if sample_name not in samples_seen:
+            samples_seen.add(sample_name)
+            run["samples"].append(make_sample(
+                len(run["samples"]), sample_name,
+                _type_from(rec["task"], sample_name), rec["qty"]))
+        target_name = rec["detector"] or "Unknown"
+        if target_name not in targets_seen:
+            targets_seen.add(target_name)
+            run["targets"].append(make_target(
+                len(run["targets"]), target_name, None,
+                guess_reference(target_name)))
+        raw_dye = reporters.get(target_name) or target_name
+        canon = canonical_channel(raw_dye) or raw_dye
+        if canon not in channels_seen:
+            channels_seen.add(canon)
+            run["channels"].append(make_channel(
+                len(run["channels"]), raw_dye, canon))
+        sample_id = next(x["id"] for x in run["samples"]
+                         if x["name"] == sample_name)
+        target_id = next(x["id"] for x in run["targets"]
+                         if x["name"] == target_name)
+        channel_id = next(x["id"] for x in run["channels"]
+                          if x["canonical"] == canon)
+        n = rec["well"]
+        row = (n - 1) % n_rows
+        col = (n - 1) // n_rows
+        well = make_well(len(run["wells"]), row, col, layout)
+        well["sampleId"] = sample_id
+        well["targetId"] = target_id
+        well["channelId"] = channel_id
+        well["cq"] = rec["ct"]
+        well["cqSD"] = rec["cqSd"]
+        well["tm"] = None
+        well["amplification"] = list(curve)
+        run["wells"].append(well)
+    if not run["channels"]:
+        run["channels"].append(make_channel(0, "FAM", "FAM"))
+    for tgt in run["targets"]:
+        if tgt["channelId"] is None:
+            tgt["channelId"] = 0
+    evidence = [first_evidence]
+    evidence.append(
+        "%d result records → %d wells, %d samples, %d targets, %d channels"
+        % (len(recs), len(run["wells"]), len(run["samples"]),
+           len(run["targets"]), len(run["channels"])))
+    if any(r["drn"] for r in recs):
+        evidence.append("Curves: Delta Rn per cycle × %d cycles "
+                        "(baseline-corrected, instrument-reported)" % max_cycles)
+    elif any(r["rn"] for r in recs):
+        evidence.append("Curves: Rn per cycle × %d cycles "
+                        "(baseline-corrected, instrument-reported)" % max_cycles)
+    else:
+        evidence.append("No amplification curves in the file (Cq values only)")
+    det_pairs = ["%s → %s" % (tgt["name"], reporters[tgt["name"]])
+                 for tgt in run["targets"] if tgt["name"] in reporters]
+    if det_pairs:
+        evidence.append("Detectors: %s" % ", ".join(det_pairs))
+    if opts.get("instrument"):
+        evidence.append("Instrument: %s" % opts["instrument"])
+    elif opts.get("instrumentId"):
+        evidence.append("Instrument id: %s" % opts["instrumentId"])
+    if opts.get("runState"):
+        evidence.append("Run state: %s" % opts["runState"])
+    evidence.append("Well numbering: ABI column-major (well 1 = A1, %d×%d)"
+                    % (n_rows, n_cols))
+    run["meta"]["instrument"] = (opts.get("instrument")
+                                 or opts.get("instrumentId") or None)
+    attach_detection(run, "eds", opts.get("confidence") or 0.97, evidence)
+    return run
+
+
+def _parse_eds_text(text, file_name):
+    """Standalone EDS analysis_result.txt → Run, or None (not EDS text)."""
+    parsed = _eds_records_from_text(text)
+    if parsed is None:
+        return None
+    return _eds_assemble(
+        parsed["recs"], file_name,
+        "EDS analysis table (analysis_result.txt layout) → per-well read",
+        {"confidence": 0.93})
+
+
+def _parse_eds_bundle(file_name, u8, names):
+    """EDS bundle (ZIP + apldbio/sds/) → Run with plate/instrument metadata."""
+    def find(pattern):
+        for n in names:
+            if re.search(pattern, n, re.I):
+                return n
+        return None
+
+    ar_name = find(r"apldbio/sds/analysis_result\.txt$")
+    plate_name = find(r"apldbio/sds/plate_setup\.xml$")
+    exp_name = find(r"apldbio/sds/experiment\.xml$")
+    reporters = {}
+    if plate_name:
+        try:
+            with zipfile.ZipFile(io.BytesIO(u8)) as zf:
+                plate_xml = zf.read(plate_name).decode("utf-8", "replace")
+            pat = re.compile(r"<Name>([^<]*)</Name>\s*<Reporter>([^<]*)</Reporter>")
+            n = 0
+            for m in pat.finditer(plate_xml):
+                if n >= 8:
+                    break
+                k = (m.group(1) or "").strip()
+                if k and k not in reporters:
+                    reporters[k] = (m.group(2) or "").strip()
+                    n += 1
+        except Exception:
+            pass  # plate_setup.xml is optional metadata
+    instrument = None
+    instrument_id = None
+    run_state = None
+    if exp_name:
+        try:
+            with zipfile.ZipFile(io.BytesIO(u8)) as zf:
+                exp_xml = zf.read(exp_name).decode("utf-8", "replace")
+            for m in re.finditer(r"<String>([^<]*)</String>", exp_xml):
+                v = (m.group(1) or "").strip()
+                if v and _EDS_MODEL_RE.search(v):
+                    instrument = v
+                    break
+            if not instrument:
+                im = re.search(r"<InstrumentTypeId>([^<]*)</InstrumentTypeId>",
+                               exp_xml)
+                if im:
+                    instrument_id = (im.group(1) or "").strip()
+            rm = re.search(r"<RunState>([^<]*)</RunState>", exp_xml)
+            if rm:
+                run_state = (rm.group(1) or "").strip()
+        except Exception:
+            pass  # experiment.xml is optional metadata
+    with zipfile.ZipFile(io.BytesIO(u8)) as zf:
+        ar_text = zf.read(ar_name).decode("utf-8", "replace")
+    parsed = _eds_records_from_text(ar_text) or {"recs": []}
+    return _eds_assemble(
+        parsed["recs"], file_name,
+        "Applied Biosystems EDS bundle → apldbio/sds/analysis_result.txt "
+        "read natively",
+        {"reporters": reporters, "instrument": instrument,
+         "instrumentId": instrument_id, "runState": run_state,
+         "confidence": 0.97})
+
+
+def find_embedded_gzip(u8, limit=None):
+    """Printable-prefix scan → embedded gzip offset, or -1."""
+    data = bytes(u8 or b"")
+    lim = min(64 if limit is None else limit, len(data) - 10)
+    for off in range(4, lim):
+        if data[off] != 0x1F or data[off + 1] != 0x8B or data[off + 2] != 0x08:
+            continue
+        if all(32 <= b <= 126 for b in data[:off]):
+            return off
+    return -1
+
+
+def _gunzip_header_end(u8, offset):
+    """gzip header (FEXTRA/FNAME/FCOMMENT/FHCRC) → deflate-stream offset."""
+    data = bytes(u8)
+    if len(data) < offset + 10:
+        raise ValueError("gzip: truncated header")
+    flg = data[offset + 3]
+    p = offset + 10
+    if flg & 0x04:  # FEXTRA
+        if p + 2 > len(data):
+            raise ValueError("gzip: truncated extra field")
+        p += 2 + (data[p] | (data[p + 1] << 8))
+    if flg & 0x08:  # FNAME
+        while p < len(data) and data[p] != 0:
+            p += 1
+        p += 1
+    if flg & 0x10:  # FCOMMENT
+        while p < len(data) and data[p] != 0:
+            p += 1
+        p += 1
+    if flg & 0x02:
+        p += 2  # FHCRC
+    if p > len(data):
+        raise ValueError("gzip: truncated header")
+    return p
+
+
+def gunzip_from(u8, offset):
+    """Decompress gzip at offset → payload bytes (zlib, else raw inflate)."""
+    data = bytes(u8)[offset:]
+    try:
+        return zlib.decompress(data, 16 + zlib.MAX_WBITS)
+    except Exception:
+        pass
+    start = _gunzip_header_end(u8, offset)
+    d = zlib.decompressobj(-15)
+    return d.decompress(bytes(u8)[start:])
+
+
+def _latin1(u8):
+    return bytes(u8).decode("latin-1")
+
+
+_LABEL_DENY = {"schema", "_items", "_size", "_version", "flag", "name", "value",
+               "state", "knownColor", "channel", "Dyes", "Dye", "Name", "Names",
+               "Value", "Values", "State", "Type", "Flag", "Items"}
+
+
+def _extract_vendor_labels(text, cap):
+    """Assay/sample labels inside a vendor binary (first-seen, capped)."""
+    out = []
+    for t in re.findall(r"[\x20-\x7e]{3,40}", str(text or "")):
+        if t in _LABEL_DENY:
+            continue
+        if t.startswith("dm.") or t.startswith("Items["):
+            continue
+        if re.fullmatch(r"[A-Za-z]+\.Count", t):
+            continue
+        if re.search(r"(.)\1{3,}", t):
+            continue
+        if not re.search(r"[A-Za-z]", t):
+            continue
+        if not re.match(r"^[A-Za-z0-9]", t) or not re.search(r"[A-Za-z0-9)]$", t):
+            continue
+        if re.match(r"^\d{4}-\d{2}-\d{2}", t):
+            continue
+        if " " not in t and not re.search(r"[.(\-']", t) and len(t) > 5:
+            continue
+        if t not in out:
+            out.append(t)
+    return {"kept": out[:cap], "total": len(out)}
+
+
+def _doctor_vendor_binary(u8, note):
+    """Vendor binary payload → honest doctor card (no fabricated Cq)."""
+    findings = ["%s → decompressed to %d bytes" % (note, len(u8)),
+                "Binary payload — not text, not ZIP, not OLE2"]
+    text = _latin1(u8)
+    markers = ["bh1600", "Samples", "Cycles", "MeltCycles", "AnalyzedResult",
+               "CtSetting", "dm."]
+    found = [m for m in markers if m in text]
+    timestamps = []
+    for t in re.findall(r"\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}", text):
+        if len(timestamps) >= 4:
+            break
+        if t not in timestamps:
+            timestamps.append(t)
+    labels = _extract_vendor_labels(text, 12)
+    if len(found) >= 3:
+        findings.append("Schema keys found: %s" % ", ".join(found))
+    if timestamps:
+        findings.append("Run timestamps: %s" % " · ".join(timestamps))
+    if labels["kept"]:
+        findings.append("Embedded labels (%d of %d): %s"
+                        % (len(labels["kept"]), labels["total"],
+                           ", ".join(labels["kept"])))
+    if len(found) >= 3:
+        title = "Vendor run database — schema read, Cq values not in a table"
+        guidance = [
+            "This is a vendor run database: the schema keys are readable, but "
+            "the Cq values are not stored as a table — decoding them would "
+            "mean guessing, so no numbers are shown.",
+            "Export a data table from your instrument software: File → Export "
+            "(or Save As) → CSV/Excel, or RDML if offered.",
+            "Drop that export here — CSV/TSV/XLS/XLSX is read directly by the "
+            "layout reasoner."]
+    else:
+        title = "Vendor-wrapped binary payload — decompressed, no data table " \
+                "inside"
+        guidance = [
+            "The decompressed payload is proprietary binary — no data table "
+            "can be read from these bytes, so nothing is shown rather than "
+            "guessed.",
+            "Export a data table from your instrument software: File → Export "
+            "(or Save As) → CSV/Excel, or RDML if offered.",
+            "Drop that export here — CSV/TSV/XLS/XLSX is read directly by the "
+            "layout reasoner."]
+    return {"title": title, "findings": findings, "guidance": guidance,
+            "supported": list(SUPPORTED_FORMATS)}
+
+
+def _dispatch_unwrapped(file_name, payload, note):
+    """Unwrapped payload → re-sniff by content (text/ZIP/OLE2) or honest card."""
+    u8 = bytes(payload)
+    kind = sniff(u8)
+    if kind == "text":
+        try:
+            run = parse_universal_text(decode_text(u8), file_name)
+        except FormatError as e:
+            if e.doctor.get("findings"):
+                e.doctor["findings"].insert(0, note)
+            raise
+        run["detection"]["evidence"].insert(0, "%s → inner text table" % note)
+        return run
+    if kind == "zip":
+        run = _parse_zip(file_name, u8)
+        run["detection"]["evidence"].insert(0, "%s → inner ZIP archive" % note)
+        return run
+    if kind == "ole":
+        run = parse_file_universal(file_name, u8)
+        run["detection"]["evidence"].insert(0, "%s → inner OLE2 document" % note)
+        return run
+    raise _format_error(_doctor_vendor_binary(u8, note))

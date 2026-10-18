@@ -366,6 +366,114 @@ def test_text_despite_extension_evidence():
 
 
 # ─────────────────────────────────────────────────────────────────
+# 10b. Vendor containers: EDS bundle + gzip-unwrap (spec T8/T9)
+# ─────────────────────────────────────────────────────────────────
+def test_eds_bundle_fixture():
+    run = um.parse_file_universal("eds_demo.eds", load_bytes("eds_demo.eds"))
+    assert run["detection"]["format"] == "eds"
+    assert run["detection"]["confidence"] == 0.97
+    assert len(run["wells"]) == 6 and len(run["samples"]) == 3
+    assert len(run["targets"]) == 2 and len(run["channels"]) == 2
+    assert [w["cq"] for w in run["wells"]] == [None, None, 18.25, 19.5, 22.75, 24.125]
+    assert all(len(w["amplification"]) == 5 for w in run["wells"])
+    assert run["wells"][0]["amplification"] == [0.5, 1.0, 1.5, 2.0, 2.5]
+    # ABI column-major: well 1 = A1, well 12 = D2, well 26 = B4
+    assert [(w["row"], w["col"]) for w in run["wells"]] == [
+        (0, 0), (0, 0), (3, 1), (3, 1), (1, 3), (1, 3)]
+    assert [s["type"] for s in run["samples"]] == ["ntc", "standard", "unknown"]
+    # plate_setup.xml reporters; VIC canonicalizes to HEX (engine rule)
+    assert [c["canonical"] for c in run["channels"]] == ["FAM", "HEX"]
+    assert run["meta"]["instrument"] == "QuantStudio 5 - 96-Well 0.2-mL Block"
+    ev = run["detection"]["evidence"]
+    assert ev[0] == ("Applied Biosystems EDS bundle → apldbio/sds/"
+                     "analysis_result.txt read natively")
+    assert ev[1] == "6 result records → 6 wells, 3 samples, 2 targets, 2 channels"
+    assert any("Delta Rn per cycle × 5 cycles" in e for e in ev)
+    assert "Detectors: Target 1 → FAM, Target 2 → VIC" in ev
+    assert "Run state: COMPLETE" in ev
+    assert "Well numbering: ABI column-major (well 1 = A1, 8×12)" in ev
+
+
+def test_eds_text_standalone():
+    # A standalone analysis_result.txt dropped in directly (its "Well … Cq Conf"
+    # header trips the engine's cq-first CFX fingerprint — must not hijack).
+    import io
+    import zipfile
+    with zipfile.ZipFile(io.BytesIO(load_bytes("eds_demo.eds"))) as zf:
+        text = zf.read("apldbio/sds/analysis_result.txt").decode("utf-8")
+    run = um.parse_universal_text(text, "analysis_result.txt")
+    assert run["detection"]["format"] == "eds"
+    assert run["detection"]["confidence"] == 0.93
+    assert len(run["wells"]) == 6
+    assert run["detection"]["evidence"][0] == (
+        "EDS analysis table (analysis_result.txt layout) → per-well read")
+    # no plate_setup.xml here → channels fall back to the detector names
+    assert [c["canonical"] for c in run["channels"]] == ["Target 1", "Target 2"]
+
+
+def test_eds_zero_well_guard():
+    header = "Well\tSample Name\tDetector\tTask\tCt\tAvg Ct\tCt SD\tDelta Ct\t" \
+             "Qty\tAvg Qty\tQty SD\tAmp Status\tCq Conf\n"
+    with pytest.raises(um.FormatError) as ei:
+        um.parse_universal_text("Session Name\t\n" + header, "empty_export.txt")
+    assert ei.value.doctor["title"] == "Header matched, but no well rows found"
+    assert any("First line: Session Name" in f for f in ei.value.doctor["findings"])
+
+
+def test_wrapped_qbd_content_beats_extension():
+    run = um.parse_file_universal("wrapped_run.qbd", load_bytes("wrapped_run.qbd"))
+    assert len(run["wells"]) == 3
+    assert run.get("cqOnly") is True
+    assert [w["cq"] for w in run["wells"]] == [20.5, 24.1, None]
+    assert run["detection"]["evidence"][0] == (
+        "vendor header + gzip stream at offset 22 → inner text table")
+
+
+def test_wrapped_qbg_vendor_db_card():
+    with pytest.raises(um.FormatError) as ei:
+        um.parse_file_universal("wrapped_qbg.qbg", load_bytes("wrapped_qbg.qbg"))
+    card = ei.value.doctor
+    assert card["title"] == ("Vendor run database — schema read, "
+                             "Cq values not in a table")
+    assert card["findings"][0] == \
+        "vendor header + gzip stream at offset 15 → decompressed to 479 bytes"
+    assert any("Schema keys found: bh1600, Samples, Cycles" in f
+               for f in card["findings"])
+    assert "Run timestamps: 2026-01-02 03:04:05 · 2026-01-02 03:05:06" \
+        in card["findings"]
+    assert ("Embedded labels (4 of 4): FAM, A10, SYNTH ASSAY A, SYNTH ASSAY B"
+            in card["findings"])
+    assert any("would mean guessing" in g for g in card["guidance"])
+    assert card["supported"] == um.SUPPORTED_FORMATS
+
+
+def test_plain_gzip_text_unwrap():
+    import gzip
+    csv = ("Well,Sample,Target,Channel,Cq\nA1,S1,GAPDH,FAM,20.5\n"
+           "A2,S2,GAPDH,FAM,24.1\nB1,NTC,GAPDH,FAM,\n")
+    run = um.parse_file_universal("run.csv.gz", gzip.compress(csv.encode()))
+    assert len(run["wells"]) == 3
+    assert run["detection"]["evidence"][0] == "gzip container → inner text table"
+
+
+def test_find_embedded_gzip():
+    payload = b"\x1f\x8b\x08\x00" + bytes(16)
+    assert um.find_embedded_gzip(b"HEAD" + payload, 64) == 4
+    # a non-printable prefix is not a vendor banner → no unwrap
+    assert um.find_embedded_gzip(b"\x00\x01\x02\x03" + payload, 64) == -1
+    assert um.find_embedded_gzip(b"short", 64) == -1
+
+
+def test_supported_formats_lockstep():
+    # The doctor's "what works here" list must exist verbatim in the JS module.
+    with open(os.path.join(REPO, "frontend", "qpcr", "qpcr-universal.js"),
+              encoding="utf-8") as fh:
+        js = fh.read()
+    for entry in um.SUPPORTED_FORMATS:
+        assert entry in js, "JS module missing SUPPORTED_FORMATS entry: %s" % entry
+
+
+# ─────────────────────────────────────────────────────────────────
 # 10. Fixture corpus end-to-end (Python side)
 # ─────────────────────────────────────────────────────────────────
 def test_fixture_unknown_long():
@@ -459,6 +567,8 @@ PARITY_FIXTURES = [
     # new universal fixtures
     "unknown_long.csv", "cq_only.csv", "semicol.csv", "utf16.tsv",
     "unknown_wide.xlsx", "demo.xls", "stub.qbd", "junk.csv",
+    # vendor containers (EDS bundle + gzip-wrapped tables)
+    "eds_demo.eds", "wrapped_qbg.qbg", "wrapped_run.qbd",
     # frozen corpus routed through the universal entry (fast paths + doctor)
     "test_run.rdml", "rdml_minimal.xml", "cfx_sectioned.csv", "cfx_longformat.csv",
     "template_minimal.tsv", "template_wide_cycles.tsv", "test_xlsx.xlsx",
