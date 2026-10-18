@@ -12,6 +12,7 @@ import sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__)))
 from qpcr_mirror import (
     parse_run, detect_format, canonical_channel,
+    parse_rdml, parse_cfx_csv, parse_template,
     linear_regression, efficiency_from_slope, compute_standard_curves,
     compute_expression, compute_qc, analyze_run, QPCR_ENGINE_VERSION,
     savitzky_golay_derivative, detect_tm_peaks, generate_methods,
@@ -454,6 +455,138 @@ def test_edge_cases_fixture():
     # NoAmp well
     noamp_well = [w for w in run["wells"] if run["samples"][w["sampleId"]]["name"] == "NoAmp"][0]
     assert noamp_well["cq"] is None
+
+
+def test_rdml_adp_mdp_extraction():
+    """Regression: the parser must decode standard RDML <adp>/<mdp> data points.
+
+    Bug this catches (fixed 2026-10-18): both JS and Python only read flat
+    <amplificationData> text blobs, so real instrument RDML (<adp><cyc>/<fluor>)
+    parsed with ZERO curves and ZERO melt points -> empty Amplification chart
+    with a phantom legend. Both mirrors were equally wrong, so parity tests
+    passed while the browser showed nothing.
+    """
+    text = load_fixture("test_run.rdml")
+    run = parse_rdml(text, "test_run.rdml")
+    assert len(run["wells"]) == 30
+    with_curve = [w for w in run["wells"] if len(w["amplification"]) > 0]
+    with_melt = [w for w in run["wells"] if w.get("melt") and len(w["melt"]["temps"]) > 0]
+    assert len(with_curve) == 30, f"expected 30 curves, got {len(with_curve)}"
+    assert len(with_melt) == 30, f"expected 30 melts, got {len(with_melt)}"
+    a1 = run["wells"][0]
+    assert len(a1["amplification"]) == 40
+    # exact fixture bytes (seed-42 deterministic generator)
+    assert a1["amplification"][0] == 0.0381
+    assert a1["amplification"][1] == 0.0375
+    assert len(a1["melt"]["temps"]) == 71
+    assert a1["melt"]["temps"][0] == 60.0
+    assert a1["melt"]["fluores"][0] == 1.5124
+
+
+def test_rdml_multiplex_dye_blocks():
+    """One <react> with multiple <dye> blocks = multiplex -> one well per dye."""
+    mux = '''<?xml version="1.0"?><rdml version="1.2"><experiment><run>
+  <react id="A1"><sample id="S1"/><dye id="FAM"><target id="GENE1"/><cq>21.5</cq>
+    <adp><cyc>1</cyc><fluor>0.1</fluor></adp><adp><cyc>2</cyc><fluor>0.4</fluor></adp><adp><cyc>3</cyc><fluor>1.2</fluor></adp></dye>
+  <dye id="HEX"><target id="GENE2"/><cq>25.7</cq>
+    <adp><cyc>1</cyc><fluor>0.2</fluor></adp><adp><cyc>2</cyc><fluor>0.5</fluor></adp></dye>
+  </react></run></experiment></rdml>'''
+    run = parse_rdml(mux, "mux.rdml")
+    assert len(run["wells"]) == 2
+    assert [c["canonical"] for c in run["channels"]] == ["FAM", "HEX"]
+    assert [t["name"] for t in run["targets"]] == ["GENE1", "GENE2"]
+    assert [w["cq"] for w in run["wells"]] == [21.5, 25.7]
+    assert [len(w["amplification"]) for w in run["wells"]] == [3, 2]
+    assert run["wells"][0]["amplification"][2] == 1.2
+
+
+def test_rdml_sample_name_resolution():
+    """Top-level <sample id><name> definitions must override raw ids."""
+    xml = '''<rdml version="1.2"><experiment>
+  <sample id="s1"><name>G untreated</name></sample>
+  <run><react id="A1"><sample id="s1"/><dye id="FAM"><target id="T1"/><cq>20.0</cq>
+    <adp><cyc>1</cyc><fluor>0.5</fluor></adp></dye></react></run>
+</experiment></rdml>'''
+    run = parse_rdml(xml, "names.rdml")
+    assert run["samples"][0]["name"] == "G untreated"
+    assert run["wells"][0]["amplification"] == [0.5]
+
+
+def test_rdml_ad_attribute_and_selfclosing_adp():
+    """Alternate instrument exports: <ad cycle=...> and <adp cyc= fluor=/> forms."""
+    xml = '''<rdml version="1.2"><experiment><run>
+  <react id="A1"><sample id="S1"/><dye id="FAM"><target id="T1"/><cq>22.0</cq>
+    <ad cycle="1">0.10</ad><ad cycle="3">0.40</ad><ad cycle="2">0.25</ad></dye></react>
+  <react id="A2"><sample id="S2"/><dye id="FAM"><target id="T1"/><cq>23.0</cq>
+    <adp cyc="1" fluor="0.20"/><adp cyc="2" fluor="0.60"/></dye></react>
+  </run></experiment></rdml>'''
+    run = parse_rdml(xml, "alt.rdml")
+    assert [w["cq"] for w in run["wells"]] == [22.0, 23.0]
+    # <ad> cycle-sorted: 1,2,3 -> 0.10, 0.25, 0.40
+    assert [round(v, 3) for v in run["wells"][0]["amplification"]] == [0.1, 0.25, 0.4]
+    assert [round(v, 3) for v in run["wells"][1]["amplification"]] == [0.2, 0.6]
+
+
+def test_cfx_sectioned_csv():
+    """CFX 'Export to CSV' sectioned format: summary + Amplification Data + Melt Data.
+
+    Bug this catches: section rows used to be parsed as MORE summary rows
+    (garbage samples named after fluorescence values) while curves stayed empty.
+    """
+    text = load_fixture("cfx_sectioned.csv")
+    run = parse_cfx_csv(text, "cfx_sectioned.csv")
+    assert len(run["wells"]) == 4
+    # no garbage samples from the amplification section
+    assert [s["name"] for s in run["samples"]] == ["Sample1", "NTC", "Sample2"]
+    assert [w["cq"] for w in run["wells"]] == [23.45, 24.01, None, 25.1]
+    # curves attached, cycle-sorted (file lists well 1 as cycles 1,2,4,3)
+    assert [len(w["amplification"]) for w in run["wells"]] == [4, 3, 2, 3]
+    assert [round(v, 4) for v in run["wells"][0]["amplification"]] == [0.105, 0.107, 0.152, 0.41]
+    # mixed-case channel "Fam" canonicalizes into the same FAM well
+    # melt section attached only to well 1
+    assert run["wells"][0]["melt"]["temps"] == [60.0, 75.0, 84.5, 95.0]
+    assert run["wells"][1]["melt"] is None
+
+
+def test_cfx_longformat():
+    """Amplification-only long table (Well,Fluor,Cycle,Value): aggregate curves, Cq None."""
+    text = load_fixture("cfx_longformat.csv")
+    run = parse_cfx_csv(text, "cfx_longformat.csv")
+    assert len(run["wells"]) == 2
+    assert [len(w["amplification"]) for w in run["wells"]] == [5, 4]
+    assert [w["cq"] for w in run["wells"]] == [None, None]
+    assert run["wells"][0]["amplification"][4] == 1.61
+
+
+def test_template_wide_cycles():
+    """Template TSV with Cycle 1..N columns must produce curves (was: empty)."""
+    text = load_fixture("template_wide_cycles.tsv")
+    run = parse_template(text, "template_wide_cycles.tsv")
+    assert len(run["wells"]) == 4
+    assert [len(w["amplification"]) for w in run["wells"]] == [5, 5, 5, 5]
+    assert [round(v, 4) for v in run["wells"][0]["amplification"]] == [0.05, 0.06, 0.14, 0.52, 1.2]
+    assert [w["cq"] for w in run["wells"]] == [22.1, 22.3, None, 19.8]
+
+
+def test_detect_new_shapes():
+    """Detection must route sectioned/long-format/tab files correctly (case-insensitive)."""
+    assert detect_format(load_fixture("cfx_sectioned.csv"), "x.csv") == "cfx_csv"
+    assert detect_format(load_fixture("cfx_longformat.csv"), "x.csv") == "cfx_csv"
+    assert detect_format(load_fixture("template_wide_cycles.tsv"), "x.tsv") == "template"
+    assert detect_format("well,fluor,target,content,cq\na1,fam,g,s1,22.5\n", "x.csv") == "cfx_csv"
+    assert detect_format("Well\tFluor\tTarget\tContent\tCq\nA1\tFAM\tG\tS1\t22.5\n", "x.csv") == "cfx_csv"
+    assert detect_format("Well\tSample\tTarget\tChannel\tCq\nA1\tS1\tG\tFAM\t22.5\n", "x.tsv") == "template"
+    # lowercase section marker
+    assert detect_format("Well,Fluor,Cq\n1,FAM,23.4\n\namplification data\nWell,Cycle,Value\n", "x.csv") == "cfx_csv"
+
+
+def test_quote_aware_csv():
+    """Quoted fields containing commas must not shift columns."""
+    text = 'Well,Fluor,Target,Content,Cq\nA1,FAM,GAPDH,"Patient, 1",22.5\nA2,FAM,GAPDH,"Patient, 2",24.1\n'
+    run = parse_cfx_csv(text, "quoted.csv")
+    assert len(run["wells"]) == 2
+    assert [w["cq"] for w in run["wells"]] == [22.5, 24.1]
+    assert [s["name"] for s in run["samples"]] == ["Patient, 1", "Patient, 2"]
 
 
 if __name__ == "__main__":

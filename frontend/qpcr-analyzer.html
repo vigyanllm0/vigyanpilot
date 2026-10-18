@@ -414,6 +414,17 @@ document.querySelectorAll('.tab').forEach(tab => {
     document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
     tab.classList.add('active');
     document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
+    // Re-render canvas views that may have been sized while their tab was hidden:
+    // a file uploaded while another tab is active gives clientWidth=0 -> blank canvas.
+    if (run) {
+      if (tab.dataset.tab === 'amplification' && ampChart) {
+        const c = document.getElementById('ampCanvas');
+        const cw = c.parentElement.clientWidth;
+        if (cw > 0 && cw !== c.width) ampChart.resize(cw, 400);
+        else ampChart.render();
+      }
+      if (tab.dataset.tab === 'melt') renderMeltChart();
+    }
     track('qpcr_analysis_viewed', { view_type: tab.dataset.tab });
   });
 });
@@ -444,6 +455,40 @@ function initViews() {
   });
   meltSel.addEventListener('change', renderMeltChart);
   renderMeltChart();
+
+  // Standard curve target select
+  const stdSel = document.getElementById('stdTargetSelect');
+  stdSel.innerHTML = '';
+  run.targets.forEach((t, i) => {
+    const opt = document.createElement('option'); opt.value = t.id; opt.textContent = t.name;
+    stdSel.appendChild(opt);
+  });
+
+  // Expression selects
+  const refSel = document.getElementById('exprRefSelect');
+  refSel.innerHTML = '';
+  run.targets.forEach(t => {
+    const opt = document.createElement('option'); opt.value = t.id; opt.textContent = t.name;
+    if (t.isReference) opt.selected = true;
+    refSel.appendChild(opt);
+  });
+  const ctrlSel = document.getElementById('exprCtrlSelect');
+  ctrlSel.innerHTML = '';
+  run.samples.forEach(s => {
+    const opt = document.createElement('option'); opt.value = s.id; opt.textContent = s.name;
+    ctrlSel.appendChild(opt);
+  });
+
+  // Data table
+  renderTable();
+
+  // Plate view
+  renderPlate();
+
+  // QC
+  renderQc();
+}
+
 
 function renderMeltChart() {
   const chIdx = parseInt(document.getElementById('meltChannelSelect').value);
@@ -536,44 +581,12 @@ function renderMeltChart() {
   });
 }
 
-  // Standard curve target select
-  const stdSel = document.getElementById('stdTargetSelect');
-  stdSel.innerHTML = '';
-  run.targets.forEach((t, i) => {
-    const opt = document.createElement('option'); opt.value = t.id; opt.textContent = t.name;
-    stdSel.appendChild(opt);
-  });
-
-  // Expression selects
-  const refSel = document.getElementById('exprRefSelect');
-  refSel.innerHTML = '';
-  run.targets.forEach(t => {
-    const opt = document.createElement('option'); opt.value = t.id; opt.textContent = t.name;
-    if (t.isReference) opt.selected = true;
-    refSel.appendChild(opt);
-  });
-  const ctrlSel = document.getElementById('exprCtrlSelect');
-  ctrlSel.innerHTML = '';
-  run.samples.forEach(s => {
-    const opt = document.createElement('option'); opt.value = s.id; opt.textContent = s.name;
-    ctrlSel.appendChild(opt);
-  });
-
-  // Data table
-  renderTable();
-
-  // Plate view
-  renderPlate();
-
-  // QC
-  renderQc();
-}
-
 function updateAmpChart() {
   if (!ampChart || !run) return;
   ampChart.series = [];
   const selectedChannels = Array.from(document.getElementById('ampChannelSelect').selectedOptions).map(o => parseInt(o.value));
   const yMode = document.getElementById('ampYMode').value;
+  let totalWells = 0, wellsWithCurves = 0;
   for (const chIdx of selectedChannels) {
     const ch = run.channels[chIdx];
     if (!ch) continue;
@@ -581,16 +594,24 @@ function updateAmpChart() {
     const bySample = {};
     for (const w of run.wells) {
       if (w.channelId !== chIdx) continue;
+      totalWells++;
+      if (w.amplification && w.amplification.length > 1) wellsWithCurves++;
       const s = run.samples[w.sampleId];
       if (!bySample[s.name]) bySample[s.name] = [];
       bySample[s.name].push(w);
     }
     for (const [sampleName, wells] of Object.entries(bySample)) {
       const w = wells[0];
+      if (!w.amplification || w.amplification.length === 0) continue; // never draw phantom legend entries
       const data = Array.from(w.amplification).map((v, i) => ({ x: i + 1, y: yMode === 'log' ? Math.log10(Math.max(v, 1e-6)) : v }));
       ampChart.addSeries(`${sampleName} (${ch.canonical})`, data);
     }
   }
+  ampChart.emptyMessage = wellsWithCurves === 0
+    ? (totalWells > 0
+        ? 'This export contains Cq values only \u2014 no per-cycle fluorescence (' + totalWells + ' wells, 0 with curves). Amplification plots need a raw data export: RDML with <adp> data points, or a CFX CSV with an Amplification Data section.'
+        : 'No wells in the selected channels.')
+    : null;
   ampChart.render();
 }
 

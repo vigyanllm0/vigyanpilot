@@ -130,14 +130,25 @@ def detect_format(text, file_name=None):
         return "unknown"
     if t.startswith("<?xml") or t.startswith("<rdml") or "<rdml" in t:
         return "rdml"
-    if "Well,Fluor,Target,Content" in t or "Well\tFluor\tTarget" in t:
-        return "cfx_csv"
-    if "Amplification Data" in t and "Well" in t:
-        return "cfx_csv"
-    if "Cq,Well" in t or "Well,Cq" in t:
-        return "cfx_csv"
-    if "well\tsample\ttarget\tchannel" in t.lower() or "Well\tSample\tTarget\tChannel" in t:
+    # First few lines are enough to identify a table header (case-insensitive, comma or tab)
+    head_lines = re.split(r"\r?\n", t)[:5]
+    has_head = lambda pat: any(re.search(pat, l, re.I) for l in head_lines)
+    head = "\n".join(head_lines)
+    # Template TSV/CSV: Well + Sample + Target + Channel (check FIRST — CFX has no Sample column)
+    if has_head(r"well[,\t].*sample") and has_head(r"target") and has_head(r"channel"):
         return "template"
+    # CFX-style summary table: Well + Fluor/Target (comma or tab delimited)
+    if has_head(r"well[,\t].*fluor") or has_head(r"well[,\t].*target"):
+        return "cfx_csv"
+    # Sectioned CFX export (any case)
+    if re.search(r"amplification data", t, re.I) and re.search(r"well", head, re.I):
+        return "cfx_csv"
+    # Long-format per-cycle table: Well + Cycle + Value/Fluorescence/Signal header
+    if has_head(r"well") and has_head(r"cycle") and has_head(r"\bvalue\b|fluorescen|signal"):
+        return "cfx_csv"
+    # Cq-first headers (QuantStudio style)
+    if has_head(r"cq[,\t].*well") or has_head(r"well[,\t].*cq"):
+        return "cfx_csv"
     return "unknown"
 
 
@@ -145,18 +156,24 @@ def parse_rdml(text, file_name=None):
     run = make_run({"fileName": file_name or "rdml", "sourceFormat": "rdml"})
     try:
         def get_tag(xml, tag):
+            # Word-boundary safe: '<cq' must not match '<cqStartFluor'
+            b = tag + r"(?=[\s>])"
             # Handle self-closing tags with id attribute: <tag id="val"/>
             for quote in ('"', "'"):
-                pattern = '<' + tag + '[^>]*?id=' + quote + '([^' + quote + ']+)' + quote
+                pattern = '<' + b + r'[^>]*?id=' + quote + '([^' + quote + ']+)' + quote
                 m = re.search(pattern, xml, re.I)
                 if m:
                     return m.group(1).strip()
             # Handle tags with text content: <tag>content</tag>
-            m = re.search(r"<" + tag + r"[^>]*>([\s\S]*?)</" + tag + r">", xml, re.I)
+            m = re.search(r"<" + b + r"[^>]*>([\s\S]*?)</" + tag + r">", xml, re.I)
             return m.group(1).strip() if m else None
 
         def get_all_tags(xml, tag):
-            return [m.group(1).strip() for m in re.finditer(r"<" + tag + r"[^>]*>([\s\S]*?)</" + tag + r">", xml, re.I)]
+            b = tag + r"(?=[\s>])"
+            return [m.group(1).strip() for m in re.finditer(r"<" + b + r"[^>]*>([\s\S]*?)</" + tag + r">", xml, re.I)]
+
+        def get_all_blocks(xml, tag):
+            return [m.group(1).strip() for m in re.finditer(r"<" + tag + r"\b[^>]*>([\s\S]*?)</" + tag + r">", xml, re.I)]
 
         instrument = get_tag(text, "instrument")
         if instrument:
@@ -169,54 +186,97 @@ def parse_rdml(text, file_name=None):
         samples_seen = set()
         channels_seen = set()
 
-        # Find react elements: support both <react id="A1"> and <react><position>A1</position>
-        react_list = []  # list of (pos, react_xml)
-        for rm in re.finditer(r'<react\s+id="([^"]+)"[^>]*>([\s\S]*?)</react>', text, re.I):
-            react_list.append((rm.group(1).strip(), rm.group(2).strip()))
-        if not react_list:
-            for rm in re.finditer(r'<react[^>]*>([\s\S]*?)</react>', text, re.I):
-                pos_tag = re.search(r'<position[^>]*>(.*?)</position>', rm.group(1), re.I)
-                if pos_tag:
-                    react_list.append((pos_tag.group(1).strip(), rm.group(1).strip()))
-        for pos, react_xml in react_list:
-            if not pos:
-                continue
-            # Process this react
-            pp = parse_position(pos, 96)
-            row, col = pp["row"], pp["col"]
+        # Top-level sample definitions: <sample id="s1"><name>Sample 1</name></sample>
+        sample_name_by_id = {}
+        for sd in re.finditer(r'<sample\s+id=["\']([^"\']+)["\'][^>]*>([\s\S]*?)</sample>', text, re.I):
+            if "<" in sd.group(2):
+                nm = get_tag(sd.group(2), "name")
+                if nm:
+                    sample_name_by_id[sd.group(1)] = nm
 
-            sample_name = get_tag(react_xml, "sample") or get_tag(react_xml, "sampleId") or "Unknown"
-            target_name = get_tag(react_xml, "target") or get_tag(react_xml, "targetId") or "Unknown"
+        # Extract nested <dye> blocks with child data (multiplex: one block per dye/channel).
+        # Plain <dye>FAM</dye> text values are NOT data blocks — skipped.
+        def get_dye_blocks(xml):
+            blocks = []
+            for m in re.finditer(r"<dye\b([^>]*)>([\s\S]*?)</dye>", xml, re.I):
+                inner = m.group(2)
+                if "<" not in inner:
+                    continue
+                idm = re.search(r'\bid=["\']([^"\']+)["\']', m.group(1) or "", re.I)
+                blocks.append((idm.group(1) if idm else "", inner.strip()))
+            return blocks
 
-            if sample_name not in samples_seen:
-                samples_seen.add(sample_name)
-                run["samples"].append(make_sample(len(run["samples"]), sample_name, guess_sample_type(sample_name)))
-            if target_name not in targets_seen:
-                targets_seen.add(target_name)
-                run["targets"].append(make_target(len(run["targets"]), target_name, None, guess_reference(target_name)))
+        # Amplification extraction — supports:
+        #   1. <adp><cyc>1</cyc><tmp>60</tmp><fluor>0.1</fluor></adp>  (standard RDML data points)
+        #   2. <adp cyc="1" fluor="0.1"/>                               (attribute form)
+        #   3. <ad cycle="1">0.1</ad>                                   (alternate instrument exports)
+        #   4. <amplificationData>0.1 0.2 ...</amplificationData>       (flat text)
+        def extract_amp(scope):
+            adps = get_all_blocks(scope, "adp")
+            if adps:
+                pts = []
+                for a in adps:
+                    c_raw = get_tag(a, "cyc")
+                    f_raw = get_tag(a, "fluor")
+                    f = float(f_raw) if f_raw is not None and _is_number(f_raw) else None
+                    if f is not None and math.isfinite(f):
+                        c = float(c_raw) if c_raw is not None and _is_number(c_raw) else float(len(pts) + 1)
+                        pts.append((c, f))
+                if pts:
+                    pts.sort(key=lambda p: p[0])
+                    return [p[1] for p in pts]
+            # attribute-form self-closing adp
+            attr_pts = []
+            for m in re.finditer(r"<adp\s([^>]*?)/>", scope, re.I):
+                cm = re.search(r'\b(?:cycle|cyc)=["\']([^"\']+)["\']', m.group(1), re.I)
+                fm = re.search(r'\b(?:fluor|value)=["\']([^"\']+)["\']', m.group(1), re.I)
+                if fm and _is_number(fm.group(1)):
+                    f = float(fm.group(1))
+                    if math.isfinite(f):
+                        c = float(cm.group(1)) if cm and _is_number(cm.group(1)) else float(len(attr_pts) + 1)
+                        attr_pts.append((c, f))
+            if attr_pts:
+                attr_pts.sort(key=lambda p: p[0])
+                return [p[1] for p in attr_pts]
+            # <ad cycle="N">value</ad>
+            ad_pts = []
+            for m in re.finditer(r"<ad\s([^>]*)>([\s\S]*?)</ad>", scope, re.I):
+                cm = re.search(r'\bcycle=["\']([^"\']+)["\']', m.group(1), re.I)
+                v_raw = re.sub(r"<[^>]+>", "", m.group(2)).strip()
+                if _is_number(v_raw):
+                    v = float(v_raw)
+                    if math.isfinite(v):
+                        c = float(cm.group(1)) if cm and _is_number(cm.group(1)) else float(len(ad_pts) + 1)
+                        ad_pts.append((c, v))
+            if ad_pts:
+                ad_pts.sort(key=lambda p: p[0])
+                return [p[1] for p in ad_pts]
+            # Flat text blob: <amplificationData>0.05 0.06 ...</amplificationData> (or bare-text <data>)
+            amp_raw = get_tag(scope, "amplificationData") or get_tag(scope, "data")
+            if amp_raw and "<" not in amp_raw:
+                vals = [float(v) for v in re.split(r"[\s,;]+", amp_raw) if _is_number(v)]
+                if vals:
+                    return vals
+            return []
 
-            sample_id = next(i for i, s in enumerate(run["samples"]) if s["name"] == sample_name)
-            target_id = next(i for i, t in enumerate(run["targets"]) if t["name"] == target_name)
-
-            raw_dye = get_tag(react_xml, "dye") or get_tag(react_xml, "fluor") or get_tag(react_xml, "channel") or ""
-            canon = canonical_channel(raw_dye) or "FAM"
-            if canon not in channels_seen:
-                channels_seen.add(canon)
-                run["channels"].append(make_channel(len(run["channels"]), raw_dye, canon))
-            channel_id = next(i for i, c in enumerate(run["channels"]) if c["canonical"] == canon)
-
-            cq_raw = get_tag(react_xml, "cq") or get_tag(react_xml, "Cq") or get_tag(react_xml, "ct")
-            cq = float(cq_raw) if cq_raw and _is_number(cq_raw) else None
-            if cq is not None and not math.isfinite(cq):
-                cq = None
-
-            amp_raw = get_tag(react_xml, "amplificationData") or get_tag(react_xml, "data")
-            amp = []
-            if amp_raw:
-                amp = [float(v) for v in re.split(r"[\s,;]+", amp_raw) if _is_number(v)]
-
-            melt_raw = get_tag(react_xml, "meltData") or get_tag(react_xml, "melt")
-            melt = None
+        # Melt extraction — supports:
+        #   1. <mdp><tmp>60.0</tmp><fluor>1.51</fluor></mdp>  (standard RDML melt data points)
+        #   2. <meltData>/<melt> containing temperature/fluorescence tags (flat/legacy)
+        def extract_melt(scope):
+            mdps = get_all_blocks(scope, "mdp")
+            if mdps:
+                temps, fluores = [], []
+                for m in mdps:
+                    t_raw = get_tag(m, "tmp")
+                    f_raw = get_tag(m, "fluor")
+                    t = float(t_raw) if t_raw is not None and _is_number(t_raw) else None
+                    f = float(f_raw) if f_raw is not None and _is_number(f_raw) else None
+                    if t is not None and f is not None and math.isfinite(t) and math.isfinite(f):
+                        temps.append(t)
+                        fluores.append(f)
+                if temps:
+                    return {"temps": temps, "fluores": fluores}
+            melt_raw = get_tag(scope, "meltData") or get_tag(scope, "melt")
             if melt_raw:
                 temps = []
                 for tag in ["temperature", "temp", "t"]:
@@ -225,10 +285,46 @@ def parse_rdml(text, file_name=None):
                 for tag in ["fluorescence", "fluor", "f"]:
                     fluores.extend(float(v) for v in get_all_tags(melt_raw, tag) if _is_number(v))
                 if temps:
-                    melt = {"temps": temps, "fluores": fluores}
+                    return {"temps": temps, "fluores": fluores}
+            return None
 
-            tm_raw = get_tag(react_xml, "tm") or get_tag(react_xml, "Tm")
+        # Build one well from a scope (a <dye> block for multiplex, else the whole <react>)
+        def add_well(pos, react_xml, scope_xml, dye_id_override=None):
+            if not pos:
+                return
+            pp = parse_position(pos, 96)
+            row, col = pp["row"], pp["col"]
+
+            sample_id_raw = get_tag(react_xml, "sample") or get_tag(react_xml, "sampleId") or "Unknown"
+            sample_name = sample_name_by_id.get(sample_id_raw, sample_id_raw)
+            target_name = get_tag(scope_xml, "target") or get_tag(scope_xml, "targetId") or "Unknown"
+
+            if sample_name not in samples_seen:
+                samples_seen.add(sample_name)
+                run["samples"].append(make_sample(len(run["samples"]), sample_name, guess_sample_type(sample_name)))
+            if target_name not in targets_seen:
+                targets_seen.add(target_name)
+                run["targets"].append(make_target(len(run["targets"]), target_name, None, guess_reference(target_name)))
+            sample_id = next(i for i, s in enumerate(run["samples"]) if s["name"] == sample_name)
+            target_id = next(i for i, t in enumerate(run["targets"]) if t["name"] == target_name)
+
+            raw_dye = dye_id_override if dye_id_override else (get_tag(scope_xml, "dye") or get_tag(scope_xml, "fluor") or get_tag(scope_xml, "channel") or "")
+            canon = canonical_channel(raw_dye) or "FAM"
+            if canon not in channels_seen:
+                channels_seen.add(canon)
+                run["channels"].append(make_channel(len(run["channels"]), raw_dye, canon))
+            channel_id = next(i for i, c in enumerate(run["channels"]) if c["canonical"] == canon)
+
+            cq_raw = get_tag(scope_xml, "cq") or get_tag(scope_xml, "Cq") or get_tag(scope_xml, "ct")
+            cq = float(cq_raw) if cq_raw and _is_number(cq_raw) else None
+            if cq is not None and not math.isfinite(cq):
+                cq = None
+            amp = extract_amp(scope_xml)
+            melt = extract_melt(scope_xml)
+            tm_raw = get_tag(scope_xml, "tm") or get_tag(scope_xml, "Tm")
             tm = float(tm_raw) if tm_raw and _is_number(tm_raw) else None
+            if tm is not None and not math.isfinite(tm):
+                tm = None
 
             well = make_well(len(run["wells"]), row, col, "96")
             well["sampleId"] = sample_id
@@ -239,6 +335,25 @@ def parse_rdml(text, file_name=None):
             well["amplification"] = amp
             well["melt"] = melt
             run["wells"].append(well)
+
+        # Find react elements: support both <react id="A1"> and <react><position>A1</position>
+        react_list = []  # list of (pos, react_xml)
+        for rm in re.finditer(r'<react\s+id="([^"]+)"[^>]*>([\s\S]*?)</react>', text, re.I):
+            react_list.append((rm.group(1).strip(), rm.group(2).strip()))
+        if not react_list:
+            for rm in re.finditer(r"<react[^>]*>([\s\S]*?)</react>", text, re.I):
+                pos_tag = re.search(r"<position[^>]*>(.*?)</position>", rm.group(1), re.I)
+                if pos_tag:
+                    react_list.append((pos_tag.group(1).strip(), rm.group(1).strip()))
+        for pos, react_xml in react_list:
+            if not pos:
+                continue
+            dye_blocks = get_dye_blocks(react_xml)
+            if dye_blocks:
+                for dye_id, block_xml in dye_blocks:
+                    add_well(pos, react_xml, block_xml, dye_id)
+            else:
+                add_well(pos, react_xml, react_xml, None)
 
         if not run["channels"]:
             run["channels"].append(make_channel(0, "FAM", "FAM"))
@@ -257,6 +372,38 @@ def _is_number(v):
         return False
 
 
+def _split_csv_line(line):
+    """Quote-aware CSV line splitter (matches JS splitCsvLine)."""
+    if '"' not in line:
+        return [c.strip() for c in line.split(",")]
+    out = []
+    cur = ''
+    in_q = False
+    i = 0
+    while i < len(line):
+        ch = line[i]
+        if in_q:
+            if ch == '"':
+                if i + 1 < len(line) and line[i + 1] == '"':
+                    cur += '"'
+                    i += 1
+                else:
+                    in_q = False
+            else:
+                cur += ch
+        else:
+            if ch == '"':
+                in_q = True
+            elif ch == ',':
+                out.append(cur)
+                cur = ''
+            else:
+                cur += ch
+        i += 1
+    out.append(cur)
+    return [c.strip() for c in out]
+
+
 def parse_cfx_csv(text, file_name=None):
     run = make_run({"fileName": file_name or "cfx_csv", "sourceFormat": "cfx_csv"})
     try:
@@ -264,17 +411,161 @@ def parse_cfx_csv(text, file_name=None):
         if not lines:
             raise ValueError("Empty file")
 
+        # Section markers (CFX "Export to CSV" puts curves in separate sections)
+        def marker_idx(pat):
+            for i, l in enumerate(lines):
+                if re.match(pat, l.strip().strip('"'), re.I):
+                    return i
+            return -1
+
+        amp_marker = marker_idx(r"amplification data")
+        melt_marker = marker_idx(r"melt data")
+        markers = [x for x in (amp_marker, melt_marker) if x >= 0]
+        summary_end = min(markers) if markers else len(lines)
+
+        # Find header row within summary region
         header_idx = -1
         headers = []
-        for i, line in enumerate(lines):
-            cols = [c.strip().strip('"') for c in line.split(",")]
+        for i in range(summary_end):
+            cols = _split_csv_line(lines[i])
             if any(re.search(r"well", c, re.I) for c in cols) and (any(re.search(r"fluor|channel|dye", c, re.I) for c in cols) or any(re.search(r"target", c, re.I) for c in cols)):
                 header_idx = i
                 headers = cols
                 break
+
+        targets_seen = set()
+        samples_seen = set()
+        channels_seen = set()
+
+        def push_well_meta(row, col, raw_fluor, sample_name, target_name, cq, cq_sd, tm, amp, melt):
+            if sample_name not in samples_seen:
+                samples_seen.add(sample_name)
+                run["samples"].append(make_sample(len(run["samples"]), sample_name, guess_sample_type(sample_name)))
+            if target_name not in targets_seen:
+                targets_seen.add(target_name)
+                run["targets"].append(make_target(len(run["targets"]), target_name, None, guess_reference(target_name)))
+            canon = canonical_channel(raw_fluor) or "FAM"
+            if canon not in channels_seen:
+                channels_seen.add(canon)
+                run["channels"].append(make_channel(len(run["channels"]), raw_fluor, canon))
+            sample_id = next(i for i, s in enumerate(run["samples"]) if s["name"] == sample_name)
+            target_id = next(i for i, t in enumerate(run["targets"]) if t["name"] == target_name)
+            channel_id = next(i for i, c in enumerate(run["channels"]) if c["canonical"] == canon)
+
+            well = make_well(len(run["wells"]), row, col, "96")
+            well["sampleId"] = sample_id
+            well["targetId"] = target_id
+            well["channelId"] = channel_id
+            well["cq"] = cq if cq is not None and math.isfinite(cq) else None
+            well["cqSD"] = cq_sd if cq_sd is not None and math.isfinite(cq_sd) else None
+            well["tm"] = tm if tm is not None and math.isfinite(tm) else None
+            well["amplification"] = amp or []
+            well["melt"] = melt
+            run["wells"].append(well)
+            return well
+
+        def finish():
+            if not run["channels"]:
+                run["channels"].append(make_channel(0, "FAM", "FAM"))
+            for t in run["targets"]:
+                if t["channelId"] is None:
+                    t["channelId"] = 0
+
+        def parse_section(marker):
+            if marker < 0 or marker + 1 >= len(lines):
+                return None
+            s_headers = _split_csv_line(lines[marker + 1])
+
+            def s_idx(pat):
+                for i, h in enumerate(s_headers):
+                    if re.search(pat, h, re.I):
+                        return i
+                return -1
+
+            s_well = s_idx(r"well")
+            if s_well < 0:
+                return None
+            s_fluor = s_idx(r"fluor|channel|dye")
+            s_cycle = s_idx(r"cycle")
+            s_temp = s_idx(r"temp|temperature")
+            s_value = s_idx(r"^value$|fluorescen|signal|^data$")
+            if s_value < 0:
+                return None
+            by_key = {}
+            for i in range(marker + 2, len(lines)):
+                raw = lines[i].strip()
+                if re.match(r"^(amplification data|melt data)", raw.strip('"'), re.I):
+                    break
+                cols = _split_csv_line(lines[i])
+                if len(cols) < 2:
+                    continue
+                well_name = (cols[s_well] if s_well < len(cols) else "").strip()
+                if not well_name:
+                    continue
+                pp = parse_position(well_name, 96)
+                row, col = pp["row"], pp["col"]
+                canon = (canonical_channel(cols[s_fluor] if s_fluor >= 0 and s_fluor < len(cols) else "") or "FAM") if s_fluor >= 0 else ""
+                try:
+                    v = float(cols[s_value])
+                except (ValueError, IndexError, TypeError):
+                    continue
+                if not math.isfinite(v):
+                    continue
+                key = f"{row},{col},{canon}"
+                x = None
+                if s_temp >= 0:
+                    try:
+                        x = float(cols[s_temp])
+                    except (ValueError, IndexError, TypeError):
+                        x = None
+                if x is None and s_cycle >= 0:
+                    try:
+                        x = float(cols[s_cycle])
+                    except (ValueError, IndexError, TypeError):
+                        x = None
+                if x is None or not math.isfinite(x):
+                    x = len(by_key[key]["pts"]) + 1 if key in by_key else 1
+                if key not in by_key:
+                    by_key[key] = {"row": row, "col": col, "canon": canon, "pts": []}
+                by_key[key]["pts"].append({"x": x, "v": v})
+            return by_key
+
+        def attach_section(by_key, kind):
+            if not by_key:
+                return
+            for w in run["wells"]:
+                ch = run["channels"][w["channelId"]]
+                canon = ch["canonical"] if ch else ""
+                entry = by_key.get(f"{w['row']},{w['col']},{canon}") or by_key.get(f"{w['row']},{w['col']},") or by_key.get(f"{w['row']},{w['col']},FAM")
+                if not entry:
+                    continue
+                pts = sorted(entry["pts"], key=lambda p: p["x"])
+                if kind == "amp":
+                    if not w["amplification"]:
+                        w["amplification"] = [p["v"] for p in pts]
+                else:
+                    if not w.get("melt"):
+                        w["melt"] = {"temps": [p["x"] for p in pts], "fluores": [p["v"] for p in pts]}
+
+        # No summary header: pure section file (amplification-only or melt-only export)
         if header_idx == -1:
+            section = parse_section(amp_marker if amp_marker >= 0 else melt_marker)
+            if section:
+                for key in section:
+                    e = section[key]
+                    pts = sorted(e["pts"], key=lambda p: p["x"])
+                    well_name = chr(65 + e["row"]) + str(e["col"] + 1)
+                    push_well_meta(
+                        e["row"], e["col"], e["canon"], well_name, "Unknown",
+                        None, None, None,
+                        [p["v"] for p in pts] if amp_marker >= 0 else [],
+                        {"temps": [p["x"] for p in pts], "fluores": [p["v"] for p in pts]} if melt_marker >= 0 else None,
+                    )
+                finish()
+                return run
+            # legacy fallback: first line as header
             header_idx = 0
-            headers = [c.strip().strip('"') for c in lines[0].split(",")]
+            headers = _split_csv_line(lines[0])
 
         def col_index(name):
             for i, h in enumerate(headers):
@@ -289,73 +580,97 @@ def parse_cfx_csv(text, file_name=None):
         cq_col = col_index(r"cq|ct")
         cq_sd_col = col_index(r"cq.*std|std.*dev|cqsd")
         tm_col = col_index(r"tm|melt")
+        cycle_col = col_index(r"cycle")
+        value_col = col_index(r"^value$|fluorescen|signal|^data$")
+        # wide cycle columns: "Cycle 1"... or bare numeric "1","2",...
         amp_cols = [i for i, h in enumerate(headers) if re.match(r"^cycle\s*\d+$", h, re.I) or re.match(r"^\d+$", h)]
 
-        targets_seen = set()
-        samples_seen = set()
-        channels_seen = set()
+        # Long-format table: one row per cycle (Well,Fluor,Cycle,Value)
+        if well_col >= 0 and cycle_col >= 0 and value_col >= 0:
+            points_by_key = {}
+            meta_by_key = {}
+            for i in range(header_idx + 1, summary_end):
+                cols = _split_csv_line(lines[i])
+                if len(cols) < 2:
+                    continue
+                well_name = (cols[well_col] if well_col < len(cols) else "").strip()
+                if not well_name:
+                    continue
+                pp = parse_position(well_name, 96)
+                row, col = pp["row"], pp["col"]
+                raw_fluor = (cols[fluor_col] if fluor_col >= 0 and fluor_col < len(cols) else "") or ""
+                canon = canonical_channel(raw_fluor) or "FAM"
+                key = f"{row},{col},{canon}"
+                try:
+                    cyc = float(cols[cycle_col])
+                except (ValueError, IndexError, TypeError):
+                    cyc = None
+                try:
+                    val = float(cols[value_col])
+                except (ValueError, IndexError, TypeError):
+                    val = None
+                if key not in points_by_key:
+                    points_by_key[key] = []
+                if cyc is not None and val is not None and math.isfinite(cyc) and math.isfinite(val):
+                    points_by_key[key].append({"c": cyc, "v": val})
+                if key not in meta_by_key:
+                    cq_raw = (cols[cq_col] if cq_col >= 0 and cq_col < len(cols) else "") or ""
+                    content = (cols[content_col] if content_col >= 0 and content_col < len(cols) else "") or ""
+                    target_name = (cols[target_col] if target_col >= 0 and target_col < len(cols) else "") or ""
+                    cq = float(cq_raw) if cq_raw and _is_number(cq_raw) else None
+                    meta_by_key[key] = {
+                        "row": row, "col": col, "raw_fluor": raw_fluor,
+                        "sample_name": content or well_name,
+                        "target_name": target_name or "Unknown",
+                        "cq": cq,
+                    }
+            for key in points_by_key:
+                meta = meta_by_key[key]
+                pts = sorted(points_by_key[key], key=lambda p: p["c"])
+                push_well_meta(meta["row"], meta["col"], meta["raw_fluor"], meta["sample_name"],
+                               meta["target_name"], meta["cq"], None, None,
+                               [p["v"] for p in pts], None)
+            attach_section(parse_section(amp_marker), "amp")
+            attach_section(parse_section(melt_marker), "melt")
+            finish()
+            return run
 
-        for i in range(header_idx + 1, len(lines)):
-            cols = [c.strip().strip('"') for c in lines[i].split(",")]
+        # Summary table (one row per well)
+        for i in range(header_idx + 1, summary_end):
+            cols = _split_csv_line(lines[i])
             if len(cols) < 2:
                 continue
-            well_name = cols[well_col] if well_col >= 0 else ""
+            well_name = (cols[well_col] if well_col >= 0 and well_col < len(cols) else "") or ""
             if not well_name:
                 continue
 
             pp = parse_position(well_name, 96)
-            raw_fluor = cols[fluor_col] if fluor_col >= 0 else ""
-            target_name = cols[target_col] if target_col >= 0 else "Unknown"
-            content = cols[content_col] if content_col >= 0 else ""
-            cq_raw = cols[cq_col] if cq_col >= 0 else ""
+            row, col = pp["row"], pp["col"]
+            raw_fluor = (cols[fluor_col] if fluor_col >= 0 and fluor_col < len(cols) else "") or ""
+            target_name = (cols[target_col] if target_col >= 0 and target_col < len(cols) else "") or "Unknown"
+            content = (cols[content_col] if content_col >= 0 and content_col < len(cols) else "") or ""
+            cq_raw = (cols[cq_col] if cq_col >= 0 and cq_col < len(cols) else "") or ""
             cq = float(cq_raw) if cq_raw and _is_number(cq_raw) else None
-            if cq is not None and not math.isfinite(cq):
-                cq = None
-            cq_sd_raw = cols[cq_sd_col] if cq_sd_col >= 0 else ""
+            cq_sd_raw = (cols[cq_sd_col] if cq_sd_col >= 0 and cq_sd_col < len(cols) else "") or ""
             cq_sd = float(cq_sd_raw) if cq_sd_raw and _is_number(cq_sd_raw) else None
-            tm_raw = cols[tm_col] if tm_col >= 0 else ""
+            tm_raw = (cols[tm_col] if tm_col >= 0 and tm_col < len(cols) else "") or ""
             tm = float(tm_raw) if tm_raw and _is_number(tm_raw) else None
 
-            sample_name = content or well_name
-            if sample_name not in samples_seen:
-                samples_seen.add(sample_name)
-                run["samples"].append(make_sample(len(run["samples"]), sample_name, guess_sample_type(sample_name)))
-            if target_name not in targets_seen:
-                targets_seen.add(target_name)
-                run["targets"].append(make_target(len(run["targets"]), target_name, None, guess_reference(target_name)))
-            canon = canonical_channel(raw_fluor) or "FAM"
-            if canon not in channels_seen:
-                channels_seen.add(canon)
-                run["channels"].append(make_channel(len(run["channels"]), raw_fluor, canon))
+            amp = []
+            if amp_cols:
+                amp = [float(cols[ci]) for ci in amp_cols if ci < len(cols) and _is_number(cols[ci])]
 
-            sample_id = next(i for i, s in enumerate(run["samples"]) if s["name"] == sample_name)
-            target_id = next(i for i, t in enumerate(run["targets"]) if t["name"] == target_name)
-            channel_id = next(i for i, c in enumerate(run["channels"]) if c["canonical"] == canon)
+            push_well_meta(row, col, raw_fluor, content or well_name, target_name or "Unknown",
+                           cq, cq_sd, tm, amp, None)
 
-            amp_vals = []
-            for ci in amp_cols:
-                if ci < len(cols) and _is_number(cols[ci]):
-                    amp_vals.append(float(cols[ci]))
+        # Attach curve/melt sections (long tables after markers)
+        attach_section(parse_section(amp_marker), "amp")
+        attach_section(parse_section(melt_marker), "melt")
 
-            well = make_well(len(run["wells"]), pp["row"], pp["col"], "96")
-            well["sampleId"] = sample_id
-            well["targetId"] = target_id
-            well["channelId"] = channel_id
-            well["cq"] = cq
-            well["cqSD"] = cq_sd
-            well["tm"] = tm
-            well["amplification"] = amp_vals
-            run["wells"].append(well)
-
-        if not run["channels"]:
-            run["channels"].append(make_channel(0, "FAM", "FAM"))
-        for t in run["targets"]:
-            if t["channelId"] is None:
-                t["channelId"] = 0
+        finish()
     except Exception as e:
         raise ValueError(f"CFX CSV parse failed: {e}")
     return run
-
 
 def parse_template(text, file_name=None):
     run = make_run({"fileName": file_name or "template", "sourceFormat": "template"})
@@ -364,7 +679,13 @@ def parse_template(text, file_name=None):
         if not lines:
             raise ValueError("Empty file")
         delim = "\t" if "\t" in lines[0] else ","
-        headers = [c.strip().strip('"') for c in lines[0].split(delim)]
+
+        def split_row(line):
+            if delim == ",":
+                return _split_csv_line(line)
+            return [c.strip().strip('"') for c in line.split(delim)]
+
+        headers = split_row(lines[0])
 
         def col_index(name):
             for i, h in enumerate(headers):
@@ -381,13 +702,15 @@ def parse_template(text, file_name=None):
         cq_sd_col = col_index(r"cqsd|cq.*sd|std")
         tm_col = col_index(r"tm|melt")
         amp_col = col_index(r"amplif|data|curve")
+        # wide cycle columns: "Cycle 1"... or bare numeric "1","2",...
+        amp_cols = [i for i, h in enumerate(headers) if re.match(r"^cycle\s*\d+$", h, re.I) or re.match(r"^\d+$", h)]
 
         targets_seen = set()
         samples_seen = set()
         channels_seen = set()
 
         for i in range(1, len(lines)):
-            cols = [c.strip().strip('"') for c in lines[i].split(delim)]
+            cols = split_row(lines[i])
             if len(cols) < 2:
                 continue
             well_name = cols[well_col] if well_col >= 0 else cols[0]
@@ -395,7 +718,7 @@ def parse_template(text, file_name=None):
                 continue
 
             pp = parse_position(well_name, 96)
-            sample_name = cols[sample_col] if sample_col >= 0 else well_name
+            sample_name = (cols[sample_col] if sample_col >= 0 else "") or well_name
             target_name = cols[target_col] if target_col >= 0 else "Unknown"
             raw_channel = cols[channel_col] if channel_col >= 0 else "FAM"
             content = cols[content_col] if content_col >= 0 else ""
@@ -425,7 +748,9 @@ def parse_template(text, file_name=None):
 
             amp = []
             if amp_col >= 0 and amp_col < len(cols) and cols[amp_col]:
-                amp = [float(v) for v in re.split(r"[;|]", cols[amp_col]) if _is_number(v)]
+                amp = [float(v) for v in re.split(r"[;|\s]+", cols[amp_col]) if _is_number(v)]
+            elif amp_cols:
+                amp = [float(cols[ci]) for ci in amp_cols if ci < len(cols) and _is_number(cols[ci])]
 
             well = make_well(len(run["wells"]), pp["row"], pp["col"], "96")
             well["sampleId"] = sample_id

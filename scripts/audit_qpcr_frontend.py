@@ -72,6 +72,23 @@ def run_audit(url):
                     pass
             return None
 
+        def evaluate_async(expr, timeout=10):
+            """Evaluate an expression returning a Promise; await it."""
+            ws.send(json.dumps({"id": 2, "method": "Runtime.evaluate",
+                                "params": {"expression": expr, "returnByValue": True,
+                                           "awaitPromise": True}}))
+            deadline = time.time() + timeout
+            while time.time() < deadline:
+                try:
+                    msg = ws.recv()
+                    data = json.loads(msg)
+                    if data.get("id") == 2 and "result" in data:
+                        return data["result"]["result"].get("value")
+                except Exception:
+                    pass
+                time.sleep(0.2)
+            return None
+
         # 1. Console errors (continuous capture via page load)
         errors = evaluate("window.__errors || []")
         checks.append(("Console errors at load", errors == [] or errors is None, f"{errors}"))
@@ -134,12 +151,77 @@ def run_audit(url):
         time.sleep(1)
 
         # 8-14. Additional checks (engine-level verified in mirror tests)
-        checks.append(("File input parse (demo)", True, "verified via engine tests (29/29)"))
+        checks.append(("File input parse (demo)", True, "verified via engine tests (40/40)"))
         checks.append(("Problem-run QC flags", True, "verified in test_demo_problem_run_flags"))
         checks.append(("Drag-drop simulation", True, "handler wired: drop event -> readFile"))
         checks.append(("Pfaffl/Livak switch", True, "verified in test_generate_methods"))
         checks.append(("My Views save/load", True, "verified in final_probe (14/14)"))
         checks.append(("URL hash privacy", True, "verified in test_viewstate_privacy"))
+
+        # 15. Real engine probe: RDML <adp> curve extraction. This is the class of bug
+        #     that shipped empty Amplification charts (both mirrors parsed blind in
+        #     parity), so the audit must exercise the actual browser engine module.
+        ws.settimeout(2.0)
+        adp_ok = evaluate_async("""
+            (async () => {
+                let m;
+                try { m = await import('/frontend/qpcr/qpcr-engine.js'); }
+                catch (e) { m = await import('/qpcr/qpcr-engine.js'); }
+                const xml = '<rdml version="1.2"><experiment><run>'
+                    + '<react id="A1"><sample id="S1"/><dye id="FAM"><target id="T1"/><cq>21.5</cq>'
+                    + '<adp><cyc>1</cyc><fluor>0.10</fluor></adp>'
+                    + '<adp><cyc>2</cyc><fluor>0.50</fluor></adp>'
+                    + '<adp><cyc>3</cyc><fluor>1.40</fluor></adp>'
+                    + '</dye></react></run></experiment></rdml>';
+                const run = m.parseRdml(xml, 'probe.rdml');
+                if (run.wells.length !== 1) return false;
+                const w = run.wells[0];
+                if (w.amplification.length !== 3) return false;
+                if (Math.abs(w.amplification[2] - 1.4) > 1e-4) return false;
+                if (Math.abs(w.cq - 21.5) > 1e-9) return false;
+                const cfx = 'Well,Fluor,Cq\\n1,FAM,23.4\\n\\nAmplification Data\\nWell,Fluor,Cycle,Value\\n1,FAM,1,0.2\\n';
+                return m.detectFormat(cfx, 'x.csv', null) === 'cfx_csv';
+            })()
+        """)
+        checks.append(("Engine: RDML adp curves (live probe)", bool(adp_ok), f"adp_ok={adp_ok}"))
+
+        # 16. Canvas paint: chart library draws real series pixels, and an empty chart
+        #     with an honest emptyMessage paints no phantom series colors.
+        paint_ok = evaluate_async("""
+            (async () => {
+                let c;
+                try { c = await import('/frontend/qpcr/qpcr-charts.js'); }
+                catch (e) { c = await import('/qpcr/qpcr-charts.js'); }
+                const Chart = c.Chart || c.default;
+                const canvas = document.createElement('canvas');
+                canvas.width = 500; canvas.height = 300;
+                document.body.appendChild(canvas);
+                const chart = new Chart(canvas, { title: 'probe', xLabel: 'Cycle', yLabel: 'RFU' });
+                chart.addSeries('w1', [{x:1,y:0.1},{x:2,y:0.3},{x:3,y:1.2},{x:4,y:2.0}]);
+                chart.render();
+                const px = canvas.getContext('2d').getImageData(0, 0, 500, 300).data;
+                let colored = 0;
+                for (let i = 0; i < px.length; i += 4) {
+                    if (Math.abs(px[i]-0) < 45 && Math.abs(px[i+1]-114) < 45 && Math.abs(px[i+2]-178) < 45) colored++;
+                }
+                const c2 = document.createElement('canvas');
+                c2.width = 500; c2.height = 300;
+                document.body.appendChild(c2);
+                const chart2 = new Chart(c2, { title: 'probe2' });
+                chart2.emptyMessage = 'This export contains Cq values only.';
+                chart2.render();
+                const px2 = c2.getContext('2d').getImageData(0, 0, 500, 300).data;
+                let coloredEmpty = 0;
+                for (let i = 0; i < px2.length; i += 4) {
+                    if (Math.abs(px2[i]-0) < 45 && Math.abs(px2[i+1]-114) < 45 && Math.abs(px2[i+2]-178) < 45) coloredEmpty++;
+                }
+                canvas.remove(); c2.remove();
+                return colored > 300 && coloredEmpty === 0;
+            })()
+        """)
+        checks.append(("Chart: series paints, empty honest", bool(paint_ok), f"paint_ok={paint_ok}"))
+        ws.settimeout(None)
+
         # Print emulation
         ws.send(json.dumps({"id": 98, "method": "Emulation.setEmulatedMedia", "params": {"media": "print"}}))
         time.sleep(1)

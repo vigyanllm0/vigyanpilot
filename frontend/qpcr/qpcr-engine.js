@@ -154,10 +154,20 @@ export function detectFormat(text, fileName, buffer) {
   const t = (text || '').trim();
   if (!t) return 'unknown';
   if (t.startsWith('<?xml') || t.startsWith('<rdml') || t.includes('<rdml')) return 'rdml';
-  if (t.includes('Well,Fluor,Target,Content') || t.includes('Well\\tFluor\\tTarget')) return 'cfx_csv';
-  if (t.includes('Amplification Data') && t.includes('Well')) return 'cfx_csv';
-  if (t.includes('Cq,Well') || t.includes('Well,Cq')) return 'cfx_csv';
-  if (t.includes('well\tsample\ttarget\tchannel') || t.includes('Well\tSample\tTarget\tChannel')) return 'template';
+  // First few lines are enough to identify a table header (case-insensitive, comma or tab)
+  const headLines = t.split(/\r?\n/).slice(0, 5);
+  const head = headLines.join('\n');
+  const hasHead = (re) => headLines.some(l => re.test(l));
+  // Template TSV/CSV: Well + Sample + Target + Channel (check FIRST — CFX has no Sample column)
+  if (hasHead(/well[,\t].*sample/i) && hasHead(/target/i) && hasHead(/channel/i)) return 'template';
+  // CFX-style summary table: Well + Fluor/Target (comma or tab delimited)
+  if (hasHead(/well[,\t].*fluor/i) || hasHead(/well[,\t].*target/i)) return 'cfx_csv';
+  // Sectioned CFX export (any case)
+  if (/amplification data/i.test(t) && /well/i.test(head)) return 'cfx_csv';
+  // Long-format per-cycle table: Well + Cycle + Value/Fluorescence/Signal header
+  if (hasHead(/well/i) && hasHead(/cycle/i) && hasHead(/\bvalue\b|fluorescen|signal/i)) return 'cfx_csv';
+  // Cq-first headers (QuantStudio style)
+  if (hasHead(/cq[,\t].*well/i) || hasHead(/well[,\t].*cq/i)) return 'cfx_csv';
   return 'unknown';
 }
 
@@ -170,18 +180,29 @@ export function parseRdml(text, fileName) {
   const run = makeRun({ fileName: fileName || 'rdml', sourceFormat: 'rdml' });
   try {
     const getTag = (xml, tag) => {
+      // Word-boundary safe: '<cq' must not match '<cqStartFluor'
+      const b = tag + '(?=[\\s>])';
       // Handle self-closing tags with id attribute: <tag id="val"/>
-      let m = xml.match(new RegExp('<' + tag + '[^>]*?\\bid=["\']([^"\']+)["\']', 'i'));
+      let m = xml.match(new RegExp('<' + b + '[^>]*?\\bid=["\']([^"\']+)["\']', 'i'));
       if (m) return m[1].trim();
-      const re = new RegExp('<' + tag + '[^>]*>([\\s\\S]*?)</' + tag + '>', 'i');
+      const re = new RegExp('<' + b + '[^>]*>([\\s\\S]*?)</' + tag + '>', 'i');
       m = xml.match(re);
       return m ? m[1].trim() : null;
     };
     const getAllTags = (xml, tag) => {
-      const re = new RegExp('<' + tag + '[^>]*>([\\s\\S]*?)</' + tag + '>', 'gi');
+      const b = tag + '(?=[\\s>])';
+      const re = new RegExp('<' + b + '[^>]*>([\\s\\S]*?)</' + tag + '>', 'gi');
       const results = [];
       let m;
       while ((m = re.exec(xml)) !== null) results.push(m[1].trim());
+      return results;
+    };
+    // Nested block elements: returns inner content of each <tag ...>...</tag>
+    const getAllBlocks = (xml, tag) => {
+      const re = new RegExp('<' + tag + '\\b([^>]*)>([\\s\\S]*?)</' + tag + '>', 'gi');
+      const results = [];
+      let m;
+      while ((m = re.exec(xml)) !== null) results.push(m[2].trim());
       return results;
     };
 
@@ -193,6 +214,158 @@ export function parseRdml(text, fileName) {
     const targetsSeen = new Set();
     const samplesSeen = new Set();
     const channelsSeen = new Set();
+
+    // Top-level sample definitions: <sample id="s1"><name>Sample 1</name></sample>
+    const sampleNameById = {};
+    const sampleDefRe = /<sample\s+id=["']([^"']+)["'][^>]*>([\s\S]*?)<\/sample>/gi;
+    let sd;
+    while ((sd = sampleDefRe.exec(text)) !== null) {
+      if (sd[2].includes('<')) {
+        const nm = getTag(sd[2], 'name');
+        if (nm) sampleNameById[sd[1]] = nm;
+      }
+    }
+
+    // Extract nested <dye> blocks with child data (multiplex: one block per dye/channel).
+    // Plain <dye>FAM</dye> text values are NOT data blocks — skipped.
+    const getDyeBlocks = (xml) => {
+      const blocks = [];
+      const re = /<dye\b([^>]*)>([\s\S]*?)<\/dye>/gi;
+      let m;
+      while ((m = re.exec(xml)) !== null) {
+        const inner = m[2];
+        if (!inner.includes('<')) continue;
+        const idm = (m[1] || '').match(/\bid=["']([^"']+)["']/i);
+        blocks.push({ id: idm ? idm[1] : '', xml: inner });
+      }
+      return blocks;
+    };
+
+    // Amplification extraction — supports:
+    //   1. <adp><cyc>1</cyc><tmp>60</tmp><fluor>0.1</fluor></adp>  (standard RDML data points)
+    //   2. <adp cyc="1" fluor="0.1"/>                               (attribute form)
+    //   3. <ad cycle="1">0.1</ad>                                   (alternate instrument exports)
+    //   4. <amplificationData>0.1 0.2 ...</amplificationData>       (flat text)
+    const extractAmp = (scope) => {
+      const adps = getAllBlocks(scope, 'adp');
+      if (adps.length) {
+        const pts = [];
+        for (const a of adps) {
+          const c = parseFloat(getTag(a, 'cyc'));
+          const f = parseFloat(getTag(a, 'fluor'));
+          if (isFinite(f)) pts.push({ c: isFinite(c) ? c : pts.length + 1, f });
+        }
+        if (pts.length) {
+          pts.sort((p1, p2) => p1.c - p2.c);
+          return new Float32Array(pts.map(p => p.f));
+        }
+      }
+      // attribute-form self-closing adp
+      const adpAttrRe = /<adp\s([^>]*?)\/>/gi;
+      const attrPts = [];
+      let am;
+      while ((am = adpAttrRe.exec(scope)) !== null) {
+        const cm = am[1].match(/\bcycle=["']([^"']+)["']/i) || am[1].match(/\bcyc=["']([^"']+)["']/i);
+        const fm = am[1].match(/\bfluor=["']([^"']+)["']/i) || am[1].match(/\bvalue=["']([^"']+)["']/i);
+        if (fm) {
+          const f = parseFloat(fm[1]);
+          if (isFinite(f)) attrPts.push({ c: cm ? parseFloat(cm[1]) : attrPts.length + 1, f });
+        }
+      }
+      if (attrPts.length) {
+        attrPts.sort((p1, p2) => p1.c - p2.c);
+        return new Float32Array(attrPts.map(p => p.f));
+      }
+      // <ad cycle="N">value</ad>
+      const adRe = /<ad\s([^>]*)>([\s\S]*?)<\/ad>/gi;
+      const adPts = [];
+      while ((am = adRe.exec(scope)) !== null) {
+        const cm = am[1].match(/\bcycle=["']([^"']+)["']/i);
+        const v = parseFloat(am[2].replace(/<[^>]+>/g, ''));
+        if (isFinite(v)) adPts.push({ c: cm ? parseFloat(cm[1]) : adPts.length + 1, f: v });
+      }
+      if (adPts.length) {
+        adPts.sort((p1, p2) => p1.c - p2.c);
+        return new Float32Array(adPts.map(p => p.f));
+      }
+      // Flat text blob: <amplificationData>0.05 0.06 ...</amplificationData> (or bare-text <data>)
+      const ampRaw = getTag(scope, 'amplificationData') || getTag(scope, 'data');
+      if (ampRaw && !ampRaw.includes('<')) {
+        const vals = ampRaw.split(/[\s,;]+/).map(Number).filter(v => !isNaN(v));
+        if (vals.length) return new Float32Array(vals);
+      }
+      return new Float32Array(0);
+    };
+
+    // Melt extraction — supports:
+    //   1. <mdp><tmp>60.0</tmp><fluor>1.51</fluor></mdp>  (standard RDML melt data points)
+    //   2. <meltData>/<melt> containing temperature/fluorescence tags (flat/legacy)
+    const extractMelt = (scope) => {
+      const mdps = getAllBlocks(scope, 'mdp');
+      if (mdps.length) {
+        const temps = [], fluores = [];
+        for (const m of mdps) {
+          const t = parseFloat(getTag(m, 'tmp'));
+          const f = parseFloat(getTag(m, 'fluor'));
+          if (isFinite(t) && isFinite(f)) { temps.push(t); fluores.push(f); }
+        }
+        if (temps.length) return { temps, fluores };
+      }
+      const meltRaw = getTag(scope, 'meltData') || getTag(scope, 'melt');
+      if (meltRaw) {
+        const temps = getAllTags(meltRaw, 'temperature').concat(getAllTags(meltRaw, 'temp')).concat(getAllTags(meltRaw, 't')).map(Number).filter(v => isFinite(v));
+        const fluores = getAllTags(meltRaw, 'fluorescence').concat(getAllTags(meltRaw, 'fluor')).concat(getAllTags(meltRaw, 'f')).map(Number).filter(v => isFinite(v));
+        if (temps.length) return { temps, fluores };
+      }
+      return null;
+    };
+
+    // Build one well from a scope (a <dye> block for multiplex, else the whole <react>)
+    const addWell = (pos, reactXml, scopeXml, dyeIdOverride) => {
+      if (!pos) return;
+      const { row, col } = parsePosition(pos, 96);
+
+      const sampleIdRaw = getTag(reactXml, 'sample') || getTag(reactXml, 'sampleId') || 'Unknown';
+      const sampleName = sampleNameById[sampleIdRaw] || sampleIdRaw;
+      const targetName = getTag(scopeXml, 'target') || getTag(scopeXml, 'targetId') || 'Unknown';
+
+      if (!samplesSeen.has(sampleName)) {
+        samplesSeen.add(sampleName);
+        run.samples.push(makeSample(run.samples.length, sampleName, guessSampleType(sampleName)));
+      }
+      if (!targetsSeen.has(targetName)) {
+        targetsSeen.add(targetName);
+        run.targets.push(makeTarget(run.targets.length, targetName, null, guessReference(targetName)));
+      }
+      const sampleId = run.samples.findIndex(s => s.name === sampleName);
+      const targetId = run.targets.findIndex(t => t.name === targetName);
+
+      const rawDye = (dyeIdOverride != null && dyeIdOverride !== '') ? dyeIdOverride
+        : (getTag(scopeXml, 'dye') || getTag(scopeXml, 'fluor') || getTag(scopeXml, 'channel') || '');
+      const canon = canonicalChannel(rawDye) || 'FAM';
+      if (!channelsSeen.has(canon)) {
+        channelsSeen.add(canon);
+        run.channels.push(makeChannel(run.channels.length, rawDye, canon));
+      }
+      const channelId = run.channels.findIndex(c => c.canonical === canon);
+
+      const cqRaw = getTag(scopeXml, 'cq') || getTag(scopeXml, 'Cq') || getTag(scopeXml, 'ct');
+      const cq = cqRaw ? parseFloat(cqRaw) : null;
+      const amp = extractAmp(scopeXml);
+      const melt = extractMelt(scopeXml);
+      const tmRaw = getTag(scopeXml, 'tm') || getTag(scopeXml, 'Tm');
+      const tm = tmRaw ? parseFloat(tmRaw) : null;
+
+      const well = makeWell(run.wells.length, row, col, '96');
+      well.sampleId = sampleId;
+      well.targetId = targetId;
+      well.channelId = channelId;
+      well.cq = isFinite(cq) ? cq : null;
+      well.tm = isFinite(tm) ? tm : null;
+      well.amplification = amp;
+      well.melt = melt;
+      run.wells.push(well);
+    };
 
     // Find react elements: support both <react id="A1"> and <react><position>A1</position>
     const reacts = [];
@@ -212,60 +385,12 @@ export function parseRdml(text, fileName) {
       const pos = react.id;
       const reactXml = react.xml;
       if (!pos) continue;
-      const { row, col } = parsePosition(pos, 96);
-
-      const sampleName = getTag(reactXml, 'sample') || getTag(reactXml, 'sampleId') || 'Unknown';
-      const targetName = getTag(reactXml, 'target') || getTag(reactXml, 'targetId') || 'Unknown';
-
-      if (!samplesSeen.has(sampleName)) {
-        samplesSeen.add(sampleName);
-        run.samples.push(makeSample(run.samples.length, sampleName, guessSampleType(sampleName)));
+      const dyeBlocks = getDyeBlocks(reactXml);
+      if (dyeBlocks.length) {
+        for (const b of dyeBlocks) addWell(pos, reactXml, b.xml, b.id);
+      } else {
+        addWell(pos, reactXml, reactXml, null);
       }
-      if (!targetsSeen.has(targetName)) {
-        targetsSeen.add(targetName);
-        run.targets.push(makeTarget(run.targets.length, targetName, null, guessReference(targetName)));
-      }
-      const sampleId = run.samples.findIndex(s => s.name === sampleName);
-      const targetId = run.targets.findIndex(t => t.name === targetName);
-
-      const rawDye = getTag(reactXml, 'dye') || getTag(reactXml, 'fluor') || getTag(reactXml, 'channel') || '';
-      const canon = canonicalChannel(rawDye) || 'FAM';
-      if (!channelsSeen.has(canon)) {
-        channelsSeen.add(canon);
-        run.channels.push(makeChannel(run.channels.length, rawDye, canon));
-      }
-      const channelId = run.channels.findIndex(c => c.canonical === canon);
-
-      const cqRaw = getTag(reactXml, 'cq') || getTag(reactXml, 'Cq') || getTag(reactXml, 'ct');
-      const cq = cqRaw ? parseFloat(cqRaw) : null;
-
-      const ampRaw = getTag(reactXml, 'amplificationData') || getTag(reactXml, 'data');
-      let amp = new Float32Array(0);
-      if (ampRaw) {
-        const vals = ampRaw.split(/[\s,;]+/).map(Number).filter(v => !isNaN(v));
-        amp = new Float32Array(vals);
-      }
-
-      const meltRaw = getTag(reactXml, 'meltData') || getTag(reactXml, 'melt');
-      let melt = null;
-      if (meltRaw) {
-        const temps = getAllTags(meltRaw, 'temperature').concat(getAllTags(meltRaw, 'temp')).concat(getAllTags(meltRaw, 't')).map(Number).filter(v => !isNaN(v));
-        const fluores = getAllTags(meltRaw, 'fluorescence').concat(getAllTags(meltRaw, 'fluor')).concat(getAllTags(meltRaw, 'f')).map(Number).filter(v => !isNaN(v));
-        if (temps.length) melt = { temps, fluores };
-      }
-
-      const tmRaw = getTag(reactXml, 'tm') || getTag(reactXml, 'Tm');
-      const tm = tmRaw ? parseFloat(tmRaw) : null;
-
-      const well = makeWell(run.wells.length, row, col, '96');
-      well.sampleId = sampleId;
-      well.targetId = targetId;
-      well.channelId = channelId;
-      well.cq = isFinite(cq) ? cq : null;
-      well.tm = isFinite(tm) ? tm : null;
-      well.amplification = amp;
-      well.melt = melt;
-      run.wells.push(well);
     }
 
     if (run.channels.length === 0) {
@@ -280,68 +405,58 @@ export function parseRdml(text, fileName) {
   return run;
 }
 
+// Quote-aware CSV line splitter
+function splitCsvLine(line) {
+  if (line.indexOf('"') === -1) return line.split(',').map(c => c.trim());
+  const out = [];
+  let cur = '';
+  let inQ = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (inQ) {
+      if (ch === '"') {
+        if (line[i + 1] === '"') { cur += '"'; i++; }
+        else inQ = false;
+      } else cur += ch;
+    } else {
+      if (ch === '"') inQ = true;
+      else if (ch === ',') { out.push(cur); cur = ''; }
+      else cur += ch;
+    }
+  }
+  out.push(cur);
+  return out.map(c => c.trim());
+}
+
 export function parseCfxCsv(text, fileName) {
   const run = makeRun({ fileName: fileName || 'cfx_csv', sourceFormat: 'cfx_csv' });
   try {
     const lines = text.split(/\r?\n/).filter(l => l.trim());
     if (lines.length === 0) throw new Error('Empty file');
 
-    // Find header row
+    // ── Section markers (CFX "Export to CSV" puts curves in separate sections) ──
+    const markerIdx = (re) => lines.findIndex(l => re.test(l.replace(/^"|"$/g, '').trim()));
+    const ampMarker = markerIdx(/^amplification data/i);
+    const meltMarker = markerIdx(/^melt data/i);
+    const markers = [ampMarker, meltMarker].filter(x => x >= 0);
+    const summaryEnd = markers.length ? Math.min(...markers) : lines.length;
+
+    // Find header row within summary region
     let headerIdx = -1;
     let headers = [];
-    for (let i = 0; i < lines.length; i++) {
-      const cols = lines[i].split(',').map(c => c.trim().replace(/^"|"$/g, ''));
-      if (cols.some(c => /well/i.test(c)) && cols.some(c => /fluor|channel|dye/i.test(c))) {
-        headerIdx = i; headers = cols; break;
-      }
-      if (cols.some(c => /well/i.test(c)) && cols.some(c => /target/i.test(c))) {
-        headerIdx = i; headers = cols; break;
-      }
-    }
-    if (headerIdx === -1) {
-      // fallback: first non-empty line as header
-      headerIdx = 0; headers = lines[0].split(',').map(c => c.trim().replace(/^"|"$/g, ''));
-    }
-
-    const colIndex = (name) => headers.findIndex(h => new RegExp(name, 'i').test(h));
-
-    const wellCol = colIndex('well');
-    const fluorCol = colIndex('fluor|channel|dye');
-    const targetCol = colIndex('target');
-    const contentCol = colIndex('content');
-    const cqCol = colIndex('cq|ct');
-    const cqSdCol = colIndex('cq.*std|std.*dev|cqsd');
-    const tmCol = colIndex('tm|melt');
-    // amplification columns: cycle numbers or "Cycle N"
-    const ampCols = [];
-    for (let i = 0; i < headers.length; i++) {
-      if (/^cycle\s*\d+$/i.test(headers[i]) || /^\d+$/.test(headers[i])) {
-        ampCols.push(i);
-      }
+    for (let i = 0; i < summaryEnd; i++) {
+      const cols = splitCsvLine(lines[i]);
+      if (cols.some(c => /well/i.test(c)) && cols.some(c => /fluor|channel|dye/i.test(c))) { headerIdx = i; headers = cols; break; }
+      if (cols.some(c => /well/i.test(c)) && cols.some(c => /target/i.test(c))) { headerIdx = i; headers = cols; break; }
     }
 
     const targetsSeen = new Set();
     const samplesSeen = new Set();
     const channelsSeen = new Set();
 
-    for (let i = headerIdx + 1; i < lines.length; i++) {
-      const cols = lines[i].split(',').map(c => c.trim().replace(/^"|"$/g, ''));
-      if (cols.length < 2) continue;
-      const wellName = cols[wellCol] || '';
-      if (!wellName) continue;
-
-      const { row, col } = parsePosition(wellName, 96);
-      const rawFluor = fluorCol >= 0 ? cols[fluorCol] : '';
-      const targetName = targetCol >= 0 ? cols[targetCol] : 'Unknown';
-      const content = contentCol >= 0 ? cols[contentCol] : '';
-      const cqRaw = cqCol >= 0 ? cols[cqCol] : '';
-      const cq = cqRaw ? parseFloat(cqRaw) : null;
-      const cqSdRaw = cqSdCol >= 0 ? cols[cqSdCol] : '';
-      const cqSd = cqSdRaw ? parseFloat(cqSdRaw) : null;
-      const tmRaw = tmCol >= 0 ? cols[tmCol] : '';
-      const tm = tmRaw ? parseFloat(tmRaw) : null;
-
-      const sampleName = content || wellName;
+    // Register sample/target/channel + push a well (shared by all paths)
+    const pushWellMeta = (meta) => {
+      const { row, col, rawFluor, sampleName, targetName, cq, cqSd, tm, amp, melt } = meta;
       if (!samplesSeen.has(sampleName)) {
         samplesSeen.add(sampleName);
         run.samples.push(makeSample(run.samples.length, sampleName, guessSampleType(sampleName)));
@@ -355,13 +470,9 @@ export function parseCfxCsv(text, fileName) {
         channelsSeen.add(canon);
         run.channels.push(makeChannel(run.channels.length, rawFluor, canon));
       }
-
       const sampleId = run.samples.findIndex(s => s.name === sampleName);
       const targetId = run.targets.findIndex(t => t.name === targetName);
       const channelId = run.channels.findIndex(c => c.canonical === canon);
-
-      const ampVals = ampCols.map(ci => parseFloat(cols[ci])).filter(v => !isNaN(v));
-      const amp = new Float32Array(ampVals);
 
       const well = makeWell(run.wells.length, row, col, '96');
       well.sampleId = sampleId;
@@ -370,12 +481,182 @@ export function parseCfxCsv(text, fileName) {
       well.cq = isFinite(cq) ? cq : null;
       well.cqSD = isFinite(cqSd) ? cqSd : null;
       well.tm = isFinite(tm) ? tm : null;
-      well.amplification = amp;
+      well.amplification = amp || new Float32Array(0);
+      well.melt = melt || null;
       run.wells.push(well);
+      return well;
+    };
+
+    const finish = () => {
+      if (run.channels.length === 0) run.channels.push(makeChannel(0, 'FAM', 'FAM'));
+      for (const t of run.targets) if (t.channelId == null) t.channelId = 0;
+    };
+
+    // Parse a section ("Amplification Data" / "Melt Data") → { "row,col,canon": [{x,v}] }
+    const parseSection = (marker) => {
+      if (marker < 0) return null;
+      let si = marker + 1;
+      if (si >= lines.length) return null;
+      const sHeaders = splitCsvLine(lines[si]);
+      const sIdx = (re) => sHeaders.findIndex(h => re.test(h));
+      const sWell = sIdx(/well/i);
+      if (sWell < 0) return null;
+      const sFluor = sIdx(/fluor|channel|dye/i);
+      const sCycle = sIdx(/cycle/i);
+      const sTemp = sIdx(/temp|temperature/i);
+      const sValue = sIdx(/^value$|fluorescen|signal|^data$/i);
+      if (sValue < 0) return null;
+      const byKey = {};
+      for (let i = si + 1; i < lines.length; i++) {
+        const raw = lines[i].trim();
+        if (/^(amplification data|melt data)/i.test(raw.replace(/^"|"$/g, ''))) break; // next section
+        const cols = splitCsvLine(lines[i]);
+        if (cols.length < 2) continue;
+        const wellName = (cols[sWell] || '').trim();
+        if (!wellName) continue;
+        const { row, col } = parsePosition(wellName, 96);
+        const canon = sFluor >= 0 ? (canonicalChannel(cols[sFluor] || '') || 'FAM') : '';
+        const v = parseFloat(cols[sValue]);
+        if (!isFinite(v)) continue;
+        let x = sTemp >= 0 ? parseFloat(cols[sTemp]) : (sCycle >= 0 ? parseFloat(cols[sCycle]) : NaN);
+        if (!isFinite(x)) x = byKey[row + ',' + col + ',' + canon] ? byKey[row + ',' + col + ',' + canon].pts.length + 1 : 1;
+        const key = row + ',' + col + ',' + canon;
+        if (!byKey[key]) byKey[key] = { row, col, canon, pts: [] };
+        byKey[key].pts.push({ x, v });
+      }
+      return byKey;
+    };
+
+    // Attach parsed section points to existing wells
+    const attachSection = (byKey, kind) => {
+      if (!byKey) return;
+      for (const w of run.wells) {
+        const ch = run.channels[w.channelId];
+        const canon = ch ? ch.canonical : '';
+        const entry = byKey[w.row + ',' + w.col + ',' + canon] || byKey[w.row + ',' + w.col + ','] || byKey[w.row + ',' + w.col + ',FAM'];
+        if (!entry) continue;
+        const pts = entry.pts.slice().sort((a, b) => a.x - b.x);
+        if (kind === 'amp') {
+          if (w.amplification.length === 0) w.amplification = new Float32Array(pts.map(p => p.v));
+        } else {
+          if (!w.melt) w.melt = { temps: pts.map(p => p.x), fluores: pts.map(p => p.v) };
+        }
+      }
+    };
+
+    // ── No summary header: pure section file (amplification-only or melt-only export) ──
+    if (headerIdx === -1) {
+      const section = parseSection(ampMarker >= 0 ? ampMarker : meltMarker);
+      if (section) {
+        for (const key of Object.keys(section)) {
+          const e = section[key];
+          const pts = e.pts.slice().sort((a, b) => a.x - b.x);
+          const wellName = String.fromCharCode(65 + e.row) + (e.col + 1);
+          pushWellMeta({
+            row: e.row, col: e.col, rawFluor: e.canon,
+            sampleName: wellName, targetName: 'Unknown',
+            cq: NaN, cqSd: NaN, tm: NaN,
+            amp: ampMarker >= 0 ? new Float32Array(pts.map(p => p.v)) : new Float32Array(0),
+            melt: meltMarker >= 0 ? { temps: pts.map(p => p.x), fluores: pts.map(p => p.v) } : null
+          });
+        }
+        finish();
+        return run;
+      }
+      // legacy fallback: first line as header
+      headerIdx = 0;
+      headers = splitCsvLine(lines[0]);
     }
 
-    if (run.channels.length === 0) run.channels.push(makeChannel(0, 'FAM', 'FAM'));
-    for (const t of run.targets) if (t.channelId == null) t.channelId = 0;
+    const colIndex = (name) => headers.findIndex(h => new RegExp(name, 'i').test(h));
+
+    const wellCol = colIndex('well');
+    const fluorCol = colIndex('fluor|channel|dye');
+    const targetCol = colIndex('target');
+    const contentCol = colIndex('content');
+    const cqCol = colIndex('cq|ct');
+    const cqSdCol = colIndex('cq.*std|std.*dev|cqsd');
+    const tmCol = colIndex('tm|melt');
+    const cycleCol = colIndex('cycle');
+    const valueCol = colIndex('^value$|fluorescen|signal|^data$');
+    // wide cycle columns: "Cycle 1"... or bare numeric "1","2",...
+    const ampCols = [];
+    for (let i = 0; i < headers.length; i++) {
+      if (/^cycle\s*\d+$/i.test(headers[i]) || /^\d+$/.test(headers[i])) ampCols.push(i);
+    }
+
+    // ── Long-format table: one row per cycle (Well,Fluor,Cycle,Value) ──
+    if (wellCol >= 0 && cycleCol >= 0 && valueCol >= 0) {
+      const pointsByKey = {};
+      const metaByKey = {};
+      for (let i = headerIdx + 1; i < summaryEnd; i++) {
+        const cols = splitCsvLine(lines[i]);
+        if (cols.length < 2) continue;
+        const wellName = (cols[wellCol] || '').trim();
+        if (!wellName) continue;
+        const { row, col } = parsePosition(wellName, 96);
+        const rawFluor = fluorCol >= 0 ? (cols[fluorCol] || '') : '';
+        const canon = canonicalChannel(rawFluor) || 'FAM';
+        const key = row + ',' + col + ',' + canon;
+        const cyc = parseFloat(cols[cycleCol]);
+        const val = parseFloat(cols[valueCol]);
+        if (!pointsByKey[key]) pointsByKey[key] = [];
+        if (isFinite(cyc) && isFinite(val)) pointsByKey[key].push({ c: cyc, v: val });
+        if (!metaByKey[key]) {
+          const cqRaw = cqCol >= 0 ? (cols[cqCol] || '') : '';
+          metaByKey[key] = {
+            row, col, rawFluor,
+            sampleName: contentCol >= 0 && cols[contentCol] ? cols[contentCol] : wellName,
+            targetName: targetCol >= 0 && cols[targetCol] ? cols[targetCol] : 'Unknown',
+            cq: cqRaw ? parseFloat(cqRaw) : NaN
+          };
+        }
+      }
+      for (const key of Object.keys(pointsByKey)) {
+        const meta = metaByKey[key];
+        const pts = pointsByKey[key].slice().sort((a, b) => a.c - b.c);
+        pushWellMeta({ ...meta, cqSd: NaN, tm: NaN, amp: new Float32Array(pts.map(p => p.v)), melt: null });
+      }
+      attachSection(parseSection(ampMarker), 'amp');
+      attachSection(parseSection(meltMarker), 'melt');
+      finish();
+      return run;
+    }
+
+    // ── Summary table (one row per well) ──
+    for (let i = headerIdx + 1; i < summaryEnd; i++) {
+      const cols = splitCsvLine(lines[i]);
+      if (cols.length < 2) continue;
+      const wellName = wellCol >= 0 ? (cols[wellCol] || '') : '';
+      if (!wellName) continue;
+
+      const { row, col } = parsePosition(wellName, 96);
+      const rawFluor = fluorCol >= 0 ? (cols[fluorCol] || '') : '';
+      const targetName = targetCol >= 0 ? (cols[targetCol] || '') : 'Unknown';
+      const content = contentCol >= 0 ? (cols[contentCol] || '') : '';
+      const cqRaw = cqCol >= 0 ? (cols[cqCol] || '') : '';
+      const cq = cqRaw ? parseFloat(cqRaw) : NaN;
+      const cqSdRaw = cqSdCol >= 0 ? (cols[cqSdCol] || '') : '';
+      const cqSd = cqSdRaw ? parseFloat(cqSdRaw) : NaN;
+      const tmRaw = tmCol >= 0 ? (cols[tmCol] || '') : '';
+      const tm = tmRaw ? parseFloat(tmRaw) : NaN;
+
+      const ampVals = ampCols.map(ci => parseFloat(cols[ci])).filter(v => !isNaN(v));
+      const amp = new Float32Array(ampVals);
+
+      pushWellMeta({
+        row, col, rawFluor,
+        sampleName: content || wellName,
+        targetName: targetName || 'Unknown',
+        cq, cqSd, tm, amp, melt: null
+      });
+    }
+
+    // ── Attach curve/melt sections (long tables after markers) ──
+    attachSection(parseSection(ampMarker), 'amp');
+    attachSection(parseSection(meltMarker), 'melt');
+
+    finish();
   } catch (e) {
     throw new Error('CFX CSV parse failed: ' + e.message);
   }
@@ -394,7 +675,8 @@ export function parseTemplate(text, fileName) {
 
     // detect delimiter
     const delim = lines[0].includes('\t') ? '\t' : ',';
-    const headers = lines[0].split(delim).map(c => c.trim().replace(/^"|"$/g, ''));
+    const splitRow = (line) => delim === ',' ? splitCsvLine(line) : line.split(delim).map(c => c.trim().replace(/^"|"$/g, ''));
+    const headers = splitRow(lines[0]);
 
     const colIndex = (name) => headers.findIndex(h => new RegExp(name, 'i').test(h));
     const wellCol = colIndex('well');
@@ -406,19 +688,24 @@ export function parseTemplate(text, fileName) {
     const cqSdCol = colIndex('cqsd|cq.*sd|std');
     const tmCol = colIndex('tm|melt');
     const ampCol = colIndex('amplif|data|curve');
+    // wide cycle columns: "Cycle 1"... or bare numeric "1","2",...
+    const ampCols = [];
+    for (let i = 0; i < headers.length; i++) {
+      if (/^cycle\s*\d+$/i.test(headers[i]) || /^\d+$/.test(headers[i])) ampCols.push(i);
+    }
 
     const targetsSeen = new Set();
     const samplesSeen = new Set();
     const channelsSeen = new Set();
 
     for (let i = 1; i < lines.length; i++) {
-      const cols = lines[i].split(delim).map(c => c.trim().replace(/^"|"$/g, ''));
+      const cols = splitRow(lines[i]);
       if (cols.length < 2) continue;
       const wellName = wellCol >= 0 ? cols[wellCol] : cols[0];
       if (!wellName) continue;
 
       const { row, col } = parsePosition(wellName, 96);
-      const sampleName = sampleCol >= 0 ? cols[sampleCol] : wellName;
+      const sampleName = (sampleCol >= 0 ? cols[sampleCol] : '') || wellName;
       const targetName = targetCol >= 0 ? cols[targetCol] : 'Unknown';
       const rawChannel = channelCol >= 0 ? cols[channelCol] : 'FAM';
       const content = contentCol >= 0 ? cols[contentCol] : '';
@@ -449,8 +736,11 @@ export function parseTemplate(text, fileName) {
 
       let amp = new Float32Array(0);
       if (ampCol >= 0 && cols[ampCol]) {
-        const vals = cols[ampCol].split(/[;|]/).map(Number).filter(v => !isNaN(v));
+        const vals = cols[ampCol].split(/[;|\s]+/).map(Number).filter(v => !isNaN(v));
         amp = new Float32Array(vals);
+      } else if (ampCols.length) {
+        const vals = ampCols.map(ci => parseFloat(cols[ci])).filter(v => !isNaN(v));
+        if (vals.length) amp = new Float32Array(vals);
       }
 
       const well = makeWell(run.wells.length, row, col, '96');
@@ -523,6 +813,11 @@ export async function parseXlsxAsync(buffer, fileName) {
     const cqSdCol = colIndex('cqsd|cq.*sd|std');
     const tmCol = colIndex('tm|melt');
     const ampCol = colIndex('amplif|data|curve');
+    // wide cycle columns: "Cycle 1"... or bare numeric "1","2",...
+    const ampCols = [];
+    for (let i = 0; i < headers.length; i++) {
+      if (/^cycle\s*\d+$/i.test(headers[i]) || /^\d+$/.test(headers[i])) ampCols.push(i);
+    }
 
     const targetsSeen = new Set();
     const samplesSeen = new Set();
@@ -567,8 +862,11 @@ export async function parseXlsxAsync(buffer, fileName) {
       let amp = new Float32Array(0);
       if (ampCol >= 0 && cols[ampCol]) {
         const val = String(cols[ampCol]);
-        const vals = val.split(/[;,|]/).map(Number).filter(v => !isNaN(v));
+        const vals = val.split(/[;,\s|]/).map(Number).filter(v => !isNaN(v));
         amp = new Float32Array(vals);
+      } else if (ampCols.length) {
+        const vals = ampCols.map(ci => parseFloat(cols[ci])).filter(v => !isNaN(v));
+        if (vals.length) amp = new Float32Array(vals);
       }
 
       const well = makeWell(run.wells.length, row, col, '96');

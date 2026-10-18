@@ -151,16 +151,40 @@ export class Chart {
       }
     }
 
-    // legend
+    // legend (skip empty/invisible series — a legend entry with no drawn curve is a lie)
     let ly = p;
     ctx.font = '11px sans-serif';
     ctx.textAlign = 'left';
     for (const s of this.series) {
-      ctx.fillStyle = s.visible ? s.color : '#94a3b8';
+      if (!s.visible || s.data.length === 0) continue;
+      ctx.fillStyle = s.color;
       ctx.fillRect(w - 120, ly, 12, 12);
       ctx.fillStyle = '#334155';
       ctx.fillText(s.label, w - 104, ly + 10);
       ly += 16;
+    }
+
+    // empty-state message: when nothing is plottable, say so instead of showing a blank plot
+    const anyPlottable = this.series.some(s => s.visible && s.data.length > 0);
+    if (!anyPlottable) {
+      const msg = this.emptyMessage || 'No data to plot.';
+      ctx.fillStyle = '#64748b';
+      ctx.font = '13px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      const maxW = w - 2 * p - 40;
+      const words = msg.split(' ');
+      const linesOut = [];
+      let cur = '';
+      for (const word of words) {
+        const test = cur ? cur + ' ' + word : word;
+        if (ctx.measureText(test).width > maxW && cur) { linesOut.push(cur); cur = word; }
+        else cur = test;
+      }
+      if (cur) linesOut.push(cur);
+      const midY = (h) / 2 - (linesOut.length - 1) * 9;
+      linesOut.forEach((ln, i) => ctx.fillText(ln, w / 2, midY + i * 18));
+      ctx.textBaseline = 'alphabetic';
     }
   }
 
