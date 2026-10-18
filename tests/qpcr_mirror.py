@@ -658,7 +658,6 @@ def detect_tm_peaks(temps, derivative, threshold=0.1):
 
 
 import base64
-import json
 
 
 def serialize_view_state(vs):
