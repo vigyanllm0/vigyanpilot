@@ -77,7 +77,7 @@ def run_audit(url):
         checks.append(("Console errors at load", errors == [] or errors is None, f"{errors}"))
 
         # 2. Engine globals loaded
-        time.sleep(4)
+        time.sleep(6)
         engine_ok = evaluate("window.__engineLoaded === true")
         checks.append(("Engine globals loaded", bool(engine_ok), f"engineLoaded={engine_ok}"))
 

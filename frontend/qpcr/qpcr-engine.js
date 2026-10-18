@@ -160,18 +160,6 @@ export function detectFormat(text, fileName, buffer) {
   if (t.includes('well\\tsample\\ttarget\\tchannel') || t.includes('Well\\tSample\\tTarget\\tChannel')) return 'template';
   return 'unknown';
 }
-  const t = (text || '').trim();
-  if (!t) return 'unknown';
-  // RDML is XML
-  if (t.startsWith('<?xml') || t.startsWith('<rdml') || t.includes('<rdml')) return 'rdml';
-  // CFX CSV has specific header patterns
-  if (t.includes('Well,Fluor,Target,Content') || t.includes('Well\tFluor\tTarget')) return 'cfx_csv';
-  if (t.includes('Amplification Data') && t.includes('Well')) return 'cfx_csv';
-  if (t.includes('Cq,Well') || t.includes('Well,Cq')) return 'cfx_csv';
-  // Generic template (TSV)
-  if (t.includes('well\tsample\ttarget\tchannel') || t.includes('Well\tSample\tTarget\tChannel')) return 'template';
-  return 'unknown';
-}
 
 /**
  * Parse RDML 1.2 XML → canonical Run.
