@@ -5,6 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Free qPCR Analyzer — Amplification, Melt & Standard Curves Online</title>
 <meta name="description" content="Analyze qPCR runs in your browser. Upload CFX CSV, RDML, or template files. Amplification curves, melt peaks, standard curves, expression analysis. Free, no login, data never leaves your browser.">
+<meta property="og:image" content="https://www.vigyanllm.in/assets/og-qpcr-analyzer.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://www.vigyanllm.in/assets/og-qpcr-analyzer.png">
 <link rel="stylesheet" href="/design-tokens.css">
 <style>
   :root { --navy: #0f172a; --teal: #0d9488; }
@@ -225,6 +230,15 @@
 
 <script type="module">
 import { parseRun, detectFormat, analyzeRun, makeRun, canonicalChannel, savitzkyGolayDerivative, detectTmPeaks, saveView, loadView, listViews, serializeViewState, deserializeViewState, generateMethods } from './qpcr/qpcr-engine.js';
+
+// Funnel analytics (consent-gated, privacy-safe: format + counts only, never data)
+function track(event, params) {
+  if (window.VLAnalytics && typeof window.VLAnalytics.track === 'function') {
+    window.VLAnalytics.track(event, params);
+  } else if (window.gtag) {
+    gtag('event', event, params);
+  }
+}
 import Chart from './qpcr/qpcr-charts.js';
 
 let run = null;
@@ -264,6 +278,7 @@ function parse() {
     mainContent.style.display = 'block';
     initViews();
     hashCheck();
+    track('qpcr_file_uploaded', { format: detectFormat(pasteArea.value.trim()), well_count: run.wells.length });
   } catch (err) {
     showStatus('Parse error: ' + err.message, 'error');
     mainContent.style.display = 'none';
@@ -297,6 +312,7 @@ document.getElementById('saveViewBtn').addEventListener('click', () => {
     analysis: { method: document.getElementById('exprMethod').value },
   };
   saveView(name, vs);
+  track('qpcr_view_saved', { view_name: name });
   alert('View saved: ' + name);
 });
 
@@ -326,7 +342,7 @@ document.getElementById('shareViewBtn').addEventListener('click', () => {
   };
   const hash = serializeViewState(vs);
   const url = window.location.origin + window.location.pathname + '#' + hash;
-  navigator.clipboard.writeText(url).then(() => alert('URL copied to clipboard. Settings travel, data never does.'));
+  navigator.clipboard.writeText(url).then(() => { track('qpcr_share_copied', {}); alert('URL copied to clipboard. Settings travel, data never does.'); });
 });
 
 // Print / PDF
@@ -341,6 +357,7 @@ document.getElementById('printBtn').addEventListener('click', () => {
     block.innerHTML = '<b>MIQE-aligned Methods:</b> ' + methods;
     document.getElementById('tab-expression').appendChild(block);
   }
+  track('qpcr_pdf_exported', {});
   window.print();
 });
 
@@ -369,6 +386,7 @@ document.querySelectorAll('.tab').forEach(tab => {
     document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
     tab.classList.add('active');
     document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
+    track('qpcr_analysis_viewed', { view_type: tab.dataset.tab });
   });
 });
 
@@ -681,7 +699,7 @@ document.getElementById('methodsBtn').addEventListener('click', () => {
   const div = document.createElement('div');
   div.className = 'info-bar';
   div.style.marginTop = '12px';
-  div.innerHTML = '<b>MIQE-aligned Methods Sentence:</b><br><br>' + methods + '<br><br><button onclick="navigator.clipboard.writeText(this.parentElement.querySelector(\'p\').textContent)" style="background:#0d9488;color:white;border:none;padding:4px 8px;border-radius:4px;cursor:pointer;">Copy</button>';
+  div.innerHTML = '<b>MIQE-aligned Methods Sentence:</b><br><br>' + methods + '<br><br><button onclick="navigator.clipboard.writeText(this.parentElement.querySelector(\'p\').textContent); track(\'qpcr_methods_copied\', {})" style="background:#0d9488;color:white;border:none;padding:4px 8px;border-radius:4px;cursor:pointer;">Copy</button>';
   const p = document.createElement('p');
   p.textContent = methods;
   p.style.display = 'none';

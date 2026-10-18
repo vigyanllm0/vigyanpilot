@@ -50,6 +50,7 @@ var SITE_INDEX = [
   { t:'Glossary – Sequencing', d:'DNA sequencing terminology', u:'Learning-vigyanllm.html#category-sequencing', c:'Learning' },
   { t:'Primer Design Best Practices', d:'Guide to designing effective primers', u:'primer-design-best-practices.html', c:'Learning' },
   { t:'qPCR Primer Design', d:'Primer design for quantitative PCR', u:'qpcr-primer-design.html', c:'Learning' },
+  { t:'qPCR Data Analyzer', d:'Analyze qPCR runs: amplification curves, melt peaks, standard curves, expression', u:'qpcr-analyzer.html', c:'Tools' },
   { t:'Primer3 Alternative', d:'Alternative to Primer3 software', u:'primer3-alternative.html', c:'Learning' },
   { t:'Molecular Docking Guide', d:'Guide to molecular docking workflows', u:'molecular-docking-guide.html', c:'Learning' },
   { t:'Sanger Sequencing: Method, Reads & Primer Design', d:'Chain-termination method, read quality, and M13 primer analysis', u:'sanger-sequencing.html', c:'Learning' },

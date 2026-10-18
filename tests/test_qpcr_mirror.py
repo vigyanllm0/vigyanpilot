@@ -255,6 +255,64 @@ def test_viewstate_privacy():
     assert "cq" not in decoded_str.lower() or "search" in decoded_str  # search is a setting, not data
 
 
+def test_demo_sybr_standard():
+    """Demo SYBR file parses and analyzes cleanly."""
+    text = load_fixture("demo-sybr-standard.tsv")
+    run = parse_run(text, "demo-sybr-standard.tsv")
+    for s in run["samples"]:
+        if s["name"].startswith("Std"):
+            s["type"] = "standard"
+            s["quantity"] = 1000 if s["name"] == "Std1" else 100 if s["name"] == "Std2" else 10 if s["name"] == "Std3" else 1 if s["name"] == "Std4" else 0.1
+    for t in run["targets"]:
+        if t["name"] == "ACTB":
+            t["isReference"] = True
+    analysis = analyze_run(run)
+    # Efficiency should be ~95%
+    curve = analysis["standardCurves"][0]
+    assert curve is not None
+    assert 90 < curve["efficiencyPct"] < 100
+    # No QC flags on clean run
+    assert len(analysis["qc"]["run"]) == 0 or all(f["code"] != "NTC_AMP" for f in analysis["qc"]["run"])
+
+
+def test_demo_taqman_multiplex():
+    """Demo TaqMan file parses with 2 channels."""
+    text = load_fixture("demo-taqman-multiplex.tsv")
+    run = parse_run(text, "demo-taqman-multiplex.tsv")
+    assert len(run["channels"]) == 2
+    # FAM and HEX
+    canons = [c["canonical"] for c in run["channels"]]
+    assert "FAM" in canons
+    assert "HEX" in canons
+    for s in run["samples"]:
+        if s["name"].startswith("Std"):
+            s["type"] = "standard"
+            s["quantity"] = 1000 if s["name"] == "Std1" else 100 if s["name"] == "Std2" else 10
+    analysis = analyze_run(run)
+    assert "standardCurves" in analysis
+
+
+def test_demo_problem_run_flags():
+    """Problem run triggers exactly the expected QC flags."""
+    text = load_fixture("demo-problem-run.tsv")
+    run = parse_run(text, "demo-problem-run.tsv")
+    for s in run["samples"]:
+        if s["name"].startswith("Std"):
+            s["type"] = "standard"
+            s["quantity"] = 1000 if s["name"] == "Std1" else 100 if s["name"] == "Std2" else 10 if s["name"] == "Std3" else 1 if s["name"] == "Std4" else 0.1
+    analysis = analyze_run(run)
+    qc = analysis["qc"]
+    # NTC amplification (Cq 32.5 < 35)
+    ntc_flags = [f for f in qc["wells"].get(0, []) if f["code"] == "NTC_AMP"]
+    assert len(ntc_flags) == 1 and ntc_flags[0]["severity"] == "strong"
+    # Late Cq (36.2 > 35)
+    late_flags = [f for f in qc["wells"].get(8, []) if f["code"] == "LATE_CQ"]
+    assert len(late_flags) == 1
+    # High replicate SD
+    sd_flags = [f for f in qc["run"] if f["code"] == "HIGH_REPLICATE_SD"]
+    assert len(sd_flags) >= 1
+
+
 def test_layout_position_math():
     """Strip/rotor position math → well-ID mapping for all 5 layouts."""
     # 96-well: 8x12
