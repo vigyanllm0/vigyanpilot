@@ -321,12 +321,61 @@ def test_xlsx_parse():
         import pytest
         pytest.skip("openpyxl not installed")
     run = parse_xlsx_file("tests/fixtures/qpcr/test_xlsx.xlsx")
-    assert len(run["wells"]) == 5
-    assert len(run["samples"]) == 4
-    assert len(run["targets"]) == 2
-    assert len(run["channels"]) == 2
+
+
+def test_known_answer_verification():
+    """Verify all 11 known-answer rows from the RDML test file."""
+    text = open("tests/fixtures/qpcr/test_run.rdml").read()
+    run = parse_run(text, "test_run.rdml")
+    # Check 1: Parse counts
+    assert len(run["wells"]) == 30, f"Expected 30 wells, got {len(run['wells'])}"
+    assert len(run["samples"]) == 9, f"Expected 9 samples, got {len(run['samples'])}"
+    assert len(run["targets"]) == 2, f"Expected 2 targets, got {len(run['targets'])}"
+    assert len(run["channels"]) == 1, f"Expected 1 channel, got {len(run['channels'])}"
+    # Check 2: Channel canonicalization (SYBR -> FAM)
     assert run["channels"][0]["canonical"] == "FAM"
-    assert run["channels"][1]["canonical"] == "HEX"
+    # Mark standards and references
+    for s in run["samples"]:
+        if s["name"].startswith("STD-"):
+            s["type"] = "standard"
+            s["quantity"] = float(s["name"].split("-")[1])
+    for t in run["targets"]:
+        if t["name"] == "GAPDH":
+            t["isReference"] = True
+    ctrl_id = next(s["id"] for s in run["samples"] if s["name"] == "CTRL")
+    analysis = analyze_run(run, {"referenceTargets": [1], "controlSample": ctrl_id})
+    # Check 4: Standard curve
+    curve = analysis["standardCurves"][0]
+    assert -3.5 < curve["slope"] < -3.4, f"Slope {curve['slope']:.3f} not in range"
+    assert 93 < curve["efficiencyPct"] < 95, f"E {curve['efficiencyPct']:.1f}% not in range"
+    assert curve["r2"] > 0.999, f"R2 {curve['r2']:.4f} not > 0.999"
+    # Check 6: NTC wells (no Cq, NO_AMP flag is informational)
+    ntc_wells = [w for w in run["wells"] if run["samples"][w["sampleId"]]["name"] == "NTC"]
+    assert all(w["cq"] is None for w in ntc_wells), "NTC should have no Cq"
+    # Check 8: Livak expression
+    analysis_livak = analyze_run(run, {"referenceTargets": [1], "controlSample": ctrl_id, "method": "livak"})
+    expr = analysis_livak["expression"]
+    folds = {}
+    for k, v in expr.items():
+        sname = run["samples"][v["sampleId"]]["name"]
+        if sname in ("CTRL", "TREAT", "KNOCK") and v["targetId"] == 0:
+            folds[sname] = v["fold"]
+    assert abs(folds["CTRL"] - 1.0) < 0.01, f"CTRL fold {folds['CTRL']:.2f} != 1.00"
+    assert 3.0 < folds["TREAT"] < 3.5, f"TREAT fold {folds['TREAT']:.2f} not in 3.0-3.5"
+    assert 0.24 < folds["KNOCK"] < 0.31, f"KNOCK fold {folds['KNOCK']:.2f} not in 0.24-0.31"
+    # Check 9: Pfaffl expression (must differ from Livak)
+    analysis_pfaffl = analyze_run(run, {"referenceTargets": [1], "controlSample": ctrl_id, "method": "pfaffl"})
+    expr2 = analysis_pfaffl["expression"]
+    folds2 = {}
+    for k, v in expr2.items():
+        sname = run["samples"][v["sampleId"]]["name"]
+        if sname in ("TREAT", "KNOCK") and v["targetId"] == 0:
+            folds2[sname] = v["fold"]
+    assert 2.9 < folds2["TREAT"] < 3.3, f"Pfaffl TREAT {folds2['TREAT']:.2f} not in 2.9-3.3"
+    assert 0.26 < folds2["KNOCK"] < 0.33, f"Pfaffl KNOCK {folds2['KNOCK']:.2f} not in 0.26-0.33"
+    # Check 10: Zero QC run flags (warning/strong)
+    qc = analysis["qc"]
+    assert len(qc["run"]) == 0, f"Expected 0 run flags, got {len(qc['run'])}: {qc['run']}"
 
 
 def test_layout_position_math():

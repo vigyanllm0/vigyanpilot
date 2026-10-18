@@ -145,8 +145,11 @@ export function parseRdml(text, fileName) {
   const run = makeRun({ fileName: fileName || 'rdml', sourceFormat: 'rdml' });
   try {
     const getTag = (xml, tag) => {
+      // Handle self-closing tags with id attribute: <tag id="val"/>
+      let m = xml.match(new RegExp('<' + tag + '[^>]*?\\bid=["\']([^"\']+)["\']', 'i'));
+      if (m) return m[1].trim();
       const re = new RegExp('<' + tag + '[^>]*>([\\s\\S]*?)</' + tag + '>', 'i');
-      const m = xml.match(re);
+      m = xml.match(re);
       return m ? m[1].trim() : null;
     };
     const getAllTags = (xml, tag) => {
@@ -166,9 +169,23 @@ export function parseRdml(text, fileName) {
     const samplesSeen = new Set();
     const channelsSeen = new Set();
 
-    const reacts = getAllTags(text, 'react');
-    for (const reactXml of reacts) {
-      const pos = getTag(reactXml, 'position') || getTag(reactXml, 'well');
+    // Find react elements: support both <react id="A1"> and <react><position>A1</position>
+    const reacts = [];
+    const reactRegex1 = /<react\s+id="([^"]+)"[^>]*>([\s\S]*?)<\/react>/gi;
+    let rm;
+    while ((rm = reactRegex1.exec(text)) !== null) {
+      reacts.push({ id: rm[1].trim(), xml: rm[2].trim() });
+    }
+    if (reacts.length === 0) {
+      const reactRegex2 = /<react[^>]*>([\s\S]*?)<\/react>/gi;
+      while ((rm = reactRegex2.exec(text)) !== null) {
+        const posMatch = rm[1].match(/<position[^>]*>(.*?)<\/position>/i);
+        if (posMatch) reacts.push({ id: posMatch[1].trim(), xml: rm[1].trim() });
+      }
+    }
+    for (const react of reacts) {
+      const pos = react.id;
+      const reactXml = react.xml;
       if (!pos) continue;
       const { row, col } = parsePosition(pos, 96);
 

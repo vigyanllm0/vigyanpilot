@@ -139,6 +139,13 @@ def parse_rdml(text, file_name=None):
     run = make_run({"fileName": file_name or "rdml", "sourceFormat": "rdml"})
     try:
         def get_tag(xml, tag):
+            # Handle self-closing tags with id attribute: <tag id="val"/>
+            for quote in ('"', "'"):
+                pattern = '<' + tag + '[^>]*?id=' + quote + '([^' + quote + ']+)' + quote
+                m = re.search(pattern, xml, re.I)
+                if m:
+                    return m.group(1).strip()
+            # Handle tags with text content: <tag>content</tag>
             m = re.search(r"<" + tag + r"[^>]*>([\s\S]*?)</" + tag + r">", xml, re.I)
             return m.group(1).strip() if m else None
 
@@ -156,10 +163,19 @@ def parse_rdml(text, file_name=None):
         samples_seen = set()
         channels_seen = set()
 
-        for react_xml in get_all_tags(text, "react"):
-            pos = get_tag(react_xml, "position") or get_tag(react_xml, "well")
+        # Find react elements: support both <react id="A1"> and <react><position>A1</position>
+        react_list = []  # list of (pos, react_xml)
+        for rm in re.finditer(r'<react\s+id="([^"]+)"[^>]*>([\s\S]*?)</react>', text, re.I):
+            react_list.append((rm.group(1).strip(), rm.group(2).strip()))
+        if not react_list:
+            for rm in re.finditer(r'<react[^>]*>([\s\S]*?)</react>', text, re.I):
+                pos_tag = re.search(r'<position[^>]*>(.*?)</position>', rm.group(1), re.I)
+                if pos_tag:
+                    react_list.append((pos_tag.group(1).strip(), rm.group(1).strip()))
+        for pos, react_xml in react_list:
             if not pos:
                 continue
+            # Process this react
             pp = parse_position(pos, 96)
             row, col = pp["row"], pp["col"]
 
