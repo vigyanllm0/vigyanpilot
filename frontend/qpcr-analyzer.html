@@ -40,6 +40,15 @@
   .qc-flag.info { background: #dbeafe; color: #1e40af; }
   .research-banner { background: #fef9c3; border: 1px solid #fde68a; padding: 8px 16px; text-align: center; font-size: 13px; color: #854d0e; }
   @media (max-width: 768px) { .hero h1 { font-size: 1.5rem; } canvas { height: 300px; } }
+  @media print {
+    body { background: white; }
+    .hero, .upload-zone, .tabs, .controls, .research-banner { display: none !important; }
+    .tab-content { display: block !important; page-break-before: always; }
+    .chart-container { page-break-inside: avoid; box-shadow: none; border: 1px solid #e2e8f0; }
+    canvas { max-height: 300px; }
+    .info-bar { background: #f8fafc; border: 1px solid #e2e8f0; }
+    #mainContent { display: block !important; }
+  }
 </style>
 </head>
 <body>
@@ -66,11 +75,25 @@
     <button id="saveViewBtn" style="background:#7c3aed;">Save View</button>
     <button id="loadViewBtn" style="background:#7c3aed;">Load View</button>
     <button id="shareViewBtn" style="background:#0891b2;">Share (URL)</button>
+    <button id="printBtn" style="background:#64748b;">Print / PDF</button>
     <span id="formatInfo" style="color:#64748b;font-size:13px;"></span>
   </div>
 
   <div id="statusBar" class="info-bar" style="display:none;"></div>
 
+  <div style="margin:20px 0;padding:16px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;">
+  <h3 style="margin:0 0 8px;font-size:15px;">Related Tools</h3>
+  <p style="font-size:13px;margin:4px 0;"><a href="/primer">Primer Design</a> — design primers for your qPCR targets</p>
+  <p style="font-size:13px;margin:4px 0;"><a href="/pcr-analysis">PCR Analysis</a> — in silico PCR amplification check</p>
+  <p style="font-size:13px;margin:4px 0;"><a href="/tm-calculator">Tm Calculator</a> — melting temperature calculation</p>
+  <p style="font-size:13px;margin:4px 0;"><a href="/primer-design-for-qpcr">qPCR Primer Design Guide</a></p>
+</div>
+<div id="exportGuides" style="margin:20px 0;padding:16px;background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;">
+    <h3 style="margin:0 0 8px;font-size:15px;">How to Export from Your Instrument</h3>
+    <details style="margin:4px 0;"><summary style="cursor:pointer;font-weight:600;">Bio-Rad CFX Maestro</summary><p style="font-size:13px;margin:8px 0;">1. Open your run in CFX Maestro → 2. Click "Export" → "Export to CSV" → 3. Select "Well, Fluor, Target, Content, Cq" + amplification cycles → 4. Save and upload here. Or export as RDML 1.2 for full data.</p></details>
+    <details style="margin:4px 0;"><summary style="cursor:pointer;font-weight:600;">Applied Biosystems QuantStudio</summary><p style="font-size:13px;margin:8px 0;">1. Open results in QuantStudio Design &amp; Analysis → 2. File → Export → "Results" (CSV) → 3. Include amplification data → 4. Upload the CSV here. For melt data, export "Melt Curve" separately.</p></details>
+    <details style="margin:4px 0;"><summary style="cursor:pointer;font-weight:600;">Generic Template</summary><p style="font-size:13px;margin:8px 0;">Download the <a href="qpcr/template.tsv" download>template TSV</a>. Fill in Well, Sample, Target, Channel, Cq, and optional Amplification (semicolon-separated). Upload here. Works with any instrument.</p></details>
+  </div>
   <div id="mainContent" style="display:none;">
     <div class="tabs">
       <button class="tab active" data-tab="amplification">Amplification</button>
@@ -169,6 +192,37 @@
   </div>
 </div>
 
+<!-- FAQ for GSC queries -->
+<div style="max-width:800px;margin:40px auto;padding:0 20px;">
+  <h2 style="font-size:1.3rem;margin-bottom:16px;">Frequently Asked Questions</h2>
+  <details style="margin:8px 0;"><summary style="cursor:pointer;font-weight:600;">How do I analyze qPCR data?</summary><p style="margin:8px 0;font-size:14px;">Upload your run file (CFX CSV, RDML, or template) → the analyzer shows amplification curves, melt peaks, standard curves, and fold-change expression. No login required, data stays in your browser.</p></details>
+  <details style="margin:8px 0;"><summary style="cursor:pointer;font-weight:600;">What is real-time PCR data analysis?</summary><p style="margin:8px 0;font-size:14px;">Real-time PCR data analysis involves interpreting amplification curves, Cq values, melt curves, and standard curves to quantify gene expression. This tool automates the process from raw data to fold-change results.</p></details>
+  <details style="margin:8px 0;"><summary style="cursor:pointer;font-weight:600;">How do I interpret a Ct curve?</summary><p style="margin:8px 0;font-size:14px;">The Ct (cycle threshold) curve shows fluorescence vs cycle number. A lower Ct means more starting template. The curve shape reveals amplification efficiency and potential artifacts.</p></details>
+  <details style="margin:8px 0;"><summary style="cursor:pointer;font-weight:600;">How do I calculate fold change from qPCR?</summary><p style="margin:8px 0;font-size:14px;">Fold change is calculated using ΔΔCq (Livak method) or efficiency-corrected Pfaffl method. This tool computes both automatically from your data with reference genes and calibrator selection.</p></details>
+  <details style="margin:8px 0;"><summary style="cursor:pointer;font-weight:600;">What is qPCR raw data?</summary><p style="margin:8px 0;font-size:14px;">qPCR raw data is the fluorescence readings per cycle per well, exported from your instrument. This tool accepts CFX CSV, RDML 1.2, and generic template formats.</p></details>
+  <details style="margin:8px 0;"><summary style="cursor:pointer;font-weight:600;">How do I interpret curve data?</summary><p style="margin:8px 0;font-size:14px;">Amplification curves show exponential growth phase; melt curves show product specificity; standard curves show efficiency and R². QC flags highlight problematic wells automatically.</p></details>
+</div>
+
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"SoftwareApplication","name":"qPCR Data Analyzer","applicationCategory":"ScientificApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"description":"Free browser-based qPCR run file analyzer. Upload CFX CSV, RDML, or template files. Amplification curves, melt peaks, standard curves, expression analysis. No login, data never leaves your browser."}
+</script>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[
+{"@type":"Question","name":"How do I analyze qPCR data?","acceptedAnswer":{"@type":"Answer","text":"Upload your run file (CFX CSV, RDML, or template) — the analyzer shows amplification curves, melt peaks, standard curves, and fold-change expression. No login required, data stays in your browser."}},
+{"@type":"Question","name":"What is real-time PCR data analysis?","acceptedAnswer":{"@type":"Answer","text":"Real-time PCR data analysis involves interpreting amplification curves, Cq values, melt curves, and standard curves to quantify gene expression. This tool automates the process from raw data to fold-change results."}},
+{"@type":"Question","name":"How do I interpret a Ct curve?","acceptedAnswer":{"@type":"Answer","text":"The Ct (cycle threshold) curve shows fluorescence vs cycle number. A lower Ct means more starting template. The curve shape reveals amplification efficiency and potential artifacts."}},
+{"@type":"Question","name":"How do I calculate fold change from qPCR?","acceptedAnswer":{"@type":"Answer","text":"Fold change is calculated using ΔΔCq (Livak method) or efficiency-corrected Pfaffl method. This tool computes both automatically from your data with reference genes and calibrator selection."}},
+{"@type":"Question","name":"What is qPCR raw data?","acceptedAnswer":{"@type":"Answer","text":"qPCR raw data is the fluorescence readings per cycle per well, exported from your instrument. This tool accepts CFX CSV, RDML 1.2, and generic template formats."}},
+{"@type":"Question","name":"How do I interpret curve data?","acceptedAnswer":{"@type":"Answer","text":"Amplification curves show exponential growth phase; melt curves show product specificity; standard curves show efficiency and R². QC flags highlight problematic wells automatically."}}
+]}
+</script>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[
+{"@type":"ListItem","position":1,"name":"Home","item":"https://www.vigyanllm.in/"},
+{"@type":"ListItem","position":2,"name":"qPCR Analyzer","item":"https://www.vigyanllm.in/qpcr-analyzer"}
+]}
+</script>
+
 <script type="module">
 import { parseRun, detectFormat, analyzeRun, makeRun, canonicalChannel, savitzkyGolayDerivative, detectTmPeaks, saveView, loadView, listViews, serializeViewState, deserializeViewState, generateMethods } from './qpcr/qpcr-engine.js';
 import Chart from './qpcr/qpcr-charts.js';
@@ -213,6 +267,11 @@ function parse() {
   } catch (err) {
     showStatus('Parse error: ' + err.message, 'error');
     mainContent.style.display = 'none';
+    // File feedback loop
+    const feedback = document.createElement('div');
+    feedback.style.cssText = 'margin:12px 0;padding:12px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;font-size:13px;';
+    feedback.innerHTML = 'Couldn\\'t parse this file. <a href="mailto:feedback@vigyanllm.in?subject=qPCR+Parse+Error&body=Format+info:+ ' + encodeURIComponent(err.message) + '" style="color:#dc2626;font-weight:600;">Report this file</a> (metadata only — no data sent). Or try the <a href="qpcr/template.tsv" download>generic template</a>.';
+    statusBar.parentElement.insertBefore(feedback, statusBar.nextSibling);
   }
 }
 
@@ -268,6 +327,21 @@ document.getElementById('shareViewBtn').addEventListener('click', () => {
   const hash = serializeViewState(vs);
   const url = window.location.origin + window.location.pathname + '#' + hash;
   navigator.clipboard.writeText(url).then(() => alert('URL copied to clipboard. Settings travel, data never does.'));
+});
+
+// Print / PDF
+document.getElementById('printBtn').addEventListener('click', () => {
+  // Ensure methods sentence is generated
+  const methods = generateMethods(run, analysis, analysis.settings);
+  const existing = document.querySelector('.methods-print-block');
+  if (!existing) {
+    const block = document.createElement('div');
+    block.className = 'methods-print-block info-bar';
+    block.style.marginTop = '12px';
+    block.innerHTML = '<b>MIQE-aligned Methods:</b> ' + methods;
+    document.getElementById('tab-expression').appendChild(block);
+  }
+  window.print();
 });
 
 // Restore from URL hash on parse
