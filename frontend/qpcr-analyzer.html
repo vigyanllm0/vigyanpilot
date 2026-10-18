@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Free qPCR Analyzer — Amplification, Melt & Standard Curves Online</title>
-<meta name="description" content="Analyze qPCR runs in your browser. Upload CFX CSV, RDML, XLSX, or template files. Amplification curves, melt peaks, standard curves, expression analysis. Free, no login, data never leaves your browser.">
+<meta name="description" content="Analyze qPCR runs in your browser. Upload any instrument export — CSV/TSV, Excel .xlsx/.xls, RDML, CFX. Amplification, melt & standard curves. Free, no login, data never leaves your browser.">
 <meta property="og:image" content="https://www.vigyanllm.in/assets/og-qpcr-analyzer.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -41,6 +41,8 @@
   .plate-cell { width: 28px; height: 28px; border-radius: 3px; border: 1px solid #cbd5e1; cursor: pointer; font-size: 9px; display: flex; align-items: center; justify-content: center; }
   .info-bar { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 12px 16px; margin: 16px 0; font-size: 14px; }
   .qc-flag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px; margin: 2px; }
+  .demo-btn { font-size: 12px; margin: 2px 4px 0 0; padding: 3px 9px; border: 1px solid #cbd5e1; background: #fff; border-radius: 6px; cursor: pointer; color: #334155; }
+  .demo-btn:hover { border-color: #0d9488; color: #0d9488; }
   .qc-flag.warning { background: #fef3c7; color: #92400e; }
   .qc-flag.strong { background: #fee2e2; color: #991b1b; }
   .qc-flag.info { background: #dbeafe; color: #1e40af; }
@@ -69,7 +71,7 @@
 <div class="container">
   <div class="upload-zone" id="uploadZone">
     <p style="font-size:1.2rem;margin:0 0 8px;">Drop your qPCR file here</p>
-    <p style="color:#64748b;margin:0;">Supports: Bio-Rad CFX CSV · RDML 1.2 · Generic Template (TSV/CSV)</p>
+    <p style="color:#64748b;margin:0;">Any instrument export: CSV/TSV/TXT (any delimiter or encoding) · Excel .xlsx &amp; .xls · RDML 1.2 · Bio-Rad CFX · OnePCR · RapiCycler · Rotor-Gene</p>
     <p style="color:#94a3b8;font-size:12px;margin:8px 0 0;">Or click to browse · Or paste data below</p>
   </div>
   <input type="file" id="fileInput" style="position:absolute;width:1px;height:1px;overflow:hidden;opacity:0;pointer-events:none;" accept="*/*">
@@ -87,6 +89,22 @@
 
   <div id="statusBar" class="info-bar" style="display:none;"></div>
 
+  <div id="detectCard" style="display:none;margin-top:10px;padding:12px 14px;background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;font-size:13px;line-height:1.5;"></div>
+  <div id="doctorCard" style="display:none;margin-top:10px;padding:14px;background:#fffbeb;border:1px solid #fcd34d;border-radius:8px;font-size:13px;line-height:1.5;"></div>
+  <div id="cqOnlyNote" style="display:none;margin-top:10px;padding:10px 14px;background:#fefce8;border:1px solid #fde68a;border-radius:8px;font-size:13px;line-height:1.5;"></div>
+
+  <div id="demoRow" style="margin:8px 0;font-size:12px;color:#64748b;">
+    Try a demo file:
+    <button type="button" class="demo-btn" data-demo="unknown_long.csv">Any-instrument CSV</button>
+    <button type="button" class="demo-btn" data-demo="cq_only.csv">Cq-only export</button>
+    <button type="button" class="demo-btn" data-demo="semicol.csv">Semicolon + Tm</button>
+    <button type="button" class="demo-btn" data-demo="utf16.tsv">UTF-16 TSV</button>
+    <button type="button" class="demo-btn" data-demo="unknown_wide.xlsx">Wide XLSX</button>
+    <button type="button" class="demo-btn" data-demo="demo.xls">Legacy XLS</button>
+    <button type="button" class="demo-btn" data-demo="stub.qbd">.qbd (guided)</button>
+    <button type="button" class="demo-btn" data-demo="junk.csv">Junk file</button>
+  </div>
+
   <div style="margin:20px 0;padding:16px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;">
   <h3 style="margin:0 0 8px;font-size:15px;">Related Tools</h3>
   <p style="font-size:13px;margin:4px 0;"><a href="/primer">Primer Design</a> — design primers for your qPCR targets</p>
@@ -98,11 +116,12 @@
     <h3 style="margin:0 0 8px;font-size:15px;">How to Export from Your Instrument</h3>
     <details style="margin:4px 0;"><summary style="cursor:pointer;font-weight:600;">Bio-Rad CFX Maestro (.pcrd files)</summary><p style="font-size:13px;margin:8px 0;"><b>Option A (recommended):</b> Export as RDML 1.2 → File → Export → "Export as RDML" → upload the .rdml file here (full data, all wells, melt curves).<br><b>Option B:</b> Export as CSV → File → Export → "Export to CSV" → select "Well, Fluor, Target, Content, Cq" + amplification cycles → upload here.<br><b>Why not .pcrd directly?</b> .pcrd is Bio-Rad's proprietary binary format. We detect .pcrd uploads and guide you to export. <em>(v1.1 will add experimental .pcrd support — research spike in progress.)</em></p></details>
     <details style="margin:4px 0;"><summary style="cursor:pointer;font-weight:600;">Applied Biosystems QuantStudio</summary><p style="font-size:13px;margin:8px 0;">1. Open results in QuantStudio Design &amp; Analysis → 2. File → Export → "Results" (CSV) → 3. Include amplification data → 4. Upload the CSV here. For melt data, export "Melt Curve" separately.</p></details>
+    <details style="margin:4px 0;"><summary style="cursor:pointer;font-weight:600;">Any instrument (CSV / TSV / TXT)</summary><p style="font-size:13px;margin:8px 0;">Drop in the export as-is — no conversion, no fixed column order. The analyzer reads the file's <b>content, not its name</b>: it detects the delimiter (comma, tab, semicolon, pipe), the encoding (UTF-8 / UTF-16), maps 80+ column spellings (Well/Position/Chamber · Sample/Specimen · Target/Assay/Oligo · Reporter/Dye/Channel · Ct/Cq/Value), and reasons about wide cycle tables or long per-cycle tables. Cq-only exports are accepted too — the charts will say so instead of drawing empty plots.</p></details>
     <details style="margin:4px 0;"><summary style="cursor:pointer;font-weight:600;">Generic Template</summary><p style="font-size:13px;margin:8px 0;">Download the <a href="qpcr/template.tsv" download>template TSV</a>. Fill in Well, Sample, Target, Channel, Cq, and optional Amplification (semicolon-separated). Upload here. Works with any instrument.</p></details>
-    <details style="margin:4px 0;"><summary style="cursor:pointer;font-weight:600;">Excel (.xlsx)</summary><p style="font-size:13px;margin:8px 0;">Upload any .xlsx file with columns: Well, Sample, Target, Channel, Content, Cq, CqSD, Tm, Amplification. First row must be headers. Amplification data can be semicolon-separated in one cell. The tool auto-detects columns by name.</p></details>
-    <details style="margin:4px 0;"><summary style="cursor:pointer;font-weight:600;">Legacy Excel (.xls)</summary><p style="font-size:13px;margin:8px 0;">.xls is a legacy binary format. Please re-save as .xlsx (File → Save As → .xlsx in Excel/LibreOffice) or export as CSV. Most instruments that produce .xls can re-save in 10 seconds. The tool auto-detects .xls and guides you.</p></details>
-    <details style="margin:4px 0;"><summary style="cursor:pointer;font-weight:600;">Qiagen Rotor-Gene (.qbg)</summary><p style="font-size:13px;margin:8px 0;">.qbg is Qiagen's proprietary binary format. Please export from Rotor-Gene Q software: File → Export → Excel/CSV. The tool detects .qbg and guides you to export.</p></details>
-    <details style="margin:4px 0;"><summary style="cursor:pointer;font-weight:600;">ZIP Archives</summary><p style="font-size:13px;margin:8px 0;">ZIP files containing run data are detected. Extract the file and upload individually, or use the ZIP upload feature (coming in v1.1). The tool auto-detects ZIP contents.</p></details>
+    <details style="margin:4px 0;"><summary style="cursor:pointer;font-weight:600;">Excel (.xlsx)</summary><p style="font-size:13px;margin:8px 0;">Upload any .xlsx — no template needed. The first sheet with recognizable columns is read: wide tables (one column per cycle), long tables (Cycle/Signal per well), or Cq tables. Encrypted workbooks and files with no recognizable table get a format card explaining what was found.</p></details>
+    <details style="margin:4px 0;"><summary style="cursor:pointer;font-weight:600;">Legacy Excel (.xls)</summary><p style="font-size:13px;margin:8px 0;">.xls files are read <b>natively</b> (OLE2/BIFF8) — no conversion needed. Older instrument software often writes .xls; just drop the file. If a sheet doesn't contain a recognizable table, the format card shows what was found in each sheet.</p></details>
+    <details style="margin:4px 0;"><summary style="cursor:pointer;font-weight:600;">Rotor-Gene family (.qbd / .qbg / .rex — Qiagen Rotor-Gene, OnePCR, RapiCycler)</summary><p style="font-size:13px;margin:8px 0;">These vendors ship proprietary binary files. The analyzer <b>probes the file's content first</b>: if it's actually an OLE2 or ZIP container inside (some exports are), it parses directly. Otherwise you get a guided format card with the exact export path from your software (usually File → Export → CSV or Excel) — that export carries the same data (Cq values and curves) and needs no manual conversion beyond that one step.</p></details>
+    <details style="margin:4px 0;"><summary style="cursor:pointer;font-weight:600;">ZIP Archives</summary><p style="font-size:13px;margin:8px 0;">ZIP files are deep-probed automatically: inner .csv/.tsv/.txt/.rdml/.xlsx entries (up to 1 MB) are located and read. Drop the whole ZIP — no extraction needed. If the archive doesn't contain run data, the format card lists what it does contain.</p></details>
   </div>
   <div id="mainContent" style="display:none;">
     <div class="tabs">
@@ -205,24 +224,26 @@
 <!-- FAQ for GSC queries -->
 <div style="max-width:800px;margin:40px auto;padding:0 20px;">
   <h2 style="font-size:1.3rem;margin-bottom:16px;">Frequently Asked Questions</h2>
-  <details style="margin:8px 0;"><summary style="cursor:pointer;font-weight:600;">How do I analyze qPCR data?</summary><p style="margin:8px 0;font-size:14px;">Upload your run file (CFX CSV, RDML, or template) → the analyzer shows amplification curves, melt peaks, standard curves, and fold-change expression. No login required, data stays in your browser.</p></details>
+  <details style="margin:8px 0;"><summary style="cursor:pointer;font-weight:600;">How do I analyze qPCR data?</summary><p style="margin:8px 0;font-size:14px;">Upload your run file (any instrument CSV/TSV export, Excel .xlsx/.xls, or RDML) → the analyzer shows amplification curves, melt peaks, standard curves, and fold-change expression. No login required, data stays in your browser.</p></details>
   <details style="margin:8px 0;"><summary style="cursor:pointer;font-weight:600;">What is real-time PCR data analysis?</summary><p style="margin:8px 0;font-size:14px;">Real-time PCR data analysis involves interpreting amplification curves, Cq values, melt curves, and standard curves to quantify gene expression. This tool automates the process from raw data to fold-change results.</p></details>
   <details style="margin:8px 0;"><summary style="cursor:pointer;font-weight:600;">How do I interpret a Ct curve?</summary><p style="margin:8px 0;font-size:14px;">The Ct (cycle threshold) curve shows fluorescence vs cycle number. A lower Ct means more starting template. The curve shape reveals amplification efficiency and potential artifacts.</p></details>
   <details style="margin:8px 0;"><summary style="cursor:pointer;font-weight:600;">How do I calculate fold change from qPCR?</summary><p style="margin:8px 0;font-size:14px;">Fold change is calculated using ΔΔCq (Livak method) or efficiency-corrected Pfaffl method. This tool computes both automatically from your data with reference genes and calibrator selection.</p></details>
-  <details style="margin:8px 0;"><summary style="cursor:pointer;font-weight:600;">What is qPCR raw data?</summary><p style="margin:8px 0;font-size:14px;">qPCR raw data is the fluorescence readings per cycle per well, exported from your instrument. This tool accepts CFX CSV, RDML 1.2, and generic template formats.</p></details>
+  <details style="margin:8px 0;"><summary style="cursor:pointer;font-weight:600;">What is qPCR raw data?</summary><p style="margin:8px 0;font-size:14px;">qPCR raw data is the fluorescence readings per cycle per well, exported from your instrument. This tool accepts any instrument CSV/TSV/TXT export, Excel .xlsx/.xls, RDML 1.2, and CFX exports — read by content, not by file name.</p></details>
+  <details style="margin:8px 0;"><summary style="cursor:pointer;font-weight:600;">Why was my .qbd file not read directly?</summary><p style="margin:8px 0;font-size:14px;">.qbd (and .qbg/.rex) are proprietary binary formats from the Rotor-Gene software family (Qiagen Rotor-Gene, OnePCR, RapiCycler). The analyzer probes the file's content first — OLE2 or ZIP containers inside parse directly. If the payload is proprietary binary, a format card explains exactly what was found and gives your software's own export step; the exported CSV/Excel carries the same Cq and curve data.</p></details>
   <details style="margin:8px 0;"><summary style="cursor:pointer;font-weight:600;">How do I interpret curve data?</summary><p style="margin:8px 0;font-size:14px;">Amplification curves show exponential growth phase; melt curves show product specificity; standard curves show efficiency and R². QC flags highlight problematic wells automatically.</p></details>
 </div>
 
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"SoftwareApplication","name":"qPCR Data Analyzer","applicationCategory":"ScientificApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"description":"Free browser-based qPCR run file analyzer. Upload CFX CSV, RDML, or template files. Amplification curves, melt peaks, standard curves, expression analysis. No login, data never leaves your browser."}
+{"@context":"https://schema.org","@type":"SoftwareApplication","name":"qPCR Data Analyzer","applicationCategory":"ScientificApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"description":"Free browser-based qPCR run file analyzer. Upload any instrument CSV/TSV export, Excel .xlsx/.xls, RDML, or CFX files. Amplification curves, melt peaks, standard curves, expression analysis. No login, data never leaves your browser."}
 </script>
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[
-{"@type":"Question","name":"How do I analyze qPCR data?","acceptedAnswer":{"@type":"Answer","text":"Upload your run file (CFX CSV, RDML, or template) — the analyzer shows amplification curves, melt peaks, standard curves, and fold-change expression. No login required, data stays in your browser."}},
+{"@type":"Question","name":"How do I analyze qPCR data?","acceptedAnswer":{"@type":"Answer","text":"Upload your run file (any instrument CSV/TSV export, Excel .xlsx/.xls, or RDML) → the analyzer shows amplification curves, melt peaks, standard curves, and fold-change expression. No login required, data stays in your browser."}},
 {"@type":"Question","name":"What is real-time PCR data analysis?","acceptedAnswer":{"@type":"Answer","text":"Real-time PCR data analysis involves interpreting amplification curves, Cq values, melt curves, and standard curves to quantify gene expression. This tool automates the process from raw data to fold-change results."}},
 {"@type":"Question","name":"How do I interpret a Ct curve?","acceptedAnswer":{"@type":"Answer","text":"The Ct (cycle threshold) curve shows fluorescence vs cycle number. A lower Ct means more starting template. The curve shape reveals amplification efficiency and potential artifacts."}},
 {"@type":"Question","name":"How do I calculate fold change from qPCR?","acceptedAnswer":{"@type":"Answer","text":"Fold change is calculated using ΔΔCq (Livak method) or efficiency-corrected Pfaffl method. This tool computes both automatically from your data with reference genes and calibrator selection."}},
-{"@type":"Question","name":"What is qPCR raw data?","acceptedAnswer":{"@type":"Answer","text":"qPCR raw data is the fluorescence readings per cycle per well, exported from your instrument. This tool accepts CFX CSV, RDML 1.2, and generic template formats."}},
+{"@type":"Question","name":"What is qPCR raw data?","acceptedAnswer":{"@type":"Answer","text":"qPCR raw data is the fluorescence readings per cycle per well, exported from your instrument. This tool accepts any instrument CSV/TSV/TXT export, Excel .xlsx/.xls, RDML 1.2, and CFX exports — read by content, not by file name."}},
+{"@type":"Question","name":"Why was my .qbd file not read directly?","acceptedAnswer":{"@type":"Answer","text":".qbd (and .qbg/.rex) are proprietary binary formats from the Rotor-Gene software family (Qiagen Rotor-Gene, OnePCR, RapiCycler). The analyzer probes the file's content first — OLE2 or ZIP containers inside parse directly. If the payload is proprietary binary, a format card explains exactly what was found and gives your software's own export step; the exported CSV/Excel carries the same Cq and curve data."}},
 {"@type":"Question","name":"How do I interpret curve data?","acceptedAnswer":{"@type":"Answer","text":"Amplification curves show exponential growth phase; melt curves show product specificity; standard curves show efficiency and R². QC flags highlight problematic wells automatically."}}
 ]}
 </script>
@@ -235,7 +256,9 @@
 
 <script type="module">
 import { parseRun, detectFormat, analyzeRun, makeRun, canonicalChannel, savitzkyGolayDerivative, detectTmPeaks, saveView, loadView, listViews, serializeViewState, deserializeViewState, generateMethods, parseXlsxAsync } from './qpcr/qpcr-engine.js';
+import { parseFileUniversal, parseUniversalText, QPCR_UNIVERSAL_VERSION } from './qpcr/qpcr-universal.js';
 window.__engineLoaded = true;
+window.__universalLoaded = true;
 
 // Funnel analytics (consent-gated, privacy-safe: format + counts only, never data)
 function track(event, params) {
@@ -259,6 +282,9 @@ const clearBtn = document.getElementById('clearBtn');
 const formatInfo = document.getElementById('formatInfo');
 const statusBar = document.getElementById('statusBar');
 const mainContent = document.getElementById('mainContent');
+const detectCard = document.getElementById('detectCard');
+const doctorCard = document.getElementById('doctorCard');
+const cqOnlyNote = document.getElementById('cqOnlyNote');
 
 uploadZone.addEventListener('click', () => fileInput.click());
 uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('dragover'); });
@@ -267,30 +293,98 @@ uploadZone.addEventListener('drop', e => { e.preventDefault(); uploadZone.classL
 fileInput.addEventListener('change', e => { if (e.target.files[0]) readFile(e.target.files[0]); });
 
 async function readFile(file) {
-  const ext = file.name.toLowerCase().split('.').pop();
-  if (ext === 'xlsx') {
-    // Binary format - read as ArrayBuffer and parse async
-    const reader = new FileReader();
-    reader.onload = async () => {
-      try {
-        run = await parseXlsxAsync(reader.result, file.name);
-        analysis = analyzeRun(run, {});
-        showStatus(`Parsed ${run.wells.length} wells, ${run.samples.length} samples, ${run.targets.length} targets, ${run.channels.length} channels.`, 'success');
-        mainContent.style.display = 'block';
-        initViews();
-        hashCheck();
-        track('qpcr_file_uploaded', { format: 'xlsx', well_count: run.wells.length });
-      } catch (err) {
-        showStatus('Parse error: ' + err.message, 'error');
-        mainContent.style.display = 'none';
-      }
-    };
-    reader.readAsArrayBuffer(file);
-    return;
-  }
+  // Universal pipeline: every file goes in as bytes — the parser sniffs
+  // content (magic bytes), never the extension.
   const reader = new FileReader();
-  reader.onload = () => { pasteArea.value = reader.result; parse(file.name); };
-  reader.readAsText(file);
+  reader.onload = () => applyUniversal(file.name, reader.result);
+  reader.onerror = () => showStatus('Could not read the file from disk.', 'error');
+  reader.readAsArrayBuffer(file);
+}
+
+function esc(s) {
+  return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+function applyUniversal(name, buffer) {
+  Promise.resolve(parseFileUniversal(name, buffer))
+    .then(run => onRunParsed(run, name))
+    .catch(err => onParseFailure(err, name));
+}
+
+function onParseFailure(err, name) {
+  mainContent.style.display = 'none';
+  detectCard.style.display = 'none';
+  cqOnlyNote.style.display = 'none';
+  formatInfo.textContent = '';
+  if (err && err.doctor) { showDoctor(err.doctor, name); return; }
+  doctorCard.style.display = 'none';
+  showStatus('Parse error: ' + ((err && err.message) || err), 'error');
+}
+
+function onRunParsed(r, name) {
+  run = r;
+  analysis = analyzeRun(run, {});
+  const det = run.detection || { format: (run.meta && run.meta.sourceFormat) || 'unknown', confidence: null, evidence: [] };
+  formatInfo.textContent = `Format: ${det.format}` +
+    (det.confidence != null ? ` \u00b7 ${Math.round(det.confidence * 100)}%` : '') +
+    ((run.meta && run.meta.instrument) ? ` \u00b7 ${run.meta.instrument}` : '');
+  renderDetectCard(det, name);
+  doctorCard.style.display = 'none';
+  if (run.cqOnly) {
+    cqOnlyNote.innerHTML = '<b>Cq-only export:</b> this file has instrument-reported Cq values but no per-cycle fluorescence. The amplification and melt charts will say so instead of drawing empty plots \u2014 Cq and Tm values (when exported) are in the <b>Data Table</b> tab.';
+    cqOnlyNote.style.display = 'block';
+  } else {
+    cqOnlyNote.style.display = 'none';
+  }
+  showStatus(`Parsed ${run.wells.length} wells, ${run.samples.length} samples, ${run.targets.length} targets, ${run.channels.length} channels.`, 'success');
+  mainContent.style.display = 'block';
+  initViews();
+  hashCheck();
+  track('qpcr_file_uploaded', { format: det.format, well_count: run.wells.length });
+}
+
+// T5.1/T5.6 — detection card: what the analyzer diagnosed, and how.
+function renderDetectCard(det, name) {
+  let h = '<b>File diagnosed:</b> ' + esc(name) +
+    ' \u00b7 format <b>' + esc(det.format) + '</b>';
+  if (det.confidence != null) h += ' \u00b7 confidence ' + Math.round(det.confidence * 100) + '%';
+  if (run.meta && run.meta.instrument) h += ' \u00b7 instrument <b>' + esc(run.meta.instrument) + '</b>';
+  if (det.evidence && det.evidence.length) {
+    h += '<details style="margin-top:6px;"><summary style="cursor:pointer;color:#0369a1;">How this file was read (' +
+      det.evidence.length + ' step' + (det.evidence.length === 1 ? '' : 's') +
+      ')</summary><ul style="margin:6px 0 0 18px;padding:0;color:#475569;">';
+    for (const e of det.evidence) h += '<li>' + esc(e) + '</li>';
+    h += '</ul></details>';
+  }
+  h += '<div style="margin-top:6px;font-size:12px;color:#94a3b8;">Analyzer v' + esc(QPCR_UNIVERSAL_VERSION) + ' \u00b7 instrument-reported Cq only \u2014 values are not re-called from raw curves.</div>';
+  detectCard.innerHTML = h;
+  detectCard.style.display = 'block';
+}
+
+// T5.4 — honest failure states: findings + next steps + supported list.
+function showDoctor(doc, name) {
+  let h = '<b>' + esc(doc.title) + '</b>';
+  if (doc.findings && doc.findings.length) {
+    h += '<div style="margin-top:8px;"><b>What I found in this file:</b><ul style="margin:4px 0 0 18px;padding:0;">';
+    for (const f of doc.findings) h += '<li>' + esc(f) + '</li>';
+    h += '</ul></div>';
+  }
+  if (doc.guidance && doc.guidance.length) {
+    h += '<div style="margin-top:8px;"><b>Next step:</b><ul style="margin:4px 0 0 18px;padding:0;">';
+    for (const g of doc.guidance) h += '<li>' + esc(g) + '</li>';
+    h += '</ul></div>';
+  }
+  if (doc.supported && doc.supported.length) {
+    h += '<details style="margin-top:8px;"><summary style="cursor:pointer;font-weight:600;">Supported formats</summary><ul style="margin:4px 0 0 18px;padding:0;">';
+    for (const s of doc.supported) h += '<li>' + esc(s) + '</li>';
+    h += '</ul></details>';
+  }
+  h += '<div style="margin-top:8px;font-size:12px;">See the <a href="#exportGuides">column &amp; export guide</a> above, or the ' +
+    '<a href="mailto:feedback@vigyanllm.in?subject=qPCR+Format+Card">Report this file</a> link (metadata only \u2014 no data sent).</div>';
+  doctorCard.innerHTML = h;
+  doctorCard.style.display = 'block';
+  detectCard.style.display = 'none';
+  showStatus(doc.title, 'error');
 }
 
 function parse(fileName) {
@@ -298,25 +392,39 @@ function parse(fileName) {
   if (!text) { showStatus('No data to parse.', 'error'); return; }
   const fName = fileName || 'upload';
   try {
-    const fmt = detectFormat(text, fName);
-    formatInfo.textContent = `Format: ${fmt}`;
-    run = parseRun(text, fName);
-    analysis = analyzeRun(run, {});
-    showStatus(`Parsed ${run.wells.length} wells, ${run.samples.length} samples, ${run.targets.length} targets, ${run.channels.length} channels.`, 'success');
-    mainContent.style.display = 'block';
-    initViews();
-    hashCheck();
-    track('qpcr_file_uploaded', { format: detectFormat(pasteArea.value.trim(), fName), well_count: run.wells.length });
+    onRunParsed(parseUniversalText(text, fName), fName);
   } catch (err) {
-    showStatus('Parse error: ' + err.message, 'error');
-    mainContent.style.display = 'none';
-    // File feedback loop
-    const feedback = document.createElement('div');
-    feedback.style.cssText = 'margin:12px 0;padding:12px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;font-size:13px;';
-    feedback.innerHTML = "Couldn't parse this file. <a href='mailto:feedback@vigyanllm.in?subject=qPCR+Parse+Error' style='color:#dc2626;font-weight:600;'>Report this file</a> (metadata only - no data sent). Or try the <a href='qpcr/template.tsv' download>generic template</a>.";
-    statusBar.parentElement.insertBefore(feedback, statusBar.nextSibling);
+    onParseFailure(err, fName);
+    // File feedback loop (only for non-doctor failures — the doctor card
+    // already offers "Report this file")
+    if (!(err && err.doctor)) {
+      const feedback = document.createElement('div');
+      feedback.style.cssText = 'margin:12px 0;padding:12px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;font-size:13px;';
+      feedback.innerHTML = "Couldn't parse this file. <a href='mailto:feedback@vigyanllm.in?subject=qPCR+Parse+Error' style='color:#dc2626;font-weight:600;'>Report this file</a> (metadata only - no data sent). Or try the <a href='qpcr/template.tsv' download>generic template</a>.";
+      statusBar.parentElement.insertBefore(feedback, statusBar.nextSibling);
+    }
   }
 }
+
+// T5.5 — demo buttons. Fixtures are served from tests/fixtures (dev server);
+// a 404 (production sync does not ship tests/) degrades to an honest message.
+document.getElementById('demoRow').addEventListener('click', async (e) => {
+  const btn = e.target.closest('[data-demo]');
+  if (!btn) return;
+  const name = btn.getAttribute('data-demo');
+  try {
+    const resp = await fetch('../tests/fixtures/qpcr/' + encodeURIComponent(name));
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const buf = await resp.arrayBuffer();
+    applyUniversal(name, buf);
+    track('qpcr_demo_loaded', { demo_file: name });
+  } catch (err) {
+    doctorCard.style.display = 'none';
+    detectCard.style.display = 'none';
+    mainContent.style.display = 'none';
+    showStatus('Demo files are not served on this deployment \u2014 upload your own file instead (see the export guides below).', 'error');
+  }
+});
 
 function showStatus(msg, type) {
   statusBar.style.display = 'block';
@@ -327,7 +435,7 @@ function showStatus(msg, type) {
 }
 
 parseBtn.addEventListener('click', () => parse());
-clearBtn.addEventListener('click', () => { pasteArea.value = ''; mainContent.style.display = 'none'; statusBar.style.display = 'none'; formatInfo.textContent = ''; });
+clearBtn.addEventListener('click', () => { pasteArea.value = ''; mainContent.style.display = 'none'; statusBar.style.display = 'none'; formatInfo.textContent = ''; detectCard.style.display = 'none'; doctorCard.style.display = 'none'; cqOnlyNote.style.display = 'none'; });
 
 // View-state: Save
 document.getElementById('saveViewBtn').addEventListener('click', () => {

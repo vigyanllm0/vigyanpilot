@@ -222,6 +222,86 @@ def run_audit(url):
         checks.append(("Chart: series paints, empty honest", bool(paint_ok), f"paint_ok={paint_ok}"))
         ws.settimeout(None)
 
+        # 17. Universal module loaded (content-sniffing parser).
+        uni_ok = evaluate("window.__universalLoaded === true")
+        checks.append(("Universal module loaded", bool(uni_ok), f"universalLoaded={uni_ok}"))
+
+        # 18-23. Universal-format probes: real fixture bytes injected as File
+        # objects through the actual file-input path (works on dev AND live).
+        import base64
+
+        def upload_probe(fixture, expect):
+            """Upload a fixture via the real input path; wait for parse or doctor."""
+            path = os.path.join(REPO, "tests", "fixtures", "qpcr", fixture)
+            if not os.path.exists(path):
+                return None  # fixture absent (live URL audit w/o repo fixtures)
+            b64 = base64.b64encode(open(path, "rb").read()).decode()
+            expr = """
+                (async () => {
+                  const b64 = '%s';
+                  let bytes;
+                  try { bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0)); }
+                  catch (e) { return 'b64-fail'; }
+                  const file = new File([bytes], '%s');
+                  const dt = new DataTransfer();
+                  dt.items.add(file);
+                  const input = document.getElementById('fileInput');
+                  input.files = dt.files;
+                  input.dispatchEvent(new Event('change'));
+                  const wait = ms => new Promise(r => setTimeout(r, ms));
+                  for (let i = 0; i < 40; i++) {
+                    await wait(150);
+                    if (document.getElementById('mainContent').style.display === 'block') return 'parse';
+                    if (document.getElementById('doctorCard').style.display === 'block') return 'doctor';
+                  }
+                  return 'timeout';
+                })()
+            """ % (b64, fixture)
+            return evaluate_async(expr, timeout=25)
+
+        def card_probe():
+            return evaluate("""({
+                dc: document.getElementById('detectCard').style.display,
+                cq: document.getElementById('cqOnlyNote').style.display,
+                fmt: document.getElementById('formatInfo').textContent,
+                ev: (document.getElementById('detectCard').innerText || '')
+            })""")
+
+        # 18. Unknown-instrument CSV → layout reasoner + detection card.
+        r = upload_probe("unknown_long.csv", "parse")
+        c = card_probe() if r == "parse" else {}
+        ok = (r == "parse" and c.get("dc") == "block"
+              and "reasoner" in (c.get("fmt") or "").lower()
+              and "OnePCR" in (c.get("ev") or ""))
+        checks.append(("Universal: reasoner CSV + detection card", bool(ok),
+                       f"result={r} card={c}"))
+
+        # 19. Cq-only export → honest banner, no phantom curves.
+        r = upload_probe("cq_only.csv", "parse")
+        c = card_probe() if r == "parse" else {}
+        checks.append(("Universal: Cq-only honest banner", bool(r == "parse" and c.get("cq") == "block"),
+                       f"result={r} banner={c.get('cq')}"))
+
+        # 20. UTF-16 TSV (no-handling-extension) parses by content.
+        r = upload_probe("utf16.tsv", "parse")
+        checks.append(("Universal: UTF-16 parses by content", bool(r == "parse"), f"result={r}"))
+
+        # 21. Legacy binary .xls parses natively (OLE2/BIFF8).
+        r = upload_probe("demo.xls", "parse")
+        checks.append(("Universal: legacy .xls native", bool(r == "parse"), f"result={r}"))
+
+        # 22. Wide .xlsx (ZIP + XML) parses.
+        r = upload_probe("unknown_wide.xlsx", "parse")
+        checks.append(("Universal: .xlsx parses", bool(r == "parse"), f"result={r}"))
+
+        # 23. Rotor-Gene-family .qbd → guided doctor card, no phantom UI.
+        r = upload_probe("stub.qbd", "doctor")
+        d = evaluate("document.getElementById('doctorCard').innerText || ''") if r == "doctor" else ""
+        ok = (r == "doctor" and "next step" in (d or "").lower()
+              and "supported formats" in (d or "").lower()
+              and evaluate("document.getElementById('mainContent').style.display") == "none")
+        checks.append(("Universal: .qbd guided doctor card", bool(ok), f"result={r}"))
+
         # Print emulation
         ws.send(json.dumps({"id": 98, "method": "Emulation.setEmulatedMedia", "params": {"media": "print"}}))
         time.sleep(1)

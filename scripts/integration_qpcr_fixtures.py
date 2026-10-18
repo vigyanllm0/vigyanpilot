@@ -29,7 +29,8 @@ import urllib.request
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 FIXTURE_DIR = os.path.join(REPO, "tests", "fixtures", "qpcr")
 
-# (filename, expected wells, min amplification chart series)
+# (filename, expected wells, min amplification chart series; 0 = Cq-only → no
+#  phantom curves + honest empty message required)
 FIXTURES = [
     ("test_run.rdml", 30, 1),          # standard RDML <adp>/<mdp> — the bug's ground zero
     ("rdml_minimal.xml", 5, 1),        # flat-text amplificationData legacy path
@@ -44,7 +45,18 @@ FIXTURES = [
     ("demo-problem-run.tsv", 10, 1),
     ("edge_cases.tsv", 5, 1),
     ("stress_384.tsv", 384, 1),
+    # Universal-format set (content-sniffing reasoner paths)
+    ("unknown_long.csv", 4, 1),        # any-instrument long table, OnePCR-style
+    ("cq_only.csv", 4, 0),             # Cq-only export — honest empty state
+    ("semicol.csv", 3, 0),             # ';' delimiter + Tm, no curves
+    ("utf16.tsv", 2, 0),               # UTF-16 encoding, no curves
+    ("unknown_wide.xlsx", 4, 1),       # wide 'Cycle N' XLSX (ZIP+XML, reasoner)
+    ("demo.xls", 4, 1),                # legacy OLE2/BIFF8 native read
 ]
+
+# Doctor fixtures: must produce the guided format card (findings + next step),
+# never a phantom chart and never a bare "unsupported format" dead end.
+DOCTOR_FIXTURES = ["stub.qbd", "junk.csv"]
 
 # Cq-only export (no per-cycle fluorescence): the exact shape behind the user report.
 # Expectation: parses, plots ZERO series, and says so honestly instead of a blank plot.
@@ -158,6 +170,9 @@ def run_sweep(url):
                 txt = evaluate("document.getElementById('statusBar') ? document.getElementById('statusBar').textContent : ''", 5)
                 if txt and (txt.startswith("Parsed") or txt.startswith("Parse error")):
                     return txt
+                doc = evaluate("document.getElementById('doctorCard').style.display", 5)
+                if doc == "block":
+                    return "(doctor-card)"
                 time.sleep(0.5)
             return "(timeout)"
 
@@ -223,7 +238,15 @@ def run_sweep(url):
             # sized while hidden), then verify curves actually painted
             click_tab("amplification")
             paint = canvas_colored("ampCanvas")
-            check(f"{fname}: amp curves painted", paint is not None and paint > 500, f"colored px={paint}")
+            if min_series >= 1:
+                check(f"{fname}: amp curves painted", paint is not None and paint > 500, f"colored px={paint}")
+            else:
+                # Cq-only export: zero phantom curves + honest empty message
+                check(f"{fname}: no phantom curves", paint is not None and 0 <= paint < 50, f"colored px={paint}")
+                msg_px = canvas_graytext("ampCanvas", (100, 116, 139))
+                check(f"{fname}: honest empty message", msg_px is not None and msg_px > 100, f"message px={msg_px}")
+                banner = evaluate("document.getElementById('cqOnlyNote').style.display")
+                check(f"{fname}: Cq-only banner", banner == "block", f"banner={banner}")
             # data table rows (switch to table tab, count body rows)
             click_tab("table")
             rows = evaluate("document.querySelectorAll('#dataTable tbody tr').length")
@@ -259,6 +282,24 @@ def run_sweep(url):
 
         errs = evaluate("window.__qpcrErrors")
         check("cq_only: 0 console/page errors", errs == [], f"{errs}")
+
+        # ── Doctor fixtures: guided card, never a phantom chart ──
+        for fname in DOCTOR_FIXTURES:
+            path = os.path.join(FIXTURE_DIR, fname)
+            if not os.path.exists(path):
+                check(f"{fname}: fixture exists", False, "missing")
+                continue
+            with open(path, "rb") as f:
+                status = upload_and_parse(b64(f.read()), fname)
+            check(f"{fname}: doctor card shown", status == "(doctor-card)", status[:120])
+            doc_txt = evaluate("document.getElementById('doctorCard').innerText || ''") or ""
+            check(f"{fname}: card explains + next step",
+                  "next step" in doc_txt.lower() and "supported formats" in doc_txt.lower(),
+                  doc_txt[:120])
+            mc = evaluate("document.getElementById('mainContent').style.display")
+            check(f"{fname}: no phantom UI", mc == "none", f"mainContent={mc}")
+        errs = evaluate("window.__qpcrErrors")
+        check("doctor fixtures: 0 console/page errors", errs == [], f"{errs}")
 
         ws.close()
 
