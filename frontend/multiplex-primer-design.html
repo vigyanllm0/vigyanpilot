@@ -98,6 +98,17 @@ img{max-width:100%}
 
 .skip-link:focus{top:0;outline:none}
 
+.wex-eq{font-family:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;font-size:12.5px;line-height:1.9;background:#0F172A;color:#E2E8F0;padding:14px 16px;border-radius:8px;overflow-x:auto;margin:12px 0 20px;white-space:pre}
+.wex-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:20px 0}
+.wex-table{width:100%;border-collapse:collapse;font-size:14px}
+.wex-table th{background:#F5F7FA;color:#0A0A0F;padding:10px 12px;text-align:left;border:1px solid #E2E5EA;font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+.wex-table td{padding:10px 12px;border:1px solid #E2E5EA;color:#4A4A6A}
+.wex-table td.num{text-align:right;font-family:'SFMono-Regular',Consolas,Menlo,monospace;font-size:13px}
+.wex-table td.diag{background:#F5F7FA;font-weight:600;color:#0A0A0F;text-align:center}
+.wex-table td.watch{background:#FFFBEB;color:#B45309;font-weight:600;text-align:center}
+.wex-table td.bad{background:#FEF2F2;color:#B91C1C;font-weight:700;text-align:center}
+.wex-mono{font-family:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;font-size:12.5px;letter-spacing:.5px}
+
 </style>
     <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -460,6 +471,55 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <p><a href="https://www.vigyanllm.in/index">VigyanLLM</a> implements a comprehensive multiplex primer design pipeline that builds on the PrimerPooler algorithm with additional layers of quality control. The pipeline accepts a list of target sequences and desired amplicon sizes, then automatically designs an optimized primer pool that satisfies all multiplex constraints simultaneously.</p>
       <p>The VigyanLLM multiplex workflow proceeds in four major phases. First, individual candidate primers are generated for each target using the standard 24-step pipeline with full thermodynamic calculation, secondary structure screening, and specificity checking. Second, all pairwise cross-dimer interactions are computed across the entire candidate set using exhaustive delta-G calculations. Third, the PrimerPooler algorithm selects the optimal pool composition by iteratively adding the best-scoring compatible pair and eliminating incompatible candidates. Fourth, the final pool is validated with a complete in silico PCR simulation that confirms all expected amplicons are produced with no off-target products.</p>
       <p>The output includes a detailed compatibility report showing all pairwise dimer delta-G values, a Tm distribution histogram, an amplicon size distribution plot, and individual quality reports for each primer in the pool. This comprehensive reporting format allows users to understand why each primer was selected and to identify any remaining risk factors that may require wet-lab optimization.</p>
+    </section>
+
+    <section class="section">
+      <h2>Worked Example: Auditing a Naive Three-Pair Multiplex Pool</h2>
+      <p>The fastest way to see every rule above fire at once is to pool three primer pairs that were never designed to share a tube. The three pairs below are the published assays already benchmarked on our <a href="https://www.vigyanllm.in/validation">validation page</a>: the SARS-CoV-2 nucleocapsid N1 assay (Lu et al., 2020, <a href="https://doi.org/10.3201/eid2608.201246">DOI 10.3201/eid2608.201246</a>), a human GAPDH qPCR pair (OriGene qSTAR HP205798), and a human &beta;-actin (ACTB) pair (OriGene HP204660, sequence identical to the pair in <a href="https://doi.org/10.1074/jbc.M111.311605">JBC M111.311605</a>). Each is a validated <em>singleplex</em> assay &mdash; none was ever proposed as a multiplex pool. Mixing them as-is is exactly the naive pooling step this page warns against, so we can run the audit the page describes and watch three of its four gates reject the pool. All thermodynamic values were computed by the same SantaLucia nearest-neighbor and Primer3 engines that produce the <a href="https://www.vigyanllm.in/validation">validation page</a> numbers, under the standard conditions used there (50&nbsp;mM Na<sup>+</sup>, 1.5&nbsp;mM Mg<sup>2+</sup>, 0.2&nbsp;mM dNTPs, 50&nbsp;nM oligo).</p>
+
+      <h3>Gate 1: Pool Tm Spread &mdash; Fails</h3>
+      <div class="wex-wrap">
+      <table class="wex-table">
+        <thead>
+          <tr><th>Primer</th><th>Sequence (5&prime;&rarr;3&prime;)</th><th>Length</th><th>Tm (&deg;C)</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>N1_F</td><td class="wex-mono">GACCCCAAAATCAGCGAAAT</td><td class="num">20</td><td class="num">57.32</td></tr>
+          <tr><td>N1_R</td><td class="wex-mono">TCTGGTTACTGCCAGTTGAATCTG</td><td class="num">24</td><td class="num">61.47</td></tr>
+          <tr><td>GAPDH_F</td><td class="wex-mono">GTCTCCTCTGACTTCAACAGCG</td><td class="num">22</td><td class="num">61.57</td></tr>
+          <tr><td>GAPDH_R</td><td class="wex-mono">ACCACCCTGTTGCTGTAGCCAA</td><td class="num">22</td><td class="num">65.09</td></tr>
+          <tr><td>ACTB_F</td><td class="wex-mono">CACCATTGGCAATGAGCGGTTC</td><td class="num">22</td><td class="num">63.56</td></tr>
+          <tr><td>ACTB_R</td><td class="wex-mono">AGGTCTTTGCGGATGTCCACGT</td><td class="num">22</td><td class="num">65.13</td></tr>
+        </tbody>
+      </table>
+      </div>
+      <p>Each pair is perfectly reasonable alone: the largest within-pair mismatch is N1 at 4.15&deg;C (57.32 vs 61.47), comfortably inside the 2&ndash;5&deg;C tolerance singleplex design allows. Pooled, the six primers span <strong>57.32&deg;C to 65.13&deg;C &mdash; a 7.81&deg;C spread against the 1&ndash;2&deg;C window multiplex design requires</strong>. There is no single annealing temperature that flatters everyone: running the gradient 2&ndash;4&deg;C below the pool minimum puts the reaction at roughly 53&ndash;55&deg;C, which leaves ACTB_R &mdash; the 65.13&deg;C primer &mdash; about 10&deg;C above the temperature chosen to keep N1_F on board. The page's own remedies are the right ones here: active Tm balancing and per-primer length adjustment (each added nucleotide buys roughly 1.5&ndash;2.0&deg;C) would pull the pool together before any primer is synthesized.</p>
+
+      <h3>Gate 2: Cross-Dimer Matrix &mdash; Passes (With a Watch List)</h3>
+      <p>With six primers in the pool there are 15 unique cross-pair combinations to check. The full matrix is below; values are heterodimer &Delta;G in kcal/mol, computed by the same Primer3 thermodynamic backend the page's design pipeline uses. The page flags any interaction more negative than &minus;6.0&nbsp;kcal/mol for redesign.</p>
+      <div class="wex-wrap">
+      <table class="wex-table">
+        <thead>
+          <tr><th></th><th>GAPDH_F</th><th>GAPDH_R</th><th>N1_F</th><th>N1_R</th><th>ACTB_F</th><th>ACTB_R</th></tr>
+        </thead>
+        <tbody>
+          <tr><th>GAPDH_F</th><td class="diag">&minus;3.00</td><td class="watch">&minus;5.12</td><td>&minus;2.79</td><td class="watch">&minus;5.00</td><td>&minus;2.67</td><td>&minus;3.02</td></tr>
+          <tr><th>GAPDH_R</th><td class="watch">&minus;5.12</td><td class="diag">&minus;3.65</td><td>&minus;3.80</td><td class="watch">&minus;5.41</td><td class="watch">&minus;5.66</td><td>&minus;2.65</td></tr>
+          <tr><th>N1_F</th><td>&minus;2.79</td><td>&minus;3.80</td><td class="diag">&minus;3.30</td><td>&minus;2.08</td><td>&minus;3.06</td><td>&minus;3.05</td></tr>
+          <tr><th>N1_R</th><td class="watch">&minus;5.00</td><td class="watch">&minus;5.41</td><td>&minus;2.08</td><td class="diag">&minus;5.34</td><td>&minus;3.91</td><td>&minus;3.48</td></tr>
+          <tr><th>ACTB_F</th><td>&minus;2.67</td><td class="watch">&minus;5.66</td><td>&minus;3.06</td><td>&minus;3.91</td><td class="bad">&minus;10.89</td><td>&minus;4.58</td></tr>
+          <tr><th>ACTB_R</th><td>&minus;3.02</td><td>&minus;2.65</td><td>&minus;3.05</td><td>&minus;3.48</td><td>&minus;4.58</td><td class="diag">&minus;3.12</td></tr>
+        </tbody>
+      </table>
+      </div>
+      <p>No cross-pair cell trips the &minus;6.0&nbsp;kcal/mol line &mdash; the worst is <strong>GAPDH_R &times; ACTB_F at &minus;5.66</strong> &mdash; so Gate 2 passes on the page's stated criterion. Four pairs, however, land in the watch band between &minus;5.0 and &minus;6.0 (amber above): GAPDH_R &times; ACTB_F (&minus;5.66), GAPDH_R &times; N1_R (&minus;5.41), the GAPDH pair's own forward&times;reverse combination (&minus;5.12), and GAPDH_F &times; N1_R (&minus;5.00). As a provenance check, the three within-pair forward&times;reverse values &mdash; GAPDH &minus;5.12, N1 &minus;2.08, ACTB &minus;4.58 &mdash; reproduce the cross-dimer numbers published on the <a href="https://www.vigyanllm.in/validation">validation page</a> exactly.</p>
+      <p>The diagonal reads a different story. Self-dimers are the same nearest-neighbor calculation applied to a primer against itself, and <strong>ACTB_F self-dimerizes at &minus;10.89&nbsp;kcal/mol</strong> &mdash; the strongest interaction anywhere in the pool, more than double the page's flag line, and the reason the engine scores ACTB_F lowest of the six (quality 49.5 vs 76&ndash;92 for the others). N1_R (&minus;5.34) is borderline; the remaining four sit between &minus;3.0 and &minus;3.7 and are unremarkable. A pooler following this page's algorithm would reject ACTB_F as a candidate and redesign that primer before the pool is built.</p>
+
+      <h3>Gate 3: Amplicon Separation &mdash; Fails for Gels, Passes for Probes</h3>
+      <p>The three amplicons are N1 at 72&nbsp;bp, GAPDH at 131&nbsp;bp, and ACTB at 135&nbsp;bp. Against the gel-based rules above, the pool fails: the size table's 2-plex row requires a minimum 50&nbsp;bp spacing on 2% agarose, and GAPDH and ACTB differ by <strong>4&nbsp;bp</strong> &mdash; indistinguishable on any gel this page recommends. Against the probe-based rules it passes cleanly: all three amplicons fall inside the 60&ndash;150&nbsp;bp window that improves hydrolysis-probe efficiency, and probe fluorescence channels separate the targets regardless of size. Gate 3's verdict therefore depends on your detection method, exactly as the page's two subsections spell out &mdash; a useful reminder that &ldquo;the pool fails&rdquo; is rarely a single yes-or-no question.</p>
+
+      <h3>Verdict</h3>
+      <p>Pooling three individually validated assays passes one gate cleanly (cross-dimers), fails two outright (pool Tm spread at 7.81&deg;C; gel separation of a 4&nbsp;bp amplicon pair), and fails a third on the strongest self-dimer the six primers produce. None of this reflects badly on the assays &mdash; every one of them is published and reproducible. It reflects that singleplex validation and multiplex compatibility are different properties, which is the entire reason algorithmic pool design exists. Running the same three pairs through the design pipeline described above &mdash; Tm balancing, full pairwise &Delta;G screening including the diagonal, and amplicon size planning matched to your detection method &mdash; is how you turn a naive pool into one that works. You can also verify any single primer against the numbers here with the <a href="https://www.vigyanllm.in/tm-calculator">Tm calculator</a>, and see all three original assays in full at the <a href="https://www.vigyanllm.in/validation">validation page</a>.</p>
     </section>
 
     <section class="section">

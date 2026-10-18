@@ -239,6 +239,8 @@ footer{background:var(--navy);color:rgba(255,255,255,.8);padding:56px 0 24px}
 @media(max-width:768px){.nav-links{display:none}.nav-inner{padding:0 12px}.hamburger{display:flex}}
 
 .dna-seq{font-family:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;font-size:13px;letter-spacing:1.5px;background:#f0fdf4;border:1px solid #bbf7d0;padding:2px 6px;border-radius:4px;color:#166534;word-break:break-all}
+.wex-eq{font-family:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;font-size:12.5px;line-height:1.9;background:#0F172A;color:#E2E8F0;padding:14px 16px;border-radius:8px;overflow-x:auto;margin:12px 0 20px;white-space:pre}
+.wex-note{font-size:13px;color:#475569;background:#F8FAFC;border-left:3px solid #94A3B8;padding:10px 14px;border-radius:0 8px 8px 0;margin:0 0 20px}
 </style>
   
   <link rel="icon" type="image/png" href="/logo.png">
@@ -501,6 +503,45 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </div>
 
     
+      <h2>Worked Example: Auditing a Published Pair Against This Checklist</h2>
+      <p>Rules are easier to trust when you can watch them accept a real primer pair. The audit below runs the human GAPDH qPCR pair <strong>OriGene qSTAR HP205798</strong> — one of the published pairs benchmarked on our <a href="/validation">validation page</a> — through every row of the checklist above. Every value was computed by the same SantaLucia nearest-neighbor engine that powers the <a href="/primer">primer design tool</a>, under its default conditions: 50&nbsp;mM Na<sup>+</sup>, 1.5&nbsp;mM Mg<sup>2+</sup>, 0.2&nbsp;mM dNTP, 50&nbsp;nM oligo.</p>
+
+      <p>Forward <span class="dna-seq">GTCTCCTCTGACTTCAACAGCG</span> — reverse <span class="dna-seq">ACCACCCTGTTGCTGTAGCCAA</span> (131&nbsp;bp amplicon).</p>
+
+      <h3>Why Rule 2 Says "Use the Nearest-Neighbor Model"</h3>
+      <p>These two primers have <em>identical base composition</em> — each contains 10 A/T and 12 G/C residues. The 40-year-old Wallace rule, which counts bases only, therefore reports the exact same melting temperature for both:</p>
+      <div class="wex-eq">Forward  GTCTCCTCTGACTTCAACAGCG   A/T = 10, G/C = 12
+  Wallace   Tm = 2(10) + 4(12)                      = 68.0 &deg;C
+  SantaLucia NN (50 mM Na+, 1.5 mM Mg2+, 50 nM)     = 61.57 &deg;C
+
+Reverse   ACCACCCTGTTGCTGTAGCCAA   A/T = 10, G/C = 12
+  Wallace   Tm = 2(10) + 4(12)                      = 68.0 &deg;C
+  SantaLucia NN (50 mM Na+, 1.5 mM Mg2+, 50 nM)     = 65.09 &deg;C
+
+Pair &Delta;Tm    Wallace rule sees   0.00 &deg;C   (composition-blind)
+                 NN model sees       3.52 &deg;C   (stacking order differs)</div>
+      <p>The Wallace formula is structurally incapable of telling these primers apart; the nearest-neighbor model finds a 3.52&nbsp;&deg;C gap because stacking order — not just base counts — sets the real melting temperature. That single number decides your annealing temperature.</p>
+
+      <h3>The Full Audit</h3>
+      <table>
+        <tr><th>Checklist row</th><th>Ideal range</th><th>Forward</th><th>Reverse</th><th>Verdict</th></tr>
+        <tr><td>Primer length</td><td>18–24 nt</td><td>22</td><td>22</td><td>Pass</td></tr>
+        <tr><td>Melting temperature (NN)</td><td>52–65&nbsp;&deg;C</td><td>61.57&nbsp;&deg;C</td><td>65.09&nbsp;&deg;C</td><td>Pass (reverse sits at the range edge)</td></tr>
+        <tr><td>Pair &Delta;Tm</td><td>&le;2&nbsp;&deg;C strict / 2–5&nbsp;&deg;C acceptable</td><td colspan="2" style="text-align:center">3.52&nbsp;&deg;C (65.09 &minus; 61.57)</td><td>Inside the 2–5&nbsp;&deg;C band; above the strict &le;2&nbsp;&deg;C rule used for qPCR quantification</td></tr>
+        <tr><td>GC content</td><td>40–60%</td><td>54.55%</td><td>54.55%</td><td>Pass</td></tr>
+        <tr><td>3&prime; terminal base</td><td>G or C (GC clamp)</td><td>G</td><td><strong>A</strong></td><td><strong>Reverse fails the clamp rule</strong></td></tr>
+        <tr><td>Hairpin &Delta;G</td><td>&gt; &minus;5.0 kcal/mol</td><td>+0.10</td><td>&minus;0.27</td><td>Pass (both essentially structure-free)</td></tr>
+        <tr><td>Self-dimer &Delta;G</td><td>&gt; &minus;5.0 kcal/mol</td><td>&minus;3.00</td><td>&minus;3.65</td><td>Pass</td></tr>
+        <tr><td>Cross-dimer &Delta;G (F&times;R)</td><td>&gt; &minus;5.0 kcal/mol</td><td colspan="2" style="text-align:center">&minus;5.12 kcal/mol</td><td><strong>Borderline</strong> — 0.12 past the line, well inside the &minus;6.0 pool threshold</td></tr>
+        <tr><td>Longest base run</td><td>&lt; 4 identical</td><td>2</td><td>3</td><td>Pass</td></tr>
+        <tr><td>Amplicon (qPCR)</td><td>70–200 bp</td><td colspan="2" style="text-align:center">131 bp</td><td>Pass</td></tr>
+        <tr><td>Engine quality score</td><td>rank candidates</td><td>92</td><td>92</td><td>Advisory warnings only — see below</td></tr>
+      </table>
+
+      <p class="wex-note">Two honest findings from a passing pair. The reverse primer ends in <strong>A</strong>, so it trips the engine's advisory <em>"3&prime; end is not G or C"</em> warning, and the forward primer's last three bases are G-C-G, tripping <em>"3&prime; GC clamp &gt;2 GC in last 3 bases."</em> Both flags are exactly that — advisory. The engine's <code>is_valid</code> field simply means "zero warnings fired," not "rejected"; this pair is commercially published, and its complete engine profile is published on <a href="/validation">our validation page</a> alongside two other published pairs. The lesson for Rule 3 is directional, not absolute: a GC clamp improves initiation efficiency <em>on average</em>, and published pairs routinely ship without one.</p>
+
+      <p>Run the same audit on your own candidates in seconds: the <a href="/tm-calculator">Tm calculator</a> reproduces both formulas side by side, the <a href="/gc-calculator">GC content calculator</a> covers Rule 3, and the full <a href="/primer">primer design pipeline</a> applies every row above automatically across all 24 steps.</p>
+
       <h2>Frequently Asked Questions</h2>
       <div itemscope itemtype="https://schema.org/FAQPage">
         <div itemscope itemprop="mainEntity" itemtype="https://schema.org/Question" style="margin-bottom:16px">
