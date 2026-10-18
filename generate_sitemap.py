@@ -42,6 +42,7 @@ PRIORITY_MAP = {
     "search.html": 0.90,
     # Tier 2: Important tools
     "pcr-analysis.html": 0.90,
+    "qpcr-analyzer.html": 0.90,
     "crispr-analysis.html": 0.90,
     "tm-calculator.html": 0.85,
     "gc-calculator.html": 0.85,
@@ -138,7 +139,7 @@ EXCLUDE_PAGES = {
     "signup.html",
 }
 
-EXCLUDE_DIR_PREFIXES = {"admin/", "api/", "partials/"}
+EXCLUDE_DIR_PREFIXES = {"admin/", "api/", "partials/", "qpcr/"}
 
 _NOINDEX_RE = re.compile(
     r'<meta[^>]+name=["\']robots["\'][^>]+content=["\'][^"\']*noindex', re.I
