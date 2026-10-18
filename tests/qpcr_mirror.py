@@ -425,6 +425,99 @@ def parse_template(text, file_name=None):
     return run
 
 
+def parse_xlsx_file(path):
+    """Parse an XLSX file using openpyxl. Returns canonical Run."""
+    try:
+        import openpyxl
+    except ImportError:
+        raise ValueError("openpyxl not installed")
+    import os
+    wb = openpyxl.load_workbook(path, data_only=True)
+    ws = wb.active
+    rows = []
+    for row in ws.iter_rows(values_only=True):
+        rows.append(list(row))
+    if not rows:
+        raise ValueError("Empty spreadsheet")
+    headers = [str(h).strip() if h is not None else '' for h in rows[0]]
+    def col_index(name):
+        for i, h in enumerate(headers):
+            if re.search(name, h, re.I):
+                return i
+        return -1
+    well_col = col_index(r"well")
+    sample_col = col_index(r"sample")
+    target_col = col_index(r"target")
+    channel_col = col_index(r"channel|fluor|dye")
+    content_col = col_index(r"content")
+    cq_col = col_index(r"cq|ct")
+    cq_sd_col = col_index(r"cqsd|cq.*sd|std")
+    tm_col = col_index(r"tm|melt")
+    amp_col = col_index(r"amplif|data|curve")
+
+    run = make_run({"fileName": os.path.basename(path), "sourceFormat": "xlsx"})
+    targets_seen = set()
+    samples_seen = set()
+    channels_seen = set()
+
+    for i in range(1, len(rows)):
+        cols = rows[i]
+        if not cols or all(c is None or str(c).strip() == '' for c in cols):
+            continue
+        well_name = str(cols[well_col]).strip() if well_col >= 0 and well_col < len(cols) and cols[well_col] is not None else str(cols[0] or '').strip()
+        if not well_name:
+            continue
+        pp = parse_position(well_name, 96)
+        sample_name = str(cols[sample_col]).strip() if sample_col >= 0 and sample_col < len(cols) and cols[sample_col] is not None else well_name
+        target_name = str(cols[target_col]).strip() if target_col >= 0 and target_col < len(cols) and cols[target_col] is not None else 'Unknown'
+        raw_channel = str(cols[channel_col]).strip() if channel_col >= 0 and channel_col < len(cols) and cols[channel_col] is not None else 'FAM'
+        content = str(cols[content_col]).strip() if content_col >= 0 and content_col < len(cols) and cols[content_col] is not None else ''
+        cq_raw = cols[cq_col] if cq_col >= 0 and cq_col < len(cols) else None
+        cq = float(cq_raw) if cq_raw is not None and _is_number(str(cq_raw)) else None
+        if cq is not None and not math.isfinite(cq):
+            cq = None
+        cq_sd_raw = cols[cq_sd_col] if cq_sd_col >= 0 and cq_sd_col < len(cols) else None
+        cq_sd = float(cq_sd_raw) if cq_sd_raw is not None and _is_number(str(cq_sd_raw)) else None
+        tm_raw = cols[tm_col] if tm_col >= 0 and tm_col < len(cols) else None
+        tm = float(tm_raw) if tm_raw is not None and _is_number(str(tm_raw)) else None
+
+        if sample_name not in samples_seen:
+            samples_seen.add(sample_name)
+            run["samples"].append(make_sample(len(run["samples"]), sample_name, guess_sample_type(sample_name)))
+        if target_name not in targets_seen:
+            targets_seen.add(target_name)
+            run["targets"].append(make_target(len(run["targets"]), target_name, None, guess_reference(target_name)))
+        canon = canonical_channel(raw_channel) or "FAM"
+        if canon not in channels_seen:
+            channels_seen.add(canon)
+            run["channels"].append(make_channel(len(run["channels"]), raw_channel, canon))
+
+        sample_id = next(i for i, s in enumerate(run["samples"]) if s["name"] == sample_name)
+        target_id = next(i for i, t in enumerate(run["targets"]) if t["name"] == target_name)
+        channel_id = next(i for i, c in enumerate(run["channels"]) if c["canonical"] == canon)
+
+        amp = []
+        if amp_col >= 0 and amp_col < len(cols) and cols[amp_col] is not None:
+            amp = [float(v) for v in str(cols[amp_col]).split(";") if _is_number(v)]
+
+        well = make_well(len(run["wells"]), pp["row"], pp["col"], "96")
+        well["sampleId"] = sample_id
+        well["targetId"] = target_id
+        well["channelId"] = channel_id
+        well["cq"] = cq
+        well["cqSD"] = cq_sd
+        well["tm"] = tm
+        well["amplification"] = amp
+        run["wells"].append(well)
+
+    if not run["channels"]:
+        run["channels"].append(make_channel(0, "FAM", "FAM"))
+    for t in run["targets"]:
+        if t["channelId"] is None:
+            t["channelId"] = 0
+    return run
+
+
 def parse_run(text, file_name=None):
     fmt = detect_format(text, file_name)
     if fmt == "rdml":
@@ -435,6 +528,8 @@ def parse_run(text, file_name=None):
         return parse_template(text, file_name)
     elif fmt == "pcrd":
         raise ValueError("Bio-Rad .pcrd is a proprietary binary format. Please export from CFX Maestro: File → Export → RDML or CSV.")
+    elif fmt == "xlsx":
+        return parse_xlsx_file(file_name) if file_name else None
     else:
         raise ValueError("Unknown format. Try the generic template or check your export.")
 

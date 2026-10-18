@@ -15,7 +15,7 @@ from qpcr_mirror import (
     linear_regression, efficiency_from_slope, compute_standard_curves,
     compute_expression, compute_qc, analyze_run, QPCR_ENGINE_VERSION,
     savitzky_golay_derivative, detect_tm_peaks, generate_methods,
-    serialize_view_state, deserialize_view_state,
+    serialize_view_state, deserialize_view_state, parse_xlsx_file,
 )
 
 FIXTURES = os.path.join(os.path.dirname(__file__), "fixtures", "qpcr")
@@ -311,6 +311,17 @@ def test_demo_problem_run_flags():
     # High replicate SD
     sd_flags = [f for f in qc["run"] if f["code"] == "HIGH_REPLICATE_SD"]
     assert len(sd_flags) >= 1
+
+
+def test_xlsx_parse():
+    """XLSX file parses correctly via openpyxl mirror."""
+    run = parse_xlsx_file("tests/fixtures/qpcr/test_xlsx.xlsx")
+    assert len(run["wells"]) == 5
+    assert len(run["samples"]) == 4
+    assert len(run["targets"]) == 2
+    assert len(run["channels"]) == 2
+    assert run["channels"][0]["canonical"] == "FAM"
+    assert run["channels"][1]["canonical"] == "HEX"
 
 
 def test_layout_position_math():
