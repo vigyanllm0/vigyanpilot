@@ -157,7 +157,7 @@ export function detectFormat(text, fileName, buffer) {
   if (t.includes('Well,Fluor,Target,Content') || t.includes('Well\\tFluor\\tTarget')) return 'cfx_csv';
   if (t.includes('Amplification Data') && t.includes('Well')) return 'cfx_csv';
   if (t.includes('Cq,Well') || t.includes('Well,Cq')) return 'cfx_csv';
-  if (t.includes('well\\tsample\\ttarget\\tchannel') || t.includes('Well\\tSample\\tTarget\\tChannel')) return 'template';
+  if (t.includes('well\tsample\ttarget\tchannel') || t.includes('Well\tSample\tTarget\tChannel')) return 'template';
   return 'unknown';
 }
 
