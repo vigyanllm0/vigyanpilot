@@ -127,8 +127,27 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What is the main difference between BLAST and DIAMOND?","acceptedAnswer":{"@type":"Answer","text":"BLAST (Basic Local Alignment Search Tool) is the gold-standard sequence alignment tool from NCBI that searches protein and nucleotide databases using heuristic seed-and-extend algorithms. DIAMOND is a faster alternative optimized for protein sequence alignment that achieves 100-10,000x speedup over BLASTP by using double-indexing and spaced seeds, making it ideal for large-scale metagenomic datasets."}},{"@type":"Question","name":"How much faster is DIAMOND compared to BLAST?","acceptedAnswer":{"@type":"Answer","text":"DIAMOND is typically 100 to 10,000 times faster than BLASTP for protein sequence alignment, depending on the database size and query characteristics. For a typical metagenomics dataset of millions of reads against the NCBI nr database, DIAMOND can complete the search in hours while BLASTP would take weeks or months using equivalent computational resources."}},{"@type":"Question","name":"Is DIAMOND as sensitive as BLAST?","acceptedAnswer":{"@type":"Answer","text":"DIAMOND offers comparable sensitivity to BLASTP, recovering approximately 95-99% of true positive alignments depending on the sensitivity mode used. The default mode is fastest but may miss distant homologs. DIAMOND provides a --sensitive flag and a --very-sensitive flag that narrow the sensitivity gap to within 1-2% of BLAST at the cost of reduced speedup."}},{"@type":"Question","name":"Can DIAMOND replace NCBI BLAST for all applications?","acceptedAnswer":{"@type":"Answer","text":"No. DIAMOND is primarily designed for protein-protein alignment (BLASTP and BLASTX). It does not support nucleotide-nucleotide BLASTN searches or many specialized BLAST variants like PSI-BLAST, PHI-BLAST, or RPS-BLAST. For nucleotide queries against nucleotide databases or for iterative profile searches, NCBI BLAST or dedicated tools remain necessary."}},{"@type":"Question","name":"What sequence databases are supported by DIAMOND?","acceptedAnswer":{"@type":"Answer","text":"DIAMOND supports any protein sequence database in FASTA format, including NCBI nr (non-redundant), UniRef50, UniRef90, Swiss-Prot, RefSeq, and custom databases. It also supports BLASTX searches against protein databases using translated nucleotide queries. Databases must be pre-formatted using the DIAMOND makedb command into a binary index format."}},{"@type":"Question","name":"Does DIAMOND support nucleotide-nucleotide (BLASTN) searches?","acceptedAnswer":{"@type":"Answer","text":"DIAMOND does not natively support BLASTN nucleotide-nucleotide searches. It is optimized exclusively for protein-level and translated searches (BLASTP and BLASTX). For nucleotide-nucleotide alignment, researchers must use NCBI BLASTN, MegaBLAST, or alternatives like Bowtie2 or Minimap2, which are designed for DNA-DNA comparison."}},{"@type":"Question","name":"What output formats does DIAMOND support?","acceptedAnswer":{"@type":"Answer","text":"DIAMOND produces output in BLAST-compatible tabular formats (6, 6+), XML, SAM, PAF (Pairwise Alignment Format), and DAA (DIAMOND Alignment Archive). The DAA format stores complete alignment data for downstream analysis and can be converted to other formats using the DIAMOND view command, providing flexibility for different bioinformatics pipelines."}},{"@type":"Question","name":"Which tool uses less memory: BLAST or DIAMOND?","acceptedAnswer":{"@type":"Answer","text":"DIAMOND generally uses more memory than BLAST because it loads the entire protein database index into RAM for fast access. A typical DIAMOND run against the NCBI nr database may require 50-100 GB of RAM. BLASTP uses less memory by streaming the database from disk, typically requiring only 1-8 GB depending on the configuration and database."}},{"@type":"Question","name":"Can I run DIAMOND on a standard laptop?","acceptedAnswer":{"@type":"Answer","text":"DIAMOND can run on a standard laptop for small databases and query sets, but for large databases like NCBI nr, it requires significant memory (50-100 GB RAM). For small custom protein databases (e.g., a few thousand sequences), DIAMOND runs well on a laptop. BLAST is more memory-efficient and runs comfortably on laptops for most use cases."}},{"@type":"Question","name":"Which tool is better for metagenomics analysis?","acceptedAnswer":{"@type":"Answer","text":"DIAMOND is generally preferred for large-scale metagenomics because its speed advantage becomes critical when searching millions of reads against comprehensive databases. Its integration with MEGAN and other metagenomics tools makes it a standard choice. BLAST remains useful for targeted metagenomics with smaller datasets or when maximum sensitivity is required."}},{"@type":"Question","name":"Does VigyanLLM offer a BLAST or DIAMOND alternative?","acceptedAnswer":{"@type":"Answer","text":"Yes, VigyanLLM offers a free web-based BLAST tool at vigyanllm.in/blast for both protein and nucleotide sequence alignment. It provides a user-friendly interface with multiple database options, E-value filtering, and downloadable results. While VigyanLLM currently focuses on convenience and accessibility, it leverages standard BLAST algorithms for accurate comparisons."}},{"@type":"Question","name":"Are BLAST and DIAMOND free for academic use?","acceptedAnswer":{"@type":"Answer","text":"Both BLAST and DIAMOND are free and open-source for all users, including academic and commercial use. NCBI BLAST is maintained by the National Center for Biotechnology Information and is publicly available with no restrictions. DIAMOND is published under a BSD license and its source code is available on GitHub, with pre-compiled binaries for Windows, macOS, and Linux."}}]}</script>
 
 <script src="/cookie-banner.js" defer></script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "name": "BLAST vs DIAMOND \u2014 Free Sequence Alignment Comparison",
+  "speakable": {
+    "@type": "SpeakableSpecification",
+    "cssSelector": [
+      "h1",
+      "h2",
+      ".lead",
+      ".section-tag"
+    ]
+  }
+}
+</script>
 </head>
-<body>
+<body><main>
+
+
 <div id="vl-header"><!--vl-header-bake-start--><a href="#main-content" class="skip-link">Skip to content</a><header>
 <nav aria-label="Main navigation">
 <div class="nav-inner">
@@ -432,7 +451,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 </script><!--vl-header-bake-end--></div>
 
 <a href="#main-content" class="skip-link">Skip to content</a>
-<main id="main-content">
+
 
 <nav class="breadcrumbs" style="font-size:0.875rem;color:#64748b;margin-bottom:16px;padding:8px 0;">
   <a href="/" style="color:#1565C0;text-decoration:none;">Home</a> <span style="margin:0 6px;">›</span> <span>BLAST vs DIAMOND</span>
@@ -587,12 +606,16 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <p style="margin-bottom:12px"><strong>Ready to run a sequence search?</strong> Try VigyanLLM's free BLAST tool with multiple database options.</p>
   <a href="/blast" style="display:inline-block;padding:12px 28px;background:#2563EB;color:#fff;border-radius:8px;font-weight:700;text-decoration:none">Launch BLAST Tool →</a>
 </div>
-<div class="auth-overlay" id="auth-overlay"><div class="auth-card"><div class="auth-title" id="auth-modal-title">Log in to VigyanLLM</div><div class="auth-sub" id="auth-modal-sub">Sign in to save &amp; export your results</div><div id="auth-content"></div></div></div></main>
+<div class="auth-overlay" id="auth-overlay"><div class="auth-card"><div class="auth-title" id="auth-modal-title">Log in to VigyanLLM</div><div class="auth-sub" id="auth-modal-sub">Sign in to save &amp; export your results</div><div id="auth-content"></div></div></div>
 
 <script defer src="/search-index.js"></script>
 <script defer src="/auth-shared.js"></script>
 
-<div id="vl-footer"><!--vl-footer-bake-start--><footer>
+<div id="vl-footer"><!--vl-footer-bake-start-->
+
+
+</main>
+<footer>
 
 <div class="footer-grid">
   <div class="footer-col">

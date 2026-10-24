@@ -1,13 +1,14 @@
 # robots.txt — VigyanLLM
 # https://vigyanllm.in/robots.txt
-# Generated: 2026-10-17
+# Generated: 2026-10-24
 
 # ── Default rules ────────────────────────────────────────────────────────
 User-agent: *
 Allow: /
+# API routes — NEVER crawl these (Bucket 5: 46 404 URLs include /api/*)
 Disallow: /api/
-# Account/admin surfaces — exact routes (previous /admin/ + /dashboard/ rules
-# matched nothing; robots is crawl guidance, not authorization)
+Disallow: /api.vigyanllm.in/
+# Account/admin surfaces
 Disallow: /dashboard
 Disallow: /usage-billing
 Disallow: /cms-login
@@ -15,10 +16,15 @@ Disallow: /admin-security
 Disallow: /cms-admin
 Disallow: /cms-editor
 Disallow: /cms-test
-# Header/footer HTML fragments — not pages, crawl waste (Growth Playbook 1.7)
+# Header/footer HTML fragments
 Disallow: /partials/
 Disallow: /header
 Disallow: /footer
+# Redirected legacy URLs (these now 301 but block to be safe)
+Disallow: /features/
+Disallow: /about/
+Disallow: /hub/
+Disallow: /nav
 
 Crawl-delay: 2
 

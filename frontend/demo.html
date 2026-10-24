@@ -153,8 +153,60 @@ img{max-width:100%}
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"VideoObject","name":"VigyanLLM Primer Design Tutorial — Automated PCR Primer Design","description":"Step-by-step tutorial: design validated PCR primers using VigyanLLM. Enter a gene name or NCBI accession, run thermodynamic profiling (SantaLucia 1998 nearest-neighbor model), check hairpin/dimer formation, verify BLAST specificity against reference genome, and download validated primer pairs with Tm, GC%, amplicon size, and delta-G scores.","thumbnailUrl":"https://www.vigyanllm.in/poster.png","uploadDate":"2026-08-01","duration":"PT5M","contentUrl":"https://www.youtube.com/watch?v=JOxw3D-L5Dw","embedUrl":"https://www.youtube.com/embed/JOxw3D-L5Dw","publisher":{"@type":"Organization","name":"VigyanLLM Private Limited","url":"https://www.vigyanllm.in"},"isFamilyFriendly":true,"inLanguage":"en","keywords":["primer design","PCR primer","Tm calculator","BLAST specificity","thermodynamic validation","qPCR primer","NCBI Primer-BLAST alternative","free primer design tool"],"interactionStatistic":{"@type":"InteractionCounter","interactionType":"https://schema.org/WatchAction","userInteractionCount":2100}}</script>
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"VigyanLLM — Automated Bioinformatics Platform","operatingSystem":"Web Browser","applicationCategory":"Scientific Software","url":"https://www.vigyanllm.in","description":"Free browser-based bioinformatics platform for primer design, molecular docking, sequence alignment, and BLAST analysis. Designed for Indian academic researchers with 24-step validation pipelines.","offers":{"@type":"AggregateOffer","lowPrice":"0","highPrice":"399","priceCurrency":"USD","offerCount":"4"}}</script>
 <script src="/cookie-banner.js" defer></script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "name": "VigyanLLM Demo \u2014 Primer Design, Docking, NLP Command Interface | Free Bioinformatics",
+  "speakable": {
+    "@type": "SpeakableSpecification",
+    "cssSelector": [
+      "h1",
+      "h2",
+      ".lead",
+      ".section-tag"
+    ]
+  }
+}
+</script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Is VigyanLLM data secure?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. VigyanLLM runs on secure AWS infrastructure with optional on-premises deployment via Docker. Zero external API calls ensure data never leaves your institution."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Does VigyanLLM use external APIs?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No. VigyanLLM uses the proprietary VigyanInferenceEngine \u2014 a native GGUF inference engine with zero external API dependency. No OpenAI, Anthropic, or Google APIs."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What makes VigyanLLM's 24-step pipeline unique?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "The 24-step validated pipeline includes nearest-neighbour thermodynamic modelling (SantaLucia 1998), BLAST specificity, SNP screening, repeat masking, multiplex cross-dimer scoring, and final verification via the ChinhAI agent."
+      }
+    }
+  ]
+}
+</script>
 </head>
-<body>
+<body><main>
+
+
 <div id="vl-header"><!--vl-header-bake-start--><a href="#main-content" class="skip-link">Skip to content</a><header>
 <nav aria-label="Main navigation">
 <div class="nav-inner">
@@ -458,7 +510,7 @@ img{max-width:100%}
 </script><!--vl-header-bake-end--></div>
 
 <a href="#main-content" class="skip-link">Skip to content</a>
-<main id="main-content">
+
 
 <!-- Google Tag Manager (noscript) -->
 <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-KRP5LLPR"
@@ -575,7 +627,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </article>
   </div>
 
-</main>
+
 
 <script defer src="/search-index.js"></script>
 <script defer src="/auth-shared.js"></script>
@@ -634,7 +686,11 @@ function toggleAuthMode(){AUTH_MODE=AUTH_MODE==='login'?'register':'login';var t
 async function handleAuth(e){e.preventDefault();var err=document.getElementById('authError');err.style.display='none';var email=document.getElementById('authEmail').value;var pass=document.getElementById('authPass').value;if(pass.length<12||!/[A-Z]/.test(pass)||!/[a-z]/.test(pass)||!/[0-9]/.test(pass)||!/[^A-Za-z0-9]/.test(pass)){err.textContent='Password must be 12+ chars with an uppercase letter, a lowercase letter, a digit & a special character.';err.style.display='block';return false}try{var api=window.VIGYAN_BACKEND_URL||'/api';var ep=AUTH_MODE==='login'?'/auth/login':'/auth/register';var body={email:email,password:pass};if(AUTH_MODE==='register'){body.name=document.getElementById('authName').value||'User';body.consent_accepted=true}var r=await fetch(api+ep,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});var d=await r.json();if(!r.ok){err.textContent=d.error||'Authentication failed';err.style.display='block';return false}if(d.requires_verification){err.textContent=d.message||'Account created! Check your email to verify.';err.style.display='block';return false}closeAuthModal();window.location.reload()}catch(a){err.textContent='Network error. Please try again.';err.style.display='block'}return false}
 </script>
 
-<div id="vl-footer"><!--vl-footer-bake-start--><footer>
+<div id="vl-footer"><!--vl-footer-bake-start-->
+
+
+</main>
+<footer>
 
 <div class="footer-grid">
   <div class="footer-col">
