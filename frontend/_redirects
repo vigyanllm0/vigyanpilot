@@ -132,6 +132,8 @@ https://vigyanllm.in https://www.vigyanllm.in 301!
 # ── Blog .html to clean URLs (Bucket 1) ─────────────────────────────────────
 /blog.html /blog 301!
 /blog/compare.html /blog/compare 301!
+# Wildcard for all blog posts (.html to clean URLs) - 91 total blog posts
+/blog/*.html /blog/:1 301!
 
 # ── Cite consistency (Bucket 5) ───────────────────────────────────────────
 /cite /cite-vigyanllm 301!
@@ -176,3 +178,17 @@ https://vigyanllm.in https://www.vigyanllm.in 301!
 # ── API routes - block these (handled in robots.txt, but redirect for safety) ─
 /api/* https://www.vigyanllm.in 410!
 /api.vigyanllm.in/* https://www.vigyanllm.in 410!
+
+# ── Gene-prefers .html to clean URLs (Bucket 3) ────────────────────────────
+# Wildcard for all gene-prefers pages (.html to clean URLs) - 52 total
+/gene-prefers/*.html /gene-prefers/:1 301!
+
+# ── Blog extended wildcards (ensuring all blog posts are covered) ────────────
+# /blog/*.html /blog/:1 301! (already in place above, but documenting)
+
+# ── Additional cleanup & future-proofing ────────────────────────────────
+# Catch any remaining .html extensions that may not be covered
+/p/*.html /p/:1 301!
+/features/*.html /features/:1 301!
+/hub/*.html /hub/:1 301!
+/solutions/*.html /solutions/:1 301!
