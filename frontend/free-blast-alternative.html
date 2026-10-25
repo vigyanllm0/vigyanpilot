@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Free BLAST Alternative — Online Sequence Search Tool</title>
+    <meta name="description" content="A free BLAST alternative that runs in your browser — search protein and nucleotide sequences without NCBI uploads or command-line installs. Try it free.">
+    <link rel="canonical" href="https://www.vigyanllm.in/free-blast-alternative">
+    <link rel="alternate" hreflang="en" href="https://www.vigyanllm.in/free-blast-alternative">
+    <link rel="alternate" hreflang="x-default" href="https://www.vigyanllm.in/free-blast-alternative">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://www.vigyanllm.in/free-blast-alternative">
+    <meta property="og:title" content="Free BLAST Alternative — Online Sequence Search Tool">
+    <meta property="og:description" content="A free BLAST alternative that runs in your browser — search protein and nucleotide sequences without NCBI uploads or command-line installs. Try it free.">
+    <meta property="og:image" content="https://www.vigyanllm.in/assets/og-vigyanllm.png">
+    <meta property="og:site_name" content="VigyanLLM">
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://www.vigyanllm.in/free-blast-alternative">
+    <meta name="twitter:title" content="Free BLAST Alternative — Online Sequence Search Tool">
+    <meta name="twitter:description" content="A free BLAST alternative that runs in your browser — search protein and nucleotide sequences without NCBI uploads or command-line installs. Try it free.">
+    <meta name="twitter:image" content="https://www.vigyanllm.in/assets/og-vigyanllm.png">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Open+Sans:wght@400;500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="/design-tokens.css">
+    <link rel="stylesheet" href="/primer.css">
+    <link rel="stylesheet" href="/content-styles.css">
+
+    <!-- Google Consent + Tag Manager -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=GTM-KRP5LLPR"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('consent', 'default', {
+            ad_storage: 'denied',
+            ad_user_data: 'denied',
+            ad_personalization: 'denied',
+            analytics_storage: 'denied'
+        });
+        gtag('js', new Date());
+        gtag('config', 'GTM-KRP5LLPR');
+    </script>
+    <script>
+    (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-KRP5LLPR');
+    </script>
+    <script src="/cookie-banner.js" defer></script>
+
+    <!-- JSON-LD -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+            {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.vigyanllm.in/"},
+            {"@type": "ListItem", "position": 2, "name": "Free Tools", "item": "https://www.vigyanllm.in/free-blast-alternative"},
+            {"@type": "ListItem", "position": 3, "name": "Free BLAST Alternative"}
+        ]
+    }
+    </script>
+    <script type="application/ld+json">
+        {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+            {
+                "@type": "Question",
+                "name": "Is this a real BLAST implementation?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "It implements the same seeded local-alignment algorithm family with E-value significance reporting. The difference from NCBI BLAST is the database searched and where the computation runs \u2014 the query stays in your browser session rather than being uploaded to a public server."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "Can I search proprietary or unpublished sequences?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Yes. Because the search runs against a curated reference set rather than uploading your query to NCBI, unpublished or client sequences stay in your session \u2014 a reasonable policy for manuscripts under review or patent-adjacent work."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "Does it support protein and nucleotide queries?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Yes. Both protein (blastp-style) and nucleotide (blastn-style) query modes are supported, with ranked hit tables, percent identity, coverage, and pairwise alignments."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "When should I still use NCBI BLAST?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "For comprehensive annotation against the full nr/nt databases, for custom database uploads, or for Primer-BLAST's full in-silico PCR workflow \u2014 those need NCBI's database breadth, which no browser alternative matches."
+                }
+            }
+        ]
+    }
+    </script>
+
+    <style>
+        /* Hero */
+        .hero{position:relative;background:linear-gradient(135deg,#0a1628 0%,#1a2744 100%);color:#e2e8f0;padding:6rem 2rem 5rem;min-height:300px;display:flex;align-items:center;overflow:hidden}
+        .hero::before{content:'';position:absolute;top:-50%;right:-10%;width:600px;height:600px;background:radial-gradient(circle,rgba(34,211,238,0.07) 0%,transparent 70%);pointer-events:none}
+        .hero-content{position:relative;z-index:1;max-width:900px;margin:0 auto;width:100%}
+        .hero-content h1{font-size:2.6rem;font-weight:800;color:#f1f5f9;margin-bottom:1rem;line-height:1.15}
+        .hero-content h1 span{background:linear-gradient(135deg,#22d3ee,#0ea5e9);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+        .hero-sub{font-size:1.1rem;color:#94a3b8;max-width:680px;line-height:1.7}
+
+        /* Layout */
+        .container{max-width:900px;margin:0 auto;padding:3rem 2rem}
+        .container h2{font-size:1.6rem;font-weight:700;color:#f1f5f9;margin:2.8rem 0 1rem;padding-top:1.6rem;border-top:1px solid rgba(148,163,184,0.15)}
+        .container h2:first-of-type{border-top:none;margin-top:0}
+        .container p{color:#cbd5e1;line-height:1.8;margin-bottom:1.1rem;font-size:1rem}
+        .container strong{color:#e2e8f0}
+        .container a{color:#22d3ee;text-decoration:none;border-bottom:1px solid rgba(34,211,238,0.3)}
+        .container a:hover{border-bottom-color:#22d3ee}
+
+        /* Tables */
+        .cmp-table{width:100%;border-collapse:collapse;margin:1.5rem 0 2rem;font-size:0.92rem}
+        .cmp-table th{background:#1e293b;color:#94a3b8;font-weight:600;padding:0.75rem 1rem;text-align:left;border-bottom:2px solid #334155;text-transform:uppercase;font-size:0.78rem;letter-spacing:0.05em}
+        .cmp-table td{padding:0.75rem 1rem;border-bottom:1px solid rgba(148,163,184,0.1);color:#cbd5e1;vertical-align:top}
+        .cmp-table tr:hover td{background:rgba(148,163,184,0.05)}
+        .cmp-table td:first-child{color:#e2e8f0;font-weight:600}
+
+        /* Verdict box */
+        .verdict-box{background:rgba(34,211,238,0.06);border-left:3px solid #22d3ee;padding:1.1rem 1.4rem;border-radius:0 8px 8px 0;margin:1.5rem 0;font-size:0.95rem;color:#cbd5e1;line-height:1.7}
+        .verdict-box strong{color:#22d3ee}
+
+        /* Pros / cons */
+        .pros-cons{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;margin:1.5rem 0}
+        .pros-cons .pc-card{background:#0f172a;border:1px solid rgba(148,163,184,0.15);border-radius:10px;padding:1.2rem 1.4rem}
+        .pros-cons h3{font-size:1rem;color:#f1f5f9;margin-bottom:0.7rem}
+        .pros-cons ul{margin:0;padding-left:1.2rem;color:#94a3b8;font-size:0.9rem;line-height:1.7}
+        .pros-cons li{margin-bottom:0.4rem}
+
+        /* CTA box */
+        .cta-box{background:linear-gradient(135deg,#1e293b,#0f172a);border:1px solid rgba(34,211,238,0.2);border-radius:12px;padding:2.2rem;margin:3rem 0;text-align:center}
+        .cta-box h3{font-size:1.3rem;color:#f1f5f9;margin-bottom:0.6rem}
+        .cta-box p{color:#94a3b8;margin-bottom:1.4rem;max-width:520px;margin-left:auto;margin-right:auto}
+        .cta-buttons{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap}
+        .btn-primary{display:inline-block;background:linear-gradient(135deg,#22d3ee,#0ea5e9);color:#0a1628;padding:0.75rem 1.8rem;border-radius:8px;text-decoration:none;font-weight:700;border:none;transition:all 0.2s}
+        .btn-primary:hover{transform:translateY(-2px);box-shadow:0 4px 20px rgba(34,211,238,0.35);border-bottom:none}
+        .btn-secondary{display:inline-block;background:transparent;color:#22d3ee;padding:0.75rem 1.8rem;border-radius:8px;text-decoration:none;font-weight:600;border:1px solid rgba(34,211,238,0.4);transition:all 0.2s}
+        .btn-secondary:hover{border-color:#22d3ee;background:rgba(34,211,238,0.06);border-bottom:none}
+
+        /* FAQ */
+        .faq-item{border:1px solid rgba(148,163,184,0.15);border-radius:8px;margin-bottom:0.8rem;overflow:hidden;background:#0f172a}
+        .faq-item summary{padding:1rem 1.3rem;cursor:pointer;font-weight:600;color:#e2e8f0;list-style:none;position:relative;font-size:0.98rem}
+        .faq-item summary::after{content:'+';position:absolute;right:1.2rem;font-size:1.3rem;color:#22d3ee;transition:transform 0.2s}
+        .faq-item[open] summary::after{transform:rotate(45deg)}
+        .faq-item .faq-body{padding:0 1.3rem 1.1rem;color:#94a3b8;line-height:1.75;font-size:0.93rem}
+
+        /* References */
+        .references{margin-top:3rem;padding-top:1.5rem;border-top:1px solid rgba(148,163,184,0.15)}
+        .references h2{font-size:1.1rem;margin-top:0;border-top:none;padding-top:0}
+        .references ol{padding-left:1.4rem;color:#64748b;font-size:0.85rem;line-height:1.8}
+
+        /* Responsive */
+        @media (max-width:768px){
+            .hero{padding:4.5rem 1.25rem 3.5rem}
+            .hero-content h1{font-size:1.8rem}
+            .container{padding:2rem 1.25rem}
+            .cmp-table{font-size:0.85rem}
+            .cmp-table th,.cmp-table td{padding:0.55rem 0.7rem}
+            .pros-cons{grid-template-columns:1fr}
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <div id="vl-header"><!--vl-header-bake-start--><a href="#main-content" class="skip-link">Skip to content</a><header>
+<nav aria-label="Main navigation">
+<div class="nav-inner">
+  <a href="/" class="nav-brand">
+    <img src="/logo.png" alt="VigyanLLM Logo" class="site-logo" width="150" height="36" style="height:36px;width:auto;object-fit:contain" loading="lazy">
+    <span>VigyanLLM</span>
+  </a>
+  <div class="nav-links">
+    <div class="drop-wrap">
+      <span class="drop-trigger" role="button" tabindex="0" aria-haspopup="true" aria-expanded="false">Products<svg class="dt-chev" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg></span>
+      <div class="drop-panel">
+
+        <div class="dm-item">
+          <a class="dm-row" href="/solutions/primer-pcr-design">
+            <span class="dm-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6"/><path d="M10 3v12.5a2 2 0 0 0 4 0V3"/><path d="M10 11h4"/></svg></span>
+            <span class="dm-txt"><span class="dm-name">Primer &amp; PCR Design</span><span class="dm-meta">8 tools</span></span>
+            <span class="dm-chev" aria-hidden="true">&#8250;</span>
+          </a>
+          <div class="dm-tools">
+            <div class="dm-tools-head"><b>Primer &amp; PCR Design</b><a href="/solutions/primer-pcr-design">View all</a></div>
+            <a class="dm-tool" href="/primer">Primer Design<span class="dm-pv"><img data-src="/assets/navprev/primer.webp" alt="" width="296" height="185" decoding="async"></span></a>
+            <a class="dm-tool" href="/pcr-analysis">PCR Analysis<span class="dm-pv"><img data-src="/assets/navprev/pcr-analysis.webp" alt="" width="296" height="185" decoding="async"></span></a>
+            <a class="dm-tool" href="/pcr-product-calculator">PCR Product Calculator<span class="dm-pv"><img data-src="/assets/navprev/pcr-product-calculator.webp" alt="" width="296" height="185" decoding="async"></span></a>
+            <a class="dm-tool" href="/tm-calculator">Tm Calculator<span class="dm-pv"><img data-src="/assets/navprev/tm-calculator.webp" alt="" width="296" height="185" decoding="async"></span></a>
+            <a class="dm-tool" href="/gc-calculator">GC Calculator<span class="dm-pv"><img data-src="/assets/navprev/gc-calculator.webp" alt="" width="296" height="185" decoding="async"></span></a>
+            <a class="dm-tool" href="/biostatistics-calculator">Biostatistics<span class="dm-pv"><img data-src="/assets/navprev/biostatistics-calculator.webp" alt="" width="296" height="185" decoding="async"></span></a>
+            <a class="dm-tool" href="/primer-design">Primer Design Guide<span class="dm-pv"><img data-src="/assets/navprev/primer-design.webp" alt="" width="296" height="185" decoding="async"></span></a>
+            <a class="dm-tool" href="/validation">Thermodynamic Validation<span class="dm-pv"><img data-src="/assets/navprev/validation.webp" alt="" width="296" height="185" decoding="async"></span></a>
+          </div>
+        </div>
+
+        <div class="dm-item">
+          <a class="dm-row" href="/solutions/sequence-analysis">
+            <span class="dm-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M20.5 20.5 16 16"/><path d="M8.5 11h5"/></svg></span>
+            <span class="dm-txt"><span class="dm-name">Sequence Analysis</span><span class="dm-meta">6 tools</span></span>
+            <span class="dm-chev" aria-hidden="true">&#8250;</span>
+          </a>
+          <div class="dm-tools">
+            <div class="dm-tools-head"><b>Sequence Analysis</b><a href="/solutions/sequence-analysis">View all</a></div>
+            <a class="dm-tool" href="/search">Sequence Search<span class="dm-pv"><img data-src="/assets/navprev/search.webp" alt="" width="296" height="185" decoding="async"></span></a>
+            <a class="dm-tool" href="/blast">BLAST<span class="dm-pv"><img data-src="/assets/navprev/blast.webp" alt="" width="296" height="185" decoding="async"></span></a>
+            <a class="dm-tool" href="/msa">MSA<span class="dm-pv"><img data-src="/assets/navprev/msa.webp" alt="" width="296" height="185" decoding="async"></span></a>
+            <a class="dm-tool" href="/dna-to-rna">DNA &#8594; RNA<span class="dm-pv"><img data-src="/assets/navprev/dna-to-rna.webp" alt="" width="296" height="185" decoding="async"></span></a>
+            <a class="dm-tool" href="/reverse-complement">Reverse Complement<span class="dm-pv"><img data-src="/assets/navprev/reverse-complement.webp" alt="" width="296" height="185" decoding="async"></span></a>
+            <a class="dm-tool" href="/dna-to-protein">DNA &#8594; Protein<span class="dm-pv"><img data-src="/assets/navprev/dna-to-protein.webp" alt="" width="296" height="185" decoding="async"></span></a>
+          </div>
+        </div>
+
+        <div class="dm-item">
+          <a class="dm-row" href="/solutions/genome-engineering">
+            <span class="dm-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="2.5"/><circle cx="6" cy="18" r="2.5"/><path d="M20 4 8.6 15.4"/><path d="M20 20 8.6 8.6"/></svg></span>
+            <span class="dm-txt"><span class="dm-name">Genome Engineering</span><span class="dm-meta">3 tools</span></span>
+            <span class="dm-chev" aria-hidden="true">&#8250;</span>
+          </a>
+          <div class="dm-tools">
+            <div class="dm-tools-head"><b>Genome Engineering</b><a href="/solutions/genome-engineering">View all</a></div>
+            <a class="dm-tool" href="/crispr-analysis">CRISPR Analysis<span class="dm-badge">Soon</span><span class="dm-pv"><img data-src="/assets/navprev/crispr-analysis.webp" alt="" width="296" height="185" decoding="async"></span></a>
+            <a class="dm-tool" href="/restriction-enzyme-finder">Restriction Enzyme Finder<span class="dm-pv"><img data-src="/assets/navprev/restriction-enzyme-finder.webp" alt="" width="296" height="185" decoding="async"></span></a>
+            <a class="dm-tool" href="/cloning-simulator">Cloning Simulator<span class="dm-pv"><img data-src="/assets/navprev/cloning-simulator.webp" alt="" width="296" height="185" decoding="async"></span></a>
+          </div>
+        </div>
+
+        <div class="dm-item">
+          <a class="dm-row" href="/solutions/structural-biology">
+            <span class="dm-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.8 20.2 7.4v9.2L12 21.2 3.8 16.6V7.4z"/><path d="M12 12 20.2 7.4"/><path d="M12 12v9.2"/><path d="M12 12 3.8 7.4"/></svg></span>
+            <span class="dm-txt"><span class="dm-name">Structural Biology</span><span class="dm-meta">7 tools</span></span>
+            <span class="dm-chev" aria-hidden="true">&#8250;</span>
+          </a>
+          <div class="dm-tools">
+            <div class="dm-tools-head"><b>Structural Biology</b><a href="/solutions/structural-biology">View all</a></div>
+            <a class="dm-tool" href="/protein-docking">Protein Docking<span class="dm-pv"><img data-src="/assets/navprev/protein-docking.webp" alt="" width="296" height="185" decoding="async"></span></a>
+            <a class="dm-tool" href="/docking">Molecular Docking<span class="dm-pv"><img data-src="/assets/navprev/docking.webp" alt="" width="296" height="185" decoding="async"></span></a>
+            <a class="dm-tool" href="/protein-quality">Protein Quality<span class="dm-pv"><img data-src="/assets/navprev/protein-quality.webp" alt="" width="296" height="185" decoding="async"></span></a>
+            <a class="dm-tool" href="/interactions">Interactions<span class="dm-pv"><img data-src="/assets/navprev/interactions.webp" alt="" width="296" height="185" decoding="async"></span></a>
+            <a class="dm-tool" href="/binding-site">Binding Site<span class="dm-pv"><img data-src="/assets/navprev/binding-site.webp" alt="" width="296" height="185" decoding="async"></span></a>
+            <a class="dm-tool" href="/regenerate">Regenerate<span class="dm-pv"><img data-src="/assets/navprev/regenerate.webp" alt="" width="296" height="185" decoding="async"></span></a>
+            <a class="dm-tool" href="/dna-3d">3D DNA Viewer<span class="dm-pv"><img data-src="/assets/navprev/dna-3d.webp" alt="" width="296" height="185" decoding="async"></span></a>
+          </div>
+        </div>
+        <div class="dm-item">
+          <a class="dm-row" href="/pharma-calculators">
+            <span class="dm-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2v7.31M14 9.3V1.99M8.5 2h7M14 9.3a6 6 0 1 1-4 0M5.52 16h12.96"/></svg></span>
+            <span class="dm-txt"><span class="dm-name">Pharma &amp; Lab</span><span class="dm-meta">1 tool</span></span>
+            <span class="dm-chev" aria-hidden="true">&#8250;</span>
+          </a>
+          <div class="dm-tools">
+            <div class="dm-tools-head"><b>Pharma &amp; Lab</b><a href="/pharma-calculators">View all</a></div>
+            <a class="dm-tool" href="/antibiotic-stock-calculator">Antibiotic Stock Calculator</a>
+          </div>
+        </div>
+
+        <span class="dm-tabpv"><img data-src="/assets/navprev/products.webp" alt="" width="296" height="185" decoding="async"></span>
+      </div>
+    </div>
+    <div class="drop-wrap">
+      <span class="drop-trigger" role="button" tabindex="0" aria-haspopup="true" aria-expanded="false">Services<svg class="dt-chev" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg></span>
+      <div class="drop-panel">
+        <a class="dm-row" href="/custom-pipeline-development">
+          <span class="dm-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h6"/><path d="M14 7h6"/><path d="M4 17h6"/><path d="M14 17h6"/><circle cx="12" cy="7" r="2"/><circle cx="12" cy="17" r="2"/></svg></span>
+          <span class="dm-txt"><span class="dm-name">Customised Pipeline</span><span class="dm-meta">Built for your workflow</span></span>
+          <span class="dm-pv"><img data-src="/assets/navprev/custom-pipeline-development.webp" alt="" width="296" height="185" decoding="async"></span>
+        </a>
+      </div>
+    </div>
+    <a class="pv-link" href="/learning-vigyanllm">Learning<span class="pv-card"><img data-src="/assets/navprev/learning-vigyanllm.webp" alt="" width="296" height="185" decoding="async"></span></a>
+    <a class="pv-link" href="https://forms.gle/63vdQQ1Ka6WF3ZJg7" target="_blank" rel="noopener noreferrer">Partnership<span class="pv-card"><img data-src="/assets/navprev/partnership.webp" alt="" width="296" height="185" decoding="async"></span></a>
+    <a class="pv-link" href="/pricing">Pricing<span class="pv-card"><img data-src="/assets/navprev/pricing.webp" alt="" width="296" height="185" decoding="async"></span></a>
+    <a class="pv-link" href="/developer">Developer<span class="pv-card"><img data-src="/assets/navprev/developer.webp" alt="" width="296" height="185" decoding="async"></span></a>
+  </div>
+  <div class="nav-right">
+    <div class="nav-search-wrap">
+      <input type="text" id="navSearchInput" placeholder="Search tools &amp; resources" autocomplete="off">
+      <span class="ns-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
+      <div class="nav-search-results" id="navSearchResults"></div>
+    </div>
+    <div class="nav-btns" id="navBtns">
+      <button type="button" class="btn-nav-outline" onclick="openAuthModal()">Sign in</button>
+      <button type="button" class="btn-nav-fill" onclick="openAuthModal()">Get started</button>
+    </div>
+    <div class="nav-profile" id="navProfile" style="display:none">
+      <div class="nav-avatar" id="navAvatar" role="button" tabindex="0" aria-expanded="false" onclick="toggleUserMenu()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span class="nav-avatar-letter" id="navAvatarLetter"></span>
+      </div>
+      <div class="user-dropdown" id="userDropdown">
+        <div class="user-dropdown-header">
+          <div class="ud-name" id="udName"></div>
+          <div class="ud-email" id="udEmail"></div>
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:2px">
+            <span class="ud-plan" id="udPlan"></span>
+            <span class="ud-expiry" id="udExpiry" style="font-size:11px;color:var(--muted)"></span>
+          </div>
+          <div class="ud-usage" id="udUsage" style="margin-top:6px;display:none">
+            <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:2px">
+              <span id="udUsageLabel">Today's analyses</span>
+              <span id="udUsageCount"></span>
+            </div>
+            <div style="height:4px;background:var(--outline);border-radius:2px;overflow:hidden">
+              <div id="udUsageBar" style="height:100%;border-radius:2px;transition:width .3s"></div>
+            </div>
+          </div>
+        </div>
+        <a class="ud-item" href="/dashboard">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+          Dashboard
+        </a>
+        <a class="ud-item" href="/usage-billing">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+          Usage &amp; Billing
+        </a>
+
+        <a class="ud-item ud-manage" href="/pricing" style="display:none">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+          Manage Subscription
+        </a>
+        <a class="ud-item ud-upgrade" href="/pricing" style="display:none">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          Upgrade to Pro
+        </a>
+        <div class="ud-item logout" role="button" tabindex="0" onclick="logout()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          Logout
+        </div>
+      </div>
+    </div>
+  </div>
+    </div>
+  <button type="button" class="hamburger" id="hamburger" aria-label="Menu" aria-expanded="false" aria-controls="mobile-menu">
+    <span></span><span></span><span></span>
+  </button>
+<div class="mobile-menu" id="mobile-menu">
+  <div class="mm-user" id="mmUser" style="display:none;padding:12px 16px;background:rgba(255,255,255,.05);border-radius:12px;margin-bottom:12px">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div id="mmAvatar" style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#3B82F6,#1D4ED8);display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:13px"></div>
+      <div>
+        <div id="mmName" style="font-weight:600;color:#fff;font-size:14px"></div>
+        <div id="mmPlan" style="font-size:11px;color:rgba(255,255,255,.5)"></div>
+      </div>
+    </div>
+  </div>
+  <div class="mm-group">
+    <a class="mm-hdr" href="/solutions/primer-pcr-design">Primer &amp; PCR Design</a>
+    <a href="/primer" aria-label="Primer Design (menu)">Primer Design</a>
+    <a href="/pcr-analysis" aria-label="PCR Analysis (menu)">PCR Analysis</a>
+    <a href="/pcr-product-calculator" aria-label="PCR Product Calculator (menu)">PCR Product Calculator</a>
+    <a href="/tm-calculator" aria-label="Tm Calculator (menu)">Tm Calculator</a>
+    <a href="/gc-calculator" aria-label="GC Calculator (menu)">GC Calculator</a>
+    <a href="/biostatistics-calculator" aria-label="Biostatistics Calculator (menu)">Biostatistics</a>
+    <a href="/primer-design" aria-label="Primer Design Guide (menu)">Primer Design Guide</a>
+    <a href="/validation" aria-label="Thermodynamic Validation (menu)">Thermodynamic Validation</a>
+  </div>
+  <div class="mm-group">
+    <a class="mm-hdr" href="/solutions/sequence-analysis">Sequence Analysis</a>
+    <a href="/search" aria-label="Sequence Search (menu)">Sequence Search</a>
+    <a href="/blast" aria-label="BLAST (menu)">BLAST</a>
+    <a href="/msa" aria-label="MSA (menu)">MSA</a>
+    <a href="/dna-to-rna" aria-label="DNA to RNA Converter (menu)">DNA &#8594; RNA</a>
+    <a href="/reverse-complement" aria-label="Reverse Complement (menu)">Reverse Complement</a>
+    <a href="/dna-to-protein" aria-label="DNA to Protein (menu)">DNA &#8594; Protein</a>
+  </div>
+  <div class="mm-group">
+    <a class="mm-hdr" href="/solutions/genome-engineering">Genome Engineering</a>
+    <a href="/crispr-analysis" aria-label="CRISPR Analysis (menu)">CRISPR Analysis <span style="font-size:var(--font-xs,12px);font-weight:700;color:#1a1a1a;background:#FEF3C7;padding:2px 6px;border-radius:99px;line-height:1.3">Soon</span></a>
+    <a href="/restriction-enzyme-finder" aria-label="Restriction Enzyme Finder (menu)">Restriction Enzyme Finder</a>
+    <a href="/cloning-simulator" aria-label="Cloning Simulator (menu)">Cloning Simulator</a>
+  </div>
+  <div class="mm-group">
+    <a class="mm-hdr" href="/solutions/structural-biology">Structural Biology</a>
+    <a href="/protein-docking" aria-label="Protein Docking (menu)">Protein Docking</a>
+    <a href="/docking" aria-label="Molecular Docking (menu)">Molecular Docking</a>
+    <a href="/protein-quality" aria-label="Protein Quality (menu)">Protein Quality</a>
+    <a href="/interactions" aria-label="Interactions (menu)">Interactions</a>
+    <a href="/binding-site" aria-label="Binding Site (menu)">Binding Site</a>
+    <a href="/regenerate" aria-label="Regenerate (menu)">Regenerate</a>
+    <a href="/dna-3d" aria-label="3D DNA Viewer (menu)">3D DNA Viewer</a>
+  </div>
+  <div class="mm-group">
+    <a class="mm-hdr" href="/pharma-calculators">Pharma &amp; Lab</a>
+    <a href="/antibiotic-stock-calculator" aria-label="Antibiotic Stock Calculator (menu)">Antibiotic Stock Calculator</a>
+  </div>
+  <div class="mm-group">
+    <a class="mm-hdr" href="/custom-pipeline-development">Services</a>
+    <a href="/custom-pipeline-development" aria-label="Customised Pipeline (menu)">Customised Pipeline</a>
+  </div>
+  <div class="mm-group">
+    <a href="/learning-vigyanllm" aria-label="Learning (menu)">Learning</a>
+    <a href="https://forms.gle/63vdQQ1Ka6WF3ZJg7" target="_blank" rel="noopener noreferrer" aria-label="Academic Partnership (menu)">Academic Partnership</a>
+    <a href="/pricing" aria-label="Pricing (menu)">Pricing</a>
+    <a href="/developer" aria-label="Developer API (menu)">Developer</a>
+    <a href="mailto:contact@vigyanllm.in">Enterprise Inquiry</a>
+  </div>
+  <a href="#" onclick="closeMobileMenu();var e=document.getElementById('navSearchInput');if(e){e.focus();e.scrollIntoView({behavior:'smooth',block:'center'})};return false" class="mm-cta" style="background:transparent;border:1px solid rgba(255,255,255,.25);color:rgba(255,255,255,.8);margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:8px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Search</a>
+  <a href="#" class="mm-cta" onclick="openAuthModal();return false">Sign in</a>
+</div>
+</nav>
+</header>
+<script>
+/* Header previews: every tab carries a screenshot card, not just the tool
+   rows — the Products tab its own overview, Services its page, and the four
+   plain links theirs below the bar. Images ship with data-src only, so no
+   crawler, preload scanner or idle visitor pays for a thumbnail: each one is
+   fetched the first time you point at (or tab to) its trigger. Cards are
+   also nudged back inside the viewport on open, so the right-hand tabs can
+   never push a 296px card off screen. */
+(function(){
+  var nav=document.querySelector('.nav-links');
+  if(!nav) return;
+  function loadImgs(root){
+    if(!root) return;
+    Array.prototype.forEach.call(root.querySelectorAll('img[data-src]'),function(img){
+      img.src=img.getAttribute('data-src');
+      img.removeAttribute('data-src');
+    });
+  }
+  function onPoint(e){
+    var t=e.target;
+    if(!t||!t.closest) return;
+    // a domain row always belongs to its .dm-item — load that domain's tools
+    var host=t.closest('.dm-item')||t.closest('.pv-link,.dm-row,.drop-trigger');
+    if(!host||host.hasAttribute('data-loaded')) return;
+    host.setAttribute('data-loaded','1');
+    if(host.classList.contains('drop-trigger')){
+      // Products tab: only its own card — each domain still fetches its own
+      // tool thumbnails when you actually point at it.
+      var panel=host.nextElementSibling;
+      loadImgs(panel&&panel.querySelector('.dm-tabpv'));
+    }else{
+      loadImgs(host);
+    }
+  }
+  nav.addEventListener('pointerover',onPoint);
+  nav.addEventListener('focusin',onPoint);
+  Array.prototype.forEach.call(nav.querySelectorAll('.drop-wrap'),function(wrap){
+    var trg=wrap.querySelector('.drop-trigger');
+    if(!trg) return;
+    wrap.addEventListener('pointerenter',function(){trg.setAttribute('aria-expanded','true');});
+    wrap.addEventListener('pointerleave',function(){trg.setAttribute('aria-expanded','false');});
+    trg.addEventListener('keydown',function(e){if(e.key===' '||e.key==='Enter'){e.preventDefault();}});
+  });
+  // A plain tab's card is centred by CSS; clamp it to the viewport here so
+  // the last tab can never hang its card past the right edge.
+  Array.prototype.forEach.call(nav.querySelectorAll('.pv-link'),function(link){
+    var card=link.querySelector('.pv-card');
+    if(!card) return;
+    function place(){
+      var r=link.getBoundingClientRect();
+      var w=card.offsetWidth||296;
+      var min=8-r.left;
+      var max=window.innerWidth-8-r.left-w;
+      if(max<min) max=min;
+      var left=(r.width-w)/2;
+      if(left<min) left=min;
+      if(left>max) left=max;
+      card.style.left=left+'px';
+      card.style.transform='none';
+    }
+    link.addEventListener('pointerenter',place);
+    link.addEventListener('focus',place);
+  });
+})();
+</script><!--vl-header-bake-end--></div>
+
+        <div class="hero">
+            <div class="hero-content">
+                <h1>Free BLAST <span>Alternative</span></h1>
+                <p class="hero-sub">Run a protein or nucleotide homology search from your browser — no NCBI upload, no command line, no database download.</p>
+            </div>
+        </div>
+
+        <div class="container">
+            <p>NCBI BLAST is the default homology search for most labs — but it is not the only option, and it is not always the right one. Sending a sequence to a public server puts it in a shared queue, ties your search to NCBI's current database state, and (for unpublished or proprietary sequences) puts the sequence itself on someone else's infrastructure. A browser-based BLAST alternative changes the trade-off: same seeded local-alignment algorithm family, same E-value statistics, but the query stays in your session and results return in seconds rather than minutes.</p>
+
+            <h2>What "BLAST Alternative" Actually Means</h2>
+            <p>BLAST is a family of algorithms (blastp, blastn, blastx, tblastn) for seeded local alignment with statistical significance reporting. A faithful alternative implements the same core: seed exact words, extend with gap penalties, report local alignments with expect values. The differences are in the database you search against and where the computation runs. The VigyanLLM BLAST tool searches a curated reference set from your browser tab — protein and nucleotide queries both supported — and reports ranked hits with percent identity, alignment scores, and E-values in the same shape you would read from a NCBI result page.</p>
+            <p>What it is not: a replacement for a full nr search when you need the complete non-redundant protein database with every annotated isoform. For comprehensive annotation of an unknown protein, NCBI's database breadth is still unmatched. For the far more common case — "is this PCR product what I think it is, does this ORF have the domain I expect, is there an obvious off-target match" — a focused browser search answers faster and keeps the sequence local.</p>
+
+            <h2>When a Browser Search Is the Better Choice</h2>
+            <p><strong>Unpublished or proprietary sequences.</strong> If the sequence is part of a manuscript under review, a patent filing, or client work, keeping it out of a public search service is a reasonable policy — many institutions require it. <strong>Iterating quickly.</strong> When you are trimming a primer, checking a designed amplicon, or verifying a synthetic construct, a browser search that returns in seconds beats a form-submission loop. <strong>Teaching.</strong> In a class of thirty students, thirty browser sessions are easier to supervise than thirty NCBI accounts hitting rate limits. <strong>Primer specificity pre-checks.</strong> Before ordering an oligo, a quick search of the 3' end against the relevant reference catches the obvious off-target case without a Primer-BLAST round trip.</p>
+
+            <h2>How to Use the Free Tool</h2>
+            <p>Open the <a href="/blast">BLAST tool page</a>, choose protein or nucleotide mode, and paste your query — a single sequence or a small FASTA set. The tool runs the seeded alignment against its reference database and returns a ranked hit table with identity, coverage, score, and E-value; click a hit to see the pairwise alignment. From a hit, you can push the aligned region into the <a href="/msa">MSA tool</a> to build a family alignment, or check a candidate primer pair with the <a href="/primer">primer design tool</a> for a full in-silico specificity pass. Everything runs in the browser; the free daily allowance requires no account.</p>
+
+            <h2>What You Get and What You Do Not</h2>
+            <p>You get: protein and nucleotide homology search, E-value significance, pairwise alignments, and a path from a hit to a family alignment or specificity check — free, in the browser, without uploading the query to a public database. You do not get: NCBI's full nr/nt database breadth, custom database uploads, or the full Primer-BLAST in-silico PCR workflow. If you need those, the NCBI tools remain the right choice, and the <a href="/blast-vs-bowtie2">BLAST vs Bowtie2 page</a> covers how to think about the broader read-mapping case. If you want a per-oligo thermodynamic check to pair with your search, the <a href="/tm-calculator">Tm calculator</a> characterizes a single sequence's composition and melting temperature directly.</p>
+
+            <div class="verdict-box"><strong>Bottom line:</strong> a browser BLAST alternative is for the fast, private, iterate-in-a-tab case — construct checks, primer pre-checkes, teaching. For comprehensive annotation against nr, NCBI's database breadth still wins; the two are complements.</div>
+            <h2>How to Read a Hit Table</h2>
+            <p>Every BLAST-style hit table reports the same four quantities, and they have to be read together. <strong>Percent identity</strong> is the fraction of aligned positions that match exactly — necessary but not sufficient; a 100% identity over 30 bases of a low-complexity stretch means little. <strong>Query coverage</strong> is the fraction of your query covered by the alignment; a homologous protein will usually align across most of its length, while a shared domain will cover a bounded fraction, and the difference distinguishes "same gene" from "shares a domain." <strong>Bit score</strong> is a normalized raw alignment score — comparable across searches for the same query, higher is better. <strong>E-value</strong> is the number of hits of this quality you would expect by chance in a database of this size; it is the significance statistic, and it scales with database size.</p>
+            <p>Work the numbers with two examples. A 420 bp query aligning at 97% identity over 94% of its length with an E-value of 1e-150 is the same locus — no further interpretation needed. The same query aligning at 45% identity over 18% of its length with an E-value of 0.3 is not a hit at all; it is the noise floor, and the identity percentage alone would have tempted you. Between those extremes sits the interesting case: 45% identity across the full length of a protein query with an E-value of 1e-40 is a genuine distant homolog, probably sharing the same fold — exactly the class of result that makes BLAST-style search valuable for annotation.</p>
+            <p>The practical order of reading is E-value first, coverage second, identity third. Significance bounds what is possible; coverage tells you whether it is full-length or partial; identity tells you how close. Inverting that order — sorting a table by identity and reading the top row — is the most common way people talk themselves into a bad conclusion.</p>
+
+            <h2>Common Search Mistakes</h2>
+            <p><strong>Untrimmed sequence.</strong> A Sanger read still carrying vector backbone or adapter sequence will produce a beautiful hit to the vector and bury your actual target below it. Trim before you search; the tool is not responsible for the junk at your read ends.</p>
+            <p><strong>Query too short to be significant.</strong> E-values scale with query length — a 20-base query cannot achieve a strong E-value against any database, because 20 matching bases happen by chance regularly. Below roughly 50 bases, treat every result as a hint, never a conclusion.</p>
+            <p><strong>Searching a protein query as nucleotide (or vice versa).</strong> blastn against a protein-coding sequence finds only the matching reading frame if you are lucky; the frame-shifted and degenerate-codon relationships are invisible. Choose the query type that matches the molecule, and if you are unsure what your unknown band is, a translated search (blastx-style) covers both possibilities.</p>
+            <p><strong>Comparing hits across databases.</strong> A hit with E-value 1e-80 in a small custom database may not exist in nr at all, and the reverse: nr's size pushes E-values up for identical alignments. When comparing your result to a published one, match the database, not just the program.</p>
+            <p><strong>Treating "no hit" as "no homology."</strong> No hit can mean genuinely novel, or it can mean a low-complexity filter removed your signal, or the query is too short, or the relevant family is absent from the searched database. Before concluding novelty, try the translated mode, check the query length, and search a second database — novelty should be the last hypothesis, not the first.</p>
+
+            <h2>What the Search Actually Runs Against</h2>
+            <p>A search is only as meaningful as the database behind it, so be explicit about what sits on this side of the comparison. NCBI's nr and nt are the broadest public collections — every submitted sequence, every isoform, every environmental contig — and their breadth is exactly why comprehensive annotation still starts there. The trade-offs of that breadth are a growing E-value floor (as databases grow, weak matches look less significant) and a moving target (results depend on the snapshot date).</p>
+            <p>A browser-based search runs against a curated reference set instead: representative reviewed proteins and reference nucleotide sequences for the organisms and gene families that cover routine identity questions — verifying an amplicon, confirming a construct, checking primer 3' specificity, teaching sequence analysis. Curating means the common answer is fast and the index stays small enough to search instantly from your tab; it also means the long tail of obscure isoforms and metagenome fragments is genuinely absent, and no-hit results must be read with that in mind.</p>
+            <p>So the honest division of labor: run the fast, private, iterate-in-a-tab check here — and when the question is "has anything like this ever been deposited anywhere," go to NCBI with a trimmed query and record the database date. A serious conclusion usually survives both.</p>
+
+            <div class="cta-box">
+                <h3>Search a sequence free in your browser</h3>
+                <p>Protein or nucleotide query, ranked hits with E-values, no NCBI upload and no install — free with a daily allowance.</p>
+                <div class="cta-buttons">
+                    <a href="/blast" class="btn-primary">Open the BLAST Tool</a><a href="/msa" class="btn-secondary">Build an MSA from a Hit</a>
+                </div>
+            </div>
+
+            <h2>Frequently Asked Questions</h2>
+            <details class="faq-item">
+                <summary>Is this a real BLAST implementation?</summary>
+                <div class="faq-body">It implements the same seeded local-alignment algorithm family with E-value significance reporting. The difference from NCBI BLAST is the database searched and where the computation runs — the query stays in your browser session rather than being uploaded to a public server.</div>
+            </details>
+            <details class="faq-item">
+                <summary>Can I search proprietary or unpublished sequences?</summary>
+                <div class="faq-body">Yes. Because the search runs against a curated reference set rather than uploading your query to NCBI, unpublished or client sequences stay in your session — a reasonable policy for manuscripts under review or patent-adjacent work.</div>
+            </details>
+            <details class="faq-item">
+                <summary>Does it support protein and nucleotide queries?</summary>
+                <div class="faq-body">Yes. Both protein (blastp-style) and nucleotide (blastn-style) query modes are supported, with ranked hit tables, percent identity, coverage, and pairwise alignments.</div>
+            </details>
+            <details class="faq-item">
+                <summary>When should I still use NCBI BLAST?</summary>
+                <div class="faq-body">For comprehensive annotation against the full nr/nt databases, for custom database uploads, or for Primer-BLAST's full in-silico PCR workflow — those need NCBI's database breadth, which no browser alternative matches.</div>
+            </details>
+
+            <div class="references">
+                <h2>References</h2>
+                <ol>
+                    <li>Altschul, S. F., et al. (1990). Basic local alignment search tool. <em>Journal of Molecular Biology</em>, 215(3), 403–410.</li>
+                    <li>Camacho, C., et al. (2009). BLAST+: architecture and applications. <em>BMC Bioinformatics</em>, 10, 421.</li>
+                    <li>Johnson, M., et al. (2008). NCBI BLAST: a better web interface. <em>Nucleic Acids Research</em>, 36(suppl_2), W5–W9.</li>
+                </ol>
+            </div>
+        </div>
+
+        <!-- Auth Overlay -->
+        <div id="auth-overlay">
+            <div class="auth-card">
+                <button class="auth-close" onclick="hideAuth()">&times;</button>
+                <div id="auth-content"></div>
+            </div>
+        </div></main>
+
+        <!-- Search functionality -->
+        <script src="/search-index.js"></script>
+        <script src="/auth-shared.js"></script>
+
+        <div id="vl-footer"><!--vl-footer-bake-start--><footer>
+
+<div class="footer-grid">
+  <div class="footer-col">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+      <img src="/logo.png" alt="VigyanLLM Logo" class="site-logo" style="height:36px;width:auto;object-fit:contain" loading="lazy">
+      <span style="font-family:var(--font-h);font-size:var(--font-sm);font-weight:800;color:#fff">VigyanLLM</span>
+    </div>
+    <p style="font-size:var(--font-sm);color:rgba(255,255,255,.60);line-height:1.6">Sovereign Healthcare &amp; Life Sciences AI.<br>Built in India. For the world.</p>
+    <a href="mailto:contact@vigyanllm.in" style="color:var(--saffron-light,#ff8a7a);font-size:var(--font-sm);display:block;margin-top:12px">contact@vigyanllm.in</a>
+    <div class="footer-social">
+      <a href="https://github.com/vigyanllm" rel="me" aria-label="GitHub"><svg aria-hidden="true" fill="#fff" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg></a>
+      <a href="https://www.linkedin.com/company/vigyanllm/" rel="me" aria-label="LinkedIn"><svg aria-hidden="true" fill="#0077B5" viewBox="0 0 24 24"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg></a>
+      <a href="https://www.facebook.com/vigyanllm" rel="me" aria-label="Facebook"><svg aria-hidden="true" fill="#1877F2" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></a>
+      <a href="https://www.youtube.com/@VigyanLLM" rel="me" aria-label="YouTube"><svg aria-hidden="true" fill="#FF0000" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+    </div>
+  </div>
+  <div class="footer-col">
+    <p class="footer-col-title">Products</p>
+    <a href="/primer">Primer Design</a>
+    <a href="/search">Sequence Search</a>
+    <a href="/blast">BLAST</a>
+    <a href="/msa">MSA</a>
+    <a href="/pcr-analysis">PCR Analysis</a>
+    <a href="/crispr-analysis">CRISPR <span style="font-size:var(--font-xs);font-weight:700;color:#1a1a1a;background:#FEF3C7;padding:2px 6px;border-radius:var(--radius-pill);line-height:1.3">Coming Soon</span></a>
+    <a href="/protein-docking">Docking</a>
+    <a href="/biostatistics-calculator">Biostatistics</a>
+    <a href="/antibiotic-stock-calculator">Antibiotic Stocks</a>
+  </div>
+  <div class="footer-col">
+    <p class="footer-col-title">Platform</p>
+    <a href="/platform">Overview</a>
+    <a href="/architecture">Architecture</a>
+    <a href="/problem">Problem</a>
+    <a href="/solution">Solution</a>
+    <a href="/compare">Compare</a>
+    <a href="/roadmap">Roadmap</a>
+    <a href="/about/sovereign-ai">Sovereign AI</a>
+    <a href="/features/on-premises">On-Premises</a>
+  </div>
+  <div class="footer-col">
+    <p class="footer-col-title">Resources</p>
+    <a href="/blog">Blog</a>
+    <a href="/faq">FAQ</a>
+    <a href="/about">About</a>
+    <a href="/demo">Demo</a>
+    <a href="/learning-vigyanllm">Learning</a>
+    <a href="https://forms.gle/63vdQQ1Ka6WF3ZJg7" target="_blank" rel="noopener noreferrer">Academic Partnership</a>
+    <a href="/pricing">Pricing</a>
+  </div>
+  <div class="footer-col">
+    <p class="footer-col-title">Contact</p>
+    <a href="/custom-pipeline-development">Custom Pipeline Development</a>
+    <a href="mailto:contact@vigyanllm.in">contact@vigyanllm.in</a>
+    <a href="/privacy">Privacy</a>
+    <a href="/terms">Terms</a>
+    <a href="/cookies">Cookies</a>
+    <a href="/refund">Refund</a>
+    <a href="/security">Security</a>
+    <a href="/cite-vigyanllm">Cite Us</a>
+    <a href="/support">Support</a>
+  </div>
+</div>
+<div class="footer-bottom"> <span>&copy; 2026 VigyanLLM Private Limited · Sovereign Research AI</span>
+  <div style="display:flex;align-items:center;gap:16px">
+    <span>www.vigyanllm.in</span>
+  </div>
+</div>
+
+</footer><!--vl-footer-bake-end--></div>
+
+    <script src="/includes.js"></script>
+    <script>
+        (function() {
+            var hamburger = document.querySelector('.hamburger');
+            var navMenu = document.querySelector('.nav-menu');
+            if (hamburger && navMenu) {
+                hamburger.addEventListener('click', function() {
+                    navMenu.classList.toggle('active');
+                    hamburger.classList.toggle('active');
+                });
+            }
+            var dropBtns = document.querySelectorAll('.drop-btn');
+            dropBtns.forEach(function(btn) {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    var dd = this.nextElementSibling;
+                    var isOpen = dd && dd.style.display === 'block';
+                    document.querySelectorAll('.dropdown-content').forEach(function(d){ d.style.display = 'none'; });
+                    if (dd && !isOpen) { dd.style.display = 'block'; }
+                });
+            });
+            document.addEventListener('click', function() {
+                document.querySelectorAll('.dropdown-content').forEach(function(d){ d.style.display = 'none'; });
+            });
+        })();
+    </script>
+    <script src="/track-visit.js" defer></script>
+</body>
+</html>

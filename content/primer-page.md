@@ -240,3 +240,117 @@ VigyanLLM offers a complete suite of free bioinformatics tools:
 
 **Last Updated:** October 2024  
 **Related Pages:** [Tm Calculator](/tm-calculator) | [PCR Analysis](/pcr-analysis) | [BLAST](/blast)
+---
+
+## SEO Meta Tags (for implementation)
+
+```html
+<title>Free Primer Design Tool | Online PCR Primer Generator | VigyanLLM</title>
+<meta name="description" content="Design primers online for PCR, qPCR, and cloning with our free bioinformatics tool. 24-step validation, BLAST specificity check, and thermodynamic analysis. No signup required.">
+<meta name="keywords" content="primer design tool, PCR primer, qPCR primers, primer generator, online primer design, free primer tool, bioinformatics">
+<link rel="canonical" href="https://www.vigyanllm.in/primer">
+<meta property="og:title" content="Free Online Primer Design Tool - VigyanLLM">
+<meta property="og:description" content="Design validated PCR primers with our free tool. 24-step validation including BLAST, thermodynamic analysis, and specificity checking.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://www.vigyanllm.in/primer">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Free Primer Design Tool">
+<meta name="twitter:description" content="Design PCR primers online free. BLAST integration, thermodynamic validation.">
+```
+
+## FAQ Schema (JSON-LD)
+
+```html
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Is VigyanLLM primer design tool really free?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes! Our primer design tool is completely free to use. No hidden charges, no premium tiers, no signup required."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How accurate are the Tm calculations?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "We use the SantaLucia 1998 nearest-neighbor model with salt correction, which is considered the gold standard for DNA duplex stability calculations."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Does BLAST check cost extra?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No. BLAST specificity checking is included at no additional cost for all users."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can I design primers for multiplex PCR?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. Our tool evaluates primer compatibility and provides cross-dimer scores for multiplex assays."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What sequence formats are supported?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "We accept plain text sequences, FASTA format, and can handle sequences up to 100,000 base pairs."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What is the 24-step validation pipeline?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Our 24-step validation checks every primer for thermodynamic properties, BLAST specificity, self-complementarity, GC content, Tm, amplicon size, SNP screening, and repeat masking."
+      }
+    }
+  ]
+}
+</script>
+```
+
+## SoftwareApplication Schema (JSON-LD)
+
+```html
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "VigyanLLM Primer Design Tool",
+  "applicationCategory": "ScientificApplication",
+  "operatingSystem": "Web-based",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD",
+    "availability": "https://schema.org/InStock"
+  },
+  "description": "Free online primer design tool for PCR, qPCR, and cloning with 24-step validation, BLAST specificity checking, and thermodynamic analysis.",
+  "featureList": [
+    "Real-time primer validation",
+    "BLAST integration",
+    "Thermodynamic analysis (SantaLucia 1998)",
+    "SNP screening",
+    "Multiplex compatibility scoring",
+    "Multiple export formats",
+    "No signup required"
+  ],
+  "url": "https://www.vigyanllm.in/primer",
+  "author": {
+    "@type": "Organization",
+    "name": "VigyanLLM",
+    "url": "https://www.vigyanllm.in"
+  }
+}
+</script>
+```

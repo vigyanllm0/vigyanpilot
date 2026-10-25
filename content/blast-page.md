@@ -313,3 +313,125 @@ VigyanLLM offers complementary bioinformatics tools:
 
 **Last Updated:** October 2024  
 **Related Pages:** [Primer Design](/primer) | [Multiple Sequence Alignment](/msa) | [Tm Calculator](/tm-calculator)
+---
+
+## SEO Meta Tags (for implementation)
+
+```html
+<title>Free BLAST Online Tool | Sequence Similarity Search | VigyanLLM</title>
+<meta name="description" content="Search NCBI databases for sequence similarity with our free online BLAST tool. Nucleotide and protein BLAST with detailed alignment visualization. No queue, no signup required.">
+<meta name="keywords" content="BLAST tool, online BLAST, sequence search, nucleotide BLAST, protein BLAST, sequence alignment, bioinformatics">
+<link rel="canonical" href="https://www.vigyanllm.in/blast">
+<meta property="og:title" content="Free Online BLAST Tool - VigyanLLM">
+<meta property="og:description" content="Search NCBI databases for sequence similarity. Instant results, no queue. Nucleotide and protein BLAST.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://www.vigyanllm.in/blast">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Free BLAST Online Tool">
+<meta name="twitter:description" content="Instant BLAST search tool. No queue, no signup required.">
+```
+
+## FAQ Schema (JSON-LD)
+
+```html
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Is VigyanLLM BLAST really free?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes! Our BLAST tool is completely free. No usage limits, no premium tiers, no signup required."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How is this different from NCBI BLAST?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "We use the same core BLAST algorithm but with our own infrastructure. Key differences: no queue, faster results, more detailed visualization."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What databases can I search?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "We provide access to nt, nr, swissprot, refseq, and 16S rRNA databases."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How long do results stay available?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Results are stored for 24 hours. Download your results for permanent storage."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What's the maximum query length?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Maximum query length is 50,000 nucleotides or amino acids. For longer sequences, split into chunks."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can I use BLAST for primer specificity?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. Search your primer sequence with blastn and review off-target hits. Set E-value high (1000) for sensitivity."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What E-value should I use?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "For general searches, E=10 works well. For strict matching, use E=0.001 or lower."
+      }
+    }
+  ]
+}
+</script>
+```
+
+## SoftwareApplication Schema (JSON-LD)
+
+```html
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "VigyanLLM BLAST Tool",
+  "applicationCategory": "ScientificApplication",
+  "operatingSystem": "Web-based",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD",
+    "availability": "https://schema.org/InStock"
+  },
+  "description": "Free online BLAST tool for sequence similarity search. Nucleotide and protein BLAST with instant results.",
+  "featureList": [
+    "No queue system",
+    "Instant results",
+    "Multiple databases (nt, nr, swissprot, refseq, 16S)",
+    "Detailed alignment visualization",
+    "Multiple export formats (HTML, Text, CSV, XML)",
+    "Advanced filtering options",
+    "Free forever"
+  ],
+  "url": "https://www.vigyanllm.in/blast",
+  "author": {
+    "@type": "Organization",
+    "name": "VigyanLLM",
+    "url": "https://www.vigyanllm.in"
+  }
+}
+</script>
+```
