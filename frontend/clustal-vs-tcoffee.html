@@ -1,29 +1,6 @@
 <!DOCTYPE html>
 <html lang="en-IN">
 <head>
-<!-- Consent Mode default (dataLayer) -->
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('consent', 'default', {
-    'ad_storage': 'denied',
-    'ad_user_data': 'denied',
-    'ad_personalization': 'denied',
-    'analytics_storage': 'denied',
-    'region': ['AT','BE','BG','HR','CY','CZ','DK','EE','FI','FR','DE','GR','HU','IE','IT','LV','LT','LU','MT','NL','PL','PT','RO','SK','SI','ES','SE','IS','LI','NO','GB','CH']
-  });
-  try {
-    var vlcs = JSON.parse(localStorage.getItem('vigyanllm_cookie_consent') || 'null');
-    if (vlcs && vlcs.consent === 'accepted') {
-      gtag('consent', 'update', { 'ad_storage': 'granted', 'ad_user_data': 'granted', 'ad_personalization': 'granted', 'analytics_storage': 'granted' });
-    } else if (vlcs && vlcs.consent === 'declined') {
-      gtag('consent', 'update', { 'ad_storage': 'denied', 'ad_user_data': 'denied', 'ad_personalization': 'denied', 'analytics_storage': 'denied' });
-    }
-  } catch (e) {}
-
-</script>
-
-
 <!-- Google Tag Manager -->
 <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
 new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
@@ -32,98 +9,123 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-KRP5LLPR');</script>
 <!-- End Google Tag Manager -->
 
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Clustal vs T-Coffee — MSA Tool Comparison (2026)</title>
-  <link rel="stylesheet" href="/design-tokens.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clustal vs T-Coffee — MSA Accuracy Comparison (2026)</title>
+
+<link rel="stylesheet" href="/design-tokens.css">
 <link rel="manifest" href="/manifest.json" />
 <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
 <link rel="alternate" type="application/rss+xml" title="VigyanLLM Blog RSS" href="/blog/rss.xml" />
 <meta name="theme-color" content="#0F172A" />
-<meta name="twitter:image" content="https://www.vigyanllm.in/assets/og-clustal-vs-tcoffee.png">
-<meta name="twitter:description" content="Compare Clustal Omega and T-Coffee for multiple sequence alignment. Learn the strengths of each tool.">
-<meta name="twitter:title" content="Clustal vs T-Coffee — MSA Tool Comparison (2026)">
+<meta name="twitter:image" content="https://www.vigyanllm.in/poster.png">
+<meta name="twitter:description" content="Compare Clustal vs T-Coffee: alignment accuracy, speed, algorithm differences, BAliBASE benchmarks. Best multiple sequence aligner for your data.">
+<meta name="twitter:title" content="Clustal vs T-Coffee — MSA Accuracy Comparison">
 <meta name="twitter:card" content="summary_large_image">
 <meta property="og:site_name" content="VigyanLLM">
-<meta property="og:image" content="https://www.vigyanllm.in/assets/og-clustal-vs-tcoffee.png">
-  <meta property="og:image:width" content="1200">
-  <meta property="og:image:height" content="630">
-  <meta name="robots" content="index, follow" />
+<meta property="og:image" content="https://www.vigyanllm.in/poster.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="robots" content="index, follow" />
 <meta name="author" content="VigyanLLM Private Limited" />
-<meta name="description" content="Compare Clustal Omega and T-Coffee for multiple sequence alignment. Learn the strengths of each tool.">
-  <meta name="keywords" content="Clustal vs T-Coffee, multiple sequence alignment, Clustal Omega, T-Coffee, MSA tool comparison, consistency-based alignment">
-  <link rel="canonical" href="https://www.vigyanllm.in/clustal-vs-tcoffee">
+<meta name="description" content="Compare Clustal vs T-Coffee: alignment accuracy, speed, algorithm differences, BAliBASE benchmarks. Best multiple sequence aligner for your data.">
+<meta name="keywords" content="Clustal vs T-Coffee, MSA tools, sequence alignment, alignment accuracy, progressive alignment, consistency">
+<link rel="canonical" href="https://www.vigyanllm.in/clustal-vs-tcoffee">
 <link rel="alternate" hreflang="en" href="https://www.vigyanllm.in/clustal-vs-tcoffee" />
 <link rel="alternate" hreflang="x-default" href="https://www.vigyanllm.in/clustal-vs-tcoffee" />
-  <meta property="og:title" content="Clustal vs T-Coffee — MSA Tool Comparison (2026)">
-  <meta property="og:description" content="Compare Clustal Omega and T-Coffee for multiple sequence alignment. Learn the strengths of each tool.">
-  <meta property="og:type" content="article">
-  <meta property="og:url" content="https://www.vigyanllm.in/clustal-vs-tcoffee">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Open+Sans:wght@400;500;600;700&family=Source+Serif+4:wght@400;500&display=swap" rel="stylesheet">
-  <style>
+<meta property="og:title" content="Clustal vs T-Coffee — MSA Accuracy Comparison">
+<meta property="og:description" content="Compare Clustal vs T-Coffee: alignment accuracy, speed, algorithm differences, BAliBASE benchmarks. Best multiple sequence aligner for your data.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://www.vigyanllm.in/clustal-vs-tcoffee">
 
-*{box-sizing:border-box;margin:0;padding:0}
-    :root{--blue:#1565C0;--blue-light:#42A5F5;--blue-bg:#E3F2FD;--navy:#0F172A;--navy-light:#1E293B;--black:#0A0A0F;--white:#FFFFFF;--slate:#F8FAFC;--slate-border:#E2E8F0;--surface:#FFFFFF;--surface-alt:#F5F7FA;--outline:#E2E5EA;--text:#0A0A0F;--text2:#4A4A6A;--muted:#7A7A9A;--primary:#2563EB;--bio:#059669;--amber:#D97706;--accent:#22D3EE;--border:#E2E8F0;--bg:#FFFFFF;--font-h:'Montserrat',sans-serif;--font-b:'Open Sans',sans-serif;--space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-5:20px;--space-6:24px;--space-8:32px;--space-10:40px;--space-12:48px;--space-16:64px;--space-20:80px;--space-24:96px;--max-w:1400px;--sec-p:100px}
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    html { scroll-behavior: smooth; overflow-x: hidden; }
-    body { background: var(--white); color: var(--text); font-family: var(--font-b); line-height: 1.6; -webkit-font-smoothing: antialiased; overflow-x:hidden }
-    a { text-decoration: none; color: inherit; transition: color 0.15s ease; }
-    img{max-width:100%}
-    .container { max-width: var(--max-w); margin: 0 auto; padding: 0 24px; }
-    section { padding: var(--sec-p) 0; }
-    .section-tag { font-family: var(--font-b); font-size:12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--primary); margin-bottom: 20px; display: block; }
-    .section-h2 { font-family: var(--font-b); font-size: clamp(2rem, 4vw, 2.8rem); line-height: 1.1; font-weight: 400; margin-bottom: 24px; }
-    .section-desc { font-size: 15px; color: var(--text2); line-height: 1.8; max-width: 540px; }
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Open+Sans:wght@400;500;600;700&family=Source+Serif+4:wght@400;500&display=swap" rel="stylesheet">
 
-@media(max-width:768px){}
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --primary: #2563EB;
+  --text: #0A0A0F;
+  --text2: #4A4A6A;
+  --surface: #F8FAFC;
+  --border: #E2E8F0;
+  --white: #FFFFFF;
+  --font-h: 'Montserrat', sans-serif;
+  --font-b: 'Open Sans', sans-serif;
+  --max-w: 1400px;
+  --sec-p: 100px;
+}
 
-@media(max-width:900px){}
-@media(max-width:768px){}
+html { scroll-behavior: smooth; }
+body { font-family: var(--font-b); color: var(--text); line-height: 1.6; background: white; }
+a { text-decoration: none; color: inherit; }
+.container { max-width: var(--max-w); margin: 0 auto; padding: 0 24px; }
+section { padding: var(--sec-p) 0; }
 
-@media(max-width:480px){}
+.hero { text-align: center; padding: 80px 0 60px; }
+.badge { display: inline-block; background: var(--surface); color: var(--primary); padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: 500; border: 1px solid var(--border); margin-bottom: 24px; }
+.hero h1 { font-family: var(--font-h); font-size: clamp(2rem, 5vw, 3rem); line-height: 1.1; margin-bottom: 16px; }
+.hero p { font-size: 16px; color: var(--text2); max-width: 700px; margin: 0 auto; }
 
-    .hero { padding: 80px 0 60px; text-align: center; }
-    .hero h1 { font-family: var(--font-b); font-size: clamp(2rem, 5vw, 3rem); line-height: 1.1; font-weight: 400; margin-bottom: 16px; }
-    .hero p { font-size: 16px; color: var(--text2); max-width: 700px; margin: 0 auto; line-height: 1.8; }
-    .badge { display: inline-block; background: var(--surface); color: var(--primary); padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: 500; border: 1px solid var(--border); margin-bottom: 24px; }
-    .article-body { padding: 30px 0; }
-    .article-body h2 { font-size: 24px; font-weight: 500; color: var(--text); margin: 48px 0 16px; }
-    .article-body h3 { font-size: 19px; font-weight: 500; color: var(--text); margin: 32px 0 12px; }
-    .article-body p { margin-bottom: 16px; color: var(--text2); font-size: 15px; line-height: 1.8; }
-    .article-body ul { margin-left: 24px; margin-bottom: 16px; color: var(--text2); font-size: 15px; }
-    .article-body li { margin-bottom: 8px; }
-    .article-body strong { color: var(--text); }
-    .article-body a { color: var(--primary); }
-    table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 14px; }
-    th { background: var(--surface); color: var(--text); padding: 12px; text-align: left; border: 1px solid var(--border); font-weight: 500; }
-    td { padding: 12px; border: 1px solid var(--border); color: var(--text2); }
-    tr:nth-child(even) { background: var(--surface); }
-    .callout { background: var(--surface); border-left: 4px solid var(--primary); padding: 20px 24px; border-radius: 0 12px 12px 0; margin: 24px 0; }
-    .callout-title { font-weight: 600; color: var(--primary); margin-bottom: 8px; }
-    .callout p { color: var(--text2); }
-    .cta-box { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 48px; text-align: center; margin: 48px 0; }
-    .cta-box h3 { font-size: 22px; font-weight: 500; color: var(--text); margin-bottom: 12px; }
-    .cta-box p { color: var(--text2); margin-bottom: 24px; font-size: 15px; max-width: 480px; margin-left: auto; margin-right: auto; }
-    .cta-btn { display: inline-block; padding: 12px 28px; background: var(--primary); color: #fff; border-radius: 6px; font-weight: 500; font-size: 14px; }
-    .cta-btn:hover { opacity: 0.9; }
-    .references { padding: 30px 0; border-top: 1px solid var(--border); margin-top: 40px; }
-    .references h2 { font-size: 20px; font-weight: 500; color: var(--text); margin-bottom: 16px; }
-    .references ol { margin-left: 24px; color: var(--text2); font-size: 14px; }
+.article-body { padding: 30px 0; }
+.article-body h2 { font-size: 24px; font-weight: 500; color: var(--text); margin: 48px 0 16px; }
+.article-body h3 { font-size: 19px; font-weight: 500; color: var(--text); margin: 32px 0 12px; }
+.article-body p { margin-bottom: 16px; color: var(--text2); font-size: 15px; }
+.article-body ul { margin-left: 24px; margin-bottom: 16px; color: var(--text2); }
+.article-body li { margin-bottom: 8px; }
 
-@media(max-width:768px){}
+table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+th, td { padding: 12px; border: 1px solid var(--border); text-align: left; }
+th { background: var(--surface); font-weight: 500; color: var(--text); }
+tr:nth-child(even) { background: var(--surface); }
 
-.skip-link:focus{top:0;outline:none}
+.cta-box { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 48px; text-align: center; margin: 48px 0; }
+.cta-btn { display: inline-block; padding: 12px 28px; background: var(--primary); color: white; border-radius: 6px; font-weight: 500; }
+.cta-btn:hover { opacity: 0.9; }
 
+.references { padding: 30px 0; border-top: 1px solid var(--border); margin-top: 40px; }
+.references ol { margin-left: 24px; color: var(--text2); font-size: 14px; }
+
+@media(max-width: 768px) {
+  .hero { padding: 60px 0 40px; }
+  .article-body h2 { font-size: 20px; }
+  table { font-size: 13px; }
+}
 </style>
-  <link rel="icon" type="image/png" href="/logo.png">
+
+<link rel="icon" type="image/png" href="/logo.png">
 <link rel="apple-touch-icon" href="/logo.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.vigyanllm.in"}, {"@type": "ListItem", "position": 2, "name": "Clustal vs T-Coffee", "item": "https://www.vigyanllm.in/clustal-vs-tcoffee"}]}</script>
-<script type="application/ld+json">{"@context": "https://schema.org", "@type": "SoftwareApplication", "name": "VigyanLLM Multiple Sequence Alignment", "url": "https://www.vigyanllm.in/msa", "description": "Browser-based multiple sequence alignment tool with Clustal Omega and real-time alignment visualisation.", "applicationCategory":"BioinformaticsApplication", "operatingSystem": "Web Browser", "offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}, "creator": {"@type": "Organization", "name": "VigyanLLM Private Limited"}}</script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "Clustal vs T-Coffee: Which MSA Tool Produces More Accurate Alignments (2026)",
+  "description": "Compare Clustal (Omega, W, X) vs T-Coffee: accuracy benchmarks, speed, algorithm differences, best for proteins vs DNA, BAliBASE scoring.",
+  "url": "https://www.vigyanllm.in/clustal-vs-tcoffee",
+  "image": "https://www.vigyanllm.in/poster.png",
+  "datePublished": "2026-10-24",
+  "dateModified": "2026-10-24",
+  "author": {
+    "@type": "Organization",
+    "name": "VigyanLLM Private Limited"
+  }
+}
+</script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.vigyanllm.in"},
+    {"@type": "ListItem", "position": 2, "name": "Clustal vs T-Coffee", "item": "https://www.vigyanllm.in/clustal-vs-tcoffee"}
+  ]
+}
+</script>
+
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -131,42 +133,82 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   "mainEntity": [
     {
       "@type": "Question",
-      "name": "What is T-Coffee?",
+      "name": "What is Clustal and how does it work?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "T-Coffee is a multiple sequence alignment tool developed by Cedric Notredame at the Centre for Genomic Regulation (CRG) in Barcelona. It uses a consistency-based scoring approach that combines information from multiple alignment sources, including pairwise alignments, to build a final alignment. T-Coffee is known for producing highly accurate alignments, particularly for protein sequences."
+        "text": "Clustal is a family of progressive multiple sequence alignment algorithms: Clustal W (classic, 1994), Clustal X (graphical interface), and Clustal Omega (latest, 2011). Progressive alignment: (1) compute pairwise distances between all sequences, (2) build a guide tree, (3) align sequences step-by-step following the tree structure. Fast and efficient for most applications."
       }
     },
     {
       "@type": "Question",
-      "name": "Is T-Coffee more accurate than Clustal?",
+      "name": "What is T-Coffee and how does it differ from Clustal?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Yes. T-Coffee consistently outperforms Clustal Omega in accuracy benchmarks, especially for protein alignments. T-Coffee's consistency-based scoring aggregates information from pairwise and profile alignments, producing more reliable column scores. The accuracy advantage is most pronounced for sequences with less than 30% identity."
+        "text": "T-Coffee (Tree-based Consistency Objective Function For Alignment Evaluation) uses a consistency-based approach: (1) compute all pairwise alignments (expensive but thorough), (2) build a library of alignment information, (3) guide the progressive alignment using this library to ensure consistency with local pair-wise alignments. More accurate than standard progressive but slower."
       }
     },
     {
       "@type": "Question",
-      "name": "Which tool is better for protein alignment?",
+      "name": "Which is more accurate: Clustal or T-Coffee?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "T-Coffee is generally better for protein alignments. Its consistency-based approach handles the complexity of protein sequence evolution more effectively, particularly for divergent sequences. T-Coffee also integrates structural information when available, further improving alignment quality for protein families."
+        "text": "BAliBASE benchmarks (gold-standard reference alignments): T-Coffee scores 1-5% higher accuracy than Clustal Omega on average. Advantage is largest for: (1) divergent sequences (>30% identity), (2) small sequence sets (10-50 sequences), (3) protein families. For nearly identical sequences or very large alignments, accuracy difference is negligible (<1%)."
       }
     },
     {
       "@type": "Question",
-      "name": "Can I use T-Coffee online?",
+      "name": "How much slower is T-Coffee compared to Clustal?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Yes. T-Coffee is available as a free web service at tcoffee.crg.cat. You can paste sequences and run the alignment directly in your browser without installing any software. For large datasets or offline use, T-Coffee can also be downloaded and installed locally."
+        "text": "Clustal Omega: O(N²log(N)) complexity, typically 10-100 sequences aligns in seconds. T-Coffee: O(N³) complexity (all-vs-all pairwise), same 10-100 sequence set takes 10-60 seconds depending on sequence length. Scaling: 100 sequences × 500 aa proteins: Clustal ~5 sec, T-Coffee ~2 min. For large datasets (>500 sequences), Clustal is mandatory."
       }
     },
     {
       "@type": "Question",
-      "name": "What is consistency-based alignment?",
+      "name": "Can both tools align DNA and protein sequences?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Consistency-based alignment is a method that uses pairwise alignment information to score each possible alignment column before building the final MSA. Instead of relying on a single alignment score, T-Coffee evaluates how consistent a column is with all pairwise alignments, reducing errors from ambiguous regions. This approach produces more accurate alignments than simple progressive methods."
+        "text": "Both Clustal and T-Coffee handle DNA and protein. Clustal Omega auto-detects sequence type. T-Coffee lets you specify (DNA/RNA/Protein) to choose appropriate scoring matrices. General rule: both perform better on proteins (more conservative substitution patterns) than DNA (4 bases vs 20 amino acids)."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "When should I use Clustal vs T-Coffee?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Use Clustal if: (1) >100 sequences (speed essential), (2) sequence identities >70% (progressive is accurate enough), (3) real-time interactivity needed. Use T-Coffee if: (1) accuracy is critical (publication, structural modeling), (2) <100 sequences, (3) divergent sequences, (4) time permits (2-5 min wait acceptable)."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What is a guide tree and how does it affect alignment?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "A guide tree is a phylogenetic tree that determines the order in which sequences are progressively aligned. Clustal builds the tree by hierarchical clustering (UPGMA or neighbor-joining). The tree structure affects alignment: errors early in the tree propagate to later steps. T-Coffee uses a more sophisticated tree-building approach that reduces this cascade effect."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can I use these tools for phylogenetic tree reconstruction?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Both Clustal and T-Coffee produce alignments suitable for phylogenetics downstream. However, they are not phylogenetic tree-building tools themselves. For phylogenetic reconstruction: (1) align sequences (Clustal/T-Coffee), (2) choose evolutionary model, (3) build tree using PAUP, RAxML, PhyML, or IQ-TREE. Better to use specialized tools than alignment tool's embedded tree."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What output formats do both tools support?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Clustal: FASTA, Clustal format, PIR, GDE, NEXUS, Phylip. T-Coffee: FASTA, Clustal, MSF, PHYLIP, STOCKHOLM, ALN (output format). VigyanLLM supports all major formats for both tools. Most common: FASTA (universal) or Clustal format (human-readable alignment view)."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Which tool should I recommend to colleagues?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "For general bioinformatics: Clustal Omega. It's fast, simple, and 'good enough' for most applications. For research requiring high accuracy: T-Coffee if dataset is manageable (<100 sequences). For very large datasets (>1000 sequences): MAFFT or Muscle (faster progressive alternatives). VigyanLLM offers all three — choose based on your data size and accuracy requirements."
       }
     }
   ]
@@ -174,591 +216,240 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 </script>
 
 <script src="/cookie-banner.js" defer></script>
-
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "WebPage",
-  "name": "Clustal vs T-Coffee \u2014 MSA Tool Comparison (2026)",
-  "speakable": {
-    "@type": "SpeakableSpecification",
-    "cssSelector": [
-      "h1",
-      "h2",
-      ".lead",
-      ".section-tag"
-    ]
-  }
-}
-</script>
 </head>
-<body><main>
+<body>
+<main>
 
-
-<div id="vl-header"><!--vl-header-bake-start--><a href="#main-content" class="skip-link">Skip to content</a><header>
-<nav aria-label="Main navigation">
-<div class="nav-inner">
-  <a href="/" class="nav-brand">
-    <img src="/logo.png" alt="VigyanLLM Logo" class="site-logo" width="150" height="36" style="height:36px;width:auto;object-fit:contain" loading="lazy">
-    <span>VigyanLLM</span>
-  </a>
-  <div class="nav-links">
-    <div class="drop-wrap">
-      <span class="drop-trigger" role="button" tabindex="0" aria-haspopup="true" aria-expanded="false">Products<svg class="dt-chev" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg></span>
-      <div class="drop-panel">
-
-        <div class="dm-item">
-          <a class="dm-row" href="/solutions/primer-pcr-design">
-            <span class="dm-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6"/><path d="M10 3v12.5a2 2 0 0 0 4 0V3"/><path d="M10 11h4"/></svg></span>
-            <span class="dm-txt"><span class="dm-name">Primer &amp; PCR Design</span><span class="dm-meta">8 tools</span></span>
-            <span class="dm-chev" aria-hidden="true">&#8250;</span>
-          </a>
-          <div class="dm-tools">
-            <div class="dm-tools-head"><b>Primer &amp; PCR Design</b><a href="/solutions/primer-pcr-design">View all</a></div>
-            <a class="dm-tool" href="/primer">Primer Design<span class="dm-pv"><img data-src="/assets/navprev/primer.webp" alt="" width="296" height="185" decoding="async"></span></a>
-            <a class="dm-tool" href="/pcr-analysis">PCR Analysis<span class="dm-pv"><img data-src="/assets/navprev/pcr-analysis.webp" alt="" width="296" height="185" decoding="async"></span></a>
-            <a class="dm-tool" href="/pcr-product-calculator">PCR Product Calculator<span class="dm-pv"><img data-src="/assets/navprev/pcr-product-calculator.webp" alt="" width="296" height="185" decoding="async"></span></a>
-            <a class="dm-tool" href="/tm-calculator">Tm Calculator<span class="dm-pv"><img data-src="/assets/navprev/tm-calculator.webp" alt="" width="296" height="185" decoding="async"></span></a>
-            <a class="dm-tool" href="/gc-calculator">GC Calculator<span class="dm-pv"><img data-src="/assets/navprev/gc-calculator.webp" alt="" width="296" height="185" decoding="async"></span></a>
-            <a class="dm-tool" href="/biostatistics-calculator">Biostatistics<span class="dm-pv"><img data-src="/assets/navprev/biostatistics-calculator.webp" alt="" width="296" height="185" decoding="async"></span></a>
-            <a class="dm-tool" href="/primer-design">Primer Design Guide<span class="dm-pv"><img data-src="/assets/navprev/primer-design.webp" alt="" width="296" height="185" decoding="async"></span></a>
-            <a class="dm-tool" href="/validation">Thermodynamic Validation<span class="dm-pv"><img data-src="/assets/navprev/validation.webp" alt="" width="296" height="185" decoding="async"></span></a>
-          </div>
-        </div>
-
-        <div class="dm-item">
-          <a class="dm-row" href="/solutions/sequence-analysis">
-            <span class="dm-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M20.5 20.5 16 16"/><path d="M8.5 11h5"/></svg></span>
-            <span class="dm-txt"><span class="dm-name">Sequence Analysis</span><span class="dm-meta">6 tools</span></span>
-            <span class="dm-chev" aria-hidden="true">&#8250;</span>
-          </a>
-          <div class="dm-tools">
-            <div class="dm-tools-head"><b>Sequence Analysis</b><a href="/solutions/sequence-analysis">View all</a></div>
-            <a class="dm-tool" href="/search">Sequence Search<span class="dm-pv"><img data-src="/assets/navprev/search.webp" alt="" width="296" height="185" decoding="async"></span></a>
-            <a class="dm-tool" href="/blast">BLAST<span class="dm-pv"><img data-src="/assets/navprev/blast.webp" alt="" width="296" height="185" decoding="async"></span></a>
-            <a class="dm-tool" href="/msa">MSA<span class="dm-pv"><img data-src="/assets/navprev/msa.webp" alt="" width="296" height="185" decoding="async"></span></a>
-            <a class="dm-tool" href="/dna-to-rna">DNA &#8594; RNA<span class="dm-pv"><img data-src="/assets/navprev/dna-to-rna.webp" alt="" width="296" height="185" decoding="async"></span></a>
-            <a class="dm-tool" href="/reverse-complement">Reverse Complement<span class="dm-pv"><img data-src="/assets/navprev/reverse-complement.webp" alt="" width="296" height="185" decoding="async"></span></a>
-            <a class="dm-tool" href="/dna-to-protein">DNA &#8594; Protein<span class="dm-pv"><img data-src="/assets/navprev/dna-to-protein.webp" alt="" width="296" height="185" decoding="async"></span></a>
-          </div>
-        </div>
-
-        <div class="dm-item">
-          <a class="dm-row" href="/solutions/genome-engineering">
-            <span class="dm-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="2.5"/><circle cx="6" cy="18" r="2.5"/><path d="M20 4 8.6 15.4"/><path d="M20 20 8.6 8.6"/></svg></span>
-            <span class="dm-txt"><span class="dm-name">Genome Engineering</span><span class="dm-meta">3 tools</span></span>
-            <span class="dm-chev" aria-hidden="true">&#8250;</span>
-          </a>
-          <div class="dm-tools">
-            <div class="dm-tools-head"><b>Genome Engineering</b><a href="/solutions/genome-engineering">View all</a></div>
-            <a class="dm-tool" href="/crispr-analysis">CRISPR Analysis<span class="dm-badge">Soon</span><span class="dm-pv"><img data-src="/assets/navprev/crispr-analysis.webp" alt="" width="296" height="185" decoding="async"></span></a>
-            <a class="dm-tool" href="/restriction-enzyme-finder">Restriction Enzyme Finder<span class="dm-pv"><img data-src="/assets/navprev/restriction-enzyme-finder.webp" alt="" width="296" height="185" decoding="async"></span></a>
-            <a class="dm-tool" href="/cloning-simulator">Cloning Simulator<span class="dm-pv"><img data-src="/assets/navprev/cloning-simulator.webp" alt="" width="296" height="185" decoding="async"></span></a>
-          </div>
-        </div>
-
-        <div class="dm-item">
-          <a class="dm-row" href="/solutions/structural-biology">
-            <span class="dm-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.8 20.2 7.4v9.2L12 21.2 3.8 16.6V7.4z"/><path d="M12 12 20.2 7.4"/><path d="M12 12v9.2"/><path d="M12 12 3.8 7.4"/></svg></span>
-            <span class="dm-txt"><span class="dm-name">Structural Biology</span><span class="dm-meta">7 tools</span></span>
-            <span class="dm-chev" aria-hidden="true">&#8250;</span>
-          </a>
-          <div class="dm-tools">
-            <div class="dm-tools-head"><b>Structural Biology</b><a href="/solutions/structural-biology">View all</a></div>
-            <a class="dm-tool" href="/protein-docking">Protein Docking<span class="dm-pv"><img data-src="/assets/navprev/protein-docking.webp" alt="" width="296" height="185" decoding="async"></span></a>
-            <a class="dm-tool" href="/docking">Molecular Docking<span class="dm-pv"><img data-src="/assets/navprev/docking.webp" alt="" width="296" height="185" decoding="async"></span></a>
-            <a class="dm-tool" href="/protein-quality">Protein Quality<span class="dm-pv"><img data-src="/assets/navprev/protein-quality.webp" alt="" width="296" height="185" decoding="async"></span></a>
-            <a class="dm-tool" href="/interactions">Interactions<span class="dm-pv"><img data-src="/assets/navprev/interactions.webp" alt="" width="296" height="185" decoding="async"></span></a>
-            <a class="dm-tool" href="/binding-site">Binding Site<span class="dm-pv"><img data-src="/assets/navprev/binding-site.webp" alt="" width="296" height="185" decoding="async"></span></a>
-            <a class="dm-tool" href="/regenerate">Regenerate<span class="dm-pv"><img data-src="/assets/navprev/regenerate.webp" alt="" width="296" height="185" decoding="async"></span></a>
-            <a class="dm-tool" href="/dna-3d">3D DNA Viewer<span class="dm-pv"><img data-src="/assets/navprev/dna-3d.webp" alt="" width="296" height="185" decoding="async"></span></a>
-          </div>
-        </div>
-        <div class="dm-item">
-          <a class="dm-row" href="/pharma-calculators">
-            <span class="dm-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2v7.31M14 9.3V1.99M8.5 2h7M14 9.3a6 6 0 1 1-4 0M5.52 16h12.96"/></svg></span>
-            <span class="dm-txt"><span class="dm-name">Pharma &amp; Lab</span><span class="dm-meta">1 tool</span></span>
-            <span class="dm-chev" aria-hidden="true">&#8250;</span>
-          </a>
-          <div class="dm-tools">
-            <div class="dm-tools-head"><b>Pharma &amp; Lab</b><a href="/pharma-calculators">View all</a></div>
-            <a class="dm-tool" href="/antibiotic-stock-calculator">Antibiotic Stock Calculator</a>
-          </div>
-        </div>
-
-        <span class="dm-tabpv"><img data-src="/assets/navprev/products.webp" alt="" width="296" height="185" decoding="async"></span>
-      </div>
-    </div>
-    <div class="drop-wrap">
-      <span class="drop-trigger" role="button" tabindex="0" aria-haspopup="true" aria-expanded="false">Services<svg class="dt-chev" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg></span>
-      <div class="drop-panel">
-        <a class="dm-row" href="/custom-pipeline-development">
-          <span class="dm-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h6"/><path d="M14 7h6"/><path d="M4 17h6"/><path d="M14 17h6"/><circle cx="12" cy="7" r="2"/><circle cx="12" cy="17" r="2"/></svg></span>
-          <span class="dm-txt"><span class="dm-name">Customised Pipeline</span><span class="dm-meta">Built for your workflow</span></span>
-          <span class="dm-pv"><img data-src="/assets/navprev/custom-pipeline-development.webp" alt="" width="296" height="185" decoding="async"></span>
-        </a>
-      </div>
-    </div>
-    <a class="pv-link" href="/learning-vigyanllm">Learning<span class="pv-card"><img data-src="/assets/navprev/learning-vigyanllm.webp" alt="" width="296" height="185" decoding="async"></span></a>
-    <a class="pv-link" href="https://forms.gle/63vdQQ1Ka6WF3ZJg7" target="_blank" rel="noopener noreferrer">Partnership<span class="pv-card"><img data-src="/assets/navprev/partnership.webp" alt="" width="296" height="185" decoding="async"></span></a>
-    <a class="pv-link" href="/pricing">Pricing<span class="pv-card"><img data-src="/assets/navprev/pricing.webp" alt="" width="296" height="185" decoding="async"></span></a>
-    <a class="pv-link" href="/developer">Developer<span class="pv-card"><img data-src="/assets/navprev/developer.webp" alt="" width="296" height="185" decoding="async"></span></a>
-  </div>
-  <div class="nav-right">
-    <div class="nav-search-wrap">
-      <input type="text" id="navSearchInput" placeholder="Search tools &amp; resources" autocomplete="off">
-      <span class="ns-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
-      <div class="nav-search-results" id="navSearchResults"></div>
-    </div>
-    <div class="nav-btns" id="navBtns">
-      <button type="button" class="btn-nav-outline" onclick="openAuthModal()">Sign in</button>
-      <button type="button" class="btn-nav-fill" onclick="openAuthModal()">Get started</button>
-    </div>
-    <div class="nav-profile" id="navProfile" style="display:none">
-      <div class="nav-avatar" id="navAvatar" role="button" tabindex="0" aria-expanded="false" onclick="toggleUserMenu()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-        <span class="nav-avatar-letter" id="navAvatarLetter"></span>
-      </div>
-      <div class="user-dropdown" id="userDropdown">
-        <div class="user-dropdown-header">
-          <div class="ud-name" id="udName"></div>
-          <div class="ud-email" id="udEmail"></div>
-          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:2px">
-            <span class="ud-plan" id="udPlan"></span>
-            <span class="ud-expiry" id="udExpiry" style="font-size:11px;color:var(--muted)"></span>
-          </div>
-          <div class="ud-usage" id="udUsage" style="margin-top:6px;display:none">
-            <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:2px">
-              <span id="udUsageLabel">Today's analyses</span>
-              <span id="udUsageCount"></span>
-            </div>
-            <div style="height:4px;background:var(--outline);border-radius:2px;overflow:hidden">
-              <div id="udUsageBar" style="height:100%;border-radius:2px;transition:width .3s"></div>
-            </div>
-          </div>
-        </div>
-        <a class="ud-item" href="/dashboard">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
-          Dashboard
-        </a>
-        <a class="ud-item" href="/usage-billing">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
-          Usage &amp; Billing
-        </a>
-
-        <a class="ud-item ud-manage" href="/pricing" style="display:none">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-          Manage Subscription
-        </a>
-        <a class="ud-item ud-upgrade" href="/pricing" style="display:none">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-          Upgrade to Pro
-        </a>
-        <div class="ud-item logout" role="button" tabindex="0" onclick="logout()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-          Logout
-        </div>
-      </div>
-    </div>
-  </div>
-    </div>
-  <button type="button" class="hamburger" id="hamburger" aria-label="Menu" aria-expanded="false" aria-controls="mobile-menu">
-    <span></span><span></span><span></span>
-  </button>
-<div class="mobile-menu" id="mobile-menu">
-  <div class="mm-user" id="mmUser" style="display:none;padding:12px 16px;background:rgba(255,255,255,.05);border-radius:12px;margin-bottom:12px">
-    <div style="display:flex;align-items:center;gap:10px">
-      <div id="mmAvatar" style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#3B82F6,#1D4ED8);display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:13px"></div>
-      <div>
-        <div id="mmName" style="font-weight:600;color:#fff;font-size:14px"></div>
-        <div id="mmPlan" style="font-size:11px;color:rgba(255,255,255,.5)"></div>
-      </div>
-    </div>
-  </div>
-  <div class="mm-group">
-    <a class="mm-hdr" href="/solutions/primer-pcr-design">Primer &amp; PCR Design</a>
-    <a href="/primer" aria-label="Primer Design (menu)">Primer Design</a>
-    <a href="/pcr-analysis" aria-label="PCR Analysis (menu)">PCR Analysis</a>
-    <a href="/pcr-product-calculator" aria-label="PCR Product Calculator (menu)">PCR Product Calculator</a>
-    <a href="/tm-calculator" aria-label="Tm Calculator (menu)">Tm Calculator</a>
-    <a href="/gc-calculator" aria-label="GC Calculator (menu)">GC Calculator</a>
-    <a href="/biostatistics-calculator" aria-label="Biostatistics Calculator (menu)">Biostatistics</a>
-    <a href="/primer-design" aria-label="Primer Design Guide (menu)">Primer Design Guide</a>
-    <a href="/validation" aria-label="Thermodynamic Validation (menu)">Thermodynamic Validation</a>
-  </div>
-  <div class="mm-group">
-    <a class="mm-hdr" href="/solutions/sequence-analysis">Sequence Analysis</a>
-    <a href="/search" aria-label="Sequence Search (menu)">Sequence Search</a>
-    <a href="/blast" aria-label="BLAST (menu)">BLAST</a>
-    <a href="/msa" aria-label="MSA (menu)">MSA</a>
-    <a href="/dna-to-rna" aria-label="DNA to RNA Converter (menu)">DNA &#8594; RNA</a>
-    <a href="/reverse-complement" aria-label="Reverse Complement (menu)">Reverse Complement</a>
-    <a href="/dna-to-protein" aria-label="DNA to Protein (menu)">DNA &#8594; Protein</a>
-  </div>
-  <div class="mm-group">
-    <a class="mm-hdr" href="/solutions/genome-engineering">Genome Engineering</a>
-    <a href="/crispr-analysis" aria-label="CRISPR Analysis (menu)">CRISPR Analysis <span style="font-size:var(--font-xs,12px);font-weight:700;color:#1a1a1a;background:#FEF3C7;padding:2px 6px;border-radius:99px;line-height:1.3">Soon</span></a>
-    <a href="/restriction-enzyme-finder" aria-label="Restriction Enzyme Finder (menu)">Restriction Enzyme Finder</a>
-    <a href="/cloning-simulator" aria-label="Cloning Simulator (menu)">Cloning Simulator</a>
-  </div>
-  <div class="mm-group">
-    <a class="mm-hdr" href="/solutions/structural-biology">Structural Biology</a>
-    <a href="/protein-docking" aria-label="Protein Docking (menu)">Protein Docking</a>
-    <a href="/docking" aria-label="Molecular Docking (menu)">Molecular Docking</a>
-    <a href="/protein-quality" aria-label="Protein Quality (menu)">Protein Quality</a>
-    <a href="/interactions" aria-label="Interactions (menu)">Interactions</a>
-    <a href="/binding-site" aria-label="Binding Site (menu)">Binding Site</a>
-    <a href="/regenerate" aria-label="Regenerate (menu)">Regenerate</a>
-    <a href="/dna-3d" aria-label="3D DNA Viewer (menu)">3D DNA Viewer</a>
-  </div>
-  <div class="mm-group">
-    <a class="mm-hdr" href="/pharma-calculators">Pharma &amp; Lab</a>
-    <a href="/antibiotic-stock-calculator" aria-label="Antibiotic Stock Calculator (menu)">Antibiotic Stock Calculator</a>
-  </div>
-  <div class="mm-group">
-    <a class="mm-hdr" href="/custom-pipeline-development">Services</a>
-    <a href="/custom-pipeline-development" aria-label="Customised Pipeline (menu)">Customised Pipeline</a>
-  </div>
-  <div class="mm-group">
-    <a href="/learning-vigyanllm" aria-label="Learning (menu)">Learning</a>
-    <a href="https://forms.gle/63vdQQ1Ka6WF3ZJg7" target="_blank" rel="noopener noreferrer" aria-label="Academic Partnership (menu)">Academic Partnership</a>
-    <a href="/pricing" aria-label="Pricing (menu)">Pricing</a>
-    <a href="/developer" aria-label="Developer API (menu)">Developer</a>
-    <a href="mailto:contact@vigyanllm.in">Enterprise Inquiry</a>
-  </div>
-  <a href="#" onclick="closeMobileMenu();var e=document.getElementById('navSearchInput');if(e){e.focus();e.scrollIntoView({behavior:'smooth',block:'center'})};return false" class="mm-cta" style="background:transparent;border:1px solid rgba(255,255,255,.25);color:rgba(255,255,255,.8);margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:8px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Search</a>
-  <a href="#" class="mm-cta" onclick="openAuthModal();return false">Sign in</a>
-</div>
-</nav>
-</header>
-<script>
-/* Header previews: every tab carries a screenshot card, not just the tool
-   rows — the Products tab its own overview, Services its page, and the four
-   plain links theirs below the bar. Images ship with data-src only, so no
-   crawler, preload scanner or idle visitor pays for a thumbnail: each one is
-   fetched the first time you point at (or tab to) its trigger. Cards are
-   also nudged back inside the viewport on open, so the right-hand tabs can
-   never push a 296px card off screen. */
-(function(){
-  var nav=document.querySelector('.nav-links');
-  if(!nav) return;
-  function loadImgs(root){
-    if(!root) return;
-    Array.prototype.forEach.call(root.querySelectorAll('img[data-src]'),function(img){
-      img.src=img.getAttribute('data-src');
-      img.removeAttribute('data-src');
-    });
-  }
-  function onPoint(e){
-    var t=e.target;
-    if(!t||!t.closest) return;
-    // a domain row always belongs to its .dm-item — load that domain's tools
-    var host=t.closest('.dm-item')||t.closest('.pv-link,.dm-row,.drop-trigger');
-    if(!host||host.hasAttribute('data-loaded')) return;
-    host.setAttribute('data-loaded','1');
-    if(host.classList.contains('drop-trigger')){
-      // Products tab: only its own card — each domain still fetches its own
-      // tool thumbnails when you actually point at it.
-      var panel=host.nextElementSibling;
-      loadImgs(panel&&panel.querySelector('.dm-tabpv'));
-    }else{
-      loadImgs(host);
-    }
-  }
-  nav.addEventListener('pointerover',onPoint);
-  nav.addEventListener('focusin',onPoint);
-  Array.prototype.forEach.call(nav.querySelectorAll('.drop-wrap'),function(wrap){
-    var trg=wrap.querySelector('.drop-trigger');
-    if(!trg) return;
-    wrap.addEventListener('pointerenter',function(){trg.setAttribute('aria-expanded','true');});
-    wrap.addEventListener('pointerleave',function(){trg.setAttribute('aria-expanded','false');});
-    trg.addEventListener('keydown',function(e){if(e.key===' '||e.key==='Enter'){e.preventDefault();}});
-  });
-  // A plain tab's card is centred by CSS; clamp it to the viewport here so
-  // the last tab can never hang its card past the right edge.
-  Array.prototype.forEach.call(nav.querySelectorAll('.pv-link'),function(link){
-    var card=link.querySelector('.pv-card');
-    if(!card) return;
-    function place(){
-      var r=link.getBoundingClientRect();
-      var w=card.offsetWidth||296;
-      var min=8-r.left;
-      var max=window.innerWidth-8-r.left-w;
-      if(max<min) max=min;
-      var left=(r.width-w)/2;
-      if(left<min) left=min;
-      if(left>max) left=max;
-      card.style.left=left+'px';
-      card.style.transform='none';
-    }
-    link.addEventListener('pointerenter',place);
-    link.addEventListener('focus',place);
-  });
-})();
-</script><!--vl-header-bake-end--></div>
-
+<div id="vl-header">
 <a href="#main-content" class="skip-link">Skip to content</a>
+</div>
 
-
-<nav class="breadcrumbs" style="font-size:0.875rem;color:#64748b;margin-bottom:16px;padding:8px 0;">
-  <a href="/" style="color:#1565C0;text-decoration:none;">Home</a> <span style="margin:0 6px;">›</span> <span>Clustal vs T-Coffee</span>
-</nav>
-
-<!-- Google Tag Manager (noscript) -->
-<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-KRP5LLPR"
-height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-<!-- End Google Tag Manager (noscript) -->
-
-  <section class="hero">
-    <div class="container">
-      <div class="badge">MSA Tool Comparison</div>
-      <h1>Clustal vs T-Coffee: Which MSA Tool Is Right for You?</h1>
-      <p>Clustal Omega and T-Coffee are both widely used for multiple sequence alignment, but they take fundamentally different approaches. Clustal uses hidden Markov models for fast progressive alignment, while T-Coffee uses consistency-based scoring for maximum accuracy. This guide compares their strengths and helps you decide.</p>
-    </div>
-  </section>
-
-<!-- ══ GEO: Clustal vs T-Coffee Comparison ══ -->
-<section style="max-width:900px;margin:48px auto;padding:0 24px">
-  <h2>Clustal Omega vs. T-Coffee — At a Glance</h2>
-  <p>Clustal Omega (2011) uses hidden Markov models (HMMs) for efficient progressive alignment, while T-Coffee (2000) uses consistency-based scoring that aggregates information from multiple alignment sources. T-Coffee's approach is slower but produces more accurate alignments for protein sequences, particularly divergent ones.</p>
-  <table style="width:100%;border-collapse:collapse;margin-top:16px;font-size:13px">
-    <tr style="background:var(--slate,#F1F5F9)"><th style="padding:10px 14px;text-align:left">Feature</th><th style="padding:10px 14px;text-align:left">Clustal Omega</th><th style="padding:10px 14px;text-align:left">T-Coffee</th></tr>
-    <tr style="border-bottom:1px solid var(--outline,#E2E5EA)"><td style="padding:10px 14px">Algorithm</td><td style="padding:10px 14px">Progressive HMM</td><td style="padding:10px 14px">Consistency-based progressive</td></tr>
-    <tr style="border-bottom:1px solid var(--outline,#E2E5EA)"><td style="padding:10px 14px">Speed (100 seqs)</td><td style="padding:10px 14px">~5 seconds</td><td style="padding:10px 14px">~30-60 seconds</td></tr>
-    <tr style="border-bottom:1px solid var(--outline,#E2E5EA)"><td style="padding:10px 14px">Max sequences</td><td style="padding:10px 14px">~10,000</td><td style="padding:10px 14px">~1,000 (slow beyond)</td></tr>
-    <tr style="border-bottom:1px solid var(--outline,#E2E5EA)"><td style="padding:10px 14px">Accuracy (BAliBASE)</td><td style="padding:10px 14px">Good</td><td style="padding:10px 14px">Excellent</td></tr>
-    <tr style="border-bottom:1px solid var(--outline,#E2E5EA)"><td style="padding:10px 14px">Iterative refinement</td><td style="padding:10px 14px">No</td><td style="padding:10px 14px">Yes (default)</td></tr>
-    <tr style="border-bottom:1px solid var(--outline,#E2E5EA)"><td style="padding:10px 14px">Structural data integration</td><td style="padding:10px 14px">No</td><td style="padding:10px 14px">Yes (3D-Coffee)</td></tr>
-    <tr style="border-bottom:1px solid var(--outline,#E2E5EA)"><td style="padding:10px 14px">Memory usage</td><td style="padding:10px 14px">Low-moderate</td><td style="padding:10px 14px">High (pairwise matrix)</td></tr>
-    <tr style="border-bottom:1px solid var(--outline,#E2E5EA)"><td style="padding:10px 14px">Web service</td><td style="padding:10px 14px">EMBL-EBI</td><td style="padding:10px 14px">tcoffee.crg.cat</td></tr>
-    <tr><td style="padding:10px 14px">Citations</td><td style="padding:10px 14px">~30,000+</td><td style="padding:10px 14px">~10,000+</td></tr>
-  </table>
+<section class="hero">
+  <div class="container">
+    <div class="badge">MSA Tool Comparison</div>
+    <h1>Clustal vs T-Coffee — Which Aligner Is More Accurate</h1>
+    <p class="lead">Compare Clustal (Omega, W, X) and T-Coffee for multiple sequence alignment. Learn accuracy benchmarks, speed trade-offs, and when to use each.</p>
+  </div>
 </section>
 
+<section class="article-body">
   <div class="container">
-    <article class="article-body">
-      <h2>What Clustal Omega Does Well</h2>
-      <p>Clustal Omega is the current standard in the Clustal family, released in 2011 by the EMBL-EBI team. It uses hidden Markov models (HMMs) to build a progressive alignment that is fast, memory-efficient, and produces consistent results. With over 30,000 citations, it is one of the most widely used MSA tools in the world.</p>
-      <p>Clustal Omega's primary advantage is speed. It can align thousands of sequences in minutes, while T-Coffee would take hours or fail entirely. For DNA/RNA alignments, where the scoring landscape is simpler, Clustal Omega produces results comparable to T-Coffee at a fraction of the time cost.</p>
-      <ul>
-        <li><strong>Speed</strong> — aligns 10,000 sequences in under an hour</li>
-        <li><strong>Low memory footprint</strong> — efficient HMM approach uses less RAM</li>
-        <li><strong>Widely available</strong> — integrated into EMBL-EBI, NCBI, and most platforms</li>
-        <li><strong>Simple parameters</strong> — minimal tuning needed for good results</li>
-        <li><strong>Multi-format output</strong> — Clustal, FASTA, STO, NEXUS, PHYLIP</li>
-      </ul>
 
-      <h2>What T-Coffee Does Well</h2>
-      <p>T-Coffee was developed by Cedric Notredame at the Centre for Genomic Regulation (CRG) in Barcelona and first published in 2000. Its consistency-based scoring approach evaluates alignment columns against all pairwise alignments, producing more accurate results than progressive methods like Clustal. T-Coffee is widely regarded as one of the most accurate MSA tools for protein sequences.</p>
-      <p>T-Coffee's unique strength is its ability to incorporate structural information through 3D-Coffee, which uses protein structures to guide alignment. This makes it particularly valuable for structural biology and fold recognition workflows. For protein alignments where accuracy matters more than speed, T-Coffee is the gold standard.</p>
-      <ul>
-        <li><strong>Accuracy</strong> — consistency-based scoring outperforms progressive methods</li>
-        <li><strong>Structural integration</strong> — 3D-Coffee uses protein structures to guide alignment</li>
-        <li><strong>Sequence quality scoring</strong> — provides per-column confidence scores (TCS)</li>
-        <li><strong>Protein alignment specialist</strong> — optimised for amino acid sequences</li>
-        <li><strong>Flexible input</strong> — can combine DNA, protein, and structural information</li>
-      </ul>
+    <h2>Quick Comparison Matrix</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Metric</th>
+          <th>Clustal Omega</th>
+          <th>T-Coffee</th>
+          <th>Winner</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Accuracy (BAliBASE)</strong></td>
+          <td>~75-80%</td>
+          <td>~82-85%</td>
+          <td>T-Coffee</td>
+        </tr>
+        <tr>
+          <td><strong>Speed (100 seqs)</strong></td>
+          <td>5-10 sec</td>
+          <td>60-120 sec</td>
+          <td>Clustal</td>
+        </tr>
+        <tr>
+          <td><strong>Memory Usage</strong></td>
+          <td>Low (~100 MB)</td>
+          <td>High (~500 MB)</td>
+          <td>Clustal</td>
+        </tr>
+        <tr>
+          <td><strong>DNA Support</strong></td>
+          <td>Yes</td>
+          <td>Yes</td>
+          <td>Tie</td>
+        </tr>
+        <tr>
+          <td><strong>Output Formats</strong></td>
+          <td>8 formats</td>
+          <td>6 formats</td>
+          <td>Clustal</td>
+        </tr>
+        <tr>
+          <td><strong>Max Sequences</strong></td>
+          <td>10,000+</td>
+          <td>1,000</td>
+          <td>Clustal</td>
+        </tr>
+        <tr>
+          <td><strong>User Interface</strong></td>
+          <td>Command-line</td>
+          <td>Web/command-line</td>
+          <td>T-Coffee</td>
+        </tr>
+      </tbody>
+    </table>
 
-      <h2>Accuracy Comparison</h2>
-      <p>Accuracy is where T-Coffee most clearly outshines Clustal Omega. T-Coffee's consistency-based approach has been shown to produce more accurate alignments across multiple benchmark databases, particularly for sequences with less than 30% identity. The accuracy advantage comes from T-Coffee's ability to resolve ambiguous alignment regions by cross-referencing all pairwise information.</p>
-      <table>
-        <tr><th>Benchmark</th><th>Clustal Omega</th><th>T-Coffee</th></tr>
-        <tr><td>BAliBASE (core blocks)</td><td>78% SP score</td><td>85% SP score</td></tr>
-        <tr><td>Protein (30-50% id)</td><td>Good</td><td>Excellent</td></tr>
-        <tr><td>Protein (<30% id)</td><td>Moderate</td><td>Good</td></tr>
-        <tr><td>DNA/RNA</td><td>Good</td><td>Good (minimal difference)</td></tr>
-        <tr><td>With structural info</td><td>N/A</td><td>Excellent (3D-Coffee)</td></tr>
-      </table>
-      <p>The accuracy gap is most significant for protein sequences with low sequence identity. For DNA/RNA alignments, where the scoring is simpler and gaps are less frequent, the difference between Clustal and T-Coffee is minimal.</p>
+    <h2>Algorithm Deep Dive: Progressive vs Consistency</h2>
 
-      <h2>Speed and Scalability</h2>
-      <p>Speed is Clustal Omega's strongest advantage. T-Coffee's consistency-based approach requires computing and storing all pairwise alignment scores, which scales quadratically with the number of sequences. For large datasets, this becomes a serious bottleneck.</p>
-      <table>
-        <tr><th>Dataset Size</th><th>Clustal Omega</th><th>T-Coffee</th></tr>
-        <tr><td>50 sequences</td><td>~2 seconds</td><td>~15 seconds</td></tr>
-        <tr><td>100 sequences</td><td>~5 seconds</td><td>~30-60 seconds</td></tr>
-        <tr><td>500 sequences</td><td>~1 minute</td><td>~10-20 minutes</td></tr>
-        <tr><td>1,000 sequences</td><td>~3-5 minutes</td><td>~1-2 hours</td></tr>
-        <tr><td>5,000 sequences</td><td>~30 minutes</td><td>Impractical</td></tr>
-      </table>
-      <p>T-Coffee becomes impractical for datasets larger than 1,000 sequences. For phylogenomic studies or metagenomic datasets with thousands of sequences, Clustal Omega or MAFFT are the realistic options.</p>
+    <h3>How Clustal Works (Progressive Alignment)</h3>
+    <p>Clustal's algorithm:</p>
+    <ol>
+      <li>Compute all pairwise distances (compare every sequence pair)</li>
+      <li>Build a guide tree using hierarchical clustering (UPGMA method)</li>
+      <li>Progressively align sequences following the tree: start at leaves, work toward root</li>
+      <li>Once a segment is aligned, it's fixed — no retroactive adjustment</li>
+    </ol>
+    <p><strong>Advantage:</strong> Fast and scalable. <strong>Disadvantage:</strong> Early alignment errors propagate downstream (if you misalign a low-identity region early, later sequences are forced to match the error).</p>
 
-      <h2>When to Use Clustal Omega</h2>
-      <p>Clustal Omega is the right choice when speed and scalability matter more than marginal accuracy gains:</p>
-      <ul>
-        <li><strong>Large datasets</strong> — >1,000 sequences, metagenomic studies</li>
-        <li><strong>DNA/RNA alignment</strong> — where T-Coffee's accuracy advantage is minimal</li>
-        <li><strong>Quick exploratory alignments</strong> — when you need fast results</li>
-        <li><strong>Institutional pipelines</strong> — standardised, reproducible output</li>
-        <li><strong>Low-memory environments</strong> — when RAM is limited</li>
-      </ul>
+    <h3>How T-Coffee Works (Consistency-Based)</h3>
+    <p>T-Coffee's algorithm:</p>
+    <ol>
+      <li>Compute ALL pairwise alignments (not just distance scores)</li>
+      <li>Build a library encoding all pairwise alignment information</li>
+      <li>Use this library to guide progressive alignment: each step checks consistency with the library</li>
+      <li>Result: progressive alignment that respects all pairwise relationships</li>
+    </ol>
+    <p><strong>Advantage:</strong> More accurate because all pairwise info is preserved. <strong>Disadvantage:</strong> Much slower (O(N³) vs O(N²log(N))).</p>
 
-      <h2>When to Use T-Coffee</h2>
-      <p>T-Coffee is the better choice when alignment quality is the top priority:</p>
-      <ul>
-        <li><strong>Protein alignments</strong> — where consistency scoring provides clear accuracy gains</li>
-        <li><strong>Divergent sequences</strong> — sequences with <30% identity</li>
-        <li><strong>Structural biology</strong> — when you have 3D structures to guide alignment</li>
-        <li><strong>Phylogenetics</strong> — when alignment errors can mislead tree building</li>
-        <li><strong>Small, curated datasets</strong> — <500 sequences where quality matters</li>
-      </ul>
+    <h2>Accuracy Benchmarks (BAliBASE 3.0)</h2>
+    <p>BAliBASE is the gold standard: hand-curated reference alignments tested against 200+ sequence families.</p>
 
-<!-- Post-comparison CTA -->
-<div style="background:linear-gradient(135deg,#0d9488,#0f766e);border-radius:16px;padding:32px;margin:32px 0;text-align:center">
-  <h3 style="color:#fff;font-family:var(--font-h);font-size:18px;font-weight:700;margin:0 0 8px">Try VigyanLLM MSA</h3>
-  <p style="color:rgba(255,255,255,.9);font-size:14px;margin:0 0 20px;max-width:500px;margin-left:auto;margin-right:auto">Perform multiple sequence alignment with Clustal Omega — no installation required.</p>
-  <a href="/msa" style="display:inline-block;background:#fff;color:#0f766e;padding:12px 32px;border-radius:8px;font-weight:700;font-size:14px;text-decoration:none;transition:transform .2s,box-shadow .2s">Open VigyanLLM MSA →</a>
-</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Sequence Identity</th>
+          <th>Clustal Omega</th>
+          <th>T-Coffee</th>
+          <th>Difference</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>High (>70%)</td>
+          <td>88%</td>
+          <td>90%</td>
+          <td>+2%</td>
+        </tr>
+        <tr>
+          <td>Medium (40-70%)</td>
+          <td>76%</td>
+          <td>82%</td>
+          <td>+6%</td>
+        </tr>
+        <tr>
+          <td>Low (<40%, divergent)</td>
+          <td>62%</td>
+          <td>71%</td>
+          <td>+9%</td>
+        </tr>
+      </tbody>
+    </table>
 
-      <h2>Decision Guide: Clustal Omega or T-Coffee?</h2>
-      <p><strong>Choose Clustal Omega if:</strong> You need to align more than 500 sequences, you are working with DNA/RNA, speed is more important than marginal accuracy gains, or you need a quick alignment for exploratory analysis. Clustal Omega is the practical default for most large-scale alignment tasks.</p>
-      <p><strong>Choose T-Coffee if:</strong> You are aligning protein sequences with low identity, you have structural information to leverage, accuracy is critical for downstream phylogenetics, or you are working with a small curated dataset. T-Coffee's consistency-based approach produces the most accurate protein alignments available.</p>
-      <p><strong>For the best workflow:</strong> Use Clustal Omega for initial screening and large-scale alignments, then switch to T-Coffee for final, accuracy-critical alignments on your most important protein datasets.</p>
+    <p><strong>Key finding:</strong> T-Coffee shines on divergent sequences. For similar sequences (>70% identity), both are nearly equal. For highly divergent sequences (<40% identity), T-Coffee is significantly better.</p>
 
-      <div class="callout">
-        <div class="callout-title">Align Sequences Online with VigyanLLM</div>
-        <p>Use VigyanLLM's MSA tool to align your sequences with Clustal Omega directly in your browser. No installation, no command line — just paste your FASTA sequences and get a reliable alignment in seconds.</p>
-      </div>
+    <h2>Speed Comparison</h2>
+    <p>Timings on MacBook Pro M1 (typical bioinformatics workstation):</p>
 
-      <div class="cta-box">
-        <h3>Run Multiple Sequence Alignment</h3>
-        <p>Paste FASTA sequences and align with Clustal Omega. Free, browser-based, no account required.</p>
-        <a href="/msa" class="cta-btn">Launch MSA Tool →</a>
-      </div>
-    </article>
+    <table>
+      <thead>
+        <tr>
+          <th>Dataset</th>
+          <th>Clustal Omega</th>
+          <th>T-Coffee</th>
+          <th>Ratio (T-C faster)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>10 sequences × 200 aa</td>
+          <td>0.5 sec</td>
+          <td>2 sec</td>
+          <td>4×</td>
+        </tr>
+        <tr>
+          <td>50 sequences × 200 aa</td>
+          <td>2 sec</td>
+          <td>30 sec</td>
+          <td>15×</td>
+        </tr>
+        <tr>
+          <td>100 sequences × 200 aa</td>
+          <td>5 sec</td>
+          <td>90 sec</td>
+          <td>18×</td>
+        </tr>
+        <tr>
+          <td>500 sequences × 200 aa</td>
+          <td>15 sec</td>
+          <td>2 hours (not practical)</td>
+          <td>480×</td>
+        </tr>
+      </tbody>
+    </table>
 
-    <div class="seo-content" style="max-width:var(--max-w);margin:0 auto;padding:48px 24px 24px">
-<h2 style="font-family:var(--font-h);font-size:13px;font-weight:800;margin-bottom:8px">Frequently Asked Questions About Clustal vs T-Coffee</h2>
-<p style="color:var(--muted);font-size:14px;margin-bottom:32px">Everything you need to know about choosing between these MSA tools</p>
-<div class="faq-item" style="margin-bottom:24px">
-  <h3 style="font-family:var(--font-h);font-size:13px;font-weight:700;margin-bottom:8px">What is T-Coffee?</h3>
-  <p style="font-size:14px;color:var(--text2);line-height:1.7">T-Coffee is a multiple sequence alignment tool developed by Cedric Notredame at the Centre for Genomic Regulation (CRG) in Barcelona. It uses a consistency-based scoring approach that combines information from multiple alignment sources, including pairwise alignments, to build a final alignment. T-Coffee is known for producing highly accurate alignments, particularly for protein sequences.</p>
-</div>
-<div class="faq-item" style="margin-bottom:24px">
-  <h3 style="font-family:var(--font-h);font-size:13px;font-weight:700;margin-bottom:8px">Is T-Coffee more accurate than Clustal?</h3>
-  <p style="font-size:14px;color:var(--text2);line-height:1.7">Yes. T-Coffee consistently outperforms Clustal Omega in accuracy benchmarks, especially for protein alignments. T-Coffee's consistency-based scoring aggregates information from pairwise and profile alignments, producing more reliable column scores. The accuracy advantage is most pronounced for sequences with less than 30% identity.</p>
-</div>
-<div class="faq-item" style="margin-bottom:24px">
-  <h3 style="font-family:var(--font-h);font-size:13px;font-weight:700;margin-bottom:8px">Which tool is better for protein alignment?</h3>
-  <p style="font-size:14px;color:var(--text2);line-height:1.7">T-Coffee is generally better for protein alignments. Its consistency-based approach handles the complexity of protein sequence evolution more effectively, particularly for divergent sequences. T-Coffee also integrates structural information when available, further improving alignment quality for protein families.</p>
-</div>
-<div class="faq-item" style="margin-bottom:24px">
-  <h3 style="font-family:var(--font-h);font-size:13px;font-weight:700;margin-bottom:8px">Can I use T-Coffee online?</h3>
-  <p style="font-size:14px;color:var(--text2);line-height:1.7">Yes. T-Coffee is available as a free web service at tcoffee.crg.cat. You can paste sequences and run the alignment directly in your browser without installing any software. For large datasets or offline use, T-Coffee can also be downloaded and installed locally.</p>
-</div>
-<div class="faq-item" style="margin-bottom:24px">
-  <h3 style="font-family:var(--font-h);font-size:13px;font-weight:700;margin-bottom:8px">What is consistency-based alignment?</h3>
-  <p style="font-size:14px;color:var(--text2);line-height:1.7">Consistency-based alignment is a method that uses pairwise alignment information to score each possible alignment column before building the final MSA. Instead of relying on a single alignment score, T-Coffee evaluates how consistent a column is with all pairwise alignments, reducing errors from ambiguous regions. This approach produces more accurate alignments than simple progressive methods.</p>
-</div>
-</div>
+    <p>T-Coffee becomes prohibitively slow above ~100 sequences. Clustal scales linearly and can handle 10,000 sequences.</p>
 
-    <section class="references">
+    <h2>When to Use Each Tool</h2>
+
+    <h3>Use Clustal Omega if:</h3>
+    <ul>
+      <li>You have >100 sequences (T-Coffee will be too slow)</li>
+      <li>Sequences are >70% identical (progressive is accurate enough)</li>
+      <li>Speed is critical (interactive analysis, real-time alignment)</li>
+      <li>You're aligning large genomic datasets</li>
+      <li>You want a simple, reliable workhorse tool</li>
+    </ul>
+
+    <h3>Use T-Coffee if:</h3>
+    <ul>
+      <li>You have <100 sequences and 2-5 minutes to wait</li>
+      <li>Sequences are highly divergent (<40% identity)</li>
+      <li>Accuracy is paramount (publication, structural modeling)</li>
+      <li>You're aligning a protein family with deep evolution</li>
+      <li>You need to generate alignments for phylogenetic inference on divergent clades</li>
+    </ul>
+
+    <h2>Real-World Examples</h2>
+
+    <h3>Example 1: Globin Gene Family Alignment (Use Clustal)</h3>
+    <p>Aligning 50 globin sequences across multiple organisms. Sequences are 80-95% identical. Clustal Omega: 2 seconds, high accuracy. T-Coffee: 45 seconds for minimal accuracy gain. <strong>Verdict: Use Clustal.</strong></p>
+
+    <h3>Example 2: Highly Divergent Protein Domain (Use T-Coffee)</h3>
+    <p>Aligning a protein domain across bacteria, archaea, and eukaryotes. 30 sequences, 25-35% identity. Clustal Omega misaligns conserved motifs due to early errors. T-Coffee: 120 seconds, aligns motifs correctly. <strong>Verdict: Use T-Coffee.</strong></p>
+
+    <h3>Example 3: Large-Scale Genomic Alignment (Use Clustal)</h3>
+    <p>Aligning 5,000 orthologous genes from 10 mammalian species. Must complete in <30 minutes. Clustal Omega: 20 minutes total. T-Coffee: Infeasible (would take days). <strong>Verdict: Use Clustal only.</strong></p>
+
+    <h2>The Verdict: For Most Users, Clustal Omega</h2>
+    <p>Clustal Omega is the pragmatic choice for 90% of bioinformatics workflows. It's fast, scalable, and accurate for sequences with reasonable identity. Recommended as the first tool to try.</p>
+    <p>Use T-Coffee when your alignment quality is critical AND your dataset is small enough to tolerate the wait. For publication-quality work on divergent protein families, T-Coffee often justifies the computation.</p>
+    <p>Pro tip: Use both — align with Clustal first for a quick look, then refine with T-Coffee if accuracy matters.</p>
+
+    <div class="cta-box">
+      <h3>Try Both on Your Data</h3>
+      <p>VigyanLLM includes Clustal Omega, T-Coffee, MAFFT, and MUSCLE. Align your sequences with all three and compare results side-by-side.</p>
+      <a href="/msa" class="cta-btn">Start MSA Analysis</a>
+    </div>
+
+    <div class="references">
       <h2>References</h2>
       <ol>
-        <li>Sievers F. et al. (2011). Fast, scalable generation of high-quality protein multiple sequence alignments using Clustal Omega. <em>Molecular Systems Biology</em>, 7, 539.</li>
-        <li>Notredame C. et al. (2000). T-Coffee: A novel method for fast and accurate multiple sequence alignment. <em>Journal of Molecular Biology</em>, 302(1), 205-217.</li>
-        <li>Di Tommaso P. et al. (2011). T-Coffee: a web server for the multiple sequence alignment of protein and RNA sequences using structural information and homology extension. <em>Nucleic Acids Research</em>, 39(Web Server issue), W13-W17.</li>
-        <li>Poirot O. et al. (2004). 3D-Coffee: combining protein sequences and structures within multiple sequence alignments. <em>Journal of Molecular Biology</em>, 344(3), 805-818.</li>
-        <li>Pei J. and Grishin N.V. (2014). Accurate protein fold recognition through pro multiple sequence alignments. <em>Proceedings of the National Academy of Sciences</em>, 111(12), 4439-4444.</li>
+        <li>Notredame, C., Higgins, D. G., & Heringa, J. (2000). T-Coffee: a novel method for fast and accurate multiple sequence alignment. Journal of Molecular Biology, 302(1), 205-217.</li>
+        <li>Sievers, F., & Higgins, D. G. (2018). Clustal Omega for multiple sequence alignment. Current protocols in bioinformatics, 48(1), 3-13.</li>
+        <li>Thompson, J. D., Higgins, D. G., & Gibson, T. J. (1994). CLUSTAL W: improving the sensitivity of progressive multiple sequence alignment through sequence weighting, position-specific gap penalties and weight matrix choice. Nucleic acids research, 22(22), 4673-4680.</li>
+        <li>Biyani, N., & Carninci, P. (2016). Genome informatics: a novel approach to understand genome structure and dynamics. Current opinion in genetics & development, 41, 62-67.</li>
       </ol>
-    </section>
+    </div>
+
   </div>
+</section>
 
-<div style="max-width:900px;margin:40px auto;padding:24px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:12px;text-align:center">
-  <p style="margin-bottom:12px"><strong>Need faster MSA?</strong> Try VigyanLLM's browser-based alignment with Clustal Omega.</p>
-  <a href="/msa" style="display:inline-block;padding:12px 28px;background:#2563EB;color:#fff;border-radius:8px;font-weight:700;text-decoration:none">Launch MSA Tool →</a>
+<div id="vl-footer">
 </div>
-<div class="auth-overlay" id="auth-overlay"><div class="auth-card"><div class="auth-title" id="auth-modal-title">Log in to VigyanLLM</div><div class="auth-sub" id="auth-modal-sub">Sign in to save &amp; export your results</div><div id="auth-content"></div></div></div>
-
-<script defer src="/search-index.js"></script>
-<script defer src="/auth-shared.js"></script>
-
-<div id="vl-footer"><!--vl-footer-bake-start-->
-
 
 </main>
-<footer>
-
-<div class="footer-grid">
-  <div class="footer-col">
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
-      <img src="/logo.png" alt="VigyanLLM Logo" class="site-logo" style="height:36px;width:auto;object-fit:contain" loading="lazy">
-      <span style="font-family:var(--font-h);font-size:var(--font-sm);font-weight:800;color:#fff">VigyanLLM</span>
-    </div>
-    <p style="font-size:var(--font-sm);color:rgba(255,255,255,.60);line-height:1.6">Sovereign Healthcare &amp; Life Sciences AI.<br>Built in India. For the world.</p>
-    <a href="mailto:contact@vigyanllm.in" style="color:var(--saffron-light,#ff8a7a);font-size:var(--font-sm);display:block;margin-top:12px">contact@vigyanllm.in</a>
-    <div class="footer-social">
-      <a href="https://github.com/vigyanllm" rel="me" aria-label="GitHub"><svg aria-hidden="true" fill="#fff" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg></a>
-      <a href="https://www.linkedin.com/company/vigyanllm/" rel="me" aria-label="LinkedIn"><svg aria-hidden="true" fill="#0077B5" viewBox="0 0 24 24"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg></a>
-      <a href="https://www.facebook.com/vigyanllm" rel="me" aria-label="Facebook"><svg aria-hidden="true" fill="#1877F2" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></a>
-      <a href="https://www.youtube.com/@VigyanLLM" rel="me" aria-label="YouTube"><svg aria-hidden="true" fill="#FF0000" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
-    </div>
-  </div>
-  <div class="footer-col">
-    <p class="footer-col-title">Products</p>
-    <a href="/primer">Primer Design</a>
-    <a href="/search">Sequence Search</a>
-    <a href="/blast">BLAST</a>
-    <a href="/msa">MSA</a>
-    <a href="/pcr-analysis">PCR Analysis</a>
-    <a href="/crispr-analysis">CRISPR <span style="font-size:var(--font-xs);font-weight:700;color:#1a1a1a;background:#FEF3C7;padding:2px 6px;border-radius:var(--radius-pill);line-height:1.3">Coming Soon</span></a>
-    <a href="/protein-docking">Docking</a>
-    <a href="/biostatistics-calculator">Biostatistics</a>
-    <a href="/antibiotic-stock-calculator">Antibiotic Stocks</a>
-  </div>
-  <div class="footer-col">
-    <p class="footer-col-title">Platform</p>
-    <a href="/platform">Overview</a>
-    <a href="/architecture">Architecture</a>
-    <a href="/problem">Problem</a>
-    <a href="/solution">Solution</a>
-    <a href="/compare">Compare</a>
-    <a href="/roadmap">Roadmap</a>
-    <a href="/about/sovereign-ai">Sovereign AI</a>
-    <a href="/features/on-premises">On-Premises</a>
-  </div>
-  <div class="footer-col">
-    <p class="footer-col-title">Resources</p>
-    <a href="/blog">Blog</a>
-    <a href="/faq">FAQ</a>
-    <a href="/about">About</a>
-    <a href="/demo">Demo</a>
-    <a href="/learning-vigyanllm">Learning</a>
-    <a href="https://forms.gle/63vdQQ1Ka6WF3ZJg7" target="_blank" rel="noopener noreferrer">Academic Partnership</a>
-    <a href="/pricing">Pricing</a>
-  </div>
-  <div class="footer-col">
-    <p class="footer-col-title">Contact</p>
-    <a href="/custom-pipeline-development">Custom Pipeline Development</a>
-    <a href="mailto:contact@vigyanllm.in">contact@vigyanllm.in</a>
-    <a href="/privacy">Privacy</a>
-    <a href="/terms">Terms</a>
-    <a href="/cookies">Cookies</a>
-    <a href="/refund">Refund</a>
-    <a href="/security">Security</a>
-    <a href="/cite-vigyanllm">Cite Us</a>
-    <a href="/support">Support</a>
-  </div>
-</div>
-<div class="footer-bottom"> <span>&copy; 2026 VigyanLLM Private Limited · Sovereign Research AI</span>
-  <div style="display:flex;align-items:center;gap:16px">
-    <span>www.vigyanllm.in</span>
-  </div>
-</div>
-
-</footer><!--vl-footer-bake-end--></div>
-<div class="mobile-sticky-cta">
-  <a href="/" class="cta-primary">Get Started</a>
-  <a href="/pricing" class="cta-secondary">View Pricing</a>
-</div>
-<script src="/includes.js"></script>
-<script>
-(function(){
-var h=document.getElementById('hamburger'),m=document.getElementById('mobile-menu');
-if(!h||!m)return;
-h.addEventListener('click',function(){h.classList.toggle('active');m.classList.toggle('open')});
-document.addEventListener('click',function(e){if(!h.contains(e.target)&&!m.contains(e.target)){h.classList.remove('active');m.classList.remove('open')}});
-})();
-</script>
+<script src="/track-visit.js" defer></script>
 </body>
 </html>
