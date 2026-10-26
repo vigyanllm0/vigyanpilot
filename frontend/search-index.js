@@ -66,6 +66,7 @@ var SITE_INDEX = [
   { t:'Primer Design Basics', d:'Complete beginner\'s guide to PCR primer design rules and best practices', u:'blog/primer-design-basics.html', c:'Blog' },
   { t:'Molecular Docking Tutorial', d:'Step-by-step molecular docking tutorial from PDB files to results', u:'blog/molecular-docking-tutorial.html', c:'Blog' },
   { t:'Variant Calling in NGS Guide', d:'Practical guide to NGS variant calling with GATK, Mutect2, and FreeBayes', u:'blog/variant-calling-guide.html', c:'Blog' },
+  { t:'VigyanLLM Explained', d:'Overview of the VigyanLLM platform: primer design, sequence analysis, CRISPR guide RNA, docking, validation, and academic access', u:'blog/vigyanllm-explained.html', c:'Blog' },
   { t:'Amplicon Sequencing Guide', d:'What amplicon sequencing is, how it works, and when to use it', u:'blog/amplicon-sequencing-guide.html', c:'Blog' },
   { t:'RT-PCR Complete Guide', d:'Complete guide to RT-PCR principles, protocol, and applications', u:'blog/rt-pcr-complete-guide.html', c:'Blog' },
 
