@@ -6,7 +6,9 @@
 - **Raised:** 2026-11-05 (found during Sprint 1 deploy — the deploy itself
   succeeded after manually loading the correct key from CSV)
 - **Status:** mitigated 2026-11-05 (profile restored + identity gate added);
-  root-cause cleanup pending decision below
+  **target state DECIDED 2026-11-05: option (b) profile migration — deadline Nov 19**
+  (Sprint 1 Day-14); interim = option (a): keep `.zshrc` exports, run
+  `scripts/pre_s3_check.sh` before every S3 op
 
 ## What happened
 
@@ -49,27 +51,36 @@ original `vigyanllm-deploy` keys).
    `user/vigyanllm-deploy`, refuses on mismatch with the exact `env -u …`
    workaround. Exit 0/1.
 
-## Pending decision (owner)
+## DECIDED 2026-11-05 — option (b), deadline Nov 19 (Sprint 1 Day-14)
 
-The Bedrock exports in `~/.zshrc` are presumably wanted for Bedrock work.
-Pick one:
+**(b) Move Bedrock to a profile, clean `.zshrc`.** Rationale (owner): the `.zshrc` exports are
+how this bug happened — every new shell inherits Bedrock credentials and shadows every profile;
+the gate is a mitigation, not a cure (voluntary — only works if remembered); profiles are the
+AWS-standard mechanism.
 
-- **(a) Keep as-is** — Bedrock works by default; every vigyanllm S3 deploy
-  runs through `bash scripts/pre_s3_check.sh` first (it tells you the exact
-  `env -u AWS_ACCESS_KEY_ID -u AWS_SECRET_ACCESS_KEY AWS_PROFILE=vigyanllm-deploy …`
-  incantation). Zero disruption to either workflow. *(Default if no action.)*
-- **(b) Move Bedrock to a profile** — delete lines 76–77 from `~/.zshrc`,
-  add `[bedrock]` to `~/.aws/credentials`, use `AWS_PROFILE=bedrock` when
-  needed. Cleanest long-term; touches the user's shell config.
+**Interim (now → Nov 19):** option (a) in effect — Bedrock stays in `.zshrc`, every vigyanllm
+S3 deploy runs `bash scripts/pre_s3_check.sh` first. Sprint 1 measurement is not blocked.
+
+**Migration checklist (due Nov 19):**
+
+- [ ] Remove the Bedrock key exports from `~/.zshrc` (lines 76–77)
+- [ ] Add a `[bedrock]` profile to `~/.aws/credentials`
+- [ ] `aws sts get-caller-identity --profile bedrock` → returns the Bedrock identity
+      (`arn:aws:iam::497862079867:user/amazon-bedrock_deploy-1`)
+- [ ] `aws sts get-caller-identity --profile vigyanllm-deploy` → returns
+      `arn:aws:iam::497862079867:user/vigyanllm-deploy`
+- [ ] Open a NEW shell: `aws sts get-caller-identity` (no profile/env) returns the configured
+      default (or nothing) — **never** a silent foreign identity
+- [ ] `pre_s3_check.sh` exits 0 in the new shell without any `env -u` workaround
 
 ## Acceptance criteria
 
 - [x] `[vigyanllm-deploy]` profile present and working (`aws s3 ls` OK)
 - [x] `scripts/pre_s3_check.sh` exits 0 on correct identity, 1 on shadowed/wrong
-- [ ] Owner decision (a) or (b) recorded
-- [ ] If (b): `~/.zshrc` lines 76–77 removed, `[bedrock]` profile added,
-      both workflows re-verified
-- [ ] Any future deploy doc/runbook references `pre_s3_check.sh` as step 0
+- [x] Owner decision recorded — **option (b), deadline Nov 19** (see DECIDED section)
+- [ ] **Nov 19 migration checklist complete** (`.zshrc` cleaned, `[bedrock]` profile,
+      both identities verified, fresh-shell default clean, gate passes with no workaround)
+- [x] Deploy checklist references `pre_s3_check.sh` as Step 0 (v3 banner ops gates + §10)
 
 ## Notes
 

@@ -24,6 +24,13 @@
 > 5. **P6 — Link Blocks 2/3** must not link to pages that don't exist yet (would ship ~6 weeks of internal 404s). Existing-target versions below.
 > 6. **P8 — Two Tier-1 rows held:** `/primer` (retargeting risk) and `/clustal-vs-muscle` (already 1.47% CTR).
 > 7. **Ops gates (missing from raw v3):** `pre_gsc_check.sh` pre-flight · surgical `aws s3 cp` only — **NEVER `deploy/aws/sync-frontend.sh`** (TICKET-1 / GitHub #8 P0) · CloudFront invalidation · `deploy/aws/indexnow_ping.sh` · `scripts/rules_lint.py` 0 errors · FAQ-mirror gate before any FAQ/schema change · GSC Request-Indexing ≈10 URLs/day, ≥30 s apart · commit/push/deploy only on explicit owner go.
+>
+>    **Ordered deploy checklist (owner, 2026-11-05) — every deploy, in this order:**
+>    1. `bash scripts/pre_s3_check.sh` (AWS identity gate — must exit 0)
+>    2. `python3 scripts/rules_lint.py` (0 errors)
+>    3. `python3 scripts/faq_mirror.py` (0 violations on the changed pages)
+>    4. `aws s3 cp` (surgical, single files — never `sync-frontend.sh`; verify 8/8 CMS uploads before AND after)
+>    5. CloudFront invalidation (both clean + `.html` forms) → `deploy/aws/indexnow_ping.sh`
 
 ---
 
@@ -454,7 +461,7 @@ Audited against the repo (`~/Desktop/vigyanpilot`, `wip/mega-menu` @ `6d2fc663`)
 | **P6** | Blocks 2/3 link to pages not shipping until Jan 5 but scheduled Nov 24–30 → ~6 weeks of internal 404s | 🔴 | Existing-target versions of Blocks 2/3 added in §4.3; new links added only in Sprint 3c |
 | **P7** | Finding N4 cites `/amplicon-size-calculator` (live **404**, never in git) and mixes query-level 19–30% CTRs with page-level data | 🟠 | §2 callout: winners = `/pcr-product-calculator` 3.0% + `/dna-3d` 11.8%; side-action = 301 the 404 URL if GSC still shows it |
 | **P8** | Tier-1 #8 would retarget `/primer` (0.73% CTR) at a secondary intent; #11 rewrites a 1.47%-CTR near-winner | 🔟 | Both **HELD**; 11 actionable rows reordered into Batches A/B/C by CTR-gap (§3 callout) |
-| **P9** | §6.4 "80+ schema-only FAQ pages" stale; no ops gates referenced anywhere (deploy path, pre-flight, quotas, lint) | 🟠 | Real count today = **37/209** → separate ticket, doesn't block Sprint 1; ops gates added to banner + §5 |
+| **P9** | §6.4 "80+ schema-only FAQ pages" stale; no ops gates referenced anywhere (deploy path, pre-flight, quotas, lint) | 🟠 | Real count = **37/209** Q-miss, **scope extended 2026-11-05 to the 85-page union** (37 Q-miss + 50 A-miss + 39 microdata, see TICKET-FAQ-85) → doesn't block Sprint 1; ops gates added to banner + §5/§10 |
 
 **Independently VERIFIED correct (kept as-is):** Finding N1 mobile>desktop CTR inversion (our export: desktop 0.59% / 324K impr vs mobile 1.19% — desktop = 89% of impressions) · Finding N2 USA crisis (our export: USA 85,156 impr @0.30% pos 13.34 vs India 56,538 @1.20% pos 9.25) · all 15 Tier-1 URLs exist and proposed titles are ≤55ch · Block 1's 6 link targets all resolve · Strike Issue A is sound (AI-artifact phrasing; anti-cannibalization-aligned) · §6.1/6.3/6.6/6.8 guardrails match house rules.
 
@@ -464,7 +471,7 @@ Audited against the repo (`~/Desktop/vigyanpilot`, `wip/mega-menu` @ `6d2fc663`)
 3. **Broken git ref `refs/remotes/origin/main 3`** (space in name, warned on every git command) — **removed** 2026-11-05 via `git update-ref -d`.
 4. `related-tools` class has **zero CSS** in `frontend/` — style decision owed in Sprint 1.
 
-**Execution gates for every row of this plan** (from repo ops, absent in raw v3): `scripts/pre_gsc_check.sh` 9/9 PASS before any GSC submission · surgical `aws s3 cp` only, **never `deploy/aws/sync-frontend.sh`** (TICKET-1 / GitHub #8 P0 — still open) · verify 8/8 CMS uploads intact around any S3 op · CloudFront invalidation (include both clean + `.html` forms) · `deploy/aws/indexnow_ping.sh` after deploy · `scripts/rules_lint.py` 0 errors · FAQ-mirror gate (visible == schema, character-exact) before any FAQ/schema edit · GSC Request-Indexing ≈10 URLs/day, ≥30 s apart · crawl freeze until the Day-7 checkpoint clears · commit/push/deploy only on explicit owner go.
+**Execution gates for every row of this plan** (from repo ops, absent in raw v3 — ordered deploy checklist in banner item 7): `scripts/pre_gsc_check.sh` 9/9 PASS before any GSC submission · `bash scripts/pre_s3_check.sh` exit 0 (AWS identity) · `scripts/rules_lint.py` 0 errors · `scripts/faq_mirror.py` 0 violations on changed pages · surgical `aws s3 cp` only, **never `deploy/aws/sync-frontend.sh`** (TICKET-1 / GitHub #8 P0 — still open) · verify 8/8 CMS uploads intact around any S3 op · CloudFront invalidation (include both clean + `.html` forms) · `deploy/aws/indexnow_ping.sh` after deploy · GSC Request-Indexing ≈10 URLs/day, ≥30 s apart · crawl freeze until the Day-7 checkpoint clears · commit/push/deploy only on explicit owner go.
 
 ---
 

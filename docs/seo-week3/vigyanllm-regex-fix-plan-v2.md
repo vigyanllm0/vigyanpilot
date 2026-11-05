@@ -284,6 +284,10 @@ The flattened visible text of items 1–5 below matches the existing schema verb
 
 ### 3.6 — HowTo schema (insert in `<head>` after the FAQ schema)
 
+> **⚠️ SKIP RULE (added 2026-11-05): Skip this section if the target page already has a HowTo
+> block — check before pasting** (`grep -c '"@type": "HowTo"' <page>`). Two HowTo blocks on one
+> page = duplicate-schema spam risk. Sprint 1 skipped §3.6 for exactly this reason.
+
 The page already has 1 HowTo block. This is an OPTIONAL improved replacement — only paste if you intend to replace the existing HowTo, not add a second one (duplicate HowTo = schema spam risk).
 
 ```html
