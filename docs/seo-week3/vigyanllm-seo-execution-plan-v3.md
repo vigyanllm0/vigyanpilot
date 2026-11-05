@@ -363,7 +363,7 @@ v1 mentions internal links but doesn't specify them. Here's the explicit wiring.
 
 > **QA (P3/P4) — Timeline corrections:**
 > 1. **The Nov 2 Day-7 GSC checkpoint has not run** (owner-side: URL Inspection on the 9 URLs, Coverage delta vs 154, Performance filter, Sprint 1 go/no-go, Pre-flight 1 AI-leak validation). v2 gates Sprint 1 on it (**≥5/9 indexed**). **Nothing on this table ships before that checkpoint clears.** As of 2026-11-05 the checkpoint is overdue — run it first.
-> 2. **"Wave 1-4 (C1/C2/C3/C4) deploy Nov 3-6" could not be located anywhere in this repo's docs** (grep: `Wave 1`, `C1/C2`, `QA report` → 0 hits). Confirm the source or delete the row — do not treat it as a dependency.
+> 2. **"Wave 1-4 (C1/C2/C3/C4)" and "QA report Critical 3" are conversation artifacts** from the prior 437-finding QA conversation — **no such doc exists in this repo** (grep: `Wave 1`, `C1/C2`, `QA report` → 0 hits). **RESOLVED 2026-11-05: dropped as dependencies** — they do not gate anything in this plan; if they ever need to be source-of-truth, write them into a repo doc first.
 > 3. **Sprint 1 window conflict:** v2 says **Nov 3–9** (5-day sprint); this table says Nov 7–9. Use **Nov 3–9 minus whatever the checkpoint delays** — i.e. start the day after the checkpoint clears, ≤5 working days.
 > 4. Sprint 2 batch A must start **after** Sprint 1's title change lands on the same page — row #1 already removed from Tier 1 (see §3 callout), so no double-touch remains.
 > 5. Every "Dev" row above = surgical `aws s3 cp` + CloudFront invalidation + IndexNow + live verify (see banner ops gates). **Never `deploy/aws/sync-frontend.sh`** (TICKET-1 / GitHub #8, P0, open).
