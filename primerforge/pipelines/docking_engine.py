@@ -98,6 +98,130 @@ def box_from_residues(pdb_string: str, chain: str, start: int, end: int) -> dict
     }
 
 
+
+# Hetero groups that are solvent, buffers or single-atom ions, never a ligand.
+NON_LIGAND_HETS = {
+    "HOH", "WAT", "DOD", "NA", "CL", "K", "MG", "CA", "ZN", "MN", "FE", "CU",
+    "CO", "NI", "CD", "BR", "IOD", "SO4", "PO4", "GOL", "EDO", "PEG", "DMS",
+    "ACT", "TRS", "MES", "EPE", "FMT", "NO3", "BME",
+}
+BOX_MIN_SIDE = 18.0          # below this a typical drug-like ligand cannot rotate freely
+BOX_MAX_SIDE = 30.0          # Vina practical per-side limit (27,000 A^3 volume)
+BOX_MAX_VOLUME = 27000.0
+BOUND_LIGAND_MARGIN = 8.0    # A of padding around the co-crystal ligand
+DEFAULT_DOCK_SEED = 42       # fixed so a re-run of the same inputs is reproducible
+
+
+def _hetatm_ligand_groups(pdb_string: str) -> dict:
+    """Group HETATM heavy atoms by (resname, chain, resnum), skipping solvent/ions."""
+    groups: dict = {}
+    for line in pdb_string.split("\n"):
+        if not line.startswith("HETATM") or len(line) < 54:
+            continue
+        resname = line[17:20].strip()
+        if not resname or resname in NON_LIGAND_HETS:
+            continue
+        element = line[76:78].strip() if len(line) >= 78 else ""
+        if element in ("H", "D"):
+            continue
+        try:
+            resnum = int(line[22:26])
+            xyz = (float(line[30:38]), float(line[38:46]), float(line[46:54]))
+        except ValueError:
+            continue
+        chain = line[21].strip() or "A"
+        groups.setdefault((resname, chain, resnum), []).append(xyz)
+    return groups
+
+
+def box_from_bound_ligand(pdb_string: str, resname: str | None = None,
+                          chain: str | None = None,
+                          margin: float = BOUND_LIGAND_MARGIN) -> dict | None:
+    """
+    Search box centred on a co-crystal (bound) ligand, the industry-standard
+    choice when an experimental complex is available.
+
+    Centre = centroid of the ligand's heavy atoms. Side = ligand extent +
+    2 x margin, clamped to [BOX_MIN_SIDE, BOX_MAX_SIDE]. Water, buffers and
+    ions are never chosen. Without `resname`, the largest bound ligand wins.
+    Returns None when the structure has no matching ligand.
+    """
+    groups = _hetatm_ligand_groups(pdb_string)
+    if resname:
+        groups = {k: v for k, v in groups.items() if k[0] == resname.strip().upper()}
+    if chain:
+        groups = {k: v for k, v in groups.items() if k[1] == chain.strip()[:1]}
+    if not groups:
+        return None
+    key = max(groups, key=lambda k: len(groups[k]))
+    pts = groups[key]
+    xs, ys, zs = zip(*pts)
+    center = [sum(xs) / len(xs), sum(ys) / len(ys), sum(zs) / len(zs)]
+    raw = [max(a) - min(a) + 2 * margin for a in (xs, ys, zs)]
+    size = [max(BOX_MIN_SIDE, min(s, BOX_MAX_SIDE)) for s in raw]
+    truncated = [axis for axis, s in zip("xyz", raw) if s > BOX_MAX_SIDE]
+    return {
+        "center": [round(c, 3) for c in center],
+        "size": [round(s, 1) for s in size],
+        "source": "bound_ligand",
+        "ligand": {"resname": key[0], "chain": key[1], "resnum": key[2],
+                   "heavy_atoms": len(pts)},
+        "truncated_axes": truncated,
+    }
+
+
+def validate_box(box: dict, pdb_string: str | None = None) -> dict:
+    """
+    Sanity-check a search box before docking. Returns {"ok", "warnings"}.
+
+    Warnings never block a run; they are shown to the user so a poor box
+    (too small to contain the ligand, clamped, or away from the protein)
+    is visible instead of silently producing misleading scores.
+    """
+    warnings: list[str] = []
+    try:
+        size = [float(v) for v in box["size"]]
+        center = [float(v) for v in box["center"]]
+    except (KeyError, TypeError, ValueError):
+        return {"ok": False, "warnings": ["Search box is malformed."]}
+
+    if any(s < BOX_MIN_SIDE for s in size):
+        warnings.append(
+            f"Box is smaller than {BOX_MIN_SIDE:g} A on at least one side; "
+            "typical drug-like ligands may not fit or rotate freely.")
+    if any(s > BOX_MAX_SIDE for s in size):
+        warnings.append(
+            f"Box side is above {BOX_MAX_SIDE:g} A, beyond Vina's practical limit; "
+            "the search is less reliable and may not cover the whole site.")
+    volume = size[0] * size[1] * size[2]
+    if volume > BOX_MAX_VOLUME:
+        warnings.append(
+            f"Box volume {volume:,.0f} A^3 exceeds the {BOX_MAX_VOLUME:,.0f} A^3 "
+            "Vina practical limit; results are less reliable.")
+
+    if pdb_string:
+        xs, ys, zs = [], [], []
+        for line in pdb_string.split("\n"):
+            if line.startswith("ATOM  ") and len(line) >= 54:
+                try:
+                    xs.append(float(line[30:38]))
+                    ys.append(float(line[38:46]))
+                    zs.append(float(line[46:54]))
+                except ValueError:
+                    continue
+        if xs:
+            pad = 5.0
+            for c, lo, hi, axis in zip(center, (min(xs), min(ys), min(zs)),
+                                       (max(xs), max(ys), max(zs)), "xyz"):
+                if c < lo - pad or c > hi + pad:
+                    warnings.append(
+                        f"Box centre lies outside the protein along {axis} "
+                        f"({c:.1f} A; protein spans {lo:.1f} to {hi:.1f} A).")
+                    break
+
+    return {"ok": not warnings, "warnings": warnings}
+
+
 def _mol_from_pdb(receptor_pdb: str):
     """Parse a (possibly imperfect) PDB block into an RDKit mol.
 
@@ -159,7 +283,19 @@ def pdb_to_pdbqt(receptor_pdb: str, output_path: str) -> bool:
         try:
             subprocess.run(["obabel", _tmp_pdb, "-O", output_path, "-xr"],
                            check=True, capture_output=True, timeout=60)
-            return True
+            # obabel passes PDB records (HEADER/REMARK/CRYST1/...) straight
+            # into the PDBQT, and Vina's rigid-receptor parser rejects them
+            # ("Unknown or inappropriate tag found in rigid receptor").
+            # Keep only the atom records — same contract as the meeko path.
+            with open(output_path) as f:
+                conv = f.readlines()
+            with open(output_path, "w", newline="\n") as f:
+                for line in conv:
+                    clean = line.rstrip("\n")
+                    if clean.startswith(("ATOM", "HETATM")):
+                        f.write(clean + "\n")
+            if os.path.getsize(output_path) > 0:
+                return True
         except Exception as e:
             logger.debug("Suppressed exception: %s", e)
     from meeko import MoleculePreparation
@@ -212,7 +348,9 @@ async def run_vina_docking(receptor_pdb: str, ligand_smiles: str, exhaustiveness
         with open(ligand_smi_path, "w") as f: f.write(ligand_smiles)
 
         if not receptor_pdbqt_path:
-            pdb_to_pdbqt(receptor_pdb, local_receptor_pdbqt)
+            if not pdb_to_pdbqt(receptor_pdb, local_receptor_pdbqt):
+                raise Exception("Receptor preparation failed: could not convert "
+                                "the structure to PDBQT for Vina.")
 
         # 3. Convert Ligand SMILES to 3D PDBQT
         if shutil.which("obabel"):
@@ -279,7 +417,7 @@ async def run_vina_docking(receptor_pdb: str, ligand_smiles: str, exhaustiveness
                 vina_bin, "--receptor", local_receptor_pdbqt, "--ligand", ligand_pdbqt_path,
                 "--center_x", str(round(cx, 3)), "--center_y", str(round(cy, 3)), "--center_z", str(round(cz, 3)),
                 "--size_x", str(round(sx, 1)), "--size_y", str(round(sy, 1)), "--size_z", str(round(sz, 1)),
-                "--exhaustiveness", str(exhaustiveness), "--out", out_pdbqt_path
+                "--exhaustiveness", str(exhaustiveness), "--seed", str(DEFAULT_DOCK_SEED), "--out", out_pdbqt_path
             ]
             if cpu:
                 vina_cmd += ["--cpu", str(int(cpu))]

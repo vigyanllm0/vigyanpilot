@@ -774,6 +774,17 @@ def _screening_refund(campaign: dict, user_id, refund_fn, mode: str = "cancel") 
     return amount
 
 
+def _plip_for_pose(receptor_pdb: str, ligand_text: str) -> dict:
+    """PLIP interaction profile for one pose. Never raises (route stays 200)."""
+    try:
+        from primerforge.pipelines.plip_analyzer import analyze_pose_plip
+        return analyze_pose_plip(receptor_pdb, ligand_text)
+    except Exception as exc:  # defensive: PLIP must never break the interaction route
+        logger.warning("PLIP profile skipped: %s", exc)
+        return {"available": False, "interactions": [], "counts": {},
+                "reason": "PLIP analysis is unavailable."}
+
+
 def create_app() -> Flask:
     app = Flask(__name__)
 
@@ -3047,8 +3058,19 @@ def create_app() -> Flask:
                                         "start": res_start, "end": res_end}}
                 elif box.get("blind"):
                     box = {"blind": True}
+                elif box.get("bound_ligand") is not None:
+                    bl = box.get("bound_ligand")
+                    if bl is not True and not isinstance(bl, dict):
+                        return err("'box.bound_ligand' must be true or {resname, chain}.", "VALIDATION_ERROR", 400)
+                    if not pdb_content:
+                        return err("A bound-ligand box needs an uploaded PDB structure that contains the ligand.",
+                                   "VALIDATION_ERROR", 400)
+                    spec = bl if isinstance(bl, dict) else {}
+                    resname = str(spec.get("resname") or "").strip().upper()[:3]
+                    chain = str(spec.get("chain") or "").strip()[:1]
+                    box = {"bound_ligand": {"resname": resname or None, "chain": chain or None}}
                 else:
-                    return err("'box' must contain center+size, residues {chain,start,end}, or blind:true.",
+                    return err("'box' must contain center+size, residues {chain,start,end}, blind:true, or bound_ligand.",
                                "VALIDATION_ERROR", 400)
 
             if pdb_content:
@@ -3413,6 +3435,8 @@ def create_app() -> Flask:
         try:
             report = analyze_interactions(receptor_pdb, ligand_sdf=ligand_sdf, ligand_xyz=ligand_xyz)
             result = report_to_dict(report)
+            if ligand_sdf:
+                result["plip"] = _plip_for_pose(receptor_pdb, ligand_sdf)
             return jsonify(result), 200
         except Exception as exc:
             logger.error("Interaction analysis error: %s", exc, exc_info=True)
@@ -3450,6 +3474,7 @@ def create_app() -> Flask:
         try:
             report = analyze_interactions(receptor_pdb, ligand_sdf=ligand_sdf)
             result_dict = report_to_dict(report)
+            result_dict["plip"] = _plip_for_pose(receptor_pdb, ligand_sdf)
             result_dict["job_id"] = job_id
             result_dict["rank"] = 1
             result_dict["smiles"] = top_mol.get("smiles", "")
@@ -3521,13 +3546,53 @@ def create_app() -> Flask:
         """
         Calculate AutoDock Vina grid box.
 
-        Two modes (advanced panel, task 2.2):
+        Three modes (advanced panel, task 2.2):
           A) {"center": [x,y,z], "radius": r}          → center + size = 2r+4
           B) {"pdb_content": "...", "residues": {"chain","start","end"}
               or "A:45-60"}                            → center/size spanning
               that residue range (computed against the structure)
+          C) {"pdb_content": "...", "bound_ligand": true
+              or {"resname","chain"}}                  → centre on the
+              co-crystal ligand (water/ions excluded); response lists every
+              candidate ligand so the UI can offer a picker.
         """
         data = request.get_json(silent=True) or {}
+
+        # Mode C: co-crystal (bound) ligand box preview
+        if data.get("pdb_content") and data.get("bound_ligand") is not None:
+            from .pipelines.docking_engine import (
+                _hetatm_ligand_groups,
+                box_from_bound_ligand,
+                validate_box,
+            )
+            pdb_text = str(data["pdb_content"])
+            spec = data.get("bound_ligand")
+            spec = spec if isinstance(spec, dict) else {}
+            lbox = box_from_bound_ligand(pdb_text,
+                                         resname=spec.get("resname"),
+                                         chain=spec.get("chain"))
+            if not lbox:
+                return err("No bound ligand found in that structure "
+                           "(water, buffers and ions don't count).",
+                           "VALIDATION_ERROR", 400)
+            groups = _hetatm_ligand_groups(pdb_text)
+            candidates = [
+                {"resname": k[0], "chain": k[1], "resnum": k[2],
+                 "heavy_atoms": len(v)}
+                for k, v in sorted(groups.items(), key=lambda kv: -len(kv[1]))
+            ]
+            cx, cy, cz = lbox["center"]
+            sx, sy, sz = lbox["size"]
+            return jsonify({
+                'center': {'x': cx, 'y': cy, 'z': cz},
+                'size': {'x': sx, 'y': sy, 'z': sz},
+                'source': 'bound_ligand',
+                'ligand': lbox['ligand'],
+                'truncated_axes': lbox.get('truncated_axes') or [],
+                'candidates': candidates[:10],
+                'validation': validate_box(lbox, pdb_text),
+                'spacing': 0.375,
+            }), 200
 
         # Mode B: residue range against a structure (box override preview)
         if data.get("pdb_content") and (data.get("residues") or data.get("range")):
@@ -3556,11 +3621,13 @@ def create_app() -> Flask:
                            "VALIDATION_ERROR", 400)
             cx, cy, cz = rbox["center"]
             sx, sy, sz = rbox["size"]
+            from .pipelines.docking_engine import validate_box
             return jsonify({
                 'center': {'x': cx, 'y': cy, 'z': cz},
                 'size': {'x': sx, 'y': sy, 'z': sz},
                 'source': 'residue_range',
                 'residues': rbox['residues'],
+                'validation': validate_box(rbox, str(data["pdb_content"])),
                 'spacing': 0.375,
             }), 200
 
@@ -3598,6 +3665,66 @@ def create_app() -> Flask:
             'npoints': round(size / 0.375) ** 3,
         }
         return jsonify(gridbox), 200
+
+    # ── Redocking-RMSD site validation (industry-standard protocol check) ──
+
+    @app.route("/api/primer/docking/redock-validate", methods=["POST"])
+    @(_docking_limiter.limit("4 per minute", exempt_when=admin_rate_exempt) if _docking_limiter else lambda f: f)
+    def redock_validate():
+        """
+        Redock the co-crystal ligand and report RMSD vs the crystal pose.
+
+        Body: {"pdb_content": "...", "resname"?: "...", "chain"?: "...",
+               "box"?: {"center":[x,y,z], "size":[sx,sy,sz]},
+               "exhaustiveness"?: 8}
+
+        The industry-standard check that the receptor preparation + search
+        box can reproduce the experimental pose before a run is trusted.
+        Returns {"available": true, "rmsd", "verdict", ...} or
+        {"available": false, "reason": ...} — never a 500 (every failure
+        mode is reported honestly). A structure with no bound ligand is a
+        400: the client sent a file the check cannot apply to.
+        """
+        data = request.get_json(silent=True) or {}
+        pdb_text = str(data.get("pdb_content", "") or "").strip()
+        if not pdb_text:
+            return err("No PDB content provided.", "VALIDATION_ERROR", 400)
+        if len(pdb_text) < 50:
+            return err("PDB content too short.", "VALIDATION_ERROR", 400)
+
+        box = data.get("box")
+        if box is not None:
+            if (not isinstance(box, dict)
+                    or not isinstance(box.get("center"), (list, tuple))
+                    or not isinstance(box.get("size"), (list, tuple))
+                    or len(box["center"]) != 3 or len(box["size"]) != 3):
+                return err("'box' must be {center: [x,y,z], size: [sx,sy,sz]}.",
+                           "VALIDATION_ERROR", 400)
+
+        from .pipelines.redock_validate import (
+            find_bound_ligand,
+            validate_redocking_sync,
+        )
+        resname = data.get("resname") or None
+        chain = data.get("chain") or None
+        if not find_bound_ligand(pdb_text, resname=resname, chain=chain):
+            return err(
+                "No bound ligand found in that structure — redocking "
+                "validation needs a co-crystal ligand (water, buffers and "
+                "ions don't count).", "VALIDATION_ERROR", 400)
+        try:
+            exh = int(data.get("exhaustiveness") or 8)
+        except (TypeError, ValueError):
+            exh = 8
+        try:
+            result = validate_redocking_sync(
+                pdb_text, resname=resname, chain=chain, box=box,
+                exhaustiveness=exh)
+        except Exception as exc:  # belt & braces: the contract is never-raise
+            logger.error("Redock validation error: %s", exc, exc_info=True)
+            return err(f"Redocking validation failed: {exc}",
+                       "ANALYSIS_FAILED", 500)
+        return jsonify(result), 200
 
     # ════════════════════════════════════════════════════════════════════
     # Regenerative Folding Engine

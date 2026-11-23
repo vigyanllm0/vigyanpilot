@@ -259,6 +259,125 @@ def _normalise_order_probe(probe: dict, index: int) -> dict:
     }
 
 
+def _order_output(step: dict):
+    """Decode one pipeline_results row's output_data into a dict (else None).
+
+    The route pre-decodes rows with ``_decrypt_output``; this also accepts a
+    raw JSON/Fernet string so the helper stays usable on its own.
+    """
+    if not isinstance(step, dict):
+        return None
+    output = step.get("output_data")
+    if isinstance(output, str):
+        output = _decrypt_output({"output_data": output}).get("output_data")
+    if isinstance(output, str):
+        try:
+            output = json.loads(output)
+        except (json.JSONDecodeError, TypeError):
+            return None
+    return output if isinstance(output, dict) else None
+
+
+def collect_order_material(step_results):
+    """Return ``(primer_pairs, probes, sequences_to_screen)`` for vendor ordering.
+
+    Two rules matter here, both learned from live step output:
+
+    * **Pairs come from the last producer only.** Step 22 (ranking) and step 24
+      (probe design) both re-emit ``ranked_pairs``, and the serializer does not
+      de-duplicate — reading both doubled every pair on the order (duplicate
+      ``VL_1_FWD`` names). Legacy jobs keep working because the scan is
+      numbering-agnostic (ranking was step 19 under the old numbering).
+    * **One probe per pair.** Step 24 emits up to five design candidates per
+      pair in ``probe_results``; only the first (best) is ordered. When
+      ``probe_results`` is present it is authoritative — falling back to the
+      probes embedded in ``ranked_pairs`` as well would double the probe lines.
+    """
+    primer_pairs: list = []
+    probes: list = []
+    sequences: list = []
+    seen_seq: set = set()
+
+    def _screen(seq: str) -> None:
+        if seq and seq not in seen_seq:
+            seen_seq.add(seq)
+            sequences.append(seq)
+
+    ranked_pairs: list = []
+    legacy_pairs: list = []
+    probe_results: list = []
+    top_level_probes: list = []
+    amplicons: list = []
+
+    for step in step_results or []:
+        output = _order_output(step)
+        if not output:
+            continue
+
+        step_pairs = output.get("ranked_pairs") or output.get("top_pairs")
+        if step_pairs:
+            ranked_pairs = list(step_pairs)          # last producer wins
+        legacy_pairs.extend(output.get("primer_pairs") or [])
+        if "probe_results" in output:
+            probe_results = output.get("probe_results") or []
+        for key in ("probes", "probe_candidates", "candidate_probes"):
+            top_level_probes.extend(output.get(key) or [])
+        amplicons.extend(output.get("amplicons") or [])
+
+    # ── Pairs: authoritative ranking, else the legacy per-step pair list ────
+    source_pairs = ranked_pairs or legacy_pairs
+    seen_pairs: set = set()
+    raw_pairs: list = []
+    for pair in source_pairs:
+        if not isinstance(pair, dict):
+            continue
+        normalised = _normalise_order_pair(pair, len(primer_pairs))
+        fwd_seq = normalised.get("forward", {}).get("sequence", "")
+        rev_seq = normalised.get("reverse", {}).get("sequence", "")
+        key = (fwd_seq, rev_seq)
+        if key in seen_pairs:
+            continue
+        seen_pairs.add(key)
+        primer_pairs.append(normalised)
+        raw_pairs.append(pair)
+        _screen(fwd_seq)
+        _screen(rev_seq)
+
+    # ── Probes: first candidate only, then de-dupe by sequence ──────────────
+    probe_source: list = []
+    for entry in probe_results:
+        if not isinstance(entry, dict):
+            continue
+        candidates = entry.get("probes") or []
+        if candidates and isinstance(candidates[0], dict):
+            probe_source.append(candidates[0])       # best candidate only
+    for pair in raw_pairs:
+        # Step 24 normally re-emits ranked_pairs with probes embedded; read the
+        # raw pair (the normalised shape keeps only forward/reverse only).
+        candidates = pair.get("probes") or []
+        if candidates and isinstance(candidates[0], dict):
+            probe_source.append(candidates[0])
+    if not probe_source:
+        probe_source = [p for p in top_level_probes if isinstance(p, dict)]
+
+    seen_probes: set = set()
+    for probe in probe_source:
+        normalised = _normalise_order_probe(probe, len(probes))
+        seq = normalised.get("sequence", "")
+        if not seq or seq in seen_probes:
+            continue
+        seen_probes.add(seq)
+        probes.append(normalised)
+        _screen(seq)
+
+    # Also screen amplicon sequences
+    for amplicon in amplicons:
+        if isinstance(amplicon, dict):
+            _screen(amplicon.get("sequence", ""))
+
+    return primer_pairs, probes, sequences
+
+
 @pipeline_bp.route("/api/pipeline/submit", methods=["POST"])
 @_route_error_handler
 @allow_guest
@@ -275,6 +394,18 @@ def submit_pipeline():
         "design_mode": "standard" | "bisulfite" | "multiplex",
         "adapter_platform": "illumina_nextera" | "illumina_truseq" | "ion_torrent" | null,
         "probe_mode": "taqman" | "sybr" | null,
+        "probe_type": "taqman",
+        "probe_reporter": "FAM",
+        "probe_quencher": "BHQ-1",
+        "probe_tm_offset_min": 8,
+        "probe_tm_offset_max": 10,
+        "probe_len_min": 18,
+        "probe_len_max": 30,
+        "probe_gc_min": 30,
+        "probe_gc_max": 80,
+        "probe_hairpin_limit": -2.0,
+        "probe_mod5": "",
+        "probe_mod3": "",
         "polymerase_type": "taq" | "hifi",
         "buffer_conditions": {
             "monovalent_mm": 50, "divalent_mm": 1.5,
@@ -342,6 +473,23 @@ def submit_pipeline():
         "design_mode": data.get("design_mode", "standard"),
         "adapter_platform": data.get("adapter_platform"),
         "probe_mode": data.get("probe_mode"),
+        # Probe customisation from the UI (reporter/quencher/Tm offset/length/
+        # GC/hairpin/mods). Step 24 reads these via input_data["probe_params"];
+        # without this key it silently falls back to hard-coded defaults.
+        "probe_params": {
+            "type": data.get("probe_type", "taqman"),
+            "reporter": data.get("probe_reporter", "FAM"),
+            "quencher": data.get("probe_quencher", "BHQ-1"),
+            "tm_offset_min": _coerce_float(data.get("probe_tm_offset_min"), 8.0),
+            "tm_offset_max": _coerce_float(data.get("probe_tm_offset_max"), 10.0),
+            "len_min": _coerce_int(data.get("probe_len_min"), 18),
+            "len_max": _coerce_int(data.get("probe_len_max"), 30),
+            "gc_min": _coerce_int(data.get("probe_gc_min"), 30),
+            "gc_max": _coerce_int(data.get("probe_gc_max"), 80),
+            "hairpin_limit": _coerce_float(data.get("probe_hairpin_limit"), -2.0),
+            "mod5": data.get("probe_mod5", ""),
+            "mod3": data.get("probe_mod3", ""),
+        },
         "polymerase_type": data.get("polymerase_type", "taq"),
         "buffer_conditions": data.get("buffer_conditions", {
             "monovalent_mm": 50.0,
@@ -777,62 +925,9 @@ def trigger_order_serialization(job_id: str):
     for sr in step_results:
         _decrypt_output(sr)
 
-    # Extract sequences for compliance screening and primer pairs for serialization
-    sequences_to_screen = []
-    primer_pairs = []
-    probes = []
-
-    for step in step_results:
-        output = step.get("output_data")
-        if not output:
-            continue
-        if isinstance(output, str):
-            try:
-                output = json.loads(output)
-            except (json.JSONDecodeError, TypeError):
-                continue
-
-        # Collect primer pairs from design steps
-        if isinstance(output, dict):
-            for pair in output.get("primer_pairs", []):
-                normalised = _normalise_order_pair(pair, len(primer_pairs))
-                primer_pairs.append(normalised)
-                fwd_seq = normalised.get("forward", {}).get("sequence", "")
-                rev_seq = normalised.get("reverse", {}).get("sequence", "")
-                if fwd_seq:
-                    sequences_to_screen.append(fwd_seq)
-                if rev_seq:
-                    sequences_to_screen.append(rev_seq)
-
-            for pair in output.get("ranked_pairs", []) or output.get("top_pairs", []):
-                normalised = _normalise_order_pair(pair, len(primer_pairs))
-                primer_pairs.append(normalised)
-                fwd_seq = normalised.get("forward", {}).get("sequence", "")
-                rev_seq = normalised.get("reverse", {}).get("sequence", "")
-                if fwd_seq:
-                    sequences_to_screen.append(fwd_seq)
-                if rev_seq:
-                    sequences_to_screen.append(rev_seq)
-
-            for probe in output.get("probes", []):
-                normalised_probe = _normalise_order_probe(probe, len(probes))
-                probes.append(normalised_probe)
-                probe_seq = normalised_probe.get("sequence", "")
-                if probe_seq:
-                    sequences_to_screen.append(probe_seq)
-
-            for probe in output.get("probe_candidates", []) or output.get("candidate_probes", []):
-                normalised_probe = _normalise_order_probe(probe, len(probes))
-                probes.append(normalised_probe)
-                probe_seq = normalised_probe.get("sequence", "")
-                if probe_seq:
-                    sequences_to_screen.append(probe_seq)
-
-            # Also screen amplicon sequences
-            for amplicon in output.get("amplicons", []):
-                amp_seq = amplicon.get("sequence", "")
-                if amp_seq:
-                    sequences_to_screen.append(amp_seq)
+    # Extract sequences for compliance screening and primer pairs for
+    # serialization — last ranking producer only, one probe per pair.
+    primer_pairs, probes, sequences_to_screen = collect_order_material(step_results)
 
     if not sequences_to_screen:
         return jsonify(brand_response(

@@ -9,9 +9,14 @@
     'ad_storage': 'denied',
     'ad_user_data': 'denied',
     'ad_personalization': 'denied',
-    'analytics_storage': 'denied',
-    'region': ['AT','BE','BG','HR','CY','CZ','DK','EE','FI','FR','DE','GR','HU','IE','IT','LV','LT','LU','MT','NL','PL','PT','RO','SK','SI','ES','SE','IS','LI','NO','GB','CH']
+    'analytics_storage': 'denied'
   });
+  window.clarity = window.clarity || function () { (window.clarity.q = window.clarity.q || []).push(arguments); };
+  try {
+    var _vlc = JSON.parse(localStorage.getItem('vigyanllm_cookie_consent') || 'null');
+    window.clarity('consent', !!(_vlc && (_vlc.consent === 'accepted' || (_vlc.cats && _vlc.cats.analytics))));
+  } catch (e) { window.clarity('consent', false); }
+
   try {
     var vlcs = JSON.parse(localStorage.getItem('vigyanllm_cookie_consent') || 'null');
     if (vlcs && vlcs.consent === 'accepted') {
@@ -80,9 +85,9 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   --slate-border: #E2E8F0;
   --text: #0F172A;
   --text2: #475569;
-  --muted: #94A3B8;
+  --muted: #64748B;
   --primary: #2563EB;
-  --bio: #059669;
+  --bio: #047857;
   --amber: #D97706;
   --accent: #22D3EE;
   --font-h: 'Montserrat', sans-serif;
@@ -95,7 +100,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   --red-soft: #fef2f2;
   --amber-soft: #fffbeb;
   --bio-soft: #f0fdf4;
-  --primary-soft: #eff6ff;;--blue:#1565C0;--blue-light:#42A5F5;--blue-bg:#E3F2FD;--navy:#0F172A;--black:#0A0A0F;--surface:#FFFFFF;--surface-alt:#F5F7FA;--outline:#E2E5EA;--text:#0A0A0F;--text2:#4A4A6A;--muted:#7A7A9A;--font-h:'Montserrat',sans-serif;--font-b:'Open Sans',sans-serif;--space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-5:20px;--space-6:24px;--space-8:32px;--space-10:40px;--space-12:48px;--space-16:64px;--space-20:80px;--space-24:96px;--max-w:1400px}
+  --primary-soft: #eff6ff;;--blue:#1565C0;--blue-light:#42A5F5;--blue-bg:#E3F2FD;--navy:#0F172A;--black:#0A0A0F;--surface:#FFFFFF;--surface-alt:#F5F7FA;--outline:#E2E5EA;--text:#0A0A0F;--text2:#4A4A6A;--muted:#6B6B8A;--font-h:'Montserrat',sans-serif;--font-b:'Open Sans',sans-serif;--space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-5:20px;--space-6:24px;--space-8:32px;--space-10:40px;--space-12:48px;--space-16:64px;--space-20:80px;--space-24:96px;--max-w:1400px}
 *{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
 body{background:var(--surface);color:var(--text);font-family:var(--font-b);line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
@@ -201,9 +206,9 @@ a{text-decoration:none;color:inherit}
 /* Score bar */
 .score-bar{height:6px;border-radius:3px;background:rgba(255,255,255,.1);margin-top:8px;overflow:hidden}
 .score-bar-fill{height:100%;border-radius:3px;transition:width .8s ease}
-.score-bar-fill.good{background:linear-gradient(90deg,#059669,#34d399)}
-.score-bar-fill.ok{background:linear-gradient(90deg,#d97706,#fbbf24)}
-.score-bar-fill.bad{background:linear-gradient(90deg,#dc2626,#f87171)}
+.score-bar-fill.good{background:linear-gradient(90deg,#047857,#34d399)}
+.score-bar-fill.ok{background:linear-gradient(90deg,#b45309,#fbbf24)}
+.score-bar-fill.bad{background:linear-gradient(90deg,#b91c1c,#f87171)}
 /* pLDDT confidence strip */
 .plddt-strip{display:flex;gap:3px;margin:10px 0}
 .plddt-strip .ps-seg{flex:1;height:8px;border-radius:2px;transition:opacity .3s}
@@ -369,6 +374,8 @@ footer{padding:32px 0;border-top:1px solid var(--slate-border)}
 
 .skip-link:focus{top:0;outline:none}
 .gate-overlay{display:none;position:fixed;inset:0;background:rgba(15,23,42,.6);z-index:99999;align-items:center;justify-content:center;padding:24px}.gate-overlay.open{display:flex}.gate-modal{background:#fff;border-radius:16px;padding:36px;width:100%;max-width:400px;box-shadow:0 24px 64px rgba(0,0,0,.25);position:relative;text-align:center;animation:gateIn .25s ease}@keyframes gateIn{from{opacity:0;transform:scale(.95) translateY(10px)}to{opacity:1;transform:scale(1) translateY(0)}}.gate-lock{font-size:40px;margin-bottom:12px}.gate-cancel{padding:10px 24px;border:1.5px solid var(--outline);background:transparent;border-radius:8px;font-size:13px;font-weight:600;color:var(--text2);cursor:pointer;font-family:var(--font-b)}.gate-cancel:hover{background:var(--surface-alt)}
+.ico{width:1em;height:1em;display:inline-block;vertical-align:-0.125em;flex-shrink:0;overflow:visible}
+.mv-btn .ico,.btn-secondary .ico,.quick-btn .ico{vertical-align:-0.15em}
 </style>
 
 <script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.vigyanllm.in"}, {"@type": "ListItem", "position": 2, "name": "Molecular Docking Consensus Pipeline", "item": "https://www.vigyanllm.in/docking"}]}</script>
@@ -410,7 +417,7 @@ footer{padding:32px 0;border-top:1px solid var(--slate-border)}
 }
 </script>
 </head>
-<body><main>
+<body><svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true"><defs><symbol id="i-alert" viewBox="0 0 24 24"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></symbol><symbol id="i-check" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></symbol><symbol id="i-zap" viewBox="0 0 24 24"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></symbol><symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></symbol><symbol id="i-upload" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></symbol><symbol id="i-package" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></symbol><symbol id="i-network" viewBox="0 0 24 24"><circle cx="6" cy="12" r="3"/><circle cx="18" cy="6" r="3"/><circle cx="18" cy="18" r="3"/><line x1="8.6" y1="10.5" x2="15.4" y2="7.5"/><line x1="8.6" y1="13.5" x2="15.4" y2="16.5"/></symbol><symbol id="i-refresh" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></symbol><symbol id="i-zoom-in" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></symbol><symbol id="i-zoom-out" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/></symbol><symbol id="i-camera" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></symbol><symbol id="i-ruler" viewBox="0 0 24 24"><path d="M21.3 15.3a2.4 2.4 0 0 1 0 3.4l-2.6 2.6a2.4 2.4 0 0 1-3.4 0L2.7 8.7a2.4 2.4 0 0 1 0-3.4l2.6-2.6a2.4 2.4 0 0 1 3.4 0Z"/><path d="m14.5 12.5 2-2"/><path d="m11.5 9.5 2-2"/><path d="m8.5 6.5 2-2"/><path d="m17.5 15.5 2-2"/></symbol><symbol id="i-maximize" viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></symbol><symbol id="i-dna" viewBox="0 0 24 24"><path d="M4 3c0 6 16 6 16 12"/><path d="M20 3c0 6-16 6-16 12"/><line x1="6" y1="7" x2="18" y2="7"/><line x1="6" y1="11" x2="18" y2="11"/><line x1="6" y1="15" x2="18" y2="15"/></symbol><symbol id="i-clipboard" viewBox="0 0 24 24"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><line x1="12" y1="11" x2="16" y2="11"/><line x1="8" y1="11" x2="8.01" y2="11"/><line x1="12" y1="15" x2="16" y2="15"/><line x1="8" y1="15" x2="8.01" y2="15"/></symbol><symbol id="i-flask" viewBox="0 0 24 24"><path d="M9 3h6"/><path d="M10 3v6l-5 9a2 2 0 0 0 1.7 3h10.6a2 2 0 0 0 1.7-3l-5-9V3"/><line x1="8.5" y1="15" x2="15.5" y2="15"/></symbol><symbol id="i-chart" viewBox="0 0 24 24"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></symbol><symbol id="i-lightbulb" viewBox="0 0 24 24"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></symbol><symbol id="i-microscope" viewBox="0 0 24 24"><path d="M6 18h8"/><path d="M3 22h18"/><path d="M14 22a7 7 0 1 0 0-14h-1"/><path d="M9 14h2"/><path d="M9 12a2 2 0 0 1-2-2V6h6v4a2 2 0 0 1-2 2Z"/><path d="M12 6V3a1 1 0 0 0-1-1H9a1 1 0 0 0-1 1v3"/></symbol><symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></symbol><symbol id="i-star" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></symbol><symbol id="i-wrench" viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></symbol><symbol id="i-book" viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></symbol><symbol id="i-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></symbol><symbol id="i-x" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></symbol><symbol id="i-arrow-right" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></symbol><symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></symbol></defs></svg><main>
 
 
 
@@ -418,18 +425,18 @@ footer{padding:32px 0;border-top:1px solid var(--slate-border)}
 <nav aria-label="Main navigation">
 <div class="nav-inner">
   <a href="/" class="nav-brand">
-    <img src="/logo.png" alt="VigyanLLM Logo" class="site-logo" width="150" height="36" style="height:36px;width:auto;object-fit:contain" loading="lazy">
+    <img src="/logo.png" alt="" class="site-logo" width="482" height="334" style="height:36px;width:auto;object-fit:contain" decoding="async">
     <span>VigyanLLM</span>
   </a>
   <div class="nav-links">
     <div class="drop-wrap">
-      <span class="drop-trigger" role="button" tabindex="0" aria-haspopup="true" aria-expanded="false">Products<svg class="dt-chev" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg></span>
-      <div class="drop-panel">
+      <span class="drop-trigger" role="button" tabindex="0" aria-haspopup="true" aria-expanded="false" aria-controls="productsMenu">Products<svg class="dt-chev" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg></span>
+      <div class="drop-panel" id="productsMenu">
 
         <div class="dm-item">
           <a class="dm-row" href="/solutions/primer-pcr-design">
             <span class="dm-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6"/><path d="M10 3v12.5a2 2 0 0 0 4 0V3"/><path d="M10 11h4"/></svg></span>
-            <span class="dm-txt"><span class="dm-name">Primer &amp; PCR Design</span><span class="dm-meta">8 tools</span></span>
+            <span class="dm-txt"><span class="dm-name">Primer &amp; PCR Design</span><span class="dm-meta">5 tools &middot; 2 guides</span></span>
             <span class="dm-chev" aria-hidden="true">&#8250;</span>
           </a>
           <div class="dm-tools">
@@ -439,7 +446,6 @@ footer{padding:32px 0;border-top:1px solid var(--slate-border)}
             <a class="dm-tool" href="/pcr-product-calculator">PCR Product Calculator<span class="dm-pv"><img data-src="/assets/navprev/pcr-product-calculator.webp" alt="" width="296" height="185" decoding="async"></span></a>
             <a class="dm-tool" href="/tm-calculator">Tm Calculator<span class="dm-pv"><img data-src="/assets/navprev/tm-calculator.webp" alt="" width="296" height="185" decoding="async"></span></a>
             <a class="dm-tool" href="/gc-calculator">GC Calculator<span class="dm-pv"><img data-src="/assets/navprev/gc-calculator.webp" alt="" width="296" height="185" decoding="async"></span></a>
-            <a class="dm-tool" href="/biostatistics-calculator">Biostatistics<span class="dm-pv"><img data-src="/assets/navprev/biostatistics-calculator.webp" alt="" width="296" height="185" decoding="async"></span></a>
             <a class="dm-tool" href="/primer-design">Primer Design Guide<span class="dm-pv"><img data-src="/assets/navprev/primer-design.webp" alt="" width="296" height="185" decoding="async"></span></a>
             <a class="dm-tool" href="/validation">Thermodynamic Validation<span class="dm-pv"><img data-src="/assets/navprev/validation.webp" alt="" width="296" height="185" decoding="async"></span></a>
           </div>
@@ -465,7 +471,7 @@ footer{padding:32px 0;border-top:1px solid var(--slate-border)}
         <div class="dm-item">
           <a class="dm-row" href="/solutions/genome-engineering">
             <span class="dm-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="2.5"/><circle cx="6" cy="18" r="2.5"/><path d="M20 4 8.6 15.4"/><path d="M20 20 8.6 8.6"/></svg></span>
-            <span class="dm-txt"><span class="dm-name">Genome Engineering</span><span class="dm-meta">3 tools</span></span>
+            <span class="dm-txt"><span class="dm-name">Genome Engineering</span><span class="dm-meta">2 tools &middot; 1 preview</span></span>
             <span class="dm-chev" aria-hidden="true">&#8250;</span>
           </a>
           <div class="dm-tools">
@@ -479,18 +485,29 @@ footer{padding:32px 0;border-top:1px solid var(--slate-border)}
         <div class="dm-item">
           <a class="dm-row" href="/solutions/structural-biology">
             <span class="dm-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.8 20.2 7.4v9.2L12 21.2 3.8 16.6V7.4z"/><path d="M12 12 20.2 7.4"/><path d="M12 12v9.2"/><path d="M12 12 3.8 7.4"/></svg></span>
-            <span class="dm-txt"><span class="dm-name">Structural Biology</span><span class="dm-meta">7 tools</span></span>
+            <span class="dm-txt"><span class="dm-name">Structural Biology</span><span class="dm-meta">6 tools &middot; 1 overview</span></span>
             <span class="dm-chev" aria-hidden="true">&#8250;</span>
           </a>
           <div class="dm-tools">
             <div class="dm-tools-head"><b>Structural Biology</b><a href="/solutions/structural-biology">View all</a></div>
-            <a class="dm-tool" href="/protein-docking">Protein Docking<span class="dm-pv"><img data-src="/assets/navprev/protein-docking.webp" alt="" width="296" height="185" decoding="async"></span></a>
+            <a class="dm-tool" href="/protein-docking">Docking Overview<span class="dm-pv"><img data-src="/assets/navprev/protein-docking.webp" alt="" width="296" height="185" decoding="async"></span></a>
             <a class="dm-tool" href="/docking">Molecular Docking<span class="dm-pv"><img data-src="/assets/navprev/docking.webp" alt="" width="296" height="185" decoding="async"></span></a>
             <a class="dm-tool" href="/protein-quality">Protein Quality<span class="dm-pv"><img data-src="/assets/navprev/protein-quality.webp" alt="" width="296" height="185" decoding="async"></span></a>
-            <a class="dm-tool" href="/interactions">Interactions<span class="dm-pv"><img data-src="/assets/navprev/interactions.webp" alt="" width="296" height="185" decoding="async"></span></a>
-            <a class="dm-tool" href="/binding-site">Binding Site<span class="dm-pv"><img data-src="/assets/navprev/binding-site.webp" alt="" width="296" height="185" decoding="async"></span></a>
-            <a class="dm-tool" href="/regenerate">Regenerate<span class="dm-pv"><img data-src="/assets/navprev/regenerate.webp" alt="" width="296" height="185" decoding="async"></span></a>
+            <a class="dm-tool" href="/interactions">Interaction Analyzer<span class="dm-pv"><img data-src="/assets/navprev/interactions.webp" alt="" width="296" height="185" decoding="async"></span></a>
+            <a class="dm-tool" href="/binding-site">Pocket Detection<span class="dm-pv"><img data-src="/assets/navprev/binding-site.webp" alt="" width="296" height="185" decoding="async"></span></a>
+            <a class="dm-tool" href="/regenerate">Structure Repair<span class="dm-pv"><img data-src="/assets/navprev/regenerate.webp" alt="" width="296" height="185" decoding="async"></span></a>
             <a class="dm-tool" href="/dna-3d">3D DNA Viewer<span class="dm-pv"><img data-src="/assets/navprev/dna-3d.webp" alt="" width="296" height="185" decoding="async"></span></a>
+          </div>
+        </div>
+        <div class="dm-item">
+          <a class="dm-row" href="/biostatistics-calculator">
+            <span class="dm-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-7"/><path d="M22 20H2"/></svg></span>
+            <span class="dm-txt"><span class="dm-name">Statistics</span><span class="dm-meta">1 tool</span></span>
+            <span class="dm-chev" aria-hidden="true">&#8250;</span>
+          </a>
+          <div class="dm-tools">
+            <div class="dm-tools-head"><b>Statistics</b><a href="/biostatistics-calculator">Open</a></div>
+            <a class="dm-tool" href="/biostatistics-calculator">Biostatistics Calculator<span class="dm-pv"><img data-src="/assets/navprev/biostatistics-calculator.webp" alt="" width="296" height="185" decoding="async"></span></a>
           </div>
         </div>
         <div class="dm-item">
@@ -509,8 +526,8 @@ footer{padding:32px 0;border-top:1px solid var(--slate-border)}
       </div>
     </div>
     <div class="drop-wrap">
-      <span class="drop-trigger" role="button" tabindex="0" aria-haspopup="true" aria-expanded="false">Services<svg class="dt-chev" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg></span>
-      <div class="drop-panel">
+      <span class="drop-trigger" role="button" tabindex="0" aria-haspopup="true" aria-expanded="false" aria-controls="servicesMenu">Services<svg class="dt-chev" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg></span>
+      <div class="drop-panel" id="servicesMenu">
         <a class="dm-row" href="/custom-pipeline-development">
           <span class="dm-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h6"/><path d="M14 7h6"/><path d="M4 17h6"/><path d="M14 17h6"/><circle cx="12" cy="7" r="2"/><circle cx="12" cy="17" r="2"/></svg></span>
           <span class="dm-txt"><span class="dm-name">Customised Pipeline</span><span class="dm-meta">Built for your workflow</span></span>
@@ -524,14 +541,14 @@ footer{padding:32px 0;border-top:1px solid var(--slate-border)}
     <a class="pv-link" href="/developer">Developer<span class="pv-card"><img data-src="/assets/navprev/developer.webp" alt="" width="296" height="185" decoding="async"></span></a>
   </div>
   <div class="nav-right">
-    <div class="nav-search-wrap">
-      <input type="text" id="navSearchInput" placeholder="Search tools &amp; resources" autocomplete="off">
-      <span class="ns-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
-      <div class="nav-search-results" id="navSearchResults"></div>
+    <div class="nav-search-wrap" role="search">
+      <input type="text" id="navSearchInput" placeholder="Search tools" autocomplete="off" aria-label="Search tools and resources" role="combobox" aria-expanded="false" aria-controls="navSearchResults" aria-autocomplete="list" aria-haspopup="listbox">
+      <span class="ns-icon" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
+      <div class="nav-search-results" id="navSearchResults" role="listbox" aria-label="Search results"></div>
     </div>
     <div class="nav-btns" id="navBtns">
       <button type="button" class="btn-nav-outline" onclick="openAuthModal()">Sign in</button>
-      <button type="button" class="btn-nav-fill" onclick="openAuthModal()">Get started</button>
+      <button type="button" class="btn-nav-fill" onclick="openAuthModal('register')">Get started</button>
     </div>
     <div class="nav-profile" id="navProfile" style="display:none">
       <div class="nav-avatar" id="navAvatar" role="button" tabindex="0" aria-expanded="false" onclick="toggleUserMenu()">
@@ -601,7 +618,6 @@ footer{padding:32px 0;border-top:1px solid var(--slate-border)}
     <a href="/pcr-product-calculator" aria-label="PCR Product Calculator (menu)">PCR Product Calculator</a>
     <a href="/tm-calculator" aria-label="Tm Calculator (menu)">Tm Calculator</a>
     <a href="/gc-calculator" aria-label="GC Calculator (menu)">GC Calculator</a>
-    <a href="/biostatistics-calculator" aria-label="Biostatistics Calculator (menu)">Biostatistics</a>
     <a href="/primer-design" aria-label="Primer Design Guide (menu)">Primer Design Guide</a>
     <a href="/validation" aria-label="Thermodynamic Validation (menu)">Thermodynamic Validation</a>
   </div>
@@ -631,6 +647,10 @@ footer{padding:32px 0;border-top:1px solid var(--slate-border)}
     <a href="/dna-3d" aria-label="3D DNA Viewer (menu)">3D DNA Viewer</a>
   </div>
   <div class="mm-group">
+    <a class="mm-hdr" href="/biostatistics-calculator">Statistics</a>
+    <a href="/biostatistics-calculator" aria-label="Biostatistics Calculator (menu)">Biostatistics Calculator</a>
+  </div>
+  <div class="mm-group">
     <a class="mm-hdr" href="/pharma-calculators">Pharma &amp; Lab</a>
     <a href="/antibiotic-stock-calculator" aria-label="Antibiotic Stock Calculator (menu)">Antibiotic Stock Calculator</a>
   </div>
@@ -645,8 +665,8 @@ footer{padding:32px 0;border-top:1px solid var(--slate-border)}
     <a href="/developer" aria-label="Developer API (menu)">Developer</a>
     <a href="mailto:contact@vigyanllm.in">Enterprise Inquiry</a>
   </div>
-  <a href="#" onclick="closeMobileMenu();var e=document.getElementById('navSearchInput');if(e){e.focus();e.scrollIntoView({behavior:'smooth',block:'center'})};return false" class="mm-cta" style="background:transparent;border:1px solid rgba(255,255,255,.25);color:rgba(255,255,255,.8);margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:8px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Search</a>
-  <a href="#" class="mm-cta" onclick="openAuthModal();return false">Sign in</a>
+  <button type="button" onclick="closeMobileMenu();var e=document.getElementById('navSearchInput');if(e){e.focus();e.scrollIntoView({behavior:'smooth',block:'center'})}" class="mm-cta" style="background:transparent;border:1px solid rgba(255,255,255,.25);color:rgba(255,255,255,.8);margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:8px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Search</button>
+  <button type="button" class="mm-cta" onclick="openAuthModal()">Sign in</button>
 </div>
 </nav>
 </header>
@@ -722,7 +742,7 @@ footer{padding:32px 0;border-top:1px solid var(--slate-border)}
     <h2 class="hc-title">Dock a ligand to a protein</h2>
     <p class="hc-lead">Predict the receptor with ESMFold, find the pocket, then score poses with AutoDock Vina and a GNINA re-score — full consensus, nothing to install.</p>
     <div class="hc-tags"><span>ESMFold</span><span class="hc-dot" aria-hidden="true">·</span><span>AutoDock Vina</span><span class="hc-dot" aria-hidden="true">·</span><span>GNINA consensus</span></div>
-    <a class="hc-cta" href="#main-content">Start docking<span aria-hidden="true">→</span></a>
+    <a class="hc-cta" href="#main-content">Start docking<span aria-hidden="true"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-arrow-right"/></svg></span></a>
   </div>
   <div class="hc-media"><img src="/assets/tool-hero/docking-protein.png" alt="Rainbow ribbon diagram of a protein structure" width="1100" height="660" decoding="async" fetchpriority="high"></div>
 </section>
@@ -737,7 +757,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <div class="dashboard-wrap">
 <!-- DISCLAIMER -->
 <div class="disclaimer">
-  <span class="disclaimer-icon">&#x26A0;&#xFE0F;</span>
+  <span class="disclaimer-icon"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-alert"/></svg></span>
   <strong>Research Use Only.</strong> Not validated for clinical diagnostic use. All docking results require independent experimental validation.
 </div>
 <!-- PAGE HEADER — DOMINATING HERO -->
@@ -754,10 +774,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <p class="ph-sub" style="margin-top:10px">Run consensus molecular docking in your browser. ESMFold predicts the protein structure, AutoDock Vina screens ligand poses, and GNINA CNN re-scores the top hits &mdash; no software install, no login required for basic runs.</p>
         <!-- Trust chips -->
         <div class="ph-meta" style="margin-top:14px">
-          <span class="ph-chip" style="background:rgba(5,150,105,.08);border-color:rgba(5,150,105,.2);color:#059669">&#x2714; ESMFold (MIT)</span>
-          <span class="ph-chip" style="background:rgba(59,130,246,.08);border-color:rgba(59,130,246,.2);color:#2563eb">&#x2714; AutoDock Vina</span>
-          <span class="ph-chip" style="background:rgba(139,92,246,.08);border-color:rgba(139,92,246,.2);color:#7c3aed">&#x2714; GNINA CNN</span>
-          <span class="ph-chip" style="background:rgba(245,158,11,.08);border-color:rgba(245,158,11,.2);color:#d97706">&#x2714; Consensus Rank</span>
+          <span class="ph-chip" style="background:rgba(5,150,105,.08);border-color:rgba(5,150,105,.2);color:#047857"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-check"/></svg> ESMFold (MIT)</span>
+          <span class="ph-chip" style="background:rgba(59,130,246,.08);border-color:rgba(59,130,246,.2);color:#2563eb"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-check"/></svg> AutoDock Vina</span>
+          <span class="ph-chip" style="background:rgba(139,92,246,.08);border-color:rgba(139,92,246,.2);color:#7c3aed"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-check"/></svg> GNINA CNN</span>
+          <span class="ph-chip" style="background:rgba(245,158,11,.08);border-color:rgba(245,158,11,.2);color:#b45309"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-check"/></svg> Consensus Rank</span>
         </div>
         <!-- CTA row -->
         <div class="cta-row" style="margin-top:16px">
@@ -770,10 +790,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div style="display:flex;flex-direction:column;gap:10px;min-width:220px">
         <div style="background:rgba(255,255,255,.06);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:16px 20px;text-align:center">
           <div style="font-family:var(--font-h);font-size:28px;font-weight:800;color:#fff">3</div>
-          <div style="font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:.08em">Scoring Engines</div>
+          <div style="font-size:11px;color:#64748B;text-transform:uppercase;letter-spacing:.08em">Scoring Engines</div>
         </div><div style="background:rgba(255,255,255,.06);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:16px 20px;text-align:center">
-          <div style="font-family:var(--font-h);font-size:28px;font-weight:800;color:#60a5fa">&#x2264;2min</div>
-          <div style="font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:.08em">Per Ligand</div>
+          <div style="font-family:var(--font-h);font-size:28px;font-weight:800;color:#2563EB">&#x2264;2min</div>
+          <div style="font-size:11px;color:#64748B;text-transform:uppercase;letter-spacing:.08em">Per Ligand</div>
         </div>
       </div>
     </div>
@@ -782,7 +802,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <!-- GEO Quick-Answer -->
 <section style="max-width:900px;margin:24px auto 0;padding:0 24px">
   <div style="background:linear-gradient(135deg,#0f172a 0%,#1e293b 100%);border-radius:12px;padding:20px 24px;border:1px solid #334155">
-    <p style="color:#94a3b8;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;margin:0 0 10px 0">&#x26A1; Quick Answer</p>
+    <p style="color:#94a3b8;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;margin:0 0 10px 0"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-zap"/></svg> Quick Answer</p>
     <p style="color:#f8fafc;font-size:13px;line-height:1.6;margin:0 0 10px 0"><strong>What is this tool?</strong> A 3-stage consensus molecular docking pipeline: ESMFold predicts protein 3D structure from sequence, AutoDock Vina screens ligand poses, and GNINA CNN re-scores top hits. Runs are processed on our hosted servers under our Privacy policy.</p>
     <p style="color:#94a3b8;font-size:13px;line-height:1.6;margin:0;padding-top:10px;border-top:1px solid #334155">Validated engines: ESMFold (MIT) + AutoDock Vina (Apache 2.0) + GNINA CNN &middot; No install required</p>
   </div>
@@ -835,10 +855,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <div style="margin-top:12px;border-top:1px solid var(--slate-border);padding-top:10px">
           <h4 style="font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:6px;font-weight:700">Pipeline Flow</h4>
           <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text2);flex-wrap:wrap">
-            <span style="background:#f0fdf4;padding:3px 8px;border-radius:4px;color:#059669;font-weight:600">ESMFold</span>
-            <span style="color:#94a3b8">&rarr;</span>
+            <span style="background:#f0fdf4;padding:3px 8px;border-radius:4px;color:#047857;font-weight:600">ESMFold</span>
+            <span style="color:#64748B">&rarr;</span>
             <span style="background:#eff6ff;padding:3px 8px;border-radius:4px;color:#2563eb;font-weight:600">Vina</span>
-            <span style="color:#94a3b8">&rarr;</span>
+            <span style="color:#64748B">&rarr;</span>
             <span style="background:#f5f3ff;padding:3px 8px;border-radius:4px;color:#7c3aed;font-weight:600">GNINA</span>
           </div>
           <p style="font-size:11px;color:var(--muted);margin-top:8px;line-height:1.6">Physics-based + deep learning consensus for improved ranking accuracy.</p>
@@ -862,7 +882,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           <div id="seq-input-mode" style="display:flex;gap:6px;margin-bottom:8px">
             <button type="button" class="quick-btn active" id="mode-seq" onclick="setInputMode('seq')">Sequence</button>
             <button type="button" class="quick-btn" id="mode-pdb" onclick="setInputMode('pdb')">PDB File</button>
-            <button type="button" class="quick-btn" id="mode-screen" onclick="setInputMode('screen')" title="Virtual screening: screen large ligand libraries against multiple proteins">Screen &#x1F50D;</button>
+            <button type="button" class="quick-btn" id="mode-screen" onclick="setInputMode('screen')" title="Virtual screening: screen large ligand libraries against multiple proteins">Screen <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-search"/></svg></button>
           </div>
           <div id="seq-text-input">
             <textarea id="protein-seq" class="form-textarea" placeholder="Paste amino acid sequence or FASTA here&#10;&#10;MKTAYIAKQRQISFVKSHFSRQLEERLGLIEVQAP..." rows="6"></textarea>
@@ -870,7 +890,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           </div>
           <div id="seq-file-input" style="display:none">
             <label for="pdb-file-input" style="display:flex;flex-direction:column;align-items:center;justify-content:center;border:2px dashed var(--slate-border);border-radius:8px;padding:24px 16px;cursor:pointer;transition:border-color .15s;text-align:center" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--slate-border)'">
-              <span style="font-size:24px;margin-bottom:8px;opacity:.4">&#x1F4C1;</span>
+              <span style="font-size:24px;margin-bottom:8px;opacity:.4"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-upload"/></svg></span>
               <span style="font-size:13px;font-weight:600;color:var(--text2)">Click to upload PDB file</span>
               <span style="font-size:12px;color:var(--muted);margin-top:4px">or drag &amp; drop &middot; .pdb format</span>
               <input type="file" id="pdb-file-input" accept=".pdb,.pdbqt,.ent" style="display:none" onchange="handlePDBUpload(this)">
@@ -894,7 +914,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           </div>
           <div id="ligand-file-input" style="display:none">
             <label for="sdf-file-input" style="display:flex;flex-direction:column;align-items:center;justify-content:center;border:2px dashed var(--slate-border);border-radius:8px;padding:24px 16px;cursor:pointer;transition:border-color .15s;text-align:center" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--slate-border)'">
-              <span style="font-size:24px;margin-bottom:8px;opacity:.4">&#x1F4C1;</span>
+              <span style="font-size:24px;margin-bottom:8px;opacity:.4"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-upload"/></svg></span>
               <span style="font-size:13px;font-weight:600;color:var(--text2)">Click to upload SDF file</span>
               <span style="font-size:12px;color:var(--muted);margin-top:4px">or drag &amp; drop &middot; .sdf format &middot; multiple molecules supported</span>
               <input type="file" id="sdf-file-input" accept=".sdf,.mol,.mol2" style="display:none" onchange="handleSDFUpload(this)">
@@ -906,7 +926,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <div class="form-group">
           <label class="form-label">
             Top N candidates for GNINA
-            <span style="font-size:12px;color:var(--muted);font-weight:400;text-transform:none">Vina &#x2192; GNINA</span>
+            <span style="font-size:12px;color:var(--muted);font-weight:400;text-transform:none">Vina <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-arrow-right"/></svg> GNINA</span>
           </label>
           <div style="display:flex;align-items:center;gap:12px">
             <input type="range" id="top-n-slider" min="5" max="100" value="50" class="form-input" style="flex:1;padding:4px">
@@ -915,16 +935,18 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         </div>
         <!-- Advanced: search box override (Phase 2, task 2.2) -->
         <div class="form-group" style="margin-bottom:0">
-          <button type="button" id="adv-box-toggle" class="quick-btn" style="width:100%" aria-expanded="false" aria-controls="adv-box-panel" onclick="toggleAdvBox()">&#9881; Advanced: search box <span id="adv-box-summary" style="font-weight:400;color:var(--muted)">&mdash; auto (pocket detection)</span></button>
-          <div id="adv-box-panel" class="hidden" style="margin-top:8px;padding:12px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px">
-            <label class="form-label" for="box-mode">Docking box targeting</label>
+          <button type="button" id="adv-box-toggle" class="quick-btn" style="width:100%" aria-expanded="true" aria-controls="adv-box-panel" onclick="toggleAdvBox()">&#127919; Search box position <span id="adv-box-summary" style="font-weight:400;color:var(--muted)">&mdash; auto (pocket detection)</span></button>
+          <div id="adv-box-panel" style="margin-top:8px;padding:12px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px">
+            <label class="form-label" for="box-mode">Where should the ligand dock?</label>
             <select id="box-mode" class="form-input" style="margin-bottom:8px" onchange="onBoxModeChange()">
               <option value="auto">Auto &mdash; detect the binding pocket (recommended)</option>
-              <option value="blind">Blind &mdash; whole-protein centroid</option>
-              <option value="manual">Manual &mdash; center + size</option>
+              <option value="manual">Custom position &mdash; enter my own center + size</option>
+              <option value="bound_ligand">Bound ligand &mdash; center on the co-crystal ligand</option>
               <option value="residue">Residue range &mdash; center on residues</option>
+              <option value="blind">Blind &mdash; whole-protein centroid</option>
             </select>
             <div id="box-manual-fields" class="hidden">
+              <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text2);margin-bottom:6px">Custom position — box center &amp; size (Å)</div>
               <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:6px">
                 <input type="number" step="0.1" id="box-cx" class="form-input" placeholder="Center X (&Aring;)" aria-label="Box center X">
                 <input type="number" step="0.1" id="box-cy" class="form-input" placeholder="Center Y (&Aring;)" aria-label="Box center Y">
@@ -936,10 +958,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 <input type="number" step="1" min="6" max="40" id="box-sz" class="form-input" placeholder="Size Z (&Aring;)" aria-label="Box size Z">
               </div>
               <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-                <input type="number" id="box-radius" class="form-input" placeholder="Radius (Å)" value="15" min="4" max="30" style="width:110px" aria-label="Pocket radius">
+                <button type="button" class="quick-btn" onclick="detectPocketFill(this)" title="Detect the top binding pocket in your uploaded PDB and fill these fields with its center + size — then adjust to your position of interest">&#127919; Detect pocket &rarr; fill position</button>
                 <button type="button" class="quick-btn" onclick="computeBoxPreview('manual')">Compute size from radius</button>
                 <span style="font-size:11px;color:var(--muted)">size = 2&times;radius + 4 &Aring;</span>
               </div>
+              <input type="number" id="box-radius" class="form-input" placeholder="Radius (Å)" value="15" min="4" max="30" style="width:110px;margin-top:6px" aria-label="Pocket radius">
+              <div style="font-size:11px;color:var(--muted);margin-top:6px;line-height:1.5">Set the box to any position of interest &mdash; e.g. a second site, an allosteric pocket, or a residue you want to probe. Docking and the PLIP interaction profile are then computed exactly at this box.</div>
             </div>
             <div id="box-residue-fields" class="hidden">
               <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">
@@ -948,6 +972,16 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 <input type="number" id="box-end" class="form-input" placeholder="End res #" min="1" aria-label="End residue">
               </div>
               <button type="button" class="quick-btn" style="margin-top:8px" onclick="computeBoxPreview('residue')">Preview box from structure</button>
+            </div>
+            <div id="box-ligand-fields" class="hidden">
+              <button type="button" class="quick-btn" onclick="computeBoxPreview('bound_ligand')">Detect bound ligand in structure</button>
+              <button type="button" id="box-redock-btn" class="quick-btn hidden" onclick="validateRedocking()">Validate by re-docking (RMSD)</button>
+              <div id="box-redock-result" class="hidden" style="margin-top:8px;padding:8px 10px;font-size:12px;background:#fff;border:1px solid #e2e8f0;border-radius:6px;line-height:1.5"></div>
+              <div id="box-ligand-pick-wrap" class="hidden" style="margin-top:8px">
+                <label class="form-label" for="box-ligand-pick" style="font-size:11px">Bound ligand found</label>
+                <select id="box-ligand-pick" class="form-input" style="font-size:12px" onchange="computeBoxPreview('bound_ligand')"></select>
+              </div>
+              <div style="font-size:11px;color:var(--muted);margin-top:6px;line-height:1.5">Needs a PDB file with the co-crystal ligand (PDB tab). Water, buffers and ions are ignored. Recommended when an experimental complex is available &mdash; the box is centred on the actual binding site.</div>
             </div>
             <div id="box-preview" style="display:none;margin-top:8px;padding:8px 10px;font-size:12px;background:#fff;border:1px solid #e2e8f0;border-radius:6px;font-family:monospace;word-break:break-all"></div>
             <div class="error-msg" id="box-error"></div>
@@ -1012,7 +1046,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
               <span id="screen-status-badge" style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:#dbeafe;color:#1d4ed8">RUNNING</span>
               <div style="display:flex;gap:6px">
-                <button type="button" class="quick-btn" id="screen-resume-btn" onclick="resumeScreening()" style="display:none;border-color:#0d9488;color:#0d9488">&#x21bb; Resume</button>
+                <button type="button" class="quick-btn" id="screen-resume-btn" onclick="resumeScreening()" style="display:none;border-color:#0f766e;color:#0f766e"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-refresh"/></svg> Resume</button>
                 <button type="button" class="quick-btn" id="screen-cancel-btn" onclick="cancelScreening()" style="border-color:#ef4444;color:#ef4444">Cancel</button>
               </div>
             </div>
@@ -1059,8 +1093,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         </div>
 
         <div class="quick-load" id="consensus-quick-load">
-          <button type="button" class="quick-btn" onclick="loadExample()">&#x1F4E6; Load Example (E. coli DHFR + trimethoprim)</button>
-          <button type="button" class="quick-btn" onclick="loadKinaseExample()">&#x1F4E6; Kinase Library</button><span style="font-size:12px;color:var(--muted);margin-left:6px">Pre-loaded kinase panel for drug discovery screens.</span>
+          <button type="button" class="quick-btn" onclick="loadExample()"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-package"/></svg> Load Example (E. coli DHFR + trimethoprim)</button>
+          <button type="button" class="quick-btn" onclick="loadKinaseExample()"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-package"/></svg> Kinase Library</button><span style="font-size:12px;color:var(--muted);margin-left:6px">Pre-loaded kinase panel for drug discovery screens.</span>
         </div>
         <button type="button" class="btn-primary" id="run-btn" onclick="runDocking()" style="margin-top:12px;padding:14px 24px;font-size:14px;font-weight:800;border-radius:10px;background:linear-gradient(135deg,#0d9488,#0f766e);box-shadow:0 4px 14px rgba(13,148,136,.3);display:flex;align-items:center;justify-content:center;gap:8px">
           <span class="spinner" id="run-spinner"></span>
@@ -1098,13 +1132,13 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
               <option value="spacefill">Ligand · spacefill</option>
               <option value="line">Ligand · lines</option>
             </select>
-            <button type="button" id="mv-inter-btn" class="mv-btn" onclick="toggleInteractions()" title="Show protein-ligand contact lines with measured distances">&#x1F91D; Contacts</button>
-            <button type="button" id="mv-spin-btn" class="mv-btn" onclick="toggleSpin()" title="Spin the structure">&#x1F504; Spin</button>
-            <button type="button" class="mv-btn" onclick="zoomViewer(1.35)" title="Zoom in">&#x2B06;</button>
-            <button type="button" class="mv-btn" onclick="zoomViewer(0.74)" title="Zoom out">&#x2B07;</button>
-            <button type="button" class="mv-btn" onclick="snapshotViewer()" title="Save a PNG snapshot of the view">&#x1F4F7;</button>
-            <button type="button" class="mv-btn" onclick="showPose2D()" title="2D top-down view of the selected docked pose">&#x1F4D0; 2D</button>
-            <button type="button" id="mv-expand-btn" class="mv-btn" onclick="toggleViewerExpand()" title="Expand the viewer to full screen (Esc to exit)">&#x26F6; Expand</button>
+            <button type="button" id="mv-inter-btn" class="mv-btn" onclick="toggleInteractions()" title="Show protein-ligand contact lines with measured distances"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-network"/></svg> Contacts</button>
+            <button type="button" id="mv-spin-btn" class="mv-btn" onclick="toggleSpin()" title="Spin the structure"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-refresh"/></svg> Spin</button>
+            <button type="button" class="mv-btn" onclick="zoomViewer(1.35)" title="Zoom in" aria-label="Zoom in"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-zoom-in"/></svg></button>
+            <button type="button" class="mv-btn" onclick="zoomViewer(0.74)" title="Zoom out" aria-label="Zoom out"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-zoom-out"/></svg></button>
+            <button type="button" class="mv-btn" onclick="snapshotViewer()" title="Save a PNG snapshot of the view" aria-label="Save a PNG snapshot of the view"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-camera"/></svg></button>
+            <button type="button" class="mv-btn" onclick="showPose2D()" title="2D top-down view of the selected docked pose"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-ruler"/></svg> 2D</button>
+            <button type="button" id="mv-expand-btn" class="mv-btn" onclick="toggleViewerExpand()" title="Expand the viewer to full screen (Esc to exit)"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-maximize"/></svg> Expand</button>
           </span>
         </div>
         <div id="mol-3d-viewer"></div>
@@ -1126,17 +1160,17 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <div id="empty-state" style="text-align:center;padding:60px 20px;position:relative">
       <div style="position:relative;width:120px;height:120px;margin:0 auto 20px">
         <div style="width:120px;height:120px;border-radius:50%;background:linear-gradient(135deg,rgba(13,148,136,.08),rgba(59,130,246,.08));display:flex;align-items:center;justify-content:center">
-          <div style="font-size:48px;opacity:.6">&#x1F9EC;</div>
+          <div style="font-size:48px;opacity:.6"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-dna"/></svg></div>
         </div>
-        <div style="position:absolute;top:-4px;right:-4px;width:28px;height:28px;border-radius:50%;background:#0d9488;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;box-shadow:0 2px 8px rgba(13,148,136,.3)">3</div>
+        <div style="position:absolute;top:-4px;right:-4px;width:28px;height:28px;border-radius:50%;background:#0f766e;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;box-shadow:0 2px 8px rgba(13,148,136,.3)">3</div>
       </div>
       <h3 style="font-family:var(--font-h);font-size:15px;font-weight:700;color:var(--text);margin-bottom:6px">Ready to Run a Docking Screen</h3>
       <p style="font-size:13px;color:var(--text2);max-width:420px;margin:0 auto;line-height:1.7">Enter a protein sequence (or upload a PDB file) and at least one ligand SMILES, then click <strong>Run Consensus Docking</strong>. The 3-stage pipeline will predict the protein structure and rank ligands by consensus score.</p>
       <div style="display:flex;justify-content:center;gap:12px;margin-top:16px;flex-wrap:wrap">
-        <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#64748b"><span style="width:24px;height:24px;border-radius:50%;background:#f0fdf4;color:#059669;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800">1</span> Protein input</div>
-        <div style="color:#cbd5e1;font-size:14px">&rarr;</div>
+        <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#64748b"><span style="width:24px;height:24px;border-radius:50%;background:#f0fdf4;color:#047857;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800">1</span> Protein input</div>
+        <div style="color:#64748B;font-size:14px">&rarr;</div>
         <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#64748b"><span style="width:24px;height:24px;border-radius:50%;background:#eff6ff;color:#2563eb;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800">2</span> Add ligands</div>
-        <div style="color:#cbd5e1;font-size:14px">&rarr;</div>
+        <div style="color:#64748B;font-size:14px">&rarr;</div>
         <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#64748b"><span style="width:24px;height:24px;border-radius:50%;background:#f5f3ff;color:#7c3aed;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800">3</span> Get results</div>
       </div>
     </div>
@@ -1145,11 +1179,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="tool-right">
     <div class="sidebar-section" style="border-left:3px solid #0d9488">
       <div class="sidebar-section-head">
-        <h3 style="display:flex;align-items:center;gap:6px"><span style="font-size:14px">&#x1F4CB;</span> Input Requirements</h3>
+        <h3 style="display:flex;align-items:center;gap:6px"><span style="font-size:14px"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-clipboard"/></svg></span> Input Requirements</h3>
       </div>
       <div class="sidebar-section-body" style="font-size:12px;color:var(--text2);line-height:1.8">
         <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:10px 12px;margin-bottom:10px">
-          <strong style="color:#059669;display:block;margin-bottom:2px">Protein Sequence</strong>
+          <strong style="color:#047857;display:block;margin-bottom:2px">Protein Sequence</strong>
           <p style="color:#475569;margin:0">Standard single-letter amino acid code (A&ndash;Z). Min 10 residues. Or upload a PDB file.</p>
         </div>
         <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:10px 12px;margin-bottom:10px">
@@ -1158,18 +1192,18 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           <code style="display:block;background:#fff;padding:6px;border-radius:4px;font-size:11px;margin-top:6px;color:#1e293b">CC(=O)Oc1ccccc1C(=O)O</code>
         </div>
         <div style="background:#fefce8;border:1px solid #fde68a;border-radius:8px;padding:10px 12px">
-          <strong style="color:#d97706;display:block;margin-bottom:2px">Top N Candidates</strong>
+          <strong style="color:#b45309;display:block;margin-bottom:2px">Top N Candidates</strong>
           <p style="color:#475569;margin:0">How many top Vina hits appear in the ranking. GNINA CNN re-scores the best 10 of them.</p>
         </div>
       </div>
     </div>
     <div class="sidebar-section" style="border-left:3px solid #2563eb">
       <div class="sidebar-section-head">
-        <h3 style="display:flex;align-items:center;gap:6px"><span style="font-size:14px">&#x1F9EA;</span> Stage Descriptions</h3>
+        <h3 style="display:flex;align-items:center;gap:6px"><span style="font-size:14px"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-flask"/></svg></span> Stage Descriptions</h3>
       </div>
       <div class="sidebar-section-body" style="font-size:12px;color:var(--text2);line-height:1.8">
         <div style="display:flex;gap:10px;align-items:flex-start;margin-bottom:10px">
-          <div style="width:28px;height:28px;border-radius:50%;background:#f0fdf4;color:#059669;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0">1</div>
+          <div style="width:28px;height:28px;border-radius:50%;background:#f0fdf4;color:#047857;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0">1</div>
           <div><strong style="font-size:12px">ESMFold</strong><p style="font-size:11px;color:#64748b;margin:2px 0 0">Predicts 3D structure from sequence. Local inference, no API.</p></div>
         </div>
         <div style="display:flex;gap:10px;align-items:flex-start;margin-bottom:10px">
@@ -1182,26 +1216,26 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         </div>
       </div>
     </div>
-    <div class="sidebar-section" style="border-left:3px solid #d97706">
+    <div class="sidebar-section" style="border-left:3px solid #b45309">
       <div class="sidebar-section-head">
-        <h3 style="display:flex;align-items:center;gap:6px"><span style="font-size:14px">&#x1F4CA;</span> Score Interpretation</h3>
+        <h3 style="display:flex;align-items:center;gap:6px"><span style="font-size:14px"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-chart"/></svg></span> Score Interpretation</h3>
       </div>
       <div class="sidebar-section-body" style="font-size:12px;color:var(--text2);line-height:1.7">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
           <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:8px;text-align:center">
-            <div style="font-size:14px;font-weight:800;color:#059669">&lt; -7</div>
+            <div style="font-size:14px;font-weight:800;color:#047857">&lt; -7</div>
             <div style="font-size:10px;color:#64748b">Strong</div>
           </div>
           <div style="background:#fefce8;border:1px solid #fde68a;border-radius:6px;padding:8px;text-align:center">
-            <div style="font-size:14px;font-weight:800;color:#d97706">-5 to -7</div>
+            <div style="font-size:14px;font-weight:800;color:#b45309">-5 to -7</div>
             <div style="font-size:10px;color:#64748b">Moderate</div>
           </div>
           <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:6px;padding:8px;text-align:center">
-            <div style="font-size:14px;font-weight:800;color:#dc2626">&gt; -5</div>
-            <div style="font-size:10px;color:#64748b">Weak</div>
+            <div style="font-size:14px;font-weight:800;color:#b91c1c">&gt; -5</div>
+            <div style="font-size:10px;color:#475569">Weak</div>
           </div>
           <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:8px;text-align:center">
-            <div style="font-size:14px;font-weight:800;color:#059669">&gt; 90</div>
+            <div style="font-size:14px;font-weight:800;color:#047857">&gt; 90</div>
             <div style="font-size:10px;color:#64748b">pLDDT High</div>
           </div>
         </div>
@@ -1275,13 +1309,13 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <h2 style="font-family:var(--font-h);font-size:13px;font-weight:700;margin-bottom:12px;margin-top:28px">Preparing Structures for Docking</h2>
 <p style="color:var(--text2);font-size:14px;line-height:1.7;margin-bottom:16px">Well-prepared input structures are essential for reliable docking: (1) for proteins, ensure hydrogen atoms are added at the correct protonation state for pH 7.4, (2) remove water molecules and cofactors unless they are critical for binding, (3) assign correct bond orders and formal charges for ligand atoms, (4) generate all possible tautomers and protonation states for the ligand at physiological pH, and (5) define the binding site using known active site residues or co-crystallized ligand coordinates. The <a href="/docking">docking pipeline</a> handles protein preparation automatically using ESMFold for structure prediction and AutoDockTools for PDBQT conversion.</p>
 <div style="background:rgba(13,148,136,.06);border:1px solid rgba(13,148,136,.2);border-radius:8px;padding:12px 16px;margin-bottom:16px">
-  <strong style="font-size:13px;color:#0d9488">💡 Pro tip:</strong>
-  <span style="font-size:13px;color:var(--text2)"> Before docking, check your protein for structural defects with the <a href="/protein-quality" style="color:#0d9488;font-weight:600">Protein Structure Quality Analyzer</a> — it catches pLDDT confidence issues, steric clashes, Ramachandran outliers, and missing residues that silently ruin binding scores.</span>
+  <strong style="font-size:13px;color:#0f766e"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-lightbulb"/></svg> Pro tip:</strong>
+  <span style="font-size:13px;color:var(--text2)"> Before docking, check your protein for structural defects with the <a href="/protein-quality" style="color:#0f766e;font-weight:600">Protein Structure Quality Analyzer</a> — it catches pLDDT confidence issues, steric clashes, Ramachandran outliers, and missing residues that silently ruin binding scores.</span>
 </div>
 <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
-  <a href="/interactions" style="font-size:12px;color:#0d9488;background:rgba(13,148,136,.08);padding:4px 10px;border-radius:6px;text-decoration:none;border:1px solid rgba(13,148,136,.15)">🔬 Analyze Interactions</a>
-  <a href="/binding-site" style="font-size:12px;color:#0d9488;background:rgba(13,148,136,.08);padding:4px 10px;border-radius:6px;text-decoration:none;border:1px solid rgba(13,148,136,.15)">🎯 Detect Binding Sites</a>
-  <a href="/regenerate" style="font-size:12px;color:#0d9488;background:rgba(13,148,136,.08);padding:4px 10px;border-radius:6px;text-decoration:none;border:1px solid rgba(13,148,136,.15)">🧬 Regenerate Structure</a>
+  <a href="/interactions" style="font-size:12px;color:#0f766e;background:rgba(13,148,136,.08);padding:4px 10px;border-radius:6px;text-decoration:none;border:1px solid rgba(13,148,136,.15)"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-microscope"/></svg> Analyze Interactions</a>
+  <a href="/binding-site" style="font-size:12px;color:#0f766e;background:rgba(13,148,136,.08);padding:4px 10px;border-radius:6px;text-decoration:none;border:1px solid rgba(13,148,136,.15)"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-target"/></svg> Detect Binding Sites</a>
+  <a href="/regenerate" style="font-size:12px;color:#0f766e;background:rgba(13,148,136,.08);padding:4px 10px;border-radius:6px;text-decoration:none;border:1px solid rgba(13,148,136,.15)"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-dna"/></svg> Regenerate Structure</a>
 </div>
 </section>
 </div>
@@ -1643,7 +1677,7 @@ function syncDockGate() {
     if (line) {
       line.innerHTML = '';
       var who = document.createElement('div');
-      who.style.cssText = 'font-size:11px;color:#059669;font-weight:600';
+      who.style.cssText = 'font-size:11px;color:#047857;font-weight:600';
       who.textContent = '\u2713 Signed in as ' + esc(u.email);
       var bal = document.createElement('div');
       bal.id = 'usage-credits';
@@ -1805,7 +1839,7 @@ function handlePDBUpload(input) {
     $('seq-error').classList.remove('show');
     var info = $('pdb-file-info');
     info.style.display = 'block';
-    info.innerHTML = '&#x2705; ' + file.name + ' — ' + residues.length + ' residues extracted';
+    info.innerHTML = '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-check"/></svg> ' + file.name + ' — ' + residues.length + ' residues extracted';
     // Also fill the sequence textarea for display
     $('protein-seq').value = residues.join('');
     $('aa-len').textContent = residues.length;
@@ -1861,7 +1895,7 @@ function handleSDFUpload(input) {
     $('smiles-error').classList.remove('show');
     var info = $('sdf-file-info');
     info.style.display = 'block';
-    info.innerHTML = '&#x2705; ' + file.name + ' — ' + smilesList.length + ' molecule' + (smilesList.length > 1 ? 's' : '') + ' extracted';
+    info.innerHTML = '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-check"/></svg> ' + file.name + ' — ' + smilesList.length + ' molecule' + (smilesList.length > 1 ? 's' : '') + ' extracted';
     // Fill the SMILES textarea for display
     $('ligand-smiles').value = smilesList.join('\n');
     $('smiles-count').textContent = smilesList.length;
@@ -1928,14 +1962,80 @@ function toggleAdvBox() {
   p.classList.toggle('hidden', !opening);
   b.setAttribute('aria-expanded', opening ? 'true' : 'false');
 }
+// ── Redocking-RMSD site validation ────────────────────────────────────────
+// Industry-standard protocol check: re-dock the co-crystal ligand into this
+// box with the receptor preparation production runs use, then compare the
+// best pose against the crystal coordinates. One Vina search server-side,
+// ~1-3 minutes; the button is shown after a bound ligand is detected.
+function _resetRedockResult() {
+  var out = $('box-redock-result');
+  if (!out) return;
+  out.classList.add('hidden');
+  out.innerHTML = '';
+  out.style.background = '';
+  out.style.borderColor = '';
+}
+function validateRedocking() {
+  var out = $('box-redock-result');
+  if (!out) return;
+  if (!_uploadedPDB) {
+    out.classList.remove('hidden');
+    out.innerHTML = '<span style="color:#b45309">A structure with a bound ligand is needed (PDB tab).</span>';
+    return;
+  }
+  var spec = true;
+  var psel = $('box-ligand-pick');
+  if (psel && psel.value) {
+    var popt = psel.options[psel.selectedIndex];
+    spec = { resname: popt.getAttribute('data-resname') || '', chain: popt.getAttribute('data-chain') || '' };
+  }
+  out.classList.remove('hidden');
+  out.style.background = '';
+  out.style.borderColor = '';
+  out.innerHTML = '<em>Re-docking the co-crystal ligand\u2026 one Vina search runs server-side, about 1\u20133 minutes. Keep this tab open.</em>';
+  var btn = $('box-redock-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Validating\u2026'; }
+  function done() { if (btn) { btn.disabled = false; btn.textContent = 'Validate by re-docking (RMSD)'; } }
+  fetch(API + '/primer/docking/redock-validate', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ pdb_content: _uploadedPDB, resname: spec.resname, chain: spec.chain, exhaustiveness: 8 })
+  }).then(function (r) { return r.json().then(function (d) { if (!r.ok) throw new Error(d.error || ('HTTP ' + r.status)); return d; }); })
+    .then(function (v) {
+      done();
+      if (!v.available) {
+        out.innerHTML = '<span style="color:#b45309">&#9888; ' + esc(String(v.reason || 'Validation is unavailable on this server.')) + '</span>';
+        return;
+      }
+      var cls = v.verdict === 'good' ? '#15803d' : (v.verdict === 'fair' ? '#b45309' : '#b91c1c');
+      var bg = v.verdict === 'good' ? '#f0fdf4' : (v.verdict === 'fair' ? '#fffbeb' : '#fef2f2');
+      out.style.background = bg;
+      out.style.borderColor = cls;
+      out.innerHTML =
+        '<div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap">' +
+          '<span style="font-size:22px;font-weight:800;color:' + cls + '">' + Number(v.rmsd).toFixed(2) + ' \u00C5</span>' +
+          '<span style="font-weight:700;color:' + cls + '">' + esc(String(v.verdict_label || '')) + '</span>' +
+        '</div>' +
+        '<div style="color:var(--text2);margin-top:4px">Vina score ' + (v.vina_score != null ? Number(v.vina_score).toFixed(2) + ' kcal/mol' : 'n/a') +
+          ' \u00B7 ligand ' + esc(v.ligand ? (v.ligand.resname + ' ' + v.ligand.chain + ':' + v.ligand.resnum) : '') +
+          ' \u00B7 exhaustiveness ' + v.exhaustiveness + (v.receptor_prepared === false ? ' \u00B7 original structure used' : '') + '</div>' +
+        (v.preparation_note ? '<div style="color:#b45309;font-size:11px;margin-top:4px">&#9888; ' + esc(String(v.preparation_note)) + '</div>' : '') +
+        '<div style="color:var(--muted);margin-top:6px;font-size:11px">' + esc(String(v.note || '')) + '</div>';
+    })
+    .catch(function (ex) {
+      done();
+      out.innerHTML = '<span style="color:#b91c1c">&#10060; ' + esc(ex.message || 'Validation failed.') + '</span>';
+    });
+}
 function onBoxModeChange() {
   var m = $('box-mode').value;
   $('box-manual-fields').classList.toggle('hidden', m !== 'manual');
   $('box-residue-fields').classList.toggle('hidden', m !== 'residue');
+  $('box-ligand-fields').classList.toggle('hidden', m !== 'bound_ligand');
   $('box-preview').style.display = 'none';
   $('box-error').classList.remove('show');
   var labels = { auto: 'auto (pocket detection)', blind: 'blind (whole protein)',
-                 manual: 'manual center/size', residue: 'residue range' };
+                 manual: 'manual center/size', residue: 'residue range',
+                 bound_ligand: 'bound ligand (co-crystal)' };
   var s = $('adv-box-summary');
   if (s) s.textContent = '\u2014 ' + (labels[m] || m);
 }
@@ -1957,6 +2057,20 @@ function collectBoxOverride() {
     }
     return { residues: { chain: chain, start: s, end: e } };
   }
+  if (m === 'bound_ligand') {
+    if (!_uploadedPDB) {
+      err.textContent = 'A bound-ligand box needs an uploaded PDB structure that contains the ligand (PDB tab).';
+      err.classList.add('show');
+      return undefined;
+    }
+    var pick = $('box-ligand-pick');
+    var opt = pick && pick.value ? pick.options[pick.selectedIndex] : null;
+    if (opt && opt.value) {
+      return { bound_ligand: { resname: opt.getAttribute('data-resname') || '',
+                               chain: opt.getAttribute('data-chain') || '' } };
+    }
+    return { bound_ligand: true };
+  }
   var ids = ['box-cx', 'box-cy', 'box-cz', 'box-sx', 'box-sy', 'box-sz'];
   var vals = ids.map(function (id) { return parseFloat($(id).value); });
   for (var i = 0; i < vals.length; i++) {
@@ -1975,6 +2089,54 @@ function collectBoxOverride() {
   }
   return { center: vals.slice(0, 3), size: vals.slice(3) };
 }
+// Detect the top binding pocket in an uploaded PDB and prefill the custom
+// position fields with its center + size. Lets a user start from the detected
+// site, then adjust the box to their own position of interest before running.
+function detectPocketFill(btn) {
+  var err = $('box-error');
+  err.classList.remove('show');
+  if (!_uploadedPDB) {
+    err.textContent = 'Pocket detection needs an uploaded PDB structure (PDB tab). Sequence runs fold at submit time, so there is no structure to detect a pocket in yet.';
+    err.classList.add('show');
+    return;
+  }
+  btn = btn || null;
+  if (btn) { btn.disabled = true; btn.textContent = 'Detecting\u2026'; }
+  fetch(API + '/primer/docking/pockets', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ pdb_content: _uploadedPDB })
+  }).then(function (r) { return r.json().then(function (d) { if (!r.ok) throw new Error(d.error || ('HTTP ' + r.status)); return d; }); })
+    .then(function (d) {
+      var bp = d.best_pocket || (d.pockets && d.pockets[0]) || null;
+      if (!bp || !bp.center || bp.center.length !== 3) {
+        throw new Error('No pocket detected in this structure.');
+      }
+      var c = bp.center, rad = (bp.radius !== undefined && bp.radius !== null) ? Number(bp.radius) : 12;
+      var size = Math.min(rad * 2 + 4, 30.0);
+      $('box-cx').value = Number(c[0]).toFixed(2);
+      $('box-cy').value = Number(c[1]).toFixed(2);
+      $('box-cz').value = Number(c[2]).toFixed(2);
+      $('box-sx').value = size.toFixed(1);
+      $('box-sy').value = size.toFixed(1);
+      $('box-sz').value = size.toFixed(1);
+      var out = $('box-preview');
+      if (out) {
+        out.style.display = 'block';
+        out.innerHTML = '&#127919; Detected pocket #' + (bp.pocket_id || 1) +
+          ' (' + (bp.druggability || 'n/a') + ', score ' + (bp.score !== undefined ? Number(bp.score).toFixed(0) : 'n/a') + ') ' +
+          '&rarr; filled center [' + Number(c[0]).toFixed(2) + ', ' + Number(c[1]).toFixed(2) + ', ' + Number(c[2]).toFixed(2) +
+          '] &middot; size ' + size.toFixed(1) + '&times;' + size.toFixed(1) + '&times;' + size.toFixed(1) + ' &Aring;' +
+          ' &mdash; adjust the numbers to your position of interest, then run.';
+      }
+    })
+    .catch(function (ex) {
+      err.textContent = ex.message || 'Pocket detection failed.';
+      err.classList.add('show');
+    })
+    .then(function () {
+      if (btn) { btn.disabled = false; btn.textContent = '\uD83C\uDFAF Detect pocket \u2192 fill position'; }
+    });
+}
 // Server-computed box preview via /docking/gridbox (task 2.2).
 function computeBoxPreview(mode) {
   mode = mode || $('box-mode').value;
@@ -1982,10 +2144,57 @@ function computeBoxPreview(mode) {
   err.classList.remove('show');
   function fail(msg) { err.textContent = msg; err.classList.add('show'); }
   function render(b) {
-    out.innerHTML = 'center [' + b.center.x.toFixed(2) + ', ' + b.center.y.toFixed(2) + ', ' + b.center.z.toFixed(2) +
+    var html = 'center [' + b.center.x.toFixed(2) + ', ' + b.center.y.toFixed(2) + ', ' + b.center.z.toFixed(2) +
       '] &middot; size ' + b.size.x.toFixed(1) + '&times;' + b.size.y.toFixed(1) + '&times;' + b.size.z.toFixed(1) + ' &Aring;' +
-      (b.residues ? ' &middot; residues ' + b.residues.chain + ':' + b.residues.start + '-' + b.residues.end : '');
+      (b.residues ? ' &middot; residues ' + b.residues.chain + ':' + b.residues.start + '-' + b.residues.end : '') +
+      (b.ligand ? ' &middot; ligand ' + b.ligand.resname + ' ' + b.ligand.chain + ':' + b.ligand.resnum +
+        ' (' + b.ligand.heavy_atoms + ' atoms)' : '');
+    if (b.validation && b.validation.warnings && b.validation.warnings.length) {
+      html += '<div style="font-family:var(--font-b,sans-serif);color:#b45309;margin-top:6px;line-height:1.5">' +
+        b.validation.warnings.map(function (w) { return '&#9888; ' + w; }).join('<br>') + '</div>';
+    }
+    out.innerHTML = html;
     out.style.display = 'block';
+  }
+  // Candidate ligand picker for bound-ligand mode (from the structure).
+  function fillLigandPicker(b) {
+    var wrap = $('box-ligand-pick-wrap'), sel = $('box-ligand-pick');
+    if (!wrap || !sel) return;
+    var cands = b.candidates || [];
+    if (cands.length < 2) { wrap.classList.add('hidden'); sel.innerHTML = ''; return; }
+    var keep = sel.value;
+    sel.innerHTML = cands.map(function (c) {
+      var val = c.resname + ':' + c.chain;
+      return '<option value="' + val + '" data-resname="' + c.resname + '" data-chain="' + c.chain + '">' +
+        c.resname + ' · chain ' + c.chain + ' · res ' + c.resnum + ' · ' + c.heavy_atoms + ' atoms</option>';
+    }).join('');
+    if (keep) sel.value = keep;
+    wrap.classList.remove('hidden');
+  }
+  if (mode === 'bound_ligand') {
+    if (!_uploadedPDB) return fail('Bound-ligand detection needs an uploaded PDB structure (PDB tab). Sequence runs fold at submit time — the folded model has no co-crystal ligand.');
+    var blSpec = true;
+    var psel = $('box-ligand-pick');
+    if (psel && psel.value) {
+      var popt = psel.options[psel.selectedIndex];
+      blSpec = { resname: popt.getAttribute('data-resname') || '', chain: popt.getAttribute('data-chain') || '' };
+    }
+    fetch(API + '/primer/docking/gridbox', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pdb_content: _uploadedPDB, bound_ligand: blSpec })
+    }).then(function (r) { return r.json().then(function (d) { if (!r.ok) throw new Error(d.error || ('HTTP ' + r.status)); return d; }); })
+      .then(function (b) {
+        fillLigandPicker(b); render(b); _resetRedockResult();
+        // Re-docking validation only makes sense once a ligand is in the box.
+        var rb = $('box-redock-btn');
+        if (rb) rb.classList.toggle('hidden', !b.ligand);
+      })
+      .catch(function (ex) {
+        var rb = $('box-redock-btn');
+        if (rb) rb.classList.add('hidden');
+        fail(ex.message || 'No bound ligand found in that structure.');
+      });
+    return;
   }
   if (mode === 'residue') {
     var chain = ($('box-chain').value || '').trim();
@@ -2205,7 +2414,7 @@ async function resumeDockRun() {
       setStage(1, 'running', 'Job ' + rec.job_id + ' queued — resuming…');
       setStage(2, 'stub', 'Waiting for stage 1');
       setStage(3, 'stub', 'Waiting for stage 2');
-      dockNote('↻ Resumed your in-progress docking run — refresh-safe, no need to re-submit.');
+      dockNote('<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-refresh"/></svg> Resumed your in-progress docking run — refresh-safe, no need to re-submit.');
       startDockPolling(rec.job_id);
     }
   } catch (e) { /* offline — keep storage; the next load retries */ }
@@ -2463,7 +2672,7 @@ function ixChips(mol, max) {
   if (!c) return '<span style="color:var(--muted)">—</span>';
   var defs = [
     ['hydrogen_bonds', 'HB', '#2563eb'],
-    ['hydrophobic_contacts', 'HY', '#0d9488'],
+    ['hydrophobic_contacts', 'HY', '#0f766e'],
     ['salt_bridges', 'SB', '#7c3aed'],
     ['pi_stacking', 'π', '#db2777']
   ];
@@ -2618,7 +2827,7 @@ function displayResults(result) {
 
     // ── Per-region confidence strip + table (Phase 4.4) ──
     var qRegions = (q && q.plddt && q.plddt.regions) ? q.plddt.regions : [];
-    var tierCol = { high: '#059669', medium: '#0d9488', low: '#d97706', very_low: '#dc2626' };
+    var tierCol = { high: '#047857', medium: '#0f766e', low: '#b45309', very_low: '#b91c1c' };
     var tierWord = { high: 'Trustworthy', medium: 'OK', low: 'Caution', very_low: 'Unreliable' };
     var tierRange = { high: '≥90%', medium: '70–89%', low: '50–69%', very_low: '<50%' };
     var qBody = '';
@@ -2659,7 +2868,7 @@ function displayResults(result) {
     var prep = s1.preparation;
     if (prep) {
       if (prep.error) {
-        prepRow = '<div class="stage-detail"><div class="stage-metric"><span class="label">Structure Preparation</span><span class="value" style="color:#d97706">skipped &mdash; original file used</span></div></div>';
+        prepRow = '<div class="stage-detail"><div class="stage-metric"><span class="label">Structure Preparation</span><span class="value" style="color:#b45309">skipped &mdash; original file used</span></div></div>';
         prepCard = '<div class="info-card" style="margin-top:10px;font-size:12px"><strong>Preparation unavailable:</strong> ' + esc(prep.error) + '</div>';
       } else {
         var wN = prep.waters_removed || 0, iN = prep.ions_removed || 0;
@@ -2696,11 +2905,11 @@ function displayResults(result) {
       (qv ? '<div class="badge ' + qBadgeCls + '" title="Composite structure quality: confidence + clashes + geometry + H-bonds + gaps">' + vWord + ' &middot; ' + esc(q.quality_grade) + ' (' + Math.round(q.quality_score) + '/100)</div>' : '') +
       '</div></div>' +
       '<div class="rc-body">' +
-      (indicative ? '<div class="error-card" style="margin-bottom:12px"><strong>&#x26A0;&#xFE0F; INDICATIVE ONLY &mdash; these scores are not decision-grade.</strong> ' +
+      (indicative ? '<div class="error-card" style="margin-bottom:12px"><strong><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-alert"/></svg> INDICATIVE ONLY &mdash; these scores are not decision-grade.</strong> ' +
         (isLow ? 'Confidence is below 50%: the coordinates themselves are unreliable (a helical fallback or a badly predicted region). ' : '') +
         (qv === 'poor' ? 'Structure quality is Poor (' + Math.round(q.quality_score) + '/100, grade ' + esc(q.quality_grade) + '). ' + esc(q.recommendation || '') + ' ' : '') +
         'Docking still runs so you can explore, but for results that matter use an experimental PDB (PDB tab).</div>' : '') +
-      (cautionQ ? '<div style="margin-bottom:12px;padding:10px 12px;border:1px solid #fcd34d;background:#fffbeb;border-radius:8px;font-size:12px;line-height:1.6;color:#92400e"><strong>&#x26A0;&#xFE0F; Moderate-quality structure &mdash; treat rankings with caution.</strong> ' +
+      (cautionQ ? '<div style="margin-bottom:12px;padding:10px 12px;border:1px solid #fcd34d;background:#fffbeb;border-radius:8px;font-size:12px;line-height:1.6;color:#92400e"><strong><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-alert"/></svg> Moderate-quality structure &mdash; treat rankings with caution.</strong> ' +
         (isCaution ? 'Confidence is 50&ndash;69%: part of the model is uncertain and docked poses in those regions may be unreliable. ' : '') +
         ((qv === 'usable' && !isCaution) ? 'Structure quality is Usable (' + Math.round(q.quality_score) + '/100, grade ' + esc(q.quality_grade) + '): flagged issues may affect some regions. ' : '') +
         'See the per-region confidence table below, and prefer an experimental PDB (PDB tab) for decisions that matter.</div>' : '') +
@@ -2708,7 +2917,7 @@ function displayResults(result) {
       '<div class="stage-detail"><div class="stage-metric"><span class="label">Sequence Length</span><span class="value">' + (seqLen || '?') + ' aa</span></div></div>' +
       '<div class="stage-detail"><div class="stage-metric"><span class="label">Mean pLDDT</span><span class="value">' + confText + '</span></div></div>' +
       (qv ? '<div class="stage-detail"><div class="stage-metric"><span class="label">Structure Quality</span><span class="value" style="font-weight:700;color:' +
-        (qv === 'good' ? 'var(--bio)' : qv === 'usable' ? '#d97706' : 'var(--red)') + '">' + vWord + ' &middot; grade ' + esc(q.quality_grade) + ' (' + Math.round(q.quality_score) + '/100)</span></div></div>' : '') +
+        (qv === 'good' ? 'var(--bio)' : qv === 'usable' ? '#b45309' : 'var(--red)') + '">' + vWord + ' &middot; grade ' + esc(q.quality_grade) + ' (' + Math.round(q.quality_score) + '/100)</span></div></div>' : '') +
       (q && q.defect_count ? '<div class="stage-detail"><div class="stage-metric"><span class="label">Defects</span><span class="value">' +
         q.defect_count.critical + ' critical &middot; ' + q.defect_count.warning + ' warnings &middot; ' +
         (qTotals ? qTotals.gaps : (q.missing_residues || []).length) + ' gaps &middot; ' +
@@ -2719,10 +2928,10 @@ function displayResults(result) {
       (s1.message ? '<div class="info-card" style="margin-top:10px;font-size:12px">' + esc(s1.message) + '</div>' : '') +
       prepCard +
       qBody +
-      (q && !qErr && !indicative && q.recommendation ? '<div class="interp-card" style="margin-top:10px;font-size:12px"><span class="interp-icon">&#x2705;</span>' + esc(q.recommendation) + '</div>' : '') +
-      '<div style="margin-top:12px"><button type="button" class="btn-secondary btn-sm" onclick="downloadPDB()">&#x2B07; Download Protein PDB</button></div>' +
+      (q && !qErr && !indicative && q.recommendation ? '<div class="interp-card" style="margin-top:10px;font-size:12px"><span class="interp-icon"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-check"/></svg></span>' + esc(q.recommendation) + '</div>' : '') +
+      '<div style="margin-top:12px"><button type="button" class="btn-secondary btn-sm" onclick="downloadPDB()"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-download"/></svg> Download Protein PDB</button></div>' +
       (showRepair ? '<div style="margin-top:10px;padding:10px 12px;border:1px solid #c7d2fe;background:#eef2ff;border-radius:8px;font-size:12px;line-height:1.6;color:#3730a3">' +
-        '<strong>&#x1F527; Repairable defects found</strong> &mdash; ' + repairBits.join(', ') + '. Regenerative folding can model missing loops and resolve steric clashes before you re-run.' +
+        '<strong><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-wrench"/></svg> Repairable defects found</strong> &mdash; ' + repairBits.join(', ') + '. Regenerative folding can model missing loops and resolve steric clashes before you re-run.' +
         '<div style="margin-top:8px"><button type="button" class="btn-secondary btn-sm" id="repair-btn" onclick="repairStructure()">Repair structure</button></div>' +
         '<div id="repair-result" style="margin-top:8px"></div></div>' : '') +
       '</div></div>';
@@ -2750,6 +2959,7 @@ function displayResults(result) {
       (s2.exhaustiveness ? '<div class="stage-detail"><div class="stage-metric"><span class="label">Search Exhaustiveness</span><span class="value">' + s2.exhaustiveness + '</span></div></div>' : '') +
       (s2.box && s2.box.size ? '<div class="stage-detail"><div class="stage-metric"><span class="label">Search Box</span><span class="value">' + s2.box.size.join('&times;') + ' &Aring; &middot; ' + esc(boxSourceLabel(s2.box)) + '</span></div></div>' : '') +
       (s2.box_note ? '<div style="font-size:11px;color:#b45309;margin-top:4px">&#9888; ' + esc(s2.box_note) + '</div>' : '') +
+      (s2.box && s2.box.validation && s2.box.validation.warnings && s2.box.validation.warnings.length ? '<div style="font-size:11px;color:#b45309;margin-top:4px">' + s2.box.validation.warnings.map(function (w) { return '&#9888; ' + esc(w); }).join('<br>') + '</div>' : '') +
       (s2.computation_time ? '<div class="stage-detail"><div class="stage-metric"><span class="label">Screening Time</span><span class="value">' + s2.computation_time + '</span></div></div>' : '') +
       '</div></div>';
   } else {
@@ -2796,7 +3006,7 @@ function displayResults(result) {
         (s3c.gnina_exhaustiveness ? '<div class="stage-detail"><div class="stage-metric"><span class="label">Redock Exhaustiveness</span><span class="value">' + s3c.gnina_exhaustiveness + (s3c.refine_top_k ? ' &middot; top ' + s3c.refine_top_k + ' Vina hits' : '') + '</span></div></div>' : '') +
         (s3c.computation_time ? '<div class="stage-detail"><div class="stage-metric"><span class="label">Refinement Time</span><span class="value">' + s3c.computation_time + '</span></div></div>' : '') +
         (failReasons.length ? '<div class="error-card" style="margin-top:8px;font-size:12px"><strong>Some refinements failed:</strong><ul style="margin:6px 0 0 16px;padding:0">' + failReasons.map(function(r){ return '<li>' + esc(r) + '</li>'; }).join('') + '</ul></div>' : '') +
-        '<div class="interp-card" style="margin-top:10px"><span class="interp-icon">&#x1F4CA;</span>' +
+        '<div class="interp-card" style="margin-top:10px"><span class="interp-icon"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-chart"/></svg></span>' +
           (consensusMode === 'full'
             ? '<strong>Full consensus:</strong> every ranked candidate was re-scored with the GNINA CNN. Consensus rank = 0.4 &times; Vina + 0.6 &times; GNINA (kcal/mol, lower = tighter).'
             : '<strong>Partial consensus:</strong> the top ' + cnnRefined + ' Vina hits were re-scored with the GNINA CNN (consensus = 0.4 &times; Vina + 0.6 &times; GNINA); the remaining ' + (s3c.vina_only || 0) + ' were ranked by their Vina score alone and are tagged &ldquo;V&rdquo; in the table.') +
@@ -2838,7 +3048,7 @@ function displayResults(result) {
         ? ' <span title="Ranked by Vina score — this candidate has no CNN score" style="font-size:9px;color:var(--muted);font-weight:700;border:1px solid var(--line,#e6e6e6);border-radius:3px;padding:0 3px">V</span>'
         : '';
       html += '<tr class="' + (isBest ? 'best-row' : '') + '" style="cursor:' + (hasStruct ? 'pointer' : 'default') + '" onclick="' + (hasStruct ? 'viewMol3D(' + i + ')' : '') + '" title="' + (hasStruct ? 'Click to view docked pose in 3D' : '') + '">' +
-        '<td><span class="rank-num ' + (isBest ? 'top-rank' : '') + '">' + (isBest ? '&#x2605;' : '#' + (i + 1)) + '</span></td>' +
+        '<td><span class="rank-num ' + (isBest ? 'top-rank' : '') + '">' + (isBest ? '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-star"/></svg>' : '#' + (i + 1)) + '</span></td>' +
         '<td class="smiles-cell">' + (mol.depiction && /^[A-Za-z0-9+/=]+$/.test(mol.depiction) ? '<img class="ligand-thumb" alt="" loading="lazy" src="data:image/svg+xml;base64,' + mol.depiction + '">' : '') + esc(mol.smiles || '') + '</td>' +
         '<td style="text-align:right"><span class="' + vClass + '">' + (vina !== null && vina !== undefined ? vina.toFixed(2) : '—') + '</span></td>';
       if (showGninaCol) html += '<td style="text-align:right"><span class="' + gClass + '">' + (gnina !== null && gnina !== undefined ? gnina.toFixed(2) : '—') + '</span></td>';
@@ -2856,7 +3066,7 @@ function displayResults(result) {
             : '—') + '</td>';
       }
       if (showInterCol) html += '<td style="text-align:center">' + ixChips(mol, 4) + '</td>';
-      html += '<td style="text-align:center">' + (hasStruct ? '<span style="color:var(--primary);font-size:11px;cursor:pointer" title="View in 3D">&#x1F52D;</span>' : '') + '</td>' +
+      html += '<td style="text-align:center">' + (hasStruct ? '<span style="color:var(--primary);font-size:11px;cursor:pointer" title="View in 3D"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-eye"/></svg></span>' : '') + '</td>' +
         '</tr>';
     }
     html += '</tbody></table></div>' +
@@ -2900,7 +3110,7 @@ function displayResults(result) {
         (topMol.interactions ? '<div style="margin-top:12px"><div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--muted);letter-spacing:.05em;margin-bottom:6px">Rank #1 pocket residues</div>' +
           '<div style="display:flex;gap:6px;flex-wrap:wrap">' + (resChips(topMol, 12) || '<span style="font-size:11px;color:var(--muted)">No receptor contacts within 5 Å</span>') + '</div></div>' : '') +
         (effR.recommendations && effR.recommendations.length
-          ? '<div class="interp-card" style="margin-top:12px"><span class="interp-icon">&#x1F4A1;</span><strong>Notes:</strong><ul style="margin:6px 0 0 16px;padding:0">' +
+          ? '<div class="interp-card" style="margin-top:12px"><span class="interp-icon"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-lightbulb"/></svg></span><strong>Notes:</strong><ul style="margin:6px 0 0 16px;padding:0">' +
             effR.recommendations.map(function (r) { return '<li>' + esc(r) + '</li>'; }).join('') + '</ul></div>'
           : '') +
         '<div style="font-size:10px;color:var(--muted);margin-top:8px;line-height:1.5">LE = |docking score| / heavy atoms (larger is better; &gt; 0.3 usually good). Pose clusters and spread are score-based proxies \u2014 they group similar SCORING behaviour, not 3D superposition across different molecules.</div>' +
@@ -2933,7 +3143,7 @@ function displayResults(result) {
         : '';
       html += '<div class="success-card" style="cursor:pointer" onclick="viewMol3D(0)" title="Click to view docked pose">' +
         '<div style="display:flex;align-items:flex-start;gap:12px">' +
-          '<div style="width:36px;height:36px;border-radius:50%;background:var(--bio);color:#fff;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">&#x2605;</div>' +
+          '<div style="width:36px;height:36px;border-radius:50%;background:var(--bio);color:#fff;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-star"/></svg></div>' +
           bestThumb +
           '<div style="flex:1">' +
             '<div style="font-size:14px;font-weight:700;color:#166534;margin-bottom:4px">Best Molecule (Rank #1) &mdash; click to view in 3D</div>' +
@@ -2944,7 +3154,7 @@ function displayResults(result) {
               (best.cnn_score !== null && best.cnn_score !== undefined ? '<span><strong>CNN pose:</strong> ' + (best.cnn_score * 100).toFixed(0) + '%</span>' : '') +
               (best.cnn_affinity !== null && best.cnn_affinity !== undefined ? '<span><strong>CNN affinity:</strong> ' + best.cnn_affinity.toFixed(2) + ' (log mol/L)</span>' : '') +
               '<span><strong>Consensus:</strong> ' + (best.consensus_score ? best.consensus_score.toFixed(3) : '—') + '</span>' +
-              (best.score_source === 'vina' ? '<span style="font-weight:700;color:#92400e">&#x26A0; Ranked by Vina &mdash; this candidate has no CNN score</span>' : '') +
+              (best.score_source === 'vina' ? '<span style="font-weight:700;color:#92400e"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-alert"/></svg> Ranked by Vina &mdash; this candidate has no CNN score</span>' : '') +
             '</div>' +
             '<div style="margin-top:8px;font-size:12px;color:#166534;line-height:1.6">' + bestInterp + '</div>' +
           '</div>' +
@@ -2956,7 +3166,7 @@ function displayResults(result) {
     // (mode-aware: every claim must match what actually ran — the old text
     // referenced a removed status-flag and over-promised "both engines")
     html += '<div class="interp-card" style="margin-top:16px">' +
-      '<span class="interp-icon">&#x1F4D6;</span><strong>How to interpret:</strong> ' +
+      '<span class="interp-icon"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-book"/></svg></span><strong>How to interpret:</strong> ' +
       '<strong>Vina &lt; -7 kcal/mol</strong> = strong binding. <strong>-5 to -7</strong> = moderate. <strong>&gt; -5</strong> = weak. ' +
       (showCnnCol ? '<strong>CNN pose score &gt; 0.7</strong> = GNINA is confident in that pose; <strong>CNN affinity</strong> is its model-estimated affinity in log mol/L (an estimate, not a measured Ki). ' : '') +
       '<strong>pLDDT:</strong> &gt; 90 high, 70&ndash;90 medium, 50&ndash;69 caution, &lt; 50 unreliable. ' +
@@ -2977,12 +3187,12 @@ function displayResults(result) {
     // ── Download Buttons (tasks 5.3: complex PDB / quality / interactions) ──
     var hasAnyInter = ranked.some(function(m){ return m.interactions && m.interactions.counts; });
     html += '<div class="dl-row" style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap">' +
-      '<button type="button" class="btn-secondary btn-sm" onclick="downloadResults(\'json\')">&#x1F4E5; Download JSON</button>' +
-      '<button type="button" class="btn-secondary btn-sm" onclick="downloadResults(\'csv\')">&#x1F4E5; Download CSV</button>' +
-      '<button type="button" class="btn-secondary btn-sm" onclick="downloadPDB()">&#x1F4E5; Download Protein PDB</button>' +
-      ((best && ranked[0] && ranked[0].structure && ranked[0].structure.ligand) ? '<button type="button" class="btn-secondary btn-sm" onclick="downloadComplexPDB(0)">&#x1F9EC; Download Complex PDB (best pose)</button>' : '') +
-      '<button type="button" class="btn-secondary btn-sm" onclick="downloadQualityReport()">&#x1F4CA; Quality report (JSON)</button>' +
-      (hasAnyInter ? '<button type="button" class="btn-secondary btn-sm" onclick="downloadInteractionsJSON()">&#x1F91D; Interactions (JSON)</button>' : '') +
+      '<button type="button" class="btn-secondary btn-sm" onclick="downloadResults(\'json\')"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-download"/></svg> Download JSON</button>' +
+      '<button type="button" class="btn-secondary btn-sm" onclick="downloadResults(\'csv\')"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-download"/></svg> Download CSV</button>' +
+      '<button type="button" class="btn-secondary btn-sm" onclick="downloadPDB()"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-download"/></svg> Download Protein PDB</button>' +
+      ((best && ranked[0] && ranked[0].structure && ranked[0].structure.ligand) ? '<button type="button" class="btn-secondary btn-sm" onclick="downloadComplexPDB(0)"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-dna"/></svg> Download Complex PDB (best pose)</button>' : '') +
+      '<button type="button" class="btn-secondary btn-sm" onclick="downloadQualityReport()"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-chart"/></svg> Quality report (JSON)</button>' +
+      (hasAnyInter ? '<button type="button" class="btn-secondary btn-sm" onclick="downloadInteractionsJSON()"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-network"/></svg> Interactions (JSON)</button>' : '') +
       '</div>';
   }
 
@@ -3152,7 +3362,7 @@ function toggleViewerExpand() {
   wrap.classList.toggle('mv-expanded', _mvExpanded);
   document.body.style.overflow = _mvExpanded ? 'hidden' : '';
   var b = $('mv-expand-btn');
-  if (b) b.innerHTML = _mvExpanded ? '&#x2715; Exit full view' : '&#x26F6; Expand';
+  if (b) b.innerHTML = _mvExpanded ? '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-x"/></svg> Exit full view' : '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-maximize"/></svg> Expand';
   if (_viewer) {
     setTimeout(function () {
       try { _viewer.resize(); } catch (e) { /* viewer torn down */ }
@@ -3199,8 +3409,16 @@ function _jobContactLists(li) {
   var lig = _batchLigands[li];
   var ranked = (window._lastDockingResult && window._lastDockingResult.ranked_results) || [];
   var entry = (lig && ranked[lig.rank - 1]) || ranked[li];
-  var d = entry && entry.interactions && entry.interactions.detail;
-  if (d && (d.hydrogen_bonds || d.hydrophobic_contacts || d.salt_bridges || d.pi_stacking)) return d;
+  var inter = entry && entry.interactions;
+  var d = inter && inter.detail;
+  var plip = inter && inter.plip;
+  if (d && (d.hydrogen_bonds || d.hydrophobic_contacts || d.salt_bridges || d.pi_stacking)) {
+    if (plip) d.plip = plip;   // PLIP profile rides along with in-house detail
+    return d;
+  }
+  // No in-house detail (deeper ranks) but PLIP exists → minimal carrier so
+  // the panel can still show the reference profile.
+  if (plip) return { plip: plip };
   return null;
 }
 // On-demand analysis for ranks beyond the server's bounded detail (or legacy
@@ -3215,12 +3433,14 @@ function _fetchContactLists(li) {
   }).then(function (rr) { return rr.ok ? rr.json() : null; })
     .then(function (rep) {
       if (!rep) return null;
-      return {
+      var out = {
         hydrogen_bonds: rep.hydrogen_bonds || [],
         hydrophobic_contacts: rep.hydrophobic_contacts || [],
         salt_bridges: rep.salt_bridges || [],
         pi_stacking: rep.pi_stacking || []
       };
+      if (rep.plip) out.plip = rep.plip;
+      return out;
     })
     .catch(function () { return null; });
 }
@@ -3248,7 +3468,7 @@ var _IX_GROUPS = [
   ['hydrogen_bonds', '#2563eb', 'Hydrogen bonds'],
   ['salt_bridges', '#7c3aed', 'Salt bridges'],
   ['pi_stacking', '#db2777', 'π-stacking'],
-  ['hydrophobic_contacts', '#0d9488', 'Hydrophobic contacts']
+  ['hydrophobic_contacts', '#0f766e', 'Hydrophobic contacts']
 ];
 function _receptorCoords() {
   if (_receptorCoordMap) return _receptorCoordMap;
@@ -3405,9 +3625,54 @@ function _renderContactPanel(li, lists) {
         (it.distance !== undefined && it.distance !== null ? Number(it.distance).toFixed(2) + ' Å' : '—') + '</span></div>';
     }
   }
-  if (!total) html += '<em>No receptor contacts within the analysis cutoffs for this pose.</em>';
+  if (!total && !(lists.plip && lists.plip.counts)) html += '<em>No receptor contacts within the analysis cutoffs for this pose.</em>';
   else if (total > 5) html += '<div class="mv-ix-head" style="color:var(--muted)">5 of ' + total + ' distances labeled in 3D (labels overlap in tight pockets) — all values listed here</div>';
+  html += _plipSectionHTML(lists.plip);
   panel.innerHTML = html;
+}
+// PLIP (Protein-Ligand Interaction Profiler, Salentin et al. 2015) — the
+// published reference method, run server-side on this same pose. Separate
+// section so its geometry-based classification is never confused with the
+// in-house measured contacts above.
+var _PLIP_TYPES = [
+  ['hydrogen_bond', '#2563eb', 'Hydrogen bonds'],
+  ['hydrophobic', '#0f766e', 'Hydrophobic contacts'],
+  ['salt_bridge', '#7c3aed', 'Salt bridges'],
+  ['pi_stacking', '#b45309', 'π–π stacking'],
+  ['pi_cation', '#be185d', 'π–cation'],
+  ['halogen_bond', '#0369a1', 'Halogen bonds'],
+  ['water_bridge', '#0891b2', 'Water bridges'],
+  ['metal', '#4b5563', 'Metal coordination']
+];
+function _plipSectionHTML(plip) {
+  if (!plip) return '';
+  var head = '<div class="mv-ix-head" style="margin-top:8px;color:#0f766e">PLIP interaction profile · reference method (Salentin et al. 2015) · run on this pose</div>';
+  if (plip.available === false || (plip.reason && !plip.counts)) {
+    return head + '<em style="color:var(--muted)">' + esc(String(plip.reason || 'PLIP analysis unavailable on this server.')) + '</em>';
+  }
+  if (plip.error && !plip.counts) {
+    return head + '<em style="color:var(--muted)">' + esc(String(plip.error)) + '</em>';
+  }
+  var rows = plip.interactions || [];
+  var counts = plip.counts || {};
+  var html = head, g, i, arr, n = 0;
+  for (g = 0; g < _PLIP_TYPES.length; g++) {
+    var kind = _PLIP_TYPES[g][0];
+    arr = rows.filter(function (r) { return r.type === kind; });
+    if (!arr.length) continue;
+    html += '<div class="mv-ix-head" style="color:' + _PLIP_TYPES[g][1] + '">' + _PLIP_TYPES[g][2] + ' (' + (counts[kind] || arr.length) + ')</div>';
+    for (i = 0; i < arr.length; i++) {
+      var r = arr[i];
+      n++;
+      html += '<div class="mv-ix-row"><span class="mv-ix-dot" style="background:' + _PLIP_TYPES[g][1] + '"></span>' +
+        '<span>' + esc(String(r.residue || '?')) +
+        (r.chain ? ' <span style="color:var(--muted)">chain ' + esc(String(r.chain)) + '</span>' : '') + '</span>' +
+        '<span class="mv-ix-dist" style="color:' + _PLIP_TYPES[g][1] + '">' +
+        (r.distance !== null && r.distance !== undefined ? Number(r.distance).toFixed(2) + ' Å' : '—') + '</span></div>';
+    }
+  }
+  if (!n) html += '<em style="color:var(--muted)">PLIP found no non-covalent contacts for this pose.</em>';
+  return html;
 }
 // ── Task 3.4: 2D top-down projection of the docked pose ───────────────────
 var _ELEM2D = {C: '#6b7280', N: '#2563eb', O: '#e74c3c', S: '#eab308', P: '#ea580c', F: '#16a34a', CL: '#16a34a', BR: '#a855f7', I: '#9333ea', H: '#cbd5e1'};
@@ -3424,7 +3689,7 @@ function showPose2D() {
   var parsed = _parse2DGeometry(lig.ligand_sdf);
   modal.onclick = function (e) { if (e.target === modal) closePose2D(); };
   modal.innerHTML = '<div class="mv-2d-card">' +
-    '<button type="button" class="mv-2d-close" onclick="closePose2D()">&#x2715; Close</button>' +
+    '<button type="button" class="mv-2d-close" onclick="closePose2D()"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-x"/></svg> Close</button>' +
     '<h4>2D view — rank #' + lig.rank + '</h4>' +
     '<div class="mv-2d-sub">Top-down (x/y) projection of the docked pose coordinates from this job’s structure file — a real-coordinate view, not a chemical layout diagram.' +
     (parsed.bonds.length ? '' : ' Bond connectivity is not present in this structure format, so atoms are shown without bonds.') + '</div>' +
@@ -3522,7 +3787,7 @@ function initViewer(retry) {
     return;
   }
   if (typeof $3Dmol === 'undefined') {
-    el.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:12px;color:var(--muted)"><div style="font-size:32px">&#x1F52D;</div><div style="font-size:13px;font-weight:600;color:var(--text2)">3D Structure Viewer</div><div style="font-size:12px;max-width:300px;text-align:center;line-height:1.6">The 3D molecular viewer library is loading. If it does not appear, try refreshing the page or using a modern browser.</div><button type="button" class="btn-secondary btn-sm" onclick="initViewer()" style="margin-top:4px">Retry Loading Viewer</button></div>';
+    el.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:12px;color:var(--muted)"><div style="font-size:32px"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-eye"/></svg></div><div style="font-size:13px;font-weight:600;color:var(--text2)">3D Structure Viewer</div><div style="font-size:12px;max-width:300px;text-align:center;line-height:1.6">The 3D molecular viewer library is loading. If it does not appear, try refreshing the page or using a modern browser.</div><button type="button" class="btn-secondary btn-sm" onclick="initViewer()" style="margin-top:4px">Retry Loading Viewer</button></div>';
     // Retry after a delay in case script is still loading
     setTimeout(function() {
       if (typeof $3Dmol !== 'undefined') initViewer();
@@ -3717,10 +3982,10 @@ async function repairStructure() {
     if (!rep.prepared_pdb) throw new Error('Repair produced no structure.');
     _repairedPDB = rep.prepared_pdb;
     var nAct = (rep.actions || []).length;
-    out.innerHTML = '<div style="font-weight:700;color:#166534">&#x2705; Structure repaired' + (nAct ? ' &mdash; ' + nAct + ' action(s)' : '') + '.</div>' +
+    out.innerHTML = '<div style="font-weight:700;color:#166534"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-check"/></svg> Structure repaired' + (nAct ? ' &mdash; ' + nAct + ' action(s)' : '') + '.</div>' +
       (rep.summary ? '<div style="font-size:11px;color:#3730a3;margin-top:2px">' + esc(rep.summary) + '</div>' : '') +
       '<div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">' +
-      '<button type="button" class="btn-secondary btn-sm" onclick="downloadRepairedPDB()">&#x2B07; Download repaired PDB</button>' +
+      '<button type="button" class="btn-secondary btn-sm" onclick="downloadRepairedPDB()"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-download"/></svg> Download repaired PDB</button>' +
       '<button type="button" class="btn-secondary btn-sm" onclick="rerunRepaired()">Re-run docking with repaired structure</button></div>';
   } catch (e) {
     out.innerHTML = '<div class="error-card" style="font-size:12px">' + esc(String((e && e.message) || e)) + '</div>';
@@ -3903,6 +4168,7 @@ async function downloadInteractionsJSON() {
         rank: i + 1,
         smiles: m.smiles || '',
         counts: inter.counts || null,
+        plip: inter.plip || null,
         pocket_residues: inter.residues || [],
         // detail is only attached server-side for the top ranks (bounded
         // job JSON) — absent for deeper ranks by design.
@@ -4191,8 +4457,8 @@ async function _loadScreenResults(campaign) {
         '<td style="padding:6px;font-weight:600;color:var(--text2)">' + rank + '</td>' +
         '<td style="padding:6px;color:var(--text2)">' + (h.protein_name || h.protein_id || '') + '</td>' +
         '<td style="padding:6px;font-family:monospace;font-size:11px;color:var(--text2)" title="' + smi.replace(/"/g, '&quot;') + '">' + smiDisplay + '</td>' +
-        '<td style="padding:6px;text-align:right;font-weight:600;color:' + (h.vina_score < -7 ? '#059669' : h.vina_score < -5 ? '#d97706' : '#64748b') + '">' + v + '</td>' +
-        '<td style="padding:6px;text-align:right;font-weight:600;color:' + (h.gnina_score < -7 ? '#059669' : h.gnina_score < -5 ? '#d97706' : '#64748b') + '">' + g + '</td>' +
+        '<td style="padding:6px;text-align:right;font-weight:600;color:' + (h.vina_score < -7 ? '#047857' : h.vina_score < -5 ? '#b45309' : '#64748b') + '">' + v + '</td>' +
+        '<td style="padding:6px;text-align:right;font-weight:600;color:' + (h.gnina_score < -7 ? '#047857' : h.gnina_score < -5 ? '#b45309' : '#64748b') + '">' + g + '</td>' +
         '<td style="padding:6px;text-align:right;font-weight:700">' + cCell + '</td>' +
         '</tr>';
     }).join('');
@@ -4230,7 +4496,7 @@ async function resumeScreening() {
     _screenError('Network error: ' + e.message);
   }
   $('screen-resume-btn').disabled = false;
-  $('screen-resume-btn').textContent = '↻ Resume';
+  $('screen-resume-btn').textContent = '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-refresh"/></svg> Resume';
 }
 </script>
 <!-- AI Widget -->
@@ -4288,7 +4554,7 @@ async function resumeScreening() {
 <script defer src="/batch-ui.js"></script>
 <script defer src="/results-ui.js"></script>
 
-<p style="font-size:12px;color:#94A3B8"><a href="/cite-vigyanllm" style="color:#2563EB">Cite this tool</a> — use the preferred citation format for VigyanLLM tools in your research.</p>
+<p style="font-size:12px;color:#64748B"><a href="/cite-vigyanllm" style="color:#2563EB">Cite this tool</a> — use the preferred citation format for VigyanLLM tools in your research.</p>
 
 <div style="margin-top:48px;padding-top:32px;border-top:1px solid #E2E8F0;font-size:13px;color:#64748B;">
   <strong>Related resources:</strong>
