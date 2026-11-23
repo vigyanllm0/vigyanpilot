@@ -314,6 +314,23 @@ def init_db():
             created_by TEXT DEFAULT 'system',
             created_at REAL DEFAULT (strftime('%s','now'))
         );
+
+        CREATE TABLE IF NOT EXISTS tool_usage_events (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            tool_key TEXT NOT NULL,
+            tool_category TEXT NOT NULL DEFAULT 'other',
+            is_authenticated INTEGER NOT NULL DEFAULT 0,
+            user_email TEXT,
+            user_plan TEXT NOT NULL DEFAULT 'guest',
+            client_ip TEXT NOT NULL,
+            sequences_count INTEGER NOT NULL DEFAULT 1,
+            usage_date TEXT NOT NULL,
+            created_at REAL NOT NULL
+        );
+        CREATE INDEX IF NOT EXISTS idx_tue_date ON tool_usage_events(usage_date);
+        CREATE INDEX IF NOT EXISTS idx_tue_tool_date ON tool_usage_events(tool_key, usage_date);
+        CREATE INDEX IF NOT EXISTS idx_tue_ip_date ON tool_usage_events(client_ip, usage_date);
+        CREATE INDEX IF NOT EXISTS idx_tue_email_date ON tool_usage_events(user_email, usage_date);
     """)
 
     # Multi-referral model (2026-10): the referrer's code row must stay

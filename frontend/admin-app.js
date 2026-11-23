@@ -27,6 +27,7 @@ window.showSection = function(name){
   var tabBtn=$('tab-'+name);
   if(tabBtn)tabBtn.classList.add('active');
   if(name==='users')loadUsers();
+  if(name==='analytics')loadAnalytics();
   if(name==='errors')loadErrors();
   if(name==='bans')loadBans();
   if(name==='blog')loadBlogPosts();
@@ -376,6 +377,165 @@ async function loadBlogPosts(){
   }
 }
 
+// ── USAGE & BEHAVIOR ANALYTICS ──
+window.ANALYTICS_PERIOD = 30;
+
+function escHtml(s){
+  return String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+window.setAnalyticsPeriod = function(days){
+  window.ANALYTICS_PERIOD = days;
+  document.querySelectorAll('.analytics-period').forEach(b => {
+    b.classList.toggle('active', parseInt(b.dataset.period) === days);
+  });
+  loadAnalytics();
+};
+
+window.exportAnalyticsCsv = function(){
+  window.location.href = '/api/admin/usage-analytics/export.csv?days=' + window.ANALYTICS_PERIOD;
+};
+
+async function loadAnalytics(){
+  const days = window.ANALYTICS_PERIOD || 30;
+  const d = await api('/api/admin/usage-analytics?days=' + days);
+  if(!d) return;
+  const k = d.kpis || {};
+  const fmt = n => (n==null ? 0 : n).toLocaleString();
+
+  // KPI cards
+  const setKpi = (id, val, sub) => { const el = $(id); if(!el) return; el.textContent = val; if(sub){ el.nextElementSibling && (el.nextElementSibling.textContent = sub); } };
+  setKpi('ua-today-users', fmt(k.today ? k.today.total_unique_users : 0), 'DAU · ' + fmt(k.today?.logged_in_users||0) + ' signed-in + ' + fmt(k.today?.anonymous_ips||0) + ' guests');
+  setKpi('ua-week-users', fmt(k.week ? k.week.total_unique_users : 0), 'WAU · last 7 days');
+  setKpi('ua-month-users', fmt(k.month ? k.month.total_unique_users : 0), 'MAU · last 30 days');
+  setKpi('ua-stickiness', (k.dau_mau_ratio ? (k.dau_mau_ratio*100).toFixed(1)+'%' : '0%'), 'DAU/MAU · ' + (k.returning_user_pct||0) + '% return');
+  const top = k.top_tool || {};
+  setKpi('ua-top-tool', top.label || '—', (top.share_pct||0) + '% of all runs · ' + fmt(top.runs||0) + ' runs');
+  setKpi('ua-return-ip', fmt(k.daily_returning_anon_ips||0), 'unregistered IPs on 2+ days');
+
+  // Chart 1 — daily active users (stacked logged-in vs anon)
+  const series = d.daily_series || [];
+  const maxDay = Math.max(1, ...series.map(s => (s.logged_in_users||0) + (s.anon_ips||0)));
+  const dayLabel = date => { const m = String(date).slice(5); return m; };
+  $('chart-daily').innerHTML = series.length
+    ? series.map(s => {
+        const total = (s.logged_in_users||0) + (s.anon_ips||0);
+        const liPct = maxDay ? Math.max((s.logged_in_users||0)/maxDay*100, total>0?4:0) : 0;
+        const anPct = maxDay ? Math.max((s.anon_ips||0)/maxDay*100, total>0?4:0) : 0;
+        return '<div class="bar-col" title="' + s.date + ' — ' + (s.logged_in_users||0) + ' signed-in, ' + (s.anon_ips||0) + ' guests, ' + ((s.logged_in_runs||0)+(s.anon_runs||0)) + ' runs">'
+          + '<div style="display:flex;flex-direction:column-reverse;width:100%;height:110px;align-items:stretch;border-radius:3px;overflow:hidden">'
+          + '<div class="bar" style="height:' + anPct + '%;width:100%;background:var(--orange);border-radius:0"></div>'
+          + '<div class="bar" style="height:' + liPct + '%;width:100%;background:var(--blue);border-radius:0"></div>'
+          + '</div><div class="bar-label">' + dayLabel(s.date) + '</div></div>';
+      }).join('')
+    : '<div style="color:var(--muted);padding:2rem;text-align:center;width:100%">No activity yet</div>';
+
+  // Chart 2 — tool leaderboard (two-tone horizontal bars)
+  const board = d.tool_leaderboard || [];
+  const maxRuns = Math.max(1, ...board.map(t => t.total_runs||0));
+  $('chart-tools').innerHTML = board.length
+    ? board.slice(0, 12).map(t => {
+        const li = t.logged_in_runs||0, an = t.anon_runs||0;
+        const liW = li/maxRuns*100, anW = an/maxRuns*100;
+        return '<div style="margin-bottom:.55rem">'
+          + '<div style="display:flex;justify-content:space-between;font-size:.72rem;margin-bottom:3px"><span style="color:var(--text)">' + escHtml(t.label) + '</span><span class="mono" style="color:var(--muted)">' + fmt(t.total_runs) + ' runs · ' + fmt(t.unique_logged_in||0) + ' u / ' + fmt(t.unique_anon_ips||0) + ' ip</span></div>'
+          + '<div style="display:flex;height:14px;background:var(--surface2);border-radius:99px;overflow:hidden">'
+          + '<div style="width:' + liW + '%;background:var(--blue)" title="' + li + ' logged-in"></div>'
+          + '<div style="width:' + anW + '%;background:var(--orange)" title="' + an + ' anonymous"></div>'
+          + '</div></div>';
+      }).join('')
+    : '<div style="color:var(--muted);padding:2rem;text-align:center;width:100%">No tool runs recorded yet</div>';
+
+  // Chart 3 — scenario split donuts
+  const segColors = { guest:'var(--orange)', free:'var(--blue)', user:'var(--blue)', trial:'var(--purple)', pro:'var(--purple)', lab:'var(--green)', admin:'var(--muted)' };
+  const runsBySeg = d.scenario_split?.runs_by_segment || [];
+  const runsTotal = runsBySeg.reduce((a,s)=>a+(s.runs||0),0);
+  let runGrad = '', runLegend = '';
+  let acc = 0;
+  runsBySeg.forEach(s => {
+    const pct = runsTotal ? (s.runs/runsTotal*100) : 0;
+    const c = segColors[s.segment] || 'var(--cyan)';
+    runGrad += c + ' ' + acc + '% ' + (acc+pct) + '%,';
+    acc += pct;
+    runLegend += '<div class="legend-item"><div class="legend-dot" style="background:' + c + '"></div>' + escHtml(s.segment) + ': ' + fmt(s.runs) + '</div>';
+  });
+  if(!runsTotal) runGrad = 'var(--surface2) 0% 100%,';
+  $('donut-runs').innerHTML = '<div class="donut" style="background:conic-gradient(' + runGrad.slice(0,-1) + ')"><div class="donut-center">' + fmt(runsTotal) + '</div></div><div class="donut-legend">' + runLegend + '</div>';
+
+  const idsByType = d.scenario_split?.identities_by_type || [];
+  const idsTotal = idsByType.reduce((a,s)=>a+(s.count||0),0);
+  const typeColors = { anonymous_ip:'var(--orange)', logged_in_account:'var(--blue)' };
+  let idGrad = '', idLegend = '';
+  acc = 0;
+  idsByType.forEach(s => {
+    const pct = idsTotal ? (s.count/idsTotal*100) : 0;
+    const c = typeColors[s.type] || 'var(--cyan)';
+    idGrad += c + ' ' + acc + '% ' + (acc+pct) + '%,';
+    acc += pct;
+    idLegend += '<div class="legend-item"><div class="legend-dot" style="background:' + c + '"></div>' + (s.type==='anonymous_ip'?'Anonymous IPs':'Logged-in accounts') + ': ' + fmt(s.count) + '</div>';
+  });
+  if(!idsTotal) idGrad = 'var(--surface2) 0% 100%,';
+  $('donut-identities').innerHTML = '<div class="donut" style="background:conic-gradient(' + idGrad.slice(0,-1) + ')"><div class="donut-center">' + fmt(idsTotal) + '</div></div><div class="donut-legend">' + idLegend + '</div>';
+
+  // Chart 4 — return frequency cohort
+  const cohort = d.return_frequency?.buckets || [];
+  const maxCohort = Math.max(1, ...cohort.map(b => b.count||0));
+  const cohortColor = ['var(--muted)','var(--cyan)','var(--blue)','var(--green)'];
+  $('chart-cohort').innerHTML = cohort.length
+    ? cohort.map((b,i) => '<div class="bar-col"><div class="bar" style="height:' + Math.max((b.count||0)/maxCohort*100,4) + '%;background:' + cohortColor[i%4] + ';width:60%"></div><div class="bar-label" style="white-space:nowrap">' + b.bucket + ' (' + fmt(b.count) + ')</div></div>').join('')
+    : '<div style="color:var(--muted);padding:2rem;text-align:center;width:100%">No data yet</div>';
+
+  // Table A — returning anonymous IPs
+  const rip = d.returning_anon_ips || [];
+  $('tbl-anon-ips').innerHTML = rip.length
+    ? rip.slice(0, 40).map(r => {
+        const streak = (r.current_streak||0) >= 2 ? '🔥 Daily (' + r.current_streak + 'd)' : '↻ Returning';
+        return '<tr><td class="mono" style="font-size:.72rem">' + escHtml(r.ip) + '</td>'
+          + '<td><span class="pill ' + ((r.current_streak||0)>=2?'pill-red':'pill-orange') + '">' + streak + '</span></td>'
+          + '<td class="mono">' + (r.active_days||0) + '</td>'
+          + '<td class="mono">' + (r.current_streak||0) + '</td>'
+          + '<td class="mono">' + fmt(r.total_runs) + '</td>'
+          + '<td class="mono">' + (r.today_runs||0) + '</td>'
+          + '<td style="font-size:.72rem">' + escHtml(r.favorite_tools) + '</td>'
+          + '<td style="font-size:.7rem" class="mono">' + (r.first_seen||'') + ' → ' + (r.last_seen||'') + '</td>'
+          + '<td style="font-size:.72rem">' + (r.linked_email ? '✅ ' + escHtml(r.linked_email) : '<span style="color:var(--muted)">—</span>') + '</td></tr>';
+      }).join('')
+    : '<tr><td colspan="9" style="text-align:center;color:var(--muted);padding:1.5rem">No returning anonymous IPs yet (needs 2+ active days)</td></tr>';
+
+  // Table B — logged-in users
+  const lusers = d.logged_in_users || [];
+  $('tbl-active-users').innerHTML = lusers.length
+    ? lusers.slice(0, 40).map(u => {
+        const planClass = u.plan==='pro'||u.plan==='trial'?'pill-purple':u.plan==='lab'?'pill-green':u.plan==='admin'?'pill-blue':'pill-blue';
+        return '<tr><td style="font-size:.78rem">' + escHtml(u.email) + '</td>'
+          + '<td><span class="pill ' + planClass + '">' + escHtml(u.plan||'free') + '</span></td>'
+          + '<td class="mono">' + (u.active_days||0) + '</td>'
+          + '<td class="mono">' + (u.runs_today||0) + '</td>'
+          + '<td class="mono">' + (u.runs_7d||0) + '</td>'
+          + '<td class="mono">' + fmt(u.runs_30d) + '</td>'
+          + '<td style="font-size:.72rem">' + escHtml(u.tool_breakdown) + '</td>'
+          + '<td style="font-size:.72rem">' + escHtml(u.last_tool||'—') + ' <span class="mono" style="color:var(--muted);font-size:.65rem">' + (u.last_seen||'') + '</span></td></tr>';
+      }).join('')
+    : '<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:1.5rem">No logged-in tool activity yet</td></tr>';
+
+  // Table C — tools matrix
+  const matrix = d.tools_matrix || [];
+  $('tbl-tools-matrix').innerHTML = matrix.length
+    ? matrix.map(t => {
+        const barPct = (t.logged_in_pct||0);
+        return '<tr><td class="mono">#' + t.rank + '</td>'
+          + '<td style="font-size:.78rem">' + escHtml(t.label) + ' <span class="pill pill-blue" style="font-size:.6rem">' + escHtml(t.category) + '</span></td>'
+          + '<td class="mono">' + (t.total_runs||0) + '</td>'
+          + '<td class="mono">' + (t.logged_in_runs||0) + '</td>'
+          + '<td class="mono">' + (t.anon_runs||0) + '</td>'
+          + '<td class="mono">' + (t.unique_logged_in||0) + '</td>'
+          + '<td class="mono">' + (t.unique_anon_ips||0) + '</td>'
+          + '<td class="mono">' + (t.returning_users||0) + '</td>'
+          + '<td><div style="display:flex;height:8px;background:var(--surface2);border-radius:99px;overflow:hidden;width:90px"><div style="width:' + barPct + '%;background:var(--blue)"></div><div style="width:' + (100-barPct) + '%;background:var(--orange)"></div></div></td></tr>';
+      }).join('')
+    : '<tr><td colspan="9" style="text-align:center;color:var(--muted);padding:1.5rem">No tool data yet</td></tr>';
+}
+
 // Bind events
 document.addEventListener('DOMContentLoaded', () => {
   $('l-pass')?.addEventListener('keydown', e => { if(e.key === 'Enter') doLogin() });
@@ -386,6 +546,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Tabs
   $('tab-threats')?.addEventListener('click', () => window.showSection('threats'));
   $('tab-users')?.addEventListener('click', () => window.showSection('users'));
+  $('tab-analytics')?.addEventListener('click', () => window.showSection('analytics'));
   $('tab-scanner')?.addEventListener('click', () => window.showSection('scanner'));
   $('tab-errors')?.addEventListener('click', () => window.showSection('errors'));
   $('tab-bans')?.addEventListener('click', () => window.showSection('bans'));

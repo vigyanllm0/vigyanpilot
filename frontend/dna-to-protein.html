@@ -441,6 +441,7 @@ function findORFs(protein){
 }
 
 function translateDNA(){
+  vlTrackTool('dna_to_protein');
   var raw=document.getElementById('dna-input').value;
   var seq=raw.replace(/[^ATGCatgc]/g,'').toUpperCase();
   if(!seq){document.getElementById('prot-output').innerHTML='<span class="ph">Please enter a valid DNA sequence.</span>';document.getElementById('prot-result-info').textContent='';return}

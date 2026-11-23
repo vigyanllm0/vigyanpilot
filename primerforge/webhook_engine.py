@@ -5,6 +5,7 @@ import ipaddress
 import json
 import logging
 import os
+import socket
 import threading
 import time
 from urllib.parse import urlparse
@@ -16,26 +17,52 @@ log = logging.getLogger('vigyanllm.webhooks')
 
 
 def _is_safe_url(url):
-    """Check if a URL is safe to deliver to (no SSRF)."""
+    """Check if a URL is safe to deliver to (no SSRF).
+
+    Blocks literal private/loopback/link-local/reserved/multicast addresses AND
+    hostnames that resolve to any such address (DNS-rebinding defence). HTTPS
+    only. A URL is rejected if ANY resolved address is non-public.
+    """
     try:
         parsed = urlparse(url)
     except Exception:
         return False
-    if parsed.scheme not in ('https',):
+    if parsed.scheme != 'https':
         return False
     if not parsed.hostname:
         return False
+    host = parsed.hostname.lower()
     blocked = ('localhost', '127.0.0.1', '0.0.0.0', '::1', 'metadata.google.internal')
-    if parsed.hostname.lower() in blocked:
+    if host in blocked:
         return False
-    if parsed.hostname.endswith('.local') or parsed.hostname.endswith('.internal'):
+    if host.endswith('.local') or host.endswith('.internal'):
         return False
+
+    # Literal IP (fast path) — no DNS needed.
     try:
-        ip = ipaddress.ip_address(parsed.hostname)
-        if ip.is_private or ip.is_loopback or ip.is_link_local or ip.is_reserved or ip.is_multicast:
+        ip = ipaddress.ip_address(host)
+        if ip.is_private or ip.is_loopback or ip.is_link_local or ip.is_reserved \
+                or ip.is_multicast or ip.is_unspecified:
             return False
+        return True
     except ValueError:
-        pass
+        pass  # not a literal IP — fall through to DNS resolution
+
+    # Resolve every address and reject if ANY is non-public (rebinding-safe).
+    try:
+        infos = socket.getaddrinfo(host, parsed.port or 443, type=socket.SOCK_STREAM)
+    except Exception:
+        return False
+    if not infos:
+        return False
+    for info in infos:
+        try:
+            addr = ipaddress.ip_address(info[4][0])
+        except ValueError:
+            return False
+        if addr.is_private or addr.is_loopback or addr.is_link_local \
+                or addr.is_reserved or addr.is_multicast or addr.is_unspecified:
+            return False
     return True
 
 
