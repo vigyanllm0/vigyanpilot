@@ -19,9 +19,14 @@ import pytest
 @pytest.fixture
 def app(monkeypatch, tmp_path):
     from primerforge.primer_server import create_app
+    import primerforge.pipelines.persistent_queue as pq
 
     monkeypatch.setenv("DATABASE_URL", "")
     monkeypatch.setenv("PRIMERFORGE_DB", str(tmp_path / "queue.db"))
+    # Isolate the persistent queue: it defaults to a shared /tmp path and is a
+    # module singleton, both of which leak stale jobs between tests.
+    monkeypatch.setattr(pq, "DEFAULT_DB_PATH", str(tmp_path / "persistent_queue.db"))
+    monkeypatch.setattr(pq, "_queue", None)
     import primerforge.security as security
 
     monkeypatch.setattr(security, "init_admin_rbac", lambda app: None)

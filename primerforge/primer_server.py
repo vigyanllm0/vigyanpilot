@@ -52,7 +52,7 @@ if _env_path.exists():
     load_dotenv(_env_path, override=True)
     logger.info("Loaded environment from %s", _env_path)
 
-from flask import Flask, Response, jsonify, request
+from flask import Flask, Response, g, jsonify, request
 
 # ── Configuration: .env loaded above, additional env vars override ──
 
@@ -4425,6 +4425,17 @@ def create_app() -> Flask:
     def _queue_admin_only(f):
         @wraps(f)
         def _guard(*args, **kwargs):
+            # Worker shared-secret gate (deny-by-default). When QUEUE_WORKER_TOKEN
+            # is set, a matching X-Queue-Token header authenticates a worker;
+            # an admin session also passes. Token unset + no admin -> 403 (the
+            # deployed default). Read at request time so workers can be rotated
+            # without a restart.
+            import hmac
+            token = os.environ.get("QUEUE_WORKER_TOKEN", "")
+            if token:
+                supplied = request.headers.get("X-Queue-Token", "")
+                if supplied and hmac.compare_digest(supplied, token):
+                    return f(*args, **kwargs)
             u = get_current_user()
             if not u or u.get("role") != "admin":
                 return jsonify({"error": "Admin access required", "code": "FORBIDDEN"}), 403

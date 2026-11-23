@@ -160,11 +160,12 @@ _BACKGROUND_EXECUTOR = ThreadPoolExecutor(max_workers=2)
 
 
 def _celery_broker_available(timeout: float = 0.25) -> bool:
-    """Return True when the configured Redis broker can accept connections.
-    Only returns True if REDIS_URL is explicitly set (not the default fallback)."""
-    broker_url = os.environ.get("REDIS_URL", "")
+    """Return True when an explicit Celery broker (CELERY_BROKER_URL) is set
+    and reachable. REDIS_URL alone (used by the rate limiter) must NOT enable
+    Celery dispatch — that strands jobs when no Celery worker is running."""
+    broker_url = os.environ.get("CELERY_BROKER_URL", "")
     if not broker_url:
-        return False  # Redis not configured — always run synchronously
+        return False  # No explicit broker — always run synchronously
     parsed = urlparse(broker_url)
     if parsed.scheme not in {"redis", "rediss"}:
         return False
