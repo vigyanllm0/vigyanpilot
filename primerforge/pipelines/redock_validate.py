@@ -41,19 +41,22 @@ FAIR_RMSD = 4.0        # A — partly reproduces it; above = does not
 MAX_EXHAUSTIVENESS = 32
 
 # Guarded imports: PLIP-style contract — absence must never fail a run.
-try:
-    from openbabel import pybel
-    _PYBEL_IMPORT_ERROR: str | None = None
-except Exception as _pbimp:  # pragma: no cover
-    pybel = None
-    _PYBEL_IMPORT_ERROR = str(_pbimp)
-
+# RDKit is imported BEFORE OpenBabel: on some Linux/Python builds loading
+# openbabel._openbabel first and then rdkit's native rdchem module segfaults
+# (symbol collision). Importing rdkit first avoids the co-import crash.
 try:
     from rdkit import Chem
     _RDKIT_IMPORT_ERROR: str | None = None
 except Exception as _rdimp:  # pragma: no cover
     Chem = None
     _RDKIT_IMPORT_ERROR = str(_rdimp)
+
+try:
+    from openbabel import pybel
+    _PYBEL_IMPORT_ERROR: str | None = None
+except Exception as _pbimp:  # pragma: no cover
+    pybel = None
+    _PYBEL_IMPORT_ERROR = str(_pbimp)
 
 try:
     from primerforge.pipelines.docking_engine import (
@@ -165,12 +168,25 @@ def perceive_smiles(ligand_block: str) -> str | None:
 
 
 def experimental_pose_mol(ligand_block: str):
-    """The crystal pose as an RDKit mol (heavy atoms, 3D coordinates)."""
-    if pybel is None or Chem is None:
+    """The crystal pose as an RDKit mol (heavy atoms, 3D coordinates).
+
+    Uses OpenBabel bond-order perception when available; otherwise parses the
+    PDB block directly with RDKit (bond orders are not needed for in-frame
+    RMSD), so the check still works on hosts without OpenBabel.
+    """
+    if Chem is None:
         return None
     try:
-        sdf = pybel.readstring("pdb", ligand_block).write("sdf")
-        return Chem.MolFromMolBlock(sdf, removeHs=True)
+        if pybel is not None:
+            sdf = pybel.readstring("pdb", ligand_block).write("sdf")
+            return Chem.MolFromMolBlock(sdf, removeHs=True)
+        mol = Chem.MolFromPDBBlock(ligand_block, removeHs=True, sanitize=False)
+        if mol is not None:
+            try:
+                Chem.SanitizeMol(mol)
+            except Exception:
+                pass  # keep unsanitized; atom matching may still work
+        return mol
     except Exception as exc:
         logger.debug("Experimental pose parse failed: %s", exc)
         return None
