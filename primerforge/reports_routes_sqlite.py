@@ -192,16 +192,74 @@ def download_report_csv(report_id):
     if not row:
         return jsonify({"error": "Report not found."}), 404
 
-    output = io.StringIO()
-    writer = csv.writer(output)
-    writer.writerow(["Field", "Value"])
-    writer.writerow(["Report ID", row["id"]])
-    writer.writerow(["Title", row["title"]])
-    writer.writerow(["Forward Sequence", row["forward_seq"]])
-    writer.writerow(["Reverse Sequence", row["reverse_seq"]])
-    writer.writerow(["Top Score", row["top_score"]])
-    writer.writerow(["Sequence Length", row["sequence_length"]])
-    writer.writerow(["Created At", row["created_at"]])
+    full_result = row["full_result"]
+    if isinstance(full_result, str):
+        try:
+            full_result = json.loads(full_result)
+        except Exception:
+            full_result = {}
+    full_result = full_result if isinstance(full_result, dict) else {}
+
+    pairs = full_result.get("pairs") or []
+    # Legacy reports saved before pair-level export have no pairs — keep the
+    # Field/Value fallback so old downloads still work.
+    if not pairs:
+        output = io.StringIO()
+        writer = csv.writer(output)
+        writer.writerow(["Field", "Value"])
+        writer.writerow(["Report ID", row["id"]])
+        writer.writerow(["Title", row["title"]])
+        writer.writerow(["Forward Sequence", row["forward_seq"]])
+        writer.writerow(["Reverse Sequence", row["reverse_seq"]])
+        writer.writerow(["Top Score", row["top_score"]])
+        writer.writerow(["Sequence Length", row["sequence_length"]])
+        writer.writerow(["Created At", row["created_at"]])
+    else:
+        output = io.StringIO()
+        writer = csv.writer(output)
+        writer.writerow([
+            "Rank", "Pair_ID", "Score", "Status",
+            "Forward_Sequence", "Forward_Tm", "Forward_GC",
+            "Reverse_Sequence", "Reverse_Tm", "Reverse_GC",
+            "Amplicon_Size", "Delta_Tm", "Cross_Dimer_dG",
+            "Total_Penalty", "Design_Date", "Job_ID",
+            "Probe_Sequence", "Probe_Tm", "Probe_GC", "Probe_Length",
+            "Probe_Reporter", "Probe_Quencher", "Probe_Status",
+        ])
+        for i, p in enumerate(pairs):
+            fwd = p.get("forward") or {}
+            rev = p.get("reverse") or {}
+            if isinstance(fwd, str):
+                fwd = {"sequence": fwd, "tm": p.get("forward_tm", ""), "gc": ""}
+            if isinstance(rev, str):
+                rev = {"sequence": rev, "tm": p.get("reverse_tm", ""), "gc": ""}
+            probes = p.get("probes") or []
+            probe = probes[0] if probes and isinstance(probes[0], dict) else {}
+            writer.writerow([
+                p.get("rank", i + 1),
+                p.get("pair_id", i + 1),
+                p.get("score", ""),
+                p.get("overall_status", ""),
+                fwd.get("sequence", ""),
+                fwd.get("tm", "") or fwd.get("tm_nn", ""),
+                fwd.get("gc", ""),
+                rev.get("sequence", ""),
+                rev.get("tm", "") or rev.get("tm_nn", ""),
+                rev.get("gc", ""),
+                p.get("amplicon_size") or p.get("product_size", ""),
+                p.get("delta_tm_nn") or p.get("delta_tm", ""),
+                p.get("cross_dimer_dg", ""),
+                p.get("total_penalty", ""),
+                str(row["created_at"]),
+                str(row["job_id"] or ""),
+                probe.get("sequence", ""),
+                probe.get("tm", ""),
+                probe.get("gc_percent", "") or probe.get("gc", ""),
+                probe.get("length", ""),
+                probe.get("reporter_5prime", "") or probe.get("reporter", ""),
+                probe.get("quencher_3prime", "") or probe.get("quencher", ""),
+                p.get("probe_status", "") or probe.get("status", ""),
+            ])
 
     resp = make_response(output.getvalue())
     resp.headers["Content-Type"] = "text/csv"

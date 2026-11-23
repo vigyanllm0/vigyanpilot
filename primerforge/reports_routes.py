@@ -194,6 +194,55 @@ def public_stats():
 
 # ── Report History ─────────────────────────────────────────────────────────
 
+def _step_output(step):
+    """Parse a step's output_data (may be a JSON string or a native dict)."""
+    out = (step or {}).get("output_data") or {}
+    if isinstance(out, str):
+        try:
+            out = json.loads(out)
+        except Exception:
+            out = {}
+    return out if isinstance(out, dict) else {}
+
+
+def extract_pairs_and_probes(steps):
+    """Numbering-agnostic ranking + probe extraction (F3).
+
+    Returns ``(pairs, probe_results)``. Ranking lived at step 19 under the old
+    22-step numbering and lives at step 22 today (the module is still named
+    ``step19_ranking.py``); step 19 is now "Clinical Hotspot Filter" and emits
+    no ``ranked_pairs``. Step 24 (probe design) re-emits ``ranked_pairs`` with
+    probes embedded AND emits ``probe_results``. The last producer of
+    ``ranked_pairs`` is authoritative; probes are merged into pairs only when
+    the pair lacks embedded probes (never double-counted).
+    """
+    pairs = []
+    probe_results = []
+    for step in steps or []:
+        out = _step_output(step)
+        if not out:
+            continue
+        step_pairs = out.get("ranked_pairs") or out.get("top_pairs")
+        if step_pairs:
+            pairs = [p for p in step_pairs if isinstance(p, dict)]
+        if "probe_results" in out:
+            probe_results = out.get("probe_results") or []
+
+    # Merge probe_results into pairs that lack embedded probes (by pair_index).
+    if probe_results:
+        for entry in probe_results:
+            if not isinstance(entry, dict):
+                continue
+            idx = entry.get("pair_index")
+            if isinstance(idx, int) and 0 <= idx < len(pairs):
+                p = pairs[idx]
+                if not p.get("probes") and entry.get("probes"):
+                    p["probes"] = entry["probes"]
+                    if entry.get("status") and not p.get("probe_status"):
+                        p["probe_status"] = entry["status"]
+    return pairs, probe_results
+
+
 @reports_bp.route("/api/reports/save", methods=["POST"])
 @require_auth
 def save_report():
@@ -213,39 +262,33 @@ def save_report():
     if not job:
         return jsonify({"error": "Job not found or access denied"}), 404
 
-    # Get step 19 (ranking) output for top pair data
-    ranking_step = fetch_one(
-        """SELECT output_data FROM pipeline_results
-           WHERE job_id = %s AND step_number = 19 LIMIT 1""",
+    # Ranking + probe extraction is numbering-agnostic (F3): ranking lived at
+    # step 19 under the old 22-step numbering and lives at step 22 today; step
+    # 19 is now Clinical Hotspot Filter and emits no ranked_pairs. Read ALL
+    # steps once and let extract_pairs_and_probes find the ranking producer.
+    all_steps = fetch_all(
+        """SELECT step_number, step_name, status, output_data, duration_ms
+           FROM pipeline_results WHERE job_id = %s ORDER BY step_number""",
         (job_id,)
     )
+    pairs, _probe_results = extract_pairs_and_probes(all_steps)
 
     top_score = None
     top_forward = None
     top_reverse = None
     amplicon_size = None
-    pair_count = 0
+    pair_count = len(pairs)
 
-    if ranking_step and ranking_step.get("output_data"):
-        output = ranking_step["output_data"]
-        if isinstance(output, str):
-            try:
-                output = json.loads(output)
-            except Exception:
-                output = {}
-
-        pairs = output.get("ranked_pairs") or output.get("top_pairs") or []
-        pair_count = len(pairs)
-        if pairs:
-            top = pairs[0]
-            top_score = top.get("score") or (
-                max(0, 100 - top["total_penalty"]) if top.get("total_penalty") is not None else None
-            )
-            fwd = top.get("forward") or {}
-            rev = top.get("reverse") or {}
-            top_forward = (fwd if isinstance(fwd, str) else fwd.get("sequence", ""))[:80]
-            top_reverse = (rev if isinstance(rev, str) else rev.get("sequence", ""))[:80]
-            amplicon_size = top.get("amplicon_size") or top.get("product_size")
+    if pairs:
+        top = pairs[0]
+        top_score = top.get("score") or (
+            max(0, 100 - top["total_penalty"]) if top.get("total_penalty") is not None else None
+        )
+        fwd = top.get("forward") or {}
+        rev = top.get("reverse") or {}
+        top_forward = (fwd if isinstance(fwd, str) else fwd.get("sequence", ""))[:80]
+        top_reverse = (rev if isinstance(rev, str) else rev.get("sequence", ""))[:80]
+        amplicon_size = top.get("amplicon_size") or top.get("product_size")
 
     input_params = job.get("input_params") or {}
     if isinstance(input_params, str):
@@ -263,11 +306,6 @@ def save_report():
     design_mode = input_params.get("design_mode", "standard")
 
     # Store the full result payload (all steps) for complete download later
-    all_steps = fetch_all(
-        """SELECT step_number, step_name, status, output_data, duration_ms
-           FROM pipeline_results WHERE job_id = %s ORDER BY step_number""",
-        (job_id,)
-    )
     full_result = {
         "job_id": str(job_id),
         "input_params": input_params,
@@ -493,28 +531,23 @@ def download_report_csv(report_id: int):
         except Exception:
             full_result = {}
 
-    # Extract pairs from step 19 output
-    pairs = []
-    for step in full_result.get("steps", []):
-        if step.get("step_number") == 19:
-            output = step.get("output_data") or {}
-            if isinstance(output, str):
-                try:
-                    output = json.loads(output)
-                except Exception:
-                    output = {}
-            pairs = output.get("ranked_pairs") or output.get("top_pairs") or []
-            break
+    # Numbering-agnostic ranking + probe extraction (F3): step 22 today,
+    # step 19 in legacy jobs; step 24 probes merged into pairs.
+    pairs, _probe_results = extract_pairs_and_probes(full_result.get("steps", []))
 
     output_buf = io.StringIO()
     writer = csv.writer(output_buf)
 
+    # Legacy 16 columns stay in place (positional readers depend on them);
+    # Probe_* columns are appended at the end.
     writer.writerow([
         "Rank", "Pair_ID", "Score", "Status",
         "Forward_Sequence", "Forward_Tm", "Forward_GC",
         "Reverse_Sequence", "Reverse_Tm", "Reverse_GC",
         "Amplicon_Size", "Delta_Tm", "Cross_Dimer_dG",
-        "Total_Penalty", "Design_Date", "Job_ID"
+        "Total_Penalty", "Design_Date", "Job_ID",
+        "Probe_Sequence", "Probe_Tm", "Probe_GC", "Probe_Length",
+        "Probe_Reporter", "Probe_Quencher", "Probe_Status",
     ])
 
     for i, p in enumerate(pairs):
@@ -524,6 +557,9 @@ def download_report_csv(report_id: int):
             fwd = {"sequence": fwd, "tm": p.get("forward_tm", ""), "gc": ""}
         if isinstance(rev, str):
             rev = {"sequence": rev, "tm": p.get("reverse_tm", ""), "gc": ""}
+
+        probes = p.get("probes") or []
+        probe = probes[0] if probes and isinstance(probes[0], dict) else {}
 
         writer.writerow([
             p.get("rank", i + 1),
@@ -542,6 +578,13 @@ def download_report_csv(report_id: int):
             p.get("total_penalty", ""),
             str(report["created_at"]),
             str(report.get("job_id") or ""),
+            probe.get("sequence", ""),
+            probe.get("tm", ""),
+            probe.get("gc_percent", "") or probe.get("gc", ""),
+            probe.get("length", ""),
+            probe.get("reporter_5prime", "") or probe.get("reporter", ""),
+            probe.get("quencher_3prime", "") or probe.get("quencher", ""),
+            p.get("probe_status", "") or probe.get("status", ""),
         ])
 
     safe_title = "".join(c if c.isalnum() or c in "-_ " else "_" for c in (report["title"] or "report"))[:50]
