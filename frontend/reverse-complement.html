@@ -582,7 +582,7 @@ Example: ATGGCCTGAACCGTT"></textarea>
 var complementMap={'A':'T','T':'A','G':'C','C':'G','a':'t','t':'a','g':'c','c':'g','N':'N','n':'n','R':'Y','Y':'R','S':'S','W':'W','K':'M','M':'K','B':'V','V':'B','D':'H','H':'D'};
 var lastMode='';
 
-function reverseComplement(){lastMode='rc';var s=getCleanSeq();if(!s)return;var comp='';for(var i=0;i<s.length;i++){comp+=complementMap[s[i]]||s[i]}var rc=comp.split('').reverse().join('');showResult(rc,'Reverse complement ('+rc.length+' bp)')}
+function reverseComplement(){vlTrackTool('reverse_complement');lastMode='rc';var s=getCleanSeq();if(!s)return;var comp='';for(var i=0;i<s.length;i++){comp+=complementMap[s[i]]||s[i]}var rc=comp.split('').reverse().join('');showResult(rc,'Reverse complement ('+rc.length+' bp)')}
 function complementOnly(){lastMode='c';var s=getCleanSeq();if(!s)return;var comp='';for(var i=0;i<s.length;i++){comp+=complementMap[s[i]]||s[i]}showResult(comp,'Complement ('+comp.length+' bp)')}
 function reverseOnly(){lastMode='r';var s=getCleanSeq();if(!s)return;var rev=s.split('').reverse().join('');showResult(rev,'Reversed ('+rev.length+' bp)')}
 

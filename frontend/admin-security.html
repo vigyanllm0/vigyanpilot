@@ -575,6 +575,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="actions">
     <button type="button" class="btn active" id="tab-threats">🚨 Threats</button>
     <button type="button" class="btn" id="tab-users">👥 Users</button>
+    <button type="button" class="btn" id="tab-analytics">📊 Usage</button>
     <button type="button" class="btn" id="tab-scanner">🔍 Scanner</button>
     <button type="button" class="btn" id="tab-errors">🐛 Errors</button>
     <button type="button" class="btn" id="tab-bans">🚫 IP Bans</button>
@@ -595,6 +596,67 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="section" id="sec-users" style="display:none">
     <div class="section-hdr"><div class="section-title">All Users</div></div>
     <div class="tbl-wrap"><table><thead><tr><th>Email</th><th>Role</th><th>Plan</th><th>Activated</th><th>Promo Used</th><th>Academic</th><th>Tokens</th><th>Paid (₹)</th><th>Infra Cost (₹)</th><th>Profit</th><th>Joined</th></tr></thead><tbody id="tbl-users"></tbody></table></div>
+  </div>
+
+  <!-- USAGE & BEHAVIOR ANALYTICS -->
+  <div class="section" id="sec-analytics" style="display:none">
+    <div class="section-hdr">
+      <div class="section-title">📊 Tool Usage &amp; User Behavior</div>
+      <div style="display:flex;gap:.5rem;align-items:center">
+        <div style="display:flex;gap:2px;background:var(--surface2);border-radius:8px;padding:3px">
+          <button type="button" class="btn btn-sm analytics-period active" data-period="7" onclick="setAnalyticsPeriod(7)">7d</button>
+          <button type="button" class="btn btn-sm analytics-period" data-period="30" onclick="setAnalyticsPeriod(30)">30d</button>
+          <button type="button" class="btn btn-sm analytics-period" data-period="90" onclick="setAnalyticsPeriod(90)">90d</button>
+        </div>
+        <button type="button" class="btn btn-sm" onclick="exportAnalyticsCsv()" style="background:var(--primary);color:#fff">⬇ CSV</button>
+      </div>
+    </div>
+
+    <!-- KPI STRIP -->
+    <div class="stats" style="margin-bottom:1.25rem">
+      <div class="stat"><div class="stat-label">Today · Users</div><div class="stat-val" id="ua-today-users">—</div><div class="stat-sub">—</div></div>
+      <div class="stat"><div class="stat-label">Weekly · Users</div><div class="stat-val" id="ua-week-users">—</div><div class="stat-sub">—</div></div>
+      <div class="stat"><div class="stat-label">Monthly · Users</div><div class="stat-val" id="ua-month-users">—</div><div class="stat-sub">—</div></div>
+      <div class="stat"><div class="stat-label">Stickiness</div><div class="stat-val cyan" id="ua-stickiness">—</div><div class="stat-sub">—</div></div>
+      <div class="stat"><div class="stat-label">Top Tool (30d)</div><div class="stat-val green" id="ua-top-tool">—</div><div class="stat-sub">—</div></div>
+      <div class="stat"><div class="stat-label">Returning Guest IPs</div><div class="stat-val orange" id="ua-return-ip">—</div><div class="stat-sub">—</div></div>
+    </div>
+
+    <!-- CHARTS -->
+    <div class="charts">
+      <div class="chart-card" style="grid-column:span 2">
+        <div class="chart-title"><span class="dot" style="background:var(--blue)"></span>Daily Active Users (signed-in + guests)</div>
+        <div class="bar-chart" id="chart-daily" style="overflow-x:auto;flex-wrap:nowrap"></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title"><span class="dot" style="background:var(--purple)"></span>Tool Performance Leaderboard</div>
+        <div id="chart-tools" style="max-height:220px;overflow-y:auto"></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title"><span class="dot" style="background:var(--orange)"></span>Runs by Segment</div>
+        <div class="donut-wrap" id="donut-runs"></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title"><span class="dot" style="background:var(--blue)"></span>Identities by Type</div>
+        <div class="donut-wrap" id="donut-identities"></div>
+      </div>
+      <div class="chart-card" style="grid-column:span 2">
+        <div class="chart-title"><span class="dot" style="background:var(--cyan)"></span>User Return Frequency (last 30 days)</div>
+        <div class="bar-chart" id="chart-cohort"></div>
+      </div>
+    </div>
+
+    <!-- RETURNING ANONYMOUS IPs -->
+    <div class="section-hdr" style="margin-top:1.5rem"><div class="section-title">🔥 Returning Anonymous IPs <span style="font-size:.7rem;color:var(--muted);font-weight:400">(unregistered users by IP · last 30 days)</span></div></div>
+    <div class="tbl-wrap"><table><thead><tr><th>IP</th><th>Status</th><th>Active Days</th><th>Streak</th><th>Total Runs</th><th>Today</th><th>Favorite Tools</th><th>First → Last Seen</th><th>Linked Account</th></tr></thead><tbody id="tbl-anon-ips"></tbody></table></div>
+
+    <!-- LOGGED-IN USERS -->
+    <div class="section-hdr" style="margin-top:1.5rem"><div class="section-title">👤 Logged-in User Behavior <span style="font-size:.7rem;color:var(--muted);font-weight:400">(last 30 days)</span></div></div>
+    <div class="tbl-wrap"><table><thead><tr><th>Email</th><th>Plan</th><th>Active Days</th><th>Today</th><th>7d</th><th>30d</th><th>Tool Breakdown</th><th>Last Activity</th></tr></thead><tbody id="tbl-active-users"></tbody></table></div>
+
+    <!-- TOOL MATRIX -->
+    <div class="section-hdr" style="margin-top:1.5rem"><div class="section-title">🧰 Tool-by-Tool Performance Matrix</div></div>
+    <div class="tbl-wrap"><table><thead><tr><th>#</th><th>Tool</th><th>Total</th><th>Signed-in</th><th>Guest</th><th>Unique Users</th><th>Unique IPs</th><th>Returning</th><th>Split</th></tr></thead><tbody id="tbl-tools-matrix"></tbody></table></div>
   </div>
 
   <!-- SCANNER -->

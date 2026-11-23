@@ -508,3 +508,33 @@ function openAuthModal(){isRegister=false;showAuth()}
   if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', build); }
   else { build(); }
 })();
+
+// ── Tool-usage analytics beacon ────────────────────────────────────────────
+// Fire-and-forget signal for the admin "Usage & Behavior" dashboard. Called by
+// pure-browser calculators (Tm/GC/converters…) that never hit a backend
+// compute endpoint. Debounced per (tool, 15s) so a live keystroke in an input
+// box records ONE real usage, not dozens.
+(function(){
+  var _last = {};
+  function vlTrackTool(toolKey, seqCount){
+    try {
+      if (!toolKey) return;
+      var now = Date.now();
+      if (_last[toolKey] && (now - _last[toolKey]) < 15000) return;
+      _last[toolKey] = now;
+      var payload = { tool_key: toolKey, count: (seqCount && seqCount > 0) ? seqCount : 1 };
+      if (navigator.sendBeacon) {
+        var blob = new Blob([JSON.stringify(payload)], { type: 'application/json' });
+        navigator.sendBeacon('/api/usage/track-tool', blob);
+      } else {
+        fetch('/api/usage/track-tool', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify(payload)
+        }).catch(function(){});
+      }
+    } catch (e) {}
+  }
+  window.vlTrackTool = vlTrackTool;
+})();

@@ -771,6 +771,7 @@ function loadGeneMapper(){
 
 // ── Calculations ──────────────────────────────────────────────
 function calcStock(){
+  vlTrackTool('antibiotic_calc');
   var err = document.getElementById('stockError');
   err.classList.remove('visible');
   if(!currentAntibiotic){
@@ -854,6 +855,7 @@ function calcStock(){
 }
 
 function calcCocktail(){
+  vlTrackTool('antibiotic_calc');
   var mediaVol = parseFloat(document.getElementById('cocktailMediaVol').value);
   if(cocktailSelection.length < 2){
     alert('Please select at least 2 antibiotics for the cocktail.');

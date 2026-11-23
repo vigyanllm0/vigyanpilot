@@ -34,6 +34,7 @@ import math
 import os
 import re
 import time
+from functools import wraps
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -880,6 +881,10 @@ def create_app() -> Flask:
         app.register_blueprint(auth_bp)
         app.register_blueprint(payment_bp)
 
+        # Register tool-usage analytics (admin dashboard + track-tool beacon)
+        from primerforge.usage_analytics import usage_analytics_bp
+        app.register_blueprint(usage_analytics_bp)
+
         # Register pipeline engine blueprint
         from primerforge.engine.pipeline_routes import pipeline_bp
         app.register_blueprint(pipeline_bp)
@@ -923,6 +928,11 @@ def create_app() -> Flask:
         init_db()
         app.teardown_appcontext(close_db)
         app.register_blueprint(auth_bp)
+
+        # Register tool-usage analytics (admin dashboard + track-tool beacon)
+        from primerforge.usage_analytics import usage_analytics_bp
+        app.register_blueprint(usage_analytics_bp)
+
         try:
             from primerforge.payment_routes import payment_bp
             app.register_blueprint(payment_bp)
@@ -985,6 +995,15 @@ def create_app() -> Flask:
 
     def err(msg, code, status):
         return jsonify({"error": msg, "code": code}), status
+
+    def _track_tool(tool_key, user=None, seq_count=1):
+        """Record one tool run for the admin analytics ledger. Never raises —
+        analytics must not break or slow down a tool result."""
+        try:
+            from primerforge.usage_analytics import record_tool_event
+            record_tool_event(tool_key, user=user, sequences_count=seq_count)
+        except Exception:
+            logger.debug("tool-usage analytics write failed", exc_info=True)
 
     # Route-level rate limiter (flask-limiter instance or None in dev).
     # Admins bypass every limit via security.admin_rate_exempt().
@@ -1256,6 +1275,9 @@ def create_app() -> Flask:
                     try: record_daily_usage(user["email"], "primer", 1)
                     except: pass
                     log_action(user["email"], "pipeline_run", f"22-step dev pipeline, {duration_ms}ms")
+
+                if status == "completed":
+                    _track_tool("primer_auto", user, 1)
 
                 return jsonify({
                     "job_id": job_id,
@@ -1790,6 +1812,8 @@ def create_app() -> Flask:
                 from .auth import record_anon_usage
             record_anon_usage(1)
 
+        _track_tool("primer_auto", None if is_anon else user, max(1, len(normalised)))
+
         return jsonify({
             # ── Rigid schema (as specified) ───────────────────────────────
             "pipeline_status": pipeline_envelope["pipeline_status"],
@@ -1883,6 +1907,7 @@ def create_app() -> Flask:
                          "specificity_pass": None, "specificity_note": "N/A"}
             pipeline_pf = _pipeline_pass_fail(fwd_out, rev_out or fwd_out, pair_meta,
                                                 template_seq=data.get("template") or "") if rev_out else None
+            _track_tool("primer_manual", None if is_anon else user, 1)
             return jsonify({
                 "forward": fwd_out,
                 "reverse": rev_out,
@@ -2248,6 +2273,7 @@ def create_app() -> Flask:
                 record_anon_usage(n_seqs)
             else:
                 _record_usage(user, "blast", n_seqs)
+            _track_tool("blast", None if is_anon else user, n_seqs)
             return jsonify({"results": results, "errors": errors, "total": len(results), "failed": len(errors)}), 200
 
         clean = query_sequence.upper().replace(" ", "").replace("\n", "")
@@ -2270,6 +2296,7 @@ def create_app() -> Flask:
                 record_anon_usage(1)
             else:
                 _record_usage(user, "blast", 1)
+            _track_tool("blast", None if is_anon else user, 1)
             return jsonify(result), 200
         except Exception as exc:
             logger.error("BLAST error: %s", exc, exc_info=True)
@@ -2757,6 +2784,7 @@ def create_app() -> Flask:
                         record_anon_usage(n)
                     else:
                         _record_usage(user, "msa", n)
+                    _track_tool("msa", None if is_anon else user, n)
                     return jsonify({
                         "job_id": job_id,
                         "total_sequences": n,
@@ -2779,6 +2807,7 @@ def create_app() -> Flask:
                 record_anon_usage(n)
             else:
                 _record_usage(user, "msa", n)
+            _track_tool("msa", None if is_anon else user, n)
             return jsonify(viewer), 200
         except Exception as exc:
             logger.error("MSA error: %s", exc, exc_info=True)
@@ -2836,6 +2865,7 @@ def create_app() -> Flask:
             record_anon_usage(n)
         else:
             _record_usage(user, "msa", n)
+        _track_tool("msa", None if is_anon else user, n)
 
         return jsonify({
             "job_id": job_id,
@@ -3161,6 +3191,8 @@ def create_app() -> Flask:
                                            credit_cost=consensus_credit_cost or 1)
             if settled is not None:
                 return settled
+
+            _track_tool("docking_consensus", user, len(ligand_smiles_list))
 
             return jsonify({"job_id": job_id, "status": "queued"}), 202
         except Exception as e:
@@ -3927,6 +3959,8 @@ def create_app() -> Flask:
                 "credits_refunded": 0,
             })
 
+            _track_tool("virtual_screening", user, n_ligands)
+
             # Spawn detached screening worker (fire-and-forget)
             spawn_err = _spawn_screening_worker(campaign_id)
             if spawn_err:
@@ -4255,8 +4289,23 @@ def create_app() -> Flask:
     # ════════════════════════════════════════════════════════════════════
     # Persistent Job Queue
     # ════════════════════════════════════════════════════════════════════
+    # These are operational/worker routes (legacy external-worker queue) that
+    # were previously unauthenticated — anyone could enqueue/claim/fail/recover
+    # arbitrary jobs (queue-flood DoS + reading another job's `data`). They are
+    # now admin-only; a future worker must authenticate as an admin or use a
+    # dedicated worker credential.
+
+    def _queue_admin_only(f):
+        @wraps(f)
+        def _guard(*args, **kwargs):
+            u = get_current_user()
+            if not u or u.get("role") != "admin":
+                return jsonify({"error": "Admin access required", "code": "FORBIDDEN"}), 403
+            return f(*args, **kwargs)
+        return _guard
 
     @app.route("/api/primer/docking/queue/enqueue", methods=["POST"])
+    @_queue_admin_only
     def queue_enqueue():
         """Add a job to the persistent queue."""
         from .pipelines.persistent_queue import PRIORITY_BATCH, PRIORITY_NORMAL, PRIORITY_URGENT, get_queue
@@ -4274,6 +4323,7 @@ def create_app() -> Flask:
         return jsonify({"job_id": job_id, "status": "pending", "priority": priority_name}), 201
 
     @app.route("/api/primer/docking/queue/claim", methods=["POST"])
+    @_queue_admin_only
     def queue_claim():
         """Claim the next pending job."""
         from .pipelines.persistent_queue import get_queue
@@ -4296,6 +4346,7 @@ def create_app() -> Flask:
         }), 200
 
     @app.route("/api/primer/docking/queue/complete", methods=["POST"])
+    @_queue_admin_only
     def queue_complete():
         """Mark a job as complete."""
         from .pipelines.persistent_queue import get_queue
@@ -4313,6 +4364,7 @@ def create_app() -> Flask:
         return jsonify({"job_id": job_id, "status": "complete"}), 200
 
     @app.route("/api/primer/docking/queue/fail", methods=["POST"])
+    @_queue_admin_only
     def queue_fail():
         """Mark a job as failed."""
         from .pipelines.persistent_queue import get_queue
@@ -4331,6 +4383,7 @@ def create_app() -> Flask:
         return jsonify({"job_id": job_id, "status": "failed", "retried": retry}), 200
 
     @app.route("/api/primer/docking/queue/stats", methods=["GET"])
+    @_queue_admin_only
     def queue_stats():
         """Get queue statistics."""
         from .pipelines.persistent_queue import get_queue
@@ -4341,6 +4394,7 @@ def create_app() -> Flask:
         return jsonify(stats), 200
 
     @app.route("/api/primer/docking/queue/recover", methods=["POST"])
+    @_queue_admin_only
     def queue_recover():
         """Recover stale claimed/running jobs."""
         from .pipelines.persistent_queue import get_queue
@@ -4351,6 +4405,7 @@ def create_app() -> Flask:
         return jsonify({"released": released, "message": f"Released {released} stale jobs"}), 200
 
     @app.route("/api/primer/docking/queue/cleanup", methods=["POST"])
+    @_queue_admin_only
     def queue_cleanup():
         """Remove old completed/failed jobs."""
         from .pipelines.persistent_queue import get_queue

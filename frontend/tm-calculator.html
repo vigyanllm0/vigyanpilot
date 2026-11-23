@@ -694,6 +694,7 @@ var INIT_GC=[0.1,-2.8];  // SantaLucia 1998 initiation: terminal GC
 var R=1.987; // cal/mol·K
 
 function calcTm(){
+  vlTrackTool('tm_calculator');
   var s=document.getElementById('seq-input').value.replace(/[\s\d]/g,'').toUpperCase();
   if(!s||s.length<2){alert('Please enter a primer sequence (min 2 bases).');return}
   if(/[^ATGC]/g.test(s)){alert('Invalid characters. Only A, T, G, C allowed.');return}
