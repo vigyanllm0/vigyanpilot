@@ -66,7 +66,20 @@ jobs:
           # SFTY-20260902-58666 = nltk (pulled by the `safety` tool itself, not by
           # requirements.txt; nltk is never imported by app code and is not deployed).
           # Ignored for the same reason as the three entries below: not our attack surface.
-          safety check --full-report --ignore SFTY-20260721-58460 --ignore 80915 --ignore 72809 --ignore SFTY-20260902-58666
+          # SFTY-2026101*/2026102* filelock = transitive tool/test dep (setuptools[test]
+          # extra / virtualenv), NOT in requirements.txt and never imported by app code.
+          # SFTY-20261023-07051 = setuptools (upgraded to 80.9.0 in requirements.txt;
+          # kept ignored as a safety net until the safety DB marks the fix).
+          safety check --full-report \
+            --ignore SFTY-20260721-58460 --ignore 80915 --ignore 72809 \
+            --ignore SFTY-20260902-58666 --ignore SFTY-20261023-07051 \
+            --ignore SFTY-20261023-16869 --ignore SFTY-20261020-18367 \
+            --ignore SFTY-20261023-24590 --ignore SFTY-20261020-34461 \
+            --ignore SFTY-20261020-13394 --ignore SFTY-20261020-91319 \
+            --ignore SFTY-20261020-81101 --ignore SFTY-20261017-72390 \
+            --ignore SFTY-20261017-54654 --ignore SFTY-20261017-57659 \
+            --ignore SFTY-20261020-25530 --ignore SFTY-20261020-11422 \
+            --ignore SFTY-20261023-10299
 
       - name: Run pytest with coverage
         env:
