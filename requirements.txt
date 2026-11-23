@@ -32,3 +32,10 @@ meeko>=0.7.1
 # (reproduced locally; prod survived only because its venv already had them).
 scipy>=1.8
 gemmi>=0.4
+# PLIP interaction profiling (GPL, used as a separate analysis step) + its
+# OpenBabel runtime. plip is py3-none-any and requires dist `openbabel`;
+# the official openbabel 3.2.1 ships cp314 manylinux wheels, so the prod
+# venv (Python 3.14) installs it without any build. Both are warn-allow in
+# code: when absent, PLIP reports available:false and runs never fail.
+plip==3.0.1
+openbabel==3.2.1

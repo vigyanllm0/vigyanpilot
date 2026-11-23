@@ -317,8 +317,13 @@ def test_pipeline_manual_box_passthrough(monkeypatch):
                   vina_calls=vina_calls, gnina_calls=gnina_calls)
     assert result["status"] == "success", result.get("message")
     s2 = result["stage2"]
-    assert s2["box"] == {"center": [9.5, 8.5, 7.5],
-                         "size": [22.0, 18.0, 16.0], "source": "manual"}
+    # _select_box annotates every box with its validation report (warnings
+    # never block a run) — the manual values themselves must pass through.
+    box = dict(s2["box"])
+    validation = box.pop("validation", None)
+    assert box == {"center": [9.5, 8.5, 7.5],
+                   "size": [22.0, 18.0, 16.0], "source": "manual"}
+    assert validation and "ok" in validation and "warnings" in validation
     assert vina_calls[0]["box"]["source"] == "manual"
     assert gnina_calls[0]["box"]["source"] == "manual"
     # detector never consulted when an explicit override exists

@@ -25,17 +25,21 @@ except ImportError:
 try:
     from primerforge.pipelines.docking_engine import (
         binary_spawn_error,
+        box_from_bound_ligand,
         box_from_residues,
         compute_box_center_from_pdb,
         gnina_available,
         human_binary_error,
         run_gnina_docking,
         run_vina_docking,
+        validate_box,
     )
 except ImportError:
     run_vina_docking = None
     run_gnina_docking = None
+    box_from_bound_ligand = None
     box_from_residues = None
+    validate_box = None
     compute_box_center_from_pdb = None
     gnina_available = None
     binary_spawn_error = None
@@ -223,11 +227,24 @@ except Exception as _iimp:  # pragma: no cover
     _interaction_report_dict = None
     _INTERACTION_IMPORT_ERROR = str(_iimp)
 
+# PLIP (reference interaction profiler) — same warn-allow contract: when the
+# PLIP/OpenBabel stack is missing on a host, in-house analysis still runs.
+try:
+    from primerforge.pipelines.plip_analyzer import analyze_pose_plip
+    _PLIP_IMPORT_ERROR: str | None = None
+except Exception as _plimp:  # pragma: no cover
+    analyze_pose_plip = None
+    _PLIP_IMPORT_ERROR = str(_plimp)
+
 # Interaction detail is bounded in the job JSON (task 5.3 lesson): the top
 # ranked poses carry capped lists for the 3D interaction overlay; every
 # ranked ligand still gets counts + pocket residues for the results table,
 # and POST /api/primer/docking/interactions gives on-demand detail per rank.
 _INTERACTION_DETAIL_TOP = 10
+# PLIP is a heavier analysis (~0.5 s/pose) — profile the same top ranks that
+# get bounded detail; deeper ranks keep in-house counts only.
+_PLIP_TOP = 10
+_PLIP_ROW_CAP = 24
 _INTERACTION_LIST_CAPS = {"hydrogen_bonds": 12, "hydrophobic_contacts": 12,
                           "salt_bridges": 8, "pi_stacking": 8}
 _INTERACTION_RESIDUE_CAP = 12
@@ -255,7 +272,30 @@ def _centroid_box(receptor_pdb: str) -> dict:
             "source": "protein_centroid"}
 
 
-def _select_box(receptor_pdb: str, manual_box: dict | None) -> tuple[dict, str | None]:
+def _select_box(receptor_pdb: str, manual_box: dict | None,
+                original_pdb: str | None = None) -> tuple[dict, str | None]:
+    """Choose the search box and attach its sanity check (box["validation"]).
+
+    Selection rules live in _select_box_raw; this wrapper only annotates the
+    chosen box with warnings so the UI can show them. Never raises.
+
+    ``original_pdb`` is the structure as the user uploaded it — receptor
+    preparation strips HETATM (including the co-crystal ligand), so a
+    bound-ligand box must be resolved against the original, not the prepared
+    receptor. Falls back to ``receptor_pdb`` when not given.
+    """
+    box, note = _select_box_raw(receptor_pdb, manual_box,
+                                original_pdb=original_pdb)
+    if validate_box is not None and isinstance(box, dict):
+        try:
+            box["validation"] = validate_box(box, receptor_pdb)
+        except Exception as exc:  # validation must never block a docking run
+            logger.warning("Box validation skipped: %s", exc)
+    return box, note
+
+
+def _select_box_raw(receptor_pdb: str, manual_box: dict | None,
+                    original_pdb: str | None = None) -> tuple[dict, str | None]:
     """Choose the docking search box for stages 2 and 3. Returns (box, note).
 
     Priority:
@@ -263,9 +303,12 @@ def _select_box(receptor_pdb: str, manual_box: dict | None) -> tuple[dict, str |
       2. manual_box {"residues"}           → source "residue_range" (falls
          back to centroid with a note when the range isn't in the structure)
       3. manual_box {"blind": true}        → skip detection, centroid box
-      4. auto: top detected pocket         → source "pocket" (pocket-centered,
+      4. manual_box {"bound_ligand"}       → ligand centroid box, resolved
+         against ``original_pdb`` (preparation removes HETATM — the ligand
+         only exists in the uploaded file)
+      5. auto: top detected pocket         → source "pocket" (pocket-centered,
          size = 2×radius + 4 Å clamped [12, 30])
-      5. fallback: whole-protein centroid  → source "protein_centroid"
+      6. fallback: whole-protein centroid  → source "protein_centroid"
 
     Never raises: pocket-detection problems fall back to the centroid.
     """
@@ -296,6 +339,27 @@ def _select_box(receptor_pdb: str, manual_box: dict | None) -> tuple[dict, str |
                 "to the whole-protein centroid box.")
         elif manual_box.get("blind"):
             return _centroid_box(receptor_pdb), None
+        elif manual_box.get("bound_ligand") is not None:
+            spec = manual_box.get("bound_ligand")
+            spec = spec if isinstance(spec, dict) else {}
+            box = None
+            # Resolve against the uploaded file: receptor preparation strips
+            # HETATM, so the co-crystal ligand is gone from receptor_pdb.
+            ligand_source = original_pdb or receptor_pdb
+            if box_from_bound_ligand is not None:
+                try:
+                    box = box_from_bound_ligand(
+                        ligand_source,
+                        resname=spec.get("resname"),
+                        chain=spec.get("chain"),
+                    )
+                except Exception as exc:
+                    logger.warning("Bound-ligand box failed: %s", exc)
+            if box:
+                return box, None
+            return _centroid_box(receptor_pdb), (
+                "No bound ligand found in the structure, so the whole-protein "
+                "centroid box was used instead.")
 
     # Auto: pocket-centered box (task 2.1) — top ranked pocket wins.
     if detect_pockets is not None:
@@ -566,6 +630,23 @@ def _attach_metrics(result: dict, receptor_pdb: str) -> None:
                 entry["detail"] = {k: (idict.get(k) or [])[:cap]
                                    for k, cap in _INTERACTION_LIST_CAPS.items()}
                 entry["recommendation"] = idict.get("recommendation") or ""
+            if i < _PLIP_TOP and analyze_pose_plip is not None and sdf:
+                try:
+                    plip = analyze_pose_plip(receptor_pdb, sdf)
+                    if plip.get("available") and not plip.get("error"):
+                        entry["plip"] = {
+                            "counts": plip.get("counts") or {},
+                            "interactions": (plip.get("interactions")
+                                             or [])[:_PLIP_ROW_CAP],
+                        }
+                    elif plip.get("reason") or plip.get("error"):
+                        # honest degradation: say why PLIP is absent
+                        entry["plip"] = {"available": False,
+                                         "reason": plip.get("reason")
+                                         or plip.get("error")}
+                except Exception as _plipe:  # PLIP must never fail a run
+                    logger.warning("PLIP profiling failed for rank %d: %s",
+                                   i + 1, _plipe)
             cand["interactions"] = entry
         except Exception as exc:
             logger.warning("Interaction analysis failed for rank %d: %s",
@@ -767,9 +848,12 @@ async def _run_pipeline_inner(
                             "Structure already clean — nothing removed.")
 
     # ── Search-box selection (Phase 2, task 2.1) ───────────────────────────
-    # Pocket-centered by default; manual/residue/blind overrides from the
-    # advanced panel win over detection. One box serves stages 2 AND 3.
-    dock_box, box_note = _select_box(receptor_pdb, box)
+    # Pocket-centered by default; manual/residue/blind/bound-ligand overrides
+    # from the advanced panel win over detection. One box serves stages 2 AND 3.
+    # original_pdb = the raw upload: preparation (above) strips HETATM, and a
+    # bound-ligand box is resolved against the file that still contains it.
+    dock_box, box_note = _select_box(receptor_pdb, box,
+                                     original_pdb=pdb_content or None)
     if dock_box.get("source") == "pocket":
         await _progress(
             "STAGE 2 / BOX",
